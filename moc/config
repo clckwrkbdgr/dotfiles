@@ -1,0 +1,63 @@
+# You can use quotes and escape ('\') in parameters
+ShowStreamErrors	= no
+Mp3IgnoreCRCErrors	= yes
+Repeat			= no
+Shuffle			= no
+AutoNext		= yes
+OutputBuffer		= 2048
+InputBuffer		= 512
+Prebuffering		= 64
+SoundDriver		= ALSA:JACK:OSS
+
+Sort			= FileName
+ReadTags = no
+FormatString		= "%a - %A / %n - %t"
+#EnforceTagsEncoding = true
+#NonUTFXTerm = yes
+OnSongChange = "/home/umi/bin/moc_submit_lastfm --artist %a --title %t --length %d --album %r"
+
+JackOutLeft		= "alsa_pcm:playback_1"
+JackOutRight		= "alsa_pcm:playback_2"
+
+OSSDevice		= /dev/dsp
+OSSMixerDevice		= /dev/mixer
+#OSSMixerChannel1	= pcm
+#OSSMixerChannel2	= master
+
+#AlsaMixer1		= Master
+#AlsaMixer2		= PCM
+AlsaDevice		= default
+
+ShowHiddenFiles		= no
+StartInMusicDir		= no
+HideFileExtension	= no
+ShowFormat		= no
+ShowTime		= IfAvailable
+Theme			= transparent-background
+MOCDir			= ~/.moc
+UseMmap			= yes
+SavePlaylist		= yes
+SyncPlaylist		= yes
+ASCIILines		= no
+
+Fastdir1 = /x/music/
+Fastdir2 = /home/umi/
+Fastdir3 = /var/junk/music
+#Fastdir10 = 
+
+#SeekTime		= 1
+#SilentSeekTime		= 5
+#ResampleMethod		= Linear
+#ForceSampleRate	= 48000
+#Allow24bitOutput	= no
+#UseRealtimePriority	= no
+TagsCacheSize		= 256
+#PlaylistNumbering	= yes
+
+Layout1		= "directory(0,0,100%,3):playlist(0,3,100%,FILL)"
+Layout2		= "playlist(50%,0,50%,100%):directory(0,0,50%,100%)"
+# Layout3		= ""
+
+FollowPlayedFile	= yes
+CanStartInPlaylist	= yes
+#PlaylistFullPaths	= yes
