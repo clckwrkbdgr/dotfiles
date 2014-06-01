@@ -5,3 +5,5 @@ moc/cache/
 moc/last_directory
 moc/pid
 moc/playlist.m3u
+w3m/cookie
+w3m/history
