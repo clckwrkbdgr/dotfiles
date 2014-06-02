@@ -1,0 +1,12 @@
+#!/bin/bash
+pushd $DOOMWADDIR
+	PK3=$(ls | grep -v 'zdoom\.pk3' | grep pk3)
+	if [ -f "$PK3" ]; then
+		./zdoom *wad "$PK3"
+	elif [ -f *deh ]; then
+		./zdoom *wad *WAD -deh *deh
+	else
+		./zdoom *wad *WAD
+	fi
+popd
+

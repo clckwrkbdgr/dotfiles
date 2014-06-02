@@ -1,0 +1,11 @@
+#!/bin/bash
+aplay -q /x/signal.wav
+if [ "$1" == "start" ]; then
+	notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing
+elif [ "$1" == "stop" ]; then
+	notify-send Pomodoro '<i>Now you can work again.</i>' --icon=gdu-smart-healthy
+elif [ -n "$1" ]; then
+	notify-send "$1"
+else
+	notify-send Alarm '<i>...goes off.</i>'
+fi

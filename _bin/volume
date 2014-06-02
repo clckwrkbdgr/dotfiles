@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ "$1" == "up" ]; then
+	amixer set Front 1+ >/dev/null
+elif [ "$1" == "down" ]; then
+	amixer set Front 1- >/dev/null
+else
+	amixer get Front | grep -o '[0-9]\+%' | tail -1
+fi

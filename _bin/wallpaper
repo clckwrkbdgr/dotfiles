@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Export variables.
+user=$( whoami )
+pid=$( pgrep -u $user gnome-panel )
+for dbusenv in $pid; do
+	DBUS_SESSION_BUS_ADDRESS=$( grep -z DBUS_SESSION_BUS_ADDRESS /proc/$pid/environ | sed -e 's/DBUS_SESSION_BUS_ADDRESS=//' )
+	data="DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
+	eval " export $data"
+done
+
+WALLPFILE=$(find "$WALLPAPERS_DIR" -type f | shuf | head -1)
+
+gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$WALLPFILE"
+gsettings set org.gnome.desktop.background picture-uri "file://$WALLPFILE"
+xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -s "$WALLPFILE"
+xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-style -s 4 # Scaled
+

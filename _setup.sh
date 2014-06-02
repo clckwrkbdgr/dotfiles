@@ -2,6 +2,7 @@
 
 DOTDIR=~/dotfiles
 DOTDIR_CONFIG=~/dotfiles/_config
+DOTDIR_BIN=~/dotfiles/_bin
 BACKUP_DOTDIR=~/dotfiles.bak
 HOMEDIR=~
 
@@ -23,6 +24,19 @@ for FILE in *; do
 		mv --backup=t "$DEST" "$BACKUP_DOTDIR/.config" && ln -s "${DOTDIR_CONFIG}/${FILE}" "$DEST" || echo "Error during copying .$FILE"
 	else
 		ln -s "${DOTDIR_CONFIG}/${FILE}" "$DEST" || echo "Error during copying .$FILE"
+	fi
+done
+popd >/dev/null
+
+mkdir -p "$BACKUP_DOTDIR/bin"
+pushd "$DOTDIR_BIN" >/dev/null
+for FILE in *; do
+	echo $FILE
+	DEST="$HOMEDIR/bin/$FILE"
+	if [ -e "$DEST" ]; then
+		mv --backup=t "$DEST" "$BACKUP_DOTDIR/bin" && ln -s "${DOTDIR_BIN}/${FILE}" "$DEST" || echo "Error during copying .$FILE"
+	else
+		ln -s "${DOTDIR_BIN}/${FILE}" "$DEST" || echo "Error during copying .$FILE"
 	fi
 done
 popd >/dev/null

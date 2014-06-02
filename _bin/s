@@ -1,0 +1,2 @@
+#!/bin/bash
+grep -rnI --exclude-dir=.git "$@"

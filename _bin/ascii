@@ -1,0 +1,23 @@
+#!/usr/bin/python3
+import itertools
+
+COLUMNS = 8
+
+def chunks(l, chunk_size):
+	for i in range(0, len(l), chunk_size):
+		yield l[i:i+chunk_size]
+
+table = {}
+for i in range(128):
+	table[i] = "%c" % i
+control_chars = [(0 , r'\0'), (1 , r'SOH'), (2 , r'STX'), (3 , r'ETX'), (4 , r'EOT'), (5 , r'ENQ'), (6 , r'ACQ'), (7 , r'BEL'), (8 , r'^H'), (9 , r'\t'), (10, r'\n'), (11, r'VT'), (12, r'FF'), (13, r'\r'), (14, r'SO'), (15, r'SI'), (16, r'DLE'), (17, r'DC1'), (18, r'DC2'), (19, r'DC3'), (20, r'DC4'), (21, r'NAK'), (22, r'SYN'), (23, r'ETB'), (24, r'CAN'), (25, r'EM'), (26, r'SUB'), (27, r'ESC'), (28, r'FS'), (29, r'GS'), (30, r'RS'), (31, r'US'), (32, r'SPC'), (127, 'DEL')]
+for index, char in control_chars:
+	table[index] = char
+
+table = sorted(table.items(), key=lambda p: p[0])
+template = "{0:>3} {1:<4}"
+table = [template.format(a, b) for a, b in table]
+row_count = int(len(table) / COLUMNS)
+columns = [chunk for chunk in chunks(table, row_count)]
+for v in itertools.zip_longest(*columns, fillvalue=''):
+	print(' '.join(v))
