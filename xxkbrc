@@ -1,0 +1,8 @@
+XXkb.mainwindow.type:  tray
+XXkb.xpm.path=/usr/share/xxkb
+XXkb.mainwindow.enable: no
+XXkb.mainwindow.geometry: 16x16+0+0
+XXkb.controls.two_state: no
+XXkb.button.enable: no
+! XXkb.button.geometry: 15x15-108+8
+Xkb.button.gravity:North
