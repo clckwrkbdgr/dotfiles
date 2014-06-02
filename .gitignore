@@ -9,3 +9,6 @@ w3m/cookie
 w3m/history
 zdoom/*.zds
 instead/saves/
+_config/ranger/bookmarks
+_config/ranger/history
+_config/ranger/tagged
