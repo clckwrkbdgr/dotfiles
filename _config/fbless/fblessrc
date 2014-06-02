@@ -1,0 +1,9 @@
+[general]
+context_lines: 1
+status: true
+columns: 100
+center_text: true
+
+[keys]
+scroll-up: k, up
+scroll-down: j, down
