@@ -1,0 +1,7 @@
+nolirc=true
+nojoystick=true
+ao=alsa:noblock
+vf=scale,screenshot
+fs=true
+subfont-text-scale=2
+cache=8192
