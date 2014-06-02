@@ -1,0 +1,12 @@
+[user]
+	name = Igor Chaika
+	email = kp580bm1@gmail.com
+
+[color]
+	ui = true
+
+[core]
+	pager = less
+
+[alias]
+	st = status
