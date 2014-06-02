@@ -26,12 +26,26 @@ alias rss='ranger ~/rss'
 alias mplayerrotate='mplayer -vo xv -vf rotate'
 alias mediasort='mediasort --root_dir=/x/music'
 alias vk='vksearch --count=1 --save-to=/tmp --play'
+alias shuffle='find "$@" -type f | sort -R | tail'
 
 function alarm() {
 	if [ -n "$1" ]; then
 		echo 'alert Alarm' | at $@;
 	else
 		alert Alarm
+	fi
+}
+
+function seen() {
+	ls -R --color=auto
+	F=$(find . \! -executable | sort -nk 2 | egrep '(ogm|avi|mkv|mp4|wmv|mpg|mov)$' | head -1)
+	YES="$1"
+	if [ -z "$YES" ]; then
+		echo ${F}, continue?
+		read YES
+	fi
+	if [ "$YES" = "y" ]; then
+		mplayer $@ "$F" && chmod a+x "$F"
 	fi
 }
 
