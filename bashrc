@@ -17,7 +17,7 @@ export PS4="\[\033[1;37m\]+\[\033[0m\] " # +
 export LC_COLLATE=C # For `ls' not to mix upper and lower case letters.
 export SDL_VIDEO_CENTERED=1
 export HISTCONTROL=ignoredups
-source .bash_vars
+source ~/.bash_vars
 alias rm='rm -i'
 alias mv='mv -i'
 alias cp='cp -i'
