@@ -1,4 +1,5 @@
 #!/bin/bash
+source ~/.bash_vars
 
 # Export variables.
 user=$( whoami )
