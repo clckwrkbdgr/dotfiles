@@ -16,6 +16,8 @@ export PS2="\[\033[1;37m\]>\[\033[0m\] " # >
 export PS4="\[\033[1;37m\]+\[\033[0m\] " # +
 export LC_COLLATE=C # For `ls' not to mix upper and lower case letters.
 export SDL_VIDEO_CENTERED=1
+export GREP_OPTIONS='--color=auto'
+export GREP_COLOR='1;32'
 export HISTCONTROL=ignoredups
 source ~/.bash_vars
 alias rm='rm -i'
