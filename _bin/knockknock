@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source ~/.bash_vars
 COUNT=0
 while true; do
 	if ping -c 1 -s 1 -W 2 "$HOST" >/dev/null 2>&1; then
