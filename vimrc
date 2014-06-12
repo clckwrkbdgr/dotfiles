@@ -29,6 +29,7 @@ set fo+=cr " perhaps will helps with newline after comments.
 set foldmethod=syntax " autofolds
 set autoindent
 set smartindent
+set pastetoggle=<F5>
 syntax on
 nohl
 
