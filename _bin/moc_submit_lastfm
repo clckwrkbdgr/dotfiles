@@ -19,6 +19,7 @@ from optparse import OptionParser
 from subprocess import check_call, call, Popen, PIPE
 import time
 import sys
+import os
 
 parser = OptionParser()
 parser.add_option("-a", "--artist", dest="artist")
@@ -84,7 +85,7 @@ def main():
 if __name__ == '__main__':
 	import sys
 	home = os.path.expanduser("~")
-	logfile = open(os.path.join(home, ".util.log", "a")
+	logfile = open(os.path.join(home, ".util.log"), "a")
 	sys.stdout = logfile
 	sys.stderr = logfile
 	try:
