@@ -1,2 +1,2 @@
 #!/bin/bash
-grep -rnI --exclude-dir=.git "$@"
+grep -RnI --exclude-dir=.wine --exclude-dir=.svn --exclude-dir=.git "$@"
