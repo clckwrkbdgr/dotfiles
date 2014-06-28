@@ -7,3 +7,9 @@ center_text: true
 [keys]
 scroll-up: k, up
 scroll-down: j, down
+
+[emphasis]
+foreground: blue
+
+[a]
+foreground: yellow
