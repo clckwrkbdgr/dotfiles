@@ -39,10 +39,15 @@ function alarm() {
 }
 
 function seen() {
-	ls -R --color=auto
 	F=$(find . \! -executable | sort -nk 2 | egrep '(ogm|avi|mkv|mp4|wmv|mpg|mov)$' | head -1)
-	YES="$1"
-	if [ -z "$YES" ]; then
+	if [ -z "$F" ]; then
+		ls -R --color=auto
+		echo 'All done.'
+		return
+	fi
+	YES=y
+	if [ "$1" == "-i" ]; then
+		ls -R --color=auto
 		echo ${F}, continue?
 		read YES
 	fi
