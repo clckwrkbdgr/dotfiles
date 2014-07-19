@@ -51,7 +51,7 @@ case "$extension" in
 		success && exit 5 || exit 1;;
 	# HTML Pages:
 	htm|html|xhtml)
-		have html2mark && html2mark "$path" | head -n $maxln | fmt -s -w $width && exit 4
+		have html2mark && html2mark --width "$width" --color "$path" && exit 4
 		have html2text && html2text -width 500 "$path" | head -n $maxln | fmt -s -w $width && exit 4
 		have w3m    && w3m    -dump "$path" | head -n $maxln | fmt -s -w $width && exit 4
 		have lynx   && lynx   -dump "$path" | head -n $maxln | fmt -s -w $width && exit 4
