@@ -56,9 +56,6 @@ function seen() {
 	fi
 }
 
-df | while read L; do
-	[ "$(echo $L | sed 's/.* \([^ ]\+\)% .*/\1/' | sed 's/[^0-9]/0/g' )" -gt 98 ] && echo $L | sed 's/.* \([^ ]\+%\)/\1/';
-done
 ps aux | grep lastfmsubmitd | grep -qv grep || echo 'lastfmsubmitd is down! <sudo service lastfmsubmitd restart>'
 python3 ~/motd.py
 [ "$(du /var/mail/$USERNAME | cut -f 1)" -gt 0 ] && echo "New mailx!"
