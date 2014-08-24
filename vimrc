@@ -33,8 +33,16 @@ set pastetoggle=<F5>
 syntax on
 nohl
 
+hi Folded ctermbg=none
+hi Folded ctermfg=cyan
+hi FoldColumn ctermbg=none
+hi FoldColumn ctermfg=cyan
+
 filetype plugin indent on
 au FileType python set tabstop=4 | set noexpandtab
 let g:xml_syntax_folding=1
 au FileType xml setlocal foldmethod=syntax
 au FileType html setlocal foldmethod=syntax
+au FileType votl setlocal foldlevel=0
+let maplocalleader=",," " Vim Outliner leader key.
+set foldcolumn=0
