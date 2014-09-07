@@ -38,24 +38,6 @@ function alarm() {
 	fi
 }
 
-function seen() {
-	F=$(find . \! -executable | sort -nk 2 | egrep '(ogm|avi|mkv|mp4|wmv|mpg|mov)$' | head -1)
-	if [ -z "$F" ]; then
-		ls -R --color=auto
-		echo 'All done.'
-		return
-	fi
-	YES=y
-	if [ "$1" == "-i" ]; then
-		ls -R --color=auto
-		echo ${F}, continue?
-		read YES
-	fi
-	if [ "$YES" = "y" ]; then
-		mplayer $@ "$F" && chmod a+x "$F"
-	fi
-}
-
 ps aux | grep lastfmsubmitd | grep -qv grep || echo 'lastfmsubmitd is down! <sudo service lastfmsubmitd restart>'
 python3 ~/motd.py
 [ "$(du /var/mail/$USERNAME | cut -f 1)" -gt 0 ] && echo "New mailx!"
