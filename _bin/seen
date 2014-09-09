@@ -1,15 +1,15 @@
 #!/bin/bash
 
-F=$(find . \! -executable | sort -nk 2 | egrep '(ogm|avi|mkv|mp4|wmv|mpg|mov)$' | head -1)
+F=$(find . \! -executable | sort -Vk 2 | egrep '(ogm|avi|mkv|mp4|wmv|mpg|mov)$' | head -1)
 if [ -z "$F" ]; then
-	ls -R --color=auto
+	ls -vR --color=auto
 	echo 'All done.'
 	exit
 fi
 YES=y
 if [ "x$1" == "x-i" ]; then
 	shift
-	ls -R --color=auto
+	ls -vR --color=auto
 	echo "${F}, continue?"
 	read YES
 fi
