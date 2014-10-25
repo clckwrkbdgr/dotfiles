@@ -1,0 +1,9 @@
+#!/bin/bash
+xset q | sed -n 4,9p | grep -o '[0-9][0-9]: [A-Za-z 0-9]\+: \+o[fn][f ]' | grep 'on $' | sed 's/.*: \([^:]\+\):.*/\1/' | while read LED; do
+	case "$LED" in
+		Caps*) echo -n 'C' ;;
+		Num*) echo -n 'N' ;;
+		"Group 2") echo -n 'R' ;;
+	esac
+done
+echo -n ' '
