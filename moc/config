@@ -42,7 +42,7 @@ ASCIILines		= no
 
 Fastdir1 = /x/music/
 Fastdir2 = /home/umi/
-Fastdir3 = /var/junk/music
+Fastdir3 = /x/torrents/music
 #Fastdir10 = 
 
 #SeekTime		= 1
