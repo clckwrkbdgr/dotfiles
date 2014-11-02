@@ -85,13 +85,23 @@ function test_setup_files_from_dir()
 	echo 'Done. Ok.'
 }
 
+DOTDIR=~/dotfiles
+HOMEDIR=~
+
 if [ "x$1" == "xtest" ]; then
 	test_setup_files_from_dir
 	exit $?
+elif [ "$1" == "check" ]; then
+	echo "TODO"
+	exit 1
+elif [ "$1" == "setup" ]; then
+	setup_files_from_dir $DOTDIR . $HOMEDIR .
+	setup_files_from_dir $DOTDIR _config $HOMEDIR .config
+	setup_files_from_dir $DOTDIR _bin $HOMEDIR bin
+else
+	echo "Usage: ./_dotfiles.sh {setup|test|check}"
+	echo "    setup - install dotfiles on their places in HOMEDIR."
+	echo "            Original files are stored in ~/dotfile.bak directory."
+	echo "    test  - test dotfiles setup function."
+	echo "    check - check for dotfiles (and dotdirs)  which aren't handled by script."
 fi
-
-DOTDIR=~/dotfiles
-HOMEDIR=~
-setup_files_from_dir $DOTDIR . $HOMEDIR .
-setup_files_from_dir $DOTDIR _config $HOMEDIR .config
-setup_files_from_dir $DOTDIR _bin $HOMEDIR bin
