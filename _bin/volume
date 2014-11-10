@@ -1,6 +1,6 @@
 #!/bin/bash
 CHANNEL=Master
-STEP=2500
+STEP=5%
 SHOW_POPUP=False
 
 if [ "$1" == "up" ]; then
@@ -8,12 +8,19 @@ if [ "$1" == "up" ]; then
 elif [ "$1" == "down" ]; then
 	amixer set "$CHANNEL" $STEP- >/dev/null
 elif [ "$1" == "reset" ]; then
-	amixer set "$CHANNEL" 30% >/dev/null
+	VOLUME=${2:-33}
+	amixer set "$CHANNEL" ${VOLUME}% >/dev/null
 fi
 
 
-VOLUME=$(amixer get "$CHANNEL" | sed '/^ *Front\ Left: /{s/^.*\[\(.*\)%\].*/\1/;p;};d;')
-STATUS=$(amixer get "$CHANNEL" | awk '$2 == "Left:" { print $NF; }')
+if amixer get "$CHANNEL" | grep -q 'Front Left'; then
+	VOLUME=$(amixer get "$CHANNEL" | sed '/^ *Front\ Left: /{s/^.*\[\(.*\)%\].*/\1/;p;};d;')
+	STATUS=$(amixer get "$CHANNEL" | awk '$2 == "Left:" { print $NF; }')
+else
+	VOLUME=$(amixer get "$CHANNEL" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)%\].*/\1/;p;};d;')
+	STATUS=$(amixer get "$CHANNEL" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)\]$/\1/;p;};d;')
+fi
+
 if [ "$STATUS" = '[off]' ]; then
     ICON=notification-audio-volume-muted
 else
@@ -26,9 +33,11 @@ else
     else
         ICON=notification-audio-volume-high
     fi
-	VOLUME=${VOLUME}%
 fi
 echo $VOLUME
+LINE=$(echo $VOLUME | python3 -c 'i=int(input())//5;print("["+"|"*i+"-"*(20-i)+"] ")')
+LINE="${LINE} ${VOLUME}%"
 
 [ "$SHOW_POPUP" == False ] && exit 0
-notify-send "Volume" -i "$ICON" -h int:value:$VOLUME -h string:synchronous:volume
+notify-send "Volume" -i "$ICON" "$LINE"
+#notify-send "Volume" -i "$ICON" -h int:value:$VOLUME -h string:synchronous:volume
