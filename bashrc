@@ -41,5 +41,4 @@ function alarm() {
 xmodmap -e 'keycode 65 = space underscore'
 
 ps aux | grep lastfmsubmitd | grep -qv grep || echo 'lastfmsubmitd is down! <sudo service lastfmsubmitd restart>'
-python3 ~/motd.py
-[ "$(du /var/mail/$USERNAME | cut -f 1)" -gt 0 ] && echo "New mailx!"
+mailx -H -S headline="%d - %100s" 2>&1 | grep -v 'No mail for '$USERNAME
