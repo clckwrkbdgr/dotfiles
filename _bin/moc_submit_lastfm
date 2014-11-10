@@ -26,6 +26,7 @@ parser.add_option("-a", "--artist", dest="artist")
 parser.add_option("-t", "--title", dest="title")
 parser.add_option("-A", "--album", dest="album")
 parser.add_option("-l", "--length", dest="length")
+parser.add_option("-f", "--filename", dest="filename")
 
 # Treating everything as bytestrings throughout seems to work OK even
 # with non-ASCII characters in song titles etc (at least with a UTF-8
@@ -59,7 +60,8 @@ def main():
 		decoded_album = options.album.encode('iso-8859-1').decode('utf-8')
 		decoded_title = options.title.encode('iso-8859-1').decode('utf-8')
 	except Exception as e:
-		print("moc: {0}/{1}/{2}/{3}: ".format(options.artist,options.album,options.title,options.length), e)
+		#print("moc: {0}/{1}/{2}/{3}: ".format(options.artist,options.album,options.title,options.length), e)
+		pass
 	if any(not options.__dict__.get(k) for k in ["artist", "title", "length"]):
 		print("moc: {0}/{1}/{2}/{3}: ".format(options.artist,options.album,options.title,options.length), "All of artist, album, length must be specified")
 		exit(1)

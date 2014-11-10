@@ -14,7 +14,7 @@ ReadTags = no
 FormatString		= "%a - %A / %n - %t"
 #EnforceTagsEncoding = true
 #NonUTFXTerm = yes
-OnSongChange = "/home/umi/bin/moc_submit_lastfm --artist %a --title %t --length %d --album %r"
+OnSongChange = "/home/umi/bin/moc_submit_lastfm --artist %a --title %t --length %d --album %r --filename %f"
 
 JackOutLeft		= "alsa_pcm:playback_1"
 JackOutRight		= "alsa_pcm:playback_2"
