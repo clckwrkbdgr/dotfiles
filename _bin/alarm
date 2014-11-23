@@ -1,0 +1,14 @@
+#!/bin/bash
+if [ "$1" == at ]; then
+	echo 'alert Alarm' | $@;
+elif [ "$1" == ask ]; then
+	value=$(zenity --entry --text "Minutes to alarm:" --entry-text 5)
+	[ -z "$value" ] && exit
+	if echo $value | grep -q '^[0-9]\+$'; then
+		echo 'alert Alarm' | at now + $value min
+	else
+		zenity --info --text "Value should be a number: $value"
+	fi
+else
+	alert Alarm
+fi

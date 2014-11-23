@@ -30,14 +30,6 @@ alias mediasort='mediasort --root_dir=/x/music'
 alias vk='vksearch --count=1 --save-to=/tmp --play'
 alias shuffle='find "$@" -type f | sort -R | tail'
 
-function alarm() {
-	if [ -n "$1" ]; then
-		echo 'alert Alarm' | at $@;
-	else
-		alert Alarm
-	fi
-}
-
 xmodmap -e 'keycode 65 = space underscore'
 
 ps aux | grep lastfmsubmitd | grep -qv grep || echo 'lastfmsubmitd is down! <sudo service lastfmsubmitd restart>'
