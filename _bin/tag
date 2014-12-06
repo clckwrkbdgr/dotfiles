@@ -9,6 +9,11 @@ MINOR=${MINOR:-0}
 MAJOR=${MAJOR:-0}
 REVISION=${REVISION:-0}
 
+if [ -z "$1" ]; then
+	git tag
+	exit
+fi
+
 case "$SECTION" in
 	( major ) MAJOR=$((MAJOR+1)); MINOR=0; REVISION=0 ;;
 	( minor ) MINOR=$((MINOR+1)); REVISION=0 ;;
