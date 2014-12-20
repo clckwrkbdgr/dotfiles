@@ -63,7 +63,7 @@ def main():
 		#print("moc: {0}/{1}/{2}/{3}: ".format(options.artist,options.album,options.title,options.length), e)
 		pass
 	if any(not options.__dict__.get(k) for k in ["artist", "title", "length"]):
-		print("moc: {0}/{1}/{2}/{3}: ".format(options.artist,options.album,options.title,options.length), "All of artist, album, length must be specified")
+		print("moc: {4}/{0}/{1}/{2}/{3}: ".format(options.artist,options.album,options.title,options.length,options.filename), "All of artist, title, length must be specified")
 		exit(1)
 	if ":" in options.length:
 		mins, secs = options.length.split(":")
