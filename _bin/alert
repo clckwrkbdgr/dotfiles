@@ -4,6 +4,8 @@ if [ "$1" == "start" ]; then
 	notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing
 elif [ "$1" == "stop" ]; then
 	notify-send Pomodoro '<i>Now you can work again.</i>' --icon=gdu-smart-healthy
+elif [ "$1" == "alarm" ]; then
+	notify-send Pomodoro '<i>Your single shot is fired.</i>' --icon=gnome-panel-clock
 elif [ -n "$1" ]; then
 	notify-send "$1"
 else
