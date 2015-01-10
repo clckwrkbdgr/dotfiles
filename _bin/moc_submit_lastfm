@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 # A wrapper script that interfaces between MOC (Music on console) and
 # lastfmsubmit.  The problem with just usnig OnSongChange is that it
 # will be triggered even if you listen to only one second of a song.
@@ -7,89 +6,150 @@
 # whether MOC is still playing it, before submitting the track to
 # last.fm.  This way, skipping through a list of tracks will not
 # result in lots of tracks submitted.
-
-#  To use, put this in your ~/.moc/config file:
-# OnSongChange = "/path/to/moc_submit_lastfm --artist %a --title %t --length %d --album %r"
-
-# Author: Luke Plant  < http://lukeplant.me.uk/ >
-# License: public domain
-
-from datetime import datetime
-from optparse import OptionParser
-from subprocess import check_call, call, Popen, PIPE
+#
+# Modified version does also decoding values to unicode and guessing missing tags.
+#
+# To use, put this in your ~/.moc/config file:
+#    OnSongChange = "/path/to/moc_submit_lastfm --artist %a --title %t --length %d --album %r --filename %f"
+# Artist, title, length, and filename arguments are mandatory
+#
+# Original author: Luke Plant  < http://lukeplant.me.uk/ >
+# Heavily modified by umi0451 <umi0451.github.io>
+# License: WTFPLv2
+import datetime
+import optparse
+import subprocess
 import time
 import sys
 import os
+import re
+import unittest
 
-parser = OptionParser()
-parser.add_option("-a", "--artist", dest="artist")
-parser.add_option("-t", "--title", dest="title")
-parser.add_option("-A", "--album", dest="album")
-parser.add_option("-l", "--length", dest="length")
-parser.add_option("-f", "--filename", dest="filename")
+DEBUG = False
 
-# Treating everything as bytestrings throughout seems to work OK even
-# with non-ASCII characters in song titles etc (at least with a UTF-8
-# locale).
+class TrackInfo:
+	def __init__(self, artist=None, title=None, album=None, length=None, filename=None):
+		other = artist
+		if other is not None and hasattr(other, "artist"):
+			self.artist = other.artist
+			self.title = other.title
+			self.album = other.album
+			self.length = other.length
+			self.filename = other.filename
+		else:
+			self.artist = artist
+			self.title = title
+			self.album = album
+			self.length = length
+			self.filename = filename
 
-def still_playing(artist, album, title, length):
-	p = Popen(["mocp", "-i"], stdout=PIPE)
+def guess_insufficient_info(original_info):
+	info = TrackInfo(original_info)
+	if not info.title:
+		info.title = os.path.splitext(os.path.basename(info.filename))[0]
+		m = re.match(r'[0-9]{,3} +[-]? +(.+)', info.title)
+		if m:
+			info.title = m.group(1)
+	return info
+
+def decode_info(original_info):
+	info = TrackInfo(original_info)
+	try:
+		info.artist = info.artist.encode('iso-8859-1').decode('utf-8')
+		info.album = info.album.encode('iso-8859-1').decode('utf-8')
+		info.title = info.title.encode('iso-8859-1').decode('utf-8')
+	except Exception as e:
+		pass
+	return info
+
+def convert_length(length):
+	if ":" not in length:
+		return int(length)
+	mins, secs = length.split(":")
+	return int(mins) * 60 + int(secs)
+
+class TestInfo(unittest.TestCase):
+	def test_should_create_info_object_from_other_object(self):
+		info = TrackInfo(title="some_title")
+		cloned_info = TrackInfo(info)
+		self.assertEqual(cloned_info.title, "some_title")
+		cloned_info.title = ""
+		self.assertEqual(info.title, "some_title")
+	def test_should_recognize_full_specified_length(self):
+		self.assertEqual(convert_length("10:10"), 10 * 60 + 10)
+	def test_should_recognize_only_minutes_length(self):
+		self.assertEqual(convert_length("10"), 10)
+
+# Side-effect functions
+
+def still_playing(info):
+	p = subprocess.Popen(["mocp", "-i"], stdout=subprocess.PIPE)
 	out, err = p.communicate()
 	lines = out.decode('utf-8').split("\n")
-	for s in ["Artist: %s" % artist, "Album: %s" % album, "SongTitle: %s" % title]:
+	for s in ["Artist: %s" % info.artist, "Album: %s" % info.album, "SongTitle: %s" % info.title]:
 		if not s in lines:
 			return False
 	return True
 
-def submit_to_lastfm(artist, album, title, length):
-	args = ["/usr/lib/lastfmsubmitd/lastfmsubmit", "--artist", artist, "--title", title, "--length", length]
-	if album is not None:
-		args.extend(["--album", album])
+def submit_to_lastfm(info):
+	args = ["/usr/lib/lastfmsubmitd/lastfmsubmit", "--artist", info.artist, "--title", info.title, "--length", str(info.length)]
+	if info.album is not None:
+		args.extend(["--album", info.album])
+	if DEBUG:
+		print(args)
+		return
 	try:
-		check_call(args)
+		subprocess.check_call(args)
 	except Exception as e:
-		print("moc: {0}/{1}/{2}/{3}: ".format(artist,album,title,length), e)
+		print("moc: {0}: ".format(info.filename), e)
 
-def main():
-	options, args = parser.parse_args()
-	decoded_artist = options.artist #.encode('iso-8859-1').decode('utf-8')
-	decoded_album = options.album #.encode('iso-8859-1').decode('utf-8')
-	decoded_title = options.title #.encode('iso-8859-1').decode('utf-8')
-	try:
-		decoded_artist = options.artist.encode('iso-8859-1').decode('utf-8')
-		decoded_album = options.album.encode('iso-8859-1').decode('utf-8')
-		decoded_title = options.title.encode('iso-8859-1').decode('utf-8')
-	except Exception as e:
-		#print("moc: {0}/{1}/{2}/{3}: ".format(options.artist,options.album,options.title,options.length), e)
-		pass
-	if any(not options.__dict__.get(k) for k in ["artist", "title", "length"]):
-		print("moc: {4}/{0}/{1}/{2}/{3}: ".format(options.artist,options.album,options.title,options.length,options.filename), "All of artist, title, length must be specified")
-		exit(1)
-	if ":" in options.length:
-		mins, secs = options.length.split(":")
-		length = int(mins) * 60 + int(secs)
-	else:
-		length = int(options.length)
-	if length < 15:
-		submit_to_lastfm(decoded_artist, decoded_album, decoded_title, options.length)
-		exit(0)
-	# wait until song is half played
-	wait = length/2
-	start = datetime.now()
+def wait_until_song_is_half_played(info):
+	if info.length < 15:
+		return True
+	wait = info.length/2
+	start = datetime.datetime.now()
 	while True:
 		time.sleep(5)
-		if not still_playing(options.artist, options.album, options.title, options.length):
-			exit(1)
-		if (datetime.now() - start).seconds > wait:
-			submit_to_lastfm(decoded_artist, decoded_album, decoded_title, options.length)
-			exit(0)
+		if not still_playing(info):
+			if DEBUG:
+				print("not playing")
+			return False
+		if (datetime.datetime.now() - start).seconds > wait:
+			return True
+
+def main():
+	parser = optparse.OptionParser()
+	parser.add_option("-a", "--artist", dest="artist")
+	parser.add_option("-t", "--title", dest="title")
+	parser.add_option("-A", "--album", dest="album")
+	parser.add_option("-l", "--length", dest="length")
+	parser.add_option("-f", "--filename", dest="filename")
+	options, args = parser.parse_args()
+	mandatory = ["artist", "title", "length", "filename"]
+	if any(not options.__dict__.get(k) for k in mandatory):
+		print("moc: {0}: All of {1} must be specified".format(options.filename, ', '.join(mandatory)))
+		exit(1)
+
+	original_info = TrackInfo(options)
+	original_info.length = convert_length(original_info.length)
+	original_info = guess_insufficient_info(original_info)
+	decoded_info = decode_info(original_info)
+	if wait_until_song_is_half_played(original_info):
+		submit_to_lastfm(decoded_info)
+		exit(0)
+	else:
+		exit(1)
 
 if __name__ == '__main__':
-	import sys
-	home = os.path.expanduser("~")
-	logfile = open(os.path.join(home, ".util.log"), "a")
-	sys.stdout = logfile
-	sys.stderr = logfile
+	if len(sys.argv) > 1 and sys.argv[1] == "test":
+		del sys.argv[1]
+		unittest.main()
+
+	if not DEBUG:
+		home = os.path.expanduser("~")
+		logfile = open(os.path.join(home, ".util.log"), "a")
+		sys.stdout = logfile
+		sys.stderr = logfile
 	try:
 		main()
 	except Exception as e:
