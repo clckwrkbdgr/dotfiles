@@ -44,13 +44,22 @@ class TrackInfo:
 			self.length = length
 			self.filename = filename
 
-def guess_insufficient_info(original_info):
+def extract_tags_from_filename(filename):
+	info = TrackInfo()
+	info.title = os.path.splitext(os.path.basename(filename))[0]
+	m = re.match(r'[0-9]{,3} +[-]? +(.+)', info.title)
+	if m:
+		info.title = m.group(1)
+	return info
+
+def substitute_insufficient_info(original_info, extended_info):
 	info = TrackInfo(original_info)
-	if not info.title:
-		info.title = os.path.splitext(os.path.basename(info.filename))[0]
-		m = re.match(r'[0-9]{,3} +[-]? +(.+)', info.title)
-		if m:
-			info.title = m.group(1)
+	if info.artist is None and extended_info.artist is not None:
+		info.artist = extended_info.artist
+	if info.album is None and extended_info.album is not None:
+		info.album = extended_info.album
+	if info.title is None and extended_info.title is not None:
+		info.title = extended_info.title
 	return info
 
 def decode_info(original_info):
@@ -70,6 +79,25 @@ def convert_length(length):
 		return int(length)
 	mins, secs = length.split(":")
 	return int(mins) * 60 + int(secs)
+
+class TestExtractInfo(unittest.TestCase):
+	def check_info(self, artist, album, title, info):
+		if isinstance(info, str):
+			info = extract_tags_from_filename(info)
+		self.assertEqual(info.artist, artist)
+		self.assertEqual(info.album, album)
+		self.assertEqual(info.title, title)
+
+	def test_should_substitute_insufficient_info(self):
+		info = TrackInfo(artist="artist")
+		extended = TrackInfo(artist="extended_artist", title="extended_title")
+		info = substitute_insufficient_info(info, extended)
+		self.check_info("artist", None, "extended_title", info)
+	def test_should_extract_tags_from_filename(self):
+		self.check_info("Artist", "Album", "Title", "/media/music/Artist/2000-Album/01-Title.mp3")
+		self.check_info("Artist", None, "Title", "/media/music/Artist - Title.mp3")
+		self.check_info("Artist", None, "Title", "/media/music/12-Artist/01-Title.mp3")
+		self.check_info(None, "Album", "Title", "/media/music/2000 - Album/01-Title.mp3")
 
 class TestDecoding(unittest.TestCase):
 	def test_should_leave_ascii_as_is(self):
@@ -161,7 +189,8 @@ def main():
 
 	original_info = TrackInfo(options)
 	original_info.length = convert_length(original_info.length)
-	original_info = guess_insufficient_info(original_info)
+	filename_info = extract_tags_from_filename(info.filename)
+	original_info = substitute_insufficient_info(original_info, filename_info)
 	decoded_info = decode_info(original_info)
 	if wait_until_song_is_half_played(original_info):
 		submit_to_lastfm(decoded_info)
