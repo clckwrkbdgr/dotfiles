@@ -189,7 +189,7 @@ def main():
 
 	original_info = TrackInfo(options)
 	original_info.length = convert_length(original_info.length)
-	filename_info = extract_tags_from_filename(info.filename)
+	filename_info = extract_tags_from_filename(original_info.filename)
 	original_info = substitute_insufficient_info(original_info, filename_info)
 	decoded_info = decode_info(original_info)
 	if wait_until_song_is_half_played(original_info):
