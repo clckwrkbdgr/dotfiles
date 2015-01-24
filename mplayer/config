@@ -4,4 +4,6 @@ ao=alsa:noblock
 vf=scale,screenshot
 fs=true
 subfont-text-scale=2
+embeddedfonts=true
+ass=true
 cache=8192
