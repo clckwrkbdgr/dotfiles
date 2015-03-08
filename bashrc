@@ -24,7 +24,7 @@ alias rm='rm -i'
 alias mv='mv -i'
 alias cp='cp -i'
 alias ls='ls --color -F'
-alias rss='ranger ~/rss'
+alias rss='ranger ~/RSS'
 alias mplayerrotate='mplayer -vo xv -vf rotate'
 alias mediasort='mediasort --root_dir=/x/music'
 alias vk='vksearch --count=1 --save-to=/tmp --play'
@@ -32,4 +32,4 @@ alias shuffle='find "$@" -type f | sort -R | tail'
 
 xmodmap -e 'keycode 65 = space underscore'
 
-mailx -H -S headline="%d - %100s" 2>&1 | grep -v 'No mail for '$USERNAME
+[ -f ~/MOTD ] && cat ~/MOTD
