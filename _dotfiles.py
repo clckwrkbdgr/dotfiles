@@ -36,7 +36,7 @@ def compare_paths(original_path, ignored_paths):
 	return "print"
 
 def check_dotfiles(dest_dir, ignored_paths):
-	for entry in os.listdir(os.path.join(*dest_dir)):
+	for entry in sorted(os.listdir(os.path.join(*dest_dir))):
 		entry = dest_dir + (entry,)
 		action = compare_paths(entry, ignored_paths)
 		if action == "print":
