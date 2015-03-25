@@ -1,4 +1,5 @@
 .*.swp
+*.pyo
 
 vim/.netrwhist
 moc/cache/
