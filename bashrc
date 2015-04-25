@@ -25,9 +25,6 @@ alias mv='mv -i'
 alias cp='cp -i'
 alias ls='ls --color -F'
 alias rss='ranger ~/RSS'
-alias mplayerrotate='mplayer -vo xv -vf rotate'
-alias mediasort='mediasort --root_dir=/x/music'
-alias vk='vksearch --count=1 --save-to=/tmp --play'
 alias shuffle='find "$@" -type f | sort -R | tail'
 
 eval `dircolors ~/.dir_colors`
