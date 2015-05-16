@@ -1,6 +1,6 @@
 #!/bin/bash
 
-F=$(find -L . \! -executable | sort | grep -v 'sample' | egrep '(ogm|avi|mkv|mp4|wmv|mpg|mov)$' | head -1)
+F=$(find -L . \! -executable | sort -f | grep -v 'sample' | egrep '(ogm|avi|mkv|mp4|wmv|mpg|mov)$' | head -1)
 if [ -z "$F" ]; then
 	ls -vRL --color=auto
 	echo 'All done.'
