@@ -1,12 +1,19 @@
 #!/bin/bash
-pushd $DOOMWADDIR
-	PK3=$(ls | grep -v 'zdoom\.pk3' | grep pk3)
-	if [ -f "$PK3" ]; then
-		./zdoom *wad "$PK3"
-	elif [ -f *deh ]; then
-		./zdoom *wad *WAD -deh *deh
-	else
-		./zdoom *wad *WAD
-	fi
-popd
+IWAD=$1
+shift
 
+if [ -z "$IWAD" ]; then
+	echo 'Usage: doom [1|2] [wads | dehs]'
+	exit 1
+fi
+
+if echo -e "1\ndoom1\ndoom" | grep -q "^$IWAD$"; then
+	IWAD=doom
+elif echo -e "2\ndoom2" | grep -q "^$IWAD$"; then
+	IWAD=doom2
+else
+	echo "Unknown iwad: $IWAD"
+	exit 1
+fi
+[ -n "$1" ] && FILE_ARG="-file"
+prboom-plus -iwad /x/games/doom/$IWAD.wad "$FILE_ARG" "$@"
