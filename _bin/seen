@@ -1,18 +1,30 @@
 #!/bin/bash
 
-F=$(find -L . \! -executable | sort -f | grep -v 'sample' | egrep '(ogm|avi|mkv|mp4|wmv|mpg|mov)$' | head -1)
-if [ -z "$F" ]; then
+function list_all_left() {
+	find -L . \! -executable | sort -f | grep -v 'sample' | egrep --color=never '(ogm|avi|mkv|mp4|wmv|mpg|mov)$'
+}
+
+if [ "x$1" == "x-l" ]; then
+	list_all_left
+	echo -n 'Series left: '
+	list_all_left | wc -l
+	exit
+fi
+
+next=$(list_all_left | head -1)
+if [ -z "$next" ]; then
 	ls -vRL --color=auto
 	echo 'All done.'
 	exit
 fi
-YES=y
+yes=y
 if [ "x$1" == "x-i" ]; then
-	shift
-	ls -vRL --color=auto
-	echo "${F}, continue?"
-	read YES
+	shift;
+	list_all_left
+	echo
+	echo "${next}, continue?"
+	read yes
 fi
-if [ "$YES" = "y" ]; then
-	mplayer $@ "$F" && chmod a+x "$F"
+if [ "$yes" = "y" ]; then
+	mplayer $@ "$next" && chmod a+x "$next"
 fi
