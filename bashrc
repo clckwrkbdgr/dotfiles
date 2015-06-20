@@ -29,5 +29,3 @@ alias shuffle='find "$@" -type f | sort -R | tail'
 
 eval `dircolors ~/.dir_colors`
 xmodmap -e 'keycode 65 = space underscore'
-
-[ -f ~/MOTD ] && cat ~/MOTD
