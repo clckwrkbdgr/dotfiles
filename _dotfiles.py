@@ -40,7 +40,11 @@ def check_dotfiles(dest_dir, ignored_paths):
 		entry = dest_dir + (entry,)
 		action = compare_paths(entry, ignored_paths)
 		if action == "print":
-			print(os.path.join(*entry))
+			entry_name = os.path.join(*entry)
+			if os.path.isdir(entry_name):
+				print(entry_name + '/')
+			else:
+				print(entry_name)
 		elif action == "descend":
 			check_dotfiles(entry, ignored_paths)
 
