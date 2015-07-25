@@ -11,6 +11,8 @@ moc/softmixer
 w3m/cookie
 w3m/history
 zdoom/*.zds
+prboom-plus/*.dsg
+prboom-plus/*.dat
 instead/saves/
 _config/ranger/bookmarks
 _config/ranger/history
