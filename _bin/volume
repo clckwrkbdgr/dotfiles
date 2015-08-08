@@ -34,7 +34,6 @@ else
         ICON=notification-audio-volume-high
     fi
 fi
-echo $VOLUME
 LINE=$(echo $VOLUME | python3 -c 'i=int(input())//5;print("["+"|"*i+"-"*(20-i)+"] ")')
 LINE="${LINE} ${VOLUME}%"
 
