@@ -8,14 +8,14 @@ if [ "x$1" == "x-l" ]; then
 	list_all_left
 	echo -n 'Series left: '
 	list_all_left | wc -l
-	exit
+	exit 0
 fi
 
 next=$(list_all_left | head -1)
 if [ -z "$next" ]; then
 	ls -vRL --color=auto
 	echo 'All done.'
-	exit
+	exit 1
 fi
 yes=y
 if [ "x$1" == "x-i" ]; then
