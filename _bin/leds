@@ -3,7 +3,7 @@ xset q | sed -n 4,9p | grep -o '[0-9][0-9]: [A-Za-z 0-9]\+: \+o[fn][f ]' | grep 
 	case "$LED" in
 		Caps*) echo -n 'C' ;;
 		Num*) echo -n 'N' ;;
-		"Group 2") echo -n 'R' ;;
+		"Group 2") echo -n 'S' ;;
 	esac
 done
 echo -n ' '
