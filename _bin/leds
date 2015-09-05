@@ -1,4 +1,5 @@
 #!/bin/bash
+get_leds() {
 xset q | sed -n 4,9p | grep -o '[0-9][0-9]: [A-Za-z 0-9]\+: \+o[fn][f ]' | grep 'on $' | sed 's/.*: \([^:]\+\):.*/\1/' | while read LED; do
 	case "$LED" in
 		Caps*) echo -n 'C' ;;
@@ -6,4 +7,9 @@ xset q | sed -n 4,9p | grep -o '[0-9][0-9]: [A-Za-z 0-9]\+: \+o[fn][f ]' | grep 
 		"Group 2") echo -n 'S' ;;
 	esac
 done
-echo -n ' '
+}
+
+LEDS=$(get_leds)
+echo "$LEDS" | grep -q 'N' && echo -n 'N' || echo -n ' '
+echo "$LEDS" | grep -q 'C' && echo -n 'C' || echo -n ' '
+echo "$LEDS" | grep -q 'S' && echo -n 'S' || echo -n ' '
