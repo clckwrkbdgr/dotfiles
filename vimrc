@@ -11,6 +11,7 @@ nmap <C-L> :make<up><CR>
 nmap Q l
 nmap QQ :w<CR>
 inoremap <C-Space> <C-^>
+nmap <C-p> :tabnew<Bar>setlocal buftype=nofile<Bar>read !xclip -o<CR>
 
 call pathogen#infect()
 set backspace=indent,eol,start " allow backspacing over everything in insert mode
