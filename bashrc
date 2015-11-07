@@ -26,6 +26,7 @@ alias cp='cp -i'
 alias ls='ls --color -F'
 alias rss='ranger ~/RSS'
 alias shuffle='find "$@" -type f | sort -R | tail'
+alias winedesktop='wine explorer /desktop=name,1024x768'
 
 eval `dircolors ~/.dir_colors`
 xmodmap -e 'keycode 65 = space underscore'
