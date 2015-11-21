@@ -1,9 +1,10 @@
 #!/bin/bash
 
 source ~/.bash_vars
+[ -n "$2" ] && INTERFACE="-I $2"
 COUNT=0
 while true; do
-	if ping -c 1 -s 1 -W 2 "$HOST" >/dev/null 2>&1; then
+	if ping -c 1 -s 1 -W 2 "$HOST" $INTERFACE >/dev/null 2>&1; then
 		echo -n +
 		COUNT=$((COUNT+1))
 	else
