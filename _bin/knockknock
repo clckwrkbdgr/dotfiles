@@ -11,6 +11,6 @@ while true; do
 		echo -n -
 		COUNT=0
 	fi
-	[ $COUNT -gt 10 ] && aplay -q /x/signal.wav
+	[ $COUNT -gt 10 ] && aplay -q ~/owlwood/sounds/signal.wav
 	sleep 3
 done
