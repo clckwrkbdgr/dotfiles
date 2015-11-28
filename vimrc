@@ -47,3 +47,5 @@ au FileType html setlocal foldmethod=syntax
 au FileType votl setlocal foldlevel=0
 let maplocalleader=",," " Vim Outliner leader key.
 set foldcolumn=0
+
+set background=light " fixes too bright colours in urxvt
