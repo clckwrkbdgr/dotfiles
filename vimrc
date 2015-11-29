@@ -31,6 +31,7 @@ set foldmethod=syntax " autofolds
 set autoindent
 set smartindent
 set pastetoggle=<F5>
+set directory=/var/tmp//,.,/tmp//
 syntax on
 nohl
 
