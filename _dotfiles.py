@@ -143,7 +143,7 @@ def split_path(path):
 	return path
 
 def main():
-	dotdir = os.path.join(os.path.expanduser('~'), 'dotfiles')
+	dotdir = os.getcwd()
 	homedir = os.path.expanduser('~')
 
 	arg = sys.argv[1] if len(sys.argv) > 1 else ''
