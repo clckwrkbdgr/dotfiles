@@ -1,0 +1,3 @@
+[filter "ignorewallpaper"]
+	smudge = cat
+	clean = "sed '/name=\"image-path\"/d;/name=\"last-[^\"]*image\"/d'"

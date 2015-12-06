@@ -1,0 +1,20 @@
+display_label=false
+display_icon=false
+display_power=false
+display_percentage=false
+display_bar=true
+display_time=true
+tooltip_display_percentage=true
+tooltip_display_time=true
+low_percentage=40
+critical_percentage=15
+action_on_low=0
+action_on_critical=1
+hide_when_full=1
+colorA=#232323
+colorH=#00FF00
+colorL=#FFA500
+colorC=#FF0000
+command_on_low=alert Battery!
+command_on_critical=alert Battery!
+

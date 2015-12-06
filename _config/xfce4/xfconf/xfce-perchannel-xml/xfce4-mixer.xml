@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<channel name="xfce4-mixer" version="1.0">
+  <property name="active-card" type="string" value="HDAATISBAlsamixer"/>
+  <property name="volume-step-size" type="uint" value="5"/>
+  <property name="sound-card" type="string" value="HDAIntelPCHAlsamixer"/>
+  <property name="sound-cards" type="empty">
+    <property name="HDAATISBAlsamixer" type="array">
+      <value type="string" value="Общий"/>
+      <value type="string" value="Front"/>
+    </property>
+    <property name="HDAIntelPCHAlsamixer" type="array">
+      <value type="string" value="Общий"/>
+      <value type="string" value="Headphone"/>
+      <value type="string" value="Speaker"/>
+      <value type="string" value="PCM"/>
+      <value type="string" value="Mic Boost"/>
+      <value type="string" value="IEC958"/>
+      <value type="string" value="Съёмка"/>
+      <value type="string" value="Auto-Mute Mode"/>
+      <value type="string" value="Digital"/>
+    </property>
+    <property name="PlaybackPulseAudioMixer" type="array">
+      <value type="string" value="Master"/>
+    </property>
+    <property name="IntelPantherPointHDMIOSSMixer" type="array">
+      <value type="string" value="Уровень"/>
+      <value type="string" value="Внутренний динамик"/>
+      <value type="string" value="Микрофон"/>
+      <value type="string" value="PCM-2"/>
+      <value type="string" value="Усиление на входе"/>
+      <value type="string" value="Цифровой-1"/>
+      <value type="string" value="Тел. выход"/>
+    </property>
+  </property>
+  <property name="window-height" type="int" value="400"/>
+  <property name="window-width" type="int" value="1018"/>
+</channel>
