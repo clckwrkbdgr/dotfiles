@@ -21,4 +21,5 @@ _config/ranger/colorschemes/__init__.py
 dosbox/russian.txt
 _config/xfce4/xfconf/xfce-perchannel-xml/displays.xml
 _config/xfce4/xfconf/xfce-perchannel-xml/pointers.xml
+supertux/save
 
