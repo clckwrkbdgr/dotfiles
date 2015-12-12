@@ -1,5 +1,5 @@
 #!/bin/bash
-aplay -q ~/owlwood/sounds/signal.wav
+aplay -q "$SIGNAL_SOUND"
 if [ "$1" == "start" ]; then
 	notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing
 elif [ "$1" == "stop" ]; then

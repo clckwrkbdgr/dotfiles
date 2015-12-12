@@ -16,4 +16,4 @@ else
 	exit 1
 fi
 [ -n "$1" ] && FILE_ARG="-file"
-prboom-plus -iwad /x/games/doom/$IWAD.wad "$FILE_ARG" "$@"
+prboom-plus -iwad ${DOOMWADDIR:-.}/$IWAD.wad "$FILE_ARG" "$@"

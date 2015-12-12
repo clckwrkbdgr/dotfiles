@@ -1,6 +1,5 @@
-[user]
-	name = Igor Chaika
-	email = kp580bm1@gmail.com
+[include]
+	path = .gitconfig.local
 
 [color]
 	ui = true

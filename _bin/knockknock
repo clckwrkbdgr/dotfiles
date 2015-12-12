@@ -1,6 +1,5 @@
 #!/bin/bash
-
-source ~/.bash_vars
+HOST=${1:-8.8.8.8}
 [ -n "$2" ] && INTERFACE="-I $2"
 COUNT=0
 while true; do
@@ -11,6 +10,6 @@ while true; do
 		echo -n -
 		COUNT=0
 	fi
-	[ $COUNT -gt 10 ] && aplay -q ~/owlwood/sounds/signal.wav
+	[ $COUNT -gt 10 ] && aplay -q "$SIGNAL_SOUND"
 	sleep 3
 done

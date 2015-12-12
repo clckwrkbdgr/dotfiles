@@ -1,5 +1,5 @@
 #!/bin/bash
-source ~/.bash_vars
+[ -z ~/.profile.local ] && source ~/.profile.local
 
 # Export variables.
 user=$( whoami )
