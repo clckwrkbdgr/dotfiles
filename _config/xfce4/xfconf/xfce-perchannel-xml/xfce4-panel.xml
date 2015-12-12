@@ -28,14 +28,6 @@
       <property name="rows" type="uint" value="1"/>
     </property>
     <property name="plugin-6" type="string" value="systray">
-      <property name="names-visible" type="array">
-        <value type="string" value="апплет networkmanager"/>
-        <value type="string" value="pidgin"/>
-        <value type="string" value="dropbox"/>
-        <value type="string" value="sylpheed"/>
-        <value type="string" value="transmission"/>
-        <value type="string" value="pomodoro"/>
-      </property>
     </property>
     <property name="plugin-1" type="string" value="xfce4-orageclock-plugin"/>
     <property name="plugin-7" type="string" value="xfce4-orageclock-plugin"/>

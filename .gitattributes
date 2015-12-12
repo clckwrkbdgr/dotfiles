@@ -1,1 +1,2 @@
 xfce4-desktop.xml filter=ignorewallpaper
+xfce4-panel.xml filter=ignore_systray_visibility

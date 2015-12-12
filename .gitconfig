@@ -1,3 +1,7 @@
 [filter "ignorewallpaper"]
 	smudge = cat
 	clean = "sed '/name=\"image-path\"/d;/name=\"last-[^\"]*image\"/d'"
+
+[filter "ignore_systray_visibility"]
+	smudge = cat
+	clean = "sed '/<property name=\"names-visible\" type=\"array\">/,/<\\/property>/d' | sed '/<property name=\"names-hidden\" type=\"array\">/,/<\\/property>/d'"
