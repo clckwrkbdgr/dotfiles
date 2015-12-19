@@ -1,4 +1,5 @@
 #!/bin/bash
+[ -f ~/.profile.local ] && source ~/.profile.local
 aplay -q "$SIGNAL_SOUND"
 if [ "$1" == "start" ]; then
 	notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing
