@@ -19,6 +19,18 @@ function list_all_left() {
 }
 
 if [ "x$1" == "x-l" ]; then
+	LIST_ALL=true
+	shift
+elif [ "x$1" == "x-i" ]; then
+	CONFIRM=true
+	shift
+fi
+if [ -n "$1" ]; then
+	trap popd SIGINT SIGTERM SIGHUP
+	pushd "$1"
+fi
+
+if [ "$LIST_ALL" == true ]; then
 	list_all_left
 	echo -n 'Series left: '
 	list_all_left | wc -l
@@ -32,7 +44,7 @@ if [ -z "$next" ]; then
 	exit 1
 fi
 yes=y
-if [ "x$1" == "x-i" ]; then
+if [ "$CONFIRM" == true ]; then
 	shift;
 	list_all_left
 	echo
