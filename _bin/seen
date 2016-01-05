@@ -27,7 +27,8 @@ elif [ "x$1" == "x-i" ]; then
 fi
 if [ -n "$1" ]; then
 	trap popd SIGINT SIGTERM SIGHUP
-	pushd "$1"
+	pushd "$1" || exit 1
+	shift
 fi
 
 if [ "$LIST_ALL" == true ]; then
@@ -45,7 +46,6 @@ if [ -z "$next" ]; then
 fi
 yes=y
 if [ "$CONFIRM" == true ]; then
-	shift;
 	list_all_left
 	echo
 	echo "${next}, continue?"
