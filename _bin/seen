@@ -26,8 +26,8 @@ elif [ "x$1" == "x-i" ]; then
 	shift
 fi
 if [ -n "$1" ]; then
-	trap popd SIGINT SIGTERM SIGHUP
-	pushd "$1" || exit 1
+	trap 'popd >/dev/null' EXIT SIGINT SIGTERM SIGHUP
+	pushd "$1" >/dev/null || exit 1
 	shift
 fi
 
