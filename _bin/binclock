@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+import datetime
+jn = lambda x: zip(*(iter(x),)*2)
+now = datetime.datetime.now()
+h, m, D, M, Y = now.time().hour, now.time().minute, now.date().day, now.date().month, now.date().year
+columns = [
+bin(h)[2:].zfill(6),
+bin(m)[2:].zfill(6),
+'0' * 6,
+bin(D)[2:].zfill(6),
+bin(M)[2:].zfill(6),
+bin(Y%100)[2:].zfill(6)[:6]
+]
+chars = {
+		'0000': ' ',
+		'0001': '\u2597',
+		'0010': '\u2596',
+		'0011': '\u2584',
+		'0100': '\u259D',
+		'0101': '\u2590',
+		'0110': '\u259E',
+		'0111': '\u259F',
+		'1000': '\u2598',
+		'1001': '\u259A',
+		'1010': '\u258C',
+		'1011': '\u2599',
+		'1100': '\u2580',
+		'1101': '\u259C',
+		'1110': '\u259B',
+		'1111': '\u2588',
+		}
+chars2 = {'00':'\u25EB', '01':'\u25E8', '10':'\u25E7', '11':'\u25A0'}
+print(''.join([chars[''.join(first + second)] for first, second in zip(jn(columns[0]), jn(columns[1]))]))
+print(''.join([chars2[''.join(value)] for value in jn(columns[3])]))
+print(''.join([chars[''.join(first + second)] for first, second in zip(jn(columns[4]), jn(columns[5]))]))
