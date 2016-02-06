@@ -22,4 +22,4 @@ dosbox/russian.txt
 _config/xfce4/xfconf/xfce-perchannel-xml/displays.xml
 _config/xfce4/xfconf/xfce-perchannel-xml/pointers.xml
 supertux/save
-
+_config/xfce4/desktop/icons.screen*.rc
