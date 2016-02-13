@@ -25,13 +25,13 @@
       <property name="override" type="bool" value="true"/>
       <property name="&lt;Super&gt;f" type="string" value="firefox"/>
       <property name="&lt;Super&gt;space" type="string" value="mocp -G"/>
-      <property name="&lt;Super&gt;l" type="string" value="xflock4"/>
       <property name="&lt;Super&gt;Up" type="string" value="volume up"/>
       <property name="&lt;Super&gt;Down" type="string" value="volume down"/>
       <property name="&lt;Super&gt;a" type="string" value="alarm ask"/>
       <property name="&lt;Super&gt;q" type="string" value="tm"/>
       <property name="&lt;Super&gt;Print" type="string" value="screenshot"/>
       <property name="&lt;Super&gt;grave" type="string" value="urxvt"/>
+      <property name="&lt;Super&gt;l" type="string" value="lock_workstation"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
