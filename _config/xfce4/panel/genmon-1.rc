@@ -1,0 +1,6 @@
+Command=pinkness eyerest
+UseLabel=0
+Text=(genmon)
+UpdatePeriod=10000
+Font=Monospace 6
+

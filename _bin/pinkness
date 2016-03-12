@@ -1,0 +1,72 @@
+#!/bin/bash
+[ -f ~/.profile.local ] && source ~/.profile.local
+LAST_BREAK_TIMESTAMP=/tmp/tm_last_break
+CURRENT_REST_TIMESTAMP=/tmp/tm_currently_resting
+
+is_mplayer_running () {
+	ps -x | grep mplayer | grep -qv grep
+}
+is_power_cord_disconnected() {
+	upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis
+}
+is_screen_locked() {
+	xscreensaver-command -time | grep -q 'screen locked since'
+}
+is_idle() {
+	IDLE_TIME=$(xprintidle)
+	IDLE_TIME=$(($IDLE_TIME / 1000))
+	[ "$IDLE_TIME" -ge 300 ]
+}
+
+eyerest() {
+	CURRENT_TIME=$(date +%s)
+
+	if [ -f "$CURRENT_REST_TIMESTAMP" ]; then
+		BEGIN_REST_TIME=$(date -r "$CURRENT_REST_TIMESTAMP" +%s)
+		REST_TIME=$(( $CURRENT_TIME - $BEGIN_REST_TIME ))
+		if [ "$REST_TIME" -ge 60 ]; then
+			rm -f "$CURRENT_REST_TIMESTAMP"
+			notify-send Pomodoro '<i>Now you can work again.</i>' --icon=gdu-smart-healthy
+			aplay -q "$SIGNAL_SOUND"
+		else
+			echo '/////'
+			return
+		fi
+	fi
+
+	if is_mplayer_running; then
+		[ -f "$LAST_BREAK_TIMESTAMP" ] && rm -f "$LAST_BREAK_TIMESTAMP"
+		echo play
+		return
+	elif is_power_cord_disconnected; then
+		[ -f "$LAST_BREAK_TIMESTAMP" ] && rm -f "$LAST_BREAK_TIMESTAMP"
+		echo power
+		return
+	elif is_screen_locked; then
+		[ -f "$LAST_BREAK_TIMESTAMP" ] && rm -f "$LAST_BREAK_TIMESTAMP"
+		echo lock
+		return
+	elif is_idle; then
+		[ -f "$LAST_BREAK_TIMESTAMP" ] && rm -f "$LAST_BREAK_TIMESTAMP"
+		echo idle
+		return
+	fi
+
+	[ ! -f "$LAST_BREAK_TIMESTAMP" ] && touch "$LAST_BREAK_TIMESTAMP"
+	LAST_BREAK_TIME=$(date -r "$LAST_BREAK_TIMESTAMP" +%s)
+	PASSED_TIME=$(($CURRENT_TIME - $LAST_BREAK_TIME))
+	if [ $PASSED_TIME -ge 1200 ]; then
+		notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing
+		aplay -q "$SIGNAL_SOUND"
+		rm -f "$LAST_BREAK_TIMESTAMP"
+		touch "$CURRENT_REST_TIMESTAMP"
+		echo '/////'
+	else
+		DOTS=$(($PASSED_TIME * 5 / 60 / 20))
+		python -c "print('.'*$DOTS+' '*(5-$DOTS))"
+	fi
+}
+
+if [ "$1" == eyerest ]; then
+	eyerest
+fi

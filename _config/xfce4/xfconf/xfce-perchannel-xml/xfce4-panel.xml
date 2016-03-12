@@ -10,6 +10,7 @@
         <value type="int" value="10"/>
         <value type="int" value="4"/>
         <value type="int" value="6"/>
+        <value type="int" value="1"/>
         <value type="int" value="8"/>
         <value type="int" value="3"/>
         <value type="int" value="11"/>
@@ -35,6 +36,7 @@
       <property name="style" type="uint" value="1"/>
     </property>
     <property name="plugin-10" type="string" value="genmon"/>
+    <property name="plugin-1" type="string" value="genmon"/>
   </property>
   <property name="configver" type="int" value="2"/>
 </channel>
