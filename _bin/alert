@@ -9,6 +9,4 @@ elif [ "$1" == "alarm" ]; then
 	notify-send Pomodoro '<i>Your single shot is fired.</i>' --icon=gnome-panel-clock
 elif [ -n "$1" ]; then
 	notify-send "$1"
-else
-	notify-send Alarm '<i>...goes off.</i>'
 fi
