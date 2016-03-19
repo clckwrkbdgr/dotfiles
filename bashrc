@@ -30,4 +30,9 @@ alias shuffle='find "$@" -type f | sort -R | tail'
 
 eval `dircolors ~/.dir_colors`
 
+# Section for XDG directory support.
+xrdb -load ~/.config/Xresources
+export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
+
+# User private settings.
 [ -f ~/.profile.local ] && source ~/.profile.local

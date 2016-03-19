@@ -62,7 +62,7 @@ eyerest() {
 		touch "$CURRENT_REST_TIMESTAMP"
 		echo '/////'
 	else
-		DOTS=$(($PASSED_TIME * 5 / 60 / 20))
+		DOTS=$(($PASSED_TIME * 6 / 60 / 20))
 		python -c "print('.'*$DOTS+' '*(5-$DOTS))"
 	fi
 }
