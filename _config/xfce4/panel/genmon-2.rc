@@ -1,0 +1,6 @@
+Command=johnny
+UseLabel=0
+Text=(genmon)
+UpdatePeriod=1000
+Font=Monospace 6
+
