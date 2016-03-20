@@ -1,0 +1,17 @@
+#!/bin/bash
+CURRENT_WS=$(wmctrl -d | grep '\* \+DG:' | cut -d ' ' -f 1)
+WS_COUNT=$(wmctrl -d | wc -l)
+if [ "$1" == "next" ]; then
+	WS=$(($CURRENT_WS + 1))
+	if [ "$WS" -ge "$WS_COUNT" ]; then
+		exit
+	fi
+elif [ "$1" == "prev" ]; then
+	WS=$(($CURRENT_WS - 1))
+	if [ "$WS" -lt 0 ]; then
+		exit
+	fi
+else
+	WS=${1:-0}
+fi
+wmctrl -s "$WS"

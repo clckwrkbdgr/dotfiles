@@ -1,0 +1,3 @@
+#!/bin/sh
+xfconf-query -c xfce4-panel -p /panels/panel-0/autohide -s false
+xfconf-query -c xfce4-panel -p /panels/panel-0/autohide -s true
