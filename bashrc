@@ -30,7 +30,7 @@ WHITE="\[\033[1;37m\]"
 RED="\[\033[1;31m\]"
 NORMAL="\[\033[0m\]"
 xterm_title() { echo "\033]0;$1\a"; }
-export PS1="${RED}\$(count_dotfiles)${WHITE}${IS_VIM}\W\$${NORMAL} $(xterm_title \w)"
+export PS1="${RED}\$(count_dotfiles)${WHITE}${IS_VIM}\W\$${NORMAL} $(xterm_title \\w)"
 export PS2="${WHITE}>${NORMAL} " # >
 export PS4="${WHITE}+${NORMAL} " # +
 unset WHITE RED NORMAL
