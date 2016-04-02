@@ -1,8 +1,0 @@
-#!/bin/bash
-if [ "$1" == at ]; then
-	echo 'alert Alarm' | $@;
-elif [ "$1" == ask ]; then
-	pomodoro --single-shot
-else
-	alert Alarm
-fi

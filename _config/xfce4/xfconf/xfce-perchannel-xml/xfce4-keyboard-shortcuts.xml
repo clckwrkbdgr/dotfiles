@@ -27,13 +27,13 @@
       <property name="&lt;Super&gt;space" type="string" value="mocp -G"/>
       <property name="&lt;Super&gt;Up" type="string" value="volume up"/>
       <property name="&lt;Super&gt;Down" type="string" value="volume down"/>
-      <property name="&lt;Super&gt;a" type="string" value="alarm ask"/>
       <property name="&lt;Super&gt;q" type="string" value="tm"/>
       <property name="&lt;Super&gt;Print" type="string" value="screenshot"/>
       <property name="&lt;Super&gt;grave" type="string" value="urxvt"/>
       <property name="&lt;Super&gt;l" type="string" value="lock_workstation"/>
       <property name="&lt;Super&gt;Right" type="string" value="switch-workspace next"/>
       <property name="&lt;Super&gt;Left" type="string" value="switch-workspace prev"/>
+      <property name="&lt;Super&gt;a" type="string" value="pinkness singleshot"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
