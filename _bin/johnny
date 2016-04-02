@@ -1,7 +1,10 @@
 #!/bin/bash
+[ -f ~/.profile.local ] && source ~/.profile.local
+
 is_scroll_led_on() {
 	xset q | sed -n 4,9p | grep -o '[0-9][0-9]: [A-Za-z 0-9]\+: \+o[fn][f ]' | grep 'on $' | sed 's/.*: \([^:]\+\):.*/\1/' | grep -q 'Group 2'
 }
+
 get_all_pidgin_unread() {
 	pgrep -x pidgin | while read pid; do
 		wmctrl -l -p | grep ${pid} | awk '{print $1}' | while read window; do
@@ -9,5 +12,47 @@ get_all_pidgin_unread() {
 		done
 	done | paste -sd+ | bc
 }
-[ "$(get_all_pidgin_unread)" -gt 0 ] && echo -n '#' || echo -n ' '
-is_scroll_led_on && echo -n 'C' || echo -n ' '
+
+mini_johnny() {
+	[ "$(get_all_pidgin_unread)" -gt 0 ] && echo -n '#' || echo -n ' '
+	is_scroll_led_on && echo -n 'C' || echo -n ' '
+}
+
+get_leds() {
+	xset q | sed -n 4,9p | grep -o '[0-9][0-9]: [A-Za-z 0-9]\+: \+o[fn][f ]' | grep 'on $' | sed 's/.*: \([^:]\+\):.*/\1/' | while read LED; do
+		case "$LED" in
+			Caps*) echo -n 'C' ;;
+			Num*) echo -n 'N' ;;
+			"Group 2") echo -n 'S' ;;
+		esac
+	done
+}
+
+leds() {
+	LEDS=$(get_leds)
+	echo "$LEDS" | grep -q 'N' && echo -n 'N' || echo -n ' '
+	echo "$LEDS" | grep -q 'C' && echo -n 'C' || echo -n ' '
+	echo "$LEDS" | grep -q 'S' && echo -n 'S' || echo -n ' '
+}
+
+alert() {
+	aplay -q "$SIGNAL_SOUND"
+	if [ "$1" == "start" ]; then
+		notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing
+	elif [ "$1" == "stop" ]; then
+		notify-send Pomodoro '<i>Now you can work again.</i>' --icon=gdu-smart-healthy
+	elif [ "$1" == "alarm" ]; then
+		notify-send Pomodoro '<i>Your single shot is fired.</i>' --icon=gnome-panel-clock
+	elif [ -n "$1" ]; then
+		notify-send "$1"
+	fi
+}
+
+ARG="$1"
+shift
+case "$ARG" in
+	"mini") mini_johnny ;;
+	"alert") alert "$@" ;;
+	"leds") leds ;;
+	*) echo 'Wat?' ;;
+esac
