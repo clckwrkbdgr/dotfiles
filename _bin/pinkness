@@ -1,72 +1,77 @@
-#!/bin/bash
-[ -f ~/.profile.local ] && source ~/.profile.local
-LAST_BREAK_TIMESTAMP=/tmp/tm_last_break
-CURRENT_REST_TIMESTAMP=/tmp/tm_currently_resting
+#!/usr/bin/python3
+import subprocess
+import datetime
+import os
+import sys
 
-is_mplayer_running () {
-	ps -x | grep mplayer | grep -qv grep
-}
-is_power_cord_disconnected() {
-	upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis
-}
-is_screen_locked() {
-	xscreensaver-command -time | grep -q 'screen locked since'
-}
-is_idle() {
-	IDLE_TIME=$(xprintidle)
-	IDLE_TIME=$(($IDLE_TIME / 1000))
-	[ "$IDLE_TIME" -ge 300 ]
-}
+LAST_BREAK_TIMESTAMP = '/tmp/tm_last_break'
+CURRENT_REST_TIMESTAMP = '/tmp/tm_currently_resting'
 
-eyerest() {
-	CURRENT_TIME=$(date +%s)
+def is_mplayer_running():
+	return 0 == os.system("ps -x | grep mplayer | grep -qv grep")
 
-	if [ -f "$CURRENT_REST_TIMESTAMP" ]; then
-		BEGIN_REST_TIME=$(date -r "$CURRENT_REST_TIMESTAMP" +%s)
-		REST_TIME=$(( $CURRENT_TIME - $BEGIN_REST_TIME ))
-		if [ "$REST_TIME" -ge 60 ]; then
-			rm -f "$CURRENT_REST_TIMESTAMP"
-			notify-send Pomodoro '<i>Now you can work again.</i>' --icon=gdu-smart-healthy
-			aplay -q "$SIGNAL_SOUND"
-		else
-			echo '/////'
+def is_power_cord_disconnected():
+	return 0 == os.system("upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis")
+
+def is_screen_locked():
+	return 0 == os.system("xscreensaver-command -time | grep -q 'screen locked since'")
+
+def is_idle():
+	idle_time = subprocess.Popen(["xprintidle"], stdout=subprocess.PIPE).communicate()[0]
+	return int(idle_time) / 1000 >= 300
+
+def eyerest():
+	current_time = datetime.datetime.now().timestamp()
+
+	if os.path.isfile(CURRENT_REST_TIMESTAMP):
+		begin_rest_time = os.path.getmtime(CURRENT_REST_TIMESTAMP)
+		rest_time = current_time - begin_rest_time
+		if rest_time >= 60:
+			os.remove(CURRENT_REST_TIMESTAMP)
+			os.system("notify-send Pomodoro '<i>Now you can work again.</i>' --icon=gdu-smart-healthy")
+			os.system("alert")
+		else:
+			print("/////")
 			return
-		fi
-	fi
 
-	if is_mplayer_running; then
-		[ -f "$LAST_BREAK_TIMESTAMP" ] && rm -f "$LAST_BREAK_TIMESTAMP"
-		echo play
+	if is_mplayer_running():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		print("play")
 		return
-	elif is_power_cord_disconnected; then
-		[ -f "$LAST_BREAK_TIMESTAMP" ] && rm -f "$LAST_BREAK_TIMESTAMP"
-		echo power
+	elif is_power_cord_disconnected():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		print("power")
 		return
-	elif is_screen_locked; then
-		[ -f "$LAST_BREAK_TIMESTAMP" ] && rm -f "$LAST_BREAK_TIMESTAMP"
-		echo lock
+	elif is_screen_locked():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		print("lock")
 		return
-	elif is_idle; then
-		[ -f "$LAST_BREAK_TIMESTAMP" ] && rm -f "$LAST_BREAK_TIMESTAMP"
-		echo idle
+	elif is_idle():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		print("idle")
 		return
-	fi
 
-	[ ! -f "$LAST_BREAK_TIMESTAMP" ] && touch "$LAST_BREAK_TIMESTAMP"
-	LAST_BREAK_TIME=$(date -r "$LAST_BREAK_TIMESTAMP" +%s)
-	PASSED_TIME=$(($CURRENT_TIME - $LAST_BREAK_TIME))
-	if [ $PASSED_TIME -ge 1200 ]; then
-		notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing
-		aplay -q "$SIGNAL_SOUND"
-		rm -f "$LAST_BREAK_TIMESTAMP"
-		touch "$CURRENT_REST_TIMESTAMP"
-		echo '/////'
-	else
-		DOTS=$(($PASSED_TIME * 6 / 60 / 20))
-		python -c "print('.'*$DOTS+' '*(5-$DOTS))"
-	fi
-}
+	if not os.path.isfile(LAST_BREAK_TIMESTAMP):
+		open(LAST_BREAK_TIMESTAMP, 'w').close()
+	last_break_time = os.path.getmtime(LAST_BREAK_TIMESTAMP)
+	passed_time = current_time - last_break_time
+	if passed_time >= 1200:
+		os.system("notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing")
+		os.system("alert")
+		os.remove(LAST_BREAK_TIMESTAMP)
+		open(CURRENT_REST_TIMESTAMP, 'w').close()
+		print("/////")
+	else:
+		dots = int(passed_time * 6 / 60 / 20)
+		print('.'*dots+' '*(5-dots))
 
-if [ "$1" == eyerest ]; then
-	eyerest
-fi
+args = sys.argv[1:]
+if args:
+	if args[0] == "eyerest":
+		eyerest()
+	elif args[0] == "isodate":
+		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))

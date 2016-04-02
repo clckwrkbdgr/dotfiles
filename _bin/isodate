@@ -1,2 +1,2 @@
 #!/bin/bash
-date +%FT%T
+pinkness isodate
