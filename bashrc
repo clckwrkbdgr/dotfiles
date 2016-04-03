@@ -23,8 +23,7 @@ export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
 export VIMPERATOR_RUNTIME="$XDG_CONFIG_HOME/vimperator"
 export HISTFILE="$XDG_DATA_HOME/bash/history"
 mkdir -p "$XDG_CACHE_HOME/vim"
-#export VIMINIT='let $MYVIMRC="$XDG_CONFIG_HOME/vim/vimrc" | source $MYVIMRC'
-export VIMINIT='let $MYVIMRC="~/.config/vim/vimrc" | source $MYVIMRC'
+export VIMINIT='let $MYVIMRC="'"$XDG_CONFIG_HOME"'/vim/vimrc" | source $MYVIMRC'
 
 # User specific aliases and functions
 if env | grep -q VIMRUNTIME; then IS_VIM="(vim)"; else IS_VIM=""; fi
