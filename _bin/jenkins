@@ -143,6 +143,11 @@ wallpaper() {
 	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-style -s 4 # Scaled
 }
 
+mocp_pause() {
+	XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+	mocp -M "$XDG_CONFIG_HOME/moc" -G
+}
+
 ARG="$1"
 shift
 case "$ARG" in
@@ -154,6 +159,7 @@ case "$ARG" in
 	"switch_ws") switch_ws "$@" ;;
 	"unhide-xfce-panel") unhide_xfce_panel ;;
 	"volume") volume "$@" ;;
+	"pause") mocp_pause "$@" ;;
 	"wallpaper") wallpaper ;;
 	*) echo 'Wat?' ;;
 esac

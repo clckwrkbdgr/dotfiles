@@ -24,7 +24,6 @@
       <property name="&lt;Alt&gt;F2" type="string" value="xfrun4"/>
       <property name="override" type="bool" value="true"/>
       <property name="&lt;Super&gt;f" type="string" value="firefox"/>
-      <property name="&lt;Super&gt;space" type="string" value="mocp -G"/>
       <property name="&lt;Super&gt;grave" type="string" value="urxvt"/>
       <property name="&lt;Super&gt;a" type="string" value="pinkness singleshot"/>
       <property name="&lt;Super&gt;l" type="string" value="jenkins lock_ws"/>
@@ -33,6 +32,7 @@
       <property name="&lt;Super&gt;Left" type="string" value="jenkins switch_ws prev"/>
       <property name="&lt;Super&gt;Down" type="string" value="jenkins volume down"/>
       <property name="&lt;Super&gt;Up" type="string" value="jenkins volume up"/>
+      <property name="&lt;Super&gt;space" type="string" value="jenkins pause"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">

@@ -1,13 +1,13 @@
 .*.swp
 *.pyo
 
-vim/.netrwhist
-moc/cache/
-moc/last_directory
-moc/pid
-moc/playlist.m3u
-moc/equalizer
-moc/softmixer
+_config/vim/.netrwhist
+_config/moc/cache/
+_config/moc/last_directory
+_config/moc/pid
+_config/moc/playlist.m3u
+_config/moc/equalizer
+_config/moc/softmixer
 w3m/cookie
 w3m/history
 zdoom/*.zds
