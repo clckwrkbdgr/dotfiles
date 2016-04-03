@@ -1,0 +1,6 @@
+[submodule "_config/vim/bundle/pathogen"]
+	path = _config/vim/bundle/pathogen
+	url = https://github.com/tpope/vim-pathogen
+[submodule "_config/vim/bundle/vimoutliner"]
+	path = _config/vim/bundle/vimoutliner
+	url = https://github.com/vimoutliner/vimoutliner
