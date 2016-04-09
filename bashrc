@@ -15,13 +15,13 @@ export ICEAUTHORITY="$XDG_RUNTIME_DIR/ICEauthority"
 export GIMP2_DIRECTORY="$XDG_CONFIG_HOME/gimp"
 export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
 export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
-export WINEPREFIX="$XDG_DATA_HOME/wine"
+#export WINEPREFIX="$XDG_DATA_HOME/wine"
 alias mocp='mocp -M "$XDG_CONFIG_HOME/moc"'
-export RLWRAP_HOME="$XDG_DATA_HOME/rlwrap_history"
+export RLWRAP_HOME="$XDG_CACHE_HOME/rlwrap_history"
 alias svn='svn --config-dir "$XDG_CONFIG_HOME/subversion"'
 export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
 export VIMPERATOR_RUNTIME="$XDG_CONFIG_HOME/vimperator"
-export HISTFILE="$XDG_DATA_HOME/bash/history"
+export HISTFILE="$XDG_CACHE_HOME/bash/history"
 mkdir -p "$XDG_CACHE_HOME/vim"
 export VIMINIT='let $MYVIMRC="'"$XDG_CONFIG_HOME"'/vim/vimrc" | source $MYVIMRC'
 
