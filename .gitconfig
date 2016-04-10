@@ -5,3 +5,8 @@
 [filter "ignore_systray_visibility"]
 	smudge = cat
 	clean = "sed '/<property name=\"names-visible\" type=\"array\">/,/<\\/property>/d' | sed '/<property name=\"names-hidden\" type=\"array\">/,/<\\/property>/d'"
+
+[filter "ignore_moc_fastdir"]
+	smudge = cat
+	clean = "sed '/^Fastdir[0-9][0-9]* *=/d'"
+

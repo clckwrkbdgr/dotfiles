@@ -40,9 +40,6 @@ SavePlaylist		= yes
 SyncPlaylist		= yes
 ASCIILines		= no
 
-Fastdir1 = /x/music/
-Fastdir2 = /home/umi/
-Fastdir3 = /x/torrents/music
 #Fastdir10 = 
 
 #SeekTime		= 1
