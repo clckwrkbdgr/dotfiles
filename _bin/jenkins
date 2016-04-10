@@ -144,8 +144,7 @@ wallpaper() {
 }
 
 mocp_pause() {
-	XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
-	mocp -M "$XDG_CONFIG_HOME/moc" -G
+	xdg mocp -G
 }
 
 ARG="$1"
