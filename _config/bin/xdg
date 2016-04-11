@@ -1,22 +1,32 @@
 #!/bin/bash
-XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
-XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
-XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
-export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
-export ICEAUTHORITY="$XDG_RUNTIME_DIR/ICEauthority"
+
+# Basic XDG structure.
+export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
+export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+
+# Configurations. Should be stored under VCS.
 export GIMP2_DIRECTORY="$XDG_CONFIG_HOME/gimp"
-export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
 export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
-#export WINEPREFIX="$XDG_DATA_HOME/wine"
 function mocp() { /usr/bin/mocp -M "$XDG_CONFIG_HOME/moc" "$@"; }
-export RLWRAP_HOME="$XDG_CACHE_HOME/rlwrap_history"
 function svn() { /usr/bin/svn --config-dir "$XDG_CONFIG_HOME/subversion" "$@"; }
 export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
 export VIMPERATOR_RUNTIME="$XDG_CONFIG_HOME/vimperator"
+export VIMINIT='let $MYVIMRC="'"$XDG_CONFIG_HOME"'/vim/vimrc" | source $MYVIMRC'
+[ -n "$SHELL" ] && eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
+
+# Local data. Should be stored in some backup or outer storage.
+#export WINEPREFIX="$XDG_DATA_HOME/wine"
+
+# These could easily be cleared at any time without loss of any important data.
+export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
+export RLWRAP_HOME="$XDG_CACHE_HOME/rlwrap_history"
 export HISTFILE="$XDG_CACHE_HOME/bash/history"
 mkdir -p "$XDG_CACHE_HOME/vim"
-export VIMINIT='let $MYVIMRC="'"$XDG_CONFIG_HOME"'/vim/vimrc" | source $MYVIMRC'
-eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
 
-# Run command in XDG-compliant environment.
+# These are valid only for one session and could placed even in RAM.
+export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
+export ICEAUTHORITY="$XDG_RUNTIME_DIR/ICEauthority"
+
+# If supplied, run command in XDG-compliant environment.
 [ -n "$1" ] && "$@"
