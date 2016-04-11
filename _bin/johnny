@@ -36,15 +36,23 @@ leds() {
 }
 
 alert() {
-	aplay -q "$SIGNAL_SOUND"
 	if [ "$1" == "start" ]; then
-		notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing
+		notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing &
+		aplay -q "$SIGNAL_SOUND"
+		glados 'Take a break!'
 	elif [ "$1" == "stop" ]; then
 		notify-send Pomodoro '<i>Now you can work again.</i>' --icon=gdu-smart-healthy
+		aplay -q "$SIGNAL_SOUND"
+		glados 'Now you can work again.'
 	elif [ "$1" == "alarm" ]; then
 		notify-send Pomodoro '<i>Your single shot is fired.</i>' --icon=gnome-panel-clock
+		aplay -q "$SIGNAL_SOUND"
+		glados 'Your single shot is fired.'
 	elif [ -n "$1" ]; then
 		notify-send "$1"
+		glados "$1"
+	else
+		aplay -q "$SIGNAL_SOUND"
 	fi
 }
 

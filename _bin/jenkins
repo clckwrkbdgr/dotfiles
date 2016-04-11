@@ -45,7 +45,7 @@ knockknock() {
 
 lock_ws() {
 	if upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis; then
-		alert 'Connect laptop to charger before locking workstation!'
+		johnny alert 'Connect laptop to charger before locking workstation!'
 	else
 		xflock4
 	fi
