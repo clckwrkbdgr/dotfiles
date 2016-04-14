@@ -21,3 +21,12 @@ URxvt*color13:#c483b8
 URxvt*color14:#77c9cd
 URxvt*color15:#cccccc
 URxvt*termName: rxvt-unicode-256color
+
+!XXkb does not use Xresources it seems; these lines should be put to /etc/X11/app-defaults/XXkb
+XXkb.mainwindow.type:  tray
+XXkb.mainwindow.enable: no
+XXkb.button.enable: no
+
+xscreensaver.lock:		False
+xscreensaver.dpmsEnabled:	False
+xscreensaver.mode:		off
