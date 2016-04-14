@@ -28,8 +28,7 @@ def eyerest():
 		rest_time = current_time - begin_rest_time
 		if rest_time >= 60:
 			os.remove(CURRENT_REST_TIMESTAMP)
-			os.system("notify-send Pomodoro '<i>Now you can work again.</i>' --icon=gdu-smart-healthy")
-			os.system("johnny alert")
+			os.system("johnny alert stop")
 		else:
 			print("/////")
 			return
@@ -60,8 +59,7 @@ def eyerest():
 	last_break_time = os.path.getmtime(LAST_BREAK_TIMESTAMP)
 	passed_time = current_time - last_break_time
 	if passed_time >= 1200:
-		os.system("notify-send Pomodoro '<b>Take a break!</b>' --icon=gdu-smart-failing")
-		os.system("johnny alert")
+		os.system("johnny alert start")
 		os.remove(LAST_BREAK_TIMESTAMP)
 		open(CURRENT_REST_TIMESTAMP, 'w').close()
 		print("/////")
