@@ -49,8 +49,8 @@ alert() {
 		aplay -q "$SIGNAL_SOUND"
 		glados 'Your single shot is fired.'
 	elif [ -n "$1" ]; then
-		notify-send "$1"
-		glados "$1"
+		notify-send "$*"
+		glados "$@"
 	else
 		aplay -q "$SIGNAL_SOUND"
 	fi

@@ -1,23 +1,20 @@
 #!/bin/bash
 
 voice() {
-	espeak -ven+f3 -k 20 -m -p 99 -s 180
-}
-
-random_pitch() {
-	word="$1"
-	pitch=$(((($RANDOM) % 100) + 100))
-	echo -n "<prosody pitch=\"$pitch\">$word</prosody> "
-	echo "$word" | grep -q '[.]$' && echo
+	IFS='\n'
+	(
+		echo '(voice_us1_mbrola)'
+		echo '(set! default_after_synth_hooks (list (lambda (utt) (utt.wave.rescale utt 1.3 t))))'
+		while read line; do
+			echo '(SayText "'"$line"'")'
+		done
+	) | festival --pipe
 }
 
 if [ -z "$1" ]; then
-	echo 'Ouh.'
+	echo 'Oh.'
 elif [ "$1" == "-" ]; then
 	cat
 else
 	echo "$@"
-fi | for word in `cat`; do
-	random_pitch "$word"
-done | voice
-
+fi | voice
