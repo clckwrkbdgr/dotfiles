@@ -14,6 +14,7 @@ export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
 export VIMPERATOR_RUNTIME="$XDG_CONFIG_HOME/vimperator"
 export VIMINIT='let $MYVIMRC="'"$XDG_CONFIG_HOME"'/vim/vimrc" | source $MYVIMRC'
 case "$SHELL" in *bash*) eval `dircolors "$XDG_CONFIG_HOME/dir_colors"` ;; esac
+export MAILRC=~/.config/mailx/mailrc
 
 # Local data. Should be stored in some backup or outer storage.
 #export WINEPREFIX="$XDG_DATA_HOME/wine"
