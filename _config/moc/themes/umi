@@ -30,5 +30,5 @@ filled_time_bar		= black		yellow
 entry			= white		default
 entry_title		= black		yellow
 error			= magenta		default	bold
-message			= red		default	bold
+message			= blue		default bold
 plist_time		= white		default	bold
