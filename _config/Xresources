@@ -22,11 +22,31 @@ URxvt*color14:#77c9cd
 URxvt*color15:#cccccc
 URxvt*termName: rxvt-unicode-256color
 
-!XXkb does not use Xresources it seems; these lines should be put to /etc/X11/app-defaults/XXkb
+! XXkb does not use Xresources it seems; these lines should be put to /etc/X11/app-defaults/XXkb
 XXkb.mainwindow.type:  tray
 XXkb.mainwindow.enable: no
 XXkb.button.enable: no
 
+! XScreensaver basic settings.
 xscreensaver.lock:		False
 xscreensaver.dpmsEnabled:	False
 xscreensaver.mode:		off
+xscreensaver.splash: false
+
+! XScreensaver timeout bar
+xscreensaver.passwd.thermometer.foreground:  #ff0000
+xscreensaver.passwd.thermometer.background:  #000000
+xscreensaver.passwd.thermometer.width:       8
+
+! XScreensaver dialog colors
+xscreensaver.Dialog.foreground: #999999
+xscreensaver.Dialog.background: #141212
+xscreensaver.Dialog.topShadowColor:     #c48d00
+xscreensaver.Dialog.bottomShadowColor:  #c48d00
+xscreensaver.Dialog.Button.foreground:  #999999
+xscreensaver.Dialog.Button.background:  #242222
+xscreensaver.Dialog.text.foreground:    #cccccc
+xscreensaver.Dialog.text.background:    #000000
+xscreensaver.Dialog.internalBorderWidth:24
+xscreensaver.Dialog.borderWidth:        0
+xscreensaver.Dialog.shadowThickness:    2

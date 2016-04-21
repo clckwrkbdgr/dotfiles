@@ -27,7 +27,7 @@
       <property name="leave-opacity" type="uint" value="81"/>
     </property>
     <property name="panel-1" type="empty">
-      <property name="position" type="string" value="p=4;x=1291;y=737"/>
+      <property name="position" type="string" value="p=4;x=1352;y=756"/>
       <property name="autohide" type="bool" value="false"/>
       <property name="position-locked" type="bool" value="true"/>
       <property name="disable-struts" type="bool" value="true"/>
