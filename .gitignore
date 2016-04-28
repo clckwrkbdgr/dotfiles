@@ -19,7 +19,7 @@ _config/ranger/bookmarks
 _config/ranger/history
 _config/ranger/tagged
 _config/ranger/colorschemes/__init__.py
-dosbox/russian.txt
+_config/dosbox/russian.txt
 _config/xfce4/xfconf/xfce-perchannel-xml/displays.xml
 _config/xfce4/xfconf/xfce-perchannel-xml/pointers.xml
 supertux/save
