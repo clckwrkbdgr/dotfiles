@@ -1,5 +1,5 @@
 #!/bin/bash
-[ -f ~/.profile.local ] && source ~/.profile.local
+[ -f ~/.local/profile ] && source ~/.local/profile
 
 doom() {
 	IWAD=$1

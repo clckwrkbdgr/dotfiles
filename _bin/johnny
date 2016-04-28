@@ -1,5 +1,5 @@
 #!/bin/bash
-[ -f ~/.profile.local ] && source ~/.profile.local
+[ -f ~/.local/profile ] && source ~/.local/profile
 
 is_scroll_led_on() {
 	xset q | sed -n 4,9p | grep -o '[0-9][0-9]: [A-Za-z 0-9]\+: \+o[fn][f ]' | grep 'on $' | sed 's/.*: \([^:]\+\):.*/\1/' | grep -q 'Group 2'

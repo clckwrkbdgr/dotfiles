@@ -40,4 +40,4 @@ export PS4="${WHITE}+${NORMAL} " # +
 unset WHITE RED NORMAL
 
 # User private settings.
-[ -f ~/.profile.local ] && source ~/.profile.local
+[ -f ~/.local/profile ] && source ~/.local/profile
