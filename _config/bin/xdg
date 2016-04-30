@@ -19,6 +19,9 @@ dosbox() { /usr/bin/dosbox -conf $XDG_CONFIG_HOME/dosbox/dosbox-0.74.conf -lang 
 prboom() { /usr/local/games/prboom-plus -config $XDG_CONFIG_HOME/prboom-plus/prboom-plus.cfg -save $XDG_DATA_HOME/prboom-plus "$@"; }
 export PENTADACTYL_RUNTIME=$XDG_CONFIG_HOME/pentadactyl
 sylpheed() { /usr/bin/sylpheed --configdir $XDG_CONFIG_HOME/sylpheed-2.0 "$@"; }
+# TODO .dbus : ~/.config/xfce4/xinitrc will probably handle dbus-launch, how to pass XDG_RUNTIME_DIR to it?
+# TODO .dropbox : hardcoded
+# TODO .dropbox-dist : hardcoded
 
 # Local data. Should be stored in some backup or outer storage.
 #export WINEPREFIX="$XDG_DATA_HOME/wine"
