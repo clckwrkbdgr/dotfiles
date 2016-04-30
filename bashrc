@@ -6,7 +6,7 @@ if [ -f /etc/bashrc ]; then
 fi
 
 # Section for XDG directory support.
-. .config/bin/xdg
+. ~/.config/bin/xdg
 
 
 # User specific aliases and functions
