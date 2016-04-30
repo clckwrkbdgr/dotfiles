@@ -1,0 +1,34 @@
+#!/usr/bin/python3
+import os, os.path, re
+
+HOMEDIR_DOTFILES = """.bashrc
+.profile
+.config
+.cache
+.local
+.private
+.haven
+""".splitlines()
+
+HOMEDIR = os.path.expanduser("~")
+
+TODO_DOTFILES = []
+with open(os.path.join(HOMEDIR, ".config/bin/xdg"), "r") as f:
+	for line in f:
+		if 'TODO' in line:
+			try:
+				TODO_DOTFILES.append(line.split('TODO')[1].split(maxsplit=1)[0])
+			except IndexError:
+				pass
+
+unknown_files = 0
+for filename in os.listdir("."):
+	if not filename.startswith("."):
+		continue
+	if os.getcwd() == HOMEDIR:
+		if filename in HOMEDIR_DOTFILES or filename in TODO_DOTFILES:
+			continue
+	unknown_files += 1
+
+if unknown_files:
+	print("[.{0}]".format(unknown_files))
