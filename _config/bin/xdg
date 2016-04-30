@@ -22,6 +22,10 @@ sylpheed() { /usr/bin/sylpheed --configdir $XDG_CONFIG_HOME/sylpheed-2.0 "$@"; }
 # TODO .dbus : ~/.config/xfce4/xinitrc will probably handle dbus-launch, how to pass XDG_RUNTIME_DIR to it?
 # TODO .dropbox : hardcoded
 # TODO .dropbox-dist : hardcoded
+export GNUPGHOME="$XDG_DATA_HOME"/gnupg
+# TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
+# TODO .adobe : WONTFIX - flash player for linux is not supported anymore.
+export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 
 # Local data. Should be stored in some backup or outer storage.
 #export WINEPREFIX="$XDG_DATA_HOME/wine"
