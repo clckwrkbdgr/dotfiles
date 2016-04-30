@@ -3,11 +3,13 @@ import os, os.path, re
 
 HOMEDIR_DOTFILES = """.bashrc
 .profile
+.xinitrc
 .config
 .cache
 .local
 .private
 .haven
+.ssh
 """.splitlines()
 
 HOMEDIR = os.path.expanduser("~")
