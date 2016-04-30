@@ -21,13 +21,26 @@ with open(os.path.join(HOMEDIR, ".config/bin/xdg"), "r") as f:
 			except IndexError:
 				pass
 
+GIT_DOTFILES = """.gitignore
+.gitattributes
+.gitconfig
+.gitmodules
+""".splitlines()
+
 unknown_files = 0
-for filename in os.listdir("."):
+is_git = False
+for filename in sorted(os.listdir(".")):
 	if not filename.startswith("."):
 		continue
 	if os.getcwd() == HOMEDIR:
 		if filename in HOMEDIR_DOTFILES or filename in TODO_DOTFILES:
 			continue
+	if filename == '.git':
+		print("[git]", end='')
+		is_git = True
+		continue
+	if is_git and filename in GIT_DOTFILES:
+		continue
 	unknown_files += 1
 
 if unknown_files:
