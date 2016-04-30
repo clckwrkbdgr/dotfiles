@@ -9,8 +9,8 @@ _config/moc/playlist.m3u
 _config/moc/equalizer
 _config/moc/softmixer
 _config/moc/last_track
-w3m/cookie
-w3m/history
+_config/w3m/cookie
+_config/w3m/history
 zdoom/*.zds
 prboom-plus/*.dsg
 prboom-plus/*.dat

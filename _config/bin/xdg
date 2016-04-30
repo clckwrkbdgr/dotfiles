@@ -26,6 +26,8 @@ export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 # TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
 # TODO .adobe : WONTFIX - flash player for linux is not supported anymore.
 export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
+# TODO .w3m : hardcoded
+export WINEPREFIX=/opt/wine-umi
 
 # Local data. Should be stored in some backup or outer storage.
 #export WINEPREFIX="$XDG_DATA_HOME/wine"
