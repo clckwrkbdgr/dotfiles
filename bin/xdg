@@ -32,14 +32,6 @@ dosbox() { /usr/bin/dosbox -conf $XDG_CONFIG_HOME/dosbox/dosbox-0.74.conf -lang 
 prboom() { /usr/local/games/prboom-plus -config $XDG_CONFIG_HOME/prboom-plus/prboom-plus.cfg -save $XDG_DATA_HOME/prboom-plus "$@"; }
 export PENTADACTYL_RUNTIME=$XDG_CONFIG_HOME/pentadactyl
 sylpheed() { /usr/bin/sylpheed --configdir $XDG_CONFIG_HOME/sylpheed-2.0 "$@"; }
-# TODO .dbus : ~/.config/xfce4/xinitrc will probably handle dbus-launch, how to pass XDG_RUNTIME_DIR to it?
-# TODO .dropbox : hardcoded
-# TODO .dropbox-dist : hardcoded
-export GNUPGHOME="$XDG_DATA_HOME"/gnupg
-# TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
-fix_hardcoded_dotfile ~/.macromedia "$XDG_DATA_HOME/macromedia"
-# TODO .adobe : WONTFIX - flash player for linux is not supported anymore.
-fix_hardcoded_dotfile ~/.adobe "$XDG_DATA_HOME/macromedia"
 export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 # TODO .w3m : hardcoded
 fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
@@ -50,6 +42,14 @@ fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
 
 # Local data. Should be stored in some backup or outer storage.
 export WINEPREFIX=/opt/wine-umi
+export GNUPGHOME="$XDG_DATA_HOME"/gnupg
+# TODO .dropbox : hardcoded
+# TODO .dropbox-dist : hardcoded
+# TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
+fix_hardcoded_dotfile ~/.macromedia "$XDG_DATA_HOME/macromedia"
+# TODO .adobe : WONTFIX - flash player for linux is not supported anymore.
+fix_hardcoded_dotfile ~/.adobe "$XDG_DATA_HOME/macromedia"
+pidgin() { /usr/bin/pidgin --config=$XDG_DATA_HOME/purple "$@"; }
 
 # These could easily be cleared at any time without loss of any important data.
 export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
@@ -58,6 +58,7 @@ export HISTFILE="$XDG_CACHE_HOME/bash/history"
 mkdir -p "$XDG_CACHE_HOME/vim"
 
 # These are valid only for one session and could placed even in RAM.
+# TODO .dbus : ~/.config/xfce4/xinitrc will probably handle dbus-launch, how to pass XDG_RUNTIME_DIR to it?
 export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
 export ICEAUTHORITY="$XDG_RUNTIME_DIR/ICEauthority"
 
