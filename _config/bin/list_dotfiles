@@ -8,6 +8,7 @@ HOMEDIR_DOTFILES = """.bashrc
 .cache
 .local
 .private
+.projects
 .haven
 .ssh
 """.splitlines()
