@@ -5,7 +5,20 @@ export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
 export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
 
+# Fixes for hardcoded homedir dotfiles.
+fix_hardcoded_dotfile() {
+	homedir_location="$1"
+	xdg_location="$2"
+	if [ "`readlink "$homedir_location"`" != "$xdg_location" ]; then
+		mv -b "$homedir_location" "${homedir_location}.bak"
+		ln -s "$xdg_location" "$homedir_location"
+	fi
+}
+
 # Configurations. Should be stored under VCS.
+fix_hardcoded_dotfile ~/.bashrc "$XDG_CONFIG_HOME/bash/bashrc"
+fix_hardcoded_dotfile ~/.profile "$XDG_CONFIG_HOME/profile"
+fix_hardcoded_dotfile ~/.xinitrc "$XDG_CONFIG_HOME/xinitrc"
 export GIMP2_DIRECTORY="$XDG_CONFIG_HOME/gimp"
 export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
 mocp() { /usr/bin/mocp -M "$XDG_CONFIG_HOME/moc" "$@"; }
@@ -24,13 +37,19 @@ sylpheed() { /usr/bin/sylpheed --configdir $XDG_CONFIG_HOME/sylpheed-2.0 "$@"; }
 # TODO .dropbox-dist : hardcoded
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 # TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
+fix_hardcoded_dotfile ~/.macromedia "$XDG_DATA_HOME/macromedia"
 # TODO .adobe : WONTFIX - flash player for linux is not supported anymore.
+fix_hardcoded_dotfile ~/.adobe "$XDG_DATA_HOME/macromedia"
 export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 # TODO .w3m : hardcoded
-export WINEPREFIX=/opt/wine-umi
+fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
+# TODO .gnome2 : apparently firefox using this?
+# TODO .gnome2_private : apparently firefox using this?
+# TODO .gstreamer-0.10 : apparently firefox using this???
+# TODO .themes : apparently firefox using this?
 
 # Local data. Should be stored in some backup or outer storage.
-#export WINEPREFIX="$XDG_DATA_HOME/wine"
+export WINEPREFIX=/opt/wine-umi
 
 # These could easily be cleared at any time without loss of any important data.
 export LESSHISTFILE="$XDG_CACHE_HOME/less/history"

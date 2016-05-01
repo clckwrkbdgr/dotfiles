@@ -137,8 +137,8 @@ wallpaper() {
 
 	WALLPFILE=$(find "$WALLPAPERS_DIR" -type f | shuf | head -1)
 
-	gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$WALLPFILE"
-	gsettings set org.gnome.desktop.background picture-uri "file://$WALLPFILE"
+	#gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$WALLPFILE"
+	#gsettings set org.gnome.desktop.background picture-uri "file://$WALLPFILE"
 	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -s "$WALLPFILE"
 	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-style -s 4 # Scaled
 }

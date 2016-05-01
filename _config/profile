@@ -18,6 +18,9 @@ fi
 if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
+if [ -d "$HOME/.projects/bin" ] ; then
+    PATH="$HOME/.projects/bin:$PATH"
+fi
 if [ -d "$HOME/.private/bin" ] ; then
     PATH="$HOME/.private/bin:$PATH"
 fi
