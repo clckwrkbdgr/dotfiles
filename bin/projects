@@ -46,10 +46,23 @@ version() {
 
 status() {
 	for D in */; do
+		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
 		if git st | grep -v 'nothing to commit' | grep -v 'Your branch is up-to-date with' | grep -vq '#\? *On branch master'; then
 			echo -e "\033[1;31m$D\033[0m"
 			git -c color.status=always st #  | sed 's/^#/ /'
+		fi
+		popd >/dev/null
+	done
+}
+
+push() {
+	for D in */; do
+		[ ! -d "$D/.git" ] && continue
+		pushd $D >/dev/null
+		if git st | grep -q 'Your branch is ahead of'; then
+			echo -e "\033[1;31m$D\033[0m"
+			git push origin master --tags
 		fi
 		popd >/dev/null
 	done
@@ -61,4 +74,5 @@ case "$COMMAND" in
 	"tag") tag ;;
 	"version") version ;;
 	"status") status ;;
+	"push") push ;;
 esac
