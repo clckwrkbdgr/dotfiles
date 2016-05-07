@@ -24,3 +24,4 @@ xfce4/xfconf/xfce-perchannel-xml/displays.xml
 xfce4/xfconf/xfce-perchannel-xml/pointers.xml
 supertux/save
 xfce4/desktop/icons.screen*.rc
+pulse/
