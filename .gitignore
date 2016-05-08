@@ -1,7 +1,10 @@
+# Temp files.
 .*.swp
 *.pyo
 
+# Some history file.
 vim/.netrwhist
+# MOC cache and data, should be stored in CACHE and DATA dirs respectively.
 moc/cache/
 moc/last_directory
 moc/pid
@@ -9,22 +12,33 @@ moc/playlist.m3u
 moc/equalizer
 moc/softmixer
 moc/last_track
+# W3m stores everything in config dir.
 w3m/cookie
 w3m/history
+# ZDOOM saves.
 zdoom/*.zds
+# Prboom+ saves.
 prboom-plus/*.dsg
 prboom-plus/*.dat
+# INSTEAD saves.
 instead/saves/
+# Ranger cache/data.
 ranger/bookmarks
 ranger/history
 ranger/tagged
 ranger/colorschemes/__init__.py
+# DOSBox translations.
 dosbox/russian.txt
+# XFCE4 hardware info: specific to a machine.
 xfce4/xfconf/xfce-perchannel-xml/displays.xml
 xfce4/xfconf/xfce-perchannel-xml/pointers.xml
-supertux/save
+# XFCE4 desktop icon cache.
 xfce4/desktop/icons.screen*.rc
+# SuperTux saves.
+supertux/save
+# PulseAudio cache (very smart for the guy who invented XDG directory spec, way to go Lennart).
 pulse/
+# Vimperator cache/data.
 vimperator/info/default/history-command
 vimperator/info/default/history-search
 vimperator/info/default/ignored-keys
@@ -32,3 +46,5 @@ vimperator/info/default/local-marks
 vimperator/info/default/macros
 vimperator/info/default/quickmarks
 vimperator/info/default/url-marks
+# Dconf dump of user config.
+dconf/user
