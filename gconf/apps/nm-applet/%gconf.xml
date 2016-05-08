@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<gconf>
+	<entry name="suppress-wireless-networks-available" mtime="1436444964" type="bool" value="false"/>
+	<entry name="disable-vpn-notifications" mtime="1436444964" type="bool" value="false"/>
+	<entry name="disable-connected-notifications" mtime="1436444964" type="bool" value="false"/>
+	<entry name="disable-disconnected-notifications" mtime="1436444964" type="bool" value="false"/>
+	<entry name="stamp" mtime="1410956538" type="int" value="3"/>
+</gconf>

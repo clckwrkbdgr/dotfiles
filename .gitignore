@@ -25,3 +25,10 @@ xfce4/xfconf/xfce-perchannel-xml/pointers.xml
 supertux/save
 xfce4/desktop/icons.screen*.rc
 pulse/
+vimperator/info/default/history-command
+vimperator/info/default/history-search
+vimperator/info/default/ignored-keys
+vimperator/info/default/local-marks
+vimperator/info/default/macros
+vimperator/info/default/quickmarks
+vimperator/info/default/url-marks
