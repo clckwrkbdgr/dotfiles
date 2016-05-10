@@ -1,3 +1,6 @@
+# Sadly this file isn't recognized by git.
+# Should be added manually to .git/config
+
 [filter "ignorewallpaper"]
 	smudge = cat
 	clean = "sed '/name=\"image-path\"/d;/name=\"last-[^\"]*image\"/d'"
@@ -10,3 +13,6 @@
 	smudge = cat
 	clean = "sed '/^Fastdir[0-9][0-9]* *=/d'"
 
+[filter "gajim_config"]
+	smudge = cat
+	clean = "sed 's/^ *\\(last_[a-z]\\+_dir\\|latest_disco_addresses\\|collapsed_rows\\|accounts[.][^ =]*[.]last_status_msg\\|accounts[.][^ =]*[.]ssl_fingerprint_sha1\\|accounts[.][^ =]*[.]password\\) *= *.*$/\\1 =/'"
