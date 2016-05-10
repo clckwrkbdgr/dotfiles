@@ -2,5 +2,5 @@ Command=johnny mini
 UseLabel=0
 Text=(genmon)
 UpdatePeriod=1000
-Font=Monospace 6
+Font=Monospace 10
 

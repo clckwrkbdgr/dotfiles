@@ -14,8 +14,14 @@ get_all_pidgin_unread() {
 }
 
 mini_johnny() {
-	[ "$(get_all_pidgin_unread)" -gt 0 ] && echo -n '#' || echo -n ' '
-	is_scroll_led_on && echo -n 'C' || echo -n ' '
+	LEDS=$(get_leds)
+	echo "$LEDS" | grep -q 'S' && echo -n 'S' || echo -n ' '
+	echo "$LEDS" | grep -q 'C' && echo -n 'C' || echo -n ' '
+	if [ "$(get_all_pidgin_unread)" -gt 0 ]; then
+		echo -n $(date +%s | sed 's/^.*\(.\)$/\1/' | sed 'y_0123456789_-O-O-O-O-O_')
+	else
+		echo -n ' '
+	fi
 }
 
 get_leds() {

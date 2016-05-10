@@ -1,6 +1,0 @@
-Command=johnny leds
-UseLabel=0
-Text=(genmon)
-UpdatePeriod=1000
-Font=Liberation Mono 8
-
