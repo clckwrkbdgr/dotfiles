@@ -48,3 +48,5 @@ vimperator/info/default/quickmarks
 vimperator/info/default/url-marks
 # Dconf dump of user config.
 dconf/user
+# Qt cache
+Trolltech.conf
