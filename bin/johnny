@@ -14,14 +14,16 @@ get_all_pidgin_unread() {
 }
 
 mini_johnny() {
+	LED_IMG_PATH="$XDG_DATA_HOME/taira"
 	LEDS=$(get_leds)
-	echo "$LEDS" | grep -q 'S' && echo -n 'S' || echo -n ' '
-	echo "$LEDS" | grep -q 'C' && echo -n 'C' || echo -n ' '
+	LED_C=$(echo "$LEDS" | grep -q 'S' && echo 'S' || echo '_')
+	LED_S=$(echo "$LEDS" | grep -q 'C' && echo 'C' || echo '_')
+	LED_1='_'
 	if [ "$(get_all_pidgin_unread)" -gt 0 ]; then
-		echo -n $(date +%s | sed 's/^.*\(.\)$/\1/' | sed 'y_0123456789_-O-O-O-O-O_')
-	else
-		echo -n ' '
+		LED_1=$(date +%s | sed 's/^.*\(.\)$/\1/' | sed 'y|0123456789|1_1_1_1_1_|')
 	fi
+	echo "<img>$LED_IMG_PATH/leds${LED_C}${LED_S}${LED_1}.png</img>"
+	echo "<tool>$(leds)</tool>"
 }
 
 get_leds() {

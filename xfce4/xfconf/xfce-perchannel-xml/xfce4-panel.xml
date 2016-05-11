@@ -25,12 +25,12 @@
       <property name="leave-opacity" type="uint" value="81"/>
     </property>
     <property name="panel-1" type="empty">
-      <property name="position" type="string" value="p=6;x=14;y=9"/>
+      <property name="position" type="string" value="p=6;x=27;y=15"/>
       <property name="autohide" type="bool" value="false"/>
       <property name="position-locked" type="bool" value="true"/>
       <property name="disable-struts" type="bool" value="true"/>
       <property name="size" type="uint" value="16"/>
-      <property name="length" type="uint" value="2"/>
+      <property name="length" type="uint" value="4"/>
       <property name="length-adjust" type="bool" value="false"/>
       <property name="background-alpha" type="uint" value="0"/>
       <property name="enter-opacity" type="uint" value="100"/>
