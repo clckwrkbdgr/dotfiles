@@ -50,3 +50,7 @@ vimperator/info/default/url-marks
 dconf/user
 # Qt cache
 Trolltech.conf
+# Transmission has a lot of cache, and its config contains lots of personal data like pwds and dirs.
+transmission-remote-gtk/
+transmission-daemon/
+transmission/
