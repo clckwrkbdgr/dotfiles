@@ -1,4 +1,12 @@
 #!/bin/bash
+# Collection of dev project handling functions.
+
+# Handles Semantic Versioning for projects.
+# Usage:
+#    tag {minor|major|rev}
+#         Updates specified section of version number and adds new tag.
+#    tag
+#         Lists all tags for current project.
 tag() {
 	SECTION="$1"
 	LAST_VERSION=$(git tag | sed 's/.*\([0-9]\+\.[0-9]\+\.[0-9]\+\)/\1/' | sort -nt . | tail -1)
@@ -29,11 +37,11 @@ tag() {
 	read YES
 	if [ "$YES" == "y" ]; then
 		git tag -a "${NEW_VERSION}" -m "${REPO_NAME} v${NEW_VERSION}"
-		#git tag -a "${REPO_NAME}-${NEW_VERSION}" -m "v${NEW_VERSION}"
 		echo "Added new tag <$NEW_VERSION>"
 	fi
 }
 
+# Extracts current project version from the last tag.
 version() {
 	VERSION=$(git tag | tail -1 | sed 's/.*\([0-9]\+\.[0-9]\+\.[0-9]\+\)/\1/')
 	MAJOR_VERSION=$(git tag | tail -1 | sed 's/.*\([0-9]\+\)\.[0-9]\+\.[0-9]\+/\1/')
@@ -44,20 +52,23 @@ version() {
 	fi
 }
 
+# Prints statuses for all projects in directory recursively.
+# Skips up-to-date projects, prints only modifications or pending commits.
 status() {
-	for D in */; do
+	find . -type d | while read D; do
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
 		if git st | grep -v 'nothing to commit' | grep -v 'Your branch is up-to-date with' | grep -vq '#\? *On branch master'; then
 			echo -e "\033[1;31m$D\033[0m"
-			git -c color.status=always st #  | sed 's/^#/ /'
+			git -c color.status=always st
 		fi
 		popd >/dev/null
 	done
 }
 
+# Pushes pending commits to remote repositories for all sub-directories recursively.
 push() {
-	for D in */; do
+	find . -type d | while read D; do
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
 		if git st | grep -q 'Your branch is ahead of'; then
@@ -71,7 +82,7 @@ push() {
 COMMAND="$1"
 shift
 case "$COMMAND" in
-	"tag") tag ;;
+	"tag") tag "$@" ;;
 	"version") version ;;
 	"status") status ;;
 	"push") push ;;

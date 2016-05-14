@@ -1,4 +1,6 @@
 #!/bin/sh
+# Script for XDG directory support.
+# Tries to make XDG-compliant environment.
 
 # Basic XDG structure.
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}

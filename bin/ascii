@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# Prints ascii table for characters 0..127 to stdout in nicely aligned table.
 import itertools
 
 COLUMNS = 8

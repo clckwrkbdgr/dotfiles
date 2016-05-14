@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+# Searchs for dotfiles in current directory and prepares status string for bash prompt.
+# Excludes some allowed dotfiles in homedir (mostly XDG-compliant).
+# Recognizes some special dotfiles like .git*
 import os, os.path, re
 
 HOMEDIR_DOTFILES = """.bashrc
