@@ -4,14 +4,6 @@
 
 # Some history file.
 vim/.netrwhist
-# MOC cache and data, should be stored in CACHE and DATA dirs respectively.
-moc/cache/
-moc/last_directory
-moc/pid
-moc/playlist.m3u
-moc/equalizer
-moc/softmixer
-moc/last_track
 # W3m stores everything in config dir.
 w3m/cookie
 w3m/history

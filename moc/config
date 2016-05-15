@@ -12,49 +12,36 @@ SoundDriver		= ALSA:JACK:OSS
 Sort			= FileName
 ReadTags = no
 FormatString		= "%a - %A / %n - %t"
-#EnforceTagsEncoding = true
-#NonUTFXTerm = yes
-OnSongChange = "/home/umi/.config/bin/xdg /home/umi/.projects/bin/moc_submit_lastfm --artist %a --title %t --length %d --album %r --filename %f"
+OnSongChange = "/home/umi/bin/moc_submit_lastfm --artist %a --title %t --length %d --album %r --filename %f"
 
 JackOutLeft		= "alsa_pcm:playback_1"
 JackOutRight		= "alsa_pcm:playback_2"
 
 OSSDevice		= /dev/dsp
 OSSMixerDevice		= /dev/mixer
-#OSSMixerChannel1	= pcm
-#OSSMixerChannel2	= master
 
-#AlsaMixer1		= Master
-#AlsaMixer2		= PCM
 AlsaDevice		= default
 
 ShowHiddenFiles		= no
-StartInMusicDir		= no
+StartInMusicDir		= yes
 HideFileExtension	= no
 ShowFormat		= no
 ShowTime		= IfAvailable
-Theme			= umi
-MOCDir			= ~/.moc
+Theme			= ${XDG_CONFIG_HOME}/moc/themes/dim
+MOCDir			= ${XDG_DATA_HOME}/moc
 UseMmap			= yes
 SavePlaylist		= yes
 SyncPlaylist		= yes
 ASCIILines		= no
 
-#Fastdir10 = 
+Softmixer_SaveState = no
+Equalizer_SaveState = no
 
-#SeekTime		= 1
-#SilentSeekTime		= 5
-#ResampleMethod		= Linear
-#ForceSampleRate	= 48000
-#Allow24bitOutput	= no
-#UseRealtimePriority	= no
+
 TagsCacheSize		= 256
-#PlaylistNumbering	= yes
 
 Layout1		= "directory(0,0,100%,3):playlist(0,3,100%,FILL)"
 Layout2		= "playlist(50%,0,50%,100%):directory(0,0,50%,100%)"
-# Layout3		= ""
 
 FollowPlayedFile	= yes
 CanStartInPlaylist	= yes
-#PlaylistFullPaths	= yes

@@ -23,7 +23,7 @@ fix_hardcoded_dotfile ~/.profile "$XDG_CONFIG_HOME/profile"
 fix_hardcoded_dotfile ~/.xinitrc "$XDG_CONFIG_HOME/xinitrc"
 export GIMP2_DIRECTORY="$XDG_CONFIG_HOME/gimp"
 export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
-mocp() { /usr/bin/mocp -M "$XDG_CONFIG_HOME/moc" "$@"; }
+mocp() { /usr/bin/mocp -C "$XDG_CONFIG_HOME/moc/config" "$@"; }
 svn() { /usr/bin/svn --config-dir "$XDG_CONFIG_HOME/subversion" "$@"; }
 export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
 export VIMPERATOR_RUNTIME="$XDG_CONFIG_HOME/vimperator"
