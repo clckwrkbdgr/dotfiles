@@ -4,6 +4,7 @@ set backupdir=~/.cache/vim,~/,/tmp
 set viminfo='100,<50,s10,h,n~/.cache/vim/viminfo
 set viminfo+=n~/.cache/vim/viminfo
 set runtimepath=~/.config/vim,~/.config/vim/after,$VIM,$VIMRUNTIME
+let g:netrw_home=$XDG_CACHE_HOME.'/vim'
 
 autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") |   exe "normal g`\"" | endif
 au BufRead,BufNewFile *.md set filetype=markdown

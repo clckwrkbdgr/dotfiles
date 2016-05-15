@@ -2,32 +2,19 @@
 .*.swp
 *.pyo
 
-# Some history file.
-vim/.netrwhist
 # W3m stores everything in config dir.
 w3m/cookie
 w3m/history
-# ZDOOM saves.
-zdoom/*.zds
-# Prboom+ saves.
-prboom-plus/*.dsg
-prboom-plus/*.dat
-# INSTEAD saves.
-instead/saves/
 # Ranger cache/data.
 ranger/bookmarks
 ranger/history
 ranger/tagged
 ranger/colorschemes/__init__.py
-# DOSBox translations.
-dosbox/russian.txt
 # XFCE4 hardware info: specific to a machine.
 xfce4/xfconf/xfce-perchannel-xml/displays.xml
 xfce4/xfconf/xfce-perchannel-xml/pointers.xml
 # XFCE4 desktop icon cache.
 xfce4/desktop/icons.screen*.rc
-# SuperTux saves.
-supertux/save
 # PulseAudio cache (very smart for the guy who invented XDG directory spec, way to go Lennart).
 pulse/
 # Vimperator cache/data.
