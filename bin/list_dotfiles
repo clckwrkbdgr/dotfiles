@@ -2,7 +2,13 @@
 # Searchs for dotfiles in current directory and prepares status string for bash prompt.
 # Excludes some allowed dotfiles in homedir (mostly XDG-compliant).
 # Recognizes some special dotfiles like .git*
-import os, os.path, re
+import os, os.path, re, sys
+
+TEST = (sys.argv[1] == 'test') if len(sys.argv) > 1 else False
+
+def explain_file(explanation, filename):
+	if TEST:
+		print("{0}: {1}".format(explanation, filename))
 
 HOMEDIR_DOTFILES = """.bashrc
 .profile
@@ -39,15 +45,23 @@ for filename in sorted(os.listdir(".")):
 	if not filename.startswith("."):
 		continue
 	if os.getcwd() == HOMEDIR:
-		if filename in HOMEDIR_DOTFILES or filename in TODO_DOTFILES:
+		if filename in HOMEDIR_DOTFILES:
+			explain_file("allowed", filename)
+			continue
+		if filename in TODO_DOTFILES:
+			explain_file("hardcoded", filename)
 			continue
 	if filename == '.git':
-		print("[git]", end='')
+		explain_file("git", filename)
+		if not TEST:
+			print("[git]", end='')
 		is_git = True
 		continue
 	if is_git and filename in GIT_DOTFILES:
+		explain_file("git", filename)
 		continue
+	explain_file("unknown", filename)
 	unknown_files += 1
 
-if unknown_files:
+if unknown_files and not TEST:
 	print("[.{0}]".format(unknown_files))
