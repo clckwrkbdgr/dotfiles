@@ -66,3 +66,5 @@ export ICEAUTHORITY="$XDG_RUNTIME_DIR/ICEauthority"
 
 # If supplied, run command in XDG-compliant environment.
 [ -n "$1" ] && "$@"
+
+true # To return EXIT_SUCCESS
