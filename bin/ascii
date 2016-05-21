@@ -16,7 +16,7 @@ for index, char in control_chars:
 	table[index] = char
 
 table = sorted(table.items(), key=lambda p: p[0])
-template = "{0:>3} {1:<4}"
+template = "{0:>3} 0x{0:02X} {1:<4}"
 table = [template.format(a, b) for a, b in table]
 row_count = int(len(table) / COLUMNS)
 columns = [chunk for chunk in chunks(table, row_count)]
