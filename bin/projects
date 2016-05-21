@@ -55,7 +55,7 @@ version() {
 # Prints statuses for all projects in directory recursively.
 # Skips up-to-date projects, prints only modifications or pending commits.
 status() {
-	find . -type d | while read D; do
+	find -L . -type d | while read D; do
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
 		if git st | grep -v 'nothing to commit' | grep -v 'Your branch is up-to-date with' | grep -vq '#\? *On branch master'; then
@@ -68,7 +68,7 @@ status() {
 
 # Pushes pending commits to remote repositories for all sub-directories recursively.
 push() {
-	find . -type d | while read D; do
+	find -L . -type d | while read D; do
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
 		if git st | grep -q 'Your branch is ahead of'; then
