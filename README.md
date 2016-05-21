@@ -15,7 +15,7 @@ Bash prompt is enhanced with python script `~/.config/bin/list_dotfiles` which s
 	[.2]~$  # There are two unknown dot files.
 	[git].config$  # This is a git repo, all dotfiles are for git.
 
-Also `list_dotfiles` can be invoked with `test` argument to explain all found dotfiles in current dir.
+Also `list_dotfiles` can be invoked with `explain` argument to explain all found dotfiles in current dir.
 
 With all above, there is no 'bootstrap' or 'install' script, dotfiles are working straight from the moment of deploying into `XDG_CONFIG_HOME`, and all exception are handled by `xdg` script, which fixes hardcoded dotfiles in home dir at the first invokation. So, basically, its `git clone ... && . ~/.config/profile`.
 

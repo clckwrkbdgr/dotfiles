@@ -4,10 +4,10 @@
 # Recognizes some special dotfiles like .git*
 import os, os.path, re, sys
 
-TEST = (sys.argv[1] == 'test') if len(sys.argv) > 1 else False
+EXPLAIN = (sys.argv[1] == 'explain') if len(sys.argv) > 1 else False
 
 def explain_file(explanation, filename):
-	if TEST:
+	if EXPLAIN:
 		print("{0}: {1}".format(explanation, filename))
 
 HOMEDIR_DOTFILES = """.bashrc
@@ -20,6 +20,7 @@ HOMEDIR_DOTFILES = """.bashrc
 .projects
 .haven
 .ssh
+.mozilla
 """.splitlines()
 
 HOMEDIR = os.path.expanduser("~")
@@ -53,7 +54,7 @@ for filename in sorted(os.listdir(".")):
 			continue
 	if filename == '.git':
 		explain_file("git", filename)
-		if not TEST:
+		if not EXPLAIN:
 			print("[git]", end='')
 		is_git = True
 		continue
@@ -63,5 +64,5 @@ for filename in sorted(os.listdir(".")):
 	explain_file("unknown", filename)
 	unknown_files += 1
 
-if unknown_files and not TEST:
+if unknown_files and not EXPLAIN:
 	print("[.{0}]".format(unknown_files))
