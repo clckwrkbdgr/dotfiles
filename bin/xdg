@@ -37,6 +37,7 @@ sylpheed() { /usr/bin/sylpheed --configdir $XDG_CONFIG_HOME/sylpheed-2.0 "$@"; }
 export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 # TODO .w3m : hardcoded
 fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
+export XRE_PROFILE_PATH="$XDG_DATA_HOME/firefox"
 # TODO .gnome2 : apparently firefox using this?
 # TODO .gnome2_private : apparently firefox using this?
 # TODO .gstreamer-0.10 : apparently firefox using this???
