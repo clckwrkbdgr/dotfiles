@@ -171,3 +171,6 @@ style "titlebar"
 widget "xfwm"                      style "titlebar"
 class "MetaFrames"                 style "titlebar"
 widget_class "MetaFrames"          style "titlebar"
+
+gtk-recent-files-max-age=0
+gtk-recent-files-limit=0
