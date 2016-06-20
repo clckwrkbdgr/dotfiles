@@ -25,7 +25,7 @@
       <property name="override" type="bool" value="true"/>
       <property name="&lt;Super&gt;f" type="string" value="firefox"/>
       <property name="&lt;Super&gt;grave" type="string" value="urxvt"/>
-      <property name="&lt;Super&gt;a" type="string" value="pinkness singleshot"/>
+      <property name="&lt;Super&gt;a" type="string" value="timed-notification"/>
       <property name="&lt;Super&gt;l" type="string" value="jenkins lock_ws"/>
       <property name="&lt;Super&gt;Print" type="string" value="jenkins screenshot"/>
       <property name="&lt;Super&gt;Right" type="string" value="jenkins switch_ws next"/>

@@ -13,4 +13,4 @@ POST_TR_LOG="$TRANSMISSION_DATA_DIR/post_torrent.sh.log"
 ) &>>"$POST_TR_LOG"
 
 READABLE_NAME=$(echo "$TR_TORRENT_NAME" | sed 's/[.]/ /g')
-~/.config/bin/xdg ~/.local/bin/johnny alert "Torrent $READABLE_NAME is finished."
+~/.config/bin/xdg ~/.config/bin/notification -t Transmission "Torrent $READABLE_NAME is finished."
