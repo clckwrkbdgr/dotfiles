@@ -26,6 +26,7 @@ alias ls='ls --color -F'
 alias shuffle='find . -type f | sort -R | tail'
 alias s='grep -RnI --exclude-dir=.wine --exclude-dir=.svn --exclude-dir=.git'
 alias isodate='date +%Y-%m-%dT%H:%M:%S'
+alias ranger-ctime='ranger --cmd="set sort ctime" --cmd="set sort_reverse true"'
 
 # Prompt
 WHITE="\[\033[1;37m\]"
