@@ -1,0 +1,10 @@
+#!/bin/bash
+message_count() {
+	pgrep -x pidgin | while read pid; do
+		wmctrl -l -p | grep ${pid} | awk '{print $1}' | while read window; do
+			xprop -id ${window} | grep _PIDGIN_UNSEEN_COUNT | awk '{print $NF}'
+		done
+	done | paste -sd+ | bc
+}
+
+[ "$(message_count)" -gt 0 ]
