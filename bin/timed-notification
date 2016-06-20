@@ -1,0 +1,20 @@
+#!/bin/bash
+MINUTES=0
+MESSAGE=
+
+while [ $MINUTES == 0 ]; do
+	MINUTES=$(zenity --entry --text='Input number of seconds:' --entry-text 5 2>/dev/null)
+	if [  $? != 0 ]; then
+		exit 1
+	fi
+done
+
+while [ -z "$MESSAGE" ]; do
+	MESSAGE=$(zenity --entry --text='Enter message text:' --entry-text "$MESSAGE" 2>/dev/null)
+	if [  $? != 0 ]; then
+		exit 1
+	fi
+done
+
+sleep ${MINUTES}m
+notification "$MESSAGE"

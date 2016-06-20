@@ -1,0 +1,26 @@
+#!/bin/bash
+TITLE=notification
+ICON=
+
+usage() {
+	echo "Usage: $(basename ${0}) [-t title] [-i icon] <text>"
+	echo "  Displays notification pop-up, plays signal sound and reads message aloud"
+}
+
+while getopts ":ht:i:" opt; do
+	case "$opt" in
+		h) usage; exit 1;;
+		t) TITLE=$OPTARG;;
+		i) ICON=$OPTARG;;
+		\?) echo "Invalid option -$OPTARG"; exit 1;;
+		:) echo "Parameter is missing for -$OPTARG"; exit 1;;
+	esac
+done
+shift $((OPTIND-1))
+
+play_signal &
+if [ -n "$1" ]; then
+	notify-send "$TITLE" "$@" --icon="$ICON" &
+	text-to-speech "$@" &
+fi
+
