@@ -1,0 +1,14 @@
+#!/bin/bash
+actual-decode() {
+	url_encoded="${1//+/ }"
+	printf '%b' "${url_encoded//%/\\x}"
+}
+
+DATA=$1
+if [ -z "$DATA" ]; then
+	while read line; do
+		actual-decode "$line"
+	done
+else
+	actual-decode "$DATA"
+fi
