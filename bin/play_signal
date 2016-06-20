@@ -1,0 +1,4 @@
+#!/bin/sh
+# Soung Naming Specification: http://0pointer.de/public/sound-naming-spec.html
+SIGNAL_SOUND="$XDG_DATA_HOME/sounds/alert-default.wav"
+aplay -q "$SIGNAL_SOUND"
