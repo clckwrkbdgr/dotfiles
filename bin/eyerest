@@ -20,7 +20,9 @@ def is_screen_locked():
 
 def is_idle():
 	idle_time = subprocess.Popen(["xprintidle"], stdout=subprocess.PIPE).communicate()[0]
-	return int(idle_time) / 1000 >= 300
+	if idle_time:
+		return int(idle_time) / 1000 >= 300
+	return False
 
 # Returns:
 #   None if resting.
