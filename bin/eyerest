@@ -1,0 +1,91 @@
+#!/usr/bin/python3
+import subprocess
+import datetime
+import os
+import sys
+
+LAST_BREAK_TIMESTAMP = '/tmp/tm_last_break'
+CURRENT_REST_TIMESTAMP = '/tmp/tm_currently_resting'
+REST_TIME = 60 # seconds
+WORK_TIME = 20 * 60 # seconds
+
+def is_mplayer_running():
+	return 0 == os.system("ps -x | grep mplayer | grep -qv grep")
+
+def is_power_cord_disconnected():
+	return 0 == os.system("upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis")
+
+def is_screen_locked():
+	return 0 == os.system("xscreensaver-command -time | grep -q 'screen locked since'")
+
+def is_idle():
+	idle_time = subprocess.Popen(["xprintidle"], stdout=subprocess.PIPE).communicate()[0]
+	return int(idle_time) / 1000 >= 300
+
+# Returns:
+#   None if resting.
+#   float (0.0 ... 1.0) for passed working time if working
+#   or activity function object if this activity is currently happening.
+def eyerest():
+	current_time = datetime.datetime.now().timestamp()
+
+	if os.path.isfile(CURRENT_REST_TIMESTAMP):
+		begin_rest_time = os.path.getmtime(CURRENT_REST_TIMESTAMP)
+		rest_time = current_time - begin_rest_time
+		if rest_time >= REST_TIME:
+			os.remove(CURRENT_REST_TIMESTAMP)
+			os.system("johnny alert stop")
+		else:
+			return None
+
+	if is_mplayer_running():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		return is_mplayer_running
+	elif is_power_cord_disconnected():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		return is_power_cord_disconnected
+	elif is_screen_locked():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		return is_screen_locked
+	elif is_idle():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		return is_idle
+
+	if not os.path.isfile(LAST_BREAK_TIMESTAMP):
+		open(LAST_BREAK_TIMESTAMP, 'w').close()
+	last_break_time = os.path.getmtime(LAST_BREAK_TIMESTAMP)
+	passed_time = current_time - last_break_time
+	if passed_time >= WORK_TIME:
+		os.system("johnny alert start")
+		os.remove(LAST_BREAK_TIMESTAMP)
+		open(CURRENT_REST_TIMESTAMP, 'w').close()
+		return None
+	else:
+		return passed_time / float(WORK_TIME)
+
+if __name__ == "__main__":
+	args = sys.argv[1:]
+	quiet = False
+	if args and args[0] == '-q':
+		quiet = True
+
+	status = eyerest()
+
+	if not quiet:
+		if status is None:
+			print('/////')
+		elif status == is_mplayer_running:
+			print("play")
+		elif status == is_power_cord_disconnected:
+			print("power")
+		elif status == is_screen_locked:
+			print("lock")
+		elif status == is_idle:
+			print("idle")
+		else:
+			dots = int(status * 6)
+			print('.'*dots+' '*(5-dots))
