@@ -1,4 +1,21 @@
 #!/bin/bash
+STATUS_FILE=/tmp/timed-notification.status
+
+cleanup_dead_statuses() {
+	[ -r "$STATUS_FILE" ] || return
+	cat "$STATUS_FILE" | awk '{print $1}' | while read pid; do
+		ps $pid >/dev/null 2>&1 || sed -i "/^$pid /d" "$STATUS_FILE"
+	done
+}
+
+if [ "$1" == "-q" ]; then
+	[ -r "$STATUS_FILE" ] || exit 0
+	cleanup_dead_statuses
+	cat "$STATUS_FILE"
+	exit 0
+fi
+
+CURRENT_PID=$$
 MINUTES=0
 MESSAGE=
 
@@ -16,5 +33,8 @@ while [ -z "$MESSAGE" ]; do
 	fi
 done
 
+cleanup_dead_statuses
+echo "$CURRENT_PID [$(date)] ${MINUTES}m: $MESSAGE" >>"$STATUS_FILE"
 sleep ${MINUTES}m
 notification "$MESSAGE"
+sed -i "/^$CURRENT_PID /d" "$STATUS_FILE"
