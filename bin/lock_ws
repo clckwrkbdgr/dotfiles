@@ -1,0 +1,6 @@
+#!/bin/sh
+if upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis; then
+	notification -t Power 'Connect laptop to charger before locking workstation!'
+else
+	xflock4
+fi
