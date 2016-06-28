@@ -30,7 +30,7 @@
       <property name="&lt;Super&gt;Print" type="string" value="xfce4-screenshoter"/>
       <property name="&lt;Super&gt;Down" type="string" value="jenkins volume down"/>
       <property name="&lt;Super&gt;Up" type="string" value="jenkins volume up"/>
-      <property name="&lt;Super&gt;space" type="string" value="jenkins pause"/>
+      <property name="&lt;Super&gt;space" type="string" value="xdg mocp -G"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
