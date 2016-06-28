@@ -1,0 +1,29 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+	echo "Sets specified wallpaper or chooses random from specified directory."
+	echo "Usage: wallpaper { filename | directory }"
+	exit 1
+fi
+if [ ! -e "$1" ]; then
+	echo "File $1 is not found!"
+	exit 1
+fi
+
+# Export variables via DBUS.
+user=$(whoami)
+pid=$(pgrep -u $user gnome-panel)
+for dbusenv in $pid; do
+	DBUS_SESSION_BUS_ADDRESS=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$pid/environ | sed -e 's/DBUS_SESSION_BUS_ADDRESS=//')
+	data="DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
+	eval " export $data"
+done
+
+WALLPFILE="$1"
+if [ -d "$1" ]; then
+	WALLPFILE=$(find "$1" -type f | shuf | head -1)
+fi
+
+#gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$WALLPFILE"
+#gsettings set org.gnome.desktop.background picture-uri "file://$WALLPFILE"
+xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -s "$WALLPFILE"
+xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-style -s 4 # Scaled
