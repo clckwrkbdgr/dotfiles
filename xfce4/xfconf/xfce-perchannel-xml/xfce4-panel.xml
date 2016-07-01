@@ -5,7 +5,7 @@
     <value type="int" value="0"/>
     <value type="int" value="1"/>
     <property name="panel-0" type="empty">
-      <property name="position" type="string" value="p=11;x=192;y=9"/>
+      <property name="position" type="string" value="p=11;x=214;y=10"/>
       <property name="length" type="uint" value="1"/>
       <property name="position-locked" type="bool" value="true"/>
       <property name="plugin-ids" type="array">
@@ -29,7 +29,7 @@
       <property name="position-locked" type="bool" value="true"/>
       <property name="disable-struts" type="bool" value="true"/>
       <property name="size" type="uint" value="16"/>
-      <property name="length" type="uint" value="4"/>
+      <property name="length" type="uint" value="5"/>
       <property name="length-adjust" type="bool" value="false"/>
       <property name="background-alpha" type="uint" value="0"/>
       <property name="enter-opacity" type="uint" value="100"/>

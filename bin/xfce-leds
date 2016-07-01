@@ -1,0 +1,123 @@
+#!/usr/bin/python3
+import os, sys, subprocess
+import re
+import configparser
+from PIL import Image
+
+"""
+Each section in ini-file is a separate LED.
+
+[Scroll Lock]
+# Name from `xset q`...
+name = "Scroll Lock"
+# ...or name of command. Command should return 0 if 'on' and non-zero if 'off'.
+# If both command and name is specified, command will be used.
+command = "pidgin_has_unread"
+# To display in hint message and in terminal:
+character_on = 'S'
+character_off = ' '
+"""
+
+def get_config_file(*args):
+    xdg_config_dir = os.environ.get('XDG_CONFIG_HOME')
+    if not xdg_config_dir:
+        xdg_config_dir = os.path.join(os.path.expanduser("~"), ".config")
+    app_config_dir = os.path.join(xdg_config_dir, "xfce4")
+    os.makedirs(app_config_dir, exist_ok=True)
+    return os.path.join(app_config_dir, "xfce-leds.ini")
+
+def get_cache_dir():
+    xdg_cache_dir = os.environ.get('XDG_CACHE_HOME')
+    if not xdg_cache_dir:
+        xdg_cache_dir = os.path.join(os.path.expanduser("~"), ".cache")
+    app_cache_dir = os.path.join(xdg_cache_dir, "xfce4", "leds")
+    os.makedirs(app_cache_dir, exist_ok=True)
+    return app_cache_dir
+
+def unquote_string(string):
+	string = string.strip()
+	if string.startswith('"') and string.endswith('"'):
+		string = string[1:-1]
+	if string.startswith("'") and string.endswith("'"):
+		string = string[1:-1]
+	# Apparently 'unicode_escape' returns string with corrupted utf-8 encoding.
+	return bytes(string, "utf-8").decode('unicode_escape').encode("latin1").decode("utf-8")
+
+def read_xset_led_status():
+	xset = subprocess.Popen(["xset", "q"], stdout=subprocess.PIPE)
+	out, err = xset.communicate()
+	if xset.returncode != 0:
+		if err:
+			print('error: {0}'.format(err))
+
+	out = out.decode('utf-8')
+	out = out.splitlines()[3:8]
+	leds = {}
+	for line in out:
+		for status in re.findall(r'[0-9][0-9]: [A-Za-z 0-9]+: +o[fn][f ]', line):
+			m = re.match(r'(\d+) *: *([^ ][^:]+) *: *(\w+)', status)
+			if m and len(m.groups()) == 3:
+				leds[m.groups()[1]] = m.groups()[2] == 'on'
+	return leds
+
+if __name__ == "__main__":
+	leds = read_xset_led_status()
+
+	settings = configparser.SafeConfigParser()
+	settings.read([get_config_file()])
+	config_mtime = os.path.getmtime(get_config_file())
+	tooltip = ''
+	images = []
+	states = ''
+	for index, group in enumerate(settings):
+		if group == 'DEFAULT':
+			continue
+		state = False
+		if 'command' in settings[group]:
+			command = unquote_string(settings[group]['command'])
+			try:
+				state = 0 == subprocess.call([command])
+			except FileNotFoundError:
+				sys.stderr.write("Error executing command {0}\n".format(command))
+		elif 'name' in settings[group]:
+			name = unquote_string(settings[group]['name'])
+			if name in leds:
+				state = leds[name]
+			else:
+				sys.stderr.write("Unknown led {0}\n".format(name))
+		else:
+			sys.stderr.write("Unknown group {0}. Where's command or name?\n".format(group))
+
+		char_setting = 'character_on' if state else 'character_off'
+		character = ' '
+		if char_setting in settings[group]:
+			character = unquote_string(settings[group][char_setting])
+		else:
+			sys.stderr.write("Missing setting {1} for group {0}.\n".format(group, char_setting))
+		tooltip += character
+
+		image_setting = 'image_on' if state else 'image_off'
+		image = ' '
+		if image_setting in settings[group]:
+			image = os.path.expanduser(unquote_string(settings[group][image_setting]))
+		else:
+			sys.stderr.write("Missing setting {1} for group {0}.\n".format(group, image_setting))
+		images.append(image)
+
+		state_symbol = chr(ord('A') + index)
+		states += state_symbol.upper() if state else state_symbol.lower()
+	state_image_path = os.path.join(get_cache_dir(), "leds_{0}.png".format(states))
+	image_exists = os.path.exists(state_image_path)
+	image_is_too_old = image_exists and config_mtime > os.path.getmtime(state_image_path)
+	if image_is_too_old:
+		sys.stderr.write("Image is too old.\n")
+	if not image_exists or image_is_too_old:
+		frames = [Image.open(image) for image in images]
+		widths = [image.width for image in frames]
+		full_width, frame_width = sum(widths), max(widths)
+		full_height = max([image.width for image in frames])
+		band = Image.new('RGBA', (full_width, full_height))
+		for index, frame in enumerate(frames):
+			band.paste(frame, (frame_width * index, 0))
+		band.save(state_image_path)
+	sys.stdout.write("<img>{0}</img>\n<tool>{1}</tool>\n".format(state_image_path, tooltip))
