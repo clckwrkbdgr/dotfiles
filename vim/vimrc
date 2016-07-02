@@ -49,6 +49,7 @@ hi FoldColumn ctermfg=cyan
 
 filetype plugin indent on
 au FileType python set tabstop=4 | set noexpandtab
+au FileType python call PyIndentAutoCfg()
 let g:xml_syntax_folding=1
 au FileType xml setlocal foldmethod=syntax
 au FileType html setlocal foldmethod=syntax
