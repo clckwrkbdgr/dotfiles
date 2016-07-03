@@ -176,7 +176,6 @@ user_pref("dom.popup_allowed_events", "change click dblclick mouseup reset submi
 user_pref("experiments.activeExperiment", false);
 user_pref("extensions.adblockplus.currentVersion", "2.7.3");
 user_pref("extensions.adblockplus.lastRuleUpdate", 1398878722);
-user_pref("extensions.adblockplus.notificationdata", "{\"shown\":[],\"lastCheck\":1467549779172,\"softExpiration\":1467635491005,\"hardExpiration\":1467707689875,\"data\":{\"notifications\":[],\"version\":\"201607030834-2/0\"},\"lastError\":0,\"downloadStatus\":\"synchronize_ok\",\"downloadCount\":494}");
 user_pref("extensions.adblockplus.patternsbackups", 0);
 user_pref("extensions.blocklist.pingCountTotal", 1145);
 user_pref("extensions.blocklist.pingCountVersion", 24);
@@ -353,7 +352,6 @@ user_pref("noscript.notify", false);
 user_pref("noscript.nselNever", true);
 user_pref("noscript.options.tabSelectedIndexes", "5,4,0");
 user_pref("noscript.policynames", "");
-user_pref("noscript.subscription.lastCheck", -1327645633);
 user_pref("noscript.temp", "");
 user_pref("noscript.untrusted", "");
 user_pref("noscript.version", "2.9.0.11");
