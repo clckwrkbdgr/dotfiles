@@ -1,0 +1,8 @@
+<SearchPlugin xmlns="http://www.mozilla.org/2006/browser/search/" xmlns:os="http://a9.com/-/spec/opensearch/1.1/">
+<os:ShortName>DHT search</os:ShortName>
+<os:Description>BTDigg</os:Description>
+<os:InputEncoding>UTF-8</os:InputEncoding>
+<SearchForm>http://btdigg.org/search</SearchForm>
+<os:Url type="text/html" method="GET" template="http://btdigg.org/search?info_hash=&amp;q={searchTerms}">
+</os:Url>
+</SearchPlugin>

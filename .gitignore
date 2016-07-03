@@ -33,3 +33,43 @@ Trolltech.conf
 transmission-remote-gtk/
 transmission-daemon/
 transmission/
+# Firefox runtime
+firefox/.parentlock
+firefox/lock
+firefox/*.sqlite-shm
+firefox/*.sqlite-wal
+# Firefox cache
+firefox/blocklist.xml
+firefox/cert8.db
+firefox/compatibility.ini
+firefox/cache2/
+firefox/extensions.ini
+firefox/extensions.sqlite
+firefox/pluginreg.dat
+firefox/search.json
+firefox/search.json.mozlz4
+firefox/urlclassifier*.sqlite
+firefox/xulstore.json
+firefox/ghostery/
+firefox/jetpack/
+firefox/safebrowsing/
+firefox/times.json
+firefox/revocations.txt
+firefox/sessionstore-backups/
+firefox/storage/
+firefox/adblockplus-rules.json
+firefox/adblockplus
+firefox/notificationstore.json
+firefox/gm_scripts/Display_LaTeX.db
+# Firefox local/share
+firefox/key3.db
+firefox/secmod.db
+firefox/signons.sqlite
+firefox/SiteSecurityServiceState.txt
+firefox/extensions/
+firefox/content-prefs.sqlite
+firefox/cookies.sqlite
+firefox/formhistory.sqlite
+firefox/permissions.sqlite
+firefox/places.sqlite
+firefox/webappsstore.sqlite

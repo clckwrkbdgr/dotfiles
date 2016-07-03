@@ -58,6 +58,12 @@ for filename in sorted(os.listdir(".")):
 			print("[git]", end='')
 		is_git = True
 		continue
+	if filename == '.parentlock':
+		explain_file("parentlock", filename)
+		if not EXPLAIN:
+			print("[lck]", end='')
+		is_git = True
+		continue
 	if is_git and filename in GIT_DOTFILES:
 		explain_file("git", filename)
 		continue
