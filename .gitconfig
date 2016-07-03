@@ -24,3 +24,7 @@
 [filter "sqlite_text_dump"]
 	smudge = "sqlitedump --load"
 	clean = "sqlitedump --dump"
+
+[filter "pretty_json"]
+	smudge = cat
+	clean = "python -m json.tool"

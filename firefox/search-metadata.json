@@ -1,0 +1,41 @@
+{
+    "[profile]/dht.xml": {
+        "alias": "dht",
+        "order": 2
+    },
+    "[profile]/duckduckgo-html.xml": {
+        "alias": "duckduckgohtml",
+        "order": 4
+    },
+    "[profile]/google.xml": {
+        "alias": "google",
+        "order": 5
+    },
+    "[profile]/lurkmore-ru.xml": {
+        "alias": "l",
+        "order": 6
+    },
+    "[profile]/the-pirate-bay.xml": {
+        "alias": "tpb",
+        "order": 9
+    },
+    "[profile]/torrentz-search.xml": {
+        "alias": "t",
+        "order": 10
+    },
+    "[profile]/wikipedia-en.xml": {
+        "alias": "wen",
+        "order": 11
+    },
+    "[profile]/wikipedia-ru.xml": {
+        "alias": "wru",
+        "order": 12
+    },
+    "[profile]/wiktionary-en.xml": {
+        "alias": "wikt"
+    },
+    "[profile]/youtube.xml": {
+        "alias": "yt",
+        "order": 13
+    }
+}

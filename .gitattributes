@@ -4,3 +4,4 @@ moc/config filter=ignore_moc_fastdir
 gajim/config filter=gajim_config
 insteadrc filter=insteadrc_remove_state
 firefox/stylish.sqlite filter=sqlite_text_dump
+firefox/*.json filter=pretty_json
