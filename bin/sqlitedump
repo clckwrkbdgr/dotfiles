@@ -1,0 +1,13 @@
+#!/bin/bash
+if [ "$1" == "--dump" ]; then
+	TMPFILE=$(mktemp)
+	cat > "$TMPFILE"
+	echo '.dump' | sqlite3 "$TMPFILE"
+elif [ "$1" == "--load" ]; then
+	TMPFILE=$(mktemp)
+	sqlite3 "$TMPFILE"
+	cat "$TMPFILE"
+else
+	[ -z "$1" ] && echo "No command specified." >&2 || echo "Unknown command $1." >&2
+	echo "Usage: sqlitedump { --load | --dump }" >&2
+fi
