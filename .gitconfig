@@ -28,3 +28,7 @@
 [filter "pretty_json"]
 	smudge = cat
 	clean = "python -m json.tool"
+
+[filter "firefox_pref_js"]
+	smudge = clean-firefox-prefs.sh --restore
+	clean = clean-firefox-prefs.sh
