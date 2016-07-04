@@ -42,7 +42,6 @@ firefox/*.sqlite-wal
 firefox/blocklist.xml
 firefox/cert8.db
 firefox/compatibility.ini
-firefox/cache2/
 firefox/extensions.ini
 firefox/extensions.sqlite
 firefox/pluginreg.dat
@@ -52,7 +51,6 @@ firefox/urlclassifier*.sqlite
 firefox/xulstore.json
 firefox/ghostery/
 firefox/jetpack/
-firefox/safebrowsing/
 firefox/times.json
 firefox/revocations.txt
 firefox/sessionstore-backups/

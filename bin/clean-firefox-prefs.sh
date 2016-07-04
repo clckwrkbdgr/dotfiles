@@ -17,4 +17,11 @@ sed '/extensions.sqlitemanager.jsonMruData/d' | \
 sed '/extensions.xpiState/d' | \
 sed '/noscript.subscription.lastCheck/d' | \
 sed '/print.print_to_filename/d' | \
+sed '/browser.shell.mostRecentDateSetAsDefault/d' | \
+sed '/browser.slowStartup.averageTime/d' | \
+sed '/browser.slowStartup.samples/d' | \
+sed '/extensions.blocklist.pingCount.*/d' | \
+sed '/extensions.getAddons.cache.lastUpdate/d' | \
+sed '/idle.lastDailyNotification/d' | \
+sed '/toolkit.startup.last_success/d' | \
 sed 's|'"$HOME"'|$HOME|g'
