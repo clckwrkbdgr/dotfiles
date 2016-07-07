@@ -2078,6 +2078,10 @@ h1, h2, h3, h4, h5, h6, .fullname {
 	color: #CCCCCC;
 }
 
+.TweetWithPivotModule-header a {
+    color: #CCCCCC;
+}
+
 .conversations-enabled .inline-reply-caret .caret-inner {
     border-bottom-color: #aaa;
     border-color: transparent transparent #aaa;
@@ -2191,6 +2195,13 @@ input, textarea, div[contenteditable], .t1-select {
     border: 1px solid #050505;
 }
 
+.Streams .TweetForwardTimeline .AdaptiveMedia {
+    border: 1px solid #050505;
+}
+
+.Streams .TweetForwardTimeline .tweet {
+    border: 1px solid #050505;
+}
 
 
 
@@ -2199,7 +2210,7 @@ input, textarea, div[contenteditable], .t1-select {
 
 
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'1224c1f5f8c882c9db68fcf86821638e');
+}',1,NULL,'http://userstyles.org/styles/97767',1,'5ce9d139f2e63a8cb2c380985bc99fdb');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -5167,14 +5178,6 @@ CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
 INSERT INTO "style_meta" VALUES(5087,37,'type','site');
-INSERT INTO "style_meta" VALUES(5218,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5219,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5220,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5221,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5222,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5223,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5224,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5225,36,'type','site');
 INSERT INTO "style_meta" VALUES(5294,34,'domain','computerra.ru');
 INSERT INTO "style_meta" VALUES(5295,34,'domain','geektimes.ru');
 INSERT INTO "style_meta" VALUES(5296,34,'domain','habrahabr.ru');
@@ -5213,8 +5216,16 @@ INSERT INTO "style_meta" VALUES(5332,38,'domain','vk.com');
 INSERT INTO "style_meta" VALUES(5333,38,'domain','vkontakte.com');
 INSERT INTO "style_meta" VALUES(5334,38,'domain','vkontakte.ru');
 INSERT INTO "style_meta" VALUES(5335,38,'type','site');
+INSERT INTO "style_meta" VALUES(5336,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5337,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5338,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5339,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5340,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5341,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5342,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5343,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',39);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5335);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5343);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;

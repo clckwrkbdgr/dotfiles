@@ -48,7 +48,7 @@ user_pref("browser.rights.3.shown", true);
 user_pref("browser.safebrowsing.enabled", false);
 user_pref("browser.safebrowsing.malware.enabled", false);
 user_pref("browser.search.countryCode", "UA");
-user_pref("browser.search.defaultenginename", "DuckDuckGo HTML");
+user_pref("browser.search.defaultenginename", "DuckDuckGo (HTML)");
 user_pref("browser.search.region", "UA");
 user_pref("browser.search.selectedEngine", "DuckDuckGo (HTML)");
 user_pref("browser.search.suggest.enabled", false);
