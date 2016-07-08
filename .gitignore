@@ -18,13 +18,13 @@ xfce4/desktop/icons.screen*.rc
 # PulseAudio cache (very smart for the guy who invented XDG directory spec, way to go Lennart).
 pulse/
 # Vimperator cache/data.
-vimperator/info/default/history-command
-vimperator/info/default/history-search
-vimperator/info/default/ignored-keys
-vimperator/info/default/local-marks
-vimperator/info/default/macros
-vimperator/info/default/quickmarks
-vimperator/info/default/url-marks
+vimperator/info/*/history-command
+vimperator/info/*/history-search
+vimperator/info/*/ignored-keys
+vimperator/info/*/local-marks
+vimperator/info/*/macros
+vimperator/info/*/quickmarks
+vimperator/info/*/url-marks
 # Dconf dump of user config.
 dconf/user
 # Qt cache
@@ -61,6 +61,8 @@ firefox/notificationstore.json
 firefox/gm_scripts/Display_LaTeX.db
 firefox/addons.json
 firefox/extensions.json
+firefox/cache2
+firefox/safebrowsing
 # Firefox local/share
 firefox/key3.db
 firefox/secmod.db
