@@ -63,6 +63,8 @@ firefox/addons.json
 firefox/extensions.json
 firefox/cache2
 firefox/safebrowsing
+firefox/firebug/annotations.json
+firefox/firebug/breakpoints.json
 # Firefox local/share
 firefox/key3.db
 firefox/secmod.db
