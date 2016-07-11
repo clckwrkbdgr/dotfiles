@@ -17,6 +17,7 @@ xfce4/xfconf/xfce-perchannel-xml/pointers.xml
 xfce4/desktop/icons.screen*.rc
 # PulseAudio cache (very smart for the guy who invented XDG directory spec, way to go Lennart).
 pulse/
+pavucontrol.ini
 # Vimperator cache/data.
 vimperator/info/*/history-command
 vimperator/info/*/history-search
