@@ -40,6 +40,8 @@ firefox/lock
 firefox/*.sqlite-shm
 firefox/*.sqlite-wal
 # Firefox cache
+firefox/sessionCheckpoints.json
+firefox/sessionstore.js
 firefox/blocklist.xml
 firefox/cert8.db
 firefox/compatibility.ini
