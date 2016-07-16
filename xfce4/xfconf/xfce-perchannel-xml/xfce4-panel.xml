@@ -29,7 +29,7 @@
       <property name="position-locked" type="bool" value="true"/>
       <property name="disable-struts" type="bool" value="true"/>
       <property name="size" type="uint" value="16"/>
-      <property name="length" type="uint" value="5"/>
+      <property name="length" type="uint" value="7"/>
       <property name="length-adjust" type="bool" value="false"/>
       <property name="background-alpha" type="uint" value="0"/>
       <property name="enter-opacity" type="uint" value="100"/>
