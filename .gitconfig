@@ -36,3 +36,7 @@
 [filter "autoskipper_user_js"]
 	smudge = cat
 	clean = "sed 's/^\\(.*RESPONSE_JS_URL[^\"]*\\)\"[^\"]\\+\"\\(.*\\)$/\\1\"https:\\/\\/localhost\\/response.js\"\\2/'"
+
+[filter "firefox_userscript_config"]
+	smudge = clean-firefox-userscripts.sh --restore
+	clean = clean-firefox-userscripts.sh
