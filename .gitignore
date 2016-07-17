@@ -44,6 +44,7 @@ firefox/sessionCheckpoints.json
 firefox/sessionstore.js
 firefox/blocklist.xml
 firefox/cert8.db
+firefox/cert_override.txt
 firefox/compatibility.ini
 firefox/extensions.ini
 firefox/extensions.sqlite
