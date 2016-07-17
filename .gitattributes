@@ -6,3 +6,4 @@ insteadrc filter=insteadrc_remove_state
 firefox/stylish.sqlite filter=sqlite_text_dump
 firefox/*.json filter=pretty_json
 firefox/prefs.js filter=firefox_pref_js
+firefox/gm_scripts/autoskipper/autoskipper.user.js filter=autoskipper_user_js

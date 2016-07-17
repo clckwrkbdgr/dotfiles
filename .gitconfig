@@ -32,3 +32,7 @@
 [filter "firefox_pref_js"]
 	smudge = clean-firefox-prefs.sh --restore
 	clean = clean-firefox-prefs.sh
+
+[filter "autoskipper_user_js"]
+	smudge = cat
+	clean = "sed 's/^\\(.*RESPONSE_JS_URL[^\"]*\\)\"[^\"]\\+\"\\(.*\\)$/\\1\"https:\\/\\/localhost\\/response.js\"\\2/'"
