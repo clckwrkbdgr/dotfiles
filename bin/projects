@@ -52,13 +52,54 @@ version() {
 	fi
 }
 
+git_has_changes() {
+	git st | \
+		grep -v '#\? *On branch master' | \
+		grep -v 'Your branch is up-to-date with' | \
+		grep -v 'nothing to commit' | \
+		grep -qv '^$'
+}
+
+git_has_changes_besides_filtered_out() {
+	git st | \
+		grep -v '#\? *On branch master' | \
+		grep -v 'Your branch is up-to-date with' | \
+		grep -v '(use "git add <file>..." to update what will be committed)' | \
+		grep -v '(use "git checkout -- <file>..." to discard changes in working directory)' | \
+		grep -v 'no changes added to commit (use "git add"' | \
+		while read line; do
+			if [ -z "$IN_CHANGES" ]; then
+				if echo "$line" | grep -q '^Changes not staged for commit:'; then
+					IN_CHANGES=1
+				else
+					echo "$line"
+				fi
+			else
+				if echo "$line" | grep -v '^$' | grep -vq '^modified: '; then
+					IN_CHANGES=0
+					echo "$line"
+				fi
+				if echo "$line" | grep -q '^modified: '; then
+					filename="$(echo "$line" | sed 's/^modified: *\(.*\)/\1/')"
+					git diff "$filename"
+				fi
+			fi
+		done | \
+		grep -qv '^f$'
+}
+
 # Prints statuses for all projects in directory recursively.
 # Skips up-to-date projects, prints only modifications or pending commits.
 status() {
+	HAS_CHANGES=git_has_changes
+	if [ "$1" == "thorough" ]; then
+		HAS_CHANGES=git_has_changes_besides_filtered_out
+		shift
+	fi
 	find -L . -type d | while read D; do
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
-		if git st | grep -v 'nothing to commit' | grep -v 'Your branch is up-to-date with' | grep -vq '#\? *On branch master'; then
+		if $HAS_CHANGES; then
 			echo -e "\033[1;31m$D\033[0m"
 			git -c color.status=always st
 		fi
@@ -83,7 +124,7 @@ COMMAND="$1"
 shift
 case "$COMMAND" in
 	"tag") tag "$@" ;;
-	"version") version ;;
-	"status") status ;;
-	"push") push ;;
+	"version") version "$@" ;;
+	"status") status "$@" ;;
+	"push") push "$@" ;;
 esac
