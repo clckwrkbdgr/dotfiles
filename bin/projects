@@ -57,13 +57,14 @@ git_has_changes() {
 		grep -v '#\? *On branch master' | \
 		grep -v 'Your branch is up-to-date with' | \
 		grep -v 'nothing to commit' | \
-		grep -qv '^$'
+		grep -v '^$'
 }
 
 git_has_changes_besides_filtered_out() {
 	git st | \
 		grep -v '#\? *On branch master' | \
 		grep -v 'Your branch is up-to-date with' | \
+		grep -v 'nothing to commit' | \
 		grep -v '(use "git add <file>..." to update what will be committed)' | \
 		grep -v '(use "git checkout -- <file>..." to discard changes in working directory)' | \
 		grep -v 'no changes added to commit (use "git add"' | \
@@ -85,7 +86,7 @@ git_has_changes_besides_filtered_out() {
 				fi
 			fi
 		done | \
-		grep -qv '^f$'
+		grep -v '^$'
 }
 
 # Prints statuses for all projects in directory recursively.
@@ -99,7 +100,7 @@ status() {
 	find -L . -type d | while read D; do
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
-		if $HAS_CHANGES; then
+		if $HAS_CHANGES >/dev/null; then
 			echo -e "\033[1;31m$D\033[0m"
 			git -c color.status=always st
 		fi
