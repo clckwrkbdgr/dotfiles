@@ -174,6 +174,7 @@ user_pref("experiments.activeExperiment", false);
 user_pref("extensions.adblockplus.currentVersion", "2.7.3");
 user_pref("extensions.adblockplus.lastRuleUpdate", 1398878722);
 user_pref("extensions.adblockplus.patternsbackups", 0);
+user_pref("extensions.classicthemerestorer.aboutprefs", "category-privacy");
 user_pref("extensions.classicthemerestorer.activndicat", true);
 user_pref("extensions.classicthemerestorer.alt_newtabp", true);
 user_pref("extensions.classicthemerestorer.altoptions", "options_win_alt");
