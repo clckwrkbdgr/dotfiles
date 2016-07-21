@@ -4,6 +4,7 @@
 		<Include>http://gold-saucer.afraid.org/mathml/greasemonkey/</Include>
 		<Include>http://gold-saucer.afraid.org/writings/Display_LaTeX_sandbox</Include>
 		<Include>http://planetmath.org/*</Include>
+		<UserInclude>http://what-if.xkcd.com/*</UserInclude>
 	</Script>
 	<Script basedir="autoskipper" checkRemoteUpdates="1" dependhash="da39a3ee5e6b4b0d3255bfef95601890afd80709" description="" enabled="true" filename="autoskipper.user.js" installTime="0" modified="0" name="autoskipper" namespace="chatvdvoem" noframes="false" runAt="document-end" updateMetaStatus="unknown" uuid="5c11a5af-4ab3-4da6-876d-8efdeb5eea6d" version="1" installurl="file://$HOME/.mozilla/firefox/zdolk61e.default/gm_scripts/autoskipper/autoskipper.user.js" updateurl="file://$HOME/.mozilla/firefox/zdolk61e.default/gm_scripts/autoskipper/autoskipper.user.js">
 		<Grant>none</Grant>
