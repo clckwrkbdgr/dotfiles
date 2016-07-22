@@ -309,11 +309,11 @@ INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter
 }
     
     .column {
-    background-color: #242424 !important;
+    background-color:  #161616 !important;
 }
     
     .app-content {
-    background-color: #1A1B1F !important;
+    background-color: #161616 !important;
 }
     
     .dropdown-menu [data-action] {
@@ -321,7 +321,7 @@ INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter
 }
     
     .compose {
-    background-color: #09181D !important;
+    background-color: #161616 !important;
     color: #BBB !important;
 }
     
@@ -330,20 +330,20 @@ INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter
 }
     
 .app-navigator {
-    background-color: #242424 !important;
+    background-color:  #242424 !important;
 }
     
     .column-nav-item {
-    background-color: #242424 !important;
+    background-color:  #242424 !important;
 }
     
     .list-item:hover, .list-item:active, .list-item.is-selected {
-    background-color: #101010 !important;
+    background-color: #1B1B1B !important;
     color: #BBB !important;
 }
     
     .popover {
-    background-color: #101010 !important;
+    background-color: #1B1B1B !important;
 }
     
     .list-item {
@@ -360,7 +360,7 @@ INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter
 }
 
 .app-title {
-    background-color: #242424;
+    background-color:  #242424;
 }
     
     .column-options .button-tray {
@@ -371,7 +371,7 @@ INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter
 }
 
 .column-options {
-    background-color: #101010 !important;
+    background-color: #1B1B1B !important;
 }
 
 .facet-type {
@@ -383,21 +383,21 @@ INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter
 }
 
 .is-options-open .column-settings-link {
-    background-color: #101010 !important;
+    background-color: #1B1B1B !important;
     border-color: #060606 #060606 -moz-use-text-color;
 }
 
 .mdl {
-    background-color: #101010 !important;
+    background-color:  #1B1B1B !important;
 }
 
 .mdl-content {
     border: 1px solid #060606 !important;
-    background: none repeat scroll 0% 0% padding-box #242424 !important;
+    background: none repeat scroll 0% 0% padding-box  #161616!important;
 }
 
 .mdl-col-settings {
-    background-color: #242424 !important;
+    background-color:  #161616 !important;
 }
 
 .QuoteTweet {
@@ -410,6 +410,10 @@ INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter
 
 .tweet {
     border-bottom: 0px solid #060606 !important;
+}
+
+.character-count-compose:disabled {
+    background-color: transparent !important;
 }
 
 
@@ -766,7 +770,7 @@ input:focus, textarea:focus, div[contenteditable="true"]:focus, div[contentedita
 }
 
 .stream-item {
-	background: rgb(16,16,16)!important;
+	background: #161616;
 }
 
 .stream-item-activity-me {
@@ -778,7 +782,7 @@ input:focus, textarea:focus, div[contenteditable="true"]:focus, div[contentedita
 }
 
 .tweet-actions {
-	background-color: rgb(16,16,16)!important;
+	background-color: #161616;
 	box-shadow: none!important;
   	padding: 2px 12px 1px 5px!important;
 }
@@ -969,11 +973,6 @@ input:focus, textarea:focus, div[contenteditable="true"]:focus, div[contentedita
     border-bottom: 0px none !important;
 }
     
-.find-friends-sources {
-    background-color: #101010 !important;
-    padding: 0px 0px 12px;
-}
-    
 .find-friends-top-subheader, .find-friends-bottom-subheader {
     background-color: #060606 !important;
 }    
@@ -1015,12 +1014,6 @@ input:focus, textarea:focus, div[contenteditable="true"]:focus, div[contentedita
     border-color: #060606 !important;
 }
 
-.stream-media-grid-items.media-grid {
-    background: none repeat scroll 0% 0% padding-box content-box #101010 !important;
-    border-left: 1px solid rgb(0, 0, 0) !important;
-    border-right: 1px solid rgb(0, 0, 0) !important;
-}  
-
 .DashboardProfileCard-avatarLink {
     background: none !important;
 }
@@ -1039,10 +1032,6 @@ input:focus, textarea:focus, div[contenteditable="true"]:focus, div[contentedita
 
 .ProfileListItem {
     border-bottom: 1px solid #060606 !important;
-}
-
-.Gallery-content {
-    background-color: #101010 !important;
 }
 
 body.user-style-MeetAnimals {
@@ -1181,10 +1170,6 @@ body.user-style-MeetAnimals {
     padding-left: 1px !important;
 }
 
-.dm-convo-placeholder {
-    background-color: #101010 !important;
-}
-
 .dm-dialog .twttr-dialog-header {
     border-bottom: 0px solid #050307 !important;
 }
@@ -1213,11 +1198,6 @@ body.user-style-MeetAnimals {
 
 .dm-caret-inner {
     border-right: 4px solid #555 !important;
-}
-    
-    .user-select-controls {
-    border: 1px solid #777 !important;
-    background-color: #101010 !important;
 }
 
     .t1-label {
@@ -1281,10 +1261,6 @@ body.user-style-MeetAnimals {
     color: #CCCCCC;
 }
 
-.SiderailRelatedTweets-viewMore:hover {
-    background-color: #101010 !important;
-}
-
 .AdaptiveSearchPage {
     background-color: #101010 !important;
 }
@@ -1300,11 +1276,6 @@ body.user-style-MeetAnimals {
 
     .simple-tweet:hover, .recent-tweets .tweet:hover, .stream-item-activity .tweet:hover, .twttr-dialog-reply-footer:hover {
     background-color: transparent !important;
-}
-
-    .permalink {
-        background-color: #101010;
-    border: 1px solid #050505;
 }
 
     .ThreadedConversation, .ThreadedConversation-showMore, .ThreadedConversation-showMore:after, .ThreadedConversation + .ThreadedConversation--loneTweet, :not(.ThreadedConversation--ownReply) + .ThreadedConversation--ownReply, .ThreadedConversation--ownReply + .ThreadedConversation--loneTweet:not(.ThreadedConversation--ownReply), .ThreadedConversation--loneTweet:first-child {
@@ -1335,20 +1306,13 @@ body.user-style-MeetAnimals {
     border-bottom: 1px solid #060606;
 }    
 
-    .InputToken {
-    background-color: #101010;
-}
-
 .DMTokenizedMultiselectSuggestion {
     border-bottom: 1px solid #050505;
 }       
 
     .u-borderUserColorLighter {
     border-color: #050505 !important;
-}
-    .DMComposer .tweet-content {
-    background-color: #101010;
-}    
+}   
 
 .DMComposer {
     box-shadow: 0px 0px 0px rgba(255, 255, 255, 0.5) inset;    
@@ -1470,12 +1434,7 @@ body.user-style-MeetAnimals {
 
     .DirectMessage--received .DirectMessage-text {
     color: #CCCCCC !important;
-}
-
-
-.DMActivity-container {
-    background-color: #101010;
-}   
+} 
 
     .DMTokenizedMultiselectSuggestion.is-highlighted {
     background-color: #161616;
@@ -1521,21 +1480,6 @@ body.user-style-MeetAnimals {
 .DMButtonBar {
     background-color: #161616;
     border-top: 1px solid #050505;
-}
-
-    .DMTypeaheadHeader {
-    color: #CCCCCC;
-    background-color: #101010;
-    border-bottom: 1px solid #050505;
-    border-top: 1px solid #333 !important;
-}
-
-.modal-header {
-    background-color: #101010 !important;
-  	border: 1px solid #000!important;
-    border-radius: 0!important;
-    -webkit-box-shadow: none!important;
-    box-shadow: none!important;
 }
 
 .activity-content .account, .modal-footer, hr, #profile_popup .go-to-profile {
@@ -2071,11 +2015,6 @@ h1, h2, h3, h4, h5, h6, .fullname {
     border-color: #666
 }
 
-.PollingCardComposer {
-    background-color: #101010;
-    box-shadow: inset 0 1px 0 #333;
-}
-
 .module .active .list-link, label {
 	color: #CCCCCC;
 }
@@ -2103,6 +2042,62 @@ h1, h2, h3, h4, h5, h6, .fullname {
 
 .AdaptiveFiltersBar-label {
     border-right: 1px solid #050505;
+}
+
+.find-friends-sources {
+    background-color: #101010;
+    padding: 0px 0px 12px;
+}
+.stream-media-grid-items.media-grid {
+    background: none repeat scroll 0% 0% padding-box content-box #101010;
+    border-left: 1px solid rgb(0, 0, 0) !important;
+    border-right: 1px solid rgb(0, 0, 0) !important;
+}  
+
+.Gallery-content {
+    background-color: #101010;
+}
+.dm-convo-placeholder {
+    background-color: #101010;
+}    
+    .user-select-controls {
+    border: 1px solid #777 !important;
+    background-color: #101010;
+}
+.SiderailRelatedTweets-viewMore:hover {
+    background-color: #101010 !important;
+}
+    .permalink {
+        background-color: #101010;
+    border: 1px solid #050505;
+}
+    .InputToken {
+    background-color: #101010;
+}
+    .DMComposer .tweet-content {
+    background-color: #101010;
+} 
+.DMActivity-container {
+    background-color: #101010;
+}  
+    .DMTypeaheadHeader {
+    color: #CCCCCC;
+    background-color: #101010;
+    border-bottom: 1px solid #050505;
+    border-top: 1px solid #333 !important;
+}
+
+.modal-header {
+    background-color: #101010 !important;
+  	border: 1px solid #000!important;
+    border-radius: 0!important;
+    -webkit-box-shadow: none!important;
+    box-shadow: none!important;
+}
+
+.PollingCardComposer {
+    background-color: #101010;
+    box-shadow: inset 0 1px 0 #333;
 }
 
 .ProfileAvatar {
@@ -2212,7 +2207,7 @@ input, textarea, div[contenteditable], .t1-select {
 
 
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'5ce9d139f2e63a8cb2c380985bc99fdb');
+}',1,NULL,'http://userstyles.org/styles/97767',1,'c820796b478136648d9c63e5a877a6a2');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -5186,14 +5181,6 @@ INSERT INTO "style_meta" VALUES(5332,38,'domain','vk.com');
 INSERT INTO "style_meta" VALUES(5333,38,'domain','vkontakte.com');
 INSERT INTO "style_meta" VALUES(5334,38,'domain','vkontakte.ru');
 INSERT INTO "style_meta" VALUES(5335,38,'type','site');
-INSERT INTO "style_meta" VALUES(5336,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5337,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5338,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5339,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5340,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5341,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5342,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5343,36,'type','site');
 INSERT INTO "style_meta" VALUES(5440,34,'domain','computerra.ru');
 INSERT INTO "style_meta" VALUES(5441,34,'domain','geektimes.ru');
 INSERT INTO "style_meta" VALUES(5442,34,'domain','habrahabr.ru');
@@ -5226,8 +5213,16 @@ INSERT INTO "style_meta" VALUES(5468,34,'domain','kniganews.org');
 INSERT INTO "style_meta" VALUES(5469,34,'domain','unixmanga.net');
 INSERT INTO "style_meta" VALUES(5470,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(5471,34,'type','global');
+INSERT INTO "style_meta" VALUES(5472,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5473,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5474,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5475,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5476,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5477,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5478,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5479,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',39);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5471);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5479);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
