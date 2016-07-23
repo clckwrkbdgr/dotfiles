@@ -54,7 +54,19 @@ export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 fix_hardcoded_dotfile ~/.macromedia "$XDG_DATA_HOME/macromedia"
 # TODO .adobe : WONTFIX - flash player for linux is not supported anymore.
 fix_hardcoded_dotfile ~/.adobe "$XDG_DATA_HOME/macromedia"
-pidgin() { /usr/bin/pidgin --config=$XDG_DATA_HOME/purple "$@"; }
+pidgin() {
+	mkdir -p "$XDG_DATA_HOME/purple"
+	mkdir -p "$XDG_DATA_HOME/purple/logs"
+	mkdir -p "$XDG_CACHE_HOME/purple"
+	mkdir -p "$XDG_CACHE_HOME/purple/certificates"
+	mkdir -p "$XDG_CACHE_HOME/purple/icons"
+	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/logs" "$XDG_DATA_HOME/purple/logs"
+	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/accels"        "$XDG_CACHE_HOME/purple/accels"
+	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/certificates"  "$XDG_CACHE_HOME/purple/certificates"
+	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/icons"         "$XDG_CACHE_HOME/purple/icons"
+	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/xmpp-caps.xml" "$XDG_CACHE_HOME/purple/xmpp-caps.xml"
+	/usr/bin/pidgin --config=$XDG_CONFIG_HOME/purple "$@";
+}
 
 # These could easily be cleared at any time without loss of any important data.
 export LESSHISTFILE="$XDG_CACHE_HOME/less/history"

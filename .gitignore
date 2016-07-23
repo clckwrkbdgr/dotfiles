@@ -82,3 +82,14 @@ firefox/formhistory.sqlite
 firefox/permissions.sqlite
 firefox/places.sqlite
 firefox/webappsstore.sqlite
+# Purple cache
+purple/accels
+purple/certificates
+purple/icons
+purple/xmpp-caps.xml
+# Purple data (should be stored in XDG_DATA_HOME?)
+purple/logs
+purple/accounts.xml
+purple/blist.xml
+purple/pounces.xml
+purple/status.xml

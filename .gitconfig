@@ -40,3 +40,7 @@
 [filter "firefox_userscript_config"]
 	smudge = clean-firefox-userscripts.sh --restore
 	clean = clean-firefox-userscripts.sh
+
+[filter "expand_homedir"]
+	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
+	clean = "sed 's|'\"$HOME\"'|$HOME|g'"
