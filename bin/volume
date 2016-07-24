@@ -9,6 +9,7 @@ CHANNEL=Master
 STEP=5%
 if [ "$1" == "-n" ]; then
 	SHOW_NOTIFICATION_POPUP=true
+	shift
 fi
 
 if [ "$1" == "up" ]; then
