@@ -307,3 +307,6 @@ if test "$ssh_agent_kill_cmd"; then
 fi
 
 xsetroot -bg white -fg red  -solid black -cursor_name watch
+
+# User config.
+test -f "$XDG_CONFIG_HOME/xinitrc" && . "$XDG_CONFIG_HOME/xinitrc"

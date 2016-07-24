@@ -22,7 +22,6 @@ fix_hardcoded_dotfile() {
 # Configurations. Should be stored under VCS.
 fix_hardcoded_dotfile ~/.bashrc "$XDG_CONFIG_HOME/bash/bashrc"
 fix_hardcoded_dotfile ~/.profile "$XDG_CONFIG_HOME/profile"
-fix_hardcoded_dotfile ~/.xinitrc "$XDG_CONFIG_HOME/xinitrc"
 export GIMP2_DIRECTORY="$XDG_CONFIG_HOME/gimp"
 export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
 mocp() { /usr/bin/mocp -C "$XDG_CONFIG_HOME/moc/config" "$@"; }

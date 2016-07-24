@@ -12,11 +12,9 @@ def explain_file(explanation, filename):
 
 HOMEDIR_DOTFILES = """.bashrc
 .profile
-.xinitrc
 .config
 .cache
 .local
-.private
 .projects
 .haven
 .ssh
