@@ -101,7 +101,7 @@ inject(function() {
 	function load_responses() {
 		$.get(RESPONSE_JS_URL, function(data) {
 			window.RESPONSES = eval(data);
-		});
+		}).done(function() { console.log("Done loading responses. OK"); }).fail(function() { alert("Failed to load responses."); });
 	}
 	
 	load_responses();
