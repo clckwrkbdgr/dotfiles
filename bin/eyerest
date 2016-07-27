@@ -12,6 +12,9 @@ WORK_TIME = 20 * 60 # seconds
 def is_mplayer_running():
 	return 0 == os.system("ps -x | grep mplayer | grep -qv grep")
 
+def is_avplay_running():
+	return 0 == os.system("ps -x | grep avplay | grep -qv grep")
+
 def is_power_cord_disconnected():
 	return 0 == os.system("upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis")
 
@@ -44,6 +47,10 @@ def eyerest():
 		if os.path.isfile(LAST_BREAK_TIMESTAMP):
 			os.remove(LAST_BREAK_TIMESTAMP)
 		return is_mplayer_running
+	elif is_avplay_running():
+		if os.path.isfile(LAST_BREAK_TIMESTAMP):
+			os.remove(LAST_BREAK_TIMESTAMP)
+		return is_avplay_running
 	elif is_power_cord_disconnected():
 		if os.path.isfile(LAST_BREAK_TIMESTAMP):
 			os.remove(LAST_BREAK_TIMESTAMP)
@@ -80,7 +87,7 @@ if __name__ == "__main__":
 	if not quiet:
 		if status is None:
 			print('/////')
-		elif status == is_mplayer_running:
+		elif status in [is_mplayer_running, is_avplay_running]:
 			print("play")
 		elif status == is_power_cord_disconnected:
 			print("power")
