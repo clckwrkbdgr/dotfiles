@@ -247,7 +247,6 @@ user_pref("extensions.firebug.DBG_WATCHPROVIDER", false);
 user_pref("extensions.firebug.addonBarOpened", true);
 user_pref("extensions.firebug.console.enableSites", true);
 user_pref("extensions.firebug.currentVersion", "2.0.17");
-user_pref("extensions.firebug.defaultPanelName", "console");
 user_pref("extensions.firebug.net.enableSites", true);
 user_pref("extensions.firebug.previousPlacement", 1);
 user_pref("extensions.firebug.script.enableSites", true);
