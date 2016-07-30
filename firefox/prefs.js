@@ -298,7 +298,7 @@ user_pref("extensions.vkontakterudownloader.preferenceMigration.done", true);
 user_pref("font.default.x-cyrillic", "sans-serif");
 user_pref("font.default.x-user-def", "sans-serif");
 user_pref("font.default.x-western", "sans-serif");
-user_pref("font.internaluseonly.changed", true);
+user_pref("font.internaluseonly.changed", false);
 user_pref("font.language.group", "ja");
 user_pref("font.name.monospace.ja", "DejaVu Sans Mono");
 user_pref("font.name.monospace.x-cyrillic", "DejaVu Sans Mono");
