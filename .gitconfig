@@ -44,3 +44,7 @@
 [filter "expand_homedir"]
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
 	clean = "sed 's|'\"$HOME\"'|$HOME|g'"
+
+[filter "pidgin_prefs"]
+	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
+	clean = "sed 's|'\"$HOME\"'|$HOME|g;/pref name=.default. type=.int./d'"
