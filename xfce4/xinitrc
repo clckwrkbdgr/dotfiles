@@ -127,6 +127,9 @@ if test x"$DBUS_SESSION_BUS_ADDRESS" = x""; then
 	fi
 fi
 
+# User config.
+test -f "$XDG_CONFIG_HOME/xinitrc" && . "$XDG_CONFIG_HOME/xinitrc"
+
 # launch gpg-agent or ssh-agent if enabled.
 ssh_agent_enabled=`xfconf-query -c xfce4-session -p /startup/ssh-agent/enabled 2> /dev/null`
 if test "$ssh_agent_enabled" != "false"; then
@@ -307,6 +310,3 @@ if test "$ssh_agent_kill_cmd"; then
 fi
 
 xsetroot -bg white -fg red  -solid black -cursor_name watch
-
-# User config.
-test -f "$XDG_CONFIG_HOME/xinitrc" && . "$XDG_CONFIG_HOME/xinitrc"
