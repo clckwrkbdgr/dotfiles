@@ -170,7 +170,7 @@ var RESPONSES = [
 					} else {
 					$('#chat_status').text('Auto...');
   					return function() {
-						setTimeout(function() { send_message(response); }, response.length * 100);
+						setTimeout(function() { send_message(response); }, response.length * 50);
 					};
 					}
 				}
@@ -243,7 +243,7 @@ var RESPONSES = [
  			if(window.is_first_message) {
 				var response = first_message_is_hello(msg_event.message);
 				if(response) {
-					setTimeout(response, 250);
+					setTimeout(response, 350);
 				} else {
 					soundManager.play('obtaining');
 					window.is_first_message = false;

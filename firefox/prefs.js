@@ -348,7 +348,7 @@ user_pref("noscript.options.tabSelectedIndexes", "5,4,0");
 user_pref("noscript.policynames", "");
 user_pref("noscript.temp", "");
 user_pref("noscript.untrusted", "");
-user_pref("noscript.version", "2.9.0.13");
+user_pref("noscript.version", "2.9.0.14");
 user_pref("noscript.visibleUIChecked", true);
 user_pref("pdfjs.migrationVersion", 2);
 user_pref("pdfjs.previousHandler.alwaysAskBeforeHandling", true);
