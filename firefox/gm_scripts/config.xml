@@ -6,11 +6,11 @@
 		<Include>http://planetmath.org/*</Include>
 		<UserInclude>http://what-if.xkcd.com/*</UserInclude>
 	</Script>
-	<Script basedir="autoskipper" checkRemoteUpdates="1" dependhash="da39a3ee5e6b4b0d3255bfef95601890afd80709" description="" enabled="true" filename="autoskipper.user.js" installTime="0" modified="0" name="autoskipper" namespace="chatvdvoem" noframes="false" runAt="document-end" updateMetaStatus="unknown" uuid="5c11a5af-4ab3-4da6-876d-8efdeb5eea6d" version="1" installurl="file://$HOME/.mozilla/firefox/zdolk61e.default/gm_scripts/autoskipper/autoskipper.user.js" updateurl="file://$HOME/.mozilla/firefox/zdolk61e.default/gm_scripts/autoskipper/autoskipper.user.js">
+	<Script basedir="autoskipper" checkRemoteUpdates="1" dependhash="da39a3ee5e6b4b0d3255bfef95601890afd80709" description="" enabled="true" filename="autoskipper.user.js" installTime="0" modified="0" name="autoskipper" namespace="chatvdvoem" noframes="false" runAt="document-end" updateMetaStatus="unknown" uuid="5c11a5af-4ab3-4da6-876d-8efdeb5eea6d" version="1" installurl="file://$HOME/.config/firefox/gm_scripts/autoskipper/autoskipper.user.js" updateurl="file://$HOME/.config/firefox/gm_scripts/autoskipper/autoskipper.user.js">
 		<Grant>none</Grant>
 		<Include>https://chatvdvoem.ru/*</Include>
 	</Script>
-	<Script basedir="hide-specific-user" checkRemoteUpdates="1" dependhash="da39a3ee5e6b4b0d3255bfef95601890afd80709" description="" enabled="true" filename="hide-specific-user.user.js" installTime="0" modified="0" name="hide-specific-user" namespace="lor" noframes="false" runAt="document-end" updateMetaStatus="unknown" uuid="3b666fea-45bf-4528-bae9-5d1fbb034fcc" version="1" installurl="file://$HOME/.mozilla/firefox/zdolk61e.default/gm_scripts/hide-specific-user/hide-specific-user.user.js" updateurl="file://$HOME/.mozilla/firefox/zdolk61e.default/gm_scripts/hide-specific-user/hide-specific-user.user.js">
+	<Script basedir="hide-specific-user" checkRemoteUpdates="1" dependhash="da39a3ee5e6b4b0d3255bfef95601890afd80709" description="" enabled="true" filename="hide-specific-user.user.js" installTime="0" modified="0" name="hide-specific-user" namespace="lor" noframes="false" runAt="document-end" updateMetaStatus="unknown" uuid="3b666fea-45bf-4528-bae9-5d1fbb034fcc" version="1" installurl="file://$HOME/.config/firefox/gm_scripts/hide-specific-user/hide-specific-user.user.js" updateurl="file://$HOME/.config/firefox/gm_scripts/hide-specific-user/hide-specific-user.user.js">
 		<Grant>none</Grant>
 		<Include>https://www.linux.org.ru/*</Include>
 	</Script>

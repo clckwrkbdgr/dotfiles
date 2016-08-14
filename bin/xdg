@@ -39,6 +39,7 @@ export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 # TODO .w3m : hardcoded
 fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
 export XRE_PROFILE_PATH="$XDG_CONFIG_HOME/firefox"
+# TODO .mozilla : for some reason ~/.mozilla/{extensions,firefox} are getting recreated on every launch, empty and useless
 # TODO .gnome2 : apparently firefox using this?
 # TODO .gnome2_private : apparently firefox using this?
 # TODO .gstreamer-0.10 : apparently firefox using this???

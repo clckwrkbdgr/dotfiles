@@ -257,7 +257,7 @@ user_pref("extensions.firefm.stationFirstRun", false);
 user_pref("extensions.firefox@ghostery.com.sdk.baseURI", "resource://firefox-at-ghostery-dot-com/");
 user_pref("extensions.firefox@ghostery.com.sdk.domain", "firefox-at-ghostery-dot-com");
 user_pref("extensions.firefox@ghostery.com.sdk.load.reason", "startup");
-user_pref("extensions.firefox@ghostery.com.sdk.version", "6.3.1");
+user_pref("extensions.firefox@ghostery.com.sdk.version", "6.3.2");
 user_pref("extensions.firefoxreader.currentversion", "0.7");
 user_pref("extensions.firefoxreader.styleoptions", "3,1,2,2,0");
 user_pref("extensions.getAddons.databaseSchema", 5);
