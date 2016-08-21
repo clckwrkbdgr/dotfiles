@@ -267,7 +267,7 @@ user_pref("extensions.greasemonkey.menuCommanderEventNameSuffix", "UABMGYRWDOWCT
 user_pref("extensions.greasemonkey.newscript_namespace", "lor");
 user_pref("extensions.greasemonkey.sortBy", "executionIndex");
 user_pref("extensions.greasemonkey.stats.prompted", true);
-user_pref("extensions.greasemonkey.version", "3.8");
+user_pref("extensions.greasemonkey.version", "3.9");
 user_pref("extensions.jid1-4P0kohSJxU1qGg@jetpack.sdk.console.logLevel", "warn");
 user_pref("extensions.lastAppVersion", "45.3.0");
 user_pref("extensions.lastPlatformVersion", "45.3.0");
