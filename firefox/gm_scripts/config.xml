@@ -14,4 +14,8 @@
 		<Grant>none</Grant>
 		<Include>https://www.linux.org.ru/*</Include>
 	</Script>
+	<Script basedir="refreshgodville" checkRemoteUpdates="1" dependhash="da39a3ee5e6b4b0d3255bfef95601890afd80709" description="Auto-closes Godville Hero screen when opened just for refresh" enabled="true" filename="refreshgodville.user.js" installTime="0" modified="0" name="refreshgodville" namespace="godville" noframes="false" runAt="document-end" updateMetaStatus="unknown" uuid="728d36b3-835a-4f1c-a3d9-8fec40447405" version="1" installurl="file://$HOME/.config/firefox/gm_scripts/refreshgodville/refreshgodville.user.js" updateurl="file://$HOME/.config/firefox/gm_scripts/refreshgodville/refreshgodville.user.js">
+		<Grant>window.close</Grant>
+		<Include>https://godville.net/superhero#refresh</Include>
+	</Script>
 </UserScriptConfig>

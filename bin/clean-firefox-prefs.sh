@@ -26,5 +26,6 @@ sed '/idle.lastDailyNotification/d' | \
 sed '/toolkit.startup.last_success/d' | \
 sed '/storage.vacuum.last.places.sqlite/d' | \
 sed '/places.database.lastMaintenance/d' | \
+sed '/extensions.greasemonkey.newscript_namespace/d' | \
 sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
 sed 's|'"$HOME"'|$HOME|g'
