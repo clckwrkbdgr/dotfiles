@@ -16,7 +16,7 @@ def is_avplay_running():
 	return 0 == os.system("ps -x | grep avplay | grep -qv grep")
 
 def is_power_cord_disconnected():
-	return 0 == os.system("upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis")
+	return 0 == os.system("upower -i /org/freedesktop/UPower/devices/DisplayDevice 2>/dev/null | grep state | grep -q dis")
 
 def is_screen_locked():
 	return 0 == os.system("xscreensaver-command -time 2>/dev/null | grep -q 'screen locked since'")
