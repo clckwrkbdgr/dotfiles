@@ -29,5 +29,6 @@ sed '/places.database.lastMaintenance/d' | \
 sed '/extensions.@vkmad.sdk.load.reason/d' | \
 sed '/extensions.firebug.defaultPanelName/d' | \
 sed '/extensions.greasemonkey.newscript_namespace/d' | \
+sed '/extensions.ui.lastCategory/d' | \
 sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
 sed 's|'"$HOME"'|$HOME|g'

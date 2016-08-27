@@ -18,4 +18,8 @@
 		<Grant>window.close</Grant>
 		<Include>https://godville.net/superhero#refresh</Include>
 	</Script>
+	<Script basedir="vk_download_full_album" checkRemoteUpdates="1" dependhash="da39a3ee5e6b4b0d3255bfef95601890afd80709" description="For auto-downloading full albums which have some non-playing tracks" enabled="true" filename="vk_download_full_album.user.js" installTime="0" modified="0" name="vk download full album" namespace="vk" noframes="false" runAt="document-end" updateMetaStatus="unknown" uuid="9960d151-080b-4be9-8cc4-f6a797535971" version="1" installurl="file://$HOME/.config/firefox/gm_scripts/vk_download_full_album/vk_download_full_album.user.js" updateurl="file://$HOME/.config/firefox/gm_scripts/vk_download_full_album/vk_download_full_album.user.js">
+		<Grant>none</Grant>
+		<Include>https://vk.com/*#badger</Include>
+	</Script>
 </UserScriptConfig>
