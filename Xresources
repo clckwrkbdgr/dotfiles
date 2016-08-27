@@ -23,6 +23,8 @@ URxvt*color15:#cccccc
 URxvt*termName: rxvt-unicode-256color
 URxvt*transparent:true
 URxvt*tintColor:#141212
+URxvt.clipboard.autocopy: true
+URxvt.perl-ext-common: selection-to-clipboard
 
 ! XXkb does not use Xresources it seems; these lines should be put to /etc/X11/app-defaults/XXkb
 XXkb.mainwindow.type:  tray
