@@ -174,7 +174,6 @@ user_pref("dom.popup_allowed_events", "change click dblclick mouseup reset submi
 user_pref("experiments.activeExperiment", false);
 user_pref("extensions.@vkmad.sdk.baseURI", "resource://vkmad/");
 user_pref("extensions.@vkmad.sdk.domain", "vkmad");
-user_pref("extensions.@vkmad.sdk.load.reason", "install");
 user_pref("extensions.@vkmad.sdk.rootURI", "jar:file://$HOME/.config/firefox/extensions/@vkmad.xpi!/");
 user_pref("extensions.@vkmad.sdk.version", "1.0.3");
 user_pref("extensions.adblockplus.currentVersion", "2.7.3");
@@ -253,7 +252,6 @@ user_pref("extensions.firebug.DBG_WATCHPROVIDER", false);
 user_pref("extensions.firebug.addonBarOpened", true);
 user_pref("extensions.firebug.console.enableSites", true);
 user_pref("extensions.firebug.currentVersion", "2.0.17");
-user_pref("extensions.firebug.defaultPanelName", "console");
 user_pref("extensions.firebug.net.enableSites", true);
 user_pref("extensions.firebug.previousPlacement", 1);
 user_pref("extensions.firebug.script.enableSites", true);
