@@ -31,6 +31,8 @@
       <property name="&lt;Super&gt;Up" type="string" value="volume up"/>
       <property name="&lt;Super&gt;space" type="string" value="xdg mocp -G"/>
       <property name="&lt;Super&gt;grave" type="string" value="quakestyle urxvt"/>
+      <property name="&lt;Super&gt;e" type="string" value="urxvt"/>
+      <property name="&lt;Super&gt;q" type="string" value="rpg.sh"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
