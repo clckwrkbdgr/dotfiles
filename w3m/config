@@ -90,9 +90,9 @@ emacs_like_lineedit 0
 mark 0
 close_tab_back 0
 confirm_qq 1
-save_hist 1
+save_hist 0
 history 100
-use_history 1
+use_history 0
 pagerline 10000
 visited_color magenta
 visited_anchor 1
