@@ -25,6 +25,7 @@ sed '/extensions.getAddons.cache.lastUpdate/d' | \
 sed '/idle.lastDailyNotification/d' | \
 sed '/toolkit.startup.last_success/d' | \
 sed '/storage.vacuum.last.places.sqlite/d' | \
+sed '/storage.vacuum.last.index/d' | \
 sed '/places.database.lastMaintenance/d' | \
 sed '/extensions.@vkmad.sdk.load.reason/d' | \
 sed '/extensions.firebug.defaultPanelName/d' | \

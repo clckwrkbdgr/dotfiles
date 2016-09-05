@@ -485,7 +485,6 @@ user_pref("services.sync.tabs.lastSyncLocal", "0");
 user_pref("signon.importedFromSqlite", true);
 user_pref("signon.rememberSignons", false);
 user_pref("spellchecker.dictionary", "ru_RU");
-user_pref("storage.vacuum.last.index", 0);
 user_pref("toolkit.telemetry.archive.enabled", false);
 user_pref("toolkit.telemetry.cachedClientID", "1219dda9-1598-46b7-88bf-70843c444c28");
 user_pref("toolkit.telemetry.previousBuildID", "20160608080710");
