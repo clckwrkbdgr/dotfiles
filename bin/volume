@@ -47,18 +47,23 @@ fi
 
 if [ "$SHOW_NOTIFICATION_POPUP" == true ]; then
 	if [ "$STATUS" = '[off]' ]; then
-		ICON=notification-audio-volume-muted
+		ICON=audio-volume-muted
 	elif [ "$VOLUME" -eq 0 ]; then
-		ICON=notification-audio-volume-off
+		ICON=audio-volume-muted
 	elif [ "$VOLUME" -lt 33 ]; then
-		ICON=notification-audio-volume-low
+		ICON=audio-volume-low
 	elif [ "$VOLUME" -lt 66 ]; then
-		ICON=notification-audio-volume-medium
+		ICON=audio-volume-medium
 	else
-		ICON=notification-audio-volume-high
+		ICON=audio-volume-high
 	fi
 	LINE=$(echo $VOLUME | python3 -c 'i=int(input())//5;print("["+"|"*i+"-"*(20-i)+"] ")')
 	LINE="${LINE} ${VOLUME}%"
 
+	# Workaround for xfce4-notifyd: kill previous notification popup to display new one in its place.
+	LAST_NOTIFICATION=$(wmctrl -l | grep xfce4-notifyd | tail -1| awk '{print $1}')
+	if [ -n "$LAST_NOTIFICATION" ]; then
+		xdotool windowkill "$LAST_NOTIFICATION"
+	fi
 	notify-send "Volume" -i "$ICON" "$LINE"
 fi
