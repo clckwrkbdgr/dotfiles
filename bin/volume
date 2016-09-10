@@ -1,16 +1,34 @@
 #!/bin/bash
+current_volume() {
+	if amixer get "$CHANNEL" | grep -q 'Front Left'; then
+		amixer get "$CHANNEL" | sed '/^ *Front\ Left: /{s/^.*\[\(.*\)%\].*/\1/;p;};d;'
+	else
+		amixer get "$CHANNEL" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)%\].*/\1/;p;};d;'
+	fi
+}
+
+current_volume_status() {
+	if amixer get "$CHANNEL" | grep -q 'Front Left'; then
+		amixer get "$CHANNEL" | awk '$2 == "Left:" { print $NF; }'
+	else
+		amixer get "$CHANNEL" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)\]$/\1/;p;};d;'
+	fi
+}
+
 if [ "$1" == "-h" ]; then
 	echo "Usage: volume [-n] { up | down | reset }"
 	echo "    -n  - display notification about volume change (sometimes built-in one does not work)."
 	exit 0
 fi
-
-CHANNEL=Master
-STEP=5%
 if [ "$1" == "-n" ]; then
 	SHOW_NOTIFICATION_POPUP=true
 	shift
 fi
+
+CHANNEL=Master
+STEP=5%
+CURRENT_VOLUME=$(current_volume)
+CURRENT_STATUS=$(current_volume_status)
 
 if [ "$1" == "up" ]; then
 	amixer set "$CHANNEL" $STEP+ >/dev/null
@@ -21,27 +39,23 @@ elif [ "$1" == "reset" ]; then
 	amixer set "$CHANNEL" ${VOLUME}% >/dev/null
 fi
 
-if [ "$SHOW_NOTIFICATION_POPUP" == true ]; then
-	if amixer get "$CHANNEL" | grep -q 'Front Left'; then
-		VOLUME=$(amixer get "$CHANNEL" | sed '/^ *Front\ Left: /{s/^.*\[\(.*\)%\].*/\1/;p;};d;')
-		STATUS=$(amixer get "$CHANNEL" | awk '$2 == "Left:" { print $NF; }')
-	else
-		VOLUME=$(amixer get "$CHANNEL" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)%\].*/\1/;p;};d;')
-		STATUS=$(amixer get "$CHANNEL" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)\]$/\1/;p;};d;')
-	fi
+VOLUME=$(current_volume)
+STATUS=$(current_volume_status)
+if [ "$VOLUME" == "$CURRENT_VOLUME" -a "$STATUS" == "$CURRENT_STATUS" ]; then
+	SHOW_NOTIFICATION_POPUP=false
+fi
 
+if [ "$SHOW_NOTIFICATION_POPUP" == true ]; then
 	if [ "$STATUS" = '[off]' ]; then
 		ICON=notification-audio-volume-muted
+	elif [ "$VOLUME" -eq 0 ]; then
+		ICON=notification-audio-volume-off
+	elif [ "$VOLUME" -lt 33 ]; then
+		ICON=notification-audio-volume-low
+	elif [ "$VOLUME" -lt 66 ]; then
+		ICON=notification-audio-volume-medium
 	else
-		if [ "$VOLUME" -eq 0 ]; then
-			ICON=notification-audio-volume-off
-		elif [ "$VOLUME" -lt 33 ]; then
-			ICON=notification-audio-volume-low
-		elif [ "$VOLUME" -lt 66 ]; then
-			ICON=notification-audio-volume-medium
-		else
-			ICON=notification-audio-volume-high
-		fi
+		ICON=notification-audio-volume-high
 	fi
 	LINE=$(echo $VOLUME | python3 -c 'i=int(input())//5;print("["+"|"*i+"-"*(20-i)+"] ")')
 	LINE="${LINE} ${VOLUME}%"

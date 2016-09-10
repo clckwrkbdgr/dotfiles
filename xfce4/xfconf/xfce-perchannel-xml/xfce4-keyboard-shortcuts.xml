@@ -27,12 +27,12 @@
       <property name="&lt;Super&gt;a" type="string" value="timed-notification"/>
       <property name="&lt;Super&gt;l" type="string" value="lock_ws"/>
       <property name="&lt;Super&gt;Print" type="string" value="xfce4-screenshoter"/>
-      <property name="&lt;Super&gt;Down" type="string" value="volume down"/>
-      <property name="&lt;Super&gt;Up" type="string" value="volume up"/>
       <property name="&lt;Super&gt;space" type="string" value="xdg mocp -G"/>
       <property name="&lt;Super&gt;grave" type="string" value="quakestyle urxvt"/>
       <property name="&lt;Super&gt;e" type="string" value="urxvt"/>
       <property name="&lt;Super&gt;q" type="string" value="rpg.sh"/>
+      <property name="&lt;Super&gt;Down" type="string" value="volume -n down"/>
+      <property name="&lt;Super&gt;Up" type="string" value="volume -n up"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
