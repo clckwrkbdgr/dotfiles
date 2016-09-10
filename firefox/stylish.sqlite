@@ -497,19 +497,6 @@ body {
     background-color: #101010 !important;
 }
 
-    .TwitterCard {
-    background-color: #161616;
-}
-
-    .TwitterCard:hover {
-    background-color: #1B1B1B;
-}
-
-    .TwitterCard .PlayerCard--video .SummaryCard-contentContainer:hover {
-        background-color: #1B1B1B;
-    }
-
-
     .permalink-tweet {
     background-color: #161616 !important;
 }
@@ -1201,12 +1188,16 @@ body.user-style-MeetAnimals {
 }
 
     .t1-label {
-    background-color: #242424 !important;
+    background-color: #161616;
 }
     .t1-legend {
     color: #CCCCCC;
 }
     
+.list-editor .options label b {
+    color: #CCCCCC;
+}
+
 .dm-participant-container {
     border-top: 0px solid #060606 !important;
 }    
@@ -2219,8 +2210,41 @@ input, textarea, div[contenteditable], .t1-select {
     color: #8899A6;
 }
 
+.TwitterCard .MomentCard {
+    background-color: #161616;
+}
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'6d22634976add7dd12eadcffea7b2fb6');
+.TwitterCard .MomentCard:hover {
+    background-color: #1B1B1B;
+}
+
+.TwitterCard .MomentCard-authorName {
+    color: #CCCCCC;
+}
+
+    .TwitterCard {
+    background-color: #161616;
+}
+
+    .TwitterCard:hover {
+    background-color: #1B1B1B;
+}
+
+    .TwitterCard .PlayerCard--video .SummaryCard-contentContainer:hover {
+        background-color: #1B1B1B;
+    }
+
+.t1-legend {
+    border-bottom: 1px solid #060606;
+}
+
+
+
+
+
+
+
+}',1,NULL,'http://userstyles.org/styles/97767',1,'22420337b08f1b1ca458bfba85cb89eb');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -5900,22 +5924,22 @@ INSERT INTO "style_meta" VALUES(5468,34,'domain','kniganews.org');
 INSERT INTO "style_meta" VALUES(5469,34,'domain','unixmanga.net');
 INSERT INTO "style_meta" VALUES(5470,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(5471,34,'type','global');
-INSERT INTO "style_meta" VALUES(5496,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5497,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5498,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5499,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5500,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5501,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5502,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5503,36,'type','site');
 INSERT INTO "style_meta" VALUES(5504,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
 INSERT INTO "style_meta" VALUES(5505,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
 INSERT INTO "style_meta" VALUES(5506,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
 INSERT INTO "style_meta" VALUES(5507,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
 INSERT INTO "style_meta" VALUES(5508,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
 INSERT INTO "style_meta" VALUES(5509,40,'type','site');
+INSERT INTO "style_meta" VALUES(5518,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5519,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5520,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5521,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5522,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5523,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5524,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5525,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',40);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5509);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5525);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
