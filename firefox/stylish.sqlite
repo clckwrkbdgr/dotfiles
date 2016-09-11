@@ -5882,6 +5882,58 @@ td[style="border-right: 1px solid #161616;width:50%;"], td[style="border-right:1
 }
 
 }',1,NULL,'http://userstyles.org/styles/118959',1,'df75db0d1aef277a24f8cf9c5af47002');
+INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("myshows.me") {
+  
+  nav, main, aside {
+    background-color: #111;
+  }
+  .commBlock._hint {
+    background-color: #221;
+    border-color: #221;
+  }
+  .content, .showHeaderMeta, .linkPseudo.cText > span {
+    color: #888;
+    border-color: #888;
+  }
+  nav ul a {
+    color: #555;
+  }
+  .col8 h1, .fsBig, ._borderLeft h3, nav ul a:hover {
+    color: #ccc;
+  }
+  .showHeaderName, .showHeaderMeta {
+    background-color: #111;
+  }
+  .seasonBlockBody table tr:nth-child(2n) {
+    background-color: #151515;  
+  }
+  ._wide {
+    border-color: #222;
+  }
+  .seasonBlockBody, .seasonBlockHeader {
+    border-color: #555;
+  }
+  div.content {
+    background-color: #111;
+  }
+  .stickingBlock li a {
+    border-color: #555 !important;
+  }
+  .stickingBlock li._active {
+    background-color: #333;
+  }
+  .stickingBlock li:not(._active) {
+    background-color: #0f0f0f;
+  }
+  
+  nav::before {
+    background-color: #0f0f0f !important;
+  }
+
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -5938,8 +5990,10 @@ INSERT INTO "style_meta" VALUES(5522,36,'url-prefix','https://twitter.com');
 INSERT INTO "style_meta" VALUES(5523,36,'url-prefix','https://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5524,36,'url-prefix','http://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5525,36,'type','site');
+INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
+INSERT INTO "style_meta" VALUES(5529,41,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',40);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5525);
+INSERT INTO "sqlite_sequence" VALUES('styles',41);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5529);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
