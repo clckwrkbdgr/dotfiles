@@ -360,7 +360,6 @@ user_pref("noscript.visibleUIChecked", true);
 user_pref("pdfjs.migrationVersion", 2);
 user_pref("pdfjs.previousHandler.alwaysAskBeforeHandling", true);
 user_pref("places.history.enabled", false);
-user_pref("places.history.expiration.transient_current_max_pages", 103235);
 user_pref("plugin.disable_full_page_plugin_for_types", "application/pdf");
 user_pref("plugin.importedState", true);
 user_pref("plugin.state.java", 0);

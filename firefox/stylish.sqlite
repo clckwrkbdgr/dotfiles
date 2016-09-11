@@ -5934,6 +5934,46 @@ INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http:
 
 
 }',1,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("kinopoisk.ru") {
+  div#photoInfoTable, #viewFilmInfoWrapper,  #content_block.withBackground, div.response span.date, #footer_wrapper, #block_right .right_pop {
+    background-color: #222;
+  }
+  #content_block[style], #content_block table, td#block_right_wrapper, .vote_export {
+    background-color: #222 !important;
+  }
+  #newMenuSub.clearfix, #viewFilmInfoWrapper #newMenuSub, #viewFilmInfoWrapper #newMenuSub li, #viewFilmInfoWrapper #newMenuSub a {
+    background-color: #222 !important;
+  }
+  div.response, div.response table td, div.response table .brand_words, form.response {
+    background-color: #292929 !important;
+  }
+  .friendsByInterests .top {
+    background-color: #222;
+  }
+  div.bad, div.bad table td, div.bad table .brand_words {
+    background-color: #292020 !important;
+  }
+  div.good, div.good table td, div.good table .brand_words {
+    background-color: #202920 !important;
+  }
+  td.news, form.rating_stars, .criticsRating .title {
+    color: #999;
+  }
+  .info a, #viewFilmInfoWrapper #actorList li a {
+    color: #36b;
+  }
+  #nav_express .express {
+    background-color: #444;
+    background-image: none;
+  }
+  #nav_express .border_left, #nav_express .border_right {
+    background-color: transparent;
+    background-image: none;
+  }
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -5992,8 +6032,10 @@ INSERT INTO "style_meta" VALUES(5524,36,'url-prefix','http://tweetdeck.twitter.c
 INSERT INTO "style_meta" VALUES(5525,36,'type','site');
 INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
+INSERT INTO "style_meta" VALUES(5530,42,'domain','kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(5531,42,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',41);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5529);
+INSERT INTO "sqlite_sequence" VALUES('styles',42);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5531);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
