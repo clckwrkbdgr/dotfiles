@@ -25,6 +25,13 @@ if [ "$1" == "-n" ]; then
 	shift
 fi
 
+LOCK_FILE=/tmp/volume.lock
+while [ -f "$LOCK_FILE" ]; do
+	:
+done
+trap 'rm -f "$LOCK_FILE"' EXIT
+touch "$LOCK_FILE"
+
 CHANNEL=Master
 STEP=5%
 CURRENT_VOLUME=$(current_volume)
@@ -61,9 +68,8 @@ if [ "$SHOW_NOTIFICATION_POPUP" == true ]; then
 	LINE="${LINE} ${VOLUME}%"
 
 	# Workaround for xfce4-notifyd: kill previous notification popup to display new one in its place.
-	LAST_NOTIFICATION=$(wmctrl -l | grep xfce4-notifyd | tail -1| awk '{print $1}')
-	if [ -n "$LAST_NOTIFICATION" ]; then
-		xdotool windowkill "$LAST_NOTIFICATION"
-	fi
-	notify-send "Volume" -i "$ICON" "$LINE"
+	wmctrl -l | grep xfce4-notifyd | awk '{print $1}' | while read wnd_id; do
+		xdotool windowkill "$wnd_id"
+	done
+	notify-send "Volume" -i "$ICON" "$LINE" &
 fi
