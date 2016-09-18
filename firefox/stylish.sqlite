@@ -5961,7 +5961,7 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   td.news, form.rating_stars, .criticsRating .title {
     color: #999;
   }
-  .info a, #viewFilmInfoWrapper #actorList li a {
+  .info a, #viewFilmInfoWrapper #actorList li a, .contentBlock4 .personPageItems .name a {
     color: #36b;
   }
   #nav_express .express {
@@ -6032,10 +6032,10 @@ INSERT INTO "style_meta" VALUES(5524,36,'url-prefix','http://tweetdeck.twitter.c
 INSERT INTO "style_meta" VALUES(5525,36,'type','site');
 INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
-INSERT INTO "style_meta" VALUES(5530,42,'domain','kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(5531,42,'type','site');
+INSERT INTO "style_meta" VALUES(5532,42,'domain','kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(5533,42,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',42);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5531);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5533);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;

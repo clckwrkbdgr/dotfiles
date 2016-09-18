@@ -32,5 +32,6 @@ sed '/extensions.firebug.defaultPanelName/d' | \
 sed '/extensions.greasemonkey.newscript_namespace/d' | \
 sed '/places.history.expiration.transient_current_max_pages/d' | \
 sed '/extensions.ui.lastCategory/d' | \
+sed '/font.internaluseonly.changed/d' | \
 sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
 sed 's|'"$HOME"'|$HOME|g'
