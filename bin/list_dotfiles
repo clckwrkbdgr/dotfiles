@@ -37,6 +37,11 @@ GIT_DOTFILES = """.gitignore
 .gitmodules
 """.splitlines()
 
+FREECIV_DOTFILES = """.freeciv
+.freeciv-client-rc-2.4
+.freeciv-server_history
+""".splitlines()
+
 unknown_files = 0
 is_git = False
 for filename in sorted(os.listdir(".")):
@@ -63,6 +68,9 @@ for filename in sorted(os.listdir(".")):
 		continue
 	if is_git and filename in GIT_DOTFILES:
 		explain_file("git", filename)
+		continue
+	if filename in FREECIV_DOTFILES:
+		explain_file("freeciv", filename)
 		continue
 	explain_file("unknown", filename)
 	unknown_files += 1

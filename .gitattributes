@@ -9,3 +9,4 @@ firefox/prefs.js filter=firefox_pref_js
 firefox/gm_scripts/autoskipper/autoskipper.user.js filter=autoskipper_user_js
 firefox/gm_scripts/config.xml filter=firefox_userscript_config
 purple/prefs.xml filter=pidgin_prefs
+.freeciv-client-rc-2.4 filter=freeciv_rc

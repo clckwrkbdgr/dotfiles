@@ -48,3 +48,7 @@
 [filter "pidgin_prefs"]
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
 	clean = "sed 's|'\"$HOME\"'|$HOME|g;/pref name=.default. type=.int./d'"
+
+[filter "freeciv_rc"]
+	smudge = clean-freeciv-rc.sh --restore
+	clean = clean-freeciv-rc.sh
