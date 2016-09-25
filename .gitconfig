@@ -52,3 +52,7 @@
 [filter "freeciv_rc"]
 	smudge = clean-freeciv-rc.sh --restore
 	clean = clean-freeciv-rc.sh
+
+[filter "openttd_config"]
+	smudge = clean-openttd-cfg.sh --restore
+	clean = clean-openttd-cfg.sh
