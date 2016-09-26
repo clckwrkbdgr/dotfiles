@@ -170,7 +170,7 @@ user_pref("dom.max_script_run_time", 40);
 user_pref("dom.mozApps.used", true);
 user_pref("dom.popup_allowed_events", "change click dblclick mouseup reset submit keypress");
 user_pref("experiments.activeExperiment", false);
-user_pref("extensions.@vkmad.group_download_dir", "$HOME/vk_album");
+user_pref("extensions.@vkmad.group_download_dir", "$HOME/VK_MUSIC/vk_album");
 user_pref("extensions.@vkmad.sdk.baseURI", "resource://vkmad/");
 user_pref("extensions.@vkmad.sdk.domain", "vkmad");
 user_pref("extensions.@vkmad.sdk.rootURI", "jar:file://$HOME/.config/firefox/extensions/@vkmad.xpi!/");
