@@ -33,9 +33,9 @@ inject(function() {
   
   function restartChat() {
     closeCurrentChat();
-    setTimeout(startNewChat, 500);
+    setTimeout(startNewChat, 1000);
   }
-  
+
   $('#chat_close').click(function() {
 		load_responses();
     restartChat();
@@ -244,7 +244,7 @@ var RESPONSES = [
 		}
 		if(msg_event.action == "chat_removed") {
 			if(window.is_first_message) {
-				setTimeout(startNewChat, 500);
+				setTimeout(startNewChat, 1000);
 			} else {
 				soundManager.play('disconnecting');
 			}
