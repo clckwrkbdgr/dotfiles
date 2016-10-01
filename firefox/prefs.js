@@ -174,7 +174,6 @@ user_pref("extensions.@vkmad.group_download_dir", "$HOME/VK_MUSIC/vk_album");
 user_pref("extensions.@vkmad.sdk.baseURI", "resource://vkmad/");
 user_pref("extensions.@vkmad.sdk.domain", "vkmad");
 user_pref("extensions.@vkmad.sdk.rootURI", "jar:file://$HOME/.config/firefox/extensions/@vkmad.xpi!/");
-user_pref("extensions.@vkmad.sdk.version", "2.3.2");
 user_pref("extensions.@vkmad.show_dialog", false);
 user_pref("extensions.@vkmad.show_group_dialog", false);
 user_pref("extensions.@vkmad.single_download_dir", "$HOME");
