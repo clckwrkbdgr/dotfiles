@@ -2238,11 +2238,13 @@ input, textarea, div[contenteditable], .t1-select {
     border-bottom: 1px solid #060606;
 }
 
+.GalleryTweet {
+    background: #161616 none repeat scroll 0% 0%;
+}
 
 
 
-
-}',1,NULL,'http://userstyles.org/styles/97767',1,'681d30e879a85cebe3c9a1d77a812476');
+}',1,NULL,'http://userstyles.org/styles/97767',1,'c03c4b586d89dd1c6ab3bfb8b4c2b655');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -5935,7 +5937,7 @@ INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http:
 INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("kinopoisk.ru") {
-  div#photoInfoTable, #viewFilmInfoWrapper,  #content_block.withBackground, div.response span.date, #footer_wrapper, #block_right .right_pop {
+  html, div#photoInfoTable, #viewFilmInfoWrapper,  #content_block.withBackground, div.response span.date, #footer_wrapper, #block_right .right_pop {
     background-color: #222;
   }
   #content_block[style], #content_block table, td#block_right_wrapper, .vote_export {
@@ -5947,7 +5949,7 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   div.response, div.response table td, div.response table .brand_words, form.response {
     background-color: #292929 !important;
   }
-  .friendsByInterests .top {
+  .friendsByInterests .top, .createNewFolder, #folderList {
     background-color: #222;
   }
   div.bad, div.bad table td, div.bad table .brand_words {
@@ -5956,10 +5958,11 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   div.good, div.good table td, div.good table .brand_words {
     background-color: #202920 !important;
   }
-  td.news, form.rating_stars, .criticsRating .title {
+  td.news, form.rating_stars, .criticsRating .title, .trivsFactBlooper .triviaBlock {
     color: #999;
   }
-  .info a, #viewFilmInfoWrapper #actorList li a, .contentBlock4 .personPageItems .name a {
+  .info a, #viewFilmInfoWrapper #actorList li a, .contentBlock4 .personPageItems .name a, .profile_name b,
+  .dropper .info .name, #folderList a, .trivsFactBlooper .triviaBlock li.trivia a {
     color: #36b;
   }
   #nav_express .express {
@@ -5969,6 +5972,17 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   #nav_express .border_left, #nav_express .border_right {
     background-color: transparent;
     background-image: none;
+  }
+  #top_form {
+    top: auto;
+    height: 200px;
+  }
+  #top {
+    top: auto;
+    height: 55px;
+  }
+  #top .menu, #top .png_block {
+    top: auto;
   }
 
 }',1,NULL,NULL,1,NULL);
@@ -6022,18 +6036,18 @@ INSERT INTO "style_meta" VALUES(5508,40,'regexp','https?://www.google.(com|([a-z
 INSERT INTO "style_meta" VALUES(5509,40,'type','site');
 INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
-INSERT INTO "style_meta" VALUES(5532,42,'domain','kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(5533,42,'type','site');
-INSERT INTO "style_meta" VALUES(5534,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5535,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5536,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5537,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5538,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5539,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5540,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5541,36,'type','site');
+INSERT INTO "style_meta" VALUES(5554,42,'domain','kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(5555,42,'type','site');
+INSERT INTO "style_meta" VALUES(5556,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5557,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5558,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5559,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5560,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5561,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5562,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5563,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',42);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5541);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5563);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
