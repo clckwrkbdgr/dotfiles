@@ -327,7 +327,6 @@ user_pref("general.warnOnAboutConfig", false);
 user_pref("gfx.blacklist.suggested-driver-version", "<Anything with EXT_texture_from_pixmap support>");
 user_pref("gfx.canvas.azure.backends", "skia");
 user_pref("gfx.content.azure.backends", "skia");
-user_pref("gfx.crash-guard.glcontext.appVersion", "45.3.0");
 user_pref("gfx.crash-guard.glcontext.deviceID", "Mesa DRI Intel(R) Ivybridge Mobile x86/MMX/SSE2");
 user_pref("gfx.crash-guard.glcontext.driverVersion", "3.0 Mesa 10.3.2");
 user_pref("gfx.crash-guard.status.glcontext", 2);

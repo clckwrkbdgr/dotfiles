@@ -37,6 +37,7 @@ sed '/browser.sessionstore.upgradeBackup.latestBuildID/d' | \
 sed '/browser.startup.homepage_override.buildID/d' | \
 sed '/gecko.buildID/d' | \
 sed '/media.gmp-manager.buildID/d' | \
+sed '/gfx.crash-guard.glcontext.appVersion/d' | \
 sed '/extensions.[^.]\+.sdk.version/d' | \
 sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
 sed 's|'"$HOME"'|$HOME|g'
