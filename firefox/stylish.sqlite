@@ -5212,7 +5212,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
 /* 
  * Name:    DarkSearch for Google
  * Author:  Nass O
- * Version: 30052016.01
+ * Version: 07102016.01
  */
  
 /* Background */
@@ -5767,60 +5767,10 @@ option {
     color: #A6A6A6!important;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ETC */
+._Qsh {
+color: #c5c5c5!important;
+}
 ._RXc {
     border-bottom: 2px solid #2C2C2C!important	;
 }
@@ -5881,7 +5831,32 @@ td[style="border-right: 1px solid #161616;width:50%;"], td[style="border-right:1
     color: #A6A6A6!important;
 }
 
-}',1,NULL,'http://userstyles.org/styles/118959',1,'df75db0d1aef277a24f8cf9c5af47002');
+/* COmpletion */
+input#lst-ib {
+    background: url("data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw%3D%3D") rgba(34, 34, 34, 0.69)!important;
+}
+
+/* Special Events (euro, world cup, olympics) */
+.oly-drk-txt,.oly-card-ttl,.oly_mbt__hltd-medal-row .oly_mbt__rank {
+    color: rgb(189, 189, 189)!important;
+}
+.oly-ob .oly-card-ttl,.oly_bcl__padding-wrap {
+    background: #161616!important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16)!important;
+}
+.oly-lght-txt {
+    color: rgba(200, 200, 200, 0.54)!important;
+}
+.oly_mbt__hltd-medal-row td,._Dji {
+    background: #1e1e1e!important;
+}
+.oly_mbt__rank {
+    color: rgba(255, 255, 255, 0.54)!important;
+    }
+._cki {
+    color: rgba(169, 169, 169, 0.87)!important;
+}
+}',1,NULL,'http://userstyles.org/styles/118959',1,'08c83633687893dd318f6b6f748920f6');
 INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("myshows.me") {
@@ -6028,12 +6003,6 @@ INSERT INTO "style_meta" VALUES(5468,34,'domain','kniganews.org');
 INSERT INTO "style_meta" VALUES(5469,34,'domain','unixmanga.net');
 INSERT INTO "style_meta" VALUES(5470,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(5471,34,'type','global');
-INSERT INTO "style_meta" VALUES(5504,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(5505,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(5506,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(5507,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(5508,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
-INSERT INTO "style_meta" VALUES(5509,40,'type','site');
 INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
 INSERT INTO "style_meta" VALUES(5554,42,'domain','kinopoisk.ru');
@@ -6046,8 +6015,14 @@ INSERT INTO "style_meta" VALUES(5560,36,'url-prefix','https://twitter.com');
 INSERT INTO "style_meta" VALUES(5561,36,'url-prefix','https://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5562,36,'url-prefix','http://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5563,36,'type','site');
+INSERT INTO "style_meta" VALUES(5564,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO "style_meta" VALUES(5565,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO "style_meta" VALUES(5566,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO "style_meta" VALUES(5567,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO "style_meta" VALUES(5568,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
+INSERT INTO "style_meta" VALUES(5569,40,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',42);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5563);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5569);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
