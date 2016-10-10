@@ -1098,7 +1098,7 @@ body.user-style-MeetAnimals {
 }
 
 .stream-item-header .avatar, .permalink-header .avatar {
-    margin-left: -58px ;
+    margin-left: -58px;
 }
 
 .conversation-module .conversation-tweet-item .stream-item-header .avatar {
@@ -1921,7 +1921,7 @@ li.stream-item.highlighted {
 }
     
     .DMDivider {
-    background-color: #101010;
+    background-color: #050505;
 }
 
 .AdaptiveNewsRelatedHeadlines-headline {
@@ -2144,11 +2144,11 @@ li.stream-item.highlighted {
 }
 
 .RichEditor {
-    border: 1px solid #101010 !important;
+    border: 1px solid #050505 !important;
 }
 
 .tweet-box textarea:focus, .tweet-box input[type="text"], .currently-dragging .tweet-form.is-droppable .tweet-drag-help, .tweet-box[contenteditable="true"]:focus, .RichEditor.is-fakeFocus {
-    border-color: #101010;
+    border-color: #050505;
 }
 
 .TwitterCard .PlayerCard--video .PlayerCard-videoContainer {
@@ -2242,9 +2242,39 @@ input, textarea, div[contenteditable], .t1-select {
     background: #161616 none repeat scroll 0% 0%;
 }
 
+.login-responsive .page-canvas {
+    background-color: #161616;
+}
 
+.login-responsive .mobile, .route-resend-password .mobile, .contact-support {
+    background-color: #242424;
+}
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'c03c4b586d89dd1c6ab3bfb8b4c2b655');
+.signin .remember {
+    color: #CCCCCC;
+}
+  
+  .global-nav--newLoggedOut #signin-dropdown {
+    background-color: #161616;
+    display: block;
+}
+  
+  .SignupCallOut {
+    display: block !important;
+    background-color: #161616;
+    border: 1px solid #050505;
+}
+
+.ProfileSidebar .TweetImpressionsModule, .ProfileSidebar .ProfileLifelineInfo, .ProfileSidebar .RelatedUsers {
+    display: block;
+}
+
+#auto-close p {
+    color:#8899A6;
+    background: #161616 none repeat scroll 0% 0%;
+}
+
+}',1,NULL,'http://userstyles.org/styles/97767',1,'3884a7fa78dbf5734040c872da1f0ae6');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -5492,14 +5522,6 @@ INSERT INTO "style_meta" VALUES(5470,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(5471,34,'type','global');
 INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
-INSERT INTO "style_meta" VALUES(5556,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5557,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5558,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5559,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5560,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5561,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5562,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5563,36,'type','site');
 INSERT INTO "style_meta" VALUES(5570,42,'domain','kinopoisk.ru');
 INSERT INTO "style_meta" VALUES(5571,42,'type','site');
 INSERT INTO "style_meta" VALUES(5572,39,'domain','duckduckgo.com');
@@ -5510,8 +5532,16 @@ INSERT INTO "style_meta" VALUES(5576,40,'regexp','https?://encrypted.google.(com
 INSERT INTO "style_meta" VALUES(5577,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
 INSERT INTO "style_meta" VALUES(5578,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
 INSERT INTO "style_meta" VALUES(5579,40,'type','site');
+INSERT INTO "style_meta" VALUES(5580,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5581,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5582,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5583,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5584,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5585,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5586,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5587,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',42);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5579);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5587);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
