@@ -5532,11 +5532,12 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   div.good, div.good table td, div.good table .brand_words {
     background-color: #202920 !important;
   }
-  td.news, form.rating_stars, .criticsRating .title, .trivsFactBlooper .triviaBlock {
+  td.news, form.rating_stars, .criticsRating .title, .trivsFactBlooper .triviaBlock, .contentBlock4 .info td {
     color: #999;
   }
-  .info a, #viewFilmInfoWrapper #actorList li a, .contentBlock4 .personPageItems .name a, .profile_name b,
-  .dropper .info .name, #folderList a, .trivsFactBlooper .triviaBlock li.trivia a {
+  a.all, .info a, #viewFilmInfoWrapper #actorList li a, .contentBlock4 .personPageItems .name a, .profile_name b,
+  .dropper .info .name, #folderList a, .trivsFactBlooper .triviaBlock li.trivia a, .contentBlock4 .info a,
+  .contentBlock4 #viewPeopleInfoWrapper #BestFilmList li a {
     color: #36b;
   }
   #nav_express .express {
@@ -5570,8 +5571,6 @@ INSERT INTO "style_meta" VALUES(5334,38,'domain','vkontakte.ru');
 INSERT INTO "style_meta" VALUES(5335,38,'type','site');
 INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
-INSERT INTO "style_meta" VALUES(5570,42,'domain','kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(5571,42,'type','site');
 INSERT INTO "style_meta" VALUES(5572,39,'domain','duckduckgo.com');
 INSERT INTO "style_meta" VALUES(5573,39,'type','site');
 INSERT INTO "style_meta" VALUES(5612,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
@@ -5620,8 +5619,10 @@ INSERT INTO "style_meta" VALUES(5654,36,'url-prefix','https://twitter.com');
 INSERT INTO "style_meta" VALUES(5655,36,'url-prefix','https://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5656,36,'url-prefix','http://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5657,36,'type','site');
+INSERT INTO "style_meta" VALUES(5658,42,'domain','kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(5659,42,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',42);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5657);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5659);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
