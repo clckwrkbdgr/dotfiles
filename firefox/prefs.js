@@ -177,7 +177,7 @@ user_pref("extensions.@vkmad.sdk.rootURI", "jar:file://$HOME/.config/firefox/ext
 user_pref("extensions.@vkmad.show_dialog", false);
 user_pref("extensions.@vkmad.show_group_dialog", false);
 user_pref("extensions.@vkmad.single_download_dir", "$HOME/VK_MUSIC");
-user_pref("extensions.adblockplus.currentVersion", "2.7.3");
+user_pref("extensions.adblockplus.currentVersion", "2.8.1");
 user_pref("extensions.adblockplus.lastRuleUpdate", 1398878722);
 user_pref("extensions.adblockplus.patternsbackups", 0);
 user_pref("extensions.classicthemerestorer.aboutprefs", "category-privacy");
