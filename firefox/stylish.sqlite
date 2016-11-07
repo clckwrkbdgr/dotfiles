@@ -2332,7 +2332,7 @@ input, textarea, div[contenteditable], .t1-select {
 
 
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'7246c2d7d471b54e635a047ca8ed3419');
+}',1,NULL,'http://userstyles.org/styles/97767',1,'55574ddb392768c3812a1d2a84cd5d53');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -4245,31 +4245,9 @@ INSERT INTO "styles" VALUES(39,'https://userstyles.org/styles/115912/darkduckgo'
 		/*padding-left: initial !important;*/
 	}
 	
-	.c-info, .c-base, .c-icon, .c-list, .c-product, .c-detail, .zci__main.has-aux, .zci__main--answer, .results, .results--didyas, .results--ads, .zcm-wrap--header {
-    max-width: initial;
-	}
-
-	.results__sidebar {
-			left: 100%;
-			top: -8px;
-			padding-left: 10px;
-	}
-
-	.about-module {
-    	border: 2px solid rgba(150,150,150,0.3);
-	}
-
-	.about-module__title, .about-module__text, .about-info-box__info-label, .about-info-box__info-value {
-    	color: #95A5A6;
-	}
-
-	.about-module__text, .about-info-box__info-value {
-    	color: whitesmoke;
-	}
-	
 	/*Black theme*/
 	.result__url,.result__url:visited,.result__url:active,.result__url:hover,a.result__menu,a.result__menu:hover,a.result__menu:active,a.result__menu:visited,.result--ad .result__url,.result--ad .result__url:hover,.result--ad .result__url:active,.result--ad .result__url:visited,.sponsored__sitelink, .sponsored__sitelink b, .sponsored__sitelink:visited,.sponsored__sitelink:hover {
-		color: #59ABE3;
+		color: #4267a6;
 	}
 	
 	.badge-link, .badge-link__text {
@@ -4781,7 +4759,7 @@ INSERT INTO "styles" VALUES(39,'https://userstyles.org/styles/115912/darkduckgo'
 		color: #181818;
 	}
 
-}',1,NULL,'http://userstyles.org/styles/115912',1,'8d08bfb1a359c09a123fc31fb0903566');
+}',1,NULL,'http://userstyles.org/styles/115912',1,'1fafbdcf3fdc6514bd12a8ef3e7c8e98');
 INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-for-google','https://userstyles.org/styles/118959/darksearch-for-google.css?','https://update.userstyles.org/118959.md5','DarkSearch for Google','@-moz-document regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?."), regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)"), regexp("https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)"), regexp("https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?."), regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\\?.*") {
 /* 
  * Name:    DarkSearch for Google
@@ -5571,8 +5549,6 @@ INSERT INTO "style_meta" VALUES(5334,38,'domain','vkontakte.ru');
 INSERT INTO "style_meta" VALUES(5335,38,'type','site');
 INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
-INSERT INTO "style_meta" VALUES(5572,39,'domain','duckduckgo.com');
-INSERT INTO "style_meta" VALUES(5573,39,'type','site');
 INSERT INTO "style_meta" VALUES(5612,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
 INSERT INTO "style_meta" VALUES(5613,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
 INSERT INTO "style_meta" VALUES(5614,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
@@ -5611,18 +5587,20 @@ INSERT INTO "style_meta" VALUES(5646,34,'domain','kniganews.org');
 INSERT INTO "style_meta" VALUES(5647,34,'domain','unixmanga.net');
 INSERT INTO "style_meta" VALUES(5648,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(5649,34,'type','global');
-INSERT INTO "style_meta" VALUES(5650,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5651,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5652,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5653,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5654,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5655,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5656,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5657,36,'type','site');
 INSERT INTO "style_meta" VALUES(5658,42,'domain','kinopoisk.ru');
 INSERT INTO "style_meta" VALUES(5659,42,'type','site');
+INSERT INTO "style_meta" VALUES(5660,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5661,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5662,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5663,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5664,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5665,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5666,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5667,36,'type','site');
+INSERT INTO "style_meta" VALUES(5668,39,'domain','duckduckgo.com');
+INSERT INTO "style_meta" VALUES(5669,39,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',42);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5659);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5669);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
