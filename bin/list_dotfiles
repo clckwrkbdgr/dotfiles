@@ -17,6 +17,7 @@ HOMEDIR_DOTFILES = """.bashrc
 .local
 .projects
 .haven
+.cloud
 .ssh
 """.splitlines()
 
