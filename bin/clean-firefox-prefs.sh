@@ -29,6 +29,7 @@ sed '/storage.vacuum.last.index/d' | \
 sed '/places.database.lastMaintenance/d' | \
 sed '/extensions.@vkmad.sdk.load.reason/d' | \
 sed '/extensions.firebug.defaultPanelName/d' | \
+sed '/extensions.firebug.previousPlacement/d' | \
 sed '/extensions.greasemonkey.newscript_namespace/d' | \
 sed '/places.history.expiration.transient_current_max_pages/d' | \
 sed '/extensions.ui.lastCategory/d' | \
