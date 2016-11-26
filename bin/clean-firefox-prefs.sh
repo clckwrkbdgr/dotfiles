@@ -39,7 +39,13 @@ sed '/browser.startup.homepage_override.buildID/d' | \
 sed '/gecko.buildID/d' | \
 sed '/media.gmp-manager.buildID/d' | \
 sed '/gfx.crash-guard.glcontext.appVersion/d' | \
-sed '/extensions.firebug.currentVersion/d' | \
+sed '/extensions\..*\.currentVersion/d' | \
+sed '/noscript.version/d' | \
+sed '/extensions.classicthemerestorer.pref_actindx/d' | \
+sed '/devtools.telemetry.tools.opened.version/d' | \
+sed '/devtools.toolbox.selectedTool/d' | \
+sed '/browser.uiCustomization.state/d' | \
+sed '/browser.syncPromoViewsLeftMap/d' | \
 sed '/extensions.[^.]\+.sdk.version/d' | \
 sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
 sed 's|'"$HOME"'|$HOME|g'
