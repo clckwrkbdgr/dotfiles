@@ -41,6 +41,10 @@
 	smudge = clean-firefox-userscripts.sh --restore
 	clean = clean-firefox-userscripts.sh
 
+[filter "firefox_mimetypes"]
+	smudge = cat
+	clean = sort-xml /RDF:RDF/RDF:Description @RDF:about
+
 [filter "expand_homedir"]
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
 	clean = "sed 's|'\"$HOME\"'|$HOME|g'"

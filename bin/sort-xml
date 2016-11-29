@@ -1,0 +1,53 @@
+#!/bin/bash
+if [ "$1" == "--help" -o "$1" == "-h" ]; then
+	echo "Pipe tool to format and sort XML nodes by specific key"
+	echo "Usage: sort-xml <NODE XPATH> <SORT KEY XPATH> [filename]"
+	exit
+fi
+if [ -z "$1" ]; then
+	echo "Sort node is not specified; see --help."
+	exit 1
+fi
+if [ -z "$2" ]; then
+	echo "Sort key is not specified; see --help."
+	exit 1
+fi
+
+XSLT="$(mktemp)"
+SORTITEM="$1"
+SORTKEY="$2"
+XML="$3"
+
+# Store XML content.
+if [ -z "$XML" ]; then
+	XML="$(mktemp)"
+	XML_TO_REMOVE="$XML"
+	cat >"$XML"
+fi
+
+echo '<?xml version="1.0" ?> ' >"$XSLT"
+echo '<xsl:stylesheet version="1.0"' >>"$XSLT"
+echo 'xmlns:xsl="http://www.w3.org/1999/XSL/Transform"' >>"$XSLT"
+cat "$XML" | grep -o 'xmlns:[^=]*=".*"' >>"$XSLT"
+echo '>' >>"$XSLT"
+echo '<xsl:output method="xml" indent="yes"/>' >>"$XSLT"
+echo '<xsl:template match="/*">' >>"$XSLT"
+echo '<xsl:copy select=".">' >>"$XSLT"
+echo '<xsl:copy-of select="@*"/>' >>"$XSLT"
+echo '<xsl:for-each select="'"$SORTITEM"'">' >>"$XSLT"
+echo '<xsl:sort select="'"$SORTKEY"'"/>' >>"$XSLT"
+echo '<xsl:copy-of select="."/>' >>"$XSLT"
+echo '</xsl:for-each>' >>"$XSLT"
+echo '<xsl:apply-templates select="node()"/>' >>"$XSLT"
+echo '</xsl:copy>' >>"$XSLT"
+echo '</xsl:template>' >>"$XSLT"
+echo '<xsl:template match="'"$SORTITEM"'"/>' >>"$XSLT"
+echo '<xsl:template match="node()|@*">' >>"$XSLT"
+echo '<xsl:copy-of select="."/>' >>"$XSLT"
+echo '</xsl:template>' >>"$XSLT"
+echo '</xsl:stylesheet>' >>"$XSLT"
+
+cat "$XML" | xsltproc "$XSLT" - | xmllint --format -
+
+[ -n "$XML_TO_REMOVE" ] && rm -f "$XML_TO_REMOVE"
+rm -f "$XSLT"
