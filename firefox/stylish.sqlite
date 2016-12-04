@@ -5546,6 +5546,55 @@ a, .div_link:hover, .div_link {
 }
 
 }',0,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(44,NULL,'',NULL,'nekto.me','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("nekto.me") {
+
+div#wrapper, .chat, #chat_messages textarea#msg, div.tbl, .tbl, div.text_pole, .text_pole {
+  width: 100% !important;
+}
+#chat_messages {
+  height: 460px;
+}
+
+body, .full_content {
+  background: #000;
+}
+.chat {
+  background: #050505;
+  border: #333 solid 1px;
+  color: #aaa;
+}
+.new_chat {
+  color: #aaa;
+}
+div#send, td#f1 {
+  background: #222;
+  color: #aaa;
+  border: solid 1px #333;
+}
+.op td.c1, .my td.c1, #f3 {
+  background: #050505;
+  color: #aaa;
+}
+.my .c0 {
+  background: #111;
+  color: #999;
+}
+.op .c0 {
+  background: #111;
+  color: #a51;
+}
+
+#header, .nav_header {
+  background-image: none;
+}
+
+div.addthis_toolbox, input#sml_but, p.top_text, div#header_right, #header, .nav_header {
+  display: none;
+}
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -5608,8 +5657,10 @@ INSERT INTO "style_meta" VALUES(5740,42,'domain','kinopoisk.ru');
 INSERT INTO "style_meta" VALUES(5741,42,'type','site');
 INSERT INTO "style_meta" VALUES(5744,43,'domain','godville.net');
 INSERT INTO "style_meta" VALUES(5745,43,'type','site');
+INSERT INTO "style_meta" VALUES(5746,44,'domain','nekto.me');
+INSERT INTO "style_meta" VALUES(5747,44,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',43);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5745);
+INSERT INTO "sqlite_sequence" VALUES('styles',44);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5747);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
