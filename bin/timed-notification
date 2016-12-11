@@ -8,19 +8,44 @@ cleanup_dead_statuses() {
 	done
 }
 
-if [ "$1" == "-q" ]; then
-	[ -r "$STATUS_FILE" ] || exit 0
-	cleanup_dead_statuses
-	cat "$STATUS_FILE"
-	exit 0
-fi
+usage() {
+	echo "Usage:"
+	echo "    $(basename "$0") -q"
+	echo "    $(basename "$0") [-m <message>] [-t <minutes to wait>]"
+}
+
+is_number() {
+	case "$1" in
+		''|*[!0-9]*) return 1 ;;
+		*) return 0 ;;
+	esac
+}
 
 CURRENT_PID=$$
 MINUTES=0
 MESSAGE=
 
+while getopts "qm:t:" arg; do
+	case "$arg" in
+		q)
+			[ -r "$STATUS_FILE" ] || exit 0
+			cleanup_dead_statuses
+			cat "$STATUS_FILE"
+			exit 0
+			;;
+		m) MESSAGE="$OPTARG" ;;
+		t) MINUTES="$OPTARG" ;;
+		*) usage; exit 1 ;;
+	esac
+done
+
+if ! is_number "$MINUTES"; then
+	echo "Minutes arg is not a number!"
+	MINUTES=0
+fi
+
 while [ $MINUTES == 0 ]; do
-	MINUTES=$(zenity --entry --text='Input number of seconds:' --entry-text 5 2>/dev/null)
+	MINUTES=$(zenity --entry --text='Input number of minutes:' --entry-text 5 2>/dev/null)
 	if [  $? != 0 ]; then
 		exit 1
 	fi
