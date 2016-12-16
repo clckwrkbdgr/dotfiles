@@ -224,7 +224,7 @@ INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter
     body {
     background: none repeat scroll 0% 0% #161616;
 }
-        
+
     #char-count {
     border: 0px none !important;
     background: none repeat scroll 0% 0% #242424 !important;    
@@ -1552,6 +1552,8 @@ body.user-style-MeetAnimals {
     color: #CCCCCC;
 }
 
+
+
 .OldMedia-attributionName {
     color: #CCCCCC;
 }
@@ -1897,6 +1899,7 @@ li.stream-item.highlighted {
 
   .ProfilePrefilledTweet .tweet {
     border: 1px solid #050505;  
+    background-color: #161616;
   }
 
 .content-header, .content-no-header {
@@ -2329,10 +2332,52 @@ input, textarea, div[contenteditable], .t1-select {
     box-shadow: 0px 0px 0px #FFF;
 }
 
+.PageContainer {
+    background: transparent;
+}
 
+.Form-textbox, .Button {
+    border: 1px solid #333;
+}
 
+.TopNav {
+    color: #8899A6;
+    background: #242424;
+    border-bottom: 1px solid #050505 !important;
+    box-shadow: 0 0 0px #aaa;
+}
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'55574ddb392768c3812a1d2a84cd5d53');
+.TopNav-title {
+    color: #8899A6;
+}
+
+.content-inner {
+    background-color: #161616 !important;
+}
+
+.field-highlight, .alert {
+    background-color: #333;
+    background-image: none !important;
+}
+
+.alert {
+    text-shadow: 0 0px 0px rgba(255,255,255,0.25);
+}
+
+.Form-textbox:focus {
+    border-color: #444;
+}
+
+.backup-code-display {
+    border: 1px solid #333;
+}
+
+.MomentMakerHomeModule {
+    background-color: #161616;
+    border: 1px solid #050505;
+}
+
+}',1,NULL,'http://userstyles.org/styles/97767',1,'c18f0bf2b1f7b5977e5238d6d34cb45d');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -5605,14 +5650,6 @@ INSERT INTO "style_meta" VALUES(5334,38,'domain','vkontakte.ru');
 INSERT INTO "style_meta" VALUES(5335,38,'type','site');
 INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
-INSERT INTO "style_meta" VALUES(5660,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5661,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5662,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5663,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5664,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5665,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5666,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5667,36,'type','site');
 INSERT INTO "style_meta" VALUES(5668,39,'domain','duckduckgo.com');
 INSERT INTO "style_meta" VALUES(5669,39,'type','site');
 INSERT INTO "style_meta" VALUES(5670,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
@@ -5659,8 +5696,16 @@ INSERT INTO "style_meta" VALUES(5744,43,'domain','godville.net');
 INSERT INTO "style_meta" VALUES(5745,43,'type','site');
 INSERT INTO "style_meta" VALUES(5746,44,'domain','nekto.me');
 INSERT INTO "style_meta" VALUES(5747,44,'type','site');
+INSERT INTO "style_meta" VALUES(5756,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5757,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5758,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5759,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5760,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5761,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5762,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5763,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5747);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5763);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
