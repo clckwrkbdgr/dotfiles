@@ -187,7 +187,6 @@ user_pref("extensions.@vkmad.show_group_dialog", false);
 user_pref("extensions.@vkmad.single_download_dir", "$HOME/VK_MUSIC");
 user_pref("extensions.adblockplus.lastRuleUpdate", 1398878722);
 user_pref("extensions.adblockplus.patternsbackups", 0);
-user_pref("extensions.classicthemerestorer.aboutprefs", "category-search");
 user_pref("extensions.classicthemerestorer.activndicat", true);
 user_pref("extensions.classicthemerestorer.alt_newtabp", true);
 user_pref("extensions.classicthemerestorer.altoptions", "options_win_alt");

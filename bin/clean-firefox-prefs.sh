@@ -43,6 +43,7 @@ sed '/extensions\..*\.currentVersion/d' | \
 sed '/extensions\.last[^.]*Version/d' | \
 sed '/noscript.version/d' | \
 sed '/extensions.classicthemerestorer.pref_actindx/d' | \
+sed '/extensions.classicthemerestorer.aboutprefs/d' | \
 sed '/devtools.telemetry.tools.opened.version/d' | \
 sed '/devtools.toolbox.selectedTool/d' | \
 sed '/browser.uiCustomization.state/d' | \

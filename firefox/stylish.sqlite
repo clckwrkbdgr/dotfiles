@@ -2377,7 +2377,11 @@ input, textarea, div[contenteditable], .t1-select {
     border: 1px solid #050505;
 }
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'c18f0bf2b1f7b5977e5238d6d34cb45d');
+.RichEditor, .TweetBoxAttachments {
+    border-color: #050505 !important;
+}
+
+}',1,NULL,'http://userstyles.org/styles/97767',1,'459b7a187fb60b74525ad0691e4124f7');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -5696,16 +5700,16 @@ INSERT INTO "style_meta" VALUES(5744,43,'domain','godville.net');
 INSERT INTO "style_meta" VALUES(5745,43,'type','site');
 INSERT INTO "style_meta" VALUES(5746,44,'domain','nekto.me');
 INSERT INTO "style_meta" VALUES(5747,44,'type','site');
-INSERT INTO "style_meta" VALUES(5756,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5757,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5758,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5759,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5760,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5761,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5762,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5763,36,'type','site');
+INSERT INTO "style_meta" VALUES(5764,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5765,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5766,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5767,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5768,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5769,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5770,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5771,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5763);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5771);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
