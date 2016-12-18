@@ -169,8 +169,6 @@ user_pref("devtools.storage.enabled", true);
 user_pref("devtools.theme", "dark");
 user_pref("devtools.toolsidebar-width.inspector", 0);
 user_pref("devtools.toolsidebar-width.netmonitor", 0);
-user_pref("devtools.webconsole.filter.", false);
-user_pref("devtools.webconsole.filter.cssparser", true);
 user_pref("dom.allow_scripts_to_close_windows", true);
 user_pref("dom.apps.reset-permissions", true);
 user_pref("dom.max_chrome_script_run_time", 40);

@@ -5519,7 +5519,7 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   html, div#photoInfoTable, #viewFilmInfoWrapper,  #content_block.withBackground, div.response span.date, #footer_wrapper, #block_right .right_pop {
     background-color: #222;
   }
-  #content_block[style], #content_block table, td#block_right_wrapper, .vote_export {
+  #content_block[style], #content_block table, td#block_right_wrapper, .vote_export, select {
     background-color: #222 !important;
   }
   #newMenuSub.clearfix, #viewFilmInfoWrapper #newMenuSub, #viewFilmInfoWrapper #newMenuSub li, #viewFilmInfoWrapper #newMenuSub a {
@@ -5541,14 +5541,25 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   .article__title, .article__lead, #newsTopBox .newsContent, #newsTopBox .article__content h2 {
     color: #999;
   }
+  #block_right table tbody tr td {
+    color: #999 !important;
+  }
   a.all, .info a, #viewFilmInfoWrapper #actorList li a, .contentBlock4 .personPageItems .name a, .profile_name b,
   .dropper .info .name, #folderList a, .trivsFactBlooper .triviaBlock li.trivia a, .contentBlock4 .info a,
-  .contentBlock4 #viewPeopleInfoWrapper #BestFilmList li a, .article__lead a.all, .article__content a.all {
+  .contentBlock4 #viewPeopleInfoWrapper #BestFilmList li a, .article__lead a.all, .article__content a.all,
+  .tenItems .name a, .profile_name a {
     color: #36b;
+  }
+  H1.level2 {
+    color: #36b !important;
   }
   #nav_express .express {
     background-color: #444;
     background-image: none;
+  }
+  div.personal_recom table tbody tr td.news,
+  div.block_left_pad table tbody tr td table tbody tr td table tbody tr td.news {
+    background-color: #444 !important;
   }
   #nav_express .border_left, #nav_express .border_right {
     background-color: transparent;
@@ -5694,8 +5705,6 @@ INSERT INTO "style_meta" VALUES(5736,34,'domain','kniganews.org');
 INSERT INTO "style_meta" VALUES(5737,34,'domain','unixmanga.net');
 INSERT INTO "style_meta" VALUES(5738,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(5739,34,'type','global');
-INSERT INTO "style_meta" VALUES(5740,42,'domain','kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(5741,42,'type','site');
 INSERT INTO "style_meta" VALUES(5744,43,'domain','godville.net');
 INSERT INTO "style_meta" VALUES(5745,43,'type','site');
 INSERT INTO "style_meta" VALUES(5746,44,'domain','nekto.me');
@@ -5708,8 +5717,10 @@ INSERT INTO "style_meta" VALUES(5768,36,'url-prefix','https://twitter.com');
 INSERT INTO "style_meta" VALUES(5769,36,'url-prefix','https://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5770,36,'url-prefix','http://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5771,36,'type','site');
+INSERT INTO "style_meta" VALUES(5772,42,'domain','kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(5773,42,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5771);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5773);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;

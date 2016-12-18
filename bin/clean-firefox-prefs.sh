@@ -48,6 +48,7 @@ sed '/devtools.telemetry.tools.opened.version/d' | \
 sed '/devtools.toolbox.selectedTool/d' | \
 sed '/browser.uiCustomization.state/d' | \
 sed '/browser.syncPromoViewsLeftMap/d' | \
+sed '/devtools.webconsole.filter./d' | \
 sed '/\(gecko\|browser\).*\.mstone/d' | \
 sed '/extensions.[^.]\+.sdk.version/d' | \
 sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
