@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import subprocess
-import datetime
+import datetime, time
 import os
 import sys
 
@@ -27,6 +27,24 @@ def is_idle():
 		return int(idle_time) / 1000 >= 300
 	return False
 
+def toggle_redshift():
+	os.system("pkill -USR1 redshift")
+
+BRIGHTNESS = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
+
+def darken_screen():
+	toggle_redshift()
+	time.sleep(2) # Ugly hack to ensure xrandr darkening without redshift's interfering.
+	for i in reversed(BRIGHTNESS):
+		os.system("xrandr --output eDP1 --brightness {0}".format(i))
+		time.sleep(.5)
+
+def lighten_screen():
+	for i in BRIGHTNESS:
+		os.system("xrandr --output eDP1 --brightness {0}".format(i))
+		time.sleep(.5)
+	toggle_redshift()
+
 # Returns:
 #   None if resting.
 #   float (0.0 ... 1.0) for passed working time if working
@@ -40,6 +58,7 @@ def eyerest():
 		if rest_time >= REST_TIME:
 			os.remove(CURRENT_REST_TIMESTAMP)
 			os.system("notification -t Pomodoro -i gdu-smart-healthy 'Now you can work again.'")
+			lighten_screen()
 		else:
 			return None
 
@@ -66,6 +85,7 @@ def eyerest():
 	passed_time = current_time - last_break_time
 	if passed_time >= WORK_TIME:
 		os.system("notification -t Pomodoro -i gdu-smart-failing 'Take a break!'")
+		darken_screen()
 		os.remove(LAST_BREAK_TIMESTAMP)
 		open(CURRENT_REST_TIMESTAMP, 'w').close()
 		return None
@@ -75,8 +95,16 @@ def eyerest():
 if __name__ == "__main__":
 	args = sys.argv[1:]
 	quiet = False
-	if args and args[0] == '-q':
+	if '-q' in args:
 		quiet = True
+	if '--redshift' in args:
+		toggle_redshift()
+		sys.exit(0)
+	if '-h' in args or '--help' in args:
+		print("Usage: eyerest [-q] [--redshift]")
+		print("   -q  - quiet mode (no text output, only notifications)")
+		print("   --redshift  - toggle redshift on/off (can be used to fix incorrect state)")
+		sys.exit(0)
 
 	status = eyerest()
 
