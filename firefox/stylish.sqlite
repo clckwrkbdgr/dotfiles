@@ -4822,7 +4822,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     /*
      * Name:    DarkSearch for Google
      * Author:  Nass O
-     * Version: v2.1.3
+     * Version: v2.1.5
      */
 
     /* Background */
@@ -4897,7 +4897,11 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     input {
         background-color: #222;
     }
+    /* Auto completion */
+    input#lst-ib.gsfi {
+        background: url(data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw%3D%3D) rgba(34, 34, 34, 0.74)!important;
 
+    }
     /* Header */
     .sfbgg {
         background-color: #151515 !important;
@@ -5078,7 +5082,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     }
 
     /* Dropdown background */
-    .ab_dropdown, .hdtb-mn-o, .hdtb-mn-c, .goog-menu, ._-F, .gstl_50 .sbdd_a, .sbsb_b, .sbdd_b, ._vx, #fsett {
+    .ab_dropdown, .hdtb-mn-o, .hdtb-mn-c, .goog-menu, ._-F, .gstl_50 .sbdd_a, ._vx, #fsett {
         background-color: #222 !important;
         border: 1px solid rgb(38,38,38) !important;
         box-shadow: 0 2px 4px rgba(0,0,0,.2) !important;
@@ -5106,7 +5110,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         background: #222;
     }
     .sbdd_b {
-        border: 1px solid #262626;
+        border: 1px solid #222;
         border-top-color: #2E2E2E;
     }
     .sbsb_d {
@@ -5344,7 +5348,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
 
     /* Translator */
     .tw-lang-selector-wrapper {
-        border: 1px solid #1d1d1d !important;
+        border: none!important;
     }
     .tw-lang-selector {
         color: #8E8E8E !important;
@@ -5361,7 +5365,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     }
     .tw-menu-btn:hover .tw-menu-btn-image:first-child {
         background-color: #1d1d1d !important;
-        border-color: #1d1d1d !important;
+        border-color: #202020 !important;
     }
     .tw-menu-btn {
         /*  opacity: 0.3!important;*/
@@ -5602,7 +5606,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         background: #222;
     }
     .sbib_a:hover, .sbibod:hover {
-        background: #242424;
+        background: #222;
     }
 
     /* New dropdown */
@@ -5806,14 +5810,14 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     ._NRl, ._Fij, ._Fij a, ._jyj, ._Xbe, ._M3k, ._Iqg, ._P8d, ._xkm, ._ywh, ._uRh {
         color: rgba(255,255,255,.87)!important;
     }
-    #brs ._ryh, ._kk, ._bMc, ._D8e, ._Obi, ._Obi a, ._xdb, ._xdb a.fl, a.duf3, ._hap, ._pLp, ._Mnc, ._Jse, span._Gxg, ._Akh, ._wkm, ._jmp, ._zwh, ._vRh, ._LMk {
+    ._OPd._Cnk a, #brs ._ryh, ._kk, ._bMc, ._D8e, ._Obi, ._Obi a, ._xdb, ._xdb a.fl, a.duf3, ._hap, ._pLp, ._Mnc, ._Jse, span._Gxg, ._Akh, ._wkm, ._jmp, ._zwh, ._vRh, ._LMk {
         color: rgba(255,255,255,.54)!important;
     }
     #brs a {
         color: #9BAED2 !important;
     }
     #brs ._kk, ._kk, ._bMc, .mnr-c ._MRj {
-        background-color: #1D1D1D !important;
+        background-color: transparent !important;
     }
     .related-question-pair .nmca, .related-question-pair .nmtbia, .qs-iml, .qs-imr, .qs-ibg, .normal-header ._kk, .g._cy {
         background-color: #101010 !important;
@@ -5857,7 +5861,8 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         color: #C5C5C5!important;
     }
 
-}',1,NULL,'http://userstyles.org/styles/118959',1,'09cb6b9d31e77ba24d36507b975000ee');
+}
+',1,NULL,'http://userstyles.org/styles/118959',1,'713313e24a87519a0e122bf6b20be6a3');
 INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("myshows.me") {
@@ -6110,14 +6115,14 @@ INSERT INTO "style_meta" VALUES(5780,36,'url-prefix','http://tweetdeck.twitter.c
 INSERT INTO "style_meta" VALUES(5781,36,'type','site');
 INSERT INTO "style_meta" VALUES(5802,44,'domain','nekto.me');
 INSERT INTO "style_meta" VALUES(5803,44,'type','site');
-INSERT INTO "style_meta" VALUES(5804,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(5805,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(5806,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(5807,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(5808,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
-INSERT INTO "style_meta" VALUES(5809,40,'type','site');
+INSERT INTO "style_meta" VALUES(5810,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO "style_meta" VALUES(5811,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO "style_meta" VALUES(5812,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO "style_meta" VALUES(5813,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO "style_meta" VALUES(5814,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
+INSERT INTO "style_meta" VALUES(5815,40,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5809);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5815);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
