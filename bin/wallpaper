@@ -1,11 +1,14 @@
 #!/bin/bash
 if [ -z "$1" ]; then
-	echo "Sets specified wallpaper or chooses random from specified directory."
-	echo "Usage: wallpaper { filename | directory }"
+	echo "Sets specified wallpaper or chooses random if multiple files/directories are specified."
+	echo "Usage: wallpaper <file/dir> [<file/dir> ...]"
 	exit 1
 fi
-if [ ! -e "$1" ]; then
-	echo "File $1 is not found!"
+
+WALLPFILE=$(find "$@" -type f | shuf | head -1)
+
+if [ ! -e "$WALLPFILE" ]; then
+	echo "File was not found: $WALLPFILE"
 	exit 1
 fi
 
@@ -17,11 +20,6 @@ for dbusenv in $pid; do
 	data="DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
 	eval " export $data"
 done
-
-WALLPFILE="$1"
-if [ -d "$1" ]; then
-	WALLPFILE=$(find "$1" -type f | shuf | head -1)
-fi
 
 #gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$WALLPFILE"
 #gsettings set org.gnome.desktop.background picture-uri "file://$WALLPFILE"
