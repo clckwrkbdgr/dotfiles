@@ -1,5 +1,80 @@
 <?xml version="1.0"?>
 <RDF:RDF xmlns:NC="http://home.netscape.com/NC-rdf#" xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <RDF:Seq RDF:about="urn:mimetypes:root">
+    <RDF:li RDF:resource="urn:mimetype:application/x-gzip"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-zip"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-bzip2"/>
+    <RDF:li RDF:resource="urn:mimetype:application/zip"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-bittorrent"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-rar-compressed"/>
+    <RDF:li RDF:resource="urn:mimetype:application/pdf"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-generic"/>
+    <RDF:li RDF:resource="urn:mimetype:application/gtar"/>
+    <RDF:li RDF:resource="urn:mimetype:text/html"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-tar"/>
+    <RDF:li RDF:resource="urn:mimetype:text/plain"/>
+    <RDF:li RDF:resource="urn:mimetype:image/vnd.djvu"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-iso9660-image"/>
+    <RDF:li RDF:resource="urn:mimetype:application/text"/>
+    <RDF:li RDF:resource="urn:mimetype:image/png"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-msdownload"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-deb"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-xpinstall"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-debian-package"/>
+    <RDF:li RDF:resource="urn:mimetype:application/vnd.ms-excel"/>
+    <RDF:li RDF:resource="urn:mimetype:text/rtf"/>
+    <RDF:li RDF:resource="urn:mimetype:text/x-python"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-bzip"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-compressed-tar"/>
+    <RDF:li RDF:resource="urn:mimetype:image/jpeg"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-java-archive"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-rar"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-7z-compressed"/>
+    <RDF:li RDF:resource="urn:mimetype:text/x-shellscript"/>
+    <RDF:li RDF:resource="urn:mimetype:text/x-csrc"/>
+    <RDF:li RDF:resource="urn:mimetype:application/download"/>
+    <RDF:li RDF:resource="urn:mimetype:video/mp4"/>
+    <RDF:li RDF:resource="urn:mimetype:unknown/unknown"/>
+    <RDF:li RDF:resource="urn:mimetype:audio/mpeg"/>
+    <RDF:li RDF:resource="urn:mimetype:application/rtf"/>
+    <RDF:li RDF:resource="urn:mimetype:application/java-archive"/>
+    <RDF:li RDF:resource="urn:mimetype:application/gzip"/>
+    <RDF:li RDF:resource="urn:mimetype:audio/x-wav"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-bzip-compressed-tar"/>
+    <RDF:li RDF:resource="urn:mimetype:text/xml"/>
+    <RDF:li RDF:resource="urn:mimetype:application/force-download"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-excel"/>
+    <RDF:li RDF:resource="urn:mimetype:video/x-msvideo"/>
+    <RDF:li RDF:resource="urn:mimetype:application/rar"/>
+    <RDF:li RDF:resource="urn:mimetype:image/gif"/>
+    <RDF:li RDF:resource="urn:mimetype:application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+    <RDF:li RDF:resource="urn:mimetype:message/rfc822"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-dosexec"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-shockwave-flash"/>
+    <RDF:li RDF:resource="urn:mimetype:video/x-flv"/>
+    <RDF:li RDF:resource="urn:mimetype:text/x-chdr"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-wine-extension-biq"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-lzma-compressed"/>
+    <RDF:li RDF:resource="urn:mimetype:audio/x-aac"/>
+    <RDF:li RDF:resource="urn:mimetype:application/msword"/>
+    <RDF:li RDF:resource="urn:mimetype:application/vnd.android.package-archive"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-msdos-program"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-view-source"/>
+    <RDF:li RDF:resource="urn:mimetype:text/x-patch"/>
+    <RDF:li RDF:resource="urn:mimetype:image/pcx"/>
+    <RDF:li RDF:resource="urn:mimetype:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-octetstream"/>
+    <RDF:li RDF:resource="urn:mimetype:image/bmp"/>
+    <RDF:li RDF:resource="urn:mimetype:application/xml"/>
+  </RDF:Seq>
+  <RDF:Seq RDF:about="urn:schemes:root">
+    <RDF:li RDF:resource="urn:scheme:mailto"/>
+    <RDF:li RDF:resource="urn:scheme:irc"/>
+    <RDF:li RDF:resource="urn:scheme:ircs"/>
+    <RDF:li RDF:resource="urn:scheme:webcal"/>
+    <RDF:li RDF:resource="urn:scheme:rtsp"/>
+    <RDF:li RDF:resource="urn:scheme:magnet"/>
+  </RDF:Seq>
   <RDF:Description RDF:about="urn:handler:local:/usr/bin/transmission-gtk" NC:prettyName="transmission-gtk" NC:path="/usr/bin/transmission-gtk"/>
   <RDF:Description RDF:about="urn:handler:web:http://30boxes.com/external/widget?refer=ff&amp;url=%s" NC:prettyName="30 Boxes" NC:uriTemplate="http://30boxes.com/external/widget?refer=ff&amp;url=%s"/>
   <RDF:Description RDF:about="urn:handler:web:http://compose.mail.yahoo.com/?To=%s" NC:prettyName="Yahoo! Mail" NC:uriTemplate="http://compose.mail.yahoo.com/?To=%s"/>
@@ -152,6 +227,11 @@
   <RDF:Description RDF:about="urn:mimetype:application/x-zip" NC:value="application/x-zip" NC:editable="true" NC:description="Zip Archive">
     <NC:handlerProp RDF:resource="urn:mimetype:handler:application/x-zip"/>
   </RDF:Description>
+  <RDF:Description RDF:about="urn:mimetype:application/xml" NC:value="application/xml" NC:editable="true" NC:description="&#x434;&#x43E;&#x43A;&#x443;&#x43C;&#x435;&#x43D;&#x442; XML">
+    <NC:fileExtensions>xml</NC:fileExtensions>
+    <NC:fileExtensions>xsd</NC:fileExtensions>
+    <NC:handlerProp RDF:resource="urn:mimetype:handler:application/xml"/>
+  </RDF:Description>
   <RDF:Description RDF:about="urn:mimetype:application/zip" NC:value="application/zip" NC:editable="true" NC:fileExtensions="zip" NC:description="Zip archive">
     <NC:handlerProp RDF:resource="urn:mimetype:handler:application/zip"/>
   </RDF:Description>
@@ -289,6 +369,9 @@
   </RDF:Description>
   <RDF:Description RDF:about="urn:mimetype:handler:application/x-zip" NC:alwaysAsk="true" NC:saveToDisk="true">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:application/x-zip"/>
+  </RDF:Description>
+  <RDF:Description RDF:about="urn:mimetype:handler:application/xml" NC:alwaysAsk="true" NC:saveToDisk="true">
+    <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:application/xml"/>
   </RDF:Description>
   <RDF:Description RDF:about="urn:mimetype:handler:application/zip" NC:alwaysAsk="true" NC:saveToDisk="true">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:application/zip"/>
@@ -485,78 +568,4 @@
   <RDF:Description RDF:about="urn:schemes">
     <NC:Protocol-Schemes RDF:resource="urn:schemes:root"/>
   </RDF:Description>
-  <RDF:Seq RDF:about="urn:schemes:root">
-    <RDF:li RDF:resource="urn:scheme:mailto"/>
-    <RDF:li RDF:resource="urn:scheme:irc"/>
-    <RDF:li RDF:resource="urn:scheme:ircs"/>
-    <RDF:li RDF:resource="urn:scheme:webcal"/>
-    <RDF:li RDF:resource="urn:scheme:rtsp"/>
-    <RDF:li RDF:resource="urn:scheme:magnet"/>
-  </RDF:Seq>
-  <RDF:Seq RDF:about="urn:mimetypes:root">
-    <RDF:li RDF:resource="urn:mimetype:application/x-gzip"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-zip"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-bzip2"/>
-    <RDF:li RDF:resource="urn:mimetype:application/zip"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-bittorrent"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-rar-compressed"/>
-    <RDF:li RDF:resource="urn:mimetype:application/pdf"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-generic"/>
-    <RDF:li RDF:resource="urn:mimetype:application/gtar"/>
-    <RDF:li RDF:resource="urn:mimetype:text/html"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-tar"/>
-    <RDF:li RDF:resource="urn:mimetype:text/plain"/>
-    <RDF:li RDF:resource="urn:mimetype:image/vnd.djvu"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-iso9660-image"/>
-    <RDF:li RDF:resource="urn:mimetype:application/text"/>
-    <RDF:li RDF:resource="urn:mimetype:image/png"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-msdownload"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-deb"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-xpinstall"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-debian-package"/>
-    <RDF:li RDF:resource="urn:mimetype:application/vnd.ms-excel"/>
-    <RDF:li RDF:resource="urn:mimetype:text/rtf"/>
-    <RDF:li RDF:resource="urn:mimetype:text/x-python"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-bzip"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-compressed-tar"/>
-    <RDF:li RDF:resource="urn:mimetype:image/jpeg"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-java-archive"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-rar"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-7z-compressed"/>
-    <RDF:li RDF:resource="urn:mimetype:text/x-shellscript"/>
-    <RDF:li RDF:resource="urn:mimetype:text/x-csrc"/>
-    <RDF:li RDF:resource="urn:mimetype:application/download"/>
-    <RDF:li RDF:resource="urn:mimetype:video/mp4"/>
-    <RDF:li RDF:resource="urn:mimetype:unknown/unknown"/>
-    <RDF:li RDF:resource="urn:mimetype:audio/mpeg"/>
-    <RDF:li RDF:resource="urn:mimetype:application/rtf"/>
-    <RDF:li RDF:resource="urn:mimetype:application/java-archive"/>
-    <RDF:li RDF:resource="urn:mimetype:application/gzip"/>
-    <RDF:li RDF:resource="urn:mimetype:audio/x-wav"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-bzip-compressed-tar"/>
-    <RDF:li RDF:resource="urn:mimetype:text/xml"/>
-    <RDF:li RDF:resource="urn:mimetype:application/force-download"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-excel"/>
-    <RDF:li RDF:resource="urn:mimetype:video/x-msvideo"/>
-    <RDF:li RDF:resource="urn:mimetype:application/rar"/>
-    <RDF:li RDF:resource="urn:mimetype:image/gif"/>
-    <RDF:li RDF:resource="urn:mimetype:application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
-    <RDF:li RDF:resource="urn:mimetype:message/rfc822"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-dosexec"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-shockwave-flash"/>
-    <RDF:li RDF:resource="urn:mimetype:video/x-flv"/>
-    <RDF:li RDF:resource="urn:mimetype:text/x-chdr"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-wine-extension-biq"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-lzma-compressed"/>
-    <RDF:li RDF:resource="urn:mimetype:audio/x-aac"/>
-    <RDF:li RDF:resource="urn:mimetype:application/msword"/>
-    <RDF:li RDF:resource="urn:mimetype:application/vnd.android.package-archive"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-msdos-program"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-view-source"/>
-    <RDF:li RDF:resource="urn:mimetype:text/x-patch"/>
-    <RDF:li RDF:resource="urn:mimetype:image/pcx"/>
-    <RDF:li RDF:resource="urn:mimetype:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
-    <RDF:li RDF:resource="urn:mimetype:application/x-octetstream"/>
-    <RDF:li RDF:resource="urn:mimetype:image/bmp"/>
-  </RDF:Seq>
 </RDF:RDF>

@@ -43,7 +43,7 @@
 
 [filter "firefox_mimetypes"]
 	smudge = cat
-	clean = sort-xml /RDF:RDF/RDF:Description @RDF:about
+	clean = sort-xml /RDF:RDF/RDF:Description @RDF:about | sort-xml /RDF:RDF/RDF:Seq @RDF:about
 
 [filter "expand_homedir"]
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
