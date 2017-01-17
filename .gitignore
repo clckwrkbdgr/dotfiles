@@ -72,6 +72,7 @@ firefox/cache2
 firefox/safebrowsing
 firefox/firebug/annotations.json
 firefox/firebug/breakpoints.json
+firefox/crashes/store.json.mozlz4
 # Firefox local/share
 firefox/gm_scripts/Display_LaTeX/display-latex.user.js
 firefox/key3.db

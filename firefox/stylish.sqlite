@@ -4822,7 +4822,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     /*
      * Name:    DarkSearch for Google
      * Author:  Nass O
-     * Version: v2.1.5
+     * Version: v2.1.6
      */
 
     /* Background */
@@ -4897,11 +4897,14 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     input {
         background-color: #222;
     }
-    /* Auto completion */
+    
+    /* Auto completion 
     input#lst-ib.gsfi {
         background: url(data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw%3D%3D) rgba(34, 34, 34, 0.74)!important;
 
     }
+    */
+    
     /* Header */
     .sfbgg {
         background-color: #151515 !important;
@@ -4950,7 +4953,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     }
 
     /* Text #BDBDBD */
-    .rreh ._fk, span[style="color:#222"], #center_col ._Ak, #rhs ._Ak, ._i2g, ._g2g, .s, ._cnc, #brs .med, ._Adb, ._tyb, .shop__secondary, .shop__secondary:link, .shop__secondary:visited, ._Lqc, .lc-loc-text, .gko-ctrl, .gko-ctrl:link, .gko-ctrl:visited {
+    .rreh ._fk, span[style="color:#222"], #center_col ._Ak, #rhs ._Ak, ._i2g, ._g2g, .s, ._cnc, #brs .med, ._Adb, ._tyb, .shop__secondary, .shop__secondary:link, .shop__secondary:visited, ._Lqc, .lc-loc-text, .gko-ctrl, .gko-ctrl:link, .gko-ctrl:visited, ._uxi, ._Hxi, ._gah {
         color: #BDBDBD !important;
     }
 
@@ -5123,7 +5126,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         box-shadow: 0 0 5px #0B0B0B !important;
     }
     ._OKe, .rl_item {
-        background: #161616 !important;
+        background: #1c1c1c !important;
     }
     .rg_fbl, .rg_fbl:hover {
         border: 1px solid #2C2C2C !important;
@@ -5861,8 +5864,23 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         color: #C5C5C5!important;
     }
 
+/* Fix for header text and button text on exact size image search tool */
+
+#isz_ex > div > div > div.exydlg > div.exyttl {
+    color: #a3a3a3!important;
 }
-',1,NULL,'http://userstyles.org/styles/118959',1,'713313e24a87519a0e122bf6b20be6a3');
+
+/* Google cards */
+g-card-section {
+    background: #1c1c1c;
+}
+
+/* Button hover in search bar fix */
+.sbibod button:hover {
+    background: #222222!important;
+}
+
+}',1,NULL,'http://userstyles.org/styles/118959',1,'14818f9899f3f0e3698f29f134baf351');
 INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("myshows.me") {
@@ -6113,16 +6131,16 @@ INSERT INTO "style_meta" VALUES(5778,36,'url-prefix','https://twitter.com');
 INSERT INTO "style_meta" VALUES(5779,36,'url-prefix','https://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5780,36,'url-prefix','http://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5781,36,'type','site');
-INSERT INTO "style_meta" VALUES(5802,44,'domain','nekto.me');
-INSERT INTO "style_meta" VALUES(5803,44,'type','site');
-INSERT INTO "style_meta" VALUES(5810,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(5811,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(5812,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(5813,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(5814,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
-INSERT INTO "style_meta" VALUES(5815,40,'type','site');
+INSERT INTO "style_meta" VALUES(5818,44,'domain','nekto.me');
+INSERT INTO "style_meta" VALUES(5819,44,'type','site');
+INSERT INTO "style_meta" VALUES(5820,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO "style_meta" VALUES(5821,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO "style_meta" VALUES(5822,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO "style_meta" VALUES(5823,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO "style_meta" VALUES(5824,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
+INSERT INTO "style_meta" VALUES(5825,40,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5815);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5825);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
