@@ -86,6 +86,7 @@ firefox/formhistory.sqlite
 firefox/permissions.sqlite
 firefox/places.sqlite
 firefox/webappsstore.sqlite
+firefox/downloads.json
 # Purple cache
 purple/accels
 purple/certificates

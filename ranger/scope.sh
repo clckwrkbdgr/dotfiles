@@ -50,7 +50,7 @@ case "$extension" in
 		transmission-show "$path" | head -n $maxln && exit 3
 		success && exit 5 || exit 1;;
 	# HTML Pages:
-	htm|html|xhtml)
+	htm|html|xhtml|vk)
 		have html2mark && html2mark --width "$width" --color "$path" && exit 4
 		have html2text && html2text -width 500 "$path" | head -n $maxln | fmt -s -w $width && exit 4
 		have w3m    && w3m    -dump "$path" | head -n $maxln | fmt -s -w $width && exit 4
