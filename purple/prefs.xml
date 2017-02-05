@@ -358,7 +358,7 @@
 		</pref>
 		<pref name='blist'>
 			<pref name='show_buddy_icons' type='bool' value='1'/>
-			<pref name='show_empty_groups' type='bool' value='0'/>
+			<pref name='show_empty_groups' type='bool' value='1'/>
 			<pref name='show_idle_time' type='bool' value='1'/>
 			<pref name='show_offline_buddies' type='bool' value='1'/>
 			<pref name='show_protocol_icons' type='bool' value='0'/>
