@@ -26,7 +26,7 @@ section#subscribe, section#next, section#difficult, section#also-links, section#
 /* habr & GT */
 div#TMpanel, div.dont-add-our-site-pls, div.lain_13_what_are_you_doing, li.postinfo-panel__item_socials, a.firskill__label,
 div.similar-posts, p.for_users_only_msg, div.live-broadcast, div.columns-group_promo, div.footer_panel, div.similar_questions,
-ul.tabs-menu_habrahabr, div.author-info, div.company_top_banner, div.sidebar_right, div.html_banner_wrap
+ul.tabs-menu_habrahabr, div.author-info, div.company_top_banner, div.sidebar_right, div.html_banner_wrap, div.default-block
 { display: none !important; }
 div.profile-header div.author-info
 { display: initial !important; }
@@ -4834,7 +4834,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     /*
      * Name:    DarkSearch for Google
      * Author:  Nass O
-     * Version: v2.1.7
+     * Version: v2.1.8
      */
 
     /* Background */
@@ -4843,7 +4843,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         color: #c5c5c5;
     }
     /* Inverting colors */
-    .qbh, .s2tb .google-logo, .gb_Vb, #wob_gsp, .gb_Qb, ._kac, #qbi, .ab_icon, .gb_Nb, .gsok_a, ._Fnc, ._Jxg, .stt-uf, ._dVi, .kcb.checked::after, ._gW {
+    .qbh, .s2tb .google-logo, .gb_Vb, #wob_gsp, ._kac, #qbi, .ab_icon, .gsok_a, ._Fnc, ._Jxg, .stt-uf, ._dVi, .kcb.checked::after, ._gW {
         -webkit-filter: invert(1) grayscale(1) !important;
         -moz-filter: invert(1) grayscale(1) !important;
         filter: invert(1) grayscale(1) !important;
@@ -4858,7 +4858,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         -moz-filter: grayscale(.6) !important;
         filter: grayscale(.6) !important;
     }
-    ._n0b, .gb_Xb, ._MNk._wtf svg {
+    ._n0b, ._MNk._wtf svg {
         -webkit-filter: invert(.9) !important;
         -moz-filter: invert(.9) !important;
         filter: invert(.9) !important;
@@ -5255,7 +5255,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     }
 
     /* Sponsored */
-    .flt-actionblock, .commercial-unit-desktop-top, .commercial-unit-desktop-rhs, .pla-unit-container, ._HSb {
+    .flt-actionblock, .commercial-unit-desktop-top, .commercial-unit-desktop-rhs, .pla-unit-container, ._HSb, .commercial-unit-desktop-top, .commercial-unit-desktop-rhs {
         border-color:  #1D1D1D !important;
     }
     ._pbb, a._pbb, ._oc, ._oc .muse-wta, ._oc .richlist-wta, ._oc ._Sb {
@@ -5354,10 +5354,10 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     }
 
     /* Unit converter */
-    ._Ohf {
-        background-color: #101010 !important;
+    ._Ohf, .ccw_unit_selector, .ccw_selector_bg {
+        background: #101010 !important;
     }
-    ._Ohf, ._eif {
+    ._Ohf, ._eif, .ccw_data, .ccw_unit_selector_cnt {
         border-color: #1d1d1d !important;
     }
 
@@ -5558,38 +5558,17 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     }
 
     /* Frontpage Aplications Dropdown */
-    .gb_jb {
-        border-bottom-color: #131313;
-    }
-    .gb_ga, .gb_ja, .gb_Z:hover .gb_4 {
-        background: #212121;
-    }
-    .gb_Z:hover:not(.gb_0) a {
-        border-color: #212121;
-    }
-    .gb_ka {
-        background: #212121;
+    .gb_ka, .gb_ha, .gb_Z:hover .gb_4 {
+        background-color: #212121;
     }
     .gb_la {
-        background-color: #131313;
-        border-bottom: 1px solid #212121;
-    }
-    .gb_ma {
-        border-color: #131313;
-    }
-    .gb_ga {
-        border-color: #343434;
+        background-color: #1d1d1d;
     }
     .gb_kb {
-        border-bottom-color: #343434;
+        border-bottom-color: #212121!important;
     }
-    .gb_Cb:hover {
-        background: #222;
-    }
-    .gb_Bb, .gb_xb {
-        background: #1C1C1C;
-        border-top: 1px solid #555;
-        border-color: #343434;
+    .gb_Z:hover:not(.gb_0) a, .gb_ma {
+        border-color: #333;
     }
     .gb_xb:active {
         background: #343434;
@@ -5597,18 +5576,42 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
     #gb#gb a.gb_O, .gb_ga, .gb_Jb {
         color: #c5c5c5;
     }
-    .gb_Fa {
-        background: #1c1c1c;
-        border: 1px solid #343434;
+    .gb_fa .gb_b {
+        filter: invert(.7);
     }
 
-    /* Google Alerts Dropdown */
-    .gb_rc .gb_jb {
-        border-bottom-color: #131313 !important;
+    /* Google Notifications Dropdown */
+    .gb_zc .gb_kb {
+        border-bottom-color: #212121 !important;
     }
-    #gbsfw.gb_yc {
-        background: #131313 !important;
-        border-color: #252525 !important;
+    #gbsfw.gb_Jc {
+        background: #212121 !important;
+        border-color: #212121 !important;
+    }
+    .gb_Ac.gb_Bc, .gb_Fc.gb_Hc {
+        filter: invert(1) brightness(.9) contrast(.87);
+    }
+
+    /* Google Account Dropdown */
+    .gb_ha, #gb a.gb_Ha.gb_Ha, .gb_Ob, .gb_Rb {
+        color: #c5c5c5 !important;
+    }
+    #gb .gb_rb a.gb_xb.gb_xb { /*My account button fix*/
+        color: #fff !important;
+    }
+    .gb_zb {
+        background-color: #1a1a1a;
+    }
+    .gb_Ha { /*Buttons: Add account&Logout*/
+        background: #222;
+        border-color: #222;
+    }
+    .gb_Cb, .gb_Eb { /* multiLogin listing */
+        background: #212121;
+        border-top-color: #333;
+    }
+    .gb_Db:hover, .gb_Hb:hover { /* multiLogin listing on hover */
+        background: #1d1d1d;
     }
 
     /* Privacy Policy */
@@ -5883,37 +5886,91 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         color: #C5C5C5!important;
     }
 
-/* Fix for header text and button text on exact size image search tool */
+    /* Fix for header text and button text on exact size image search tool */
 
-#isz_ex > div > div > div.exydlg > div.exyttl {
-    color: #a3a3a3!important;
-}
+    #isz_ex > div > div > div.exydlg > div.exyttl {
+        color: #a3a3a3!important;
+    }
 
-/* Google cards */
-g-card-section {
-    background: #1c1c1c;
-}
+    /* Google cards */
+    g-card-section {
+        background: #1c1c1c;
+    }
 
-/* People also ask */
-._qgo {
-    background: #1c1c1c !important;
-    border-top-color: #303030 !important;
-}
+    /* People also ask */
+    ._qgo {
+        background: #1c1c1c !important;
+        border-top-color: #303030 !important;
+    }
 
-/* Animated loading icon */
-g-loading-icon img {
-    -webkit-filter: grayscale(.6) !important;
-    -moz-filter: grayscale(.6) !important;
-    filter: grayscale(.6) !important;
-}
+    /* Animated loading icon */
+    g-loading-icon img {
+        -webkit-filter: grayscale(.6) !important;
+        -moz-filter: grayscale(.6) !important;
+        filter: grayscale(.6) !important;
+    }
 
-/* Button hover in search bar fix */
-.sbibod button:hover {
-    background: #222222!important;
-}
+    /* Button hover in search bar fix */
+    .sbibod button:hover {
+        background: #222!important;
+    }
 
 }
-',1,NULL,'http://userstyles.org/styles/118959',1,'06974a0f5095d87d0437d6cfbef9c7bd');
+@-moz-document regexp("https?://plus.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/_/notifications/frame\\?.*") {
+    /* Google Alerts Dropdown iframe */
+    .aac, .Rzc, .WdjWF, .WpuQke {
+        background-color: #212121;
+    }
+    .vKFgJc, .Ygb, .bxpCne, .tubEcf {
+        filter: invert(1);
+    }
+    .l4a, .f4a, .f4a.tta, .Kza {
+        background-color: #101010;
+    }
+    .Kza:before {
+        border-top-color: #252525;
+    }
+    .Kza:after {
+        border-top-color: #101010;
+    }
+    .Jub, .Hub, .nYXukb, .xQb, .bhsVm {
+        color: #c5c5c5;
+    }
+    .MNn0h, .MNn0h:hover {
+        background: #1d1d1d;
+    }
+    .MNn0h:hover .YGETNc, .MNn0h.RATVS .YGETNc, .y9fV .YGETNc {
+        color: #868686;
+    }
+}
+@-moz-document regexp("https?://notifications.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/widget\\?.*") {
+    /* Google Notifications Dropdown iframe */
+
+    .gV6pJf { /*dropdown background*/
+        background-color: #212121;
+    }
+    .CxSKqd.PNdSh, .CxSKqd.Wj1LYb { /*notification background*/
+        background: #151515;
+    }
+    .iWO9fc .mUbCce svg, .yxaWLe svg, .ajgU6 { /*icons*/
+        fill: rgba(255,255,255,.54);
+    }
+    .iWO9fc .mUbCce:hover svg, .yxaWLe:hover svg { /*icons:hover*/
+        fill: rgba(255,255,255,.87);
+    }
+    .XSVuue { /*logo Google*/
+        fill: rgba(255,255,255,.26);
+    }
+    .v7k2xf, .v7k2xf, .gMG7Fd, .wh73ab { /*text*/
+        color: rgba(255,255,255,.87);
+    }
+    .OlDqke, .Vz68Kb { /*subtext*/
+        color: rgba(255,255,255,.54);
+    }
+    .fEjTrb, .jvWPmb.qs41qe .fEjTrb { /*footer-bar*/
+        background-color: #1d1d1d;
+    }
+}',1,NULL,'http://userstyles.org/styles/118959',1,'3435f1eb110ccb375e500e40c92e980e');
 INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("myshows.me") {
@@ -6120,38 +6177,6 @@ INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
 INSERT INTO "style_meta" VALUES(5668,39,'domain','duckduckgo.com');
 INSERT INTO "style_meta" VALUES(5669,39,'type','site');
-INSERT INTO "style_meta" VALUES(5708,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(5709,34,'domain','geektimes.ru');
-INSERT INTO "style_meta" VALUES(5710,34,'domain','habrahabr.ru');
-INSERT INTO "style_meta" VALUES(5711,34,'domain','smartfiction.ru');
-INSERT INTO "style_meta" VALUES(5712,34,'domain','chatvdvoem.ru');
-INSERT INTO "style_meta" VALUES(5713,34,'url','http://forums.roguetemple.com/irldb/');
-INSERT INTO "style_meta" VALUES(5714,34,'domain','www.kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(5715,34,'domain','linux.org.ru');
-INSERT INTO "style_meta" VALUES(5716,34,'domain','livejournal.com');
-INSERT INTO "style_meta" VALUES(5717,34,'domain','pastebin.com');
-INSERT INTO "style_meta" VALUES(5718,34,'domain','3dnews.ru');
-INSERT INTO "style_meta" VALUES(5719,34,'domain','kniganews.org');
-INSERT INTO "style_meta" VALUES(5720,34,'domain','unixmanga.net');
-INSERT INTO "style_meta" VALUES(5721,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(5722,34,'domain','nplus1.ru');
-INSERT INTO "style_meta" VALUES(5723,34,'domain','geektimes.ru');
-INSERT INTO "style_meta" VALUES(5724,34,'domain','habrahabr.ru');
-INSERT INTO "style_meta" VALUES(5725,34,'domain','smartfiction.ru');
-INSERT INTO "style_meta" VALUES(5726,34,'domain','24types.ru');
-INSERT INTO "style_meta" VALUES(5727,34,'domain','aspergers.ru');
-INSERT INTO "style_meta" VALUES(5728,34,'domain','bash.im');
-INSERT INTO "style_meta" VALUES(5729,34,'domain','candies.aniwey.net');
-INSERT INTO "style_meta" VALUES(5730,34,'domain','chatvdvoem.ru');
-INSERT INTO "style_meta" VALUES(5731,34,'domain','icq.com');
-INSERT INTO "style_meta" VALUES(5732,34,'domain','lib.ru');
-INSERT INTO "style_meta" VALUES(5733,34,'domain','knjazna.livejournal.com');
-INSERT INTO "style_meta" VALUES(5734,34,'domain','codeofhonor.com');
-INSERT INTO "style_meta" VALUES(5735,34,'domain','3dnews.ru');
-INSERT INTO "style_meta" VALUES(5736,34,'domain','kniganews.org');
-INSERT INTO "style_meta" VALUES(5737,34,'domain','unixmanga.net');
-INSERT INTO "style_meta" VALUES(5738,34,'domain','instead.syscall.ru');
-INSERT INTO "style_meta" VALUES(5739,34,'type','global');
 INSERT INTO "style_meta" VALUES(5744,43,'domain','godville.net');
 INSERT INTO "style_meta" VALUES(5745,43,'type','site');
 INSERT INTO "style_meta" VALUES(5772,42,'domain','kinopoisk.ru');
@@ -6166,14 +6191,48 @@ INSERT INTO "style_meta" VALUES(5876,36,'url-prefix','https://twitter.com');
 INSERT INTO "style_meta" VALUES(5877,36,'url-prefix','https://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5878,36,'url-prefix','http://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5879,36,'type','site');
-INSERT INTO "style_meta" VALUES(5880,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(5881,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(5882,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(5883,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(5884,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
-INSERT INTO "style_meta" VALUES(5885,40,'type','site');
+INSERT INTO "style_meta" VALUES(5893,34,'domain','computerra.ru');
+INSERT INTO "style_meta" VALUES(5894,34,'domain','geektimes.ru');
+INSERT INTO "style_meta" VALUES(5895,34,'domain','habrahabr.ru');
+INSERT INTO "style_meta" VALUES(5896,34,'domain','smartfiction.ru');
+INSERT INTO "style_meta" VALUES(5897,34,'domain','chatvdvoem.ru');
+INSERT INTO "style_meta" VALUES(5898,34,'url','http://forums.roguetemple.com/irldb/');
+INSERT INTO "style_meta" VALUES(5899,34,'domain','www.kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(5900,34,'domain','linux.org.ru');
+INSERT INTO "style_meta" VALUES(5901,34,'domain','livejournal.com');
+INSERT INTO "style_meta" VALUES(5902,34,'domain','pastebin.com');
+INSERT INTO "style_meta" VALUES(5903,34,'domain','3dnews.ru');
+INSERT INTO "style_meta" VALUES(5904,34,'domain','kniganews.org');
+INSERT INTO "style_meta" VALUES(5905,34,'domain','unixmanga.net');
+INSERT INTO "style_meta" VALUES(5906,34,'domain','computerra.ru');
+INSERT INTO "style_meta" VALUES(5907,34,'domain','nplus1.ru');
+INSERT INTO "style_meta" VALUES(5908,34,'domain','geektimes.ru');
+INSERT INTO "style_meta" VALUES(5909,34,'domain','habrahabr.ru');
+INSERT INTO "style_meta" VALUES(5910,34,'domain','smartfiction.ru');
+INSERT INTO "style_meta" VALUES(5911,34,'domain','24types.ru');
+INSERT INTO "style_meta" VALUES(5912,34,'domain','aspergers.ru');
+INSERT INTO "style_meta" VALUES(5913,34,'domain','bash.im');
+INSERT INTO "style_meta" VALUES(5914,34,'domain','candies.aniwey.net');
+INSERT INTO "style_meta" VALUES(5915,34,'domain','chatvdvoem.ru');
+INSERT INTO "style_meta" VALUES(5916,34,'domain','icq.com');
+INSERT INTO "style_meta" VALUES(5917,34,'domain','lib.ru');
+INSERT INTO "style_meta" VALUES(5918,34,'domain','knjazna.livejournal.com');
+INSERT INTO "style_meta" VALUES(5919,34,'domain','codeofhonor.com');
+INSERT INTO "style_meta" VALUES(5920,34,'domain','3dnews.ru');
+INSERT INTO "style_meta" VALUES(5921,34,'domain','kniganews.org');
+INSERT INTO "style_meta" VALUES(5922,34,'domain','unixmanga.net');
+INSERT INTO "style_meta" VALUES(5923,34,'domain','instead.syscall.ru');
+INSERT INTO "style_meta" VALUES(5924,34,'type','global');
+INSERT INTO "style_meta" VALUES(5925,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO "style_meta" VALUES(5926,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO "style_meta" VALUES(5927,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO "style_meta" VALUES(5928,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO "style_meta" VALUES(5929,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
+INSERT INTO "style_meta" VALUES(5930,40,'regexp','https?://plus.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/_/notifications/frame\?.*');
+INSERT INTO "style_meta" VALUES(5931,40,'regexp','https?://notifications.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/widget\?.*');
+INSERT INTO "style_meta" VALUES(5932,40,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5885);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5932);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
