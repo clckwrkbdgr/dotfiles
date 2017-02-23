@@ -270,7 +270,6 @@ user_pref("extensions.greasemonkey.haveInsertedToolbarbutton", true);
 user_pref("extensions.greasemonkey.menuCommanderEventNameSuffix", "UABMGYRWDOWCT5UAY2RO7QB6BX3WFQ4C");
 user_pref("extensions.greasemonkey.sortBy", "executionIndex");
 user_pref("extensions.greasemonkey.stats.prompted", true);
-user_pref("extensions.greasemonkey.version", "3.9");
 user_pref("extensions.jid1-4P0kohSJxU1qGg@jetpack.sdk.console.logLevel", "warn");
 user_pref("extensions.liberator.privacy.cpd.commandLine", false);
 user_pref("extensions.liberator.privacy.cpd.macros", false);
