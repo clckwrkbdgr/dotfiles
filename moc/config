@@ -37,6 +37,7 @@ ASCIILines		= no
 Softmixer_SaveState = no
 Equalizer_SaveState = no
 
+MusicDir = ${FastDir1}
 
 TagsCacheSize		= 256
 
