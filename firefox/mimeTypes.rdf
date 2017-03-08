@@ -439,7 +439,7 @@
   <RDF:Description RDF:about="urn:mimetype:handler:video/mp4" NC:alwaysAsk="true" NC:saveToDisk="true">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:video/mp4"/>
   </RDF:Description>
-  <RDF:Description RDF:about="urn:mimetype:handler:video/x-flv" NC:alwaysAsk="true" NC:saveToDisk="true">
+  <RDF:Description RDF:about="urn:mimetype:handler:video/x-flv" NC:alwaysAsk="true" NC:useSystemDefault="true" NC:saveToDisk="false">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:video/x-flv"/>
   </RDF:Description>
   <RDF:Description RDF:about="urn:mimetype:handler:video/x-msvideo" NC:alwaysAsk="true" NC:saveToDisk="true">
@@ -512,7 +512,7 @@
   <RDF:Description RDF:about="urn:mimetype:video/mp4" NC:value="video/mp4" NC:editable="true" NC:fileExtensions="mp4" NC:description="MPEG-4 video">
     <NC:handlerProp RDF:resource="urn:mimetype:handler:video/mp4"/>
   </RDF:Description>
-  <RDF:Description RDF:about="urn:mimetype:video/x-flv" NC:value="video/x-flv" NC:editable="true" NC:fileExtensions="flv" NC:description="Flash video">
+  <RDF:Description RDF:about="urn:mimetype:video/x-flv" NC:fileExtensions="flv" NC:description="Flash video" NC:value="video/x-flv" NC:editable="true">
     <NC:handlerProp RDF:resource="urn:mimetype:handler:video/x-flv"/>
   </RDF:Description>
   <RDF:Description RDF:about="urn:mimetype:video/x-msvideo" NC:value="video/x-msvideo" NC:editable="true" NC:fileExtensions="avi" NC:description="Audio Video Interleave - Microsoft">
