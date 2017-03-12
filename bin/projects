@@ -132,12 +132,18 @@ addlocal() {
 	REPO_STORAGE_PATH="${1}"
 	if [ -z "$REPO_STORAGE_PATH" ]; then
 		echo "Repo storage path is missing"
-		echo "Usage: projects addlocal <repo local storage path>"
+		echo "Usage: projects addlocal <repo local storage path>[/<repo name>[.git]]"
 		return 1
 	fi
 	REPO_STORAGE_PATH="${REPO_STORAGE_PATH%%/}"
-	ROOTDIR=$(git rev-parse --show-toplevel)
-	NAME="$(basename "$ROOTDIR")"
+	if [ ! -e "$REPO_STORAGE_PATH" ]; then
+		NAME="$(basename "$REPO_STORAGE_PATH")"
+		NAME=${NAME%%.git}
+		REPO_STORAGE_PATH="$(dirname "$REPO_STORAGE_PATH")"
+	else
+		ROOTDIR=$(git rev-parse --show-toplevel)
+		NAME="$(basename "$ROOTDIR")"
+	fi
 	NEW_REMOTE_PATH="$REPO_STORAGE_PATH/${NAME}.git"
 	if [ -e "$NEW_REMOTE_PATH" ]; then
 		echo "Remote path '$1' already exists."
