@@ -121,6 +121,37 @@ push() {
 	done
 }
 
+# Creates Git bare repository in local filesystem and adds it as a remote to current repo.
+addlocal() {
+	LOCAL_REMOTE_NAME='local'
+	if git remote | grep -q "^${LOCAL_REMOTE_NAME}$"; then
+		echo "Git remote named '$LOCAL_REMOTE_NAME' is already added to this repo:"
+		git remote -v
+		return 1
+	fi
+	REPO_STORAGE_PATH="${1}"
+	if [ -z "$REPO_STORAGE_PATH" ]; then
+		echo "Repo storage path is missing"
+		echo "Usage: projects addlocal <repo local storage path>"
+		return 1
+	fi
+	REPO_STORAGE_PATH="${REPO_STORAGE_PATH%%/}"
+	ROOTDIR=$(git rev-parse --show-toplevel)
+	NAME="$(basename "$ROOTDIR")"
+	NEW_REMOTE_PATH="$REPO_STORAGE_PATH/${NAME}.git"
+	if [ -e "$NEW_REMOTE_PATH" ]; then
+		echo "Remote path '$1' already exists."
+		return 1
+	fi
+	echo -n "Add new bare repo at $NEW_REMOTE_PATH? "
+	read answer
+	if [ "$answer" == "y" ]; then
+		git init --bare "$NEW_REMOTE_PATH"
+		git remote add "$LOCAL_REMOTE_NAME" "$NEW_REMOTE_PATH"
+		git push "$LOCAL_REMOTE_NAME" master --tags
+	fi
+}
+
 COMMAND="$1"
 shift
 case "$COMMAND" in
@@ -128,4 +159,5 @@ case "$COMMAND" in
 	"version") version "$@" ;;
 	"status") status "$@" ;;
 	"push") push "$@" ;;
+	"addlocal") addlocal "$@" ;;
 esac
