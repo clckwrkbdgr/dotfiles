@@ -103,3 +103,7 @@ purple/status.xml
 .freeciv/saves
 # OpenTTD
 openttd/hs.dat
+# SVN
+subversion/README.txt
+subversion/servers
+
