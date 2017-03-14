@@ -116,6 +116,7 @@ push() {
 		if git st | grep -q 'Your branch is ahead of'; then
 			echo -e "\033[1;31m$D\033[0m"
 			git push origin master --tags
+			git remote | grep -q local && git push local master --tags
 		fi
 		popd >/dev/null
 	done
