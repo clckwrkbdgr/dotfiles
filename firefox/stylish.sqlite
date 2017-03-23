@@ -2410,8 +2410,84 @@ input, textarea, div[contenteditable], .t1-select {
     background-color: #161616;
 }
 
+.Banner {  background-color: #333;
+}
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'0318675a47522317e3ef54ccae89b89f');
+
+    .MomentCapsuleCover-title {
+    color: #CCCCCC;
+    }
+.MomentCapsuleCover-description {
+    color: #CCCCCC;
+    }
+.u-textUserColor, .u-textUserColorHover:hover, .u-textUserColorHover:hover .ProfileTweet-actionCount, .u-textUserColorHover:focus {
+    color: #8899A6 !important;
+    }
+    .MomentButton--blue:active, .MomentButton--blue:hover {
+    color: #ccc;
+    border-color: #333;
+    }
+        .MomentButton--blue:active, .MomentButton--blue {
+    color: #ccc;
+    border-color: #333;
+    }
+    .MomentFloatingMenu {
+    background-color: #161616;
+    border: 1px solid #000;
+    }
+    .MomentButton--gray, .MomentButton--gray:focus {
+    color: #8899A6;
+    }
+    .MomentCapsuleCover-media {
+    border-bottom: 1px solid #333;
+    }
+    .MomentFormatLink-anchor:focus, .MomentFormatLink-anchor:hover {
+    background-color: #1B1B1B;
+    border-color: #333;
+    }
+        .MomentFormatLink-anchor:active, .MomentFormatLink-anchor:focus, .MomentFormatLink-anchor {
+    background-color: #161616;
+    border-color: #333;
+    }
+.MomentFormatLink--withText .MomentFormatLink-anchor:active, .MomentFormatLink--withText .MomentFormatLink-anchor:focus, .MomentFormatLink--withText .MomentFormatLink-anchor:hover {
+    background-color: #1B1B1B;
+    }
+    .MomentFormatLink-title, .MomentFormatLink-description {
+    color: #CCCCCC;
+    }
+    .MomentCapsuleItemTweet--withText {
+    background-color: #161616;
+    }
+    .MomentCapsuleSummary-title {
+    color: #CCCCCC;
+    }
+    .MomentCapsuleSummary-description {
+    color: #CCCCCC;
+    }
+    .MomentsPermalinkPage-related {
+    border-top: 1px solid #333;
+    }
+    .MomentUserByline-fullname {
+    color: #CCCCCC;
+    }
+    .WhoToFollow {
+    background-color: #161616;
+    border: 1px solid #000;
+    }
+    .Tombstone {
+    background-color: #161616;
+    border: 1px solid #333;
+        color: #CCCCCC;
+    }
+    .ThreadedConversation-moreReplies {
+        background-color: #161616;
+    }
+.QuoteTweet .tweet-content, .QuoteTweet-text a, .QuoteTweet-text a:hover, .QuoteTweet-text a:focus, .QuoteTweet-text a:active, .QuoteTweet-text .pretty-link b, .QuoteTweet-text .pretty-link s, .QuoteTweet-text .pretty-link:hover b, .QuoteTweet-text .pretty-link:hover s, .QuoteTweet-text .pretty-link:focus b, .QuoteTweet-text .pretty-link:focus s, .QuoteTweet-text .pretty-link:active b, .QuoteTweet-text .pretty-link:active s {
+    color: #CCCCCC;
+}
+
+
+}',1,NULL,'http://userstyles.org/styles/97767',1,'2678ca5d7d1f666266ac7073e1809662');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -6232,16 +6308,16 @@ INSERT INTO "style_meta" VALUES(5929,40,'regexp','https?://www.google.(com|([a-z
 INSERT INTO "style_meta" VALUES(5930,40,'regexp','https?://plus.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/_/notifications/frame\?.*');
 INSERT INTO "style_meta" VALUES(5931,40,'regexp','https?://notifications.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/widget\?.*');
 INSERT INTO "style_meta" VALUES(5932,40,'type','site');
-INSERT INTO "style_meta" VALUES(5933,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5934,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5935,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5936,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5937,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5938,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5939,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5940,36,'type','site');
+INSERT INTO "style_meta" VALUES(5941,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5942,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5943,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5944,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5945,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5946,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5947,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5948,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5940);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5948);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
