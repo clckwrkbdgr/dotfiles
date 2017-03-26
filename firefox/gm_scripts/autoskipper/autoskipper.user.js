@@ -239,7 +239,10 @@ var RESPONSES = [
 		// {"action":"message_from_user","sender":"someone","message":"Чот все сонные такие","from":"e41775e2b1dcb4f636a2f765fa6dace5","chat":"1463935602711c3935"}
 		// {"action":"user_writing","from":"e41775e2b1dcb4f636a2f765fa6dace5","chat":"1463935602711c3935"}
 		// {"action":"chat_removed","reason":"user_leaved","chat":"1463935602711c3935"}
-    if(msg_event.action == "user_connected") {
+    if(msg_event.action == "captcha_required") {
+		soundManager.play('disconnecting');
+	}
+    if(msg_event.action == "chat_connected") {
 			window.is_first_message = true;
 			window.now_we_are_talking = false;
 			setTimeout(advance_waiting_timer, 1000);
