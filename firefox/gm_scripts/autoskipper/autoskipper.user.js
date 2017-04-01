@@ -41,6 +41,12 @@ inject(function() {
     restartChat();
   });
 
+/* Basic responses are now should be loaded from local file.
+ * File should contains text lines, each line should represent a valid JS regexp object (e.g.: /hello/i).
+ * Empty lines are ignored.
+ * Local storage should be available (set cookies for https://chatvdvoem.ru).
+ */
+
 	var RESTART_CHAT_TIMEOUT = '5'; // seconds.
 var RESPONSES = [
 		[ undefined, [
@@ -199,12 +205,32 @@ var RESPONSES = [
 				var pattern_count = parse_responses(file_event.target.result);
 				console.log("Loaded " + pattern_count + " patterns.");
 				window.CACHED = file_event.target.result;
+				try {
+					window.localStorage.setItem('responses', file_event.target.result);
+					console.log("Saved cached patterns to local storage.");
+				} catch(err) {
+					alert("Error during saving local storage: " + err);
+					console.log(err);
+				}
 			} catch(err) {
 				alert("Error during loading responses text: " + err);
 			}
-		} else if(window.CACHED != undefined) {
-			parse_responses(window.CACHED);
-			console.log("Reloaded cached patterns.");
+		} else {
+			var cached = null;
+			try {
+				cached = window.localStorage.getItem('responses');
+				console.log("Reloaded cached patterns from local storage.");
+			} catch(err) {
+				alert("Error during loading local storage: " + err);
+				console.log(err);
+			}
+			if(cached != null) {
+				parse_responses(cached);
+				window.CACHED = cached;
+			} else if(window.CACHED != undefined) {
+				parse_responses(window.CACHED);
+				console.log("Reloaded cached patterns.");
+			}
 		}
 	}
 
