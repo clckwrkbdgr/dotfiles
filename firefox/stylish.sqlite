@@ -850,10 +850,6 @@ input:focus, textarea:focus, div[contenteditable="true"]:focus, div[contentedita
     border-left: 1px solid rgb(1, 1, 1)!important;
 }
 
-.module .flex-module {
-    border: 0px solid rgb(5, 2, 7)!important;
-}
-
 .dashboard .stats {
     border: 0px solid rgb(5, 2, 7)!important;
 }
@@ -2486,8 +2482,18 @@ input, textarea, div[contenteditable], .t1-select {
     color: #CCCCCC;
 }
 
+.recap-header {
+    border-bottom: 1px solid #050505;
+    color: #CCCCCC;
+}
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'2678ca5d7d1f666266ac7073e1809662');
+.module .flex-module {
+    border: none !important;
+    background-color: #161616 !important;
+}
+
+
+}',1,NULL,'http://userstyles.org/styles/97767',1,'f1f0cd08c02b2c3edf24c2995100b6d2');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -6264,8 +6270,6 @@ INSERT INTO "style_meta" VALUES(5668,39,'domain','duckduckgo.com');
 INSERT INTO "style_meta" VALUES(5669,39,'type','site');
 INSERT INTO "style_meta" VALUES(5744,43,'domain','godville.net');
 INSERT INTO "style_meta" VALUES(5745,43,'type','site');
-INSERT INTO "style_meta" VALUES(5772,42,'domain','kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(5773,42,'type','site');
 INSERT INTO "style_meta" VALUES(5818,44,'domain','nekto.me');
 INSERT INTO "style_meta" VALUES(5819,44,'type','site');
 INSERT INTO "style_meta" VALUES(5893,34,'domain','computerra.ru');
@@ -6308,16 +6312,18 @@ INSERT INTO "style_meta" VALUES(5929,40,'regexp','https?://www.google.(com|([a-z
 INSERT INTO "style_meta" VALUES(5930,40,'regexp','https?://plus.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/_/notifications/frame\?.*');
 INSERT INTO "style_meta" VALUES(5931,40,'regexp','https?://notifications.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/widget\?.*');
 INSERT INTO "style_meta" VALUES(5932,40,'type','site');
-INSERT INTO "style_meta" VALUES(5941,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5942,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5943,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5944,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5945,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5946,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5947,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5948,36,'type','site');
+INSERT INTO "style_meta" VALUES(5951,42,'domain','kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(5952,42,'type','site');
+INSERT INTO "style_meta" VALUES(5953,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5954,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5955,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5956,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5957,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5958,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5959,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5960,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5948);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5960);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
