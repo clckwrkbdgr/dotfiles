@@ -97,6 +97,31 @@ var RESPONSES = [
 		] ]
 	]
 
+	function notify(text) {
+		// Let's check if the browser supports notifications
+		if (!("Notification" in window)) {
+			console.log("This browser does not support desktop notification");
+		}
+
+		// Let's check whether notification permissions have already been granted
+		else if (Notification.permission === "granted") {
+			// If it's okay let's create a notification
+			var notification = new Notification(text);
+		}
+
+		// Otherwise, we need to ask the user for permission
+		else if (Notification.permission !== "denied") {
+			Notification.requestPermission(function (permission) {
+				// If the user accepts, let's create a notification
+				if (permission === "granted") {
+					var notification = new Notification(text);
+				}
+			});
+		}
+
+		// At last, if the user has denied notifications, and you 
+		// want to be respectful there is no need to bother them any more.
+	}
 	
   function advance_waiting_timer() {
 		if(typeof window.now_we_are_talking == undefined) {
@@ -246,6 +271,7 @@ var RESPONSES = [
 			console.log(window.end_chat_attempt);
 			if(window.end_chat_attempt > 25) {
 				soundManager.play('disconnecting');
+				notify("Disconnected.");
 				window.end_chat_attempt = 0;
 			}
 		} else {
@@ -285,6 +311,7 @@ var RESPONSES = [
 		// {"action":"chat_removed","reason":"user_leaved","chat":"1463935602711c3935"}
     if(msg_event.action == "captcha_required") {
 		soundManager.play('disconnecting');
+		notify("Captcha required.");
 	}
     if(msg_event.action == "chat_connected") {
 			window.is_first_message = true;
@@ -311,11 +338,15 @@ var RESPONSES = [
 				window.now_we_are_talking = true;
 			}
  			if(window.is_first_message) {
+				if(msg_event.message.match(/^Sticker:/)) {
+					setTimeout(restartChat, 350);
+				}
 				var response = first_message_is_hello(msg_event.message.replace('\n', ' '));
 				if(response) {
 					setTimeout(response, 350);
 				} else {
 					soundManager.play('obtaining');
+					notify("First message!\n" + msg_event.message);
 					window.is_first_message = false;
 				}
 			} else {
