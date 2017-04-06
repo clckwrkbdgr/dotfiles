@@ -258,6 +258,13 @@ var RESPONSES = [
 			}
 		}
 	}
+	$(window).focus(function() {
+		window.FOCUSED = true;
+	});
+
+	$(window).blur(function() {
+		window.FOCUSED = false;
+	});
 
 	function watch_hanging_disconnect() {
 		if(typeof window.end_chat_attempt == undefined) {
@@ -299,6 +306,9 @@ var RESPONSES = [
 		}
 		if(typeof window.now_we_are_talking == undefined) {
 			window.now_we_are_talking = false;
+		}
+		if(typeof window.FOCUSED == undefined) {
+			window.FOCUSED = true;
 		}
 		chat_sound_on = false;
 		
@@ -346,10 +356,13 @@ var RESPONSES = [
 					setTimeout(response, 350);
 				} else {
 					soundManager.play('obtaining');
-					notify("First message!\n" + msg_event.message);
+					notify(msg_event.message);
 					window.is_first_message = false;
 				}
 			} else {
+				if(!window.FOCUSED) {
+					notify(msg_event.message);
+				}
 				soundManager.play('obtaining');
 			}
     }
