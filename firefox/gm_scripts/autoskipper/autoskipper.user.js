@@ -43,6 +43,8 @@ inject(function() {
 
 /* Basic responses are now should be loaded from local file.
  * File should contains text lines, each line should represent a valid JS regexp object (e.g.: /hello/i).
+ * Each regexp can be followed by an arrow and an answer, enclosed in quotes:
+ *    /expr/m   =>   "answer"
  * Empty lines are ignored.
  * Local storage should be available (set cookies for https://chatvdvoem.ru).
  */
@@ -52,49 +54,6 @@ var RESPONSES = [
 		[ undefined, [
 			/^.$/, /^(.)\\1+$/, /^[0-9]+$/
 		]	],
-		[ 'Нет, это у тебя вопросы шаблонные.', [
-			/^Ты (че)? *бот *(что ли)?.?$/i, /^это.*бот[?]?/i
-		]	],
-		[ 'Здравствуй.', [
-			/^Приветствую.?$/i
-		]	],
-		[ 'Привет.', [
-			/^(ну[,]? )?[.]*(пр+и+[ву]+[еэі]+[тиь].?|прива?|пиривет)[ ^_?;:.30)!сc]*(собеседник)?.?$/i,
-			/^привте$/i, /^ривет$/i, /^пивет$/, /^тевирп$/i,
-			/^приветики?[! .:з)]?$/i, /^привки$/i,
-			/^привет что ли/i,
-			/^э?х[аеэ]+й[.)~]?$/i,
-			/^алоха.?$/i, /^бонжур/i, /^х[эеа]л+о+у?[.]?$/i,
-			/^Ку+$/i, /^ку-?ку/i,
-			/^салам$/i,
-			/^йо+у?$/i,
-			/^салют/i,
-			/^ал+о$/i,
-			/^hello$/i,
-			/^(добрый веч.р|вечер добрый)[. ?)!:^]*$/i, /^доброго вечера/i, /^добро(е|го) врем(я|ени) суток[. ?]*$/i, /^добрый день$/i,
-			/^з?дра+сь*т[ьеи][ ).?^]*$/i, /^здравствуйте.?$/i, /^(ну )?здрав?ствуй[?)cс:.]*$/i, /^[з]?д[ао]ров(а)?[.]?$/i, /^здаровки/i
-		]	],
-		[ 'Шевелится.', [
-			/^как оно[?) ]*$/i
-		]	],
-		[ 'Хорошо. А у тебя?', [
-			/^(ну )?как (тво. )?(дела+|делишки|жизнь|жиза|настрой|настроени([ея]|це))( молодая)?[?) \\:D]*$/i
-		]	],
-		[ 'Спокойно. А у тебя?', [
-			/^как (прош.л)? *(твой)? *(денек|день|вечер|выходные) *(складывается|проходит|прош.л)?[?) ]*$/i
-		]	],
-		[ 'Хорошо. А у вас?', [
-			/^как ваше настроение[?) ]*$/i, /^как ваши дела[? )]*$/i, /^как ваша жизнь[? )]*$/i
-		]	],
-		[ 'Хорошо. А вы?', [
-			/^как вы[?) ]*$/i
-		]	],
-		[ 'Хорошо. А ты?', [
-			/^как (ты|поживаешь)( там)?[?) ]*$/i
-		]	],
-		[ 'Собеседников ищу, а ты?', [
-			/^чем занимаешься[?) ]*$/i, /^(ч(то|е|его)|шо+) (ты|тут|здесь)? *делаешь[!?) ]*$/i
-		] ]
 	]
 
 	function notify(text) {
@@ -188,30 +147,57 @@ var RESPONSES = [
 		};
 	}
 
-	function parse_responses(text) {
-		var default_patterns = null;
+	function find_response_group(target) {
 		for(var j = 0; j < window.RESPONSES.length; ++j) {
 			var patterns = window.RESPONSES[j][1];
 			var response = window.RESPONSES[j][0];
-			if(response == undefined) {
-				default_patterns = patterns;
-				break;
+			if(response == target) {
+				return patterns;
 			}
 		}
+		return null;
+	}
+
+	function parse_responses(text) {
+		var default_patterns = find_response_group(undefined);
 
 		var data = text.split(/\n+/g);
 		for(var i = 0; i < data.length; ++i) {
 			var expr = data[i].trim();
-			expr = eval(expr);
-			if(expr == undefined) {
-				continue;
-			}
-			if(expr.length == 0) {
-				continue;
-			}
+			if(expr.contains('=>')) {
+				var parts = expr.split(/ *=> */g);
+				if(parts.length != 2) {
+					console.log("Cannot parse response: " + expr);
+					continue;
+				}
+				var question = eval(parts[0]);
+				var answer = eval(parts[1]);
+				if(question == undefined || question.length == 0) {
+					continue;
+				}
+				if(answer == undefined || answer.length == 0) {
+					continue;
+				}
 
-			default_patterns.push(expr);
+				var answer_patterns = find_response_group(answer);
+				if(answer_patterns != null) {
+					answer_patterns.push(question);
+				} else {
+					window.RESPONSES.push([answer, [question]]);
+				}
+			} else {
+				expr = eval(expr);
+				if(expr == undefined) {
+					continue;
+				}
+				if(expr.length == 0) {
+					continue;
+				}
+
+				default_patterns.push(expr);
+			}
 		}
+
 		return data.length;
 	}
 
@@ -275,7 +261,6 @@ var RESPONSES = [
 		}
 		if($('div.disconnected').length) {
 			window.end_chat_attempt += 1;
-			console.log(window.end_chat_attempt);
 			if(window.end_chat_attempt > 25) {
 				soundManager.play('disconnecting');
 				notify("Disconnected.");
