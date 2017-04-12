@@ -298,8 +298,14 @@ var RESPONSES = [
 		if(typeof window.FOCUSED == undefined) {
 			window.FOCUSED = true;
 		}
+		if(typeof window.chat_is_stuck == undefined) {
+			window.chat_is_stuck = 0;
+		}
+		if(window.chat_is_stuck == undefined) {
+			window.chat_is_stuck = 0;
+		}
 		chat_sound_on = false;
-		
+
 		var result = window.onmessageOut(evt);
     var msg_event = JSON.parse(evt.data);
 		// {"action":"chat_connected","chat":"1463935535015c5299","opp_guid":"E8D7BF71-6DF1-4DA4-91CB-6455FADA3B42","version":null,"opp_unname":"Слон-1171"}
@@ -307,6 +313,16 @@ var RESPONSES = [
 		// {"action":"message_from_user","sender":"someone","message":"Чот все сонные такие","from":"e41775e2b1dcb4f636a2f765fa6dace5","chat":"1463935602711c3935"}
 		// {"action":"user_writing","from":"e41775e2b1dcb4f636a2f765fa6dace5","chat":"1463935602711c3935"}
 		// {"action":"chat_removed","reason":"user_leaved","chat":"1463935602711c3935"}
+		if(msg_event.action == "hrt_response" && window.is_first_message) {
+			window.chat_is_stuck += 1;
+			if(window.chat_is_stuck >= 10) {
+				soundManager.play('disconnecting');
+				notify("Chat is stuck.");
+			}
+		} else if(msg_event.action != "user_writing") {
+			window.chat_is_stuck = 0;
+		}
+
     if(msg_event.action == "captcha_required") {
 		soundManager.play('disconnecting');
 		notify("Captcha required.");
