@@ -45,6 +45,7 @@ inject(function() {
  * File should contains text lines, each line should represent a valid JS regexp object (e.g.: /hello/i).
  * Each regexp can be followed by an arrow and an answer, enclosed in quotes:
  *    /expr/m   =>   "answer"
+ * If answer is an empty string ("" or ''), it does not get posted, but the auto-response mode is still on.
  * Empty lines are ignored.
  * Local storage should be available (set cookies for https://chatvdvoem.ru).
  */
@@ -117,6 +118,8 @@ var RESPONSES = [
 					if(response == undefined) {
 						window.is_first_message = false;
 						return restartChat;
+					} else if(response == '') {
+						return function() {};
 					} else {
 					$('#chat_status').text('Auto...');
   					return function() {
@@ -175,7 +178,7 @@ var RESPONSES = [
 				if(question == undefined || question.length == 0) {
 					continue;
 				}
-				if(answer == undefined || answer.length == 0) {
+				if(answer == undefined) {
 					continue;
 				}
 
