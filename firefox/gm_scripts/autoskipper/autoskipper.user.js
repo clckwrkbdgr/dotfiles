@@ -369,7 +369,10 @@ var RESPONSES = [
 				}
 				soundManager.play('obtaining');
 			}
-    }
+			if(msg_event.message.length > 131) {
+				alert(msg_event.message);
+			}
+		}
 		var my_responses = get_only_my_responses(window.RESPONSES);
 		if(msg_event.action == "message_from_user" && msg_event.sender != 'someone' && my_responses.indexOf(msg_event.message) < 0) {
 			soundManager.play('sending');
