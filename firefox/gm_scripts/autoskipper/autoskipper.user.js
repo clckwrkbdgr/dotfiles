@@ -306,6 +306,14 @@ var RESPONSES = [
 		}
 		chat_sound_on = false;
 
+		try {
+			if($("div#modal-content").length && $("div#modal-content").is(':visible')) {
+				evalAlertOk();
+			}
+		} catch(err) {
+			alert("Error during evalAlertOk call: " + err);
+		}
+
 		var result = window.onmessageOut(evt);
     var msg_event = JSON.parse(evt.data);
 		// {"action":"chat_connected","chat":"1463935535015c5299","opp_guid":"E8D7BF71-6DF1-4DA4-91CB-6455FADA3B42","version":null,"opp_unname":"Слон-1171"}
@@ -361,6 +369,9 @@ var RESPONSES = [
 				} else {
 					soundManager.play('obtaining');
 					notify(msg_event.message);
+					if(msg_event.message.length > 131) {
+						alert(msg_event.message);
+					}
 					window.is_first_message = false;
 				}
 			} else {
@@ -368,9 +379,9 @@ var RESPONSES = [
 					notify(msg_event.message);
 				}
 				soundManager.play('obtaining');
-			}
-			if(msg_event.message.length > 131) {
-				alert(msg_event.message);
+				if(msg_event.message.length > 131) {
+					alert(msg_event.message);
+				}
 			}
 		}
 		var my_responses = get_only_my_responses(window.RESPONSES);
