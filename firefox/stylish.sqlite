@@ -2493,7 +2493,7 @@ input, textarea, div[contenteditable], .t1-select {
 }
 
 
-}',1,NULL,'http://userstyles.org/styles/97767',1,'f1f0cd08c02b2c3edf24c2995100b6d2');
+}',1,NULL,'http://userstyles.org/styles/97767',1,'b98e9ded21367aaf5eff67e9dc9412ac');
 INSERT INTO "styles" VALUES(37,'https://userstyles.org/styles/126200/habitica-gaming1','https://userstyles.org/styles/126200/habitica-gaming1.css?','https://update.userstyles.org/126200.md5','Habitica - Gaming1','@-moz-document domain("habitica.com") {
 
 
@@ -6314,16 +6314,16 @@ INSERT INTO "style_meta" VALUES(5931,40,'regexp','https?://notifications.google.
 INSERT INTO "style_meta" VALUES(5932,40,'type','site');
 INSERT INTO "style_meta" VALUES(5951,42,'domain','kinopoisk.ru');
 INSERT INTO "style_meta" VALUES(5952,42,'type','site');
-INSERT INTO "style_meta" VALUES(5953,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(5954,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5955,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5956,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(5957,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(5958,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5959,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(5960,36,'type','site');
+INSERT INTO "style_meta" VALUES(5961,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO "style_meta" VALUES(5962,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5963,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5964,36,'url-prefix','http://twitter.com');
+INSERT INTO "style_meta" VALUES(5965,36,'url-prefix','https://twitter.com');
+INSERT INTO "style_meta" VALUES(5966,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5967,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO "style_meta" VALUES(5968,36,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5960);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5968);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
