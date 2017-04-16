@@ -101,6 +101,7 @@ status() {
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
 		if $HAS_CHANGES >/dev/null; then
+			[ "$D" == "." ] && D="$(basename "$(pwd)")"
 			echo -e "\033[1;31m$D\033[0m"
 			git -c color.status=always st
 		fi
@@ -114,6 +115,7 @@ push() {
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
 		if git st | grep -q 'Your branch is ahead of'; then
+			[ "$D" == "." ] && D="$(basename "$(pwd)")"
 			echo -e "\033[1;31m$D\033[0m"
 			git push origin master --tags
 			git remote | grep -q local && git push local master --tags
