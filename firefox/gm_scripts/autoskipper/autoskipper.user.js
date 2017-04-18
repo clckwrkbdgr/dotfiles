@@ -306,12 +306,8 @@ var RESPONSES = [
 		}
 		chat_sound_on = false;
 
-		try {
-			if($("div#modal-content").length && $("div#modal-content").is(':visible')) {
-				evalAlertOk();
-			}
-		} catch(err) {
-			alert("Error during evalAlertOk call: " + err);
+		if($("div.modal-content").length && $("div.modal-content").is(':visible')) {
+			evalAlertOk();
 		}
 
 		var result = window.onmessageOut(evt);
@@ -362,17 +358,18 @@ var RESPONSES = [
  			if(window.is_first_message) {
 				if(msg_event.message.match(/^Sticker:/)) {
 					setTimeout(restartChat, 350);
-				}
-				var response = first_message_is_hello(msg_event.message.replace('\n', ' '));
-				if(response) {
-					setTimeout(response, 350);
 				} else {
-					soundManager.play('obtaining');
-					notify(msg_event.message);
-					if(msg_event.message.length > 131) {
-						alert(msg_event.message);
+					var response = first_message_is_hello(msg_event.message.replace('\n', ' '));
+					if(response) {
+						setTimeout(response, 350);
+					} else {
+						soundManager.play('obtaining');
+						notify(msg_event.message);
+						if(msg_event.message.length > 131) {
+							alert(msg_event.message);
+						}
+						window.is_first_message = false;
 					}
-					window.is_first_message = false;
 				}
 			} else {
 				if(!window.FOCUSED) {
