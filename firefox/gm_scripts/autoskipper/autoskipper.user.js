@@ -275,6 +275,14 @@ var RESPONSES = [
 		setTimeout(watch_hanging_disconnect, 200);
 	}
 
+	function watch_modal_alert() {
+		if($("div.modal-content").length && $("div.modal-content").is(':visible')) {
+			evalAlertOk();
+		}
+		setTimeout(watch_modal_alert, 500);
+	}
+
+
 	$('div#header').append('<label for="responses">Responses:</label><input id="responses" type="file">');
 	$("#responses").click(function () {
 		this.value = null;
@@ -287,6 +295,7 @@ var RESPONSES = [
 	} );
 	watch_hanging_disconnect();
 	load_responses();
+	watch_modal_alert();
 
 	window.onmessageIn = function(evt) {
 		if(typeof window.is_first_message == undefined) {
@@ -305,10 +314,6 @@ var RESPONSES = [
 			window.chat_is_stuck = 0;
 		}
 		chat_sound_on = false;
-
-		if($("div.modal-content").length && $("div.modal-content").is(':visible')) {
-			evalAlertOk();
-		}
 
 		var result = window.onmessageOut(evt);
     var msg_event = JSON.parse(evt.data);
