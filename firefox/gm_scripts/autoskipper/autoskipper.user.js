@@ -262,14 +262,25 @@ var RESPONSES = [
 		if(window.end_chat_attempt == undefined) {
 			window.end_chat_attempt = 0;
 		}
+		if(typeof window.end_chat_notifications == undefined) {
+			window.end_chat_notifications = 0;
+		}
+		if(window.end_chat_notifications == undefined) {
+			window.end_chat_notifications = 0;
+		}
 		if($('div.disconnected').length) {
 			window.end_chat_attempt += 1;
 			if(window.end_chat_attempt > 25) {
 				soundManager.play('disconnecting');
 				notify("Disconnected.");
+				window.end_chat_notifications += 1;
+				if(window.end_chat_notifications == 3) {
+					setTimeout(restartChat, 350);
+				}
 				window.end_chat_attempt = 0;
 			}
 		} else {
+			window.end_chat_notifications = 0;
 			window.end_chat_attempt = 0;
 		}
 		setTimeout(watch_hanging_disconnect, 200);
@@ -370,10 +381,10 @@ var RESPONSES = [
 					} else {
 						soundManager.play('obtaining');
 						notify(msg_event.message);
+						window.is_first_message = false;
 						if(msg_event.message.length > 131) {
 							alert(msg_event.message);
 						}
-						window.is_first_message = false;
 					}
 				}
 			} else {
