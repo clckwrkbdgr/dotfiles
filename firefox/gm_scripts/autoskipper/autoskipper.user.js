@@ -293,6 +293,22 @@ var RESPONSES = [
 		setTimeout(watch_modal_alert, 500);
 	}
 
+	// http://stackoverflow.com/a/1219983/2128769
+	function htmlEncode(value){
+		// Create a in-memory div, set its inner text (which jQuery automatically encodes)
+		// Then grab the encoded contents back out. The div never exists on the page.
+		return $('<div/>').text(value).html();
+	}
+	function htmlDecode(value){
+		return $('<div/>').html(value).text();
+	}
+
+	function handle_long_message(text) {
+		if(text.length > 131) {
+			$('div#messages ol').append('<li>' + htmlEncode(text) + '</li>');
+		}
+	}
+
 
 	$('div#header').append('<label for="responses">Responses:</label><input id="responses" type="file">');
 	$("#responses").click(function () {
@@ -382,9 +398,7 @@ var RESPONSES = [
 						soundManager.play('obtaining');
 						notify(msg_event.message);
 						window.is_first_message = false;
-						if(msg_event.message.length > 131) {
-							alert(msg_event.message);
-						}
+						handle_long_message(msg_event.message);
 					}
 				}
 			} else {
@@ -392,9 +406,7 @@ var RESPONSES = [
 					notify(msg_event.message);
 				}
 				soundManager.play('obtaining');
-				if(msg_event.message.length > 131) {
-					alert(msg_event.message);
-				}
+				handle_long_message(msg_event.message);
 			}
 		}
 		var my_responses = get_only_my_responses(window.RESPONSES);
