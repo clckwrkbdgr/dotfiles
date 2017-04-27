@@ -17,6 +17,7 @@ HOMEDIR_DOTFILES = """.bashrc
 .local
 .cloud
 .ssh
+.anyconnect
 """.splitlines()
 
 HOMEDIR = os.path.expanduser("~")
