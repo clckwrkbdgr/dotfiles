@@ -354,6 +354,9 @@ var RESPONSES = [
 			if(window.chat_is_stuck >= 10) {
 				soundManager.play('disconnecting');
 				notify("Chat is stuck.");
+				if(window.chat_is_stuck >= 12) {
+					setTimeout(restartChat, 350);
+				}
 			}
 		} else if(msg_event.action != "user_writing") {
 			window.chat_is_stuck = 0;
