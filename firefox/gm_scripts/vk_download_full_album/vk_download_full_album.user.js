@@ -11,9 +11,23 @@ var DEBUG = false;
 
 // Works only with VK Music Download add-on.
 function try_to_download() {
-  var specific_request = /#badger([01]*)$/g.exec(window.location.href);
+  var specific_request = /#badger([012]*)$/g.exec(window.location.href);
   if(specific_request != undefined) {
 	  specific_request = specific_request[1];
+  }
+  if('2' == specific_request) {
+	  var buttons = document.getElementsByClassName('audio_row_cover_play_icon');
+	  if(buttons.length) {
+		  if(!DEBUG) {
+			  var button = buttons[0];
+			  button.click();
+		  } else {
+			  console.log("DEBUG: clicked first found Play button.");
+		  }
+	  } else {
+		  console.log("Failed to find any play buttons.");
+	  }
+	  return; // This mode should not auto-close page.
   }
   var specific_request_index = 0;
   var span_download_all = document.getElementsByClassName('download_all');
@@ -75,7 +89,7 @@ function try_to_download() {
   }
 }
 
-if(/#badger[01]*$/.test(window.location.href)) {
+if(/#badger[012]*$/.test(window.location.href)) {
   setTimeout(try_to_download, 1000);
 } else {
   console.log("Not a #badger target! URL: " + window.location.href);
