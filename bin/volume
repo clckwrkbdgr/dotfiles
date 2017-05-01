@@ -15,6 +15,21 @@ current_volume_status() {
 	fi
 }
 
+set_volume() {
+	CHANNEL="$1"
+	VOLUME="$2"
+	if [ "$VOLUME" -lt 0 -o "$VOLUME" -gt 150 ]; then
+		echo "Invalid volume level: $VOLUME, expected to be in range of 0..150" >&2
+		return 1
+	fi
+	if [ "$VOLUME" -lt 100 ]; then
+		amixer set "$CHANNEL" ${VOLUME}% >/dev/null
+	else
+		pactl set-sink-volume 0 ${VOLUME}%
+	fi
+	return 0
+}
+
 if [ "$1" == "-h" ]; then
 	echo "Usage: volume [-n] { up | down | reset }"
 	echo "    -n  - display notification about volume change (sometimes built-in one does not work)."
@@ -37,7 +52,10 @@ elif [ "$1" == "down" ]; then
 	amixer set "$CHANNEL" $STEP- >/dev/null
 elif [ "$1" == "reset" ]; then
 	VOLUME=${2:-33}
-	amixer set "$CHANNEL" ${VOLUME}% >/dev/null
+	set_volume "$CHANNEL" "$VOLUME"
+elif echo "$1" | grep -q '^[0-9]\+$'; then
+	VOLUME=${1}
+	set_volume "$CHANNEL" "$VOLUME"
 else
 	current_volume
 fi
