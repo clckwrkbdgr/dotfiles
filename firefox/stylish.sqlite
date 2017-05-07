@@ -6256,6 +6256,19 @@ div.addthis_toolbox, input#sml_but, p.top_text, div#header_right, #header, .nav_
 }
 
 }',1,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(45,NULL,'',NULL,'trimps','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("trimps.github.io") {
+
+span#buildingsTitleSpan.titleSpan, span#jobsTitleSpan.titleSpan, span#upgradesTitleSpan.titleSpan, span#equipmentTitleSpan.titleSpan,
+#buildingsTitleDiv > div:nth-child(1) > div:nth-child(2),
+#equipmentTitleDiv > div:nth-child(1) > div:nth-child(2),
+#equipmentTitleDiv > div:nth-child(1) > div:nth-child(3),
+#equipmentTitleDiv > div:nth-child(1) > div:nth-child(4) {
+  display: none;
+}
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -6322,8 +6335,10 @@ INSERT INTO "style_meta" VALUES(5965,36,'url-prefix','https://twitter.com');
 INSERT INTO "style_meta" VALUES(5966,36,'url-prefix','https://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5967,36,'url-prefix','http://tweetdeck.twitter.com/');
 INSERT INTO "style_meta" VALUES(5968,36,'type','site');
+INSERT INTO "style_meta" VALUES(5969,45,'domain','trimps.github.io');
+INSERT INTO "style_meta" VALUES(5970,45,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',44);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5968);
+INSERT INTO "sqlite_sequence" VALUES('styles',45);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5970);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
