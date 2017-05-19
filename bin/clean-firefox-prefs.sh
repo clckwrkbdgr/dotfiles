@@ -54,4 +54,6 @@ sed '/\(gecko\|browser\).*\.mstone/d' | \
 sed '/extensions.[^.]\+.sdk.version/d' | \
 sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
 sed '/extensions.greasemonkey.version/d' | \
+sed '/extensions.browsec.tracking_cid/d' | \
+sed 's/\(devtools.toolsidebar-width.webconsole\)", *[0-9]\+/\1", 300/' | \
 sed 's|'"$HOME"'|$HOME|g'
