@@ -280,7 +280,7 @@
 		<pref name='filelocations'>
 			<pref name='last_save_folder' type='path' value='$HOME'/>
 			<pref name='last_open_folder' type='path' value='$HOME'/>
-			<pref name='last_icon_folder' type='path' value=''/>
+			<pref name='last_icon_folder' type='path' value='$HOME'/>
 		</pref>
 		<pref name='smileys'>
 			<pref name='theme' type='string' value='none'/>
@@ -377,7 +377,7 @@
 			<pref name='send_italic' type='bool' value='0'/>
 			<pref name='send_underline' type='bool' value='0'/>
 			<pref name='spellcheck' type='bool' value='0'/>
-			<pref name='show_incoming_formatting' type='bool' value='0'/>
+			<pref name='show_incoming_formatting' type='bool' value='1'/>
 			<pref name='minimum_entry_lines' type='int' value='1'/>
 			<pref name='show_timestamps' type='bool' value='1'/>
 			<pref name='show_formatting_toolbar' type='bool' value='0'/>

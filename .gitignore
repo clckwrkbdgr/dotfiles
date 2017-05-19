@@ -98,6 +98,10 @@ purple/accounts.xml
 purple/blist.xml
 purple/pounces.xml
 purple/status.xml
+purple/telegram-purple/*/auth
+purple/telegram-purple/*/secret
+purple/telegram-purple/*/state
+purple/telegram-purple/*/downloads/
 # Freeciv (stores config only in HOME, so thinks that ~/.config is HOME)
 .freeciv-server_history
 .freeciv/saves
