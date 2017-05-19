@@ -60,3 +60,7 @@
 [filter "openttd_config"]
 	smudge = clean-openttd-cfg.sh --restore
 	clean = clean-openttd-cfg.sh
+
+[filter "gtkfilechooser"]
+	smudge = cat
+	clean = "sed 's|GeometryY=[0-9]\\+|GeometryY=60|'"
