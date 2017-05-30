@@ -302,7 +302,7 @@
 			<pref name='icon-theme' type='string' value=''/>
 			<pref name='icon-theme-dir' type='path' value=''/>
 			<pref name='dialog'>
-				<pref name='width' type='int' value='702'/>
+				<pref name='width' type='int' value='757'/>
 				<pref name='height' type='int' value='250'/>
 			</pref>
 		</pref>
