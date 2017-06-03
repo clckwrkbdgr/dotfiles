@@ -56,4 +56,5 @@ sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' 
 sed '/extensions.greasemonkey.version/d' | \
 sed '/extensions.browsec.tracking_cid/d' | \
 sed 's/\(devtools.toolsidebar-width.webconsole\)", *[0-9]\+/\1", 300/' | \
+sed '/extensions.firefox@zenmate.com.sdk.version/d' | \
 sed 's|'"$HOME"'|$HOME|g'

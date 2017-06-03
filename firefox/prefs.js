@@ -277,7 +277,6 @@ user_pref("extensions.firefox@zenmate.com.sdk.baseURI", "resource://firefox-at-z
 user_pref("extensions.firefox@zenmate.com.sdk.domain", "firefox-at-zenmate-dot-com");
 user_pref("extensions.firefox@zenmate.com.sdk.load.reason", "startup");
 user_pref("extensions.firefox@zenmate.com.sdk.rootURI", "jar:file://$HOME/.config/firefox/extensions/firefox@zenmate.com.xpi!/");
-user_pref("extensions.firefox@zenmate.com.sdk.version", "5.10.2");
 user_pref("extensions.firefoxreader.currentversion", "0.7");
 user_pref("extensions.firefoxreader.styleoptions", "3,1,2,2,0");
 user_pref("extensions.getAddons.databaseSchema", 5);
@@ -355,7 +354,7 @@ user_pref("network.predictor.cleaned-up", true);
 user_pref("network.proxy.proxy_over_tls", false);
 user_pref("network.proxy.type", 0);
 user_pref("noscript.ABE.migration", 1);
-user_pref("noscript.ABE.rulesets.USER", "# User-defined rules. Feel free to experiment here.\nSite .yastatic.net\nAccept from .kinopoisk.ru\nDeny");
+user_pref("noscript.ABE.rulesets.USER", "# User-defined rules. Feel free to experiment here.\nSite .yastatic.net\nAccept from .kinopoisk.ru\nDeny\n\nSite .yandex.st\nAccept from .kinopoisk.ru\nDeny");
 user_pref("noscript.autoReload", false);
 user_pref("noscript.forbidMetaRefresh", true);
 user_pref("noscript.gtemp", "");

@@ -63,4 +63,4 @@
 
 [filter "gtkfilechooser"]
 	smudge = cat
-	clean = "sed 's|GeometryY=[0-9]\\+|GeometryY=60|'"
+	clean = "sed 's|Geometry\\([XY]\\)=[0-9]\\+|Geometry\\1=0|'"
