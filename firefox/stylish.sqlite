@@ -6269,6 +6269,36 @@ span#buildingsTitleSpan.titleSpan, span#jobsTitleSpan.titleSpan, span#upgradesTi
 }
 
 }',1,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(46,NULL,'',NULL,'neuronovosti','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("neuronovosti.ru") {
+
+body {
+  color: #aaa !important;
+  background-image: none !important;
+  background: #111111;
+}
+blockquote {
+  color: #999 !important;
+}
+a {
+  color: #ec0 !important;
+}
+h1, h2, h3, h4, h5, h6, h1 > a, h2 > a, h3 > a, h4 > a, h5 > a, h6 > a, h1 > a:link, h2 > a:link, h3 > a:link, h4 > a:link, h5 > a:link, h6 > a:link, h1 > a:hover, h2 > a:hover, h3 > a:hover, h4 > a:hover, h6 > a:hover, h1 > a:visited, h2 > a:visited, h3 > a:visited, h4 > a:visited, h5 > a:visited, h6 > a:visited,
+.widget-area > h3, .widget-area > h2, .content-inner-block h2 {
+  color: #fd1 !important;
+}
+.page-header a, .page-header span, #top-nav, .sidebar-container, #latest-news > h2 {
+  background: #222 !important;
+}
+.phone-menu-block {
+  border-top-color: #fd1;
+}
+div#footer-bottom {
+  display: none;
+}
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -6337,8 +6367,10 @@ INSERT INTO "style_meta" VALUES(5967,36,'url-prefix','http://tweetdeck.twitter.c
 INSERT INTO "style_meta" VALUES(5968,36,'type','site');
 INSERT INTO "style_meta" VALUES(5969,45,'domain','trimps.github.io');
 INSERT INTO "style_meta" VALUES(5970,45,'type','site');
+INSERT INTO "style_meta" VALUES(5971,46,'domain','neuronovosti.ru');
+INSERT INTO "style_meta" VALUES(5972,46,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',45);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5970);
+INSERT INTO "sqlite_sequence" VALUES('styles',46);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',5972);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
