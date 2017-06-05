@@ -30,14 +30,39 @@ inject(function() {
 		script.textContent = source;
 		frame.document.body.appendChild(script);
 	}
+
+	window.use_old_design = true;
+
+	// Oldcompat functions.
+	function compat_closeCurrentChat() {
+		if(window.use_old_design) {
+			closeCurrentChat();
+		} else {
+			chat.close();
+		}
+	}
+	function compat_startNewChat() {
+		if(window.use_old_design) {
+			startNewChat();
+		} else {
+			chat.start();
+		}
+	}
+	function compat_sendNewMessage(text) {
+		if(window.use_old_design) {
+			sendNewMessage();
+		} else {
+			chat.sendMessage(text);
+		}
+	}
   
   function restartChat() {
-    closeCurrentChat();
-    setTimeout(startNewChat, 1000);
+	  compat_closeCurrentChat();
+	  setTimeout(compat_startNewChat, 1000);
   }
 
   $('#chat_close').click(function() {
-		load_responses();
+		//load_responses();
     restartChat();
   });
 
@@ -106,7 +131,7 @@ var RESPONSES = [
 	function send_message(text) {
 		$('#chat_status').text('');
 		$('#text').val(text);
-		sendNewMessage();		
+		compat_sendNewMessage(text);
 	}
 		
 	function first_message_is_hello(text) {
@@ -381,7 +406,7 @@ var RESPONSES = [
 		}
 		if(msg_event.action == "chat_removed") {
 			if(window.is_first_message) {
-				setTimeout(startNewChat, 1000);
+				setTimeout(compat_startNewChat, 1000);
 			} else {
 				soundManager.play('disconnecting');
 			}
@@ -419,11 +444,20 @@ var RESPONSES = [
 		return result;
 	}.bind(this);
 
-	var onmessageSource = window.WebSocketCreate.toString();
-	onmessageSource = onmessageSource.replace("manSocket.onmessage =", 
-		"manSocket.onmessage = function(evt) { return onmessageIn(evt); }; onmessageOut =");
+	if(window.use_old_design) {
+		var onmessageSource = window.WebSocketCreate.toString();
+		onmessageSource = onmessageSource.replace("manSocket.onmessage =", 
+				"manSocket.onmessage = function(evt) { return onmessageIn(evt); }; onmessageOut =");
 
-	injectToFrame("WebSocketCreate = " + onmessageSource, window);
+		injectToFrame("WebSocketCreate = " + onmessageSource, window);
+
+	} else {
+		var onmessageSource = chat.createWebSocket.toString();
+		onmessageSource = onmessageSource.replace("this.socket.onmessage =",
+			"this.socket.onmessage = function(evt) { return onmessageIn(evt); }; onmessageOut =");
+
+		injectToFrame("chat.createWebSocket = " + onmessageSource, window);
+	}
 	console.log('Userscript is successfully set.');
 
 });
