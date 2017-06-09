@@ -40,68 +40,6 @@ div.profile-header div.author-info
   { display: none !important; }
 }
 
-/* chatvdvoem.ru */
-.messages-chat-media, div#contactsMainWrapper, #sticker_send { display: none !important; height:0 !important; }
-#bz1, div#smartbanner, li#claim_Chat, ul.themes
-{ display: none !important; height:0 !important; }
-#messages ol li.messageFrom { color: #aaa !important; background:#111111 !important;}
-#messages ol li.messageTo { color: #a91 !important; background:#111111 !important;}
-#messages ol li{list-style:none;margin:0;padding:.3em 0 .3em 65px;border-bottom:1px dotted #111 !important;}
-#messages ol li.messageFrom em i{background:#1a1a1a !important;}
-#messages ol li.messageTo em i{background:#1a1a1a !important;}
-li#sound_switcher { background-image: none !important; }
-li#sound_switcher a { color: #430 !important; }
-@-moz-document domain("chatvdvoem.ru") {
-  * {
-    border-color: #111 !important;
-    border-image: none !important;
-    background-image: none !important;
-  }
-  input#text_send, input#chat_close {
-    border-color: #222 !important;
-    border-style: solid !important;
-    border-width: 1px !important;
-    color: #777 !important;
-  }
-  textarea#text {
-    border-top-color: #222 !important;
-    border-top-style: solid !important;
-    border-top-width: 1px !important;
-  }
-  small#chat_status, li#name_editor { color: #222 !important; }
-  li#name_editor { display: none !important; }
-  small#chat_status { width: 100% !important; height: auto !important; display: block !important; }
-  div.disconnected div:nth-of-type(2) { display: none !important; }
-  div.disconnected div:nth-of-type(3) { display: none !important; }
-  div.disconnected div:nth-of-type(4) { display: none !important; }
-  div.disconnected b, div.disconnected a { display: none !important; }
-  div.disconnected div a { display: inline-block !important; }
-  div.disconnected { color: #111 !important; }
-  h1, h2 { font-size: 10pt !important; }
-  #chatPage div#header { height: 30px !important; }
-  #sysChat .inside { padding-top: 0px !important; }
-  div.disconnected div { margin: 0 0 0 0 !important; height: auto !important; }
-  iframe#vkwidget4 { height: 0 !important; }
-  .chatmsg { border: 0 !important; }
-  body#chatWindow { border-image-width: 0 0 0 0 !important; border-bottom-color: black !important; }
-  div#wrapper, div#chatPage, div.chatContent { padding: 0 0 0 0 !important; margin: 0 0 0 0 !important; }
-  div.controlwrapper
-  {
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-  }
-  div#chatbox, div.logWrapper, div.logBox, div#messages
-  {
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    top: 0 !important;
-    padding: 0 0 0 0 !important;
-    margin: 0 0 0 0 !important;
-  }
-}
-
 /* roguetemple */
 @-moz-document url("http://forums.roguetemple.com/irldb/") {
   a {color: #fd1 !important; }
@@ -157,7 +95,7 @@ li#sound_switcher a { color: #430 !important; }
 input { color: white !important; background-color: #0f0f0f !important; }
 
 @-moz-document domain("computerra.ru"), domain("nplus1.ru"), domain("geektimes.ru"), domain("habrahabr.ru"), domain("smartfiction.ru"), domain("24types.ru"),
-  domain("aspergers.ru"), domain("bash.im"), domain("candies.aniwey.net"), domain("chatvdvoem.ru"), domain("icq.com"), domain("lib.ru"), domain("knjazna.livejournal.com"),
+  domain("aspergers.ru"), domain("bash.im"), domain("candies.aniwey.net"), domain("icq.com"), domain("lib.ru"), domain("knjazna.livejournal.com"),
   domain("codeofhonor.com"), domain("3dnews.ru"), domain("kniganews.org"), domain("unixmanga.net"), domain("instead.syscall.ru")
 {
   p, div { font-size: 10pt !important; font-family: monospace !important; }
@@ -6299,6 +6237,120 @@ div#footer-bottom {
 }
 
 }',1,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(47,NULL,'',NULL,'chatvdvoem','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("chatvdvoem.ru") {
+
+#but-close, #but-start {
+  left: auto;
+  right: 0;
+}
+
+#text-wrap {
+  left: 0;
+}
+
+#but-sticker, #but-photo, #but-send,
+#themes {
+  display: none;
+}
+
+div#social {
+  display: none !important;
+}
+
+.messages-chat-media, div#contactsMainWrapper, #sticker_send { display: none !important; height:0 !important; }
+#bz1, div#smartbanner, li#claim_Chat, ul.themes
+{ display: none !important; height:0 !important; }
+
+
+
+  * {
+    border-color: #111 !important;
+    border-image: none !important;
+    background-image: none !important;
+  }
+  input#text_send, input#chat_close {
+    border-color: #222 !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+    color: #777 !important;
+  }
+  textarea#text {
+    border-top-color: #222 !important;
+    border-top-style: solid !important;
+    border-top-width: 1px !important;
+  }
+  small#chat_status, li#name_editor { color: #222 !important; }
+  li#name_editor { display: none !important; }
+  small#chat_status { width: 100% !important; height: auto !important; display: block !important; }
+  div.disconnected div:nth-of-type(2) { display: none !important; }
+  div.disconnected div:nth-of-type(3) { display: none !important; }
+  div.disconnected div:nth-of-type(4) { display: none !important; }
+  div.disconnected b, div.disconnected a { display: none !important; }
+  div.disconnected div a { display: inline-block !important; }
+  div.disconnected { color: #111 !important; }
+  h1, h2 { font-size: 10pt !important; }
+  #chatPage div#header { height: 30px !important; }
+  #sysChat .inside { padding-top: 0px !important; }
+  div.disconnected div { margin: 0 0 0 0 !important; height: auto !important; }
+  iframe#vkwidget4 { height: 0 !important; }
+  .chatmsg { border: 0 !important; }
+  body#chatWindow { border-image-width: 0 0 0 0 !important; border-bottom-color: black !important; }
+  div#wrapper, div#chatPage, div.chatContent { padding: 0 0 0 0 !important; margin: 0 0 0 0 !important; }
+  div.controlwrapper
+  {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+  div#chatbox, div.logWrapper, div.logBox, div#messages
+  {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: 0 !important;
+    padding: 0 0 0 0 !important;
+    margin: 0 0 0 0 !important;
+  }
+
+  p, div { font-size: 10pt !important; font-family: monospace !important; }
+  code:not([class]) { color: green !important; }
+  
+  div.folding-dot-holder, a.comment-item__avatar { background-color: black !important; }
+  h1, h2, h3, h4, h5, em, iron { color: #a81 !important; }
+  i, em { color: inherit !important; }
+  a { color: #fd1 !important; }
+  a.btn span, a.btn span span, div#sysChat .inside, #header p strong#online_counter { background-color: #111 !important; background-image: none !important; }
+  body, div, p, table, tr, td, article, section, figure, ul, textarea, sup { color:#bbb !important; background-color: #111 !important; }
+  li, hr { color: #fff !important; }
+  div.dsq-comment-header { color: #fff !important; }
+
+#log {
+  padding-top: 0px !important;
+  background-image: none;
+}
+#log-wrap::before {
+  background: none;
+}
+
+.but-chat-start, a.ended-but {
+  background: #111 !important;
+}
+
+a.ended-but {
+  display: none;
+}
+
+
+#log  ol li.from, #log ol li.from .message, #messages ol li.messageFrom { color: #aaa !important; background:#111111 !important;}
+#log  ol li.to, #log ol li.to .message, #messages ol li.messageTo { color: #a91 !important; background:#111111 !important;}
+#messages ol li{list-style:none;margin:0;padding:.3em 0 .3em 65px;border-bottom:1px dotted #111 !important;}
+#messages ol li.messageFrom em i{background:#1a1a1a !important;}
+#messages ol li.messageTo em i{background:#1a1a1a !important;}
+
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -6315,38 +6367,6 @@ INSERT INTO "style_meta" VALUES(5744,43,'domain','godville.net');
 INSERT INTO "style_meta" VALUES(5745,43,'type','site');
 INSERT INTO "style_meta" VALUES(5818,44,'domain','nekto.me');
 INSERT INTO "style_meta" VALUES(5819,44,'type','site');
-INSERT INTO "style_meta" VALUES(5893,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(5894,34,'domain','geektimes.ru');
-INSERT INTO "style_meta" VALUES(5895,34,'domain','habrahabr.ru');
-INSERT INTO "style_meta" VALUES(5896,34,'domain','smartfiction.ru');
-INSERT INTO "style_meta" VALUES(5897,34,'domain','chatvdvoem.ru');
-INSERT INTO "style_meta" VALUES(5898,34,'url','http://forums.roguetemple.com/irldb/');
-INSERT INTO "style_meta" VALUES(5899,34,'domain','www.kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(5900,34,'domain','linux.org.ru');
-INSERT INTO "style_meta" VALUES(5901,34,'domain','livejournal.com');
-INSERT INTO "style_meta" VALUES(5902,34,'domain','pastebin.com');
-INSERT INTO "style_meta" VALUES(5903,34,'domain','3dnews.ru');
-INSERT INTO "style_meta" VALUES(5904,34,'domain','kniganews.org');
-INSERT INTO "style_meta" VALUES(5905,34,'domain','unixmanga.net');
-INSERT INTO "style_meta" VALUES(5906,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(5907,34,'domain','nplus1.ru');
-INSERT INTO "style_meta" VALUES(5908,34,'domain','geektimes.ru');
-INSERT INTO "style_meta" VALUES(5909,34,'domain','habrahabr.ru');
-INSERT INTO "style_meta" VALUES(5910,34,'domain','smartfiction.ru');
-INSERT INTO "style_meta" VALUES(5911,34,'domain','24types.ru');
-INSERT INTO "style_meta" VALUES(5912,34,'domain','aspergers.ru');
-INSERT INTO "style_meta" VALUES(5913,34,'domain','bash.im');
-INSERT INTO "style_meta" VALUES(5914,34,'domain','candies.aniwey.net');
-INSERT INTO "style_meta" VALUES(5915,34,'domain','chatvdvoem.ru');
-INSERT INTO "style_meta" VALUES(5916,34,'domain','icq.com');
-INSERT INTO "style_meta" VALUES(5917,34,'domain','lib.ru');
-INSERT INTO "style_meta" VALUES(5918,34,'domain','knjazna.livejournal.com');
-INSERT INTO "style_meta" VALUES(5919,34,'domain','codeofhonor.com');
-INSERT INTO "style_meta" VALUES(5920,34,'domain','3dnews.ru');
-INSERT INTO "style_meta" VALUES(5921,34,'domain','kniganews.org');
-INSERT INTO "style_meta" VALUES(5922,34,'domain','unixmanga.net');
-INSERT INTO "style_meta" VALUES(5923,34,'domain','instead.syscall.ru');
-INSERT INTO "style_meta" VALUES(5924,34,'type','global');
 INSERT INTO "style_meta" VALUES(5925,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
 INSERT INTO "style_meta" VALUES(5926,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
 INSERT INTO "style_meta" VALUES(5927,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
@@ -6369,8 +6389,40 @@ INSERT INTO "style_meta" VALUES(5969,45,'domain','trimps.github.io');
 INSERT INTO "style_meta" VALUES(5970,45,'type','site');
 INSERT INTO "style_meta" VALUES(5971,46,'domain','neuronovosti.ru');
 INSERT INTO "style_meta" VALUES(5972,46,'type','site');
+INSERT INTO "style_meta" VALUES(5975,34,'domain','computerra.ru');
+INSERT INTO "style_meta" VALUES(5976,34,'domain','geektimes.ru');
+INSERT INTO "style_meta" VALUES(5977,34,'domain','habrahabr.ru');
+INSERT INTO "style_meta" VALUES(5978,34,'domain','smartfiction.ru');
+INSERT INTO "style_meta" VALUES(5979,34,'url','http://forums.roguetemple.com/irldb/');
+INSERT INTO "style_meta" VALUES(5980,34,'domain','www.kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(5981,34,'domain','linux.org.ru');
+INSERT INTO "style_meta" VALUES(5982,34,'domain','livejournal.com');
+INSERT INTO "style_meta" VALUES(5983,34,'domain','pastebin.com');
+INSERT INTO "style_meta" VALUES(5984,34,'domain','3dnews.ru');
+INSERT INTO "style_meta" VALUES(5985,34,'domain','kniganews.org');
+INSERT INTO "style_meta" VALUES(5986,34,'domain','unixmanga.net');
+INSERT INTO "style_meta" VALUES(5987,34,'domain','computerra.ru');
+INSERT INTO "style_meta" VALUES(5988,34,'domain','nplus1.ru');
+INSERT INTO "style_meta" VALUES(5989,34,'domain','geektimes.ru');
+INSERT INTO "style_meta" VALUES(5990,34,'domain','habrahabr.ru');
+INSERT INTO "style_meta" VALUES(5991,34,'domain','smartfiction.ru');
+INSERT INTO "style_meta" VALUES(5992,34,'domain','24types.ru');
+INSERT INTO "style_meta" VALUES(5993,34,'domain','aspergers.ru');
+INSERT INTO "style_meta" VALUES(5994,34,'domain','bash.im');
+INSERT INTO "style_meta" VALUES(5995,34,'domain','candies.aniwey.net');
+INSERT INTO "style_meta" VALUES(5996,34,'domain','icq.com');
+INSERT INTO "style_meta" VALUES(5997,34,'domain','lib.ru');
+INSERT INTO "style_meta" VALUES(5998,34,'domain','knjazna.livejournal.com');
+INSERT INTO "style_meta" VALUES(5999,34,'domain','codeofhonor.com');
+INSERT INTO "style_meta" VALUES(6000,34,'domain','3dnews.ru');
+INSERT INTO "style_meta" VALUES(6001,34,'domain','kniganews.org');
+INSERT INTO "style_meta" VALUES(6002,34,'domain','unixmanga.net');
+INSERT INTO "style_meta" VALUES(6003,34,'domain','instead.syscall.ru');
+INSERT INTO "style_meta" VALUES(6004,34,'type','global');
+INSERT INTO "style_meta" VALUES(6005,47,'domain','chatvdvoem.ru');
+INSERT INTO "style_meta" VALUES(6006,47,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',46);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',5972);
+INSERT INTO "sqlite_sequence" VALUES('styles',47);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',6006);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;

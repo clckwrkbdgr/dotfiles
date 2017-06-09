@@ -31,7 +31,7 @@ inject(function() {
 		frame.document.body.appendChild(script);
 	}
 
-	window.use_old_design = true;
+	window.use_old_design = false;
 
 	// Oldcompat functions.
 	function compat_closeCurrentChat() {
@@ -61,7 +61,9 @@ inject(function() {
 	  setTimeout(compat_startNewChat, 1000);
   }
 
-  $('#chat_close').click(function() {
+  var button_close_id = window.use_old_design ? "#chat_close" : "#but-close";
+
+  $(button_close_id).click(function() {
 		//load_responses();
     restartChat();
   });
@@ -107,13 +109,15 @@ var RESPONSES = [
 		// At last, if the user has denied notifications, and you 
 		// want to be respectful there is no need to bother them any more.
 	}
+
+	var chat_status_id = window.use_old_design ? "#chat_status" : "#status-chat-started";
 	
   function advance_waiting_timer() {
 		if(typeof window.now_we_are_talking == undefined) {
 			window.now_we_are_talking = false;
 		}
 		if(!window.now_we_are_talking) {
-			var status = $('#chat_status').text();
+			var status = $(chat_status_id).text();
 			if(status.match(/^[0-9]+$/)) {
 				if(status == RESTART_CHAT_TIMEOUT) {
 					restartChat();
@@ -123,13 +127,13 @@ var RESPONSES = [
 			} else {
 				status = '0';
 			}
-			$('#chat_status').text(status);
+			$(chat_status_id).text(status);
 			setTimeout(advance_waiting_timer, 1000);
 		}
 	}
 	
 	function send_message(text) {
-		$('#chat_status').text('');
+		$(chat_status_id).text('');
 		$('#text').val(text);
 		compat_sendNewMessage(text);
 	}
@@ -146,7 +150,7 @@ var RESPONSES = [
 					} else if(response == '') {
 						return function() {};
 					} else {
-					$('#chat_status').text('Auto...');
+					$(chat_status_id).text('Auto...');
   					return function() {
 						setTimeout(function() { send_message(response); }, response.length * 75);
 					};
@@ -280,6 +284,8 @@ var RESPONSES = [
 		window.FOCUSED = false;
 	});
 
+	var disconnected_id = window.use_old_design ? "div.disconnected" : 'div.ended';
+
 	function watch_hanging_disconnect() {
 		if(typeof window.end_chat_attempt == undefined) {
 			window.end_chat_attempt = 0;
@@ -293,14 +299,14 @@ var RESPONSES = [
 		if(window.end_chat_notifications == undefined) {
 			window.end_chat_notifications = 0;
 		}
-		if($('div.disconnected').length) {
+		if($(disconnected_id).length) {
 			window.end_chat_attempt += 1;
 			if(window.end_chat_attempt > 25) {
 				soundManager.play('disconnecting');
 				notify("Disconnected.");
 				window.end_chat_notifications += 1;
 				if(window.end_chat_notifications == 3) {
-					setTimeout(restartChat, 350);
+					setTimeout(compat_startNewChat, 350);
 				}
 				window.end_chat_attempt = 0;
 			}
@@ -335,7 +341,8 @@ var RESPONSES = [
 	}
 
 
-	$('div#header').append('<label for="responses">Responses:</label><input id="responses" type="file">');
+	var chat_header_id = window.use_old_design ? "div#header" : 'div#chat-header';
+	$(chat_header_id).append('<label for="responses">Responses:</label><input id="responses" type="file">');
 	$("#responses").click(function () {
 		this.value = null;
 	} );
@@ -392,6 +399,9 @@ var RESPONSES = [
 		notify("Captcha required.");
 	}
     if(msg_event.action == "chat_connected") {
+		if(!window.use_old_design) {
+			$(chat_status_id).text('started');
+		}
 			window.is_first_message = true;
 			window.now_we_are_talking = false;
 			setTimeout(advance_waiting_timer, 1000);
