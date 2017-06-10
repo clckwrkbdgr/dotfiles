@@ -74,5 +74,6 @@ $COUNTER | while read; do
 	else
 		check_host "$HOST" "$INTERFACE" >/dev/null && exit 0
 	fi
+	sleep 1
 done && exit 0
 exit 1 # All attempts failed.
