@@ -152,7 +152,7 @@ var RESPONSES = [
 					} else {
 					$(chat_status_id).text('Auto...');
   					return function() {
-						setTimeout(function() { send_message(response); }, response.length * 75);
+						setTimeout(function() { send_message(response); }, response.length * 100);
 					};
 					}
 				}
