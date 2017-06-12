@@ -91,6 +91,13 @@ div.profile-header div.author-info
   { display: none !important; }
 }
 
+/* neuronovosti */
+@-moz-document domain("neuronovosti.ru") {
+  header, aside#sidebar1, .comments-template, div#footer div.container, nav.page-navigation,
+  div.entry-meta-cat, div.entry-meta
+  { display: none !important; }
+}
+
 /* Global color style */
 input { color: white !important; background-color: #0f0f0f !important; }
 
@@ -6229,6 +6236,9 @@ h1, h2, h3, h4, h5, h6, h1 > a, h2 > a, h3 > a, h4 > a, h5 > a, h6 > a, h1 > a:l
 .page-header a, .page-header span, #top-nav, .sidebar-container, #latest-news > h2 {
   background: #222 !important;
 }
+.page-header {
+  border-bottom: 2px solid #7e5a02;
+}
 .phone-menu-block {
   border-top-color: #fd1;
 }
@@ -6351,6 +6361,19 @@ a.ended-but {
 
 
 }',1,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(48,NULL,'',NULL,'apod','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("apod.nasa.gov") {
+
+body {
+  background-color: #111;
+  color: #999;
+}
+a {
+  color: #fb2;
+}
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -6387,42 +6410,45 @@ INSERT INTO "style_meta" VALUES(5967,36,'url-prefix','http://tweetdeck.twitter.c
 INSERT INTO "style_meta" VALUES(5968,36,'type','site');
 INSERT INTO "style_meta" VALUES(5969,45,'domain','trimps.github.io');
 INSERT INTO "style_meta" VALUES(5970,45,'type','site');
-INSERT INTO "style_meta" VALUES(5971,46,'domain','neuronovosti.ru');
-INSERT INTO "style_meta" VALUES(5972,46,'type','site');
-INSERT INTO "style_meta" VALUES(5975,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(5976,34,'domain','geektimes.ru');
-INSERT INTO "style_meta" VALUES(5977,34,'domain','habrahabr.ru');
-INSERT INTO "style_meta" VALUES(5978,34,'domain','smartfiction.ru');
-INSERT INTO "style_meta" VALUES(5979,34,'url','http://forums.roguetemple.com/irldb/');
-INSERT INTO "style_meta" VALUES(5980,34,'domain','www.kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(5981,34,'domain','linux.org.ru');
-INSERT INTO "style_meta" VALUES(5982,34,'domain','livejournal.com');
-INSERT INTO "style_meta" VALUES(5983,34,'domain','pastebin.com');
-INSERT INTO "style_meta" VALUES(5984,34,'domain','3dnews.ru');
-INSERT INTO "style_meta" VALUES(5985,34,'domain','kniganews.org');
-INSERT INTO "style_meta" VALUES(5986,34,'domain','unixmanga.net');
-INSERT INTO "style_meta" VALUES(5987,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(5988,34,'domain','nplus1.ru');
-INSERT INTO "style_meta" VALUES(5989,34,'domain','geektimes.ru');
-INSERT INTO "style_meta" VALUES(5990,34,'domain','habrahabr.ru');
-INSERT INTO "style_meta" VALUES(5991,34,'domain','smartfiction.ru');
-INSERT INTO "style_meta" VALUES(5992,34,'domain','24types.ru');
-INSERT INTO "style_meta" VALUES(5993,34,'domain','aspergers.ru');
-INSERT INTO "style_meta" VALUES(5994,34,'domain','bash.im');
-INSERT INTO "style_meta" VALUES(5995,34,'domain','candies.aniwey.net');
-INSERT INTO "style_meta" VALUES(5996,34,'domain','icq.com');
-INSERT INTO "style_meta" VALUES(5997,34,'domain','lib.ru');
-INSERT INTO "style_meta" VALUES(5998,34,'domain','knjazna.livejournal.com');
-INSERT INTO "style_meta" VALUES(5999,34,'domain','codeofhonor.com');
-INSERT INTO "style_meta" VALUES(6000,34,'domain','3dnews.ru');
-INSERT INTO "style_meta" VALUES(6001,34,'domain','kniganews.org');
-INSERT INTO "style_meta" VALUES(6002,34,'domain','unixmanga.net');
-INSERT INTO "style_meta" VALUES(6003,34,'domain','instead.syscall.ru');
-INSERT INTO "style_meta" VALUES(6004,34,'type','global');
 INSERT INTO "style_meta" VALUES(6005,47,'domain','chatvdvoem.ru');
 INSERT INTO "style_meta" VALUES(6006,47,'type','site');
+INSERT INTO "style_meta" VALUES(6009,46,'domain','neuronovosti.ru');
+INSERT INTO "style_meta" VALUES(6010,46,'type','site');
+INSERT INTO "style_meta" VALUES(6073,34,'domain','computerra.ru');
+INSERT INTO "style_meta" VALUES(6074,34,'domain','geektimes.ru');
+INSERT INTO "style_meta" VALUES(6075,34,'domain','habrahabr.ru');
+INSERT INTO "style_meta" VALUES(6076,34,'domain','smartfiction.ru');
+INSERT INTO "style_meta" VALUES(6077,34,'url','http://forums.roguetemple.com/irldb/');
+INSERT INTO "style_meta" VALUES(6078,34,'domain','www.kinopoisk.ru');
+INSERT INTO "style_meta" VALUES(6079,34,'domain','linux.org.ru');
+INSERT INTO "style_meta" VALUES(6080,34,'domain','livejournal.com');
+INSERT INTO "style_meta" VALUES(6081,34,'domain','pastebin.com');
+INSERT INTO "style_meta" VALUES(6082,34,'domain','3dnews.ru');
+INSERT INTO "style_meta" VALUES(6083,34,'domain','kniganews.org');
+INSERT INTO "style_meta" VALUES(6084,34,'domain','unixmanga.net');
+INSERT INTO "style_meta" VALUES(6085,34,'domain','neuronovosti.ru');
+INSERT INTO "style_meta" VALUES(6086,34,'domain','computerra.ru');
+INSERT INTO "style_meta" VALUES(6087,34,'domain','nplus1.ru');
+INSERT INTO "style_meta" VALUES(6088,34,'domain','geektimes.ru');
+INSERT INTO "style_meta" VALUES(6089,34,'domain','habrahabr.ru');
+INSERT INTO "style_meta" VALUES(6090,34,'domain','smartfiction.ru');
+INSERT INTO "style_meta" VALUES(6091,34,'domain','24types.ru');
+INSERT INTO "style_meta" VALUES(6092,34,'domain','aspergers.ru');
+INSERT INTO "style_meta" VALUES(6093,34,'domain','bash.im');
+INSERT INTO "style_meta" VALUES(6094,34,'domain','candies.aniwey.net');
+INSERT INTO "style_meta" VALUES(6095,34,'domain','icq.com');
+INSERT INTO "style_meta" VALUES(6096,34,'domain','lib.ru');
+INSERT INTO "style_meta" VALUES(6097,34,'domain','knjazna.livejournal.com');
+INSERT INTO "style_meta" VALUES(6098,34,'domain','codeofhonor.com');
+INSERT INTO "style_meta" VALUES(6099,34,'domain','3dnews.ru');
+INSERT INTO "style_meta" VALUES(6100,34,'domain','kniganews.org');
+INSERT INTO "style_meta" VALUES(6101,34,'domain','unixmanga.net');
+INSERT INTO "style_meta" VALUES(6102,34,'domain','instead.syscall.ru');
+INSERT INTO "style_meta" VALUES(6103,34,'type','global');
+INSERT INTO "style_meta" VALUES(6104,48,'domain','apod.nasa.gov');
+INSERT INTO "style_meta" VALUES(6105,48,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',47);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',6006);
+INSERT INTO "sqlite_sequence" VALUES('styles',48);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',6105);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
