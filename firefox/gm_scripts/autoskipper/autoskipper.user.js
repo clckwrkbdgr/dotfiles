@@ -314,6 +314,20 @@ var RESPONSES = [
 			window.end_chat_notifications = 0;
 			window.end_chat_attempt = 0;
 		}
+		if(window.search_is_stuck == undefined) {
+			window.search_is_stuck = 0;
+		}
+		if($('#searching')[0].style.display == "block") {
+			console.log(window.search_is_stuck);
+			window.search_is_stuck += 1;
+			if(window.search_is_stuck > 25) {
+				soundManager.play('disconnecting');
+				notify("Search is stuck.");
+				window.search_is_stuck = 0;
+			}
+		} else {
+			window.search_is_stuck = 0;
+		}
 		setTimeout(watch_hanging_disconnect, 200);
 	}
 
