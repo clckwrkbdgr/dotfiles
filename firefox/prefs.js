@@ -164,6 +164,7 @@ user_pref("datareporting.sessions.prunedIndex", 657);
 user_pref("devtools.editor.expandtab", false);
 user_pref("devtools.editor.tabsize", 4);
 user_pref("devtools.hud.height", 230);
+user_pref("devtools.inspector.activeSidebar", "computedview");
 user_pref("devtools.selfxss.count", 5);
 user_pref("devtools.storage.enabled", true);
 user_pref("devtools.theme", "dark");
