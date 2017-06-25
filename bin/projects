@@ -55,19 +55,30 @@ version() {
 git_has_changes() {
 	git st | \
 		grep -v '#\? *On branch master' | \
+		grep -v 'На ветке master' | \
 		grep -v 'Your branch is up-to-date with' | \
+		grep -v 'Ваша ветка обновлена в соответствии с ' | \
 		grep -v 'nothing to commit' | \
+		grep -v 'нечего коммитить, нет изменений в рабочем каталоге' | \
 		grep -v '^$'
 }
 
 git_has_changes_besides_filtered_out() {
 	git st | \
 		grep -v '#\? *On branch master' | \
+		grep -v 'На ветке master' | \
 		grep -v 'Your branch is up-to-date with' | \
+		grep -v 'Ваша ветка обновлена в соответствии с ' | \
 		grep -v 'nothing to commit' | \
+		grep -v 'нечего коммитить, нет изменений в рабочем каталоге' | \
 		grep -v '(use "git add <file>..." to update what will be committed)' | \
+		grep -v '(используйте «git add <файл>…», чтобы добавить файл в индекс)' | \
 		grep -v '(use "git checkout -- <file>..." to discard changes in working directory)' | \
+		grep -v '(используйте «git checkout -- <файл>…», чтобы отменить изменения' | \
+		grep -v 'в рабочем каталоге)' | \
 		grep -v 'no changes added to commit (use "git add"' | \
+		grep -v 'нет изменений добавленных для коммита' | \
+		grep -v '(используйте «git add» и/или «git commit -a»)' | \
 		while read line; do
 			if [ -z "$IN_CHANGES" ]; then
 				if echo "$line" | grep -q '^Changes not staged for commit:'; then
