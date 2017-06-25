@@ -16,7 +16,6 @@ export PAGER=less
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 export LC_COLLATE=C # For `ls' not to mix upper and lower case letters.
 export SDL_VIDEO_CENTERED=1
-export GREP_OPTIONS='--color=auto'
 export GREP_COLOR='1;32'
 export HISTCONTROL=ignoredups
 alias rm='rm -i'
@@ -28,6 +27,7 @@ alias s='grep -RnI --exclude-dir=.wine --exclude-dir=.svn --exclude-dir=.git'
 alias isodate='date +%Y-%m-%dT%H:%M:%S'
 alias ranger-ctime='ranger --cmd="set sort ctime" --cmd="set sort_reverse true"'
 alias qiv='qiv -f -t -i'
+alias grep='grep --color=auto'
 
 # Prompt
 WHITE="\[\033[1;37m\]"
