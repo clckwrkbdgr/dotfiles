@@ -1,5 +1,7 @@
 #!/bin/sh
 
+[ -z "$LC_CTYPE" ] && export LC_CTYPE=en_US.utf8
+
 # if running bash
 if [ -n "$BASH_VERSION" ]; then
     # include .bashrc if it exists
