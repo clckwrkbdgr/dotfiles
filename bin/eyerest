@@ -36,12 +36,14 @@ def darken_screen():
 	toggle_redshift()
 	time.sleep(2) # Ugly hack to ensure xrandr darkening without redshift's interfering.
 	for i in reversed(BRIGHTNESS):
-		os.system("xrandr --output eDP1 --brightness {0}".format(i))
+		# TODO pick correct output automatically.
+		os.system("xrandr --output eDP-1 --brightness {0}".format(i))
 		time.sleep(.5)
 
 def lighten_screen():
 	for i in BRIGHTNESS:
-		os.system("xrandr --output eDP1 --brightness {0}".format(i))
+		# TODO pick correct output automatically.
+		os.system("xrandr --output eDP-1 --brightness {0}".format(i))
 		time.sleep(.5)
 	toggle_redshift()
 
