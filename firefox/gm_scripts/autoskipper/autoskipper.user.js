@@ -31,6 +31,12 @@ inject(function() {
 		frame.document.body.appendChild(script);
 	}
 
+	if(!('contains' in String.prototype)) {
+		String.prototype.contains = function(str, startIndex) {
+			return -1 !== String.prototype.indexOf.call(this, str, startIndex);
+		};
+	}
+
 	window.use_old_design = false;
 
 	// Oldcompat functions.
@@ -305,9 +311,9 @@ var RESPONSES = [
 				soundManager.play('disconnecting');
 				notify("Disconnected.");
 				window.end_chat_notifications += 1;
-				if(window.end_chat_notifications == 3) {
+				//if(window.end_chat_notifications == 3) {
 					setTimeout(compat_startNewChat, 350);
-				}
+				//}
 				window.end_chat_attempt = 0;
 			}
 		} else {
@@ -386,6 +392,12 @@ var RESPONSES = [
 		if(window.chat_is_stuck == undefined) {
 			window.chat_is_stuck = 0;
 		}
+		if(window.flood_counter == undefined) {
+			window.flood_counter = 0;
+		}
+		if(window.last_message_time == undefined) {
+			window.last_message_time = 0;
+		}
 		chat_sound_on = false;
 
 		var result = window.onmessageOut(evt);
@@ -400,9 +412,9 @@ var RESPONSES = [
 			if(window.chat_is_stuck >= 10) {
 				soundManager.play('disconnecting');
 				notify("Chat is stuck.");
-				if(window.chat_is_stuck >= 12) {
+				//if(window.chat_is_stuck >= 12) {
 					setTimeout(restartChat, 350);
-				}
+				//}
 			}
 		} else if(msg_event.action != "user_writing") {
 			window.chat_is_stuck = 0;
@@ -436,6 +448,18 @@ var RESPONSES = [
 			}
 		}
 		if(msg_event.action == "message_from_user" && msg_event.sender == 'someone') {
+			var timestamp = Date.now();
+			if(timestamp - window.last_message_time < 1000) {
+				++window.flood_counter;
+			} else {
+				window.flood_counter = 0;
+			}
+			window.last_message_time = timestamp;
+			if(window.flood_counter >= 5) {
+				restartChat();
+				window.flood_counter = 0;
+			}
+
 			if(!window.now_we_are_talking) {
 				window.now_we_are_talking = true;
 			}
