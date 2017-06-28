@@ -60,4 +60,8 @@ sed '/devtools.toolbox.splitconsoleHeight/d' | \
 sed '/devtools.debugger.ui.panes-[a-z]*-width/d' | \
 sed '/devtools.toolbox.footer.height/d' | \
 sed '/extensions.firefox@zenmate.com.sdk.version/d' | \
+sed '/\(extensions.\)\?e10s.rollout/d' | \
+sed '/extensions.webextensions.uuids/d' | \
+sed '/media.gmp[.-]/d' | \
+sed '/services.blocklist/d' | \
 sed 's|'"$HOME"'|$HOME|g'
