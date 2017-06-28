@@ -38,6 +38,7 @@ inject(function() {
 	}
 
 	window.use_old_design = false;
+	var TEST = false;
 
 	// Oldcompat functions.
 	function compat_closeCurrentChat() {
@@ -196,19 +197,36 @@ var RESPONSES = [
 		return null;
 	}
 
+	function subst_presets(expr, presets) {
+		if(TEST) { console.log('SUBST: ' + expr); }
+		for(var name in presets) {
+			var placeholder = '{' + name + '}';
+			var fuse = 10;
+			while(fuse > 0 && expr.contains(placeholder)) {
+				if(TEST) { console.log('FOUND PRESET: ' + placeholder); }
+				expr = expr.replace(placeholder, '(' + presets[name] + ')');
+				if(TEST) { console.log('REPLACED: ' + expr); }
+				--fuse;
+			}
+		}
+		if(TEST) { console.log('SUBST RESULT: ' + expr); }
+		return expr;
+	}
 	function parse_responses(text) {
 		var default_patterns = find_response_group(undefined);
 
+		var presets = {};
 		var data = text.split(/\n+/g);
 		for(var i = 0; i < data.length; ++i) {
 			var expr = data[i].trim();
+			if(TEST) { console.log(expr); }
 			if(expr.contains('=>')) {
 				var parts = expr.split(/ *=> */g);
 				if(parts.length != 2) {
 					console.log("Cannot parse response: " + expr);
 					continue;
 				}
-				var question = eval(parts[0]);
+				var question = eval(subst_presets(parts[0], presets));
 				var answer = eval(parts[1]);
 				if(question == undefined || question.length == 0) {
 					continue;
@@ -223,7 +241,17 @@ var RESPONSES = [
 				} else {
 					window.RESPONSES.push([answer, [question]]);
 				}
+			} else if(expr.match(/^[A-Z][A-Z_0-9]* *= */)) {
+				expr = /^([A-Z][A-Z_0-9]*) *= *(.*)/.exec(expr);
+				var name = expr[1];
+				var preset = eval(expr[2]);
+				if(preset == undefined || preset.length == 0) {
+					continue;
+				}
+				if(TEST) { console.log('PRESET: ' + name + ' = ' + preset); }
+				presets[name] = preset;
 			} else {
+				expr = subst_presets(expr, presets);
 				expr = eval(expr);
 				if(expr == undefined) {
 					continue;
@@ -237,6 +265,20 @@ var RESPONSES = [
 		}
 
 		return data.length;
+	}
+	if(TEST) {
+		var TEST_RESPONSES = [
+			'VAR= "[0-9]"',
+			'/^[a-z]_{VAR}/i',
+			'/^[a-z]_[0-9]/i',
+			'/question/i => "answer"',
+			'/question{VAR}/i => "answer"',
+		].join('\n');
+		if(window.RESPONSES == undefined) {
+			window.RESPONSES = RESPONSES;
+		}
+		parse_responses(TEST_RESPONSES);
+		TEST=false;
 	}
 
 	function load_responses(file_event) {
