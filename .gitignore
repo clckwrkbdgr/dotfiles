@@ -46,6 +46,9 @@ firefox/startupCache/
 firefox/sessionCheckpoints.json
 firefox/sessionstore.js
 firefox/blocklist.xml
+firefox/blocklist-addons.json
+firefox/blocklist-gfx.json
+firefox/blocklist-plugins.json
 firefox/cert8.db
 firefox/cert_override.txt
 firefox/compatibility.ini
@@ -73,6 +76,7 @@ firefox/safebrowsing
 firefox/firebug/annotations.json
 firefox/firebug/breakpoints.json
 firefox/crashes/store.json.mozlz4
+firefox/gmp-gmpopenh264/1.6/*gmpopenh264*
 # Firefox local/share
 firefox/gm_scripts/Display_LaTeX/display-latex.user.js
 firefox/key3.db
@@ -88,6 +92,10 @@ firefox/places.sqlite
 firefox/webappsstore.sqlite
 firefox/downloads.json
 firefox/logins.json
+firefox/containers.json
+firefox/kinto.sqlite
+firefox/storage.sqlite
+firefox/weave/changes/greasemonkey.json
 # Purple cache
 purple/accels
 purple/certificates
