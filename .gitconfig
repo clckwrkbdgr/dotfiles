@@ -64,3 +64,7 @@
 [filter "gtkfilechooser"]
 	smudge = cat
 	clean = "sed 's|Geometry\\([XY]\\)=[0-9]\\+|Geometry\\1=0|'"
+
+[filter "remove_known_applications"]
+	smudge = cat
+	clean = "xmlstarlet ed -d \"/channel/property[@name='applications']/property[@name='known_applications']\""
