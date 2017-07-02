@@ -125,7 +125,7 @@ push() {
 	find -L . -type d | while read D; do
 		[ ! -d "$D/.git" ] && continue
 		pushd $D >/dev/null
-		if git st | grep -q 'Your branch is ahead of'; then
+		if git st | grep -q 'Your branch is ahead of\|Ваша ветка опережает .* на '; then
 			[ "$D" == "." ] && D="$(basename "$(pwd)")"
 			echo -e "\033[1;31m$D\033[0m"
 			git push origin master --tags
