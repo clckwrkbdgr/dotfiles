@@ -89,7 +89,7 @@ export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
 export RLWRAP_HOME="$XDG_CACHE_HOME/rlwrap_history"
 export HISTFILE="$XDG_CACHE_HOME/bash/history"
 mkdir -p "$XDG_CACHE_HOME/vim"
-wget() { wget --hsts-file "$XDG_CACHE_HOME/wget-hsts" }
+wget() { wget --hsts-file "$XDG_CACHE_HOME/wget-hsts"; }
 export -f wget
 
 # These are valid only for one session and could placed even in RAM.
