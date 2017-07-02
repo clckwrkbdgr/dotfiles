@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. ~/.profile
+
 # fix broken $UID on some system...
 if test "x$UID" = "x"; then
 	if test -x /usr/xpg4/bin/id; then
@@ -129,6 +131,9 @@ fi
 
 # User config.
 test -f "$XDG_CONFIG_HOME/xinitrc" && . "$XDG_CONFIG_HOME/xinitrc"
+
+# Section for XDG directory support.
+test -f ~/.config/bin/xdg && . ~/.config/bin/xdg
 
 # launch gpg-agent or ssh-agent if enabled.
 ssh_agent_enabled=`xfconf-query -c xfce4-session -p /startup/ssh-agent/enabled 2> /dev/null`
