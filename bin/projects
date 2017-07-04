@@ -81,18 +81,18 @@ git_has_changes_besides_filtered_out() {
 		grep -v '(используйте «git add» и/или «git commit -a»)' | \
 		while read line; do
 			if [ -z "$IN_CHANGES" ]; then
-				if echo "$line" | grep -q '^Changes not staged for commit:'; then
+				if echo "$line" | grep -q '^Changes not staged for commit:\|Изменения, которые не в индексе для коммита:'; then
 					IN_CHANGES=1
 				else
 					echo "$line"
 				fi
 			else
-				if echo "$line" | grep -v '^$' | grep -vq '^modified: '; then
+				if echo "$line" | grep -v '^$' | grep -vq '^modified: \|изменено: '; then
 					IN_CHANGES=0
 					echo "$line"
 				fi
-				if echo "$line" | grep -q '^modified: '; then
-					filename="$(echo "$line" | sed 's/^modified: *\(.*\)/\1/')"
+				if echo "$line" | grep -q '^modified: \|изменено: '; then
+					filename="$(echo "$line" | sed 's/^\(modified: \|изменено: \)\(.*\)/\2/')"
 					git diff "$filename"
 				fi
 			fi
