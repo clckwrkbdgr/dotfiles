@@ -25,21 +25,21 @@ fix_hardcoded_dotfile ~/.profile "$XDG_CONFIG_HOME/profile"
 export GIMP2_DIRECTORY="$XDG_CONFIG_HOME/gimp"
 export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
 mocp() { /usr/bin/mocp -C "$XDG_CONFIG_HOME/moc/config" "$@"; }
-export -f mocp
+[ -n "$BASH" ] && export -f mocp
 svn() { /usr/bin/svn --config-dir "$XDG_CONFIG_HOME/subversion" "$@"; }
-export -f svn
+[ -n "$BASH" ] && export -f svn
 export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
 export VIMPERATOR_RUNTIME="$XDG_CONFIG_HOME/vimperator"
 export VIMINIT='let $MYVIMRC="'"$XDG_CONFIG_HOME"'/vim/vimrc" | source $MYVIMRC'
 case "$SHELL" in *bash*) eval `dircolors "$XDG_CONFIG_HOME/dir_colors"` ;; esac
 export MAILRC=~/.config/mailx/mailrc
 dosbox() { /usr/bin/dosbox -conf $XDG_CONFIG_HOME/dosbox/dosbox-0.74.conf "$@"; }
-export -f dosbox
+[ -n "$BASH" ] && export -f dosbox
 prboom() { /usr/local/games/prboom-plus -config $XDG_CONFIG_HOME/prboom-plus/prboom-plus.cfg -save $XDG_DATA_HOME/prboom-plus "$@"; }
-export -f prboom
+[ -n "$BASH" ] && export -f prboom
 export PENTADACTYL_RUNTIME=$XDG_CONFIG_HOME/pentadactyl
 sylpheed() { /usr/bin/sylpheed --configdir $XDG_CONFIG_HOME/sylpheed-2.0 "$@"; }
-export -f sylpheed
+[ -n "$BASH" ] && export -f sylpheed
 export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 # TODO .w3m : hardcoded
 fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
@@ -79,7 +79,7 @@ pidgin() {
 	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/xmpp-caps.xml" "$XDG_CACHE_HOME/purple/xmpp-caps.xml"
 	/usr/bin/pidgin --config=$XDG_CONFIG_HOME/purple "$@";
 }
-export -f pidgin
+[ -n "$BASH" ] && export -f pidgin
 export FREECIV_SAVE_PATH="$XDG_DATA_HOME"/freeciv/saves
 export FREECIV_SCENARIO_PATH="$XDG_DATA_HOME"/freeciv/scenarios:/usr/share/freeciv/scenarios:/usr/share/games/freeciv/scenarios:/usr/local/share/freeciv/scenarios
 export FREECIV_DATA_PATH="$XDG_DATA_HOME"/freeciv:/usr/share/freeciv:/usr/share/games/freeciv:/usr/local/share/freeciv
@@ -90,7 +90,7 @@ export RLWRAP_HOME="$XDG_CACHE_HOME/rlwrap_history"
 export HISTFILE="$XDG_CACHE_HOME/bash/history"
 mkdir -p "$XDG_CACHE_HOME/vim"
 wget() { wget --hsts-file "$XDG_CACHE_HOME/wget-hsts"; }
-export -f wget
+[ -n "$BASH" ] && export -f wget
 
 # These are valid only for one session and could placed even in RAM.
 # TODO .dbus : ~/.config/xfce4/xinitrc will probably handle dbus-launch, how to pass XDG_RUNTIME_DIR to it?
