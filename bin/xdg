@@ -89,7 +89,7 @@ export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
 export RLWRAP_HOME="$XDG_CACHE_HOME/rlwrap_history"
 export HISTFILE="$XDG_CACHE_HOME/bash/history"
 mkdir -p "$XDG_CACHE_HOME/vim"
-wget() { wget --hsts-file "$XDG_CACHE_HOME/wget-hsts"; }
+wget() { /usr/bin/wget --hsts-file "$XDG_CACHE_HOME/wget-hsts" "$@"; }
 [ -n "$BASH" ] && export -f wget
 
 # These are valid only for one session and could placed even in RAM.
@@ -99,6 +99,6 @@ export ICEAUTHORITY="$XDG_RUNTIME_DIR/ICEauthority"
 
 # If supplied, run command in XDG-compliant environment.
 # If XDG_HOME is set, it substitutes original HOME variable for the command invokation.
-[ -n "$1" ] && HOME=${XDG_HOME:-$HOME} "$@"
+[ "$0" == "$BASH_SOURCE" -a -n "$1" ] && HOME=${XDG_HOME:-$HOME} "$@"
 
 true # To return EXIT_SUCCESS
