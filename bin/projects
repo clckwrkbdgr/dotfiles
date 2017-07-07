@@ -92,7 +92,7 @@ git_has_changes_besides_filtered_out() {
 					echo "$line"
 				fi
 				if echo "$line" | grep -q '^modified: \|изменено: '; then
-					filename="$(echo "$line" | sed 's/^\(modified: \|изменено: \)\(.*\)/\2/')"
+					filename="$(echo "$line" | sed 's/^\(modified: \+\|изменено: \+\)\(.*\)/\2/')"
 					git diff "$filename"
 				fi
 			fi
