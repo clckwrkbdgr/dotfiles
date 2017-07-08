@@ -15,6 +15,7 @@ HOMEDIR_DOTFILES = """.bashrc
 .config
 .cache
 .local
+.state
 .cloud
 .ssh
 """.splitlines()
