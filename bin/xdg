@@ -68,7 +68,7 @@ case "$1" in
 esac
 
 # Local data. Should be stored in some backup or outer storage.
-export WINEPREFIX=/opt/wine-umi
+export WINEPREFIX=/opt/wine-$USER
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 # TODO .dropbox : hardcoded
 # TODO .dropbox-dist : hardcoded
@@ -95,9 +95,9 @@ export FREECIV_SCENARIO_PATH="$XDG_DATA_HOME"/freeciv/scenarios:/usr/share/freec
 export FREECIV_DATA_PATH="$XDG_DATA_HOME"/freeciv:/usr/share/freeciv:/usr/share/games/freeciv:/usr/local/share/freeciv
 
 # These could easily be cleared at any time without loss of any important data.
-export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
-export RLWRAP_HOME="$XDG_CACHE_HOME/rlwrap_history"
-export HISTFILE="$XDG_CACHE_HOME/bash/history"
+export LESSHISTFILE="$XDG_STATE_HOME/less_history"
+export RLWRAP_HOME="$XDG_STATE_HOME/rlwrap_history"
+export HISTFILE="$XDG_STATE_HOME/bash_history"
 mkdir -p "$XDG_CACHE_HOME/vim"
 wget() { /usr/bin/wget --hsts-file "$XDG_CACHE_HOME/wget-hsts" "$@"; }
 [ -n "$BASH" ] && export -f wget
