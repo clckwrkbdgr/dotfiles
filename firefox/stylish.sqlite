@@ -7899,6 +7899,20 @@ INSERT INTO "styles" VALUES(49,NULL,'',NULL,'flibusta','/*675767@gmail.com*/
 
 
 ',1,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(50,NULL,'',NULL,'zenhabits','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("zenhabits.net") {
+
+body, p, .post li {
+  background-color: #111;
+  color: #999;
+}
+
+h2, .post a:link {
+  color: #ccc;
+}
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -7980,8 +7994,10 @@ INSERT INTO "style_meta" VALUES(6182,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(6183,34,'type','global');
 INSERT INTO "style_meta" VALUES(6184,47,'domain','chatvdvoem.ru');
 INSERT INTO "style_meta" VALUES(6185,47,'type','site');
+INSERT INTO "style_meta" VALUES(6186,50,'domain','zenhabits.net');
+INSERT INTO "style_meta" VALUES(6187,50,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',49);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',6185);
+INSERT INTO "sqlite_sequence" VALUES('styles',50);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',6187);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
