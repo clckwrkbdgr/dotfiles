@@ -66,6 +66,7 @@
     <RDF:li RDF:resource="urn:mimetype:application/x-octetstream"/>
     <RDF:li RDF:resource="urn:mimetype:image/bmp"/>
     <RDF:li RDF:resource="urn:mimetype:application/xml"/>
+    <RDF:li RDF:resource="urn:mimetype:application/x-xz"/>
   </RDF:Seq>
   <RDF:Seq RDF:about="urn:schemes:root">
     <RDF:li RDF:resource="urn:scheme:mailto"/>
@@ -224,6 +225,9 @@
   <RDF:Description RDF:about="urn:mimetype:application/x-xpinstall" NC:value="application/x-xpinstall" NC:editable="true" NC:fileExtensions="xpi" NC:description="">
     <NC:handlerProp RDF:resource="urn:mimetype:handler:application/x-xpinstall"/>
   </RDF:Description>
+  <RDF:Description RDF:about="urn:mimetype:application/x-xz" NC:value="application/x-xz" NC:fileExtensions="xz">
+    <NC:handlerProp RDF:resource="urn:mimetype:handler:application/x-xz"/>
+  </RDF:Description>
   <RDF:Description RDF:about="urn:mimetype:application/x-zip" NC:value="application/x-zip" NC:editable="true" NC:description="Zip Archive">
     <NC:handlerProp RDF:resource="urn:mimetype:handler:application/x-zip"/>
   </RDF:Description>
@@ -367,6 +371,7 @@
   <RDF:Description RDF:about="urn:mimetype:handler:application/x-xpinstall" NC:alwaysAsk="true" NC:saveToDisk="false" NC:useSystemDefault="false" NC:handleInternal="false">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:application/x-xpinstall"/>
   </RDF:Description>
+  <RDF:Description RDF:about="urn:mimetype:handler:application/x-xz" NC:saveToDisk="true" NC:alwaysAsk="true"/>
   <RDF:Description RDF:about="urn:mimetype:handler:application/x-zip" NC:alwaysAsk="true" NC:saveToDisk="true">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:application/x-zip"/>
   </RDF:Description>
