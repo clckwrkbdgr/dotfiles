@@ -24,7 +24,7 @@ function check_load_state() {
 }
 
 if(window.location.href.substr(-8) == '#refresh') {
-  setTimeout(check_load_state, 1000);  
+  setTimeout(check_load_state, 5000);
 } else {
   console.log("Not a #refresh target!");
 }
