@@ -33,6 +33,7 @@ user_pref("browser.download.manager.closeWhenDone", true);
 user_pref("browser.download.manager.retention", 0);
 user_pref("browser.download.manager.showWhenStarting", false);
 user_pref("browser.download.panel.firstSessionCompleted", true);
+user_pref("browser.download.panel.shown", true);
 user_pref("browser.download.save_converter_index", 1);
 user_pref("browser.feeds.showFirstRunUI", false);
 user_pref("browser.formfill.enable", false);

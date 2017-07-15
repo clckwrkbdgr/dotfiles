@@ -79,6 +79,7 @@ firefox/crashes/store.json.mozlz4
 firefox/gmp-gmpopenh264/1.6/*gmpopenh264*
 firefox/AlternateServices.txt
 firefox/SecurityPreloadState.txt
+firefox/datareporting/
 # Firefox local/share
 firefox/gm_scripts/Display_LaTeX/display-latex.user.js
 firefox/key3.db
