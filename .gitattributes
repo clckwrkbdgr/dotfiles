@@ -1,6 +1,7 @@
 xfce4-desktop.xml filter=ignorewallpaper
 xfce4-panel.xml filter=ignore_systray_visibility
 xfce4-notifyd.xml filter=remove_known_applications
+xfce4-settings-manager.xml filter=remove_xfce_window_size
 moc/config filter=ignore_moc_fastdir
 gajim/config filter=gajim_config
 insteadrc filter=insteadrc_remove_state

@@ -68,3 +68,7 @@
 [filter "remove_known_applications"]
 	smudge = cat
 	clean = "xmlstarlet ed -d \"/channel/property[@name='applications']/property[@name='known_applications']\""
+
+[filter "remove_xfce_window_size"]
+	smudge = cat
+	clean = "xmlstarlet ed -d \"/channel/property[@name='last']/property[@name='window-width']\" | xmlstarlet ed -d \"/channel/property[@name='last']/property[@name='window-height']\""
