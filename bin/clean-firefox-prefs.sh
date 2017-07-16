@@ -8,6 +8,7 @@ sed '/browser[.]safebrowsing[.]provider[.]\(mozilla\|google\)[.][^.]*updatetime/
 sed '/capability.policy.maonoscript.sites/d' | \
 sed '/datareporting.sessions.previous/d' | \
 sed '/datareporting.sessions.current/d' | \
+sed '/datareporting.sessions.prunedIndex/d' | \
 sed '/devtools.scratchpad.recentFilePaths/d' | \
 sed '/extensions.adblockplus.notificationdata/d' | \
 sed '/extensions.bootstrappedAddons/d' | \
