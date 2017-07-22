@@ -80,6 +80,7 @@ firefox/gmp-gmpopenh264/1.6/*gmpopenh264*
 firefox/AlternateServices.txt
 firefox/SecurityPreloadState.txt
 firefox/datareporting/
+firefox/saved-telemetry-pings/
 # Firefox local/share
 firefox/gm_scripts/Display_LaTeX/display-latex.user.js
 firefox/key3.db
