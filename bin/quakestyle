@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Emulates quake terminal drop-down functionality for specified application.
 # Based on quake_term.sh by Jimmy Wu (github:jw013)
 # In addition to basic version also implements drop-down animation,
@@ -41,19 +41,21 @@ then # hide active quake term
 	# Un-maximized before changing size.
 	wmctrl -R "$quake_term_wmclass" -x -b remove,maximized_vert,maximized_horz
 	# Resize to fit the desktop.
-	xdotool windowsize  $(xdotool getactivewindow) 100% 100%
+	activewindow=$(xdotool getactivewindow)
+	xdotool windowsize "$activewindow" 100% 100%
 	# Step by step move window out of view
 	for i in `seq 1 $ANIMATION_COUNT`; do
-		xdotool windowmove  $(xdotool getactivewindow) -3 -${i}0
+		xdotool windowmove "$activewindow" -3 -${i}0
 	done
 
 	xdotool windowminimize $(xdotool getactivewindow)
 else
 	# attempt to both focus and raise quake terminal
 	if wmctrl -R "$quake_term_wmclass" -x ; then
+		activewindow=$(xdotool getactivewindow)
 		# Step by step drop window down.
 		for i in `seq $ANIMATION_COUNT -1 1`; do
-			xdotool windowmove  $(xdotool getactivewindow) -3 -${i}0
+			xdotool windowmove "$activewindow" -3 -${i}0
 		done
 		# And maximize it at the end.
 		wmctrl -R "$quake_term_wmclass" -x -b add,maximized_vert,maximized_horz
