@@ -68,4 +68,5 @@ sed '/extensions.webextensions.uuids/d' | \
 sed '/media.gmp[.-]/d' | \
 sed '/services.blocklist/d' | \
 sed '/browser.startup.homepage_override.torbrowser.version/d' | \
+sed '/browser.rights.3.shown/d' | \
 sed 's|'"$HOME"'|$HOME|g'
