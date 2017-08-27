@@ -201,7 +201,7 @@ var RESPONSES = [
 		if(TEST) { console.log('SUBST: ' + expr); }
 		for(var name in presets) {
 			var placeholder = '{' + name + '}';
-			var fuse = 10;
+			var fuse = 100;
 			while(fuse > 0 && expr.contains(placeholder)) {
 				if(TEST) { console.log('FOUND PRESET: ' + placeholder); }
 				expr = expr.replace(placeholder, '(' + presets[name] + ')');
@@ -249,6 +249,7 @@ var RESPONSES = [
 					if(preset == undefined || preset.length == 0) {
 						continue;
 					}
+					preset = subst_presets(preset, presets);
 					if(TEST) { console.log('PRESET: ' + name + ' = ' + preset); }
 					presets[name] = preset;
 				} else {
@@ -373,7 +374,7 @@ var RESPONSES = [
 		if($('#searching')[0].style.display == "block") {
 			console.log(window.search_is_stuck);
 			window.search_is_stuck += 1;
-			if(window.search_is_stuck > 25) {
+			if(window.search_is_stuck > 100) {
 				soundManager.play('disconnecting');
 				notify("Search is stuck.");
 				window.search_is_stuck = 0;
