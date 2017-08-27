@@ -64,7 +64,7 @@
                     (show-button-bar "true"))))))
 (session-info "toplevel"
     (factory-entry "gimp-empty-image-window")
-    (position 410 370)
+    (position 377 131)
     (size 620 200)
     (open-on-exit))
 (session-info "toplevel"
