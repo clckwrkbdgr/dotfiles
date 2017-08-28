@@ -259,10 +259,6 @@ user_pref("extensions.firebug.toolbarCustomizationDone", true);
 user_pref("extensions.firebug.toolbarCustomizationDone2", true);
 user_pref("extensions.firefm.lastUser", "reddeadheat");
 user_pref("extensions.firefm.stationFirstRun", false);
-user_pref("extensions.firefox@zenmate.com.sdk.baseURI", "resource://firefox-at-zenmate-dot-com/");
-user_pref("extensions.firefox@zenmate.com.sdk.domain", "firefox-at-zenmate-dot-com");
-user_pref("extensions.firefox@zenmate.com.sdk.load.reason", "startup");
-user_pref("extensions.firefox@zenmate.com.sdk.rootURI", "jar:file://$HOME/.config/firefox/extensions/firefox@zenmate.com.xpi!/");
 user_pref("extensions.firefoxreader.currentversion", "0.7");
 user_pref("extensions.firefoxreader.styleoptions", "3,1,2,2,0");
 user_pref("extensions.getAddons.databaseSchema", 5);
@@ -283,6 +279,7 @@ user_pref("extensions.liberator.saved.browser.link.open_newwindow.restriction", 
 user_pref("extensions.liberator.saved.browser.tabs.autoHide", false);
 user_pref("extensions.liberator.saved.layout.scrollbar.side", 2);
 user_pref("extensions.pendingOperations", false);
+user_pref("extensions.pocket.enabled", false);
 user_pref("extensions.shownSelectionUI", true);
 user_pref("extensions.sqlitemanager.openMode", 2);
 user_pref("extensions.sqlitemanager.openWithLastDb", false);
