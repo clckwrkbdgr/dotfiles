@@ -52,7 +52,6 @@ user_pref("browser.preferences.advanced.selectedTabIndex", 4);
 user_pref("browser.reader.detectedFirstArticle", true);
 user_pref("browser.search.countryCode", "UA");
 user_pref("browser.search.defaultenginename", "DuckDuckGo HTML");
-user_pref("browser.search.hiddenOneOffs", "Поиск@Mail.Ru");
 user_pref("browser.search.region", "UA");
 user_pref("browser.search.selectedEngine", "DuckDuckGo (HTML)");
 user_pref("browser.search.useDBForOrder", true);
