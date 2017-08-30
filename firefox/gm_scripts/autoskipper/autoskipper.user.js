@@ -150,18 +150,24 @@ var RESPONSES = [
 			var patterns = window.RESPONSES[j][1];
 			var response = window.RESPONSES[j][0];
 			for(var i = 0; i < patterns.length; ++i) {
-				if(text.match(patterns[i])) {
-					if(response == undefined) {
-						window.is_first_message = false;
-						return restartChat;
-					} else if(response == '') {
-						return function() {};
-					} else {
-					$(chat_status_id).text('Auto...');
-  					return function() {
-						setTimeout(function() { send_message(response); }, response.length * 100);
-					};
+				try {
+					if(text.match(patterns[i])) {
+						console.log(patterns[i]);
+						if(response == undefined) {
+							window.is_first_message = false;
+							return restartChat;
+						} else if(response == '') {
+							return function() {};
+						} else {
+							$(chat_status_id).text('Auto...');
+							return function() {
+								setTimeout(function() { send_message(response); }, response.length * 100);
+							};
+						}
 					}
+				} catch(err) {
+					alert("Error during matching expression '" + patterns[i] + "': " + err);
+					console.log(patterns[i], err);
 				}
 			}
 		}
@@ -242,7 +248,7 @@ var RESPONSES = [
 					} else {
 						window.RESPONSES.push([answer, [question]]);
 					}
-				} else if(expr.match(/^[A-Z][A-Z_0-9]* *= */)) {
+				} else if(expr.match(/^[A-Z_][A-Z_0-9]* *= */)) {
 					expr = /^([A-Z][A-Z_0-9]*) *= *(.*)/.exec(expr);
 					var name = expr[1];
 					var preset = eval(expr[2]);
@@ -372,7 +378,6 @@ var RESPONSES = [
 			window.search_is_stuck = 0;
 		}
 		if($('#searching')[0].style.display == "block") {
-			console.log(window.search_is_stuck);
 			window.search_is_stuck += 1;
 			if(window.search_is_stuck > 100) {
 				soundManager.play('disconnecting');
