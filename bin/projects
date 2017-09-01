@@ -168,7 +168,7 @@ addlocal() {
 	if [ "$answer" == "y" ]; then
 		git init --bare "$NEW_REMOTE_PATH"
 		git remote add "$LOCAL_REMOTE_NAME" "$NEW_REMOTE_PATH"
-		git push "$LOCAL_REMOTE_NAME" master --tags
+		git push -u "$LOCAL_REMOTE_NAME" master --tags
 	fi
 }
 
