@@ -278,9 +278,7 @@
   <RDF:Description RDF:about="urn:mimetype:handler:application/rar" NC:alwaysAsk="true" NC:saveToDisk="true">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:application/rar"/>
   </RDF:Description>
-  <RDF:Description RDF:about="urn:mimetype:handler:application/rtf" NC:alwaysAsk="true" NC:saveToDisk="true">
-    <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:application/rtf"/>
-  </RDF:Description>
+  <RDF:Description RDF:about="urn:mimetype:handler:application/rtf" NC:useSystemDefault="true" NC:alwaysAsk="true"/>
   <RDF:Description RDF:about="urn:mimetype:handler:application/text" NC:alwaysAsk="true" NC:saveToDisk="true">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:application/text"/>
   </RDF:Description>

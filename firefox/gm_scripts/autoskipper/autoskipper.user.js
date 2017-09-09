@@ -379,7 +379,7 @@ var RESPONSES = [
 		}
 		if($('#searching')[0].style.display == "block") {
 			window.search_is_stuck += 1;
-			if(window.search_is_stuck > 100) {
+			if(window.search_is_stuck > 200) {
 				soundManager.play('disconnecting');
 				notify("Search is stuck.");
 				window.search_is_stuck = 0;
