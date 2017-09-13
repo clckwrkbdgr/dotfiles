@@ -480,6 +480,8 @@ var RESPONSES = [
 		}
 
     if(msg_event.action == "captcha_required") {
+		window.my_messages = false;
+		window.chat_is_stuck = 0;
 		soundManager.play('disconnecting');
 		notify("Captcha required.");
 	}
@@ -495,6 +497,8 @@ var RESPONSES = [
 			setTimeout(advance_waiting_timer, 1000);
 		}
 		if(msg_event.action == "chat_removed") {
+			window.my_messages = false;
+			window.chat_is_stuck = 0;
 			window.now_we_are_talking = true;
 		}
 	  if(msg_event.action == "user_writing") {
