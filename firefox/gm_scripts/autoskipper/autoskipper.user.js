@@ -451,6 +451,12 @@ var RESPONSES = [
 		if(window.last_message_time == undefined) {
 			window.last_message_time = 0;
 		}
+		if(window.current_message_count == undefined) {
+			window.current_message_count = 0;
+		}
+		if(window.my_messages == undefined) {
+			window.my_messages = false;
+		}
 		chat_sound_on = false;
 
 		var result = window.onmessageOut(evt);
@@ -460,16 +466,16 @@ var RESPONSES = [
 		// {"action":"message_from_user","sender":"someone","message":"Чот все сонные такие","from":"e41775e2b1dcb4f636a2f765fa6dace5","chat":"1463935602711c3935"}
 		// {"action":"user_writing","from":"e41775e2b1dcb4f636a2f765fa6dace5","chat":"1463935602711c3935"}
 		// {"action":"chat_removed","reason":"user_leaved","chat":"1463935602711c3935"}
-		if(msg_event.action == "hrt_response" && window.is_first_message) {
+		if(msg_event.action == "hrt_response" && (window.is_first_message || !window.my_messages)) {
 			window.chat_is_stuck += 1;
-			if(window.chat_is_stuck >= 10) {
+			if(window.chat_is_stuck >= 10 + 2 * window.current_message_count) {
 				soundManager.play('disconnecting');
 				notify("Chat is stuck.");
 				//if(window.chat_is_stuck >= 12) {
 					setTimeout(restartChat, 350);
 				//}
 			}
-		} else if(msg_event.action != "user_writing") {
+		} else if(msg_event.action == "user_writing") {
 			window.chat_is_stuck = 0;
 		}
 
@@ -481,6 +487,9 @@ var RESPONSES = [
 		if(!window.use_old_design) {
 			$(chat_status_id).text('started');
 		}
+			window.my_messages = false;
+			window.current_message_count = 0;
+			window.chat_is_stuck = 0;
 			window.is_first_message = true;
 			window.now_we_are_talking = false;
 			setTimeout(advance_waiting_timer, 1000);
@@ -499,6 +508,9 @@ var RESPONSES = [
 			} else {
 				soundManager.play('disconnecting');
 			}
+		}
+		if(msg_event.action == "message_from_user") {
+			window.current_message_count++;
 		}
 		if(msg_event.action == "message_from_user" && msg_event.sender == 'someone') {
 			var timestamp = Date.now();
@@ -538,8 +550,11 @@ var RESPONSES = [
 				handle_long_message(msg_event.message);
 			}
 		}
+		if(msg_event.action == "message_from_user" && msg_event.sender != 'someone') {
+			window.my_messages = true;
+		}
 		var my_responses = get_only_my_responses(window.RESPONSES);
-		if(msg_event.action == "message_from_user" && msg_event.sender != 'someone' && my_responses.indexOf(msg_event.message) < 0) {
+		if(!window.is_first_message && msg_event.action == "message_from_user" && msg_event.sender != 'someone' && my_responses.indexOf(msg_event.message) < 0) {
 			soundManager.play('sending');
 		}
 		return result;
