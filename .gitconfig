@@ -1,6 +1,10 @@
 # Sadly this file isn't recognized by git.
 # Should be added manually to .git/config
 
+[filter "textsort"]
+	smudge = cat
+	clean = sort
+
 [filter "ignorewallpaper"]
 	smudge = cat
 	clean = "sed '/name=\"image-path\"/d;/name=\"last-[^\"]*image\"/d'"
