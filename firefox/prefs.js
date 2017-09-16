@@ -181,7 +181,6 @@ user_pref("extensions.browsec@browsec.com.sdk.baseURI", "resource://browsec-at-b
 user_pref("extensions.browsec@browsec.com.sdk.domain", "browsec-at-browsec-dot-com");
 user_pref("extensions.browsec@browsec.com.sdk.load.reason", "startup");
 user_pref("extensions.browsec@browsec.com.sdk.rootURI", "jar:file://$HOME/.config/firefox/extensions/browsec@browsec.com.xpi!/");
-user_pref("extensions.browsec@browsec.com.sdk.version", "2.0.7");
 user_pref("extensions.classicthemerestorer.activndicat", true);
 user_pref("extensions.classicthemerestorer.alt_newtabp", true);
 user_pref("extensions.classicthemerestorer.altoptions", "options_win_alt");
