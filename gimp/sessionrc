@@ -6,26 +6,29 @@
 # you quit GIMP.  If this file isn't found, defaults are used.
 
 (session-info "toplevel"
-    (factory-entry "gimp-toolbox-window")
+    (factory-entry "gimp-empty-image-window")
+    (position 377 131)
+    (size 620 200)
+    (open-on-exit))
+(session-info "toplevel"
+    (factory-entry "gimp-single-image-window")
     (position 0 0)
-    (size 210 739)
+    (size 1366 768)
     (open-on-exit)
+    (aux-info
+        (left-docks-width "167")
+        (right-docks-width "204")
+        (maximized "yes"))
     (gimp-toolbox
+        (side left)
         (book
             (current-page 0)
             (dockable "gimp-tool-options"
                 (tab-style automatic)
                 (aux-info
-                    (show-button-bar "true"))))))
-(session-info "toplevel"
-    (factory-entry "gimp-dock-window")
-    (position 1148 0)
-    (size 210 739)
-    (open-on-exit)
-    (aux-info
-        (show-image-menu "false")
-        (follow-active-image "true"))
+                    (show-button-bar "true")))))
     (gimp-dock
+        (side right)
         (book
             (current-page 0)
             (dockable "gimp-layer-list"
@@ -63,15 +66,6 @@
                 (aux-info
                     (show-button-bar "true"))))))
 (session-info "toplevel"
-    (factory-entry "gimp-empty-image-window")
-    (position 377 131)
-    (size 620 200)
-    (open-on-exit))
-(session-info "toplevel"
-    (factory-entry "gimp-single-image-window")
-    (position 160 70)
-    (size 1140 780))
-(session-info "toplevel"
     (factory-entry "gimp-toolbox-color-dialog")
     (position 0 82))
 (session-info "toplevel"
@@ -80,7 +74,7 @@
     (size 1185 673))
 
 (hide-docks no)
-(single-window-mode no)
+(single-window-mode yes)
 (last-tip-shown 0)
 
 # end of sessionrc
