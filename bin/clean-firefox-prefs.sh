@@ -71,4 +71,5 @@ sed '/browser.startup.homepage_override.torbrowser.version/d' | \
 sed '/browser.rights.3.shown/d' | \
 sed '/extensions.pocket.settings.test.panelSignUp/d' | \
 sed '/extensions..*.sdk.version/d' | \
+sed '/browser.preferences.advanced.selectedTabIndex/d' | \
 sed 's|'"$HOME"'|$HOME|g'

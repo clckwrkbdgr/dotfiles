@@ -48,7 +48,6 @@ user_pref("browser.pagethumbnails.storage_version", 3);
 user_pref("browser.panorama.animate_zoom", false);
 user_pref("browser.places.importBookmarksHTML", false);
 user_pref("browser.places.smartBookmarksVersion", 8);
-user_pref("browser.preferences.advanced.selectedTabIndex", 4);
 user_pref("browser.reader.detectedFirstArticle", true);
 user_pref("browser.search.countryCode", "UA");
 user_pref("browser.search.defaultenginename", "DuckDuckGo HTML");
