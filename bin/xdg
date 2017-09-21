@@ -59,6 +59,8 @@ export XRE_PROFILE_PATH="$XDG_CONFIG_HOME/firefox"
 # TODO .gnome2_private : apparently firefox using this?
 # TODO .gstreamer-0.10 : apparently firefox using this???
 # TODO .themes : apparently firefox using this?
+fix_hardcoded_dotfile ~/.themes/umi/gtk-2.0 "$XDG_DATA_HOME/gtk-2.0"
+fix_hardcoded_dotfile ~/.themes/umi/gtk-3.0 "$XDG_DATA_HOME/gtk-3.0"
 case "$1" in
 	# Exception for freeciv-* clients:
 	freeciv-*)
