@@ -7918,6 +7918,29 @@ h2, .post a:link {
 }
 
 }',1,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(51,NULL,'',NULL,'mirf','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("www.mirf.ru") {
+
+#cb-container, #cb-content,
+.cb-sidebar, .rpwe_widget {
+  color: #999;
+  background: #222;
+}
+
+#cb-top-menu, .cb-breadcrumbs,
+.rpwe_widget > h3:nth-child(1), .cb-sidebar-widget > h3:nth-child(1),
+.lead, .vrezka, div.wp-caption, .cb-tags > a {
+  color: #999;
+  background: #191919;
+}
+
+p.wp-caption-text {
+  color: #999 !important;
+  background: #191919 !important;
+}
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5086,37,'domain','habitica.com');
@@ -8001,8 +8024,10 @@ INSERT INTO "style_meta" VALUES(6215,34,'domain','kniganews.org');
 INSERT INTO "style_meta" VALUES(6216,34,'domain','unixmanga.net');
 INSERT INTO "style_meta" VALUES(6217,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(6218,34,'type','global');
+INSERT INTO "style_meta" VALUES(6225,51,'domain','www.mirf.ru');
+INSERT INTO "style_meta" VALUES(6226,51,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',50);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',6218);
+INSERT INTO "sqlite_sequence" VALUES('styles',51);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',6226);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
