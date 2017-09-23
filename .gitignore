@@ -68,7 +68,7 @@ firefox/storage/
 firefox/adblockplus-rules.json
 firefox/adblockplus
 firefox/notificationstore.json
-firefox/gm_scripts/Display_LaTeX.db
+firefox/gm_scripts/*.db
 firefox/addons.json
 firefox/extensions.json
 firefox/cache2
