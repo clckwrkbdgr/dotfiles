@@ -20,7 +20,6 @@
 
     -GtkPaned-handle-size: 5;
 
-    -GtkCheckButton-indicator-size: 16;
     -GtkCheckMenuItem-indicator-size: 12;
 
     /* The size for scrollbars. The slider is 2px smaller, but we keep it
@@ -30,21 +29,13 @@
      */
 
     -GtkScrolledWindow-scrollbar-spacing: 0;
-    -GtkScrolledWindow-scrollbars-within-bevel: 1;
 
     -GtkToolItemGroup-expander-size: 12;
     -GtkExpander-expander-size: 12;
     -GtkToolbar-internal-padding: 4;     /* ??? */
 
-    -GtkMenu-horizontal-padding: 0;
-    -GtkMenu-vertical-padding: 0;
-
-    -GtkWidget-link-color: @link_color;
-    -GtkWidget-visited-link-color: @link_color;
     -GtkIMHtml-hyperlink-color: @link_color;
     -GtkHTML-link-color: @link_color;
-
-    -GtkWidget-wide-separators: 1;
 
     -WnckTasklist-fade-overlay-rect: 0;
 
@@ -55,8 +46,13 @@
     background-color: @theme_bg_color;
     color: @theme_fg_color;
 
-    -GtkWidget-focus-padding: 2;
-    -GtkWidget-focus-line-width: 1;
+    outline-offset: 2px;
+    outline-width: 1px;
+}
+
+checkbutton {
+    min-width: 16px;
+    min-height: 16px;
 }
 
 /***************
@@ -202,12 +198,13 @@ GtkProgressBar.trough {
  * GtkScale *
  ************/
 GtkScale {
-    -GtkScale-slider-length: 16;
-    -GtkRange-slider-width: 22;
-    -GtkRange-trough-border: 0;
+    min-height: 16px;
+    min-width: 16px;
 }
 
 GtkScale.slider {
+    min-width: 22px;
+    min-height: 22px;
     border-width: 1px;
     border-radius: 3px;
 
@@ -222,6 +219,7 @@ GtkScale.slider:disabled {
 }
 
 GtkScale.trough {
+    margin: 0;
     border-width: 1px;
     border-radius: 2px;
     border-style: solid;
@@ -270,12 +268,11 @@ GtkCalendar {
     border-radius: 0;
 
     background-color: @theme_base_color;
-
-    -GtkNotebook-tab-overlap: 8;
-    -GtkNotebook-tab-curvature: 6;
 }
 
 .notebook tab {
+    margin-left: 8px;
+    margin-right: 8px;
     padding: 3px 8px 0;
     background-image: none;
     background-color: @notebook_unselected_tab_color;
@@ -303,8 +300,8 @@ GtkCalendar {
 GtkComboBox {
     padding: 1px 2px;
 
-    -GtkWidget-focus-padding: 0;
-    -GtkWidget-focus-line-width: 0;
+    outline-offset: 0;
+    outline-width: 0;
 
     -GtkComboBox-arrow-scaling: 0.5;
     -GtkComboBox-shadow-type: 2;
@@ -326,17 +323,11 @@ GtkComboBox .button:hover {
 .scrollbar {
     background-image: none;
     border-style: solid;
-    -GtkRange-trough-border: 2;
-    -GtkRange-arrow-scaling: 0.444;
-    -GtkRange-slider-width: 18;
-    -GtkRange-stepper-size: 18;
     -GtkScrollbar-min-slider-length: 30; /* minimum size for the slider. sadly can't be in '.slider' where it belongs */
-
-    -GtkRange-stepper-spacing: 1;
-    -GtkRange-trough-under-steppers: 1;
 }
 
 .scrollbar.trough {
+    margin: 2px;
     background-image: none;
     background-color: shade (@theme_bg_color, 0.882);
     border-width: 0;
@@ -345,6 +336,8 @@ GtkComboBox .button:hover {
 
 .scrollbar.slider,
 .scrollbar.button {
+    min-width: 18px;
+    min-height: 18px;
     background-image: none;
     background-color: #0e0e0e;
     border-color: #121212;
@@ -451,6 +444,10 @@ GtkComboBox .button:hover {
     -GtkMenuBar-internal-padding: 0;
 }
 
+GtkMenu {
+	padding: 0;
+}
+
 /* remove the image from the prelight areas */
 .menubar.menuitem:hover {
     background-image: none;
@@ -513,7 +510,7 @@ GtkComboBox .button:hover {
     border-color: @menu_border;
 
     -GtkSeparatorMenuItem-horizontal-padding: 0;
-    -GtkWidget-separator-height: 1;
+    min-height: 1px;
 }
 
 /* menu radio and check items are drawn differently */
@@ -590,7 +587,7 @@ GtkComboBox .button:hover {
 
     background-image: none;
     background-color: alpha (@theme_base_color, 0.0);
-    -GtkWidget-focus-line-width: 0;
+    outline-width: 0;
 }
 
 .primary-toolbar.toolbar.button:hover {
@@ -622,8 +619,7 @@ GtkComboBox .button:hover {
 }
 
 .primary-toolbar.toolbar GtkSeparatorToolItem {
-    -GtkWidget-wide-separators: 1;
-    -GtkWidget-separator-width: 1;
+    min-width: 1px;
 
     border-style: solid;
     border-width: 1px;
@@ -640,7 +636,7 @@ GtkComboBox .button:hover {
                                      from (@button_gradient_color_a),
                                      to (@button_gradient_color_b));
 
-    -GtkWidget-focus-line-width: 2;
+    outline-width: 2px;
 }
 
 .primary-toolbar.toolbar.raised.button:disabled {
@@ -706,7 +702,9 @@ GtkComboBox .button:hover {
  *************/
 
 GtkSwitch {
-    font: bold condensed 10px;
+    font-weight: bold;
+	font-stretch: condensed;
+	font-size: 10px;
 }
 
 GtkSwitch.trough {
@@ -793,7 +791,7 @@ GtkTreeView {
     -GtkTreeView-vertical-separator: 0;
     -GtkTreeView-expander-size: 8;
 
-    -GtkWidget-focus-line-width: 1;
+    outline-width: 1px;
 }
 
 GtkTreeView.separator {
@@ -973,7 +971,7 @@ PanelToplevel {
 
 ClockBox,
 .gnome-panel-menu-bar {
-    font: bold;
+    font-weight: bold;
 }
 
 PanelApplet > GtkMenuBar.menubar.menuitem:hover,
