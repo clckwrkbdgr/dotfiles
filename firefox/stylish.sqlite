@@ -7922,6 +7922,10 @@ INSERT INTO "styles" VALUES(51,NULL,'',NULL,'mirf','@namespace url(http://www.w3
 
 @-moz-document domain("www.mirf.ru") {
 
+#cb-bg-to {
+  background: #222 !important;
+}
+
 #cb-container, #cb-content,
 .cb-sidebar, .rpwe_widget {
   color: #999;
@@ -7930,7 +7934,7 @@ INSERT INTO "styles" VALUES(51,NULL,'',NULL,'mirf','@namespace url(http://www.w3
 
 #cb-top-menu, .cb-breadcrumbs,
 .rpwe_widget > h3:nth-child(1), .cb-sidebar-widget > h3:nth-child(1),
-.lead, .vrezka, div.wp-caption, .cb-tags > a {
+.lead, .vrezka, .vrezka2, div.wp-caption, .cb-tags > a {
   color: #999;
   background: #191919;
 }
@@ -7938,6 +7942,10 @@ INSERT INTO "styles" VALUES(51,NULL,'',NULL,'mirf','@namespace url(http://www.w3
 p.wp-caption-text {
   color: #999 !important;
   background: #191919 !important;
+}
+
+h1 {
+  color: #aaa !important;
 }
 
 }',1,NULL,NULL,1,NULL);
@@ -8024,10 +8032,10 @@ INSERT INTO "style_meta" VALUES(6215,34,'domain','kniganews.org');
 INSERT INTO "style_meta" VALUES(6216,34,'domain','unixmanga.net');
 INSERT INTO "style_meta" VALUES(6217,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(6218,34,'type','global');
-INSERT INTO "style_meta" VALUES(6225,51,'domain','www.mirf.ru');
-INSERT INTO "style_meta" VALUES(6226,51,'type','site');
+INSERT INTO "style_meta" VALUES(6229,51,'domain','www.mirf.ru');
+INSERT INTO "style_meta" VALUES(6230,51,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',51);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',6226);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',6230);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
