@@ -1,7 +1,8 @@
-delay=1
-region=1
+delay=20
+region=2
 action=3
 show_mouse=0
-app=gimp
+app=gimp-2.8
 last_user=
+screenshot_dir=file://$HOME
 
