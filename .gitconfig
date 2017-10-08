@@ -23,7 +23,7 @@
 
 [filter "insteadrc_remove_state"]
 	smudge = cat
-	clean = "sed 's/^game = .*$/game = /'"
+	clean = "sed 's/^game = .*$/game = /;s/^fs = [01]$/fs = 0/'"
 
 [filter "sqlite_text_dump"]
 	smudge = "sqlitedump --load"
