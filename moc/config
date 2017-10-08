@@ -8,6 +8,8 @@ OutputBuffer		= 2048
 InputBuffer		= 512
 Prebuffering		= 64
 SoundDriver		= ALSA:JACK:OSS
+#MP3IgnoreCRCErrors = yes
+Precache = yes
 
 Sort			= FileName
 ReadTags = no
@@ -21,18 +23,29 @@ OSSDevice		= /dev/dsp
 OSSMixerDevice		= /dev/mixer
 
 AlsaDevice		= default
+ALSAStutterDefeat = no
 
 ShowHiddenFiles		= no
-StartInMusicDir		= yes
+StartInMusicDir		= no
 HideFileExtension	= no
+PlaylistFullPaths = yes
 ShowFormat		= no
 ShowTime		= IfAvailable
+ShowTimePercent = no
 Theme			= ${XDG_CONFIG_HOME}/moc/themes/dim
 MOCDir			= ${XDG_CACHE_HOME}/moc
 UseMmap			= yes
 SavePlaylist		= yes
 SyncPlaylist		= yes
 ASCIILines		= no
+AutoLoadLyrics = no
+UseMimeMagic = no
+PlaylistNumbering = no
+# Use librcc to fix ID3 version 1/1.1 tags encoding.
+UseRCC = yes
+UseRCCForFilesystem = no
+EnforceTagsEncoding = no
+FileNamesIconv = no
 
 Softmixer_SaveState = no
 Equalizer_SaveState = no
@@ -41,8 +54,13 @@ MusicDir = ${FastDir1}
 
 TagsCacheSize		= 256
 
+SetXtermTitle = yes
+SetScreenTitle = yes
 Layout1		= "directory(0,0,100%,3):playlist(0,3,100%,FILL)"
 Layout2		= "playlist(50%,0,50%,100%):directory(0,0,50%,100%)"
+MessageLingerTime = 2
+PrefixQueuedMessages = yes
+ErrorMessagesQueued = "(...)"
 
 FollowPlayedFile	= yes
 CanStartInPlaylist	= yes
