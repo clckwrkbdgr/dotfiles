@@ -1,0 +1,16 @@
+#!/bin/bash
+filename=$1
+symlink_content=$(mktemp)
+readlink "$filename" > "$symlink_content"
+
+${EDITOR:-vi} "$symlink_content"
+
+ln=$(cat "$symlink_content" | wc -l)
+if [ $ln -ne 1 ]; then
+	echo "error: expected one line, found $ln"
+	exit 1
+fi
+if [ "$(cat "$symlink_content")" == "$filename" ]; then
+	exit 0
+fi
+ln -sf "$(cat "$symlink_content")" "$filename"
