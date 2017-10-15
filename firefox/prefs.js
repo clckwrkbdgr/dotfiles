@@ -331,7 +331,6 @@ user_pref("noscript.ABE.rulesets.USER", "# User-defined rules. Feel free to expe
 user_pref("noscript.autoReload", false);
 user_pref("noscript.firstRunRedirection.pending", "5.1.2");
 user_pref("noscript.forbidMetaRefresh", true);
-user_pref("noscript.global", true);
 user_pref("noscript.gtemp", "");
 user_pref("noscript.notify", false);
 user_pref("noscript.nselNever", true);
