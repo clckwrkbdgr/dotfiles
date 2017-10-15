@@ -6965,6 +6965,258 @@ h1 {
 }
 
 }',1,NULL,NULL,1,NULL);
+INSERT INTO "styles" VALUES(54,NULL,'',NULL,'dark habitica','@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document domain("habitica.com")
+{
+::-moz-selection {
+    background: #000; /* Gecko Browsers */
+    color: #00adee;
+}
+body, .modal-content {
+    background: #0f0f0f !important;
+}
+.tasks-list {
+    background: #181818 !important;
+}
+.form-control, .group .items, .tier-list li[data-v-47c12a3e], #task-modal .task-modal-content input {
+    background-color: #191919;
+}
+.nav-link:hover {
+    background: #222222 !important;
+}
+.task-content, .btn-secondary, .dropdown > .btn-secondary, .dropdown-menu, textarea {
+    background: #282828 !important;
+}
+.btn-show-more {
+    background: #303030 !important;
+}
+.form-control:focus, #task-modal .task-modal-content input:focus {
+    background-color: #323232;
+}
+.secondary-menu, .filter-panel {
+    background: #3c3c3c  !important;
+    border: 1px solid #000;
+}
+.task-habit-disabled, .standard-sidebar, .sidebar {
+    background: #444444 !important;
+}
+    
+/* blue colors */
+.drawer-title, .popover {
+    background: #272b35;
+}
+.drawer-content, code, .item.item-empty {
+    background: #393f4c;
+}
+.slider-button, .card, .item-with-icon[data-v-c38c7d6e], .spell, .item, #task-modal .option-item-box, .category-select {
+    background-color: #4c5666 !important;
+}
+    
+/* border */    
+button.btn.btn-secondary.filter-button, input, textarea, input.form-control, textarea.form-control,
+button.btn.btn-secondary.filter-button[data-v-7ad1109e] {
+    border: 1px solid #000 !important;
+}
+.standard-sidebar {
+    border-left: 1px solid #000 !important;
+}
+    
+/* text */
+button.btn.btn-secondary.filter-button:hover, button.btn.btn-secondary.filter-button:active, button.btn.btn-secondary.filter-button:focus, button.btn.btn-secondary.filter-button.open,.item:hover,.task:hover,
+button.btn.btn-secondary.filter-button[data-v-7ad1109e]:hover, button.btn.btn-secondary.filter-button[data-v-7ad1109e]:active, button.btn.btn-secondary.filter-button[data-v-7ad1109e]:focus, button.btn.btn-secondary.filter-button.open[data-v-7ad1109e]{
+    border-color: #00adee !important;
+    color: #00adee !important;
+    box-shadow: 0px 0px 5px 0px !important;
+}
+input:active:not(:disabled), input:focus:not(:disabled), textarea:active:not(:disabled), textarea:focus:not(:disabled), input.form-control:active:not(:disabled), input.form-control:focus:not(:disabled), textarea.form-control:active:not(:disabled), textarea.form-control:focus:not(:disabled), .markdown > p, .close, .card-link[data-v-6804d287], .spell, #task-modal .task-modal-header h1, #task-modal .task-modal-content input:focus {
+    color: #FFF !important;
+}
+.custom-control .custom-control-indicator {
+    border: 2px solid #00adee;
+}
+.spell .mana, .filter-panel .tags-category {
+    color: #00adee !important;
+}
+.filter.active, .drawer-tab-text-active {
+    color: #00adee !important;
+    border-bottom: 2px solid #00adee !important;
+}
+.filter {
+    color: #444 !important;
+}
+body, .task-title, .task-notes, .checklist-item, h1, h2, h3, h4, h5, h6, .secondary-menu .nav-link, .dropdown-label, .btn-secondary, .dropdown > .btn-secondary, .text[data-v-09e46526], .dropdown-item {
+    color: #9c9c9c !important;
+}
+.nav-link.active, code, .close:focus, .close:hover {
+    color: #00adee !important;
+    box-shadow: 0px 4px 0px #00adee !important; 
+}
+.filter:hover, .btn-secondary:hover:not(:disabled):not(.disabled), .btn-secondary:active, .btn-secondary.active, .btn-secondary:focus, .dropdown > .btn-secondary:hover:not(:disabled):not(.disabled), .dropdown > .btn-secondary:active, .dropdown > .btn-secondary.active, .dropdown > .btn-secondary:focus, .dropdown-item:hover, .dropdown-icon-item .svg-icon:hover, .dropdown-icon-item:hover .svg-icon, .nav-link:hover {
+    color: #00adee !important;
+    text-shadow: 0px 0px 5px #00adee !important;
+}
+
+/* compaction */
+.task-content {
+    padding: 2px 8px 0px;
+}
+.icons {
+    margin-top: 0px;
+}
+.task-title {
+    padding-bottom: 0px;
+}
+.left-control, .right-control {
+    min-height: 44px !important;
+    width: 35px;
+}
+.daily-todo-control {
+    margin-top: 8px;
+}
+.drawer-slider {
+    padding: 0px 0 0 8px;
+}
+.navbar.navbar-inverse.fixed-top.navbar-toggleable-lg, nav.navbar {
+    height: 32px !important;
+}
+.nav-item .nav-link {
+    padding: 8px 24px !important;
+}
+.item-with-icon {
+    padding-top: 8px !important;
+}
+.row.user-tasks-page {
+    padding-top: 10px;
+}
+.row.tasks-navigation {
+    margin-bottom: 10px;
+}
+.member-details {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+}
+#app-header {
+    height: 164px !important;
+    margin-top: 30px !important;
+}
+.tasks-column {
+    height: inherit;
+}
+    
+/* extra compact */
+.icons-right.d-flex.justify-content-end {
+    margin-top: -10px;
+}
+.left-control, .right-control {
+    min-height: 34px !important;
+}
+.daily-todo-control {
+    margin-top: 3px;
+}
+.tasks-column.col-lg-3.col-md-6.habit, .tasks-column.col-lg-3.col-md-6.daily, .tasks-column.col-lg-3.col-md-6.todo {
+    padding-right: 0;
+}
+.member-details .col-4 {
+    max-width: 160px !important;
+}
+#app-header .col-6 {
+    max-width: 46%;
+}    
+
+/* hide footer */
+footer {
+    display: none;
+}
+
+/* hide filter */
+.col-4 .input-group {
+    display: none;
+}
+.row.tasks-navigation {
+    margin-bottom: 0 !important;
+    height: 0;
+}    
+#create-dropdown {
+    /* bottom: 70px; */
+    z-index: 11;
+    right: 0;
+    margin: 0 52px 0;
+    position: absolute;
+    width: 92px;
+    top: -72px;
+}
+.view-party .btn {
+    margin-top: 30% !important;
+}
+
+/* narrow rewards */
+.tasks-column.col-lg-3.col-md-6.reward {
+    max-width: 10%;
+}
+.col-lg-3 {
+    -ms-flex: 0 0 28%;
+    flex: 0 0 30%;
+    max-width: 30%;
+}
+
+/* vertical skills */
+.user-tasks-page .drawer-container {
+    right: 0 !important;
+    left: unset !important;
+    width: 10%;
+}
+.user-tasks-page .drawer-content {
+    max-height: 400px !important;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.user-tasks-page .drawer-slider {
+    padding: 0 !important;
+}
+.user-tasks-page .container.spell-container {
+    width: 100%;
+    padding: 0 !important;
+}
+.user-tasks-page .container.spell-container .row {
+    margin: 0;
+}
+.user-tasks-page .col-3 {
+    float: left;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 10px !important;
+    padding: 0 !important;
+}
+.user-tasks-page .spell.col-12.row {
+    width: 160px !important;
+    float: left !important;
+}
+.user-tasks-page .spell .details span {
+    width: 100% !important;
+    text-align: right;
+}
+.user-tasks-page .spell .mana-text {
+    padding: 2em 0 0 !important;
+    vertical-align: bottom;
+}
+.user-tasks-page .shop-sprite.item-img {
+    float: right;
+}
+
+
+/* bug fixes */
+.dragInfo .spell .title, .spell .details .notes {
+    margin: 0 0 3px !important;
+}
+.spell .details .notes {
+    font-size: 11px;        
+}
+#task-modal .category-wrap {
+    margin-top: 15px;
+}
+
+}',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
 INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5332,38,'domain','vk.com');
@@ -7048,8 +7300,10 @@ INSERT INTO "style_meta" VALUES(6301,34,'domain','kniganews.org');
 INSERT INTO "style_meta" VALUES(6302,34,'domain','unixmanga.net');
 INSERT INTO "style_meta" VALUES(6303,34,'domain','instead.syscall.ru');
 INSERT INTO "style_meta" VALUES(6304,34,'type','global');
+INSERT INTO "style_meta" VALUES(6305,54,'domain','habitica.com');
+INSERT INTO "style_meta" VALUES(6306,54,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',53);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',6304);
+INSERT INTO "sqlite_sequence" VALUES('styles',54);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',6306);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;
