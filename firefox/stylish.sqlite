@@ -127,29 +127,6 @@ input { color: white !important; background-color: #0f0f0f !important; }
   div.dsq-comment-header { color: #fff !important; }
 }
 ',1,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(35,NULL,'',NULL,'vimperator','@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);
-
-/*change cmd box*/
-#liberator-commandline-command{color:red!important;background:#111!important}
-/*change statusbar*/
-#liberator-statusline{color:red!important;background:#111!important;border:1pt solid lightgray!important}
-
-/*change bg of the rest of the statusbar*/
-#status-bar{background-color:#111!important}
-/*larger cmd line font*/
-#liberator-commandline{font-size:10pt!important}
-/*add some space to : */
-#liberator-commandline-prompt{padding:0 2pt!important}
-/*add a border to cmd box*/
-#liberator-container{border:1pt solid lightgray!important}
-/*change border-color on mouseover*/
-#liberator-container:hover,
-#liberator-statusline:hover{border-color:#111!important}
-/*stuff in the rightside of statusbar*/
-#liberator-statusline-field-inputbuffer{color:yellow!important}
-#liberator-statusline-field-progress{color:orange!important}
-#liberator-statusline-field-tabcount{color:blue!important}
-#liberator-statusline-field-bufferposition{color:purple!important}',1,NULL,NULL,1,NULL);
 INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter-customizable','https://userstyles.org/styles/97767/dark-twitter-customizable.css?ik-avatarMarginValue=ik-With%20Avatar&ik-whotofollow=ik-Display&ik-hpbackground=%23101010&ik-tweetbgcolor=%23161616&ik-tweetbghovercolor=%231B1B1B&ik-navbarbgcolor=%23242424&ik-tweetfontcolor=%23CCCCCC&ik-darkerfontcolor=%238899A6&ik-bgimage=none','https://update.userstyles.org/97767.md5','Dark Twitter Customizable','@-moz-document url-prefix("https://twitter.com/intent")
 
 {
@@ -5141,34 +5118,6 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   }
 
 }',1,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(43,NULL,'',NULL,'godville','@namespace url(http://www.w3.org/1999/xhtml);
-
-@-moz-document domain("godville.net") {
-
-body, .block, .frMsgBlock, .gc_topic, .fr_msg_meta, .msgDockPopup {
-  background: #111;
-  color: #999;
-}
-.block, .frMsgBlock, .gc_topic, .msgDockPopup {
-  border: 1px solid #222;
-}
-.block_title, .msgDock, .fr_chat_header {
-  background: #222;
-  color: #999;
-}
-.input_text {
-  color: #aaa;
-  background-color: #000;
-}
-div.p_bar {
-  background-color: #333;
-  border: 1px solid #444;
-}
-a, .div_link:hover, .div_link {
-  color: #07a;
-}
-
-}',0,NULL,NULL,1,NULL);
 INSERT INTO "styles" VALUES(44,NULL,'',NULL,'nekto.me','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("nekto.me") {
@@ -7218,7 +7167,6 @@ footer {
 
 }',1,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
-INSERT INTO "style_meta" VALUES(1289,35,'type','app');
 INSERT INTO "style_meta" VALUES(5332,38,'domain','vk.com');
 INSERT INTO "style_meta" VALUES(5333,38,'domain','vkontakte.com');
 INSERT INTO "style_meta" VALUES(5334,38,'domain','vkontakte.ru');
@@ -7227,8 +7175,6 @@ INSERT INTO "style_meta" VALUES(5528,41,'domain','myshows.me');
 INSERT INTO "style_meta" VALUES(5529,41,'type','site');
 INSERT INTO "style_meta" VALUES(5668,39,'domain','duckduckgo.com');
 INSERT INTO "style_meta" VALUES(5669,39,'type','site');
-INSERT INTO "style_meta" VALUES(5744,43,'domain','godville.net');
-INSERT INTO "style_meta" VALUES(5745,43,'type','site');
 INSERT INTO "style_meta" VALUES(5818,44,'domain','nekto.me');
 INSERT INTO "style_meta" VALUES(5819,44,'type','site');
 INSERT INTO "style_meta" VALUES(5925,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
@@ -7304,6 +7250,6 @@ INSERT INTO "style_meta" VALUES(6305,54,'domain','habitica.com');
 INSERT INTO "style_meta" VALUES(6306,54,'type','site');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('styles',54);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',6306);
+INSERT INTO "sqlite_sequence" VALUES('style_meta',6307);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;

@@ -100,6 +100,7 @@ firefox/containers.json
 firefox/kinto.sqlite
 firefox/storage.sqlite
 firefox/weave/changes/greasemonkey.json
+firefox/storage-sync.sqlite
 # Purple cache
 purple/accels
 purple/certificates
