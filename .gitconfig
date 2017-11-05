@@ -76,3 +76,7 @@
 [filter "remove_xfce_window_size"]
 	smudge = cat
 	clean = "xmlstarlet ed -d \"/channel/property[@name='last']/property[@name='window-width']\" | xmlstarlet ed -d \"/channel/property[@name='last']/property[@name='window-height']\""
+
+[filter "gimp_tags"]
+	smudge = cat
+	clean = "sort-xml /tags/resource @identifier | sed 's/checksum=.[0-9a-f]\\+./checksum=\"(null)\"/'"

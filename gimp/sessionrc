@@ -71,6 +71,10 @@
     (factory-entry "gimp-file-export-dialog")
     (position 140 0)
     (size 1185 673))
+(session-info "toplevel"
+    (factory-entry "gimp-file-open-dialog")
+    (position 86 22)
+    (size 1185 673))
 
 (hide-docks no)
 (single-window-mode yes)
