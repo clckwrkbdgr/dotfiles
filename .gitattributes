@@ -19,3 +19,4 @@ gtk-2.0/gtkfilechooser.ini filter=gtkfilechooser
 gimp/menurc filter=textsort
 gimp/tags.xml filter=gimp_tags
 xfce4/xfce4-screenshooter filter=expand_homedir
+*.bau filter=zipfile

@@ -6,8 +6,8 @@
 	clean = sort
 
 [filter "zipfile"]
-	smudge = "zipdump --load"
-	clean = "zipdump --dump"
+	smudge = "zipdump load"
+	clean = "zipdump dump"
 
 [filter "ignorewallpaper"]
 	smudge = cat
