@@ -124,4 +124,12 @@ openttd/hs.dat
 # SVN
 subversion/README.txt
 subversion/servers
-
+# LibreOffice
+libreoffice/4/user/config/autotbl.fmt
+libreoffice/4/user/config/javasettings_Linux_x86.xml
+libreoffice/4/user/extensions/buildid
+libreoffice/4/user/extensions/*/lastsynchronized
+libreoffice/4/user/gallery/sg30.sdv
+libreoffice/4/user/gallery/sg30.thm
+libreoffice/4/user/psprint/pspfontcache
+libreoffice/4/user/uno_packages/cache/
