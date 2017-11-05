@@ -45,6 +45,7 @@ sed '/gfx.crash-guard.glcontext.appVersion/d' | \
 sed '/extensions\..*\.currentVersion/d' | \
 sed '/extensions\.last[^.]*Version/d' | \
 sed '/noscript.version/d' | \
+sed '/noscript.firstRunRedirection.pending/d' | \
 sed '/noscript.ABE.cspHeaderDelim/d' | \
 sed '/extensions.classicthemerestorer.pref_actindx/d' | \
 sed '/extensions.classicthemerestorer.aboutprefs/d' | \
