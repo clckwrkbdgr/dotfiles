@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+import os, sys, io
+import zipfile
+import argparse
+
+# Metainfo line format:
+# {length}|<reserved>|filename...
+
+def dump_zip(archive, text):
+    archive = zipfile.ZipFile(archive, 'r')
+    for filename in archive.namelist():
+        data = archive.read(filename)
+        text.write('{0}||{1}\n'.format(len(data), filename))
+        text.write(data.decode())
+        text.write('\n') # Content separator
+    archive.close()
+
+def load_zip(text, archive):
+    archive = zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED)
+    while True:
+        line = text.readline()
+        if not line:
+            break
+        size, reserved, filename = line.split('|', maxsplit=3)
+        size = int(size)
+        filename = filename[:-1] # Removing trailing linebreak.
+        data = text.read(size)
+        archive.writestr(filename, data)
+        text.read(1) # Content separator
+    archive.close()
+
+if __name__ == "__main__":
+    args = argparse.ArgumentParser(description='A tool to dump zip file content to text and load it back.')
+    commands = args.add_subparsers(dest='command')
+    dump_args = commands.add_parser('dump', help='Dumps zip file content converted to text to stdout.')
+    dump_args.add_argument('filename', nargs='?', default=None, help='ZIP file to dump content of. If not specified or "-", stdin is used.')
+    load_args = commands.add_parser('load', help='Converts text representation of zip file to actual archive and sends to stdout.')
+    load_args.add_argument('filename', nargs='?', default=None, help='ZIP file to dump content to. If not specified or "-", stdout is used.')
+
+    settings = args.parse_args()
+
+    bin_stdin = io.open(sys.stdin.fileno(), 'rb')
+    bin_stdout = io.open(sys.stdout.fileno(), 'wb')
+
+    if settings.command == 'dump':
+        if not settings.filename or settings.filename == '-':
+            dump_zip(bin_stdin, sys.stdout)
+        else:
+            with open(settings.filename, 'rb') as f:
+                dump_zip(f, sys.stdout)
+    elif settings.command == 'load':
+        if not settings.filename or settings.filename == '-':
+            load_zip(sys.stdin, bin_stdout)
+        else:
+            with open(settings.filename, 'r') as f:
+                load_zip(f, bin_stdout)
+

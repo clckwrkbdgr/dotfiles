@@ -5,6 +5,10 @@
 	smudge = cat
 	clean = sort
 
+[filter "zipfile"]
+	smudge = "zipdump --load"
+	clean = "zipdump --dump"
+
 [filter "ignorewallpaper"]
 	smudge = cat
 	clean = "sed '/name=\"image-path\"/d;/name=\"last-[^\"]*image\"/d'"
