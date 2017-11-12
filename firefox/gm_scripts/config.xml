@@ -22,4 +22,8 @@
 		<Grant>none</Grant>
 		<Include>https://vk.com/*#badger*</Include>
 	</Script>
+	<Script basedir="diary" checkRemoteUpdates="1" dependhash="da39a3ee5e6b4b0d3255bfef95601890afd80709" description="" enabled="true" filename="diary.user.js" installTime="0" modified="0" name="diary" namespace="diary" noframes="false" runAt="document-end" updateMetaStatus="unknown" uuid="4584e99e-c551-4943-8719-49940612b9d1" version="1" installurl="file://$HOME/.config/firefox/gm_scripts/diary/diary.user.js" updateurl="file://$HOME/.config/firefox/gm_scripts/diary/diary.user.js">
+		<Grant>none</Grant>
+		<Include>http://*.diary.ru/*</Include>
+	</Script>
 </UserScriptConfig>
