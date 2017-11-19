@@ -382,7 +382,7 @@ var RESPONSES = [
 			if(window.search_is_stuck > 200) {
 				soundManager.play('disconnecting');
 				notify("Search is stuck.");
-				window.location.reload();
+				window.location = window.location.href.split("#")[0] + '#autostart';
 				window.search_is_stuck = 0;
 			}
 		} else {
@@ -583,5 +583,13 @@ var RESPONSES = [
 		injectToFrame("chat.createWebSocket = " + onmessageSource, window);
 	}
 	console.log('Userscript is successfully set.');
+
+	if(/#autostart$/.test(window.location.href)) {
+		var start_button = $('a#chat_start');
+		if(start_button.is(':visible')) {
+			console.log('Autostarted as requested in href');
+			setTimeout(function() { start_button.click(); }, 1500);
+		}
+	}
 
 });
