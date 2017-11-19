@@ -470,8 +470,8 @@ var RESPONSES = [
 		if(msg_event.action == "hrt_response" && (window.is_first_message || !window.my_messages) && !$("span#title-searching").is(':visible')) {
 			window.chat_is_stuck += 1;
 			if(window.chat_is_stuck >= 10 + 2 * window.current_message_count) {
-				soundManager.play('disconnecting');
-				notify("Chat is stuck.");
+				//soundManager.play('disconnecting');
+				//notify("Chat is stuck.");
 				//if(window.chat_is_stuck >= 12) {
 					setTimeout(restartChat, 350);
 				//}
