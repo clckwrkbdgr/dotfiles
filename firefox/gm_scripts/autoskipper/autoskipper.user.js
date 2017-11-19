@@ -382,6 +382,7 @@ var RESPONSES = [
 			if(window.search_is_stuck > 200) {
 				soundManager.play('disconnecting');
 				notify("Search is stuck.");
+				window.location.reload();
 				window.search_is_stuck = 0;
 			}
 		} else {
