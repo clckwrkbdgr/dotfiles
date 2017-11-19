@@ -383,6 +383,7 @@ var RESPONSES = [
 				soundManager.play('disconnecting');
 				notify("Search is stuck.");
 				window.location = window.location.href.split("#")[0] + '#autostart';
+				window.location.reload();
 				window.search_is_stuck = 0;
 			}
 		} else {
