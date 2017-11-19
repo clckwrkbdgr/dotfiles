@@ -466,7 +466,7 @@ var RESPONSES = [
 		// {"action":"message_from_user","sender":"someone","message":"Чот все сонные такие","from":"e41775e2b1dcb4f636a2f765fa6dace5","chat":"1463935602711c3935"}
 		// {"action":"user_writing","from":"e41775e2b1dcb4f636a2f765fa6dace5","chat":"1463935602711c3935"}
 		// {"action":"chat_removed","reason":"user_leaved","chat":"1463935602711c3935"}
-		if(msg_event.action == "hrt_response" && (window.is_first_message || !window.my_messages)) {
+		if(msg_event.action == "hrt_response" && (window.is_first_message || !window.my_messages) && !$("span#title-searching").is(':visible')) {
 			window.chat_is_stuck += 1;
 			if(window.chat_is_stuck >= 10 + 2 * window.current_message_count) {
 				soundManager.play('disconnecting');
@@ -484,6 +484,9 @@ var RESPONSES = [
 		window.chat_is_stuck = 0;
 		soundManager.play('disconnecting');
 		notify("Captcha required.");
+	}
+    if(msg_event.action == "user_connected") {
+		window.chat_is_stuck = 0;
 	}
     if(msg_event.action == "chat_connected") {
 		if(!window.use_old_design) {
