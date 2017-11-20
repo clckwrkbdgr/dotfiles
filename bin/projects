@@ -128,8 +128,8 @@ push() {
 		if git st | grep -q 'Your branch is ahead of\|Ваша ветка опережает .* на '; then
 			[ "$D" == "." ] && D="$(basename "$(pwd)")"
 			echo -e "\033[1;31m$D\033[0m"
-			git push origin master --tags
-			git remote | grep -q local && git push local master --tags
+			git push origin --tags
+			git remote | grep -q local && git push local --tags
 		fi
 		popd >/dev/null
 	done
