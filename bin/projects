@@ -128,8 +128,10 @@ push() {
 		if git st | grep -q 'Your branch is ahead of\|Ваша ветка опережает .* на '; then
 			[ "$D" == "." ] && D="$(basename "$(pwd)")"
 			echo -e "\033[1;31m$D\033[0m"
-			git push origin --tags
-			git remote | grep -q local && git push local --tags
+			git branch | sed 's/^..//' | while read branch_name; do
+				git push origin "$branch_name" --tags
+				git remote | grep -q local && git push local "$branch_name" --tags
+			done
 		fi
 		popd >/dev/null
 	done
