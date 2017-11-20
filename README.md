@@ -20,3 +20,15 @@ Also `list_dotfiles` can be invoked with `explain` argument to explain all found
 With all above, there is no 'bootstrap' or 'install' script, dotfiles are working straight from the moment of deploying into `XDG_CONFIG_HOME`, and all exception are handled by `xdg` script, which fixes hardcoded dotfiles in home dir at the first invokation. So, basically, its `git clone ... && . ~/.config/profile`.
 
 Some personal settings (like git config or profile) are stored in `~/.local` dir (e.g. `~/.local/gitconfig`) and included in their respective .config parents, so this setup is customizable and extendable.
+
+## Different dotfiles setups for different systems/devices
+
+There is a separate orphan branch called `loader` which serves as a root for such partial (sparse) setups.
+They depend on sparse-checkout feature of git and are controlled by file listings of sparse-checkout format (similar to gitignore etc).
+
+E.g. to get only work-related configs, have `work.lst` file in `loader` branch, have `work` target in Makefile and do following:
+
+	mkdir .config
+	cd .config
+	git clone --depth 1 --single-branch --branch loader <path to this repo> .
+	make work # Or any other defined target.
