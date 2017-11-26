@@ -1,185 +1,315 @@
-#!/bin/bash
-# Collection of dev project handling functions.
+#!/usr/bin/python3
+import os, sys, subprocess
+import re
+from collections import namedtuple
 
-# Handles Semantic Versioning for projects.
-# Usage:
-#    tag {minor|major|rev}
-#         Updates specified section of version number and adds new tag.
-#    tag
-#         Lists all tags for current project.
-tag() {
-	SECTION="$1"
-	LAST_VERSION=$(git tag | sed 's/.*\([0-9]\+\.[0-9]\+\.[0-9]\+\)/\1/' | sort -nt . | tail -1)
-	REPO_NAME=$(git remote -v | grep '(push)' | sed 's/.*\/\([^\/]*\)\.git.*/\1/')
-	MAJOR=$(echo $LAST_VERSION | sed 's/.*\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)/\1/')
-	MINOR=$(echo $LAST_VERSION | sed 's/.*\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)/\2/')
-	REVISION=$(echo $LAST_VERSION | sed 's/.*\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)/\3/')
-	MINOR=${MINOR:-0}
-	MAJOR=${MAJOR:-0}
-	REVISION=${REVISION:-0}
+LOCAL_REMOTE_NAME = 'local'
 
-	if [ -z "$1" ]; then
-		git tag
-		exit
-	fi
+extract_match = lambda match: match.group(1) if match else None
+non_empty = lambda x:x
+print_lines = lambda lines: map(print, lines)
 
-	case "$SECTION" in
-		( major ) MAJOR=$((MAJOR+1)); MINOR=0; REVISION=0 ;;
-		( minor ) MINOR=$((MINOR+1)); REVISION=0 ;;
-		( rev | revision ) REVISION=$((REVISION+1)) ;;
-		( * ) FAILED=true; echo "Unknown section: <$SECTION>. Should be: major, minor or revision (rev)." ;;
-	esac
-	[ "$FAILED" == true ] && exit 1
+def match_any(line, patterns):
+	return list(map(non_empty, (re.match(expr, line) for expr in patterns)))
 
-	NEW_VERSION="${MAJOR}.${MINOR}.${REVISION}"
-	git tag
-	echo -n "Add <$NEW_VERSION>, (y)es?"
-	read YES
-	if [ "$YES" == "y" ]; then
-		git tag -a "${NEW_VERSION}" -m "${REPO_NAME} v${NEW_VERSION}"
-		echo "Added new tag <$NEW_VERSION>"
-	fi
-}
+def search_any(line, patterns):
+	return list(map(non_empty, (re.search(expr, line) for expr in patterns)))
 
-# Extracts current project version from the last tag.
-version() {
-	VERSION=$(git tag | tail -1 | sed 's/.*\([0-9]\+\.[0-9]\+\.[0-9]\+\)/\1/')
-	MAJOR_VERSION=$(git tag | tail -1 | sed 's/.*\([0-9]\+\)\.[0-9]\+\.[0-9]\+/\1/')
-	if [ "$1" == "major" ]; then
-		echo "$MAJOR_VERSION"
-	else
-		echo "$VERSION"
-	fi
-}
+def skip_lines_with_patterns(lines, patterns):
+	return [line for line in lines if not any(re.search(expr, line) for expr in patterns)]
 
-git_has_changes() {
-	git st | \
-		grep -v '#\? *On branch master' | \
-		grep -v 'На ветке master' | \
-		grep -v 'Your branch is up-to-date with' | \
-		grep -v 'Ваша ветка обновлена в соответствии с ' | \
-		grep -v 'nothing to commit' | \
-		grep -v 'нечего коммитить, нет изменений в рабочем каталоге' | \
-		grep -v '^$'
-}
+def skip_lines_that_contains(lines, parts):
+	return [line for line in lines if not any(part in line for part in parts)]
 
-git_has_changes_besides_filtered_out() {
-	git st | \
-		grep -v '#\? *On branch master' | \
-		grep -v 'На ветке master' | \
-		grep -v 'Your branch is up-to-date with' | \
-		grep -v 'Ваша ветка обновлена в соответствии с ' | \
-		grep -v 'nothing to commit' | \
-		grep -v 'нечего коммитить, нет изменений в рабочем каталоге' | \
-		grep -v '(use "git add <file>..." to update what will be committed)' | \
-		grep -v '(используйте «git add <файл>…», чтобы добавить файл в индекс)' | \
-		grep -v '(use "git checkout -- <file>..." to discard changes in working directory)' | \
-		grep -v '(используйте «git checkout -- <файл>…», чтобы отменить изменения' | \
-		grep -v 'в рабочем каталоге)' | \
-		grep -v 'no changes added to commit (use "git add"' | \
-		grep -v 'нет изменений добавленных для коммита' | \
-		grep -v '(используйте «git add» и/или «git commit -a»)' | \
-		while read line; do
-			if [ -z "$IN_CHANGES" ]; then
-				if echo "$line" | grep -q '^Changes not staged for commit:\|Изменения, которые не в индексе для коммита:'; then
-					IN_CHANGES=1
-				else
-					echo "$line"
-				fi
-			else
-				if echo "$line" | grep -v '^$' | grep -vq '^modified: \|изменено: '; then
-					IN_CHANGES=0
-					echo "$line"
-				fi
-				if echo "$line" | grep -q '^modified: \|изменено: '; then
-					filename="$(echo "$line" | sed 's/^\(modified: \+\|изменено: \+\)\(.*\)/\2/')"
-					git diff "$filename"
-				fi
-			fi
-		done | \
-		grep -v '^$'
-}
+def colored(text, color):
+	colors = {
+			'red' : '\033[1;31m',
+			}
+	reset = '\033[0m'
+	return colors[color] + text + reset
 
-# Prints statuses for all projects in directory recursively.
-# Skips up-to-date projects, prints only modifications or pending commits.
-status() {
-	HAS_CHANGES=git_has_changes
-	if [ "$1" == "thorough" ]; then
-		HAS_CHANGES=git_has_changes_besides_filtered_out
-		shift
-	fi
-	find -L . -type d | while read D; do
-		[ ! -d "$D/.git" ] && continue
-		pushd $D >/dev/null
-		if $HAS_CHANGES >/dev/null; then
-			[ "$D" == "." ] && D="$(basename "$(pwd)")"
-			echo -e "\033[1;31m$D\033[0m"
-			git -c color.status=always st
-		fi
-		popd >/dev/null
-	done
-}
+SemVer = namedtuple('SemVer', 'major minor revision')
 
-# Pushes pending commits to remote repositories for all sub-directories recursively.
-push() {
-	find -L . -type d | while read D; do
-		[ ! -d "$D/.git" ] && continue
-		pushd $D >/dev/null
-		if git st | grep -q 'Your branch is ahead of\|Ваша ветка опережает .* на '; then
-			[ "$D" == "." ] && D="$(basename "$(pwd)")"
-			echo -e "\033[1;31m$D\033[0m"
-			git branch | sed 's/^..//' | while read branch_name; do
-				git push origin "$branch_name" --tags
-				git remote | grep -q local && git push local "$branch_name" --tags
-			done
-		fi
-		popd >/dev/null
-	done
-}
+class Git:
+	class Error(Exception): pass
+	def add_tag(self, new_tag, commit_message):
+		subprocess.run(["git", "tag", "-a", new_tag, "-m", commit_message])
+	def push(self, remote='origin', branch='master'):
+		subprocess.run(["git", "push", remote, branch, "--tags"])
+	def add_bare_remote(self, name, path):
+		subprocess.run(["git", "init", "--bare", path])
+		subprocess.run(["git", "remote", "add", name, path])
+		subprocess.run(["git", "push", "-u", name, "master", "--tags"])
+	def rootdir(self):
+		git = subprocess.run(["git", "rev-parse", "--show-toplevel"], stdout=subprocess.PIPE)
+		if git.returncode != 0:
+			raise Git.Error()
+		return git.stdout.decode().splitlines()[0]
+	def tags(self):
+		git = subprocess.run(["git", "tag"], stdout=subprocess.PIPE)
+		if git.returncode != 0:
+			raise Git.Error()
+		return git.stdout.decode().splitlines()
+	def remotes(self):
+		git = subprocess.run(["git", "remote", "-v"], stdout=subprocess.PIPE)
+		if git.returncode != 0:
+			raise Git.Error()
+		return git.stdout.decode().splitlines()
+	def status(self):
+		git = subprocess.run(["git", "status"], stdout=subprocess.PIPE)
+		if git.returncode != 0:
+			raise Git.Error()
+		return git.stdout.decode().splitlines()
+	def differs(self, filename):
+		git = subprocess.run(["git", "diff", "--numstat", filename], stdout=subprocess.PIPE)
+		if git.returncode != 0:
+			raise Git.Error()
+		diff = git.stdout.decode().splitlines()[0]
+		diff = diff.split(maxsplit=2)
+		return diff[0] != '0' or diff[1] != '0'
+	def branches(self):
+		git = subprocess.run(["git", "status"], stdout=subprocess.PIPE)
+		if git.returncode != 0:
+			raise Git.Error()
+		return [line[2:] for line in git.stdout.decode().splitlines()]
 
-# Creates Git bare repository in local filesystem and adds it as a remote to current repo.
-addlocal() {
-	LOCAL_REMOTE_NAME='local'
-	if git remote | grep -q "^${LOCAL_REMOTE_NAME}$"; then
-		echo "Git remote named '$LOCAL_REMOTE_NAME' is already added to this repo:"
-		git remote -v
-		return 1
-	fi
-	REPO_STORAGE_PATH="${1}"
-	if [ -z "$REPO_STORAGE_PATH" ]; then
-		echo "Repo storage path is missing"
-		echo "Usage: projects addlocal <repo local storage path>[/<repo name>[.git]]"
-		return 1
-	fi
-	REPO_STORAGE_PATH="${REPO_STORAGE_PATH%%/}"
-	if [ ! -e "$REPO_STORAGE_PATH" ]; then
-		NAME="$(basename "$REPO_STORAGE_PATH")"
-		NAME=${NAME%%.git}
-		REPO_STORAGE_PATH="$(dirname "$REPO_STORAGE_PATH")"
-	else
-		ROOTDIR=$(git rev-parse --show-toplevel)
-		NAME="$(basename "$ROOTDIR")"
-	fi
-	NEW_REMOTE_PATH="$REPO_STORAGE_PATH/${NAME}.git"
-	if [ -e "$NEW_REMOTE_PATH" ]; then
-		echo "Remote path '$1' already exists."
-		return 1
-	fi
-	echo -n "Add new bare repo at $NEW_REMOTE_PATH? "
-	read answer
-	if [ "$answer" == "y" ]; then
-		git init --bare "$NEW_REMOTE_PATH"
-		git remote add "$LOCAL_REMOTE_NAME" "$NEW_REMOTE_PATH"
-		git push -u "$LOCAL_REMOTE_NAME" master --tags
-	fi
-}
+def find_git_repos(root='.'):
+	for root, dirnames, filenames in os.walk(root, followlinks=True):
+		if '.git' not in dirnames:
+			continue
+		dirnames = dirnames[:]
+		yield os.path.abspath(root)
 
-COMMAND="$1"
-shift
-case "$COMMAND" in
-	"tag") tag "$@" ;;
-	"version") version "$@" ;;
-	"status") status "$@" ;;
-	"push") push "$@" ;;
-	"addlocal") addlocal "$@" ;;
-esac
+class CurrentDir:
+	def __init__(self, path):
+		self.path = path
+	def __enter__(self):
+		self.prev = os.getcwd()
+		os.chdir(self.path)
+	def __exit__(self, e, tb, i):
+		os.chdir(self.prev)
+
+def versions_from_tags(tags):
+	versions = [extract_match(re.search(r'(\d+[.]\d\+[.]\d+)', line)) for line in tags]
+	versions = filter(non_empty, tags)
+	versions = map(lambda version: SemVer(map(int, version.split('.'))), versions)
+	return sorted(versions)
+
+def find_repo_name(remotes):
+	repo_names = set([extract_match(re.search(r'/([^/]*)[.]git')) for remote in remotes if '(push)' in remote])
+	if not repo_names:
+		print("Cannot extract unambiguous repo name from `git remote -v`: no valid remotes")
+		return None
+	if len(repo_names) > 1:
+		print("Cannot extract unambiguous repo name from `git remote -v`: {0}".format(', '.join(repo_names)))
+		return None
+	return next(iter(repo_names))
+
+def tag(section=None):
+	"""
+	Handles Semantic Versioning for projects.
+	Usage:
+	   tag {minor|major|rev}
+			Updates specified section of version number and adds new tag.
+	   tag
+			Lists all tags for current project.
+	"""
+	tags = Git().tags()
+	if section is None:
+		print_lines(tags)
+		return True
+
+	versions = versions_from_tags(tags)
+	repo_name = find_repo_name(Git().remotes())
+
+	last_version = versions[-1] if versions else SemVer(0, 0, 0)
+	if section == 'major':
+		new_version = SemVer(last_version.major + 1, 0, 0)
+	elif section == 'minor':
+		new_version = SemVer(last_version.major, last_version.minor + 1, 0)
+	elif section in 'rev revision'.split():
+		new_version = SemVer(last_version.major, last_version.minor, last_version.revision + 1)
+	else:
+		print("Unknown section: <{0}>. Should be: major, minor or revision (rev).".format(section))
+		return False
+
+	new_version = '.'.join(new_version)
+	print_lines(tags)
+	yes = input("Add <{0}>, (y)es? ".format(new_version))
+	if yes.lower() != "y":
+		return False
+	Git().add_tag(new_version, "{0} v{1}".format(repo_name, new_version))
+	print("Added new tag <{0}>".format(new_version))
+	return True
+
+def version(section=None):
+	""" Extracts current project version from the last tag. """
+	versions = versions_from_tags(Git().tags())
+	if not versions:
+		return False
+	version = versions[-1]
+	if section == 'major':
+		print(version.major)
+	elif section == 'minor':
+		print(version.minor)
+	elif section in 'rev revision'.split():
+		print(version.revision)
+	else:
+		print("Unknown section: <{0}>. Should be: major, minor or revision (rev).".format(section))
+		return False
+	return True
+
+def git_has_changes():
+	OK_LINES = [
+			r'#\?\s*On branch master',
+			r'На ветке master',
+			r'Your branch is up-to-date with',
+			r'Ваша ветка обновлена в соответствии с ',
+			r'nothing to commit',
+			r'нечего коммитить, нет изменений в рабочем каталоге',
+			r'^$',
+			]
+	status = Git().status()
+	status = skip_lines_with_patterns(status, OK_LINES)
+	return status
+
+def git_has_changes_besides_filtered_out():
+	status = get_has_changes()
+	CHANGES = [
+			r'(use "git add <file>..." to update what will be committed)',
+			r'(используйте «git add <файл>…», чтобы добавить файл в индекс)',
+			r'(use "git checkout -- <file>..." to discard changes in working directory)',
+			r'(используйте «git checkout -- <файл>…», чтобы отменить изменения',
+			r'в рабочем каталоге)',
+			r'no changes added to commit (use "git add"',
+			r'нет изменений добавленных для коммита',
+			r'(используйте «git add» и/или «git commit -a»)',
+			]
+	NOT_STAGED = [
+			r'^Changes not staged for commit:',
+			r'^Изменения, которые не в индексе для коммита:',
+			]
+	MODIFIED = [
+			r'^modified:\s+(.*)$',
+			r'^изменено:\s+(.*)$',
+			]
+	status = skip_lines_that_contains(status, CHANGES)
+	changes = []
+	in_changes = False
+	for line in status:
+		if not line.strip():
+			continue
+		if not in_changes:
+			if match_any(line, NOT_STAGED):
+				in_changes = True
+			else:
+				changes.append(line)
+		else:
+			modifications = match_any(line, MODIFIED)
+			if not modifications:
+				in_changes = False
+				changes.append(line)
+			else:
+				filename = modifications[0].group(1)
+				if Git().differs(filename):
+					changes.append(filename)
+	return list(map(non_empty, changes))
+
+def status(thorough=False):
+	"""
+	Prints statuses for all projects in directory recursively.
+	Skips up-to-date projects, prints only modifications or pending commits.
+	"""
+	has_changes = git_has_changes
+	if thorough:
+		has_changes = git_has_changes_besides_filtered_out
+	for repo in find_git_repos():
+		with CurrentDir(repo):
+			if has_changes():
+				print(colored(os.path.basename(repo), 'red'))
+				os.system("git -c color.status=always st")
+	return True
+
+def push():
+	""" Pushes pending commits to remote repositories for all sub-directories recursively. """
+	BRANCH_AHEAD = [
+			r'Your branch is ahead of',
+			r'Ваша ветка опережает .* на ',
+			]
+	for repo in find_git_repos():
+		with CurrentDir(repo):
+			status = Git().status()
+			is_ahead = list(filter(lambda line: search_any(line, BRANCH_AHEAD), status))
+			if not is_ahead:
+				continue
+			print(colored(os.path.basename(repo), 'red'))
+			branches = Git().branches()
+			remotes = Git().remotes()
+			for branch in branches:
+				Git().push('origin', branch)
+				if any(LOCAL_REMOTE_NAME in remote for remote in remotes):
+					Git().push(LOCAL_REMOTE_NAME, branch)
+	return True
+
+def addlocal(repo_storage_path):
+	""" Creates Git bare repository in local filesystem and adds it as a remote to current repo. """
+	remotes = Git().remotes()
+	if any(LOCAL_REMOTE_NAME in remote for remote in remotes):
+		print("Git remote named '{0}' is already added to this repo:".format(LOCAL_REMOTE_NAME))
+		print_lines(remotes)
+		return False
+	if not os.path.exists(repo_storage_path):
+		name = os.path.basename(repo_storage_path)
+		if name.endswith('.git'):
+			name = name[:-4]
+		repo_storage_path = os.path.dirname(repo_storage_path)
+	else:
+		rootdir = Git().rootdir()
+		name = os.path.basename(rootdir)
+	new_remote_path = os.path.join(repo_storage_path, name + '.git')
+	if os.path.exists(new_remote_path):
+		print("Remote path '{0}' already exists.".format(repo_storage_path))
+		return False
+	yes = input("Add new bare repo at {0}? ".format(new_remote_path))
+	if yes.lower() != "y":
+		return False
+	Git().add_bare_remote(LOCAL_REMOTE_NAME, new_remote_path)
+	return True
+
+USAGE = """Collection of dev project handling functions.
+Usage:
+	projects tag   - lists all tags for current project.
+	projects tag [minor|major|rev]	- creates new tag with specified version advancement.
+	projects version  - displays current project's version.
+	projects status [thorough]	- checks project's status.
+	projects push  - pushes changes to remote repos.
+	projects addlocal <repo local storage path>[/<repo name>[.git]]
+		- creates bare repo in local filesystem as an additional remote.
+"""
+
+def main(command, args):
+	if command == 'tag':
+		return tag(args[0] if args else None)
+	elif command == "version":
+		return version(args[0] if args else None)
+	elif command == "status":
+		return status(args[0] == 'thorough' if args else False)
+	elif command == "push":
+		return push()
+	elif command == "addlocal":
+		return addlocal(args[0])
+	print("Unknown command: {0}".format(command))
+	print(USAGE)
+	return False
+
+if __name__ == "__main__":
+	args = sys.argv[1:]
+	if not args:
+		print(USAGE)
+		sys.exit(1)
+	command, args = args[0], args[1:]
+	try:
+		if not main(command, args):
+			sys.exit(1)
+	except Git.Error:
+		sys.exit(1)
