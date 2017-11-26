@@ -40,6 +40,7 @@ firefox/lock
 firefox/*.sqlite-shm
 firefox/*.sqlite-wal
 # Firefox cache
+firefox/_CACHE_CLEAN_
 firefox/OfflineCache/
 firefox/browser-extension-data/
 firefox/startupCache/
