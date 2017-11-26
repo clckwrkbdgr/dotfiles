@@ -482,6 +482,7 @@ user_pref("privacy.donottrackheader.enabled", true);
 user_pref("privacy.sanitize.migrateFx3Prefs", true);
 user_pref("security.OCSP.GET.enabled", true);
 user_pref("security.OCSP.require", true);
+user_pref("security.disable_button.openCertManager", false);
 user_pref("security.enable_java", false);
 user_pref("security.ssl.enable_ocsp_stapling", false);
 user_pref("security.warn_viewing_mixed", false);
