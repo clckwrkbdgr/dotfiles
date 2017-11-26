@@ -10,10 +10,10 @@ non_empty = lambda x:x
 print_lines = lambda lines: map(print, lines)
 
 def match_any(line, patterns):
-	return list(map(non_empty, (re.match(expr, line) for expr in patterns)))
+	return list(filter(non_empty, (re.match(expr, line) for expr in patterns)))
 
 def search_any(line, patterns):
-	return list(map(non_empty, (re.search(expr, line) for expr in patterns)))
+	return list(filter(non_empty, (re.search(expr, line) for expr in patterns)))
 
 def skip_lines_with_patterns(lines, patterns):
 	return [line for line in lines if not any(re.search(expr, line) for expr in patterns)]
@@ -174,7 +174,7 @@ def git_has_changes():
 	return status
 
 def git_has_changes_besides_filtered_out():
-	status = get_has_changes()
+	status = git_has_changes()
 	CHANGES = [
 			r'(use "git add <file>..." to update what will be committed)',
 			r'(используйте «git add <файл>…», чтобы добавить файл в индекс)',
@@ -190,8 +190,8 @@ def git_has_changes_besides_filtered_out():
 			r'^Изменения, которые не в индексе для коммита:',
 			]
 	MODIFIED = [
-			r'^modified:\s+(.*)$',
-			r'^изменено:\s+(.*)$',
+			r'^\s*modified:\s+(.*)$',
+			r'^\s*изменено:\s+(.*)$',
 			]
 	status = skip_lines_that_contains(status, CHANGES)
 	changes = []
