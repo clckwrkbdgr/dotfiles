@@ -161,8 +161,8 @@ def version(section=None):
 
 def git_has_changes():
 	OK_LINES = [
-			r'#\?\s*On branch master',
-			r'На ветке master',
+			r'#\?\s*On branch ',
+			r'На ветке ',
 			r'Your branch is up-to-date with',
 			r'Ваша ветка обновлена в соответствии с ',
 			r'nothing to commit',
