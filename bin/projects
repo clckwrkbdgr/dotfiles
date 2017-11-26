@@ -68,7 +68,7 @@ class Git:
 		diff = diff.split(maxsplit=2)
 		return diff[0] != '0' or diff[1] != '0'
 	def branches(self):
-		git = subprocess.run(["git", "status"], stdout=subprocess.PIPE)
+		git = subprocess.run(["git", "branch"], stdout=subprocess.PIPE)
 		if git.returncode != 0:
 			raise Git.Error()
 		return [line[2:] for line in git.stdout.decode().splitlines()]
