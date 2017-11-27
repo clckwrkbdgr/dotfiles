@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+import sys, difflib
+icase_lines = lambda f: [line.lower().title() for line in f.readlines()]
+with open(sys.argv[1], encoding='utf-8') as left, open(sys.argv[2], encoding='utf-8') as right:
+	sys.stdout.writelines(difflib.unified_diff(icase_lines(left), icase_lines(right)))
