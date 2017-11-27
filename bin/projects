@@ -227,6 +227,7 @@ def status(thorough=False):
 		with CurrentDir(repo):
 			if has_changes():
 				print(colored(os.path.basename(repo), 'red'))
+				sys.stdout.flush()
 				os.system("git -c color.status=always st")
 	return True
 
