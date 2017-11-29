@@ -84,11 +84,13 @@ pidgin() {
 	mkdir -p "$XDG_CACHE_HOME/purple"
 	mkdir -p "$XDG_CACHE_HOME/purple/certificates"
 	mkdir -p "$XDG_CACHE_HOME/purple/icons"
+	mkdir -p "$XDG_CACHE_HOME/purple/telegram-purple"
 	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/logs" "$XDG_DATA_HOME/purple/logs"
 	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/accels"        "$XDG_CACHE_HOME/purple/accels"
 	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/certificates"  "$XDG_CACHE_HOME/purple/certificates"
 	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/icons"         "$XDG_CACHE_HOME/purple/icons"
 	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/xmpp-caps.xml" "$XDG_CACHE_HOME/purple/xmpp-caps.xml"
+	fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/telegram-purple" "$XDG_CACHE_HOME/purple/telegram-purple"
 	/usr/bin/pidgin --config=$XDG_CONFIG_HOME/purple "$@";
 }
 [ -n "$BASH" ] && export -f pidgin
