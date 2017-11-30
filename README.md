@@ -32,3 +32,7 @@ E.g. to get only work-related configs, have `work.lst` file in `loader` branch, 
 	cd .config
 	git clone --depth 1 --single-branch --branch loader <path to this repo> .
 	make work # Or any other defined target.
+
+Afterwards current branch should be switched to the main branch with only the specified files downloaded.
+
+**NOTE**: Makefile targets set git remote properties from command line with quoted argument. Under Windows' cmd interpreter quotes are not expanded and are written to .git/config file, which would later break any remote-related git operations. Sadly, this behaviour is unavoidable in default environment, but it can be fixed with setting other `$SHELL` for `make` or using `nmake` if available.
