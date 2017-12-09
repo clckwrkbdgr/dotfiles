@@ -21,6 +21,9 @@ bring_to_top() { # <process name(s)>
 	return 1
 }
 
+ulimit -Sm 2000000
+ulimit -Sv 1000000
+
 browser=/usr/bin/iceweasel
 pnames="iceweasel firefox-esr x-www-browser"
 
