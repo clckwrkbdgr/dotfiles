@@ -1,20 +1,21 @@
 #!/bin/bash
 bring_to_top() { # <process name(s)>
 	for pname in "$@"; do
-		pid=$(ps -ef | pgrep "$pname" | head -1)
-		if [ -z "$pid" ]; then
-			continue
-		fi
-		xdotool search --pid "$pid" | while read window_id; do
-			window_name="$(xdotool getwindowname $window_id)"
-			if [ -z "$window_name" ]; then
+		for pid in $(pgrep "$pname"); do
+			if [ -z "$pid" ]; then
 				continue
 			fi
-			if xdotool windowactivate "$window_id" 2>&1 | fgrep -q 'XGetWindowProperty[_NET_WM_DESKTOP] failed (code=1)'; then
-				:;
-			else
-				break
-			fi
+			xdotool search --pid "$pid" | while read window_id; do
+				window_name="$(xdotool getwindowname $window_id)"
+				if [ -z "$window_name" ]; then
+					continue
+				fi
+				if xdotool windowactivate "$window_id" 2>&1 | fgrep -q 'XGetWindowProperty[_NET_WM_DESKTOP] failed (code=1)'; then
+					:;
+				else
+					break
+				fi
+			done
 		done
 		return 0
 	done
