@@ -31,11 +31,21 @@ alias qiv='qiv -f -t -i'
 alias grep='grep --color=auto'
 
 # Prompt
-WHITE="\[\033[1;37m\]"
-RED="\[\033[1;31m\]"
-NORMAL="\[\033[0m\]"
+WHITE='\[\033[1;37m\]'
+RED='\[\033[1;31m\]'
+NORMAL='\[\033[0m\]'
 xterm_title() { echo "\[\033]0;$1\a\]"; }
-export PS1="${RED}\$(list_dotfiles)${WHITE}${IS_VIM}\W\$${NORMAL} $(xterm_title \\w)"
+strip_escape_sequences() { sed 's%\\033\(\[[0-9]\+\(;[0-9]\+\)\?m\|\][0-9]\+;\)%%g;s%\\\[\\\]%%g'; }
+strip_unimportant_PS1_stuff() { sed 's/\\u@\\h://;s/\\s-\\v//g;s/\\[Wwa$]//g;s/ \+$//;s/\$(list_dotfiles)//g'; }
+PS1=$(echo "$PS1" | strip_unimportant_PS1_stuff | strip_escape_sequences)
+MY_SHELL_LEVEL=$((SHLVL-2)) # For GUI interactive shells: 1 for GUI + 1 for terminal
+if [ "$MY_SHELL_LEVEL" -le 0 ]; then
+	MY_SHELL_LEVEL=
+else
+	MY_SHELL_LEVEL="(bash)"
+fi
+export PS1="${RED}\$(list_dotfiles)${PS1}${MY_SHELL_LEVEL}${WHITE}${IS_VIM}"'\W\$'"${NORMAL} "
+#export PS1="${RED}\$(list_dotfiles)${WHITE}${IS_VIM}${PS1}"'\W\$'"${NORMAL} "'$(xterm_title \w)'
 export PS2="${WHITE}>${NORMAL} " # >
 export PS4="${WHITE}+${NORMAL} " # +
 unset WHITE RED NORMAL
