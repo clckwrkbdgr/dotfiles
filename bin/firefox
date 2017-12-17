@@ -1,23 +1,32 @@
 #!/bin/bash
-bring_to_top() { # <process name(s)>
+processes_by_names() { # <list of pnames>
 	for pname in "$@"; do
-		for pid in $(pgrep "$pname"); do
-			if [ -z "$pid" ]; then
-				continue
-			fi
-			xdotool search --pid "$pid" | while read window_id; do
-				window_name="$(xdotool getwindowname $window_id)"
-				if [ -z "$window_name" ]; then
-					continue
-				fi
-				if xdotool windowactivate "$window_id" 2>&1 | fgrep -q 'XGetWindowProperty[_NET_WM_DESKTOP] failed (code=1)'; then
-					:;
-				else
-					break
-				fi
-			done
-		done
-		return 0
+		pgrep "$pname"
+	done
+}
+
+windows_by_pid() { # <pid>
+	pid=$1
+	xdotool search --pid "$pid" | while read window_id; do
+		window_name="$(xdotool getwindowname $window_id)"
+		if [ -z "$window_name" ]; then
+			continue
+		fi
+		echo $window_id
+	done
+}
+
+windows_by_process_names() { # <list of pnames>
+	processes_by_names "$@" | while read pid; do
+		windows_by_pid "$pid"
+	done
+}
+
+bring_to_top() { # <process name(s)>
+	windows_by_process_names "$@" | while read window_id; do
+		if ! xdotool windowactivate "$window_id" 2>&1 | fgrep -q 'XGetWindowProperty[_NET_WM_DESKTOP] failed (code=1)'; then
+			return 0
+		fi
 	done
 	return 1
 }
