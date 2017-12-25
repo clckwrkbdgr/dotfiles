@@ -42,9 +42,18 @@ MY_SHELL_LEVEL=$((SHLVL-2)) # For GUI interactive shells: 1 for GUI + 1 for term
 if [ "$MY_SHELL_LEVEL" -le 0 ]; then
 	MY_SHELL_LEVEL=
 else
-	MY_SHELL_LEVEL="(bash)"
+	if [ "$RANGER_LEVEL" != "$PREV_RANGER_LEVEL" ]; then
+		export PREV_RANGER_LEVEL=$RANGER_LEVEL
+		# Ranger apparently starts login bash and loads default PS1, so all previous stacks are lost.
+		MY_SHELL_LEVEL="(ranger-$RANGER_LEVEL)"
+	elif [ "$TMUX" != "$PREV_TMUX" ]; then
+		export PREV_TMUX=$TMUX
+		MY_SHELL_LEVEL="(tmux)"
+	else
+		MY_SHELL_LEVEL="(bash)"
+	fi
 fi
-export PS1="${RED}\$(list_dotfiles)${PS1}${MY_SHELL_LEVEL}${WHITE}${IS_VIM}"'\W\$'"${NORMAL} "
+export PS1="${RED}\$(list_dotfiles)${MY_SHELL_LEVEL}${PS1}${WHITE}${IS_VIM}"'\W\$'"${NORMAL} "
 #export PS1="${RED}\$(list_dotfiles)${WHITE}${IS_VIM}${PS1}"'\W\$'"${NORMAL} "'$(xterm_title \w)'
 export PS2="${WHITE}>${NORMAL} " # >
 export PS4="${WHITE}+${NORMAL} " # +
