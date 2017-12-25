@@ -66,6 +66,11 @@ for filename in sorted(os.listdir(".")):
 			print("[lck]", end='')
 		is_git = True
 		continue
+	if filename == '.build':
+		explain_file("build", filename)
+		if not EXPLAIN:
+			print("[build]", end='')
+		continue
 	if is_git and filename in GIT_DOTFILES:
 		explain_file("git", filename)
 		continue
