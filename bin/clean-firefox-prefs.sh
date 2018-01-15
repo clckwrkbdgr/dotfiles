@@ -10,6 +10,16 @@ sed '/datareporting.sessions.previous/d' | \
 sed '/datareporting.sessions.current/d' | \
 sed '/datareporting.sessions.prunedIndex/d' | \
 sed '/devtools.scratchpad.recentFilePaths/d' | \
+sed '/devtools.telemetry.tools.opened.version/d' | \
+sed '/devtools.webconsole.filter./d' | \
+sed '/devtools.debugger.ui.panes-[a-z]*-width/d' | \
+sed 's/\(devtools.toolsidebar-width.webconsole\)", *[0-9]\+/\1", 300/' | \
+sed '/devtools.toolbox.splitconsoleHeight/d' | \
+sed '/devtools.toolbox.splitconsoleEnabled/d' | \
+sed '/devtools.toolbox.selectedTool/d' | \
+sed '/devtools.toolbox.footer.height/d' | \
+sed '/devtools.toolbox.previousHost/d' | \
+sed '/devtools.toolbox.host/d' | \
 sed '/extensions.adblockplus.notificationdata/d' | \
 sed '/extensions.bootstrappedAddons/d' | \
 sed '/extensions.downloadyoutubemp4[.]/d' | \
@@ -49,20 +59,13 @@ sed '/noscript.firstRunRedirection.pending/d' | \
 sed '/noscript.ABE.cspHeaderDelim/d' | \
 sed '/extensions.classicthemerestorer.pref_actindx/d' | \
 sed '/extensions.classicthemerestorer.aboutprefs/d' | \
-sed '/devtools.telemetry.tools.opened.version/d' | \
-sed '/devtools.toolbox.selectedTool/d' | \
 sed '/browser.uiCustomization.state/d' | \
 sed '/browser.syncPromoViewsLeftMap/d' | \
-sed '/devtools.webconsole.filter./d' | \
 sed '/\(gecko\|browser\).*\.mstone/d' | \
 sed '/extensions.[^.]\+.sdk.version/d' | \
 sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
 sed '/extensions.greasemonkey.version/d' | \
 sed '/extensions.browsec.tracking_cid/d' | \
-sed 's/\(devtools.toolsidebar-width.webconsole\)", *[0-9]\+/\1", 300/' | \
-sed '/devtools.toolbox.splitconsoleHeight/d' | \
-sed '/devtools.debugger.ui.panes-[a-z]*-width/d' | \
-sed '/devtools.toolbox.footer.height/d' | \
 sed '/extensions.firefox@zenmate.com.sdk.version/d' | \
 sed '/\(extensions.\)\?e10s.rollout/d' | \
 sed '/extensions.webextensions.uuids/d' | \
@@ -73,6 +76,4 @@ sed '/browser.rights.3.shown/d' | \
 sed '/extensions.pocket.settings.test.panelSignUp/d' | \
 sed '/extensions..*.sdk.version/d' | \
 sed '/browser.preferences.advanced.selectedTabIndex/d' | \
-sed '/devtools.toolbox.previousHost/d' | \
-sed '/devtools.toolbox.host/d' | \
 sed 's|'"$HOME"'|$HOME|g'

@@ -157,7 +157,6 @@ user_pref("devtools.hud.height", 230);
 user_pref("devtools.selfxss.count", 5);
 user_pref("devtools.storage.enabled", true);
 user_pref("devtools.theme", "dark");
-user_pref("devtools.toolbox.splitconsoleEnabled", true);
 user_pref("devtools.toolsidebar-height.inspector", 350);
 user_pref("devtools.toolsidebar-width.inspector", 350);
 user_pref("devtools.toolsidebar-width.netmonitor", 0);
