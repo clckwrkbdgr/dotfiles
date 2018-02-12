@@ -44,7 +44,7 @@ clear_ping_output() {
 check_host() {
 	HOST="${1:-127.0.0.1}"
 	INTERFACE="$2"
-	[ -n "$INTERFACE" ] && INTERFACE_ARG="-I '$INTERFACE'"
+	[ -n "$INTERFACE" ] && INTERFACE_ARG="-I $INTERFACE"
 	ping $INTERFACE_ARG -qc 1 "$HOST" | clear_ping_output
 }
 
