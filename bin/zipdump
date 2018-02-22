@@ -44,6 +44,8 @@ if __name__ == "__main__":
 
     if settings.command == 'dump':
         if not settings.filename or settings.filename == '-':
+            # Fix for Windows: zip fails to seek on piped input.
+            bin_stdin = io.BytesIO(bin_stdin.read())
             dump_zip(bin_stdin, sys.stdout)
         else:
             with open(settings.filename, 'rb') as f:
