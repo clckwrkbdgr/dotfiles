@@ -75,6 +75,19 @@
     (factory-entry "gimp-file-open-dialog")
     (position 86 22)
     (size 1185 673))
+(session-info "toplevel"
+    (factory-entry "gimp-rotate-tool-dialog")
+    (position 788 390))
+(session-info "toplevel"
+    (factory-entry "gimp-perspective-tool-dialog")
+    (position 657 351))
+(session-info "toplevel"
+    (factory-entry "gimp-levels-tool-dialog")
+    (position 803 69)
+    (size 478 537))
+(session-info "toplevel"
+    (factory-entry "gimp-threshold-tool-dialog")
+    (position 616 0))
 
 (hide-docks no)
 (single-window-mode yes)
