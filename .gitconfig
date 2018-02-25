@@ -84,3 +84,7 @@
 [filter "gimp_tags"]
 	smudge = cat
 	clean = "sort-xml /tags/resource @identifier | sed 's/checksum=.[0-9a-f]\\+./checksum=\"(null)\"/'"
+
+[filter "gimp_menurc"]
+	smudge = cat
+	clean = "sort | sed '/^(gtk_accel_path \"<Actions>\\/windows\\/windows-display-[0-9]\\+\" \"<Alt>[0-9]\\+\")/d'"
