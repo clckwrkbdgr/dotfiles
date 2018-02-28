@@ -132,3 +132,5 @@ libreoffice/4/user/gallery/sg30.sdv
 libreoffice/4/user/gallery/sg30.thm
 libreoffice/4/user/psprint/pspfontcache
 libreoffice/4/user/uno_packages/cache/
+# FreeRDP
+freerdp/known_hosts
