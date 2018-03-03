@@ -8,8 +8,14 @@ center_text: true
 scroll-up: k, up
 scroll-down: j, down
 
+[default]
+background: none
+
 [emphasis]
 foreground: blue
 
 [a]
 foreground: yellow
+
+[style]
+foreground: white
