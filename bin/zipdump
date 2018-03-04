@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os, sys, io
+import base64
 import zipfile
 import argparse
 
@@ -10,8 +11,15 @@ def dump_zip(archive, text):
     archive = zipfile.ZipFile(archive, 'r')
     for filename in archive.namelist():
         data = archive.read(filename)
-        text.write('{0}||{1}\n'.format(len(data), filename))
-        text.write(data.decode())
+        encoding = ''
+        try:
+            data = data.decode('utf-8')
+            encoding = 'utf-8'
+        except UnicodeError:
+            data = base64.b64encode(data).decode('ascii')
+            encoding = 'base64'
+        text.write('{0}|{2}|{1}\n'.format(len(data), filename, encoding))
+        text.write(data)
         text.write('\n') # Content separator
     archive.close()
 
@@ -21,10 +29,14 @@ def load_zip(text, archive):
         line = text.readline()
         if not line:
             break
-        size, reserved, filename = line.split('|', maxsplit=3)
+        size, encoding, filename = line.split('|', maxsplit=3)
         size = int(size)
         filename = filename[:-1] # Removing trailing linebreak.
         data = text.read(size)
+        if encoding == 'utf-8':
+            data = data.encode('utf-8')
+        elif encoding == 'base64':
+            data = base64.b64decode(data)
         archive.writestr(filename, data)
         text.read(1) # Content separator
     archive.close()

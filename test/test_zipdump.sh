@@ -20,7 +20,7 @@ EOF
 
 function should_zip_simple_text_file() {
 lorem_ipsum >'test.txt'
-echo $(cat 'test.txt' | wc -c)'||test.txt'
+echo $(cat 'test.txt' | wc -c)'|utf-8|test.txt'
 cat 'test.txt'
 echo # Content separator.
 
@@ -29,7 +29,7 @@ zip "test.zip" "test.txt" >&2
 
 function should_zip_utf8() {
 ryba_utf8 >'test.txt'
-echo $(cat 'test.txt' | wc -c)'||test.txt'
+echo $(cat 'test.txt' | wc -m)'|utf-8|test.txt'
 cat 'test.txt'
 echo # Content separator.
 
@@ -38,8 +38,8 @@ zip "test.zip" "test.txt" >&2
 
 function should_zip_cp1251() {
 ryba_utf8 | iconv -f 'utf-8' -t 'cp1251' >'test.txt'
-echo $(cat 'test.txt' | wc -c)'||test.txt'
-cat 'test.txt'
+echo $( (cat 'test.txt' | base64 | wc -c | tr -d '\n'; echo - 1) | bc)'|base64|test.txt'
+cat 'test.txt' | base64 | tr -d '\n'
 echo # Content separator.
 
 zip "test.zip" "test.txt" >&2
@@ -51,6 +51,7 @@ testdir=$(mktemp -d)
 pushd "$testdir" >/dev/null
 
 function perform_test() { # <test name>
+	echo ">>> $1"
 	"$1" >"expected.txt"
 	tput setf 4 # red
 	zipdump dump "test.zip" | diff "expected.txt" - | cat -vet
