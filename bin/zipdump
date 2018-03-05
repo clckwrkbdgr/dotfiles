@@ -15,12 +15,14 @@ def dump_zip(archive, text):
         try:
             data = data.decode('utf-8')
             encoding = 'utf-8'
+            data = data.encode('utf-8')
         except UnicodeError:
-            data = base64.b64encode(data).decode('ascii')
+            data = base64.b64encode(data)
             encoding = 'base64'
-        text.write('{0}|{2}|{1}\n'.format(len(data), filename, encoding))
+        header = '{0}|{2}|{1}\n'.format(len(data), filename, encoding)
+        text.write(header.encode('utf-8', 'surrogateescape'))
         text.write(data)
-        text.write('\n') # Content separator
+        text.write(b'\n') # Content separator
     archive.close()
 
 def load_zip(text, archive):
@@ -29,13 +31,14 @@ def load_zip(text, archive):
         line = text.readline()
         if not line:
             break
-        size, encoding, filename = line.split('|', maxsplit=3)
+        size, encoding, filename = line.split(b'|', maxsplit=3)
         size = int(size)
         filename = filename[:-1] # Removing trailing linebreak.
+        filename = filename.decode('utf-8', 'surrogateescape')
         data = text.read(size)
-        if encoding == 'utf-8':
+        if encoding == b'utf-8':
             data = data.encode('utf-8')
-        elif encoding == 'base64':
+        elif encoding == b'base64':
             data = base64.b64decode(data)
         archive.writestr(filename, data)
         text.read(1) # Content separator
@@ -58,14 +61,13 @@ if __name__ == "__main__":
         if not settings.filename or settings.filename == '-':
             # Fix for Windows: zip fails to seek on piped input.
             bin_stdin = io.BytesIO(bin_stdin.read())
-            dump_zip(bin_stdin, sys.stdout)
+            dump_zip(bin_stdin, bin_stdout)
         else:
             with open(settings.filename, 'rb') as f:
-                dump_zip(f, sys.stdout)
+                dump_zip(f, bin_stdout)
     elif settings.command == 'load':
         if not settings.filename or settings.filename == '-':
-            load_zip(sys.stdin, bin_stdout)
+            load_zip(bin_stdin, bin_stdout)
         else:
             with open(settings.filename, 'r') as f:
                 load_zip(f, bin_stdout)
-

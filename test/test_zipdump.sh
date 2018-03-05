@@ -29,7 +29,7 @@ zip "test.zip" "test.txt" >&2
 
 function should_zip_utf8() {
 ryba_utf8 >'test.txt'
-echo $(cat 'test.txt' | wc -m)'|utf-8|test.txt'
+echo $(cat 'test.txt' | wc -c)'|utf-8|test.txt'
 cat 'test.txt'
 echo # Content separator.
 
@@ -38,7 +38,9 @@ zip "test.zip" "test.txt" >&2
 
 function should_zip_cp1251() {
 ryba_utf8 | iconv -f 'utf-8' -t 'cp1251' >'test.txt'
-echo $( (cat 'test.txt' | base64 | wc -c | tr -d '\n'; echo - 1) | bc)'|base64|test.txt'
+size=$(cat 'test.txt' | base64 | wc -c)
+size=$((size-1))
+echo $size'|base64|test.txt'
 cat 'test.txt' | base64 | tr -d '\n'
 echo # Content separator.
 
