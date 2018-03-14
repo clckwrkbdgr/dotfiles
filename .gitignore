@@ -134,3 +134,6 @@ libreoffice/4/user/psprint/pspfontcache
 libreoffice/4/user/uno_packages/cache/
 # FreeRDP
 freerdp/known_hosts
+# Enchant (for some reason does not recognize $ENCHANT_CONFIG_DIR)
+enchant/*.dic
+enchant/*.exc

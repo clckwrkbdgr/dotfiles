@@ -72,6 +72,7 @@ esac
 # Local data. Should be stored in some backup or outer storage.
 export WINEPREFIX=/opt/wine-$USER
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
+export ENCHANT_CONFIG_DIR="$XDG_DATA_HOME"/enchant
 # TODO .dropbox : hardcoded
 # TODO .dropbox-dist : hardcoded
 # TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
