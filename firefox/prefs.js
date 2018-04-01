@@ -361,7 +361,6 @@ user_pref("noscript.forbidMetaRefresh", true);
 user_pref("noscript.gtemp", "");
 user_pref("noscript.notify", false);
 user_pref("noscript.nselNever", true);
-user_pref("noscript.options.tabSelectedIndexes", "4,4,0");
 user_pref("noscript.policynames", "");
 user_pref("noscript.temp", "");
 user_pref("noscript.visibleUIChecked", true);
