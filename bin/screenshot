@@ -1,6 +1,10 @@
 #!/bin/bash
 FILENAME=~/screenshot-$(date -Is).png
 QUESTION="Screenshot was saved to $FILENAME.\nDo you want to open it in GIMP for editing?"
-xwd | xwdtopnm | pnmtopng >"$FILENAME" || rm -f "$FILENAME"
+if which convert >/dev/null 2>&1; then
+	xwd | convert xwd:- png:- >"$FILENAME" || rm -f "$FILENAME"
+else
+	xwd | xwdtopnm | pnmtopng >"$FILENAME" || rm -f "$FILENAME"
+fi
 [ -f "$FILENAME" ] && zenity --question --text "$QUESTION" && gimp "$FILENAME"
 
