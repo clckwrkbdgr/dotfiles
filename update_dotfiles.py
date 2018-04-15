@@ -1,15 +1,20 @@
 import os, sys, subprocess
 
+class Stash(object):
+	def __enter__(self):
+		os.system("git stash")
+		return self
+	def __exit__(self, e, t, tb):
+		os.system("git stash pop")
+
 # Fetch remote updates status only.
 os.system("git remote update")
 
 # Check if master branch is behind remote/origin/master
 output = subprocess.check_output('git for-each-ref --format="%(push:track)" refs/heads/master')
 if b'behind' in output:
-	# Stash current local changes, pull (fetch and merge) remote master and re-apply local changes back.
-	os.system("git stash")
-	os.system("git pull origin master")
-	os.system("git stash pop")
+	with Stash():
+		os.system("git pull origin master")
 
 # Check if loader branch is behind remote/origin/loader
 output = subprocess.check_output('git for-each-ref --format="%(push:track)" refs/heads/loader')
@@ -28,6 +33,5 @@ if b'behind' in output:
 		sys.stdout.write(work_lst.decode()) # TODO print diff instead.
 		with open(sparse_checkout, 'wb') as f:
 			f.write(work_lst)
-		os.system("git stash")
-		os.system("git checkout master")
-		os.system("git stash pop")
+		with Stash():
+			os.system("git checkout master")
