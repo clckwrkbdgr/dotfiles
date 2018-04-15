@@ -7,31 +7,44 @@ class Stash(object):
 	def __exit__(self, e, t, tb):
 		os.system("git stash pop")
 
-# Fetch remote updates status only.
-os.system("git remote update")
+class GitFile(object):
+	def __init__(self, branch, path):
+		self.branch, self.path = branch, path
+		self.content = subprocess.check_output('git show {0}:{1}'.format(self.branch, self.path))
 
-# Check if master branch is behind remote/origin/master
-output = subprocess.check_output('git for-each-ref --format="%(push:track)" refs/heads/master')
-if b'behind' in output:
-	with Stash():
-		os.system("git pull origin master")
+class SparseCheckout(object):
+	def __init__(self, branch, path):
+		self.basefile = os.path.join('.git', 'info', 'sparse-checkout')
+	def is_same(self, content):
+		with open(self.base, 'rb') as f:
+			if f.read() != content:
+				return False
+		return True
+	def update_with(self, content):
+		with open(self.base, 'wb') as f:
+			f.write(content)
 
-# Check if loader branch is behind remote/origin/loader
-output = subprocess.check_output('git for-each-ref --format="%(push:track)" refs/heads/loader')
-if b'behind' in output:
-	# Fetch loader branch in background without switching to it (and messing with current branch).
-	os.system("git fetch origin loader:loader")
-	# Detect changes in sparse checkout listing.
-	work_lst = subprocess.check_output('git show loader:work.lst')
-	sparse_checkout = os.path.join('.git', 'info', 'sparse-checkout')
-	diffs = False
-	with open(sparse_checkout, 'rb') as f:
-		if f.read() != work_lst:
-			diffs = True
-	if diffs:
-		print('Updating sparse-checkout:')
-		sys.stdout.write(work_lst.decode()) # TODO print diff instead.
-		with open(sparse_checkout, 'wb') as f:
-			f.write(work_lst)
+def branch_is_behind_remote(branch):
+	output = subprocess.check_output('git for-each-ref --format="%(push:track)" refs/heads/{1}'.format(branch))
+	return b'behind' in output
+
+if __name__ == "__main__":
+	# Fetch remote updates status only.
+	os.system("git remote update")
+
+	if branch_is_behind_remote('master'):
 		with Stash():
-			os.system("git checkout master")
+			os.system("git pull origin master")
+
+	if branch_is_behind_remote('loader'):
+		# Fetch loader branch in background without switching to it (and messing with current branch).
+		os.system("git fetch origin loader:loader")
+		# Detect changes in sparse checkout listing.
+		listing = GitFile('loader', 'work.lst')
+		sparse = SparseCheckout()
+		if not sparse.is_same(listing.content):
+			print('Updating sparse-checkout:')
+			sys.stdout.write(listing.content.decode()) # TODO print diff instead.
+			sparse.update_with(listing.content)
+			with Stash():
+				os.system("git checkout master")
