@@ -34,9 +34,9 @@ random_host() {
 }
 
 clear_ping_output() {
-	egrep --line-buffered -v 'PING ([[:digit:]]+[.]?)+ \(([[:digit:]]+[.]?)+\) from ([[:digit:]]+[.]?)+ [a-z0-9]+: [0-9]+\([0-9]+\) bytes of data.' | \
-	egrep --line-buffered -v 'PING ([[:digit:]]+[.]?)+ \(([[:digit:]]+[.]?)+\) [0-9]+\([0-9]+\) bytes of data.' | \
-	egrep --line-buffered -v -- '--- ([[:digit:]]+[.]?)+ ping statistics ---' | \
+	egrep --line-buffered -v 'PING ([[:alnum:]]+[.]?)+ \(([[:digit:]]+[.]?)+\) from ([[:digit:]]+[.]?)+ [a-z0-9]+: [0-9]+\([0-9]+\) bytes of data.' | \
+	egrep --line-buffered -v 'PING ([[:alnum:]]+[.]?)+ \(([[:digit:]]+[.]?)+\) [0-9]+\([0-9]+\) bytes of data.' | \
+	egrep --line-buffered -v -- '--- ([[:alnum:]]+[.]?)+ ping statistics ---' | \
 	grep --line-buffered -v '^$'
 	true
 }
