@@ -25,7 +25,7 @@ class SparseCheckout(object):
 			f.write(content)
 
 def branch_is_behind_remote(branch):
-	output = subprocess.check_output('git for-each-ref --format="%(push:track)" refs/heads/{1}'.format(branch))
+	output = subprocess.check_output('git for-each-ref --format="%(push:track)" refs/heads/{0}'.format(branch))
 	return b'behind' in output
 
 if __name__ == "__main__":
