@@ -9,11 +9,13 @@ panic() {
 usage() {
 cat >&2 <<EOF
 Checks network availability.
-Usage: $0 [-h <host>] [-c <count>]
+Usage: $0 [-h <host>] [-c <count>] [-i <interface>]
      -h  - host (name/IP) to ping.
            If host is not specified, it is randomly picked from predefined list of trusted locations.
      -c  - amount of tries, by default is 1.
 	       When set to 0, pings infinitely until the first success.
+     -i  - specific network interface to use. See 'ip link show' or 'netstat -a'.
+	       Available interfaces: $(ip link show | grep '^[^ ]' | cut -d ' ' -f 2 | sed 's/://' | tr '\n' ' ')
 Known hosts:
 $(known_hosts)
 EOF
@@ -37,6 +39,7 @@ clear_ping_output() {
 	egrep --line-buffered -v 'PING ([[:alnum:]]+[.]?)+ \(([[:digit:]]+[.]?)+\) from ([[:digit:]]+[.]?)+ [a-z0-9]+: [0-9]+\([0-9]+\) bytes of data.' | \
 	egrep --line-buffered -v 'PING ([[:alnum:]]+[.]?)+ \(([[:digit:]]+[.]?)+\) [0-9]+\([0-9]+\) bytes of data.' | \
 	egrep --line-buffered -v -- '--- ([[:alnum:]]+[.]?)+ ping statistics ---' | \
+	egrep --line-buffered -v -- 'ping: Warning: source address might be selected on device other than .*' | \
 	grep --line-buffered -v '^$'
 	true
 }
@@ -45,7 +48,7 @@ check_host() {
 	HOST="${1:-127.0.0.1}"
 	INTERFACE="$2"
 	[ -n "$INTERFACE" ] && INTERFACE_ARG="-I $INTERFACE"
-	ping $INTERFACE_ARG -qc 1 "$HOST" | clear_ping_output
+	ping $INTERFACE_ARG -qc 1 "$HOST" 2>&1 | clear_ping_output
 }
 
 while getopts "h:c:i:q" optarg; do
