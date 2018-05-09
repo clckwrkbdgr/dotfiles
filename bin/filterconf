@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+import os, sys
+import re
+import argparse
+
+"""
+*:
+    expand/collapse $HOME
+    expand/collapse other predefined variables, like
+        XRESOLUTION=$(xrandr |grep \* |awk '{print $1}' | sed 's/x/,/')
+
+text:
+    cat/plain sort
+
+xml:
+    delete tag (full node) by xpath
+    delete
+    replace attribute value by xpath
+    sort ?
+    sort-xml - sort tags by attribute
+
+json:
+    pretty json (consider it as sort ?? or maybe the other way around: consider prettification and it would be sort for xml/ini/etc)
+
+firefox pref.js
+    user_pref("accessibility.blockautorefresh", true);
+    delete preference by pattern (including regexp and wildcard)
+    replace preference value by name and possibly regexp pattern with match groups
+
+ini:
+    sort sections/ sort values in sections
+    delete ini setting by section/name
+    delete whole section
+    including search by regexp
+    replace value for given section/name to another one
+    including regexp and regexp match groups
+
+scheme:
+    delete value by setting name (including regex in names)
+    """
+
+def main():
+    supported_formats = ['text']
+    parser = argparse.ArgumentParser(description="Script to filter configuration files.")
+    parser.add_argument('--restore', action='store_bool', default=False, help='Restore filtered config file to normal state instead of filtering.')
+    parser.add_argument('-f', '--format', nargs=1, required=True, choices=supported_formats, help="Format of configuration file. Supported formats: " + ', '.join(supported_formats))
+
+    HOME = os.getenv('HOME')
+    content = sys.stdin.read()
+    # TODO unit tests
+    if restore:
+        content = content.replace('$HOME', HOME)
+    else:
+        content = content.replace(HOME, '$HOME')
+    sys.stdout.write(content)
+
+if __name__ == "__main__":
+    ok = main()
+    if not ok:
+        sys.exit(1)
