@@ -40,15 +40,17 @@ scheme:
     """
 
 def main():
-    supported_formats = ['text']
+    supported_formats = ['txt']
     parser = argparse.ArgumentParser(description="Script to filter configuration files.")
-    parser.add_argument('--restore', action='store_bool', default=False, help='Restore filtered config file to normal state instead of filtering.')
+    parser.add_argument('--restore', action='store_true', default=False, help='Restore filtered config file to normal state instead of filtering.')
     parser.add_argument('-f', '--format', nargs=1, required=True, choices=supported_formats, help="Format of configuration file. Supported formats: " + ', '.join(supported_formats))
+
+    settings = parser.parse_args()
 
     HOME = os.getenv('HOME')
     content = sys.stdin.read()
     # TODO unit tests
-    if restore:
+    if settings.restore:
         content = content.replace('$HOME', HOME)
     else:
         content = content.replace(HOME, '$HOME')
