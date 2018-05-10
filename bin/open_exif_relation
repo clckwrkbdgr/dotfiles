@@ -1,5 +1,19 @@
 #!/bin/bash
-[ -z "$1" ] && exit 1
-relation=$(exiftool -s3 -relation "$1")
-[ -z "$relation" ] && exit 1
-x-www-browser "$relation"
+if [ -z "$1" ]; then
+	echo "$0 - opens URL stored in EXIT::relation tag for specified image file(s)"
+	echo "Usage: $0 <image file> [<image file> ...]"
+	exit 1
+fi
+
+declare -a relations
+
+for filename in "$@"; do
+	relation=$(exiftool -s3 -relation "$filename")
+	if [ -z "$relation" ]; then
+		echo "$filename: No EXIF::relation tag." >&2
+		continue
+	fi
+	relations+=("$relation")
+done
+
+x-www-browser "${relations[@]}"
