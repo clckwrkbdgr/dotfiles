@@ -3,6 +3,19 @@ import os, sys
 import re
 import argparse
 
+class Environment(object):
+	def __init__(self):
+		self.envvars = {} # name: value
+		self.known_vars = {} # name: lambda
+	def known_names(self):
+		return self.known_vars.keys()
+	def register(self, name, loader):
+		self.known_vars[name] = loader
+	def get(self, name):
+		if name not in self.envvars:
+			self.envvars[name] = self.known_vars[name]()
+		return self.envvars[name]
+
 """
 *:
 	expand/collapse $HOME
@@ -47,12 +60,19 @@ def main():
 
 	settings = parser.parse_args()
 
-	HOME = os.getenv('HOME')
+	envvars = Environment()
+	envvars.register('HOME', lambda: os.getenv('HOME'))
+
 	content = sys.stdin.read()
 	if settings.restore:
-		content = content.replace('$HOME', HOME)
+		for name in envvars.known_names():
+			placeholder = '${0}'.format(name)
+			if placeholder in content:
+				content = content.replace(placeholder, envvars.get(name))
 	else:
-		content = content.replace(HOME, '$HOME')
+		for name in envvars.known_names():
+			placeholder = '${0}'.format(name)
+			content = content.replace(envvars.get(name), placeholder)
 	sys.stdout.write(content)
 
 if __name__ == "__main__":
