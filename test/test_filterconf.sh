@@ -12,6 +12,30 @@ function should_restore_home_dir_in_plain_text() {
 	echo -e 'First: $HOME\nSecond: $HOME' >test.txt
 }
 
+function should_smudge_custom_env_var() {
+	echo -e 'First: $XHOME\nSecond: $XHOME' # Expected.
+	XHOME=$HOME
+	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >test.txt
+}
+
+function should_restore_custom_env_var() {
+	XHOME=$HOME
+	echo -e "First: ${XHOME}\nSecond: ${XHOME}" # Expected.
+	echo -e 'First: $XHOME\nSecond: $XHOME' >test.txt
+}
+
+function should_smudge_several_custom_env_vars() {
+	echo -e 'First: $XHOME\nSecond: $USERNAME' # Expected.
+	XHOME=$HOME
+	echo -e "First: ${XHOME}\nSecond: ${USER}" >test.txt
+}
+
+function should_restore_several_custom_env_vars() {
+	XHOME=$HOME
+	echo -e "First: ${XHOME}\nSecond: ${USER}" # Expected.
+	echo -e 'First: $XHOME\nSecond: $USERNAME' >test.txt
+}
+
 ### MAIN
 
 testdir=$(mktemp -d)
@@ -29,8 +53,9 @@ function perform_test() { # <format> <smudge|restore> <test name>
 	fi
 	echo ">>> $3"
 	"$3" >"expected.txt"
+	shift 3 # Make rooms for custom args.
 	tput setf 4 # red
-	filterconf -f "$format" $restore <"test.$format" | diff "expected.txt" - | cat -vet
+	filterconf -f "$format" $restore "$@" <"test.$format" | diff "expected.txt" - | cat -vet
 	rc=$?
 	tput sgr0
 	rm -f "test.$format"
@@ -39,6 +64,10 @@ function perform_test() { # <format> <smudge|restore> <test name>
 
 perform_test 'txt' 'smudge' should_smudge_home_dir_in_plain_text
 perform_test 'txt' 'restore' should_restore_home_dir_in_plain_text
+perform_test 'txt' 'smudge' should_smudge_custom_env_var -e 'XHOME=echo $HOME'
+perform_test 'txt' 'restore' should_restore_custom_env_var -e 'XHOME=echo $HOME'
+perform_test 'txt' 'smudge' should_smudge_several_custom_env_vars -e 'XHOME=echo $HOME' -e 'USERNAME=$USER'
+perform_test 'txt' 'restore' should_restore_several_custom_env_vars -e 'XHOME=echo $HOME' -e 'USERNAME=$USER'
 
 popd >/dev/null
 rm -rf "$testdir"

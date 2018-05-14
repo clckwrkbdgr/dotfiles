@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, sys
+import os, sys, subprocess
 import re
 import argparse
 
@@ -17,11 +17,6 @@ class Environment(object):
 		return self.envvars[name]
 
 """
-*:
-	expand/collapse $HOME
-	expand/collapse other predefined variables, like
-		XRESOLUTION=$(xrandr |grep \* |awk '{print $1}' | sed 's/x/,/')
-
 text:
 	cat/plain sort
 
@@ -57,11 +52,30 @@ def main():
 	parser = argparse.ArgumentParser(description="Script to filter configuration files.")
 	parser.add_argument('--restore', action='store_true', default=False, help='Restore filtered config file to normal state instead of filtering.')
 	parser.add_argument('-f', '--format', nargs=1, required=True, choices=supported_formats, help="Format of configuration file. Supported formats: " + ', '.join(supported_formats))
+	parser.add_argument('-e', '--enviro', nargs=1, action='append',
+			help="Custom variable for usage in filtering. Its value will be substitude with its name wherever found upon filtering, "
+			"and will be substituted back with the value for the current system upon restoring. "
+			"Should be in form NAME=VALUE, where value is either environment variable with dollar sign, e.g.: `HOME=$HOME`, "
+			"or command which prints value to stdout, e.g.: `HOME=echo $HOME`. "
+			"By default only $HOME is recognized."
+			)
 
 	settings = parser.parse_args()
+	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
 
 	envvars = Environment()
 	envvars.register('HOME', lambda: os.getenv('HOME'))
+	for enviro in settings.enviro:
+		if not '=' in enviro:
+			raise Exception('Expected NAME=VALUE for -e argument, got {0}'.format(enviro))
+		name, value = enviro.split('=', 1)
+		if value.startswith('$'):
+			varname = value[1:]
+			if os.getenv(varname) is None:
+				raise Exception('Environment variable {0} is not defined!'.format(varname))
+			envvars.register(name, lambda varname=varname: os.getenv(varname))
+		else:
+			envvars.register(name, lambda command=value: subprocess.check_output(command, shell=True).rstrip('\n'))
 
 	content = sys.stdin.read()
 	if settings.restore:
