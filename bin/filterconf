@@ -47,7 +47,7 @@ scheme:
 	delete value by setting name (including regex in names)
 	"""
 
-def main():
+def parse_args():
 	supported_formats = ['txt']
 	parser = argparse.ArgumentParser(description="Script to filter configuration files.")
 	parser.add_argument('--restore', action='store_true', default=False, help='Restore filtered config file to normal state instead of filtering.')
@@ -62,10 +62,12 @@ def main():
 
 	settings = parser.parse_args()
 	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
+	return settings
 
+def prepare_envvars(enviro_args):
 	envvars = Environment()
 	envvars.register('HOME', lambda: os.getenv('HOME'))
-	for enviro in settings.enviro:
+	for enviro in enviro_args:
 		if not '=' in enviro:
 			raise Exception('Expected NAME=VALUE for -e argument, got {0}'.format(enviro))
 		name, value = enviro.split('=', 1)
@@ -76,6 +78,11 @@ def main():
 			envvars.register(name, lambda varname=varname: os.getenv(varname))
 		else:
 			envvars.register(name, lambda command=value: subprocess.check_output(command, shell=True).rstrip('\n'))
+	return envvars
+
+def main():
+	settings = parse_args()
+	envvars = prepare_envvars(settings.enviro)
 
 	content = sys.stdin.read()
 	if settings.restore:
