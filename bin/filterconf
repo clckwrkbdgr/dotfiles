@@ -17,9 +17,6 @@ class Environment(object):
 		return self.envvars[name]
 
 """
-text:
-	cat/plain sort
-
 xml:
 	delete tag (full node) by xpath
 	delete
@@ -48,11 +45,18 @@ scheme:
 	"""
 
 def parse_args():
-	supported_formats = ['txt']
-	parser = argparse.ArgumentParser(description="Script to filter configuration files.")
+	FORMATS = {
+			'txt' : 'Plain-text config (or unknown format). Sorting is performed by lines alphabetically.',
+			}
+	epilog = 'FORMATS:\n' + '\n'.join(['{0}  - {1}'.format(key, value) for key, value in FORMATS.items()])
+
+	parser = argparse.ArgumentParser(
+			description="Script to filter configuration files. Can process content with actions like sorting, replacing value, deleting value etc, see ACTIONS below.",
+			epilog=epilog
+			)
 	parser.add_argument('--restore', action='store_true', default=False, help='Restore filtered config file to normal state instead of filtering.')
-	parser.add_argument('-f', '--format', nargs=1, required=True, choices=supported_formats, help="Format of configuration file. Supported formats: " + ', '.join(supported_formats))
-	parser.add_argument('--sort', action='store_true', default=False, help='Sort content depending on format.')
+	parser.add_argument('-f', '--format', nargs=1, required=True, choices=FORMATS.keys(),
+			help="Format of configuration file. See last section FORMATS for description of formats and actions. Supported formats: " + ', '.join(FORMATS.keys()))
 	parser.add_argument('-e', '--enviro', nargs=1, action='append',
 			help="Custom variable for usage in filtering. Its value will be substitude with its name wherever found upon filtering, "
 			"and will be substituted back with the value for the current system upon restoring. "
@@ -60,6 +64,9 @@ def parse_args():
 			"or command which prints value to stdout, e.g.: `HOME=echo $HOME`. "
 			"By default only $HOME is recognized."
 			)
+
+	actions = parser.add_argument_group('ACTIONS', 'List of available actions. By default content will be passed as-is. Effects of each action depend on specified format.')
+	actions.add_argument('--sort', action='store_true', default=False, help='Sort content depending on format.')
 
 	settings = parser.parse_args()
 	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
