@@ -52,6 +52,7 @@ def parse_args():
 	parser = argparse.ArgumentParser(description="Script to filter configuration files.")
 	parser.add_argument('--restore', action='store_true', default=False, help='Restore filtered config file to normal state instead of filtering.')
 	parser.add_argument('-f', '--format', nargs=1, required=True, choices=supported_formats, help="Format of configuration file. Supported formats: " + ', '.join(supported_formats))
+	parser.add_argument('--sort', action='store_true', default=False, help='Sort content depending on format.')
 	parser.add_argument('-e', '--enviro', nargs=1, action='append',
 			help="Custom variable for usage in filtering. Its value will be substitude with its name wherever found upon filtering, "
 			"and will be substituted back with the value for the current system upon restoring. "
@@ -91,6 +92,11 @@ def main():
 			if placeholder in content:
 				content = content.replace(placeholder, envvars.get(name))
 	else:
+		if settings.sort:
+			ends_with_cr = content.endswith('\n')
+			content = '\n'.join(sorted(content.splitlines()))
+			if ends_with_cr:
+				content += '\n'
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
 			content = content.replace(envvars.get(name), placeholder)

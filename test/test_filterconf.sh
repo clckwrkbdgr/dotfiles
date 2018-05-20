@@ -36,6 +36,11 @@ function should_restore_several_custom_env_vars() {
 	echo -e 'First: $XHOME\nSecond: $USERNAME' >test.txt
 }
 
+function should_sort_plain_text() {
+	echo -e 'a\nb\nc' # Expected.
+	echo -e "b\nc\na" >test.txt
+}
+
 ### MAIN
 
 testdir=$(mktemp -d)
@@ -68,6 +73,7 @@ perform_test 'txt' 'smudge' should_smudge_custom_env_var -e 'XHOME=echo $HOME'
 perform_test 'txt' 'restore' should_restore_custom_env_var -e 'XHOME=echo $HOME'
 perform_test 'txt' 'smudge' should_smudge_several_custom_env_vars -e 'XHOME=echo $HOME' -e 'USERNAME=$USER'
 perform_test 'txt' 'restore' should_restore_several_custom_env_vars -e 'XHOME=echo $HOME' -e 'USERNAME=$USER'
+perform_test 'txt' 'smudge' should_sort_plain_text --sort
 
 popd >/dev/null
 rm -rf "$testdir"
