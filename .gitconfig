@@ -85,6 +85,10 @@
 	smudge = cat
 	clean = "sort | sed '/^(gtk_accel_path \"<Actions>\\/windows\\/windows-display-[0-9]\\+\" \"<Alt>[0-9]\\+\")/d'"
 
+[filter "gimp_pluginrc"]
+	smudge = cat
+	clean = "sed 's/^\\((plug-in-def \"[^\"]\\+\"\\) [0-9]\\+/\\1 0/g'"
+
 [filter "mc_ini"]
 	smudge = cat
 	clean = "sed 's|ftpfs_password=.*|ftpfs_password=anonymous@|'"
