@@ -361,8 +361,8 @@
 			<pref name='show_idle_time' type='bool' value='1'/>
 			<pref name='show_offline_buddies' type='bool' value='1'/>
 			<pref name='show_protocol_icons' type='bool' value='0'/>
-			<pref name='list_visible' type='bool' value='1'/>
-			<pref name='list_maximized' type='bool' value='1'/>
+			<pref name='list_visible' type='bool' value='0'/>
+			<pref name='list_maximized' type='bool' value='0'/>
 			<pref name='sort_type' type='string' value='alphabetical'/>
 			<pref name='x' type='int' value='0'/>
 			<pref name='y' type='int' value='0'/>
@@ -433,9 +433,9 @@
 		</pref>
 		<pref name='docklet'>
 			<pref name='blink' type='bool' value='1'/>
-			<pref name='show' type='string' value='never'/>
+			<pref name='show' type='string' value='always'/>
 			<pref name='gtk'>
-				<pref name='embedded' type='bool' value='0'/>
+				<pref name='embedded' type='bool' value='1'/>
 			</pref>
 		</pref>
 	</pref>
