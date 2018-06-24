@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os, sys, subprocess
 import re
+import inspect
 import argparse
 
 class Environment(object):
@@ -52,12 +53,37 @@ scheme:
 	delete value by setting name (including regex in names)
 	"""
 
+class ConfigFilter:
+	""" Basic class for config filter.
+	Should be created for specific content.
+	Supports several actions performed on this content, see ACTIONS in args.
+	"""
+	def __init__(self, content):
+		self.content = content
+	@classmethod
+	def description(filterclass):
+		docs = [
+				inspect.getdoc(filterclass),
+				inspect.getdoc(filterclass.sort),
+				]
+		return '\n'.join(docs)
+	def sort(self):
+		raise NotImplementedError
+
+class PlainText(ConfigFilter):
+	""" Plain-text config (or unknown format). """
+	def sort(self):
+		""" Sorting is performed by lines alphabetically. """
+		ends_with_cr = self.content.endswith('\n')
+		self.content = '\n'.join(sorted(self.content.splitlines()))
+		if ends_with_cr:
+			self.content += '\n'
+
 def parse_args():
 	FORMATS = {
-			'txt' : 'Plain-text config (or unknown format). '
-					'Sorting is performed by lines alphabetically.',
+			'txt' : PlainText,
 			}
-	epilog = 'FORMATS:\n' + '\n'.join(['{0}  - {1}'.format(key, value) for key, value in FORMATS.items()])
+	epilog = 'FORMATS:\n' + '\n'.join(['{0}  - {1}'.format(key, filterclass.description()) for key, filterclass in FORMATS.items()])
 
 	parser = argparse.ArgumentParser(
 			description="Script to filter configuration files. "
@@ -90,6 +116,7 @@ def parse_args():
 			help='Sort content depending on format.')
 
 	settings = parser.parse_args()
+	settings.format = FORMATS[settings.format[0]]
 	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
 	return settings
 
@@ -123,11 +150,10 @@ def main():
 			if placeholder in content:
 				content = content.replace(placeholder, envvars.get(name))
 	else:
+		filter = settings.format(content)
 		if settings.sort:
-			ends_with_cr = content.endswith('\n')
-			content = '\n'.join(sorted(content.splitlines()))
-			if ends_with_cr:
-				content += '\n'
+			filter.sort()
+		content = filter.content
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
 			content = content.replace(envvars.get(name), placeholder)
