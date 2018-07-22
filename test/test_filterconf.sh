@@ -41,6 +41,11 @@ function should_sort_plain_text() {
 	echo -e "b\nc\na" >test.txt
 }
 
+function should_delete_value_from_plain_text() {
+	echo -e 'a\nc' # Expected.
+	echo -e "a\nb\nc" >test.txt
+}
+
 ### MAIN
 
 testdir=$(mktemp -d)
@@ -60,6 +65,7 @@ function perform_test() { # <format> <smudge|restore> <test name>
 	"$3" >"expected.txt"
 	shift 3 # Make rooms for custom args.
 	tput setf 4 # red
+	export LANGUAGE=en_US:en # To make `diff` output 'printable'.
 	filterconf -f "$format" $restore "$@" <"test.$format" | diff "expected.txt" - | cat -vet
 	rc=$?
 	tput sgr0
@@ -73,7 +79,9 @@ perform_test 'txt' 'smudge' should_smudge_custom_env_var -e 'XHOME=echo $HOME'
 perform_test 'txt' 'restore' should_restore_custom_env_var -e 'XHOME=echo $HOME'
 perform_test 'txt' 'smudge' should_smudge_several_custom_env_vars -e 'XHOME=echo $HOME' -e 'USERNAME=$USER'
 perform_test 'txt' 'restore' should_restore_several_custom_env_vars -e 'XHOME=echo $HOME' -e 'USERNAME=$USER'
+
 perform_test 'txt' 'smudge' should_sort_plain_text --sort
+perform_test 'txt' 'smudge' should_delete_value_from_plain_text --delete 'b'
 
 popd >/dev/null
 rm -rf "$testdir"

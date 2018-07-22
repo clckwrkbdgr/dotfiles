@@ -4,6 +4,9 @@ import re
 import inspect
 import argparse
 
+def unfold_list(seq):
+	return [item for subseq in seq for item in subseq]
+
 class Environment(object):
 	""" Keeps track of variables which can be used in config substitution.
 	See --enviro argument.
@@ -69,6 +72,8 @@ class ConfigFilter:
 		return '\n'.join(docs)
 	def sort(self):
 		raise NotImplementedError
+	def delete(self, pattern):
+		raise NotImplementedError
 
 class PlainText(ConfigFilter):
 	""" Plain-text config (or unknown format). """
@@ -76,6 +81,14 @@ class PlainText(ConfigFilter):
 		""" Sorting is performed by lines alphabetically. """
 		ends_with_cr = self.content.endswith('\n')
 		self.content = '\n'.join(sorted(self.content.splitlines()))
+		if ends_with_cr:
+			self.content += '\n'
+	def delete(self, pattern):
+		""" Removes lines that contain specified substring. """
+		ends_with_cr = self.content.endswith('\n')
+		lines = self.content.splitlines()
+		lines = [line for line in lines if pattern not in line]
+		self.content = '\n'.join(lines)
 		if ends_with_cr:
 			self.content += '\n'
 
@@ -114,10 +127,13 @@ def parse_args():
 			'Effects of each action depend on specified format.')
 	actions.add_argument('--sort', action='store_true', default=False,
 			help='Sort content depending on format.')
+	actions.add_argument('--delete', action='append', default=[],
+			help='Delete entries that match specified patterns/paths (depends on format.')
 
 	settings = parser.parse_args()
 	settings.format = FORMATS[settings.format[0]]
 	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
+	settings.delete = unfold_list(settings.delete)
 	return settings
 
 def prepare_envvars(enviro_args):
@@ -153,6 +169,8 @@ def main():
 		filter = settings.format(content)
 		if settings.sort:
 			filter.sort()
+		for pattern in settings.delete:
+			filter.delete(pattern)
 		content = filter.content
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
