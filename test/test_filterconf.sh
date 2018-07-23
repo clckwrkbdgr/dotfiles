@@ -46,6 +46,21 @@ function should_delete_value_from_plain_text() {
 	echo -e "a\nb\nc" >test.txt
 }
 
+function should_delete_multiple_values_from_plain_text() {
+	echo -e 'a' # Expected.
+	echo -e "a\nb\nc" >test.txt
+}
+
+function should_delete_line_with_substring_from_plain_text() {
+	echo -e 'first\nthird' # Expected.
+	echo -e "first\nsecond\nthird" >test.txt
+}
+
+function should_delete_regex_from_plain_text() {
+	echo -e 'first\nthird' # Expected.
+	echo -e "first\nsecond\nthird" >test.txt
+}
+
 ### MAIN
 
 testdir=$(mktemp -d)
@@ -82,6 +97,9 @@ perform_test 'txt' 'restore' should_restore_several_custom_env_vars -e 'XHOME=ec
 
 perform_test 'txt' 'smudge' should_sort_plain_text --sort
 perform_test 'txt' 'smudge' should_delete_value_from_plain_text --delete 'b'
+perform_test 'txt' 'smudge' should_delete_multiple_values_from_plain_text --delete 'b' 'c'
+perform_test 'txt' 'smudge' should_delete_line_with_substring_from_plain_text --delete 'eco'
+perform_test 'txt' 'smudge' should_delete_regex_from_plain_text --delete '^se.on+d$' --pattern-type 'regex'
 
 popd >/dev/null
 rm -rf "$testdir"

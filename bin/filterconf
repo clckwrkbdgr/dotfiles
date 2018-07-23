@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os, sys, subprocess
-import re
+import re, fnmatch
 import inspect
 import argparse
 
@@ -72,7 +72,7 @@ class ConfigFilter:
 		return '\n'.join(docs)
 	def sort(self):
 		raise NotImplementedError
-	def delete(self, pattern):
+	def delete(self, pattern, pattern_type=None):
 		raise NotImplementedError
 
 class PlainText(ConfigFilter):
@@ -83,11 +83,22 @@ class PlainText(ConfigFilter):
 		self.content = '\n'.join(sorted(self.content.splitlines()))
 		if ends_with_cr:
 			self.content += '\n'
-	def delete(self, pattern):
-		""" Removes lines that contain specified substring. """
+	def delete(self, pattern, pattern_type=None):
+		""" Removes lines that contain specified substring/regex/wildcard. """
 		ends_with_cr = self.content.endswith('\n')
 		lines = self.content.splitlines()
-		lines = [line for line in lines if pattern not in line]
+		if pattern_type == 'regex':
+			pattern = re.compile(pattern)
+		elif pattern_type == 'wildcard':
+			pattern = fnmatch.translate(pattern)
+		else:
+			class DummyPattern:
+				def __init__(self, expr):
+					self.expr = expr
+				def match(self, line):
+					return self.expr in line
+			pattern = DummyPattern(pattern)
+		lines = [line for line in lines if not pattern.match(line)]
 		self.content = '\n'.join(lines)
 		if ends_with_cr:
 			self.content += '\n'
@@ -121,14 +132,17 @@ def parse_args():
 			"or command which prints value to stdout, e.g.: `HOME=echo $HOME`. "
 			"By default only $HOME is recognized."
 			)
+	parser.add_argument('--pattern-type', default='plain', choices='plain regex wildcard'.split(),
+			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
+			)
 
 	actions = parser.add_argument_group('ACTIONS',
 			'List of available actions. By default content will be passed as-is. '
 			'Effects of each action depend on specified format.')
 	actions.add_argument('--sort', action='store_true', default=False,
 			help='Sort content depending on format.')
-	actions.add_argument('--delete', action='append', default=[],
-			help='Delete entries that match specified patterns/paths (depends on format.')
+	actions.add_argument('--delete', nargs='+', action='append', default=[],
+			help='Delete entries that match specified patterns/paths (depends on format).')
 
 	settings = parser.parse_args()
 	settings.format = FORMATS[settings.format[0]]
@@ -170,7 +184,7 @@ def main():
 		if settings.sort:
 			filter.sort()
 		for pattern in settings.delete:
-			filter.delete(pattern)
+			filter.delete(pattern, settings.pattern_type)
 		content = filter.content
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
