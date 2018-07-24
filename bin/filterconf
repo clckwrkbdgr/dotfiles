@@ -115,8 +115,6 @@ def parse_args():
 			"deleting value etc, see ACTIONS below.",
 			epilog=epilog
 			)
-	parser.add_argument('--restore', action='store_true', default=False,
-			help='Restore filtered config file to normal state instead of filtering.')
 	parser.add_argument('-f', '--format', nargs=1, required=True,
 			choices=FORMATS.keys(),
 			help="Format of configuration file. "
@@ -132,22 +130,33 @@ def parse_args():
 			"or command which prints value to stdout, e.g.: `HOME=echo $HOME`. "
 			"By default only $HOME is recognized."
 			)
-	parser.add_argument('--pattern-type', default='plain', choices='plain regex wildcard'.split(),
-			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
+
+	actions = parser.add_subparsers(dest='action',
+			help='List of available actions. By default content will be passed as-is. '
+			'Effects of each action depend on specified format.')
+
+	restore_action = actions.add_parser('restore',
+			help='Restore filtered config file to normal state instead of filtering.')
+
+	enviro_action = actions.add_parser('enviro',
+			help='Dummy action for the cases when only environment variables are needed to be expanded.'
+			'Every other action will do the same expansion but "enviro" will do nothing except that.'
 			)
 
-	actions = parser.add_argument_group('ACTIONS',
-			'List of available actions. By default content will be passed as-is. '
-			'Effects of each action depend on specified format.')
-	actions.add_argument('--sort', action='store_true', default=False,
-			help='Sort content depending on format.')
-	actions.add_argument('--delete', nargs='+', action='append', default=[],
+	sort_action = actions.add_parser('sort', help='Sort content depending on format.')
+
+	delete_action = actions.add_parser('delete',
 			help='Delete entries that match specified patterns/paths (depends on format).')
+	delete_action.add_argument('patterns', nargs='+', action='append', default=[], help='Patterns or paths.')
+	delete_action.add_argument('--pattern-type', default='plain', choices='plain regex wildcard'.split(),
+			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
+			)
 
 	settings = parser.parse_args()
 	settings.format = FORMATS[settings.format[0]]
 	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
-	settings.delete = unfold_list(settings.delete)
+	if settings.action == 'delete':
+		settings.patterns = unfold_list(settings.patterns)
 	return settings
 
 def prepare_envvars(enviro_args):
@@ -174,17 +183,18 @@ def main():
 	envvars = prepare_envvars(settings.enviro)
 
 	content = sys.stdin.read()
-	if settings.restore:
+	if settings.action == 'restore':
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
 			if placeholder in content:
 				content = content.replace(placeholder, envvars.get(name))
 	else:
 		filter = settings.format(content)
-		if settings.sort:
+		if settings.action == 'sort':
 			filter.sort()
-		for pattern in settings.delete:
-			filter.delete(pattern, settings.pattern_type)
+		elif settings.action == 'delete':
+			for pattern in settings.patterns:
+				filter.delete(pattern, settings.pattern_type)
 		content = filter.content
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
