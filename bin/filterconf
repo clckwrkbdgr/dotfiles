@@ -74,6 +74,8 @@ class ConfigFilter:
 		raise NotImplementedError
 	def delete(self, pattern, pattern_type=None):
 		raise NotImplementedError
+	def replace(self, pattern, substitute, pattern_type=None):
+		raise NotImplementedError
 
 class PlainText(ConfigFilter):
 	""" Plain-text config (or unknown format). """
@@ -87,6 +89,7 @@ class PlainText(ConfigFilter):
 		""" Removes lines that contain specified substring/regex/wildcard. """
 		ends_with_cr = self.content.endswith('\n')
 		lines = self.content.splitlines()
+
 		if pattern_type == 'regex':
 			pattern = re.compile(pattern)
 		elif pattern_type == 'wildcard':
@@ -98,7 +101,29 @@ class PlainText(ConfigFilter):
 				def match(self, line):
 					return self.expr in line
 			pattern = DummyPattern(pattern)
+
 		lines = [line for line in lines if not pattern.match(line)]
+		self.content = '\n'.join(lines)
+		if ends_with_cr:
+			self.content += '\n'
+	def replace(self, pattern, substitute, pattern_type=None):
+		""" Replaces value specified by substring/regex with substitute. """
+		ends_with_cr = self.content.endswith('\n')
+		lines = self.content.splitlines()
+
+		if pattern_type == 'regex':
+			pattern = re.compile(pattern)
+		else:
+			class DummyPattern:
+				def __init__(self, expr):
+					self.expr = expr
+				def match(self, line):
+					return self.expr in line
+				def sub(self, repl, line):
+					return line.replace(self.expr, repl)
+			pattern = DummyPattern(pattern)
+		lines = [(pattern.sub(substitute, line) if pattern.match(line) else line) for line in lines]
+
 		self.content = '\n'.join(lines)
 		if ends_with_cr:
 			self.content += '\n'
@@ -152,11 +177,24 @@ def parse_args():
 			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
 			)
 
+	replace_action = actions.add_parser('replace',
+			help='Replace entry specified by patterns/paths with another value (depends on format).')
+	replace_action.add_argument('pattern', nargs=1, default=[], help='Pattern or path.')
+	replace_action.add_argument('--pattern-type', default='plain', choices='plain regex wildcard'.split(),
+			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
+			)
+	replace_action.add_argument('--with', dest='with_value', nargs=1, required=True,
+			help="Value to substitute. May contain references to the original value like refgroups for regexes (depends on format and pattern type)."
+			)
+
 	settings = parser.parse_args()
 	settings.format = FORMATS[settings.format[0]]
 	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
 	if settings.action == 'delete':
 		settings.patterns = unfold_list(settings.patterns)
+	elif settings.action == 'replace':
+		settings.pattern = settings.pattern[0]
+		settings.with_value = settings.with_value[0]
 	return settings
 
 def prepare_envvars(enviro_args):
@@ -195,6 +233,8 @@ def main():
 		elif settings.action == 'delete':
 			for pattern in settings.patterns:
 				filter.delete(pattern, settings.pattern_type)
+		elif settings.action == 'replace':
+			filter.replace(settings.pattern, settings.with_value, settings.pattern_type)
 		content = filter.content
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
