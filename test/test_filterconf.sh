@@ -71,6 +71,11 @@ function should_replace_regex_in_plain_text() {
 	echo -e "first\nsecond\nthird" >test.txt
 }
 
+function should_prettify_plain_text() {
+	echo -e 'first\n  second\n\tthird' # Expected.
+	echo -e "first\n  second\n\tthird" >test.txt
+}
+
 ### MAIN
 
 testdir=$(mktemp -d)
@@ -104,6 +109,7 @@ perform_test 'txt' should_delete_line_with_substring_from_plain_text delete 'eco
 perform_test 'txt' should_delete_regex_from_plain_text delete '^se.on+d$' --pattern-type 'regex'
 perform_test 'txt' should_replace_substring_in_plain_text replace 'seco' --with '2'
 perform_test 'txt' should_replace_regex_in_plain_text replace '^seco([a-z]+)$' --pattern-type 'regex' --with '2\1'
+perform_test 'txt' should_prettify_plain_text pretty
 
 popd >/dev/null
 rm -rf "$testdir"

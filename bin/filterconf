@@ -76,6 +76,8 @@ class ConfigFilter:
 		raise NotImplementedError
 	def replace(self, pattern, substitute, pattern_type=None):
 		raise NotImplementedError
+	def pretty(self):
+		raise NotImplementedError
 
 class PlainText(ConfigFilter):
 	""" Plain-text config (or unknown format). """
@@ -127,6 +129,9 @@ class PlainText(ConfigFilter):
 		self.content = '\n'.join(lines)
 		if ends_with_cr:
 			self.content += '\n'
+	def pretty(self):
+		""" Plain text cannot be prettified. """
+		pass
 
 def parse_args():
 	FORMATS = {
@@ -187,6 +192,8 @@ def parse_args():
 			help="Value to substitute. May contain references to the original value like refgroups for regexes (depends on format and pattern type)."
 			)
 
+	pretty_action = actions.add_parser('pretty', help='Prettify content depending on format.')
+
 	settings = parser.parse_args()
 	settings.format = FORMATS[settings.format[0]]
 	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
@@ -235,6 +242,8 @@ def main():
 				filter.delete(pattern, settings.pattern_type)
 		elif settings.action == 'replace':
 			filter.replace(settings.pattern, settings.with_value, settings.pattern_type)
+		elif settings.action == 'pretty':
+			filter.pretty()
 		content = filter.content
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
