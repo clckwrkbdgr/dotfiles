@@ -39,6 +39,7 @@ firefox/.parentlock
 firefox/lock
 firefox/*.sqlite-shm
 firefox/*.sqlite-wal
+firefox/*.sqlite-journal
 # Firefox cache
 firefox/_CACHE_CLEAN_
 firefox/Cache/
