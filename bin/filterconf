@@ -2,10 +2,15 @@
 import os, sys, subprocess
 import re, fnmatch
 import inspect
-import argparse
+import argparse, shlex
 
-def unfold_list(seq):
-	return [item for subseq in seq for item in subseq]
+class UnfoldArgList(argparse.Action):
+	def __call__(self, parser, namespace, values, option_string=None):
+		getattr(namespace, self.dest).extend(values)
+
+class TakeFirstArg(argparse.Action):
+	def __call__(self, parser, namespace, values, option_string=None):
+		setattr(namespace, self.dest, values[0])
 
 class Environment(object):
 	""" Keeps track of variables which can be used in config substitution.
@@ -133,34 +138,7 @@ class PlainText(ConfigFilter):
 		""" Plain text cannot be prettified. """
 		pass
 
-def parse_args():
-	FORMATS = {
-			'txt' : PlainText,
-			}
-	epilog = 'FORMATS:\n' + '\n'.join(['{0}  - {1}'.format(key, filterclass.description()) for key, filterclass in FORMATS.items()])
-
-	parser = argparse.ArgumentParser(
-			description="Script to filter configuration files. "
-			"Can process content with actions like sorting, replacing value, "
-			"deleting value etc, see ACTIONS below.",
-			epilog=epilog
-			)
-	parser.add_argument('-f', '--format', nargs=1, required=True,
-			choices=FORMATS.keys(),
-			help="Format of configuration file. "
-			"See last section FORMATS for description of formats and actions. "
-			"Supported formats: " + ', '.join(FORMATS.keys()))
-	parser.add_argument('-e', '--enviro', nargs=1, action='append',
-			help="Custom variable for usage in filtering. "
-			"Its value will be substitude with its name wherever found upon "
-			"filtering, and will be substituted back with the value for the "
-			"current system upon restoring. "
-			"Should be in form NAME=VALUE, where value is either "
-			"environment variable with dollar sign, e.g.: `HOME=$HOME`, "
-			"or command which prints value to stdout, e.g.: `HOME=echo $HOME`. "
-			"By default only $HOME is recognized."
-			)
-
+def add_action_arguments(parser):
 	actions = parser.add_subparsers(dest='action',
 			help='List of available actions. By default content will be passed as-is. '
 			'Effects of each action depend on specified format.')
@@ -177,31 +155,62 @@ def parse_args():
 
 	delete_action = actions.add_parser('delete',
 			help='Delete entries that match specified patterns/paths (depends on format).')
-	delete_action.add_argument('patterns', nargs='+', action='append', default=[], help='Patterns or paths.')
+	delete_action.add_argument('patterns', nargs='+', action=UnfoldArgList, default=[], help='Patterns or paths.')
 	delete_action.add_argument('--pattern-type', default='plain', choices='plain regex wildcard'.split(),
 			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
 			)
 
 	replace_action = actions.add_parser('replace',
 			help='Replace entry specified by patterns/paths with another value (depends on format).')
-	replace_action.add_argument('pattern', nargs=1, default=[], help='Pattern or path.')
+	replace_action.add_argument('pattern', nargs=1, action=TakeFirstArg, default=[], help='Pattern or path.')
 	replace_action.add_argument('--pattern-type', default='plain', choices='plain regex wildcard'.split(),
 			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
 			)
 	replace_action.add_argument('--with', dest='with_value', nargs=1, required=True,
+			action=TakeFirstArg,
 			help="Value to substitute. May contain references to the original value like refgroups for regexes (depends on format and pattern type)."
 			)
 
 	pretty_action = actions.add_parser('pretty', help='Prettify content depending on format.')
 
+	script_action = actions.add_parser('script',
+			help='Run several commands, stored in script file. Commands are applied in the given order.')
+	script_action.add_argument('filename', nargs=1, action=TakeFirstArg, default=[],
+			help='File with commands. Each command have the same syntax as in command-line arguments.')
+
+def parse_args():
+	FORMATS = {
+			'txt' : PlainText,
+			}
+	epilog = 'FORMATS:\n' + '\n'.join(['{0}  - {1}'.format(key, filterclass.description()) for key, filterclass in FORMATS.items()])
+
+	parser = argparse.ArgumentParser(
+			description="Script to filter configuration files. "
+			"Can process content with actions like sorting, replacing value, "
+			"deleting value etc, see ACTIONS below.",
+			epilog=epilog
+			)
+	parser.add_argument('-f', '--format', nargs=1, required=True,
+			action=TakeFirstArg,
+			choices=FORMATS.keys(),
+			help="Format of configuration file. "
+			"See last section FORMATS for description of formats and actions. "
+			"Supported formats: " + ', '.join(FORMATS.keys()))
+	parser.add_argument('-e', '--enviro', nargs=1, action=UnfoldArgList, default=[],
+			help="Custom variable for usage in filtering. "
+			"Its value will be substitude with its name wherever found upon "
+			"filtering, and will be substituted back with the value for the "
+			"current system upon restoring. "
+			"Should be in form NAME=VALUE, where value is either "
+			"environment variable with dollar sign, e.g.: `HOME=$HOME`, "
+			"or command which prints value to stdout, e.g.: `HOME=echo $HOME`. "
+			"By default only $HOME is recognized."
+			)
+
+	add_action_arguments(parser)
+
 	settings = parser.parse_args()
-	settings.format = FORMATS[settings.format[0]]
-	settings.enviro = [x for s in settings.enviro for x in s] if settings.enviro else []
-	if settings.action == 'delete':
-		settings.patterns = unfold_list(settings.patterns)
-	elif settings.action == 'replace':
-		settings.pattern = settings.pattern[0]
-		settings.with_value = settings.with_value[0]
+	settings.format = FORMATS[settings.format]
 	return settings
 
 def prepare_envvars(enviro_args):
@@ -223,6 +232,28 @@ def prepare_envvars(enviro_args):
 			envvars.register(name, lambda command=value: subprocess.check_output(command, shell=True).rstrip('\n'))
 	return envvars
 
+def perform_action(filter, settings):
+	if settings.action == 'sort':
+		filter.sort()
+	elif settings.action == 'delete':
+		for pattern in settings.patterns:
+			filter.delete(pattern, settings.pattern_type)
+	elif settings.action == 'replace':
+		filter.replace(settings.pattern, settings.with_value, settings.pattern_type)
+	elif settings.action == 'pretty':
+		filter.pretty()
+	elif settings.action == 'script':
+		with open(settings.filename) as f:
+			for line in f:
+				if not line.strip() or line.lstrip().startswith('#'):
+					continue
+				parser = argparse.ArgumentParser()
+				add_action_arguments(parser)
+				command = parser.parse_args(shlex.split(line))
+				perform_action(filter, command)
+				pass
+	return filter
+
 def main():
 	settings = parse_args()
 	envvars = prepare_envvars(settings.enviro)
@@ -234,20 +265,12 @@ def main():
 			if placeholder in content:
 				content = content.replace(placeholder, envvars.get(name))
 	else:
-		filter = settings.format(content)
-		if settings.action == 'sort':
-			filter.sort()
-		elif settings.action == 'delete':
-			for pattern in settings.patterns:
-				filter.delete(pattern, settings.pattern_type)
-		elif settings.action == 'replace':
-			filter.replace(settings.pattern, settings.with_value, settings.pattern_type)
-		elif settings.action == 'pretty':
-			filter.pretty()
-		content = filter.content
 		for name in envvars.known_names():
 			placeholder = '${0}'.format(name)
 			content = content.replace(envvars.get(name), placeholder)
+		filter = settings.format(content)
+		filter = perform_action(filter, settings)
+		content = filter.content
 	sys.stdout.write(content)
 
 if __name__ == "__main__":

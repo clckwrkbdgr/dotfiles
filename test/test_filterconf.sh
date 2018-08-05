@@ -76,6 +76,16 @@ function should_prettify_plain_text() {
 	echo -e "first\n  second\n\tthird" >test.txt
 }
 
+function should_perform_multiple_commands() {
+	echo '# Comment' >script.sh
+	echo 'delete --pattern-type regex "^.*remove"' >>script.sh
+	echo 'sort' >>script.sh
+	echo 'replace --pattern-type regex "seco(nd)" --with "2\1"' >>script.sh
+
+	echo -e 'first\n2nd\nthird' # Expected.
+	echo -e "second\nthird\nto remove\nfirst" >test.txt
+}
+
 ### MAIN
 
 testdir=$(mktemp -d)
@@ -110,6 +120,8 @@ perform_test 'txt' should_delete_regex_from_plain_text delete '^se.on+d$' --patt
 perform_test 'txt' should_replace_substring_in_plain_text replace 'seco' --with '2'
 perform_test 'txt' should_replace_regex_in_plain_text replace '^seco([a-z]+)$' --pattern-type 'regex' --with '2\1'
 perform_test 'txt' should_prettify_plain_text pretty
+
+perform_test 'txt' should_perform_multiple_commands script 'script.sh'
 
 popd >/dev/null
 rm -rf "$testdir"
