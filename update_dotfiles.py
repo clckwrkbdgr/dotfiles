@@ -13,7 +13,7 @@ class GitFile(object):
 		self.content = subprocess.check_output('git show {0}:{1}'.format(self.branch, self.path))
 
 class SparseCheckout(object):
-	def __init__(self, branch, path):
+	def __init__(self):
 		self.basefile = os.path.join('.git', 'info', 'sparse-checkout')
 	def is_same(self, content):
 		with open(self.base, 'rb') as f:
