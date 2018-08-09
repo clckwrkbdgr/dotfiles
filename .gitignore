@@ -124,6 +124,7 @@ openttd/hs.dat
 # SVN
 subversion/README.txt
 subversion/servers
+subversion/auth/
 # LibreOffice
 libreoffice/4/user/config/autotbl.fmt
 libreoffice/4/user/config/javasettings_Linux_x86.xml
