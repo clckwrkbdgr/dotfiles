@@ -1,5 +1,16 @@
 #!/bin/bash
 
+function assert_files_equal() { # <file_actual> <file_expected>
+	actual="$1"
+	expected="$2"
+	tput setf 4 # red
+	export LANGUAGE=en_US:en # To make `diff` output 'printable'.
+	diff "$expected" "$actual" | cat -vet
+	rc=$?
+	tput sgr0
+	return "$rc"
+}
+
 ### TESTS
 
 function should_smudge_home_dir_in_plain_text() {
@@ -88,7 +99,7 @@ function should_perform_multiple_commands() {
 
 ### MAIN
 
-testdir=$(mktemp -d)
+testdir=$(mktemp -d -p $XDG_RUNTIME_DIR)
 pushd "$testdir" >/dev/null
 
 function perform_test() { # <format> <smudge|restore> <test name>
@@ -96,11 +107,9 @@ function perform_test() { # <format> <smudge|restore> <test name>
 	echo ">>> $2"
 	"$2" >"expected.txt"
 	shift 2 # Make rooms for custom args.
-	tput setf 4 # red
-	export LANGUAGE=en_US:en # To make `diff` output 'printable'.
-	filterconf -f "$format" "$@" <"test.$format" | diff "expected.txt" - | cat -vet
+	filterconf -f "$format" "$@" <"test.$format" >"actual.$format"
+	assert_files_equal "actual.$format" "expected.$format"
 	rc=$?
-	tput sgr0
 	rm -f "test.$format"
 	return "$rc"
 }
