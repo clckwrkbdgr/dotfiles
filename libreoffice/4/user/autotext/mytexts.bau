@@ -1,8 +1,8 @@
-0||mimetype
+0|utf-8|mimetype
 
-117||BlockList.xml
+117|utf-8|BlockList.xml
 <block-list:block-list xmlns:block-list="http://openoffice.org/2001/block-list" block-list:list-name="My AutoText"/>
 
-325||META-INF/manifest.xml
+325|utf-8|META-INF/manifest.xml
 <manifest:manifest xmlns:manifest="http://openoffice.org/2001/manifest"><manifest:file-entry manifest:media-type="" manifest:full-path="/"/><manifest:file-entry manifest:media-type="" manifest:full-path="META-INF/"/><manifest:file-entry manifest:media-type="text/xml" manifest:full-path="BlockList.xml"/></manifest:manifest>
 
