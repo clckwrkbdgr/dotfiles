@@ -67,6 +67,7 @@
     <RDF:li RDF:resource="urn:mimetype:image/bmp"/>
     <RDF:li RDF:resource="urn:mimetype:application/xml"/>
     <RDF:li RDF:resource="urn:mimetype:application/x-xz"/>
+    <RDF:li RDF:resource="urn:mimetype:text/csv"/>
   </RDF:Seq>
   <RDF:Seq RDF:about="urn:schemes:root">
     <RDF:li RDF:resource="urn:scheme:mailto"/>
@@ -409,6 +410,7 @@
   <RDF:Description RDF:about="urn:mimetype:handler:message/rfc822" NC:alwaysAsk="true" NC:saveToDisk="true">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:message/rfc822"/>
   </RDF:Description>
+  <RDF:Description RDF:about="urn:mimetype:handler:text/csv" NC:saveToDisk="true" NC:alwaysAsk="true"/>
   <RDF:Description RDF:about="urn:mimetype:handler:text/html" NC:useSystemDefault="false" NC:handleInternal="false" NC:alwaysAsk="true" NC:saveToDisk="true">
     <NC:externalApplication RDF:resource="urn:mimetype:externalApplication:text/html"/>
   </RDF:Description>
@@ -473,6 +475,9 @@
   </RDF:Description>
   <RDF:Description RDF:about="urn:mimetype:message/rfc822" NC:value="message/rfc822" NC:editable="true" NC:fileExtensions="eml" NC:description="MHTML Document">
     <NC:handlerProp RDF:resource="urn:mimetype:handler:message/rfc822"/>
+  </RDF:Description>
+  <RDF:Description RDF:about="urn:mimetype:text/csv" NC:value="text/csv" NC:fileExtensions="csv">
+    <NC:handlerProp RDF:resource="urn:mimetype:handler:text/csv"/>
   </RDF:Description>
   <RDF:Description RDF:about="urn:mimetype:text/html" NC:description="HTML document" NC:value="text/html" NC:editable="true">
     <NC:fileExtensions>html</NC:fileExtensions>
