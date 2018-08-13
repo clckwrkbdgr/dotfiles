@@ -14,77 +14,91 @@ function assert_files_equal() { # <file_actual> <file_expected>
 ### TESTS
 
 function should_smudge_home_dir_in_plain_text() {
-	echo -e 'First: $HOME\nSecond: $HOME' # Expected.
+	echo -e 'First: $HOME\nSecond: $HOME' >expected.txt
 	echo -e "First: ${HOME}\nSecond: ${HOME}" >test.txt
+	filterconf -f 'txt' enviro <test.txt >actual.txt
 }
 
 function should_restore_home_dir_in_plain_text() {
-	echo -e "First: ${HOME}\nSecond: ${HOME}" # Expected.
+	echo -e "First: ${HOME}\nSecond: ${HOME}" >expected.txt
 	echo -e 'First: $HOME\nSecond: $HOME' >test.txt
+	filterconf -f 'txt' restore <test.txt >actual.txt
 }
 
 function should_smudge_custom_env_var() {
-	echo -e 'First: $XHOME\nSecond: $XHOME' # Expected.
+	echo -e 'First: $XHOME\nSecond: $XHOME' >expected.txt
 	XHOME=$HOME
 	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >test.txt
+	filterconf -f 'txt' -e 'XHOME=echo $HOME' enviro <test.txt >actual.txt
 }
 
 function should_restore_custom_env_var() {
 	XHOME=$HOME
-	echo -e "First: ${XHOME}\nSecond: ${XHOME}" # Expected.
+	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >expected.txt
 	echo -e 'First: $XHOME\nSecond: $XHOME' >test.txt
+	filterconf -f 'txt' -e 'XHOME=echo $HOME' restore <test.txt >actual.txt
 }
 
 function should_smudge_several_custom_env_vars() {
-	echo -e 'First: $XHOME\nSecond: $USERNAME' # Expected.
+	echo -e 'First: $XHOME\nSecond: $USERNAME' >expected.txt
 	XHOME=$HOME
 	echo -e "First: ${XHOME}\nSecond: ${USER}" >test.txt
+	filterconf -f 'txt' -e 'XHOME=echo $HOME' -e 'USERNAME=$USER' enviro <test.txt >actual.txt
 }
 
 function should_restore_several_custom_env_vars() {
 	XHOME=$HOME
-	echo -e "First: ${XHOME}\nSecond: ${USER}" # Expected.
+	echo -e "First: ${XHOME}\nSecond: ${USER}" >expected.txt
 	echo -e 'First: $XHOME\nSecond: $USERNAME' >test.txt
+	filterconf -f 'txt' -e 'XHOME=echo $HOME' -e 'USERNAME=$USER' restore <test.txt >actual.txt
 }
 
 function should_sort_plain_text() {
-	echo -e 'a\nb\nc' # Expected.
+	echo -e 'a\nb\nc' >expected.txt
 	echo -e "b\nc\na" >test.txt
+	filterconf -f 'txt' sort <test.txt >actual.txt
 }
 
 function should_delete_value_from_plain_text() {
-	echo -e 'a\nc' # Expected.
+	echo -e 'a\nc' >expected.txt
 	echo -e "a\nb\nc" >test.txt
+	filterconf -f 'txt' delete 'b' <test.txt >actual.txt
 }
 
 function should_delete_multiple_values_from_plain_text() {
-	echo -e 'a' # Expected.
+	echo -e 'a' >expected.txt
 	echo -e "a\nb\nc" >test.txt
+	filterconf -f 'txt' delete 'b' 'c' <test.txt >actual.txt
 }
 
 function should_delete_line_with_substring_from_plain_text() {
-	echo -e 'first\nthird' # Expected.
+	echo -e 'first\nthird' >expected.txt
 	echo -e "first\nsecond\nthird" >test.txt
+	filterconf -f 'txt' delete 'eco' <test.txt >actual.txt
 }
 
 function should_delete_regex_from_plain_text() {
-	echo -e 'first\nthird' # Expected.
+	echo -e 'first\nthird' >expected.txt
 	echo -e "first\nsecond\nthird" >test.txt
+	filterconf -f 'txt' delete '^se.on+d$' --pattern-type 'regex' <test.txt >actual.txt
 }
 
 function should_replace_substring_in_plain_text() {
-	echo -e 'first\n2nd\nthird' # Expected.
+	echo -e 'first\n2nd\nthird' >expected.txt
 	echo -e "first\nsecond\nthird" >test.txt
+	filterconf -f 'txt' replace 'seco' --with '2' <test.txt >actual.txt
 }
 
 function should_replace_regex_in_plain_text() {
-	echo -e 'first\n2nd\nthird' # Expected.
+	echo -e 'first\n2nd\nthird' >expected.txt
 	echo -e "first\nsecond\nthird" >test.txt
+	filterconf -f 'txt' replace '^seco([a-z]+)$' --pattern-type 'regex' --with '2\1' <test.txt >actual.txt
 }
 
 function should_prettify_plain_text() {
-	echo -e 'first\n  second\n\tthird' # Expected.
+	echo -e 'first\n  second\n\tthird' >expected.txt
 	echo -e "first\n  second\n\tthird" >test.txt
+	filterconf -f 'txt' pretty <test.txt >actual.txt
 }
 
 function should_perform_multiple_commands() {
@@ -93,44 +107,44 @@ function should_perform_multiple_commands() {
 	echo 'sort' >>script.sh
 	echo 'replace --pattern-type regex "seco(nd)" --with "2\1"' >>script.sh
 
-	echo -e 'first\n2nd\nthird' # Expected.
+	echo -e 'first\n2nd\nthird' >expected.txt
 	echo -e "second\nthird\nto remove\nfirst" >test.txt
+	filterconf -f 'txt' script 'script.sh' <test.txt >actual.txt
 }
 
 ### MAIN
 
-testdir=$(mktemp -d -p $XDG_RUNTIME_DIR)
-pushd "$testdir" >/dev/null
 
 function perform_test() { # <format> <smudge|restore> <test name>
-	format="$1"
-	echo ">>> $2"
-	"$2" >"expected.txt"
-	shift 2 # Make rooms for custom args.
-	filterconf -f "$format" "$@" <"test.$format" >"actual.$format"
-	assert_files_equal "actual.$format" "expected.$format"
+	testdir=$(mktemp -d -p $XDG_RUNTIME_DIR)
+	pushd "$testdir" >/dev/null
+
+	echo ">>> $1"
+	"$1"
+	assert_files_equal "actual.txt" "expected.txt"
 	rc=$?
-	rm -f "test.$format"
+
+	popd >/dev/null
+	rm -rf "$testdir"
+
 	return "$rc"
 }
 
-perform_test 'txt' should_smudge_home_dir_in_plain_text enviro
-perform_test 'txt' should_restore_home_dir_in_plain_text restore
-perform_test 'txt' should_smudge_custom_env_var -e 'XHOME=echo $HOME' enviro
-perform_test 'txt' should_restore_custom_env_var -e 'XHOME=echo $HOME' restore
-perform_test 'txt' should_smudge_several_custom_env_vars -e 'XHOME=echo $HOME' -e 'USERNAME=$USER' enviro
-perform_test 'txt' should_restore_several_custom_env_vars -e 'XHOME=echo $HOME' -e 'USERNAME=$USER' restore
+perform_test should_smudge_home_dir_in_plain_text
+perform_test should_restore_home_dir_in_plain_text
+perform_test should_smudge_custom_env_var
+perform_test should_restore_custom_env_var
+perform_test should_smudge_several_custom_env_vars
+perform_test should_restore_several_custom_env_vars
 
-perform_test 'txt' should_sort_plain_text sort
-perform_test 'txt' should_delete_value_from_plain_text delete 'b'
-perform_test 'txt' should_delete_multiple_values_from_plain_text delete 'b' 'c'
-perform_test 'txt' should_delete_line_with_substring_from_plain_text delete 'eco'
-perform_test 'txt' should_delete_regex_from_plain_text delete '^se.on+d$' --pattern-type 'regex'
-perform_test 'txt' should_replace_substring_in_plain_text replace 'seco' --with '2'
-perform_test 'txt' should_replace_regex_in_plain_text replace '^seco([a-z]+)$' --pattern-type 'regex' --with '2\1'
-perform_test 'txt' should_prettify_plain_text pretty
+perform_test should_sort_plain_text
+perform_test should_delete_value_from_plain_text
+perform_test should_delete_multiple_values_from_plain_text
+perform_test should_delete_line_with_substring_from_plain_text
+perform_test should_delete_regex_from_plain_text
+perform_test should_replace_substring_in_plain_text
+perform_test should_replace_regex_in_plain_text
+perform_test should_prettify_plain_text
 
-perform_test 'txt' should_perform_multiple_commands script 'script.sh'
+perform_test should_perform_multiple_commands
 
-popd >/dev/null
-rm -rf "$testdir"
