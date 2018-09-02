@@ -134,6 +134,10 @@ libreoffice/4/user/gallery/sg30.sdv
 libreoffice/4/user/gallery/sg30.thm
 libreoffice/4/user/psprint/pspfontcache
 libreoffice/4/user/uno_packages/cache/
+libreoffice/4/user/database/biblio/biblio.dbf
+libreoffice/4/user/database/biblio/biblio.dbt
+libreoffice/4/user/database/biblio.odb
+libreoffice/4/user/database/evolocal.odb
 # FreeRDP
 freerdp/known_hosts
 # Enchant (for some reason does not recognize $ENCHANT_CONFIG_DIR)
