@@ -562,6 +562,10 @@ type/^Microsoft\ Word
 	Open=/usr/lib/mc/ext.d/doc.sh open msdoc
 	View=%view{ascii} /usr/lib/mc/ext.d/doc.sh view msdoc
 
+regex/i/\.(csv)$
+	Open=/usr/lib/mc/ext.d/doc.sh open msdoc
+	View=%view{ascii} /usr/lib/mc/ext.d/doc.sh view msdoc
+
 # RTF document
 shell/i/.rtf
 	Open=/usr/lib/mc/ext.d/doc.sh open msdoc
