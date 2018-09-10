@@ -194,7 +194,7 @@ user_pref("extensions.brief.database.limitStoredEntries", true);
 user_pref("extensions.brief.feedview.autoMarkRead", true);
 user_pref("extensions.brief.firstRun", false);
 user_pref("extensions.brief.homeFolder", 205);
-user_pref("extensions.brief.pagePersist", "{\"startView\":\"\",\"closedFolders\":\"_\",\"tagList\":{\"width\":\"\"},\"sidebar\":{\"width\":\"\",\"hidden\":false},\"view\":{\"filter\":\"all\",\"mode\":\"full\"}}");
+user_pref("extensions.brief.pagePersist", "{\"startView\":\"all-items-folder\",\"closedFolders\":\"_\",\"tagList\":{\"width\":\"\"},\"sidebar\":{\"width\":\"100px\",\"hidden\":false},\"view\":{\"filter\":\"unread\",\"mode\":\"full\"}}");
 user_pref("extensions.browsec.bypass", "localhost, localdomain, .localdomain, local, .local, 127.0.0.1, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, www.google-analytics.com");
 user_pref("extensions.browsec.firstrun", false);
 user_pref("extensions.caligon.s4e.advanced.urlbar.forceBinding", true);
