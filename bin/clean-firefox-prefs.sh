@@ -82,4 +82,5 @@ sed '/extensions..*.sdk.version/d' | \
 sed '/browser.preferences.advanced.selectedTabIndex/d' | \
 sed '/extensions.brief.update.lastUpdateTime/d' | \
 sed '/storage.vacuum.last.brief.sqlite/d' | \
+sed '/extensions.brief.database.lastPurgeTime/d' | \
 sed 's|'"$HOME"'|$HOME|g'
