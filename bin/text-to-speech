@@ -1,6 +1,6 @@
 #!/bin/bash
 
-voice() {
+say_mbrola() {
 	IFS='\n'
 	while read line; do
 		echo '(voice_us1_mbrola)'
@@ -9,6 +9,16 @@ voice() {
 		echo '(set! default_after_synth_hooks (list (lambda (utt) (utt.wave.rescale utt 1.5 t))))'
 		echo '(SayText "'"$line"'")'
 	done | festival --pipe
+}
+
+say_rhvoice() {
+	spd-say -e -w -o rhvoice -i +100 -p +60 -r -10 -l english -y SLT >/dev/null
+}
+
+# TODO custom configuration for this.
+VOICE=say_rhvoice
+voice() {
+	$VOICE
 }
 
 if [ -z "$1" ]; then
