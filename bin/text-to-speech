@@ -12,7 +12,7 @@ say_mbrola() {
 }
 
 say_rhvoice() {
-	spd-say -e -w -o rhvoice -i +100 -p +60 -r -10 -l english -y SLT >/dev/null
+	spd-say -e -w -o rhvoice -i +100 -p +40 -r -10 -l english -y SLT >/dev/null
 }
 
 # TODO custom configuration for this.
