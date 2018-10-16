@@ -1,0 +1,8 @@
+calendar = ~/.local/main.cal
+editor = vim
+wrap_auto = 1
+wrap_max = 100
+calendar_today_style = bgcyan,fgblack
+monday_first = 1
+orthodox_easter = 1
+ampm = 0
