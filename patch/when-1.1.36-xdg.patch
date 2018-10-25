@@ -1,0 +1,86 @@
+447c447
+< in your ~/.when/preferences file. I'd be interested in hearing from
+---
+> in your ~/.config/when/preferences file. I'd be interested in hearing from
+615c615
+< 	m4_include(/home/yourname/.when/birthdays)
+---
+> 	m4_include(/home/yourname/.config/when/birthdays)
+626c626
+< B<$HOME>/.when/calendar - The default location for the
+---
+> B<$HOME>/.config/when/calendar - The default location for the
+629c629
+< B<$HOME>/.when/preferences - The user's preferences.
+---
+> B<$HOME>/.config/when/preferences - The user's preferences.
+702c702
+<   'calendar'=>'~/.when/calendar',   # where to find the calendar file
+---
+>   'calendar'=>'~/.config/when/calendar',   # where to find the calendar file
+966c966
+<         'ask_if_set_up'=>("Adesso puoi impostare il tuo calendario. Questo avviene creando una directory ~/.when e creando\n".
+---
+>         'ask_if_set_up'=>("Adesso puoi impostare il tuo calendario. Questo avviene creando una directory ~/.config/when e creando\n".
+992c992
+<         'ask_if_set_up'=>("Za chwil${e_polish} rozpocznie sie konfiguracja kalendarza. Stworzony zostanie katalog ~/.when w\n kt${o_polish}rym pojawi${a_polish} sie pliki konfiguracyjne. Je${s_polish}li zgadzasz si${e_polish} na t${a_polish} operacj${e_polish} wci${s_polish}nij\n klawisz 'y' i potwierd${z_polish} klawiszem Enter.\n"),
+---
+>         'ask_if_set_up'=>("Za chwil${e_polish} rozpocznie sie konfiguracja kalendarza. Stworzony zostanie katalog ~/.config/when w\n kt${o_polish}rym pojawi${a_polish} sie pliki konfiguracyjne. Je${s_polish}li zgadzasz si${e_polish} na t${a_polish} operacj${e_polish} wci${s_polish}nij\n klawisz 'y' i potwierd${z_polish} klawiszem Enter.\n"),
+1023c1023
+<         'ask_if_set_up'=>("U kan nu uw kalender instellen. U dient de map ~/.when aan te maken samen met\n".
+---
+>         'ask_if_set_up'=>("U kan nu uw kalender instellen. U dient de map ~/.config/when aan te maken samen met\n".
+1056c1056
+<         'ask_if_set_up'=>("Sie k${o_uml}nnen jetzt Ihren Kalender aufbauen. Dies hat zur Folge, dass ein Verzeichnis ~/.when angelegt wird, und in ihm\n".
+---
+>         'ask_if_set_up'=>("Sie k${o_uml}nnen jetzt Ihren Kalender aufbauen. Dies hat zur Folge, dass ein Verzeichnis ~/.config/when angelegt wird, und in ihm\n".
+1090c1090
+<         'ask_if_set_up'=>("Nyni muzete nastavit vas kalendar. To vytvori adresar ~/.when, a\n".
+---
+>         'ask_if_set_up'=>("Nyni muzete nastavit vas kalendar. To vytvori adresar ~/.config/when, a\n".
+1122c1122
+<         'ask_if_set_up'=>("Der kan nu oprettes en kalender. Derved oprettes en mappe ~/.when, med et par filer i sig.\n".
+---
+>         'ask_if_set_up'=>("Der kan nu oprettes en kalender. Derved oprettes en mappe ~/.config/when, med et par filer i sig.\n".
+1154c1154
+<         'ask_if_set_up'=>("Din kalendar kan nu uppr${a_uml}ttas. Katalogen ~/.when och ett par filer kommer att skapas.\n".
+---
+>         'ask_if_set_up'=>("Din kalendar kan nu uppr${a_uml}ttas. Katalogen ~/.config/when och ett par filer kommer att skapas.\n".
+1186c1186
+<         'ask_if_set_up'=>("Puedes configurar ahora tu calendario. Esto implica crear el directorio ~/.when y un par de archivos en ${e_acute}l. Si deseas hacer esto, teclea 'y' y presiona enter.\n"),
+---
+>         'ask_if_set_up'=>("Puedes configurar ahora tu calendario. Esto implica crear el directorio ~/.config/when y un par de archivos en ${e_acute}l. Si deseas hacer esto, teclea 'y' y presiona enter.\n"),
+1216c1216
+<         'ask_if_set_up'=>("Μπορείτε τώρα να ρυθμίσετε το ημερολόγιο. Αυτό περιλαμβάνει τη δημιουργία του καταλόγου ~/.when, και τη δημιουργία\n".
+---
+>         'ask_if_set_up'=>("Μπορείτε τώρα να ρυθμίσετε το ημερολόγιο. Αυτό περιλαμβάνει τη δημιουργία του καταλόγου ~/.config/when, και τη δημιουργία\n".
+1250c1250
+<         'ask_if_set_up'=>("Pute${t_commabelow}i s${a_breve} v${a_breve} configura${t_commabelow}i acum calendarul. Aceasta implic${a_breve} crearea directorului ~/.when, ${s_commabelow}i a\n".
+---
+>         'ask_if_set_up'=>("Pute${t_commabelow}i s${a_breve} v${a_breve} configura${t_commabelow}i acum calendarul. Aceasta implic${a_breve} crearea directorului ~/.config/when, ${s_commabelow}i a\n".
+1286c1286
+<         'ask_if_set_up'=>("Vous pouvez maintenant installer votre calendrier. C'est-à-dire créer le répertoire ~/.when, et y créer\n".
+---
+>         'ask_if_set_up'=>("Vous pouvez maintenant installer votre calendrier. C'est-à-dire créer le répertoire ~/.config/when, et y créer\n".
+1322c1322
+<         'ask_if_set_up'=>("Зараз ви можете налаштувати ваш календар. Це передбачає, що буде створена директорія ~/.when\n".
+---
+>         'ask_if_set_up'=>("Зараз ви можете налаштувати ваш календар. Це передбачає, що буде створена директорія ~/.config/when\n".
+1358c1358
+<         'ask_if_set_up'=>("You can now set up your calendar. This involves creating a directory ~/.when, and making\n".
+---
+>         'ask_if_set_up'=>("You can now set up your calendar. This involves creating a directory ~/.config/when, and making\n".
+1395,1396c1395,1396
+< my $dir = glob "~/.when";
+< my $prefs_file = glob '~/.when/preferences';
+---
+> my $dir = glob "~/.config/when";
+> my $prefs_file = glob '~/.config/when/preferences';
+2054c2054
+<   my $dir = glob "~/.when";
+---
+>   my $dir = glob "~/.config/when";
+2066c2066
+<   my $prefs = glob "~/.when/preferences";
+---
+>   my $prefs = glob "~/.config/when/preferences";
