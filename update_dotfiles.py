@@ -16,12 +16,12 @@ class SparseCheckout(object):
 	def __init__(self):
 		self.basefile = os.path.join('.git', 'info', 'sparse-checkout')
 	def is_same(self, content):
-		with open(self.base, 'rb') as f:
+		with open(self.basefile, 'rb') as f:
 			if f.read() != content:
 				return False
 		return True
 	def update_with(self, content):
-		with open(self.base, 'wb') as f:
+		with open(self.basefile, 'wb') as f:
 			f.write(content)
 
 def branch_is_behind_remote(branch):
