@@ -37,9 +37,14 @@ class Git:
 	def push(self, remote='origin', branch='master'):
 		subprocess.run(["git", "push", remote, branch, "--tags"])
 	def add_bare_remote(self, name, path):
-		subprocess.run(["git", "init", "--bare", path])
+		existed = os.path.exists(path)
+		if existed:
+			print('Remote path already exists, considering bare repo already inited.')
+		if not existed:
+			subprocess.run(["git", "init", "--bare", path])
 		subprocess.run(["git", "remote", "add", name, path])
-		subprocess.run(["git", "push", "-u", name, "master", "--tags"])
+		if not existed:
+			subprocess.run(["git", "push", "-u", name, "master", "--tags"])
 	def rootdir(self):
 		git = subprocess.run(["git", "rev-parse", "--show-toplevel"], stdout=subprocess.PIPE)
 		if git.returncode != 0:
@@ -268,9 +273,6 @@ def addlocal(repo_storage_path):
 		rootdir = Git().rootdir()
 		name = os.path.basename(rootdir)
 	new_remote_path = os.path.join(repo_storage_path, name + '.git')
-	if os.path.exists(new_remote_path):
-		print("Remote path '{0}' already exists.".format(repo_storage_path))
-		return False
 	yes = input("Add new bare repo at {0}? ".format(new_remote_path))
 	if yes.lower() != "y":
 		return False
