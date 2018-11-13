@@ -64,6 +64,7 @@ user_pref("browser.sessionstore.upgradeBackup.maxUpgradeBackups", 0);
 user_pref("browser.shell.checkDefaultBrowser", true);
 user_pref("browser.startup.homepage", "file://$HOME/.local/personal/links.html");
 user_pref("browser.tabs.animate", false);
+user_pref("browser.tabs.crashReporting.sendReport", false);
 user_pref("browser.tabs.loadDivertedInBackground", true);
 user_pref("browser.tabs.remote.autostart.2", true);
 user_pref("browser.toolbarbuttons.introduced.pocket-button", true);
