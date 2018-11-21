@@ -13,16 +13,28 @@ function assert_files_equal() { # <file_actual> <file_expected>
 
 ### TESTS
 
+function setup() {
+	testdir=$(mktemp -d -p $XDG_RUNTIME_DIR)
+	pushd "$testdir" >/dev/null
+}
+
+function teardown() {
+	popd >/dev/null
+	rm -rf "$testdir"
+}
+
 function should_smudge_home_dir_in_plain_text() {
 	echo -e 'First: $HOME\nSecond: $HOME' >expected.txt
 	echo -e "First: ${HOME}\nSecond: ${HOME}" >test.txt
 	filterconf -f 'txt' enviro <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_restore_home_dir_in_plain_text() {
 	echo -e "First: ${HOME}\nSecond: ${HOME}" >expected.txt
 	echo -e 'First: $HOME\nSecond: $HOME' >test.txt
 	filterconf -f 'txt' restore <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_smudge_custom_env_var() {
@@ -30,6 +42,7 @@ function should_smudge_custom_env_var() {
 	XHOME=$HOME
 	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >test.txt
 	filterconf -f 'txt' -e 'XHOME=echo $HOME' enviro <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_restore_custom_env_var() {
@@ -37,6 +50,7 @@ function should_restore_custom_env_var() {
 	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >expected.txt
 	echo -e 'First: $XHOME\nSecond: $XHOME' >test.txt
 	filterconf -f 'txt' -e 'XHOME=echo $HOME' restore <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_smudge_several_custom_env_vars() {
@@ -44,6 +58,7 @@ function should_smudge_several_custom_env_vars() {
 	XHOME=$HOME
 	echo -e "First: ${XHOME}\nSecond: ${USER}" >test.txt
 	filterconf -f 'txt' -e 'XHOME=echo $HOME' -e 'USERNAME=$USER' enviro <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_restore_several_custom_env_vars() {
@@ -51,54 +66,63 @@ function should_restore_several_custom_env_vars() {
 	echo -e "First: ${XHOME}\nSecond: ${USER}" >expected.txt
 	echo -e 'First: $XHOME\nSecond: $USERNAME' >test.txt
 	filterconf -f 'txt' -e 'XHOME=echo $HOME' -e 'USERNAME=$USER' restore <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_sort_plain_text() {
 	echo -e 'a\nb\nc' >expected.txt
 	echo -e "b\nc\na" >test.txt
 	filterconf -f 'txt' sort <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_delete_value_from_plain_text() {
 	echo -e 'a\nc' >expected.txt
 	echo -e "a\nb\nc" >test.txt
 	filterconf -f 'txt' delete 'b' <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_delete_multiple_values_from_plain_text() {
 	echo -e 'a' >expected.txt
 	echo -e "a\nb\nc" >test.txt
 	filterconf -f 'txt' delete 'b' 'c' <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_delete_line_with_substring_from_plain_text() {
 	echo -e 'first\nthird' >expected.txt
 	echo -e "first\nsecond\nthird" >test.txt
 	filterconf -f 'txt' delete 'eco' <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_delete_regex_from_plain_text() {
 	echo -e 'first\nthird' >expected.txt
 	echo -e "first\nsecond\nthird" >test.txt
 	filterconf -f 'txt' delete '^se.on+d$' --pattern-type 'regex' <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_replace_substring_in_plain_text() {
 	echo -e 'first\n2nd\nthird' >expected.txt
 	echo -e "first\nsecond\nthird" >test.txt
 	filterconf -f 'txt' replace 'seco' --with '2' <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_replace_regex_in_plain_text() {
 	echo -e 'first\n2nd\nthird' >expected.txt
 	echo -e "first\nsecond\nthird" >test.txt
 	filterconf -f 'txt' replace '^seco([a-z]+)$' --pattern-type 'regex' --with '2\1' <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_prettify_plain_text() {
 	echo -e 'first\n  second\n\tthird' >expected.txt
 	echo -e "first\n  second\n\tthird" >test.txt
 	filterconf -f 'txt' pretty <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 function should_perform_multiple_commands() {
@@ -110,22 +134,19 @@ function should_perform_multiple_commands() {
 	echo -e 'first\n2nd\nthird' >expected.txt
 	echo -e "second\nthird\nto remove\nfirst" >test.txt
 	filterconf -f 'txt' script 'script.sh' <test.txt >actual.txt
+	assert_files_equal "actual.txt" "expected.txt"
 }
 
 ### MAIN
 
-
-function perform_test() { # <format> <smudge|restore> <test name>
-	testdir=$(mktemp -d -p $XDG_RUNTIME_DIR)
-	pushd "$testdir" >/dev/null
+function perform_test() { # <test name>
+	type setup | grep -q 'shell function' && setup
 
 	echo ">>> $1"
 	"$1"
-	assert_files_equal "actual.txt" "expected.txt"
 	rc=$?
 
-	popd >/dev/null
-	rm -rf "$testdir"
+	type teardown | grep -q 'shell function' && teardown
 
 	return "$rc"
 }
