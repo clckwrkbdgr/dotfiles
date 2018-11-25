@@ -4,3 +4,6 @@
 [submodule "vim/bundle/vimoutliner"]
 	path = vim/bundle/vimoutliner
 	url = https://github.com/vimoutliner/vimoutliner
+[submodule "vim/bundle/vim-textile"]
+	path = vim/bundle/vim-textile
+	url = https://github.com/amiorin/vim-textile.git
