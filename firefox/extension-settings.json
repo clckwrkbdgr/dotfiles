@@ -1,0 +1,63 @@
+{
+    "commands": {},
+    "default_search": {},
+    "newTabNotification": {
+        "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
+            "initialValue": false,
+            "precedenceList": [
+                {
+                    "enabled": true,
+                    "id": "{66E978CD-981F-47DF-AC42-E3CF417C1467}",
+                    "installDate": 1522499089000,
+                    "value": true
+                }
+            ]
+        }
+    },
+    "prefs": {
+        "network.networkPredictionEnabled": {
+            "initialValue": {
+                "network.dns.disablePrefetch": false,
+                "network.http.speculative-parallel-limit": 6,
+                "network.predictor.enabled": true,
+                "network.prefetch-next": true
+            },
+            "precedenceList": [
+                {
+                    "enabled": true,
+                    "id": "uBlock0@raymondhill.net",
+                    "installDate": 1511006749000,
+                    "value": false
+                }
+            ]
+        },
+        "websites.hyperlinkAuditingEnabled": {
+            "initialValue": {
+                "browser.send_pings": false
+            },
+            "precedenceList": [
+                {
+                    "enabled": true,
+                    "id": "uBlock0@raymondhill.net",
+                    "installDate": 1511006749000,
+                    "value": false
+                }
+            ]
+        }
+    },
+    "url_overrides": {
+        "newTabURL": {
+            "initialValue": "about:newtab",
+            "precedenceList": [
+                {
+                    "enabled": true,
+                    "id": "{66E978CD-981F-47DF-AC42-E3CF417C1467}",
+                    "installDate": 1522499089000,
+                    "value": "moz-extension://a4b0dd36-0d25-4144-af3c-21e53900e118/redirect.html"
+                }
+            ]
+        }
+    },
+    "version": 2,
+    "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {}
+}

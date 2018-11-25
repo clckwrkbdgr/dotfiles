@@ -1,0 +1,529 @@
+{
+    "defaultHandlersVersion": {
+        "en-US": 4
+    },
+    "mimeTypes": {
+        "application/download": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "txt",
+                "asc",
+                "text",
+                "pot",
+                "brf"
+            ]
+        },
+        "application/force-download": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "pdf"
+            ]
+        },
+        "application/gtar": {
+            "action": 0,
+            "ask": true
+        },
+        "application/gzip": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "gz"
+            ]
+        },
+        "application/java-archive": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "jar"
+            ]
+        },
+        "application/msword": {
+            "action": 4,
+            "ask": true,
+            "extensions": [
+                "doc",
+                "dot"
+            ]
+        },
+        "application/pdf": {
+            "action": 3,
+            "extensions": [
+                "pdf"
+            ]
+        },
+        "application/rar": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "rar"
+            ]
+        },
+        "application/rtf": {
+            "action": 4,
+            "ask": true,
+            "extensions": [
+                "rtf"
+            ]
+        },
+        "application/text": {
+            "action": 0,
+            "ask": true
+        },
+        "application/vnd.android.package-archive": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "apk"
+            ]
+        },
+        "application/vnd.ms-excel": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "xls",
+                "xlb",
+                "xlt"
+            ]
+        },
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "xlsx"
+            ]
+        },
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
+            "action": 4,
+            "ask": true,
+            "extensions": [
+                "docx"
+            ]
+        },
+        "application/x-7z-compressed": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "7z"
+            ]
+        },
+        "application/x-bittorrent": {
+            "action": 4,
+            "ask": true,
+            "extensions": [
+                "torrent"
+            ]
+        },
+        "application/x-bzip": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-bzip-compressed-tar": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-bzip2": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-compressed-tar": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-deb": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-debian-package": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "deb",
+                "udeb"
+            ]
+        },
+        "application/x-dosexec": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "dll"
+            ]
+        },
+        "application/x-excel": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "xls",
+                "xlb",
+                "xlt"
+            ]
+        },
+        "application/x-generic": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-gzip": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-iso9660-image": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "iso"
+            ]
+        },
+        "application/x-java-archive": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-lzma-compressed": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "lzma"
+            ]
+        },
+        "application/x-msdos-program": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "com",
+                "exe",
+                "bat",
+                "dll"
+            ]
+        },
+        "application/x-msdownload": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-octetstream": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "fb2"
+            ]
+        },
+        "application/x-rar": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-rar-compressed": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-shockwave-flash": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "swf",
+                "swfl"
+            ]
+        },
+        "application/x-tar": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "tar"
+            ]
+        },
+        "application/x-view-source": {
+            "action": 4,
+            "ask": true,
+            "extensions": [
+                "jpg",
+                "jpeg",
+                "jpe"
+            ]
+        },
+        "application/x-wine-extension-biq": {
+            "action": 0,
+            "ask": true
+        },
+        "application/x-xpinstall": {
+            "action": 2,
+            "ask": true,
+            "extensions": [
+                "xpi"
+            ],
+            "handlers": [
+                {
+                    "name": "iceweasel",
+                    "path": "/usr/bin/iceweasel"
+                }
+            ]
+        },
+        "application/x-xz": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "xz"
+            ]
+        },
+        "application/x-zip": {
+            "action": 0,
+            "ask": true
+        },
+        "application/xml": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "xml",
+                "xsd"
+            ]
+        },
+        "application/zip": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "zip"
+            ]
+        },
+        "audio/mpeg": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "mpga",
+                "mpega",
+                "mp2",
+                "mp3",
+                "m4a"
+            ]
+        },
+        "audio/x-aac": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "aac"
+            ]
+        },
+        "audio/x-wav": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "wav"
+            ]
+        },
+        "image/bmp": {
+            "action": 0,
+            "ask": true
+        },
+        "image/gif": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "gif"
+            ]
+        },
+        "image/jpeg": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "jpeg",
+                "jpg",
+                "jpe"
+            ]
+        },
+        "image/pcx": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "pcx"
+            ]
+        },
+        "image/png": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "png"
+            ]
+        },
+        "image/vnd.djvu": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "djvu",
+                "djv"
+            ]
+        },
+        "message/rfc822": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "eml"
+            ]
+        },
+        "text/csv": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "csv"
+            ]
+        },
+        "text/html": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "html",
+                "htm",
+                "shtml"
+            ]
+        },
+        "text/plain": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "asc",
+                "txt",
+                "text",
+                "pot",
+                "brf",
+                "srt"
+            ]
+        },
+        "text/rtf": {
+            "action": 0,
+            "ask": true
+        },
+        "text/x-chdr": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "h"
+            ]
+        },
+        "text/x-csrc": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "c"
+            ]
+        },
+        "text/x-patch": {
+            "action": 0,
+            "ask": true
+        },
+        "text/x-python": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "py"
+            ]
+        },
+        "text/x-shellscript": {
+            "action": 0,
+            "ask": true
+        },
+        "text/xml": {
+            "action": 0,
+            "ask": true
+        },
+        "unknown/unknown": {
+            "action": 2,
+            "ask": true,
+            "handlers": [
+                {
+                    "name": "firefox",
+                    "path": "/usr/bin/firefox"
+                }
+            ]
+        },
+        "video/mp4": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "mp4"
+            ]
+        },
+        "video/x-flv": {
+            "action": 4,
+            "ask": true,
+            "extensions": [
+                "flv"
+            ]
+        },
+        "video/x-msvideo": {
+            "action": 0,
+            "ask": true,
+            "extensions": [
+                "avi"
+            ]
+        }
+    },
+    "schemes": {
+        "irc": {
+            "action": 2,
+            "ask": true,
+            "handlers": [
+                null,
+                {
+                    "name": "Mibbit",
+                    "uriTemplate": "https://www.mibbit.com/?url=%s"
+                }
+            ]
+        },
+        "ircs": {
+            "action": 2,
+            "ask": true,
+            "handlers": [
+                null,
+                {
+                    "name": "Mibbit",
+                    "uriTemplate": "https://www.mibbit.com/?url=%s"
+                }
+            ]
+        },
+        "magnet": {
+            "action": 2,
+            "handlers": [
+                {
+                    "name": "transmission-gtk",
+                    "path": "/usr/bin/transmission-gtk"
+                }
+            ]
+        },
+        "mailto": {
+            "action": 4,
+            "handlers": [
+                null,
+                {
+                    "name": "Gmail",
+                    "uriTemplate": "https://mail.google.com/mail/?extsrc=mailto&url=%s"
+                },
+                {
+                    "name": "Mail.Ru",
+                    "uriTemplate": "http://win.mail.ru/cgi-bin/sentmsg?mailto=%s"
+                },
+                {
+                    "name": "Yahoo! Mail",
+                    "uriTemplate": "http://compose.mail.yahoo.com/?To=%s"
+                },
+                {
+                    "name": "Yahoo! Mail",
+                    "uriTemplate": "https://compose.mail.yahoo.com/?To=%s"
+                }
+            ]
+        },
+        "rtsp": {
+            "action": 2,
+            "ask": true
+        },
+        "webcal": {
+            "action": 4,
+            "ask": true,
+            "handlers": [
+                null,
+                {
+                    "name": "30 Boxes",
+                    "uriTemplate": "http://30boxes.com/external/widget?refer=ff&url=%s"
+                },
+                {
+                    "name": "30 Boxes",
+                    "uriTemplate": "https://30boxes.com/external/widget?refer=ff&url=%s"
+                }
+            ]
+        }
+    }
+}
