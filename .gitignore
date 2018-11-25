@@ -53,6 +53,7 @@ firefox/blocklist-addons.json
 firefox/blocklist-gfx.json
 firefox/blocklist-plugins.json
 firefox/cert8.db
+firefox/cert9.db
 firefox/cert_override.txt
 firefox/compatibility.ini
 firefox/extensions.ini
@@ -84,6 +85,9 @@ firefox/AlternateServices.txt
 firefox/SecurityPreloadState.txt
 firefox/datareporting/
 firefox/saved-telemetry-pings/
+firefox/weave/failed/tabs.json
+firefox/weave/toFetch/tabs.json
+firefox/favicons.sqlite
 # Firefox local/share
 firefox/gm_scripts/Display_LaTeX/display-latex.user.js
 firefox/key3.db
@@ -105,6 +109,9 @@ firefox/storage.sqlite
 firefox/weave/changes/greasemonkey.json
 firefox/storage-sync.sqlite
 firefox/brief.sqlite
+firefox/pkcs11.txt
+firefox/TRRBlacklist.txt
+firefox/key4.db
 # Purple cache
 purple/accels
 purple/certificates
