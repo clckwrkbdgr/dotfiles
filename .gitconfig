@@ -13,7 +13,7 @@
 
 [filter "mozLz4"]
 	smudge = "mozLz4.py compress"
-	clean = "mozLz4.py decompress"
+	clean = "mozLz4.py decompress | python -m json.tool"
 
 [filter "ignorewallpaper"]
 	smudge = cat

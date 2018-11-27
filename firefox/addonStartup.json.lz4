@@ -1,1 +1,359 @@
-{"app-profile":{"addons":{"uBlock0@raymondhill.net":{"enabled":true,"lastModifiedTime":1539897112000,"path":"uBlock0@raymondhill.net.xpi","signedState":2,"version":"1.17.2","type":"webextension","bootstrapped":true,"dependencies":[],"runInSafeMode":false,"hasEmbeddedWebExtension":false},"{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}":{"enabled":true,"lastModifiedTime":1514208665000,"path":"{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}.xpi","signedState":2,"version":"1.3","type":"webextension","bootstrapped":true,"dependencies":[],"runInSafeMode":false,"hasEmbeddedWebExtension":false},"{66E978CD-981F-47DF-AC42-E3CF417C1467}":{"enabled":true,"lastModifiedTime":1543006111000,"path":"{66E978CD-981F-47DF-AC42-E3CF417C1467}.xpi","signedState":2,"version":"0.6.2","type":"webextension","bootstrapped":true,"dependencies":[],"runInSafeMode":false,"hasEmbeddedWebExtension":false},"firefox@tampermonkey.net":{"enabled":true,"lastModifiedTime":1536872993000,"path":"firefox@tampermonkey.net.xpi","signedState":2,"version":"4.8.5847","type":"webextension","bootstrapped":true,"dependencies":[],"runInSafeMode":false,"hasEmbeddedWebExtension":false},"{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}":{"enabled":true,"lastModifiedTime":1543007631000,"path":"{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}.xpi","signedState":2,"version":"1.5.0","type":"webextension","bootstrapped":true,"dependencies":[],"runInSafeMode":false,"hasEmbeddedWebExtension":false},"{73a6fe31-595d-460b-a920-fcc0f8843232}":{"enabled":true,"lastModifiedTime":1543006111000,"path":"{73a6fe31-595d-460b-a920-fcc0f8843232}.xpi","signedState":2,"version":"10.1.9.9","type":"webextension","bootstrapped":true,"dependencies":[],"runInSafeMode":false,"hasEmbeddedWebExtension":false},"{d7742d87-e61d-4b78-b8a1-b469842139fa}":{"enabled":true,"lastModifiedTime":1543006722000,"path":"{d7742d87-e61d-4b78-b8a1-b469842139fa}.xpi","signedState":2,"version":"1.64","type":"webextension","bootstrapped":true,"dependencies":[],"runInSafeMode":false,"hasEmbeddedWebExtension":false}},"path":"/home/umi/.config/firefox/extensions"},"app-system-defaults":{"addons":{"webcompat@mozilla.org":{"enabled":true,"lastModifiedTime":1540333042000,"path":"webcompat@mozilla.org.xpi","version":"1.1","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false},"aushelper@mozilla.org":{"enabled":true,"lastModifiedTime":1540333042000,"path":"aushelper@mozilla.org.xpi","version":"2.0","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false},"firefox@getpocket.com":{"enabled":true,"lastModifiedTime":1540333042000,"path":"firefox@getpocket.com.xpi","version":"1.0.5","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false},"activity-stream@mozilla.org":{"enabled":true,"lastModifiedTime":1540333042000,"path":"activity-stream@mozilla.org.xpi","version":"2018.04.20.1103-b3b95672","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false},"followonsearch@mozilla.com":{"enabled":true,"lastModifiedTime":1540333042000,"path":"followonsearch@mozilla.com.xpi","version":"0.9.6","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false},"formautofill@mozilla.org":{"enabled":true,"lastModifiedTime":1540333042000,"path":"formautofill@mozilla.org.xpi","version":"1.0","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false},"jaws-esr@mozilla.org":{"enabled":true,"lastModifiedTime":1540333042000,"path":"jaws-esr@mozilla.org.xpi","version":"1.2","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false},"onboarding@mozilla.org":{"enabled":true,"lastModifiedTime":1540333042000,"path":"onboarding@mozilla.org.xpi","version":"1.0","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false},"screenshots@mozilla.org":{"enabled":true,"lastModifiedTime":1540333042000,"path":"screenshots@mozilla.org.xpi","version":"30.1.0","bootstrapped":true,"dependencies":[],"runInSafeMode":true,"hasEmbeddedWebExtension":false}},"path":"/usr/lib/firefox-esr/browser/features"},"app-global":{"addons":{"{972ce4c6-7e08-4474-a285-3208198ce6fd}":{"enabled":true,"lastModifiedTime":1540333042000,"path":"{972ce4c6-7e08-4474-a285-3208198ce6fd}.xpi","version":"60.3.0","type":"theme"},"langpack-ru@firefox-esr.mozilla.org":{"enabled":false,"lastModifiedTime":1540333042000,"path":"langpack-ru@firefox-esr.mozilla.org.xpi","version":"60.0buildid20181023221722","type":"webextension-langpack","bootstrapped":true,"dependencies":[],"runInSafeMode":false,"hasEmbeddedWebExtension":false,"startupData":{"chromeEntries":[["locale","necko","ru","chrome/ru/locale/ru/necko/"],["locale","pdf.js","ru","browser/chrome/ru/locale/pdfviewer/"],["locale","global","ru","chrome/ru/locale/ru/global/"],["locale","onboarding","ru","browser/features/onboarding@mozilla.org/ru/locale/ru/"],["locale","devtools","ru","browser/chrome/ru/locale/ru/devtools/client/"],["locale","pipnss","ru","chrome/ru/locale/ru/pipnss/"],["locale","devtools-shim","ru","browser/chrome/ru/locale/ru/devtools/shim/"],["locale","alerts","ru","chrome/ru/locale/ru/alerts/"],["locale","branding","ru","browser/chrome/ru/locale/branding/"],["locale","autoconfig","ru","chrome/ru/locale/ru/autoconfig/"],["locale","devtools-shared","ru","browser/chrome/ru/locale/ru/devtools/shared/"],["locale","global-platform","ru","chrome/ru/locale/ru/global-platform/unix/"],["locale","browser-region","ru","browser/chrome/ru/locale/browser-region/"],["locale","mozapps","ru","chrome/ru/locale/ru/mozapps/"],["locale","pluginproblem","ru","chrome/ru/locale/ru/pluginproblem/"],["locale","formautofill","ru","browser/features/formautofill@mozilla.org/ru/locale/ru/"],["locale","weave","ru","chrome/ru/locale/ru/services/"],["locale","pocket","ru","browser/features/firefox@getpocket.com/ru/locale/ru/"],["locale","places","ru","chrome/ru/locale/ru/places/"],["locale","passwordmgr","ru","chrome/ru/locale/ru/passwordmgr/"],["locale","pippki","ru","chrome/ru/locale/ru/pippki/"],["locale","jaws-esr","ru","browser/features/jaws-esr@mozilla.org/ru/locale/ru/"],["locale","browser","ru","browser/chrome/ru/locale/browser/"]],"langpackId":"langpack-ru-browser","l10nRegistrySources":{"browser":"browser/"},"languages":["ru"]}}},"path":"/usr/lib/firefox-esr/browser/extensions","checkStartupModifications":true}}
+{
+    "app-global": {
+        "addons": {
+            "langpack-ru@firefox-esr.mozilla.org": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": false,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "langpack-ru@firefox-esr.mozilla.org.xpi",
+                "runInSafeMode": false,
+                "startupData": {
+                    "chromeEntries": [
+                        [
+                            "locale",
+                            "necko",
+                            "ru",
+                            "chrome/ru/locale/ru/necko/"
+                        ],
+                        [
+                            "locale",
+                            "pdf.js",
+                            "ru",
+                            "browser/chrome/ru/locale/pdfviewer/"
+                        ],
+                        [
+                            "locale",
+                            "global",
+                            "ru",
+                            "chrome/ru/locale/ru/global/"
+                        ],
+                        [
+                            "locale",
+                            "onboarding",
+                            "ru",
+                            "browser/features/onboarding@mozilla.org/ru/locale/ru/"
+                        ],
+                        [
+                            "locale",
+                            "devtools",
+                            "ru",
+                            "browser/chrome/ru/locale/ru/devtools/client/"
+                        ],
+                        [
+                            "locale",
+                            "pipnss",
+                            "ru",
+                            "chrome/ru/locale/ru/pipnss/"
+                        ],
+                        [
+                            "locale",
+                            "devtools-shim",
+                            "ru",
+                            "browser/chrome/ru/locale/ru/devtools/shim/"
+                        ],
+                        [
+                            "locale",
+                            "alerts",
+                            "ru",
+                            "chrome/ru/locale/ru/alerts/"
+                        ],
+                        [
+                            "locale",
+                            "branding",
+                            "ru",
+                            "browser/chrome/ru/locale/branding/"
+                        ],
+                        [
+                            "locale",
+                            "autoconfig",
+                            "ru",
+                            "chrome/ru/locale/ru/autoconfig/"
+                        ],
+                        [
+                            "locale",
+                            "devtools-shared",
+                            "ru",
+                            "browser/chrome/ru/locale/ru/devtools/shared/"
+                        ],
+                        [
+                            "locale",
+                            "global-platform",
+                            "ru",
+                            "chrome/ru/locale/ru/global-platform/unix/"
+                        ],
+                        [
+                            "locale",
+                            "browser-region",
+                            "ru",
+                            "browser/chrome/ru/locale/browser-region/"
+                        ],
+                        [
+                            "locale",
+                            "mozapps",
+                            "ru",
+                            "chrome/ru/locale/ru/mozapps/"
+                        ],
+                        [
+                            "locale",
+                            "pluginproblem",
+                            "ru",
+                            "chrome/ru/locale/ru/pluginproblem/"
+                        ],
+                        [
+                            "locale",
+                            "formautofill",
+                            "ru",
+                            "browser/features/formautofill@mozilla.org/ru/locale/ru/"
+                        ],
+                        [
+                            "locale",
+                            "weave",
+                            "ru",
+                            "chrome/ru/locale/ru/services/"
+                        ],
+                        [
+                            "locale",
+                            "pocket",
+                            "ru",
+                            "browser/features/firefox@getpocket.com/ru/locale/ru/"
+                        ],
+                        [
+                            "locale",
+                            "places",
+                            "ru",
+                            "chrome/ru/locale/ru/places/"
+                        ],
+                        [
+                            "locale",
+                            "passwordmgr",
+                            "ru",
+                            "chrome/ru/locale/ru/passwordmgr/"
+                        ],
+                        [
+                            "locale",
+                            "pippki",
+                            "ru",
+                            "chrome/ru/locale/ru/pippki/"
+                        ],
+                        [
+                            "locale",
+                            "jaws-esr",
+                            "ru",
+                            "browser/features/jaws-esr@mozilla.org/ru/locale/ru/"
+                        ],
+                        [
+                            "locale",
+                            "browser",
+                            "ru",
+                            "browser/chrome/ru/locale/browser/"
+                        ]
+                    ],
+                    "l10nRegistrySources": {
+                        "browser": "browser/"
+                    },
+                    "langpackId": "langpack-ru-browser",
+                    "languages": [
+                        "ru"
+                    ]
+                },
+                "type": "webextension-langpack",
+                "version": "60.0buildid20181023221722"
+            },
+            "{972ce4c6-7e08-4474-a285-3208198ce6fd}": {
+                "enabled": true,
+                "lastModifiedTime": 1540333042000,
+                "path": "{972ce4c6-7e08-4474-a285-3208198ce6fd}.xpi",
+                "type": "theme",
+                "version": "60.3.0"
+            }
+        },
+        "checkStartupModifications": true,
+        "path": "/usr/lib/firefox-esr/browser/extensions"
+    },
+    "app-profile": {
+        "addons": {
+            "firefox@tampermonkey.net": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1536872993000,
+                "path": "firefox@tampermonkey.net.xpi",
+                "runInSafeMode": false,
+                "signedState": 2,
+                "type": "webextension",
+                "version": "4.8.5847"
+            },
+            "uBlock0@raymondhill.net": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1539897112000,
+                "path": "uBlock0@raymondhill.net.xpi",
+                "runInSafeMode": false,
+                "signedState": 2,
+                "type": "webextension",
+                "version": "1.17.2"
+            },
+            "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1543006111000,
+                "path": "{66E978CD-981F-47DF-AC42-E3CF417C1467}.xpi",
+                "runInSafeMode": false,
+                "signedState": 2,
+                "type": "webextension",
+                "version": "0.6.2"
+            },
+            "{73a6fe31-595d-460b-a920-fcc0f8843232}": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1543266832000,
+                "path": "{73a6fe31-595d-460b-a920-fcc0f8843232}.xpi",
+                "runInSafeMode": false,
+                "signedState": 2,
+                "type": "webextension",
+                "version": "10.2.0"
+            },
+            "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1543007631000,
+                "path": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}.xpi",
+                "runInSafeMode": false,
+                "signedState": 2,
+                "type": "webextension",
+                "version": "1.5.0"
+            },
+            "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1543006722000,
+                "path": "{d7742d87-e61d-4b78-b8a1-b469842139fa}.xpi",
+                "runInSafeMode": false,
+                "signedState": 2,
+                "type": "webextension",
+                "version": "1.64"
+            },
+            "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1514208665000,
+                "path": "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}.xpi",
+                "runInSafeMode": false,
+                "signedState": 2,
+                "type": "webextension",
+                "version": "1.3"
+            }
+        },
+        "path": "/home/umi/.config/firefox/extensions"
+    },
+    "app-system-defaults": {
+        "addons": {
+            "activity-stream@mozilla.org": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "activity-stream@mozilla.org.xpi",
+                "runInSafeMode": true,
+                "version": "2018.04.20.1103-b3b95672"
+            },
+            "aushelper@mozilla.org": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "aushelper@mozilla.org.xpi",
+                "runInSafeMode": true,
+                "version": "2.0"
+            },
+            "firefox@getpocket.com": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "firefox@getpocket.com.xpi",
+                "runInSafeMode": true,
+                "version": "1.0.5"
+            },
+            "followonsearch@mozilla.com": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "followonsearch@mozilla.com.xpi",
+                "runInSafeMode": true,
+                "version": "0.9.6"
+            },
+            "formautofill@mozilla.org": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "formautofill@mozilla.org.xpi",
+                "runInSafeMode": true,
+                "version": "1.0"
+            },
+            "jaws-esr@mozilla.org": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "jaws-esr@mozilla.org.xpi",
+                "runInSafeMode": true,
+                "version": "1.2"
+            },
+            "onboarding@mozilla.org": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "onboarding@mozilla.org.xpi",
+                "runInSafeMode": true,
+                "version": "1.0"
+            },
+            "screenshots@mozilla.org": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "screenshots@mozilla.org.xpi",
+                "runInSafeMode": true,
+                "version": "30.1.0"
+            },
+            "webcompat@mozilla.org": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 1540333042000,
+                "path": "webcompat@mozilla.org.xpi",
+                "runInSafeMode": true,
+                "version": "1.1"
+            }
+        },
+        "path": "/usr/lib/firefox-esr/browser/features"
+    }
+}
