@@ -88,6 +88,7 @@ firefox/saved-telemetry-pings/
 firefox/weave/failed/tabs.json
 firefox/weave/toFetch/tabs.json
 firefox/favicons.sqlite
+firefox/blocklists/addons.json
 # Firefox local/share
 firefox/gm_scripts/Display_LaTeX/display-latex.user.js
 firefox/key3.db
