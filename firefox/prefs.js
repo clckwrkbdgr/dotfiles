@@ -210,7 +210,6 @@ user_pref("extensions.VimFx.mode.normal.history_list", "");
 user_pref("extensions.VimFx.prevent_autofocus", true);
 user_pref("extensions.adblockplus.lastRuleUpdate", 1398878722);
 user_pref("extensions.adblockplus.patternsbackups", 0);
-user_pref("extensions.blocklist.lastModified", "Thu, 15 Nov 2018 09:04:34 GMT");
 user_pref("extensions.brief.database.limitStoredEntries", true);
 user_pref("extensions.brief.feedview.autoMarkRead", true);
 user_pref("extensions.brief.firstRun", false);
