@@ -84,4 +84,5 @@ sed '/extensions.brief.update.lastUpdateTime/d' | \
 sed '/storage.vacuum.last.brief.sqlite/d' | \
 sed '/extensions.brief.database.lastPurgeTime/d' | \
 sed '/extensions.blocklist.lastModified/d' | \
+sed '/extensions.pendingOperations/d' | \
 sed 's|'"$HOME"'|$HOME|g'

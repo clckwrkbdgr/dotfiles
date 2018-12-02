@@ -6,7 +6,7 @@
                 "dependencies": [],
                 "enabled": false,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "langpack-ru@firefox-esr.mozilla.org.xpi",
                 "runInSafeMode": false,
                 "startupData": {
@@ -159,14 +159,14 @@
                     ]
                 },
                 "type": "webextension-langpack",
-                "version": "60.0buildid20181023221722"
+                "version": "0.0"
             },
             "{972ce4c6-7e08-4474-a285-3208198ce6fd}": {
                 "enabled": true,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "{972ce4c6-7e08-4474-a285-3208198ce6fd}.xpi",
                 "type": "theme",
-                "version": "60.3.0"
+                "version": "0.0"
             }
         },
         "checkStartupModifications": true,
@@ -179,84 +179,84 @@
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1536872993000,
+                "lastModifiedTime": 0,
                 "path": "firefox@tampermonkey.net.xpi",
                 "runInSafeMode": false,
                 "signedState": 2,
                 "type": "webextension",
-                "version": "4.8.5847"
+                "version": "0.0"
             },
             "uBlock0@raymondhill.net": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1539897112000,
+                "lastModifiedTime": 0,
                 "path": "uBlock0@raymondhill.net.xpi",
                 "runInSafeMode": false,
                 "signedState": 2,
                 "type": "webextension",
-                "version": "1.17.2"
+                "version": "0.0"
             },
             "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1543006111000,
+                "lastModifiedTime": 0,
                 "path": "{66E978CD-981F-47DF-AC42-E3CF417C1467}.xpi",
                 "runInSafeMode": false,
                 "signedState": 2,
                 "type": "webextension",
-                "version": "0.6.2"
+                "version": "0.0"
             },
             "{73a6fe31-595d-460b-a920-fcc0f8843232}": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1543266832000,
+                "lastModifiedTime": 0,
                 "path": "{73a6fe31-595d-460b-a920-fcc0f8843232}.xpi",
                 "runInSafeMode": false,
                 "signedState": 2,
                 "type": "webextension",
-                "version": "10.2.0"
+                "version": "0.0"
             },
             "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1543007631000,
+                "lastModifiedTime": 0,
                 "path": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}.xpi",
                 "runInSafeMode": false,
                 "signedState": 2,
                 "type": "webextension",
-                "version": "1.5.0"
+                "version": "0.0"
             },
             "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1543006722000,
+                "lastModifiedTime": 0,
                 "path": "{d7742d87-e61d-4b78-b8a1-b469842139fa}.xpi",
                 "runInSafeMode": false,
                 "signedState": 2,
                 "type": "webextension",
-                "version": "1.64"
+                "version": "0.0"
             },
             "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1514208665000,
+                "lastModifiedTime": 0,
                 "path": "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}.xpi",
                 "runInSafeMode": false,
                 "signedState": 2,
                 "type": "webextension",
-                "version": "1.3"
+                "version": "0.0"
             }
         },
         "path": "/home/umi/.config/firefox/extensions"
@@ -268,90 +268,90 @@
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "activity-stream@mozilla.org.xpi",
                 "runInSafeMode": true,
-                "version": "2018.04.20.1103-b3b95672"
+                "version": "0.0"
             },
             "aushelper@mozilla.org": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "aushelper@mozilla.org.xpi",
                 "runInSafeMode": true,
-                "version": "2.0"
+                "version": "0.0"
             },
             "firefox@getpocket.com": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "firefox@getpocket.com.xpi",
                 "runInSafeMode": true,
-                "version": "1.0.5"
+                "version": "0.0"
             },
             "followonsearch@mozilla.com": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "followonsearch@mozilla.com.xpi",
                 "runInSafeMode": true,
-                "version": "0.9.6"
+                "version": "0.0"
             },
             "formautofill@mozilla.org": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "formautofill@mozilla.org.xpi",
                 "runInSafeMode": true,
-                "version": "1.0"
+                "version": "0.0"
             },
             "jaws-esr@mozilla.org": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "jaws-esr@mozilla.org.xpi",
                 "runInSafeMode": true,
-                "version": "1.2"
+                "version": "0.0"
             },
             "onboarding@mozilla.org": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "onboarding@mozilla.org.xpi",
                 "runInSafeMode": true,
-                "version": "1.0"
+                "version": "0.0"
             },
             "screenshots@mozilla.org": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "screenshots@mozilla.org.xpi",
                 "runInSafeMode": true,
-                "version": "30.1.0"
+                "version": "0.0"
             },
             "webcompat@mozilla.org": {
                 "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
                 "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 1540333042000,
+                "lastModifiedTime": 0,
                 "path": "webcompat@mozilla.org.xpi",
                 "runInSafeMode": true,
-                "version": "1.1"
+                "version": "0.0"
             }
         },
         "path": "/usr/lib/firefox-esr/browser/features"

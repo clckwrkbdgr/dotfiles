@@ -7,6 +7,7 @@ gajim/config filter=gajim_config
 insteadrc filter=insteadrc_remove_state
 firefox/stylish.sqlite filter=sqlite_text_dump
 firefox/*.json.lz4 filter=mozLz4
+firefox/addonStartup.json.lz4 filter=addonStartupLz4
 firefox/*.json filter=pretty_json
 firefox/prefs.js filter=firefox_pref_js
 firefox/gm_scripts/config.xml filter=firefox_userscript_config

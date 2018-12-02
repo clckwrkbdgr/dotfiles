@@ -15,6 +15,10 @@
 	smudge = "mozLz4.py compress"
 	clean = "mozLz4.py decompress | python -m json.tool"
 
+[filter "addonStartupLz4"]
+	smudge = "mozLz4.py compress"
+	clean = "mozLz4.py decompress | python -m json.tool | sed 's/\\(\"lastModifiedTime\"\\)[^,]*\\(,\\?\\)$/\\1: 0\\2/;s/\\(\"version\"\\):[^,]*\\(,\\?\\)$/\\1: \"0.0\"\\2/' "
+
 [filter "ignorewallpaper"]
 	smudge = cat
 	clean = "sed '/name=\"image-path\"/d;/name=\"last-[^\"]*image\"/d'"
