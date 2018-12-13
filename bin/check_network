@@ -78,5 +78,6 @@ $COUNTER | while read; do
 		check_host "$HOST" "$INTERFACE" >/dev/null && exit 0
 	fi
 	sleep 1
+	false # Set failed state, in case this is the last attempt.
 done && exit 0
 exit 1 # All attempts failed.
