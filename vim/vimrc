@@ -10,6 +10,12 @@ autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") |   exe "no
 au BufRead,BufNewFile *.md set filetype=markdown
 au BufRead,BufNewFile *.tilespec,*.spec set filetype=dosini
 
+nnoremap <C-J> <Esc>
+inoremap <C-J> <Esc>
+onoremap <C-J> <Esc>
+vnoremap <C-J> <Esc>
+cnoremap <C-J> <Esc>
+
 map <S-Insert> <MiddleMouse> " Make shift-insert work like in Xterm
 map! <S-Insert> <MiddleMouse> " Make shift-insert work like in Xterm
 map <C-a> :e %:p:s,.h$,.X123X,:s,.cpp$,.h,:s,.X123X$,.cpp,<CR> " switching between .h and .cpp files that in the SAME directory.
