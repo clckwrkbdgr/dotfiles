@@ -6,3 +6,4 @@ calendar_today_style = bgcyan,fgblack
 monday_first = 1
 orthodox_easter = 1
 ampm = 0
+prefilter = cpp
