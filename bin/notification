@@ -37,9 +37,9 @@ shift $((OPTIND-1))
 [ "$QUIET" != true ] && play_signal &
 if [ -n "$1" ]; then
 	notify-send "$TITLE" "$@" --icon="$ICON" &
-	[ "$QUIET" != true ] && text-to-speech "$@" &
 	TEMPFILE="$(mktemp)"
 	echo "$(date) <${TITLE}> $@" >>"$MESSAGE_LOG_FILE"
 	tail -n "$MESSAGES_TO_STORE" "$MESSAGE_LOG_FILE" >"$TEMPFILE" && mv -f "$TEMPFILE" "$MESSAGE_LOG_FILE"
+	[ "$QUIET" != true ] && text-to-speech "$@"
 fi
 
