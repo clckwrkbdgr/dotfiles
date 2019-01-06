@@ -186,6 +186,18 @@
                 "type": "webextension",
                 "version": "0.0"
             },
+            "godville-ui-plus@erinome.net": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 0,
+                "path": "godville-ui-plus@erinome.net.xpi",
+                "runInSafeMode": false,
+                "signedState": 2,
+                "type": "webextension",
+                "version": "0.0"
+            },
             "uBlock0@raymondhill.net": {
                 "bootstrapped": true,
                 "dependencies": [],
