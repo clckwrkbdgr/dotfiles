@@ -85,4 +85,6 @@ sed '/storage.vacuum.last.brief.sqlite/d' | \
 sed '/extensions.brief.database.lastPurgeTime/d' | \
 sed '/extensions.blocklist.lastModified/d' | \
 sed '/extensions.pendingOperations/d' | \
+sed '/devtools.debugger.tabs/d' | \
+sed '/devtools.debugger.pending-selected-location/d' | \
 sed 's|'"$HOME"'|$HOME|g'
