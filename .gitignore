@@ -52,6 +52,8 @@ firefox/blocklist.xml
 firefox/blocklist-addons.json
 firefox/blocklist-gfx.json
 firefox/blocklist-plugins.json
+firefox/blocklists/addons.json
+firefox/blocklists/plugins.json
 firefox/cert8.db
 firefox/cert9.db
 firefox/cert_override.txt
