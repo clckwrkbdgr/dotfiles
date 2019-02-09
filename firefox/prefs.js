@@ -521,6 +521,8 @@ user_pref("privacy.clearOnShutdown.sessions", false);
 user_pref("privacy.donottrackheader.enabled", true);
 user_pref("privacy.history.custom", true);
 user_pref("privacy.sanitize.migrateFx3Prefs", true);
+user_pref("reader.color_scheme", "dark");
+user_pref("reader.content_width", 4);
 user_pref("security.OCSP.GET.enabled", true);
 user_pref("security.disable_button.openCertManager", false);
 user_pref("security.disable_button.openDeviceManager", false);
