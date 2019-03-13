@@ -1,4 +1,5 @@
 import os, sys, subprocess
+import difflib
 
 class Stash(object):
 	def __enter__(self):
@@ -15,11 +16,21 @@ class GitFile(object):
 class SparseCheckout(object):
 	def __init__(self):
 		self.basefile = os.path.join('.git', 'info', 'sparse-checkout')
-	def is_same(self, content):
+		self.content = None
+	def _load_content(self):
+		if self.content:
+			return
 		with open(self.basefile, 'rb') as f:
-			if f.read() != content:
-				return False
-		return True
+			self.content = f.read()
+	def is_same(self, content):
+		self._load_content()
+		return self.content == content:
+	def diff(self, content):
+		self._load_content()
+		return list(difflib.unified_diff(
+			self.content.decode('utf-8', 'replace').splitlines(),
+			content.decode('utf-8', 'replace').splitlines(),
+			))
 	def update_with(self, content):
 		with open(self.basefile, 'wb') as f:
 			f.write(content)
@@ -44,7 +55,8 @@ if __name__ == "__main__":
 		sparse = SparseCheckout()
 		if not sparse.is_same(listing.content):
 			print('Updating sparse-checkout:')
-			sys.stdout.write(listing.content.decode()) # TODO print diff instead.
+			for line in sparse.diff(listing.content):
+				print(line)
 			sparse.update_with(listing.content)
 			with Stash():
 				os.system("git checkout master")
