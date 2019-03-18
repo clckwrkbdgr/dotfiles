@@ -24,7 +24,7 @@ class SparseCheckout(object):
 			self.content = f.read()
 	def is_same(self, content):
 		self._load_content()
-		return self.content == content:
+		return self.content == content
 	def diff(self, content):
 		self._load_content()
 		return list(difflib.unified_diff(
