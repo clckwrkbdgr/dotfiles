@@ -9,10 +9,9 @@ for arg in "$@"; do
 	if [ "$arg" == '-e' ]; then
 		open_editor=true
 	else
-		args+="$arg"
+		args+=("$arg")
 	fi
 done
-
 
 if [ -n "$open_editor" ]; then
 	quickfix=/tmp/search.$$.quickfix
