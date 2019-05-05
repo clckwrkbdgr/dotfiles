@@ -87,4 +87,5 @@ sed '/extensions.blocklist.lastModified/d' | \
 sed '/extensions.pendingOperations/d' | \
 sed '/devtools.debugger.tabs/d' | \
 sed '/devtools.debugger.pending-selected-location/d' | \
+sed '/xpinstall.signatures.required/d' | \
 sed 's|'"$HOME"'|$HOME|g'
