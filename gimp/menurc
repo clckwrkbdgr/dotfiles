@@ -857,6 +857,7 @@
 ; (gtk_accel_path "<Actions>/plug-in/script-fu-waves-anim" "")
 ; (gtk_accel_path "<Actions>/plug-in/script-fu-weave" "")
 ; (gtk_accel_path "<Actions>/plug-in/script-fu-xach-effect" "")
+; (gtk_accel_path "<Actions>/plug-in/xsane" "")
 ; (gtk_accel_path "<Actions>/quick-mask/quick-mask-configure" "")
 ; (gtk_accel_path "<Actions>/quick-mask/quick-mask-invert-off" "")
 ; (gtk_accel_path "<Actions>/quick-mask/quick-mask-invert-on" "")

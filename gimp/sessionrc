@@ -88,6 +88,9 @@
 (session-info "toplevel"
     (factory-entry "gimp-threshold-tool-dialog")
     (position 616 0))
+(session-info "toplevel"
+    (factory-entry "gimp-image-new-dialog")
+    (position 468 265))
 
 (hide-docks no)
 (single-window-mode yes)
