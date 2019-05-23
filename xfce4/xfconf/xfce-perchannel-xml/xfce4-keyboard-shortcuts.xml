@@ -32,6 +32,7 @@
       <property name="&lt;Super&gt;grave" type="string" value="fix_lc quakestyle urxvt"/>
       <property name="&lt;Super&gt;f" type="string" value="xdg firefox"/>
       <property name="&lt;Super&gt;p" type="string" value="xfce4-screenshooter"/>
+      <property name="&lt;Super&gt;h" type="string" value="backlight_off"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
