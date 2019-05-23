@@ -1,7 +1,7 @@
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE styles (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, url TEXT, updateUrl TEXT, md5Url TEXT, name TEXT NOT NULL, code TEXT NOT NULL, enabled INTEGER NOT NULL, originalCode TEXT NULL, idUrl TEXT NULL, applyBackgroundUpdates INTEGER NOT NULL DEFAULT 1, originalMd5 TEXT NULL);
-INSERT INTO "styles" VALUES(34,NULL,'',NULL,'dim','/* Ads and banners */
+INSERT INTO styles VALUES(34,NULL,'',NULL,'dim','/* Ads and banners */
 div.ads#sky-banner {
   display: none !important;
 }
@@ -144,7 +144,7 @@ div.profile-header div.author-info
 }
 
 ',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(36,'https://userstyles.org/styles/97767/dark-twitter-customizable','https://userstyles.org/styles/97767/dark-twitter-customizable.css?ik-avatarMarginValue=ik-With%20Avatar&ik-whotofollow=ik-Display&ik-hpbackground=%23101010&ik-tweetbgcolor=%23161616&ik-tweetbghovercolor=%231B1B1B&ik-navbarbgcolor=%23242424&ik-tweetfontcolor=%23CCCCCC&ik-darkerfontcolor=%238899A6&ik-bgimage=none','https://update.userstyles.org/97767.md5','Dark Twitter Customizable','@-moz-document url-prefix("https://twitter.com/intent")
+INSERT INTO styles VALUES(36,'https://userstyles.org/styles/97767/dark-twitter-customizable','https://userstyles.org/styles/97767/dark-twitter-customizable.css?ik-avatarMarginValue=ik-With%20Avatar&ik-whotofollow=ik-Display&ik-hpbackground=%23101010&ik-tweetbgcolor=%23161616&ik-tweetbghovercolor=%231B1B1B&ik-navbarbgcolor=%23242424&ik-tweetfontcolor=%23CCCCCC&ik-darkerfontcolor=%238899A6&ik-bgimage=none','https://update.userstyles.org/97767.md5','Dark Twitter Customizable','@-moz-document url-prefix("https://twitter.com/intent")
 
 {
 
@@ -2442,7 +2442,7 @@ input, textarea, div[contenteditable], .t1-select {
 
 
 }',0,NULL,'http://userstyles.org/styles/97767',1,'b98e9ded21367aaf5eff67e9dc9412ac');
-INSERT INTO "styles" VALUES(39,'https://userstyles.org/styles/115912/darkduckgo','https://userstyles.org/styles/115912/darkduckgo.css?','https://update.userstyles.org/115912.md5','DarkDuckGO','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(39,'https://userstyles.org/styles/115912/darkduckgo','https://userstyles.org/styles/115912/darkduckgo.css?','https://update.userstyles.org/115912.md5','DarkDuckGO','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("duckduckgo.com") {
 	
@@ -2974,7 +2974,7 @@ INSERT INTO "styles" VALUES(39,'https://userstyles.org/styles/115912/darkduckgo'
 	}
 
 }',0,NULL,'http://userstyles.org/styles/115912',1,'1fafbdcf3fdc6514bd12a8ef3e7c8e98');
-INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-for-google','https://userstyles.org/styles/118959/darksearch-for-google.css?','https://update.userstyles.org/118959.md5','DarkSearch for Google','@-moz-document regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?."), regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)"), regexp("https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)"), regexp("https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?."), regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\\?.*") {
+INSERT INTO styles VALUES(40,'https://userstyles.org/styles/118959/darksearch-for-google','https://userstyles.org/styles/118959/darksearch-for-google.css?','https://update.userstyles.org/118959.md5','DarkSearch for Google','@-moz-document regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?."), regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)"), regexp("https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)"), regexp("https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?."), regexp("https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\\?.*") {
     /*
      * Name:    DarkSearch for Google
      * Author:  Nass O
@@ -4115,7 +4115,7 @@ INSERT INTO "styles" VALUES(40,'https://userstyles.org/styles/118959/darksearch-
         background-color: #1d1d1d;
     }
 }',0,NULL,'http://userstyles.org/styles/118959',1,'3435f1eb110ccb375e500e40c92e980e');
-INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("myshows.me") {
   
@@ -4167,7 +4167,7 @@ INSERT INTO "styles" VALUES(41,NULL,'',NULL,'myshows-dark','@namespace url(http:
 
 
 }',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("kinopoisk.ru") {
   html, div#photoInfoTable, #viewFilmInfoWrapper,  #content_block.withBackground, div.response span.date, #footer_wrapper, #block_right .right_pop {
@@ -4232,7 +4232,7 @@ INSERT INTO "styles" VALUES(42,NULL,'',NULL,'kinopoisk-dark','@namespace url(htt
   }
 
 }',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(45,NULL,'',NULL,'trimps','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(45,NULL,'',NULL,'trimps','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("trimps.github.io") {
 
@@ -4245,7 +4245,7 @@ span#buildingsTitleSpan.titleSpan, span#jobsTitleSpan.titleSpan, span#upgradesTi
 }
 
 }',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(46,NULL,'',NULL,'neuronovosti','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(46,NULL,'',NULL,'neuronovosti','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("neuronovosti.ru") {
 
@@ -4278,7 +4278,7 @@ div#footer-bottom {
 }
 
 }',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(47,NULL,'',NULL,'chatvdvoem','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(47,NULL,'',NULL,'chatvdvoem','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("chatvdvoem.ru") {
 
@@ -4397,7 +4397,7 @@ a.ended-but {
 
 
 }',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(48,NULL,'',NULL,'apod','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(48,NULL,'',NULL,'apod','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("apod.nasa.gov") {
 
@@ -4410,7 +4410,7 @@ a {
 }
 
 }',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(49,NULL,'',NULL,'flibusta','/*675767@gmail.com*/
+INSERT INTO styles VALUES(49,NULL,'',NULL,'flibusta','/*675767@gmail.com*/
 @namespace url(http://www.w3.org/1999/xhtml);
 
 @font-face
@@ -5930,7 +5930,7 @@ INSERT INTO "styles" VALUES(49,NULL,'',NULL,'flibusta','/*675767@gmail.com*/
 
 
 ',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(50,NULL,'',NULL,'zenhabits','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(50,NULL,'',NULL,'zenhabits','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("zenhabits.net") {
 
@@ -5944,7 +5944,7 @@ h2, .post a:link {
 }
 
 }',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(51,NULL,'',NULL,'mirf','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(51,NULL,'',NULL,'mirf','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("www.mirf.ru") {
 
@@ -5979,7 +5979,7 @@ h1 {
 }
 
 }',0,NULL,NULL,1,NULL);
-INSERT INTO "styles" VALUES(54,NULL,'',NULL,'dark habitica','@namespace url(http://www.w3.org/1999/xhtml);
+INSERT INTO styles VALUES(54,NULL,'',NULL,'dark habitica','@namespace url(http://www.w3.org/1999/xhtml);
 
 @-moz-document domain("habitica.com")
 {
@@ -6232,89 +6232,89 @@ footer {
 
 }',0,NULL,NULL,1,NULL);
 CREATE TABLE style_meta (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, style_id INTEGER NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL);
-INSERT INTO "style_meta" VALUES(6567,48,'domain','apod.nasa.gov');
-INSERT INTO "style_meta" VALUES(6568,48,'type','site');
-INSERT INTO "style_meta" VALUES(6569,47,'domain','chatvdvoem.ru');
-INSERT INTO "style_meta" VALUES(6570,47,'type','site');
-INSERT INTO "style_meta" VALUES(6571,54,'domain','habitica.com');
-INSERT INTO "style_meta" VALUES(6572,54,'type','site');
-INSERT INTO "style_meta" VALUES(6573,36,'url-prefix','https://twitter.com/intent');
-INSERT INTO "style_meta" VALUES(6574,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(6575,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(6576,36,'url-prefix','http://twitter.com');
-INSERT INTO "style_meta" VALUES(6577,36,'url-prefix','https://twitter.com');
-INSERT INTO "style_meta" VALUES(6578,36,'url-prefix','https://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(6579,36,'url-prefix','http://tweetdeck.twitter.com/');
-INSERT INTO "style_meta" VALUES(6580,36,'type','site');
-INSERT INTO "style_meta" VALUES(6581,39,'domain','duckduckgo.com');
-INSERT INTO "style_meta" VALUES(6582,39,'type','site');
-INSERT INTO "style_meta" VALUES(6583,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(6584,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(6585,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
-INSERT INTO "style_meta" VALUES(6586,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
-INSERT INTO "style_meta" VALUES(6587,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
-INSERT INTO "style_meta" VALUES(6588,40,'regexp','https?://plus.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/_/notifications/frame\?.*');
-INSERT INTO "style_meta" VALUES(6589,40,'regexp','https?://notifications.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/widget\?.*');
-INSERT INTO "style_meta" VALUES(6590,40,'type','site');
-INSERT INTO "style_meta" VALUES(6591,34,'domain','twitter.com');
-INSERT INTO "style_meta" VALUES(6592,34,'domain','diary.ru');
-INSERT INTO "style_meta" VALUES(6593,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(6594,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(6595,34,'domain','nplus1.ru');
-INSERT INTO "style_meta" VALUES(6596,34,'domain','geektimes.ru');
-INSERT INTO "style_meta" VALUES(6597,34,'domain','habrahabr.ru');
-INSERT INTO "style_meta" VALUES(6598,34,'domain','smartfiction.ru');
-INSERT INTO "style_meta" VALUES(6599,34,'url','http://forums.roguetemple.com/irldb/');
-INSERT INTO "style_meta" VALUES(6600,34,'domain','www.kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(6601,34,'domain','linux.org.ru');
-INSERT INTO "style_meta" VALUES(6602,34,'domain','livejournal.com');
-INSERT INTO "style_meta" VALUES(6603,34,'domain','pastebin.com');
-INSERT INTO "style_meta" VALUES(6604,34,'domain','3dnews.ru');
-INSERT INTO "style_meta" VALUES(6605,34,'domain','kniganews.org');
-INSERT INTO "style_meta" VALUES(6606,34,'domain','unixmanga.net');
-INSERT INTO "style_meta" VALUES(6607,34,'domain','neuronovosti.ru');
-INSERT INTO "style_meta" VALUES(6608,34,'url-prefix','http://');
-INSERT INTO "style_meta" VALUES(6609,34,'url-prefix','https://');
-INSERT INTO "style_meta" VALUES(6610,34,'domain','computerra.ru');
-INSERT INTO "style_meta" VALUES(6611,34,'domain','nplus1.ru');
-INSERT INTO "style_meta" VALUES(6612,34,'domain','geektimes.ru');
-INSERT INTO "style_meta" VALUES(6613,34,'domain','habrahabr.ru');
-INSERT INTO "style_meta" VALUES(6614,34,'domain','smartfiction.ru');
-INSERT INTO "style_meta" VALUES(6615,34,'domain','24types.ru');
-INSERT INTO "style_meta" VALUES(6616,34,'domain','aspergers.ru');
-INSERT INTO "style_meta" VALUES(6617,34,'domain','bash.im');
-INSERT INTO "style_meta" VALUES(6618,34,'domain','candies.aniwey.net');
-INSERT INTO "style_meta" VALUES(6619,34,'domain','icq.com');
-INSERT INTO "style_meta" VALUES(6620,34,'domain','lib.ru');
-INSERT INTO "style_meta" VALUES(6621,34,'domain','knjazna.livejournal.com');
-INSERT INTO "style_meta" VALUES(6622,34,'domain','codeofhonor.com');
-INSERT INTO "style_meta" VALUES(6623,34,'domain','3dnews.ru');
-INSERT INTO "style_meta" VALUES(6624,34,'domain','kniganews.org');
-INSERT INTO "style_meta" VALUES(6625,34,'domain','unixmanga.net');
-INSERT INTO "style_meta" VALUES(6626,34,'domain','instead.syscall.ru');
-INSERT INTO "style_meta" VALUES(6627,34,'type','global');
-INSERT INTO "style_meta" VALUES(6628,49,'domain','flibusta.is');
-INSERT INTO "style_meta" VALUES(6629,49,'domain','flibusta.me');
-INSERT INTO "style_meta" VALUES(6630,49,'domain','flibusta.net');
-INSERT INTO "style_meta" VALUES(6631,49,'regexp','https?://(proxy\.|www\.)?flibusta\.net/b/\d+/read.*');
-INSERT INTO "style_meta" VALUES(6632,49,'regexp','http://flibustahezeous3.onion/');
-INSERT INTO "style_meta" VALUES(6633,49,'regexp','https?://flibusta\.i2p/b/\d+/read.*');
-INSERT INTO "style_meta" VALUES(6634,49,'regexp','https?://zmw2cyw2vj7f6obx3msmdvdepdhnw2ctc4okza2zjxlukkdfckhq\.b32\.i2p/b/\d+/read.*');
-INSERT INTO "style_meta" VALUES(6635,49,'type','site');
-INSERT INTO "style_meta" VALUES(6636,42,'domain','kinopoisk.ru');
-INSERT INTO "style_meta" VALUES(6637,42,'type','site');
-INSERT INTO "style_meta" VALUES(6638,51,'domain','www.mirf.ru');
-INSERT INTO "style_meta" VALUES(6639,51,'type','site');
-INSERT INTO "style_meta" VALUES(6640,41,'domain','myshows.me');
-INSERT INTO "style_meta" VALUES(6641,41,'type','site');
-INSERT INTO "style_meta" VALUES(6644,46,'domain','neuronovosti.ru');
-INSERT INTO "style_meta" VALUES(6645,46,'type','site');
-INSERT INTO "style_meta" VALUES(6646,45,'domain','trimps.github.io');
-INSERT INTO "style_meta" VALUES(6647,45,'type','site');
-INSERT INTO "style_meta" VALUES(6648,50,'domain','zenhabits.net');
-INSERT INTO "style_meta" VALUES(6649,50,'type','site');
+INSERT INTO style_meta VALUES(6567,48,'domain','apod.nasa.gov');
+INSERT INTO style_meta VALUES(6568,48,'type','site');
+INSERT INTO style_meta VALUES(6569,47,'domain','chatvdvoem.ru');
+INSERT INTO style_meta VALUES(6570,47,'type','site');
+INSERT INTO style_meta VALUES(6571,54,'domain','habitica.com');
+INSERT INTO style_meta VALUES(6572,54,'type','site');
+INSERT INTO style_meta VALUES(6573,36,'url-prefix','https://twitter.com/intent');
+INSERT INTO style_meta VALUES(6574,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO style_meta VALUES(6575,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO style_meta VALUES(6576,36,'url-prefix','http://twitter.com');
+INSERT INTO style_meta VALUES(6577,36,'url-prefix','https://twitter.com');
+INSERT INTO style_meta VALUES(6578,36,'url-prefix','https://tweetdeck.twitter.com/');
+INSERT INTO style_meta VALUES(6579,36,'url-prefix','http://tweetdeck.twitter.com/');
+INSERT INTO style_meta VALUES(6580,36,'type','site');
+INSERT INTO style_meta VALUES(6581,39,'domain','duckduckgo.com');
+INSERT INTO style_meta VALUES(6582,39,'type','site');
+INSERT INTO style_meta VALUES(6583,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO style_meta VALUES(6584,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO style_meta VALUES(6585,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?/((\?|webhp|search|gfe_rd|auth|gws_rd|#q|imghp|#gfe_rd|#safe|#pws|#tbs|#gws|#tbm).*)');
+INSERT INTO style_meta VALUES(6586,40,'regexp','https?://encrypted.google.(com|([a-z]{2}))(.[a-z]{2})?.');
+INSERT INTO style_meta VALUES(6587,40,'regexp','https?://www.google.(com|([a-z]{2}))(.[a-z]{2})?/_/chrome/newtab\?.*');
+INSERT INTO style_meta VALUES(6588,40,'regexp','https?://plus.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/_/notifications/frame\?.*');
+INSERT INTO style_meta VALUES(6589,40,'regexp','https?://notifications.google.(com|([a-z]{2}))(.[a-z]{2})?/u/0/widget\?.*');
+INSERT INTO style_meta VALUES(6590,40,'type','site');
+INSERT INTO style_meta VALUES(6591,34,'domain','twitter.com');
+INSERT INTO style_meta VALUES(6592,34,'domain','diary.ru');
+INSERT INTO style_meta VALUES(6593,34,'domain','computerra.ru');
+INSERT INTO style_meta VALUES(6594,34,'domain','computerra.ru');
+INSERT INTO style_meta VALUES(6595,34,'domain','nplus1.ru');
+INSERT INTO style_meta VALUES(6596,34,'domain','geektimes.ru');
+INSERT INTO style_meta VALUES(6597,34,'domain','habrahabr.ru');
+INSERT INTO style_meta VALUES(6598,34,'domain','smartfiction.ru');
+INSERT INTO style_meta VALUES(6599,34,'url','http://forums.roguetemple.com/irldb/');
+INSERT INTO style_meta VALUES(6600,34,'domain','www.kinopoisk.ru');
+INSERT INTO style_meta VALUES(6601,34,'domain','linux.org.ru');
+INSERT INTO style_meta VALUES(6602,34,'domain','livejournal.com');
+INSERT INTO style_meta VALUES(6603,34,'domain','pastebin.com');
+INSERT INTO style_meta VALUES(6604,34,'domain','3dnews.ru');
+INSERT INTO style_meta VALUES(6605,34,'domain','kniganews.org');
+INSERT INTO style_meta VALUES(6606,34,'domain','unixmanga.net');
+INSERT INTO style_meta VALUES(6607,34,'domain','neuronovosti.ru');
+INSERT INTO style_meta VALUES(6608,34,'url-prefix','http://');
+INSERT INTO style_meta VALUES(6609,34,'url-prefix','https://');
+INSERT INTO style_meta VALUES(6610,34,'domain','computerra.ru');
+INSERT INTO style_meta VALUES(6611,34,'domain','nplus1.ru');
+INSERT INTO style_meta VALUES(6612,34,'domain','geektimes.ru');
+INSERT INTO style_meta VALUES(6613,34,'domain','habrahabr.ru');
+INSERT INTO style_meta VALUES(6614,34,'domain','smartfiction.ru');
+INSERT INTO style_meta VALUES(6615,34,'domain','24types.ru');
+INSERT INTO style_meta VALUES(6616,34,'domain','aspergers.ru');
+INSERT INTO style_meta VALUES(6617,34,'domain','bash.im');
+INSERT INTO style_meta VALUES(6618,34,'domain','candies.aniwey.net');
+INSERT INTO style_meta VALUES(6619,34,'domain','icq.com');
+INSERT INTO style_meta VALUES(6620,34,'domain','lib.ru');
+INSERT INTO style_meta VALUES(6621,34,'domain','knjazna.livejournal.com');
+INSERT INTO style_meta VALUES(6622,34,'domain','codeofhonor.com');
+INSERT INTO style_meta VALUES(6623,34,'domain','3dnews.ru');
+INSERT INTO style_meta VALUES(6624,34,'domain','kniganews.org');
+INSERT INTO style_meta VALUES(6625,34,'domain','unixmanga.net');
+INSERT INTO style_meta VALUES(6626,34,'domain','instead.syscall.ru');
+INSERT INTO style_meta VALUES(6627,34,'type','global');
+INSERT INTO style_meta VALUES(6628,49,'domain','flibusta.is');
+INSERT INTO style_meta VALUES(6629,49,'domain','flibusta.me');
+INSERT INTO style_meta VALUES(6630,49,'domain','flibusta.net');
+INSERT INTO style_meta VALUES(6631,49,'regexp','https?://(proxy\.|www\.)?flibusta\.net/b/\d+/read.*');
+INSERT INTO style_meta VALUES(6632,49,'regexp','http://flibustahezeous3.onion/');
+INSERT INTO style_meta VALUES(6633,49,'regexp','https?://flibusta\.i2p/b/\d+/read.*');
+INSERT INTO style_meta VALUES(6634,49,'regexp','https?://zmw2cyw2vj7f6obx3msmdvdepdhnw2ctc4okza2zjxlukkdfckhq\.b32\.i2p/b/\d+/read.*');
+INSERT INTO style_meta VALUES(6635,49,'type','site');
+INSERT INTO style_meta VALUES(6636,42,'domain','kinopoisk.ru');
+INSERT INTO style_meta VALUES(6637,42,'type','site');
+INSERT INTO style_meta VALUES(6638,51,'domain','www.mirf.ru');
+INSERT INTO style_meta VALUES(6639,51,'type','site');
+INSERT INTO style_meta VALUES(6640,41,'domain','myshows.me');
+INSERT INTO style_meta VALUES(6641,41,'type','site');
+INSERT INTO style_meta VALUES(6644,46,'domain','neuronovosti.ru');
+INSERT INTO style_meta VALUES(6645,46,'type','site');
+INSERT INTO style_meta VALUES(6646,45,'domain','trimps.github.io');
+INSERT INTO style_meta VALUES(6647,45,'type','site');
+INSERT INTO style_meta VALUES(6648,50,'domain','zenhabits.net');
+INSERT INTO style_meta VALUES(6649,50,'type','site');
 DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" VALUES('styles',54);
-INSERT INTO "sqlite_sequence" VALUES('style_meta',6649);
+INSERT INTO sqlite_sequence VALUES('styles',54);
+INSERT INTO sqlite_sequence VALUES('style_meta',6649);
 CREATE INDEX style_meta_style_id ON style_meta (style_id);
 COMMIT;

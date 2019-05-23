@@ -2,7 +2,7 @@
 if [ "$1" == "--dump" ]; then
 	TMPFILE=$(mktemp)
 	cat > "$TMPFILE"
-	echo '.dump' | sqlite3 "$TMPFILE" | dos2unix
+	echo '.dump' | sqlite3 "$TMPFILE" | sed 's/replace(\(.*\),'"'"'\\r'"'"',char(13))/\1/;s/replace(\(.*\),'"'"'\\n'"'"',char(10))/\1/;s/\(\\r\)\?\\n/\n/g' | dos2unix
 elif [ "$1" == "--load" ]; then
 	TMPFILE=$(mktemp)
 	dos2unix | sqlite3 "$TMPFILE" # Read DB schema from stdin and populate DB.
