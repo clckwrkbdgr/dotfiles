@@ -186,7 +186,6 @@ user_pref("devtools.toolsidebar-width.inspector", 350);
 user_pref("devtools.toolsidebar-width.inspector.splitsidebar", 350);
 user_pref("devtools.toolsidebar-width.netmonitor", 0);
 user_pref("devtools.toolsidebar-width.webconsole", 300);
-user_pref("distribution.iniFile.exists.appversion", "60.6.3");
 user_pref("distribution.iniFile.exists.value", false);
 user_pref("dom.allow_scripts_to_close_windows", true);
 user_pref("dom.apps.reset-permissions", true);
@@ -319,7 +318,6 @@ user_pref("extensions.greasemonkey.menuCommanderEventNameSuffix", "UABMGYRWDOWCT
 user_pref("extensions.greasemonkey.sortBy", "executionIndex");
 user_pref("extensions.greasemonkey.stats.prompted", true);
 user_pref("extensions.jid1-4P0kohSJxU1qGg@jetpack.sdk.console.logLevel", "warn");
-user_pref("extensions.lastAppBuildId", "20190508201454");
 user_pref("extensions.liberator.privacy.cpd.commandLine", false);
 user_pref("extensions.liberator.privacy.cpd.macros", false);
 user_pref("extensions.liberator.privacy.cpd.marks", false);

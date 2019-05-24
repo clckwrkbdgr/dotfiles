@@ -88,4 +88,6 @@ sed '/extensions.pendingOperations/d' | \
 sed '/devtools.debugger.tabs/d' | \
 sed '/devtools.debugger.pending-selected-location/d' | \
 sed '/xpinstall.signatures.required/d' | \
+sed '/distribution.iniFile.exists.appversion/d' | \
+sed '/extensions.lastAppBuildId/d' | \
 sed 's|'"$HOME"'|$HOME|g'
