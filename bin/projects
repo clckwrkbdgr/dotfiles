@@ -69,7 +69,10 @@ class Git:
 		git = subprocess.run(["git", "diff", "--numstat", filename], stdout=subprocess.PIPE)
 		if git.returncode != 0:
 			raise Git.Error()
-		diff = git.stdout.decode().splitlines()[0]
+		diff = git.stdout.decode()
+		if not diff:
+			return False
+		diff = diff .splitlines()[0]
 		diff = diff.split(maxsplit=2)
 		return diff[0] != '0' or diff[1] != '0'
 	def branches(self):
