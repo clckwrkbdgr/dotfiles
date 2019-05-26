@@ -131,6 +131,7 @@ purple/status.xml
 purple/telegram-purple
 # Freeciv (stores config only in HOME, so thinks that ~/.config is HOME)
 .freeciv-server_history
+.freeciv/freeciv-server_history
 .freeciv/saves
 # OpenTTD
 openttd/hs.dat
