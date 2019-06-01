@@ -1,0 +1,42 @@
+#!/bin/bash
+# Manages audio stream over network.
+# https://superuser.com/a/750324/967860
+
+export LC_ALL=C # Needed for load-module to work correctly.
+source_name="$(pactl list sources short | grep output | awk '{print $2}')"
+rate=48000
+channels=2
+port=8000
+
+function start_service() {
+	echo -n 'Starting service... #'
+    pactl load-module module-simple-protocol-tcp "rate=$rate" format=s16le "channels=$channels" "source=$source_name" record=true "port=$port"
+	netstat -nlt | grep "$port" # To check started socket.
+}
+
+function service_status() {
+	pactl list | grep tcp -B1 | grep M
+}
+
+function stop_service() {
+	service_number=$(service_status | sed 's/[^0-9]//g')
+	if [ -n "$service_number" ]; then
+		pactl unload-module "$service_number"
+	fi
+}
+
+case "$1" in
+	status)
+		service_status
+		;;
+	start)
+		stop_service
+		start_service
+		;;
+	stop)
+		stop_service
+		;;
+	*)
+		echo "Usage: $0 start|stop|status" >&2
+		;;
+esac
