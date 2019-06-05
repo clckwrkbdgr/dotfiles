@@ -7,6 +7,14 @@ message_count() {
 	done | paste -sd+ | bc
 }
 
+set_counter() { # <new value>
+	pgrep -x pidgin | while read pid; do
+		wmctrl -l -p | grep ${pid} | awk '{print $1}' | while read window; do
+			xprop -id ${window} -format _PIDGIN_UNSEEN_COUNT 32c -set _PIDGIN_UNSEEN_COUNT "$1"
+		done
+	done
+}
+
 inc_counter() {
 	pgrep -x pidgin | while read pid; do
 		wmctrl -l -p | grep ${pid} | awk '{print $1}' | while read window; do
@@ -30,6 +38,10 @@ if [ "$1" == "inc" ]; then
 	inc_counter
 elif [ "$1" == "dec" ]; then
 	dec_counter
+elif [ "$1" == "reset" ]; then
+	set_counter 0
+elif [ "$1" == "show" ]; then
+	message_count
 elif [ -z "$1" ]; then
 	[ "$(message_count)" -gt 0 ] && exit 0
 	exit 1
