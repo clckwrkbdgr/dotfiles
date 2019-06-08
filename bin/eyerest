@@ -4,8 +4,8 @@ import datetime, time
 import os
 import sys
 
-LAST_BREAK_TIMESTAMP = '/tmp/tm_last_break'
-CURRENT_REST_TIMESTAMP = '/tmp/tm_currently_resting'
+LAST_BREAK_TIMESTAMP = os.path.expanduser('~/.state/tm_last_break')
+CURRENT_REST_TIMESTAMP = os.path.expanduser('~/.state/tm_currently_resting')
 REST_TIME = 60 # seconds
 WORK_TIME = 20 * 60 # seconds
 

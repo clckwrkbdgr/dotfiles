@@ -1,5 +1,5 @@
 #!/bin/bash
-STATUS_FILE=/tmp/timed-notification.status
+STATUS_FILE="${XDG_STATE_HOME:-$HOME/.state}/timed-notification.status"
 
 cleanup_dead_statuses() {
 	[ -r "$STATUS_FILE" ] || return

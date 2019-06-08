@@ -1,6 +1,6 @@
 #!/bin/bash
 MESSAGES_TO_STORE=20 # To store in message log.
-MESSAGE_LOG_FILE=/tmp/notification.log
+MESSAGE_LOG_FILE="${XDG_STATE_HOME:-$HOME/.state}/notification.log"
 TITLE=notification
 ICON=
 
