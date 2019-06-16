@@ -54,5 +54,12 @@ for f in "$@"; do
 	if [ "${f}" == '--hide' ]; then
 		continue
 	fi
+	if [ -f "$f" ]; then
+		if echo "$f" | grep -q '[.]url$'; then
+			( set -o pipefail;
+				grep 'URL' "$1" | sed 's/^URL *= *//'
+			) && continue
+		fi
+	fi
 	echo "${f}" | sed 's/\r//g'
 done | xargs -d '\n' $browser --
