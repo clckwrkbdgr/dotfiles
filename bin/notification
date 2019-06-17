@@ -34,6 +34,13 @@ while getopts ":hqt:i:l" opt; do
 done
 shift $((OPTIND-1))
 
+PREV_VOLUME="$(volume)"
+if [ "$QUIET" != true -a "$PREV_VOLUME" -gt 75 ]; then
+	volume 75
+else
+	unset PREV_VOLUME
+fi
+
 [ "$QUIET" != true ] && play_signal &
 if [ -n "$1" ]; then
 	notify-send "$TITLE" "$@" --icon="$ICON" &
@@ -43,3 +50,6 @@ if [ -n "$1" ]; then
 	[ "$QUIET" != true ] && text-to-speech "$@"
 fi
 
+if [ -n "$PREV_VOLUME" ]; then
+	volume "$PREV_VOLUME"
+fi
