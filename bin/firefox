@@ -34,8 +34,9 @@ bring_to_top() { # <process name(s)>
 #ulimit -Sm 4000000
 #ulimit -Sv 1000000
 
-browser=/usr/bin/iceweasel
-pnames="iceweasel firefox-esr x-www-browser"
+browser=${firefox_binary:-/usr/bin/iceweasel}
+pnames="${firefox_pnames:-iceweasel firefox-esr x-www-browser}"
+print "$browser"
 
 for f in "$@"; do
 	if [ "${f}" == '--hide' ]; then
@@ -60,6 +61,9 @@ for f in "$@"; do
 				grep 'URL' "$1" | sed 's/^URL *= *//'
 			) && continue
 		fi
+	fi
+	if [ -f "$f" ]; then
+		f="$(python -c 'import sys,pathlib; print(pathlib.Path(sys.argv[1]).resolve().as_uri())' "$f")"
 	fi
 	echo "${f}" | sed 's/\r//g'
 done | xargs -d '\n' $browser --
