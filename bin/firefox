@@ -36,7 +36,6 @@ bring_to_top() { # <process name(s)>
 
 browser=${firefox_binary:-/usr/bin/iceweasel}
 pnames="${firefox_pnames:-iceweasel firefox-esr x-www-browser}"
-print "$browser"
 
 for f in "$@"; do
 	if [ "${f}" == '--hide' ]; then
