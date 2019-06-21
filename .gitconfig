@@ -13,11 +13,11 @@
 
 [filter "mozLz4"]
 	smudge = "mozLz4.py compress"
-	clean = "mozLz4.py decompress | python -m json.tool"
+	clean = "mozLz4.py decompress | python -m json.tool --sort-keys"
 
 [filter "addonStartupLz4"]
 	smudge = "mozLz4.py compress"
-	clean = "mozLz4.py decompress | python -m json.tool | sed 's/\\(\"lastModifiedTime\"\\)[^,]*\\(,\\?\\)$/\\1: 0\\2/;s/\\(\"version\"\\):[^,]*\\(,\\?\\)$/\\1: \"0.0\"\\2/' | sed '/signedState/d' "
+	clean = "mozLz4.py decompress | python -m json.tool --sort-keys | sed 's/\\(\"lastModifiedTime\"\\)[^,]*\\(,\\?\\)$/\\1: 0\\2/;s/\\(\"version\"\\):[^,]*\\(,\\?\\)$/\\1: \"0.0\"\\2/' | sed '/signedState/d' "
 
 [filter "ignorewallpaper"]
 	smudge = cat
@@ -45,7 +45,7 @@
 
 [filter "pretty_json"]
 	smudge = cat
-	clean = "python -m json.tool"
+	clean = "python -m json.tool --sort-keys"
 
 [filter "firefox_pref_js"]
 	smudge = clean-firefox-prefs.sh --restore
