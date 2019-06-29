@@ -4,9 +4,17 @@
 
 export LC_ALL=C # Needed for load-module to work correctly.
 source_name="$(pactl list sources short | grep output | awk '{print $2}')"
-rate=48000
+rate=44100
 channels=2
 port=8000
+
+function print_usage() {
+	for line in "$@"; do echo "$line"; done
+	echo "Usage: $0 [-c <channel num>] [-p <port>] [-r <bitrate>] start|stop|status"
+	echo "  -c  - Number of channels, 1 or 2. Default is 2."
+	echo "  -p  - Port number. Default is 8000."
+	echo "  -r  - Bitrate: 11025, 12000, 22050, 24000, 44100 (default), 48000."
+}
 
 function start_service() {
 	echo -n 'Starting service... #'
@@ -25,6 +33,18 @@ function stop_service() {
 	fi
 }
 
+while getopts ":hr:p:c:" opt; do
+	case "$opt" in
+		h) print_usage; exit 0;;
+		r) rate=$OPTARG;;
+		p) port=$OPTARG;;
+		c) channels=$OPTARG;;
+		\?) print_usage "Invalid option -$OPTARG" >&2; exit 1;;
+		:) print_usage "Parameter is missing for -$OPTARG" >&2; exit 1;;
+	esac
+done
+shift $((OPTIND-1))
+
 case "$1" in
 	status)
 		service_status
@@ -37,6 +57,7 @@ case "$1" in
 		stop_service
 		;;
 	*)
-		echo "Usage: $0 start|stop|status" >&2
+		print_usage "Unknown command: $@" >&2
+		exit 1
 		;;
 esac
