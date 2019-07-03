@@ -90,4 +90,6 @@ sed '/devtools.debugger.pending-selected-location/d' | \
 sed '/xpinstall.signatures.required/d' | \
 sed '/distribution.iniFile.exists.appversion/d' | \
 sed '/extensions.lastAppBuildId/d' | \
+sed '/browser.safebrowsing.provider.google4.lastupdatetime/d' | \
+sed '/browser.safebrowsing.provider.google4.nextupdatetime/d' | \
 sed 's|'"$HOME"'|$HOME|g'
