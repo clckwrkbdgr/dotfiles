@@ -92,4 +92,5 @@ sed '/distribution.iniFile.exists.appversion/d' | \
 sed '/extensions.lastAppBuildId/d' | \
 sed '/browser.safebrowsing.provider.google4.lastupdatetime/d' | \
 sed '/browser.safebrowsing.provider.google4.nextupdatetime/d' | \
+sed '/devtools.toolsidebar-width./d' | \
 sed 's|'"$HOME"'|$HOME|g'
