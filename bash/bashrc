@@ -19,6 +19,7 @@ export SDL_VIDEO_CENTERED=1
 export GREP_COLOR='1;32'
 export HISTCONTROL=ignoredups
 export MAILPATH="/var/mail/$USER"
+export PYGAME_HIDE_SUPPORT_PROMPT=true
 alias rm='rm -i'
 alias mv='mv -i'
 alias cp='cp -i'
