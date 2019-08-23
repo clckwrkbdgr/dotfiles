@@ -174,6 +174,17 @@
     },
     "app-profile": {
         "addons": {
+            "@mutelinks": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 0,
+                "path": "@mutelinks.xpi",
+                "runInSafeMode": false,
+                "type": "webextension",
+                "version": "0.0"
+            },
             "firefox@tampermonkey.net": {
                 "bootstrapped": true,
                 "dependencies": [],
