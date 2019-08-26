@@ -33,6 +33,8 @@
       <property name="&lt;Super&gt;f" type="string" value="xdg firefox"/>
       <property name="&lt;Super&gt;p" type="string" value="xfce4-screenshooter"/>
       <property name="&lt;Super&gt;h" type="string" value="backlight_off"/>
+      <property name="&lt;Super&gt;KP_0" type="string" value="xdotool click 1"/>
+      <property name="&lt;Super&gt;KP_Decimal" type="string" value="xdotool click 3"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
