@@ -78,6 +78,7 @@ user_pref("browser.search.suggest.enabled", false);
 user_pref("browser.search.useDBForOrder", true);
 user_pref("browser.sessionstore.upgradeBackup.maxUpgradeBackups", 0);
 user_pref("browser.shell.checkDefaultBrowser", true);
+user_pref("browser.showQuitWarning", true);
 user_pref("browser.startup.homepage", "http://localhost:8007/links.html");
 user_pref("browser.tabs.crashReporting.sendReport", false);
 user_pref("browser.tabs.loadDivertedInBackground", true);
