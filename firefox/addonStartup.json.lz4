@@ -218,6 +218,17 @@
                 "type": "webextension",
                 "version": "0.0"
             },
+            "{60f82f00-9ad5-4de5-b31c-b16a47c51558}": {
+                "bootstrapped": true,
+                "dependencies": [],
+                "enabled": true,
+                "hasEmbeddedWebExtension": false,
+                "lastModifiedTime": 0,
+                "path": "{60f82f00-9ad5-4de5-b31c-b16a47c51558}.xpi",
+                "runInSafeMode": false,
+                "type": "webextension",
+                "version": "0.0"
+            },
             "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
                 "bootstrapped": true,
                 "dependencies": [],
