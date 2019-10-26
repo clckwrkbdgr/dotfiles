@@ -10,7 +10,7 @@ port=8000
 
 function print_usage() {
 	for line in "$@"; do echo "$line"; done
-	echo "Usage: $0 [-c <channel num>] [-p <port>] [-r <bitrate>] start|stop|status"
+	echo "Usage: $0 [-c <channel num>] [-p <port>] [-r <bitrate>] start|restart|stop|status"
 	echo "  -c  - Number of channels, 1 or 2. Default is 2."
 	echo "  -p  - Port number. Default is 8000."
 	echo "  -r  - Bitrate: 11025, 12000, 22050, 24000, 44100 (default), 48000."
@@ -33,6 +33,20 @@ function stop_service() {
 	fi
 }
 
+function read_current_settings() {
+	trap "rm -f /tmp/audiostreaming.$$" EXIT
+	pactl list | grep tcp -A1 | tail -1 >/tmp/audiostreaming.$$
+	current_rate=$(cat /tmp/audiostreaming.$$     | sed     's/^.* rate=\([^ ]\+\)\( .*\)\?$/\1/')
+	current_channels=$(cat /tmp/audiostreaming.$$ | sed 's/^.* channels=\([^ ]\+\)\( .*\)\?$/\1/')
+	current_port=$(cat /tmp/audiostreaming.$$     | sed     's/^.* port=\([^ ]\+\)\( .*\)\?$/\1/')
+	rate=${current_rate:-$rate}
+	channels=${current_channels:-$channels}
+	port=${current_port:-$port}
+	rm -f /tmp/audiostreaming.$$
+}
+
+read_current_settings
+
 while getopts ":hr:p:c:" opt; do
 	case "$opt" in
 		h) print_usage; exit 0;;
@@ -47,9 +61,19 @@ shift $((OPTIND-1))
 
 case "$1" in
 	status)
-		service_status
+		if service_status; then
+			echo "rate=$rate"
+			echo "channels=$channels"
+			echo "port=$port"
+		else
+			exit 1
+		fi
 		;;
 	start)
+		stop_service
+		start_service
+		;;
+	restart)
 		stop_service
 		start_service
 		;;
