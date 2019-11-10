@@ -18,7 +18,6 @@ user_pref("app.update.backgroundErrors", 2);
 user_pref("browser.anchor_color", "#FFFF33");
 user_pref("browser.bookmarks.max_backups", 0);
 user_pref("browser.bookmarks.showMobileBookmarks", false);
-user_pref("browser.cache.disk.amount_written", 1264614);
 user_pref("browser.cache.disk.capacity", 5120);
 user_pref("browser.cache.disk.filesystem_reported", 1);
 user_pref("browser.cache.disk.smart_size.enabled", false);

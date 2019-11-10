@@ -93,4 +93,5 @@ sed '/extensions.lastAppBuildId/d' | \
 sed '/browser.safebrowsing.provider.google4.lastupdatetime/d' | \
 sed '/browser.safebrowsing.provider.google4.nextupdatetime/d' | \
 sed '/devtools.toolsidebar-width./d' | \
+sed '/browser.cache.disk.amount_written/d' | \
 sed 's|'"$HOME"'|$HOME|g'
