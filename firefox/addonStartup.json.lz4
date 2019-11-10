@@ -1,13 +1,192 @@
 {
+    "app-builtin": {
+        "addons": {
+            "amazondotcom@search.mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource://search-extensions/amazondotcom/",
+                "runInSafeMode": true,
+                "telemetryKey": "amazondotcom%40search.mozilla.org:1.1",
+                "version": "0.0"
+            },
+            "bing@search.mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource://search-extensions/bing/",
+                "runInSafeMode": true,
+                "telemetryKey": "bing%40search.mozilla.org:1.0",
+                "version": "0.0"
+            },
+            "ddg@search.mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource://search-extensions/ddg/",
+                "runInSafeMode": true,
+                "telemetryKey": "ddg%40search.mozilla.org:1.0",
+                "version": "0.0"
+            },
+            "default-theme@mozilla.org": {
+                "dependencies": [],
+                "enabled": false,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource://gre/modules/themes/default/",
+                "runInSafeMode": true,
+                "telemetryKey": "default-theme%40mozilla.org:1.0",
+                "type": "theme",
+                "version": "0.0"
+            },
+            "firefox-compact-dark@mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource:///modules/themes/dark/",
+                "runInSafeMode": true,
+                "startupData": {
+                    "experiment": {
+                        "colors": null,
+                        "images": null,
+                        "properties": null,
+                        "stylesheet": "moz-extension://b158160e-c523-4e18-a1bb-489c9be49232/experiment.css"
+                    },
+                    "lwtDarkStyles": null,
+                    "lwtData": {
+                        "darkTheme": null,
+                        "experiment": {
+                            "colors": null,
+                            "images": null,
+                            "properties": null,
+                            "stylesheet": "moz-extension://b158160e-c523-4e18-a1bb-489c9be49232/experiment.css"
+                        },
+                        "theme": {
+                            "accentcolor": "hsl(240, 5%, 5%)",
+                            "experimental": {
+                                "colors": {},
+                                "images": {},
+                                "properties": {}
+                            },
+                            "icon_color": "rgb(249, 249, 250, 0.7)",
+                            "id": "firefox-compact-dark@mozilla.org",
+                            "ntp_background": "#2A2A2E",
+                            "ntp_text": "rgb(249, 249, 250)",
+                            "popup": "#4a4a4f",
+                            "popup_border": "#27272b",
+                            "popup_text": "rgb(249, 249, 250)",
+                            "sidebar": "#38383D",
+                            "sidebar_border": "rgba(255, 255, 255, 0.1)",
+                            "sidebar_text": "rgb(249, 249, 250)",
+                            "tab_line": "#0a84ff",
+                            "textcolor": "rgb(249, 249, 250)",
+                            "toolbarColor": "hsl(240, 1%, 20%)",
+                            "toolbar_bottom_separator": "hsl(240, 5%, 5%)",
+                            "toolbar_field": "rgb(71, 71, 73)",
+                            "toolbar_field_border": "rgba(249, 249, 250, 0.2)",
+                            "toolbar_field_separator": "#5F6670",
+                            "toolbar_field_text": "rgb(249, 249, 250)",
+                            "version": "0.0"
+                        }
+                    },
+                    "lwtStyles": {
+                        "accentcolor": "hsl(240, 5%, 5%)",
+                        "experimental": {
+                            "colors": {},
+                            "images": {},
+                            "properties": {}
+                        },
+                        "icon_color": "rgb(249, 249, 250, 0.7)",
+                        "id": "firefox-compact-dark@mozilla.org",
+                        "ntp_background": "#2A2A2E",
+                        "ntp_text": "rgb(249, 249, 250)",
+                        "popup": "#4a4a4f",
+                        "popup_border": "#27272b",
+                        "popup_text": "rgb(249, 249, 250)",
+                        "sidebar": "#38383D",
+                        "sidebar_border": "rgba(255, 255, 255, 0.1)",
+                        "sidebar_text": "rgb(249, 249, 250)",
+                        "tab_line": "#0a84ff",
+                        "textcolor": "rgb(249, 249, 250)",
+                        "toolbarColor": "hsl(240, 1%, 20%)",
+                        "toolbar_bottom_separator": "hsl(240, 5%, 5%)",
+                        "toolbar_field": "rgb(71, 71, 73)",
+                        "toolbar_field_border": "rgba(249, 249, 250, 0.2)",
+                        "toolbar_field_separator": "#5F6670",
+                        "toolbar_field_text": "rgb(249, 249, 250)",
+                        "version": "0.0"
+                    }
+                },
+                "telemetryKey": "firefox-compact-dark%40mozilla.org:1.0",
+                "type": "theme",
+                "version": "0.0"
+            },
+            "firefox-compact-light@mozilla.org": {
+                "dependencies": [],
+                "enabled": false,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource:///modules/themes/light/",
+                "runInSafeMode": true,
+                "telemetryKey": "firefox-compact-light%40mozilla.org:1.0",
+                "type": "theme",
+                "version": "0.0"
+            },
+            "google@search.mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource://search-extensions/google/",
+                "runInSafeMode": true,
+                "telemetryKey": "google%40search.mozilla.org:1.0",
+                "version": "0.0"
+            },
+            "twitter@search.mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource://search-extensions/twitter/",
+                "runInSafeMode": true,
+                "telemetryKey": "twitter%40search.mozilla.org:1.0",
+                "version": "0.0"
+            },
+            "wikipedia@search.mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": null,
+                "rootURI": "resource://search-extensions/wikipedia/",
+                "runInSafeMode": true,
+                "telemetryKey": "wikipedia%40search.mozilla.org:1.0",
+                "version": "0.0"
+            }
+        },
+        "staged": {}
+    },
     "app-global": {
         "addons": {
             "langpack-ru@firefox-esr.mozilla.org": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": false,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "langpack-ru@firefox-esr.mozilla.org.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/extensions/langpack-ru@firefox-esr.mozilla.org.xpi!/",
                 "runInSafeMode": false,
                 "startupData": {
                     "chromeEntries": [
@@ -31,12 +210,6 @@
                         ],
                         [
                             "locale",
-                            "onboarding",
-                            "ru",
-                            "browser/features/onboarding@mozilla.org/ru/locale/ru/"
-                        ],
-                        [
-                            "locale",
                             "devtools",
                             "ru",
                             "browser/chrome/ru/locale/ru/devtools/client/"
@@ -49,21 +222,27 @@
                         ],
                         [
                             "locale",
-                            "devtools-shim",
-                            "ru",
-                            "browser/chrome/ru/locale/ru/devtools/shim/"
-                        ],
-                        [
-                            "locale",
                             "alerts",
                             "ru",
                             "chrome/ru/locale/ru/alerts/"
                         ],
                         [
                             "locale",
+                            "devtools-startup",
+                            "ru",
+                            "browser/chrome/ru/locale/ru/devtools/startup/"
+                        ],
+                        [
+                            "locale",
                             "branding",
                             "ru",
                             "browser/chrome/ru/locale/branding/"
+                        ],
+                        [
+                            "locale",
+                            "fxmonitor",
+                            "ru",
+                            "browser/features/fxmonitor@mozilla.org/ru/locale/ru/"
                         ],
                         [
                             "locale",
@@ -115,12 +294,6 @@
                         ],
                         [
                             "locale",
-                            "pocket",
-                            "ru",
-                            "browser/features/firefox@getpocket.com/ru/locale/ru/"
-                        ],
-                        [
-                            "locale",
                             "places",
                             "ru",
                             "chrome/ru/locale/ru/places/"
@@ -133,15 +306,15 @@
                         ],
                         [
                             "locale",
-                            "pippki",
+                            "report-site-issue",
                             "ru",
-                            "chrome/ru/locale/ru/pippki/"
+                            "browser/features/webcompat-reporter@mozilla.org/ru/locale/ru/"
                         ],
                         [
                             "locale",
-                            "jaws-esr",
+                            "pippki",
                             "ru",
-                            "browser/features/jaws-esr@mozilla.org/ru/locale/ru/"
+                            "chrome/ru/locale/ru/pippki/"
                         ],
                         [
                             "locale",
@@ -151,246 +324,869 @@
                         ]
                     ],
                     "l10nRegistrySources": {
-                        "browser": "browser/"
+                        "browser": "browser/",
+                        "toolkit": ""
                     },
                     "langpackId": "langpack-ru-browser",
                     "languages": [
                         "ru"
                     ]
                 },
-                "type": "webextension-langpack",
-                "version": "0.0"
-            },
-            "{972ce4c6-7e08-4474-a285-3208198ce6fd}": {
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "path": "{972ce4c6-7e08-4474-a285-3208198ce6fd}.xpi",
-                "type": "theme",
+                "telemetryKey": "langpack-ru%40firefox-esr.mozilla.org:68.0buildid20191106112211",
+                "type": "locale",
                 "version": "0.0"
             }
         },
         "checkStartupModifications": true,
-        "path": "/usr/lib/firefox-esr/browser/extensions"
+        "path": "/usr/lib/firefox-esr/browser/extensions",
+        "staged": {}
     },
     "app-profile": {
         "addons": {
             "@mutelinks": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "@mutelinks.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/@mutelinks.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onMessage": [
+                                []
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "%40mutelinks:0.2.2",
                 "version": "0.0"
             },
             "firefox@tampermonkey.net": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "firefox@tampermonkey.net.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/firefox@tampermonkey.net.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onConnect": [
+                                []
+                            ],
+                            "onMessage": [
+                                []
+                            ]
+                        },
+                        "webRequest": {
+                            "onBeforeRedirect": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*",
+                                            "ftp://*/*",
+                                            "file:///*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    []
+                                ]
+                            ],
+                            "onBeforeSendHeaders": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "script",
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*",
+                                            "ftp://*/*",
+                                            "file:///*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*",
+                                            "ftp://*/*",
+                                            "file:///*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ]
+                            ],
+                            "onErrorOccurred": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*",
+                                            "ftp://*/*",
+                                            "file:///*"
+                                        ],
+                                        "windowId": null
+                                    }
+                                ]
+                            ],
+                            "onHeadersReceived": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*",
+                                            "ftp://*/*",
+                                            "file:///*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "responseHeaders"
+                                    ]
+                                ]
+                            ],
+                            "onResponseStarted": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*",
+                                            "ftp://*/*",
+                                            "file:///*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    []
+                                ]
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "firefox%40tampermonkey.net:4.9.5941",
                 "version": "0.0"
             },
             "godville-ui-plus@erinome.net": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "godville-ui-plus@erinome.net.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/godville-ui-plus@erinome.net.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onMessage": [
+                                []
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "godville-ui-plus%40erinome.net:1.1.22.2",
                 "version": "0.0"
             },
             "uBlock0@raymondhill.net": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "uBlock0@raymondhill.net.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/uBlock0@raymondhill.net.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onConnect": [
+                                []
+                            ]
+                        },
+                        "webRequest": {
+                            "onBeforeRequest": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "moz-extension://43326e01-dea5-4fc7-8835-007142b6ad25/web_accessible_resources/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*",
+                                            "ws://*/*",
+                                            "wss://*/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "csp_report"
+                                        ],
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestBody"
+                                    ]
+                                ]
+                            ],
+                            "onHeadersReceived": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "object",
+                                            "image",
+                                            "imageset",
+                                            "media",
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "http://*/*",
+                                            "https://*/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "responseHeaders"
+                                    ]
+                                ]
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "uBlock0%40raymondhill.net:1.23.0",
                 "version": "0.0"
             },
             "{60f82f00-9ad5-4de5-b31c-b16a47c51558}": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "{60f82f00-9ad5-4de5-b31c-b16a47c51558}.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B60f82f00-9ad5-4de5-b31c-b16a47c51558%7D.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "telemetryKey": "%7B60f82f00-9ad5-4de5-b31c-b16a47c51558%7D:0.5rc2",
                 "version": "0.0"
             },
             "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "{66E978CD-981F-47DF-AC42-E3CF417C1467}.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B66E978CD-981F-47DF-AC42-E3CF417C1467%7D.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "telemetryKey": "%7B66E978CD-981F-47DF-AC42-E3CF417C1467%7D:0.6.2",
                 "version": "0.0"
             },
             "{73a6fe31-595d-460b-a920-fcc0f8843232}": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "{73a6fe31-595d-460b-a920-fcc0f8843232}.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B73a6fe31-595d-460b-a920-fcc0f8843232%7D.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onConnect": [
+                                []
+                            ],
+                            "onMessage": [
+                                []
+                            ]
+                        },
+                        "webRequest": {
+                            "onBeforeRequest": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "https://sync-messages.invalid/moz-extension://1568cc5e-19be-4f82-b5ef-d791daec7916/?*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "script",
+                                            "xslt",
+                                            "xbl",
+                                            "font",
+                                            "object",
+                                            "object_subrequest",
+                                            "xmlhttprequest",
+                                            "ping",
+                                            "beacon",
+                                            "media",
+                                            "other"
+                                        ],
+                                        "urls": [
+                                            "<all_urls>"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "csp_report"
+                                        ],
+                                        "urls": [
+                                            "https://noscript-csp.invalid/__NoScript_Probe__/"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestBody"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "object"
+                                        ],
+                                        "urls": [
+                                            "*://*/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestBody"
+                                    ]
+                                ]
+                            ],
+                            "onCompleted": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "script",
+                                            "xslt",
+                                            "xbl",
+                                            "font",
+                                            "object",
+                                            "object_subrequest",
+                                            "xmlhttprequest",
+                                            "ping",
+                                            "beacon",
+                                            "media",
+                                            "other"
+                                        ],
+                                        "urls": [
+                                            "<all_urls>"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    null
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "object"
+                                        ],
+                                        "urls": [
+                                            "*://*/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    null
+                                ]
+                            ],
+                            "onErrorOccurred": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "script",
+                                            "xslt",
+                                            "xbl",
+                                            "font",
+                                            "object",
+                                            "object_subrequest",
+                                            "xmlhttprequest",
+                                            "ping",
+                                            "beacon",
+                                            "media",
+                                            "other"
+                                        ],
+                                        "urls": [
+                                            "<all_urls>"
+                                        ],
+                                        "windowId": null
+                                    }
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "object"
+                                        ],
+                                        "urls": [
+                                            "*://*/*"
+                                        ],
+                                        "windowId": null
+                                    }
+                                ]
+                            ],
+                            "onHeadersReceived": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "object"
+                                        ],
+                                        "urls": [
+                                            "<all_urls>"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "responseHeaders"
+                                    ]
+                                ]
+                            ],
+                            "onResponseStarted": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame",
+                                            "sub_frame",
+                                            "object"
+                                        ],
+                                        "urls": [
+                                            "<all_urls>"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "responseHeaders"
+                                    ]
+                                ]
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "%7B73a6fe31-595d-460b-a920-fcc0f8843232%7D:11.0.8",
                 "version": "0.0"
             },
             "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B7a7a4a92-a2a0-41d1-9fd7-1e92480d612d%7D.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onConnect": [
+                                []
+                            ],
+                            "onMessage": [
+                                []
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "%7B7a7a4a92-a2a0-41d1-9fd7-1e92480d612d%7D:1.5.6",
                 "version": "0.0"
             },
             "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc%7D.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onConnect": [
+                                []
+                            ]
+                        },
+                        "webRequest": {
+                            "onBeforeRequest": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "https://chatvdvoem.ru/new/prb/compl*/scripts/museconfig.js",
+                                            "https://chatvdvoem.ru/new/prb/compl*/scripts/museutils.js",
+                                            "https://chatvdvoem.ru/new/prb/compl*/index.html"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ]
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "%7B8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc%7D:0.4",
                 "version": "0.0"
             },
             "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "{d7742d87-e61d-4b78-b8a1-b469842139fa}.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7Bd7742d87-e61d-4b78-b8a1-b469842139fa%7D.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onConnect": [
+                                []
+                            ],
+                            "onMessage": [
+                                []
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "%7Bd7742d87-e61d-4b78-b8a1-b469842139fa%7D:1.64.6",
                 "version": "0.0"
             },
             "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7Bd7ce25e4-e6a8-433e-bb29-ec763dcd26bf%7D.xpi!/",
                 "runInSafeMode": false,
-                "type": "webextension",
+                "telemetryKey": "%7Bd7ce25e4-e6a8-433e-bb29-ec763dcd26bf%7D:1.3",
                 "version": "0.0"
             }
         },
-        "path": "/home/umi/.config/firefox/extensions"
+        "path": "$HOME/.config/firefox/extensions",
+        "staged": {}
     },
     "app-system-defaults": {
         "addons": {
-            "activity-stream@mozilla.org": {
-                "bootstrapped": true,
-                "dependencies": [],
-                "enabled": true,
-                "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 0,
-                "path": "activity-stream@mozilla.org.xpi",
-                "runInSafeMode": true,
-                "version": "0.0"
-            },
-            "aushelper@mozilla.org": {
-                "bootstrapped": true,
-                "dependencies": [],
-                "enabled": true,
-                "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 0,
-                "path": "aushelper@mozilla.org.xpi",
-                "runInSafeMode": true,
-                "version": "0.0"
-            },
-            "firefox@getpocket.com": {
-                "bootstrapped": true,
-                "dependencies": [],
-                "enabled": true,
-                "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 0,
-                "path": "firefox@getpocket.com.xpi",
-                "runInSafeMode": true,
-                "version": "0.0"
-            },
-            "followonsearch@mozilla.com": {
-                "bootstrapped": true,
-                "dependencies": [],
-                "enabled": true,
-                "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 0,
-                "path": "followonsearch@mozilla.com.xpi",
-                "runInSafeMode": true,
-                "version": "0.0"
-            },
             "formautofill@mozilla.org": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "formautofill@mozilla.org.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/formautofill@mozilla.org.xpi!/",
                 "runInSafeMode": true,
+                "telemetryKey": "formautofill%40mozilla.org:1.0",
                 "version": "0.0"
             },
-            "jaws-esr@mozilla.org": {
-                "bootstrapped": true,
+            "fxmonitor@mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
-                "path": "jaws-esr@mozilla.org.xpi",
+                "loader": null,
+                "path": "fxmonitor@mozilla.org.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/fxmonitor@mozilla.org.xpi!/",
                 "runInSafeMode": true,
-                "version": "0.0"
-            },
-            "onboarding@mozilla.org": {
-                "bootstrapped": true,
-                "dependencies": [],
-                "enabled": true,
-                "hasEmbeddedWebExtension": false,
-                "lastModifiedTime": 0,
-                "path": "onboarding@mozilla.org.xpi",
-                "runInSafeMode": true,
+                "telemetryKey": "fxmonitor%40mozilla.org:3.0",
                 "version": "0.0"
             },
             "screenshots@mozilla.org": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "screenshots@mozilla.org.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/screenshots@mozilla.org.xpi!/",
                 "runInSafeMode": true,
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onMessage": [
+                                []
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "screenshots%40mozilla.org:39.0.0",
+                "version": "0.0"
+            },
+            "webcompat-reporter@mozilla.org": {
+                "dependencies": [],
+                "enabled": false,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": "webcompat-reporter@mozilla.org.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/webcompat-reporter@mozilla.org.xpi!/",
+                "runInSafeMode": true,
+                "telemetryKey": "webcompat-reporter%40mozilla.org:1.1.0",
                 "version": "0.0"
             },
             "webcompat@mozilla.org": {
-                "bootstrapped": true,
                 "dependencies": [],
                 "enabled": true,
-                "hasEmbeddedWebExtension": false,
                 "lastModifiedTime": 0,
+                "loader": null,
                 "path": "webcompat@mozilla.org.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/webcompat@mozilla.org.xpi!/",
                 "runInSafeMode": true,
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onConnect": [
+                                []
+                            ],
+                            "onMessage": [
+                                []
+                            ]
+                        },
+                        "webRequest": {
+                            "onBeforeSendHeaders": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://webcompat-addon-testbed.herokuapp.com/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://*.santander.co.uk/*",
+                                            "*://bob.santanderbank.com/*",
+                                            "*://rolb.santanderbank.com/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://supportforms.embarcadero.com/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://*.att.tv/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://steamcommunity.com/chat*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "https://watch.sling.com/*",
+                                            "https://www.sling.com/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ]
+                            ],
+                            "onHeadersReceived": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "https://*.linkedin.com/tscp-serving/dtag*",
+                                            "https://ads-us.rd.linksynergy.com/as.php*",
+                                            "https://www.office.com/logout?sid*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "responseHeaders"
+                                    ]
+                                ]
+                            ]
+                        }
+                    }
+                },
+                "telemetryKey": "webcompat%40mozilla.org:6.3.0",
                 "version": "0.0"
             }
         },
-        "path": "/usr/lib/firefox-esr/browser/features"
+        "path": "/usr/lib/firefox-esr/browser/features",
+        "staged": {}
     }
 }

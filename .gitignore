@@ -115,8 +115,8 @@ firefox/brief.sqlite
 firefox/pkcs11.txt
 firefox/TRRBlacklist.txt
 firefox/key4.db
-firefox/gmp-gmpopenh264/1.7.1/gmpopenh264.info
-firefox/gmp-gmpopenh264/1.7.1/libgmpopenh264.so
+firefox/gmp-gmpopenh264/*/gmpopenh264.info
+firefox/gmp-gmpopenh264/*/libgmpopenh264.so
 # Purple cache
 purple/accels
 purple/certificates

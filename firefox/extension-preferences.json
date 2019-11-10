@@ -1,0 +1,134 @@
+{
+    "@mutelinks": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "amazondotcom@search.mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "bing@search.mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "ddg@search.mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "firefox-compact-dark@mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "firefox@tampermonkey.net": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "formautofill@mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "fxmonitor@mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "godville-ui-plus@erinome.net": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "google@search.mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "screenshots@mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "twitter@search.mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "uBlock0@raymondhill.net": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "webcompat@mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "wikipedia@search.mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "{60f82f00-9ad5-4de5-b31c-b16a47c51558}": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "{73a6fe31-595d-460b-a920-fcc0f8843232}": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
+    "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    }
+}

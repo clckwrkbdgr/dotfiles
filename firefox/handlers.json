@@ -1,6 +1,7 @@
 {
     "defaultHandlersVersion": {
-        "en-US": 4
+        "en-US": 4,
+        "und": 4
     },
     "mimeTypes": {
         "application/download": {
@@ -519,18 +520,7 @@
         },
         "webcal": {
             "action": 4,
-            "ask": true,
-            "handlers": [
-                null,
-                {
-                    "name": "30 Boxes",
-                    "uriTemplate": "http://30boxes.com/external/widget?refer=ff&url=%s"
-                },
-                {
-                    "name": "30 Boxes",
-                    "uriTemplate": "https://30boxes.com/external/widget?refer=ff&url=%s"
-                }
-            ]
+            "ask": true
         }
     }
 }
