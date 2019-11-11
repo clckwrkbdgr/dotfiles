@@ -94,4 +94,6 @@ sed '/browser.safebrowsing.provider.google4.lastupdatetime/d' | \
 sed '/browser.safebrowsing.provider.google4.nextupdatetime/d' | \
 sed '/devtools.toolsidebar-width./d' | \
 sed '/browser.cache.disk.amount_written/d' | \
+sed '/services.settings.clock_skew_seconds/d' | \
+sed '/services.settings.last_update_seconds/d' | \
 sed 's|'"$HOME"'|$HOME|g'
