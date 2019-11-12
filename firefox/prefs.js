@@ -547,7 +547,6 @@ user_pref("security.ssl.enable_ocsp_stapling", false);
 user_pref("security.ssl.errorReporting.automatic", true);
 user_pref("security.warn_viewing_mixed", false);
 user_pref("security.warn_viewing_mixed.show_once", false);
-user_pref("services.settings.last_etag", "\"1573321790405\"");
 user_pref("services.settings.main.cfr-fxa.last_check", 1573190550);
 user_pref("services.settings.main.cfr.last_check", 1573190550);
 user_pref("services.settings.main.fxmonitor-breaches.last_check", 1573190550);

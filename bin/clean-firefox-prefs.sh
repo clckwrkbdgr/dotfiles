@@ -96,4 +96,5 @@ sed '/devtools.toolsidebar-width./d' | \
 sed '/browser.cache.disk.amount_written/d' | \
 sed '/services.settings.clock_skew_seconds/d' | \
 sed '/services.settings.last_update_seconds/d' | \
+sed '/services.settings.last_etag/d' | \
 sed 's|'"$HOME"'|$HOME|g'
