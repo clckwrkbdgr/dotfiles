@@ -989,7 +989,413 @@
             }
         },
         "path": "$HOME/.config/firefox/extensions",
-        "staged": {}
+        "staged": {
+            "firefox@tampermonkey.net": {
+                "aboutURL": null,
+                "active": false,
+                "appDisabled": false,
+                "applyBackgroundUpdates": 1,
+                "blocklistState": 0,
+                "blocklistURL": null,
+                "defaultLocale": {
+                    "contributors": null,
+                    "creator": null,
+                    "description": "The world's most popular userscript manager, with over 10 million users",
+                    "developers": null,
+                    "homepageURL": "https://www.tampermonkey.net/",
+                    "name": "Tampermonkey",
+                    "translators": null
+                },
+                "dependencies": [],
+                "foreignInstall": false,
+                "hidden": false,
+                "iconURL": null,
+                "icons": {
+                    "128": "images/icon128.png",
+                    "32": "images/icon32.png",
+                    "48": "images/icon48.png"
+                },
+                "id": "firefox@tampermonkey.net",
+                "incognito": "spanning",
+                "installDate": 1513195989000,
+                "installTelemetryInfo": null,
+                "loader": null,
+                "locales": [
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "en"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "ja"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "pt-PT"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "fr"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "id"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "cs"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "hu"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "vi"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "uk"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "ar"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "ko"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "it"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "de"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "nb"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "hi"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "sk"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "zh-CN"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "ru"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "pl"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "hr"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "sr"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "es"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "pt-BR"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "tr"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "nl"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "be"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    },
+                    {
+                        "contributors": null,
+                        "creator": null,
+                        "description": "The world's most popular userscript manager, with over 10 million users",
+                        "developers": null,
+                        "homepageURL": "https://www.tampermonkey.net/",
+                        "locales": [
+                            "zh-TW"
+                        ],
+                        "name": "Tampermonkey",
+                        "translators": null
+                    }
+                ],
+                "location": "app-profile",
+                "optionsBrowserStyle": false,
+                "optionsType": 3,
+                "optionsURL": "options.html",
+                "recommendationState": null,
+                "releaseNotesURI": "https://addons.mozilla.org/versions/updateInfo/4902640/ru-UA/",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/staged/firefox@tampermonkey.net.xpi!/",
+                "seen": true,
+                "skinnable": false,
+                "softDisabled": false,
+                "sourceURI": "https://addons.cdn.mozilla.net/user-media/addons/683490/tampermonkey-4.9.6095-an+fx.xpi?filehash=sha256%3Aad5856846fa34e993dda92966848fd7d292279fca04e5035ec9abb554cfc2113",
+                "startupData": null,
+                "strictCompatibility": true,
+                "syncGUID": "{f0f4dee6-f145-47d7-ad07-15338e15240d}",
+                "targetApplications": [
+                    {
+                        "id": "toolkit@mozilla.org",
+                        "maxVersion": null,
+                        "minVersion": "52.0"
+                    }
+                ],
+                "targetPlatforms": [],
+                "type": "extension",
+                "updateDate": 1573852825553,
+                "updateURL": null,
+                "userDisabled": false,
+                "userPermissions": {
+                    "origins": [
+                        "<all_urls>",
+                        "file:///*.user.js"
+                    ],
+                    "permissions": [
+                        "notifications",
+                        "tabs",
+                        "idle",
+                        "webNavigation",
+                        "webRequest",
+                        "webRequestBlocking",
+                        "unlimitedStorage",
+                        "storage",
+                        "contextMenus",
+                        "clipboardWrite",
+                        "cookies",
+                        "downloads"
+                    ]
+                },
+                "version": "0.0",
+                "visible": false
+            }
+        }
     },
     "app-system-defaults": {
         "addons": {
