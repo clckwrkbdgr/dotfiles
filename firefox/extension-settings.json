@@ -1,6 +1,7 @@
 {
     "commands": {},
     "default_search": {},
+    "homepageNotification": {},
     "newTabNotification": {
         "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
             "initialValue": false,

@@ -6,10 +6,8 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/amazondotcom/",
                 "runInSafeMode": true,
-                "telemetryKey": "amazondotcom%40search.mozilla.org:1.1",
                 "version": "0.0"
             },
             "bing@search.mozilla.org": {
@@ -17,10 +15,8 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/bing/",
                 "runInSafeMode": true,
-                "telemetryKey": "bing%40search.mozilla.org:1.0",
                 "version": "0.0"
             },
             "ddg@search.mozilla.org": {
@@ -28,10 +24,8 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/ddg/",
                 "runInSafeMode": true,
-                "telemetryKey": "ddg%40search.mozilla.org:1.0",
                 "version": "0.0"
             },
             "default-theme@mozilla.org": {
@@ -39,10 +33,8 @@
                 "enabled": false,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://gre/modules/themes/default/",
                 "runInSafeMode": true,
-                "telemetryKey": "default-theme%40mozilla.org:1.0",
                 "type": "theme",
                 "version": "0.0"
             },
@@ -51,7 +43,6 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource:///modules/themes/dark/",
                 "runInSafeMode": true,
                 "startupData": {
@@ -126,7 +117,6 @@
                         "version": "0.0"
                     }
                 },
-                "telemetryKey": "firefox-compact-dark%40mozilla.org:1.0",
                 "type": "theme",
                 "version": "0.0"
             },
@@ -135,10 +125,8 @@
                 "enabled": false,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource:///modules/themes/light/",
                 "runInSafeMode": true,
-                "telemetryKey": "firefox-compact-light%40mozilla.org:1.0",
                 "type": "theme",
                 "version": "0.0"
             },
@@ -147,10 +135,8 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/google/",
                 "runInSafeMode": true,
-                "telemetryKey": "google%40search.mozilla.org:1.0",
                 "version": "0.0"
             },
             "twitter@search.mozilla.org": {
@@ -158,10 +144,8 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/twitter/",
                 "runInSafeMode": true,
-                "telemetryKey": "twitter%40search.mozilla.org:1.0",
                 "version": "0.0"
             },
             "wikipedia@search.mozilla.org": {
@@ -169,10 +153,8 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/wikipedia/",
                 "runInSafeMode": true,
-                "telemetryKey": "wikipedia%40search.mozilla.org:1.0",
                 "version": "0.0"
             }
         },
@@ -332,7 +314,6 @@
                         "ru"
                     ]
                 },
-                "telemetryKey": "langpack-ru%40firefox-esr.mozilla.org:68.0buildid20191106112211",
                 "type": "locale",
                 "version": "0.0"
             }
@@ -360,7 +341,6 @@
                         }
                     }
                 },
-                "telemetryKey": "%40mutelinks:0.2.2",
                 "version": "0.0"
             },
             "firefox@tampermonkey.net": {
@@ -512,7 +492,6 @@
                         }
                     }
                 },
-                "telemetryKey": "firefox%40tampermonkey.net:4.9.5941",
                 "version": "0.0"
             },
             "godville-ui-plus@erinome.net": {
@@ -532,7 +511,6 @@
                         }
                     }
                 },
-                "telemetryKey": "godville-ui-plus%40erinome.net:1.1.22.2",
                 "version": "0.0"
             },
             "uBlock0@raymondhill.net": {
@@ -631,7 +609,6 @@
                         }
                     }
                 },
-                "telemetryKey": "uBlock0%40raymondhill.net:1.23.0",
                 "version": "0.0"
             },
             "{60f82f00-9ad5-4de5-b31c-b16a47c51558}": {
@@ -642,7 +619,6 @@
                 "path": "{60f82f00-9ad5-4de5-b31c-b16a47c51558}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B60f82f00-9ad5-4de5-b31c-b16a47c51558%7D.xpi!/",
                 "runInSafeMode": false,
-                "telemetryKey": "%7B60f82f00-9ad5-4de5-b31c-b16a47c51558%7D:0.5rc2",
                 "version": "0.0"
             },
             "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
@@ -653,7 +629,6 @@
                 "path": "{66E978CD-981F-47DF-AC42-E3CF417C1467}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B66E978CD-981F-47DF-AC42-E3CF417C1467%7D.xpi!/",
                 "runInSafeMode": false,
-                "telemetryKey": "%7B66E978CD-981F-47DF-AC42-E3CF417C1467%7D:0.6.2",
                 "version": "0.0"
             },
             "{73a6fe31-595d-460b-a920-fcc0f8843232}": {
@@ -887,7 +862,6 @@
                         }
                     }
                 },
-                "telemetryKey": "%7B73a6fe31-595d-460b-a920-fcc0f8843232%7D:11.0.8",
                 "version": "0.0"
             },
             "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": {
@@ -910,7 +884,6 @@
                         }
                     }
                 },
-                "telemetryKey": "%7B7a7a4a92-a2a0-41d1-9fd7-1e92480d612d%7D:1.5.6",
                 "version": "0.0"
             },
             "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}": {
@@ -950,7 +923,6 @@
                         }
                     }
                 },
-                "telemetryKey": "%7B8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc%7D:0.4",
                 "version": "0.0"
             },
             "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
@@ -973,7 +945,6 @@
                         }
                     }
                 },
-                "telemetryKey": "%7Bd7742d87-e61d-4b78-b8a1-b469842139fa%7D:1.64.6",
                 "version": "0.0"
             },
             "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
@@ -984,418 +955,11 @@
                 "path": "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7Bd7ce25e4-e6a8-433e-bb29-ec763dcd26bf%7D.xpi!/",
                 "runInSafeMode": false,
-                "telemetryKey": "%7Bd7ce25e4-e6a8-433e-bb29-ec763dcd26bf%7D:1.3",
                 "version": "0.0"
             }
         },
         "path": "$HOME/.config/firefox/extensions",
-        "staged": {
-            "firefox@tampermonkey.net": {
-                "aboutURL": null,
-                "active": false,
-                "appDisabled": false,
-                "applyBackgroundUpdates": 1,
-                "blocklistState": 0,
-                "blocklistURL": null,
-                "defaultLocale": {
-                    "contributors": null,
-                    "creator": null,
-                    "description": "The world's most popular userscript manager, with over 10 million users",
-                    "developers": null,
-                    "homepageURL": "https://www.tampermonkey.net/",
-                    "name": "Tampermonkey",
-                    "translators": null
-                },
-                "dependencies": [],
-                "foreignInstall": false,
-                "hidden": false,
-                "iconURL": null,
-                "icons": {
-                    "128": "images/icon128.png",
-                    "32": "images/icon32.png",
-                    "48": "images/icon48.png"
-                },
-                "id": "firefox@tampermonkey.net",
-                "incognito": "spanning",
-                "installDate": 1513195989000,
-                "installTelemetryInfo": null,
-                "loader": null,
-                "locales": [
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "en"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "ja"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "pt-PT"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "fr"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "id"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "cs"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "hu"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "vi"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "uk"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "ar"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "ko"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "it"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "de"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "nb"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "hi"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "sk"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "zh-CN"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "ru"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "pl"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "hr"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "sr"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "es"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "pt-BR"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "tr"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "nl"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "be"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    },
-                    {
-                        "contributors": null,
-                        "creator": null,
-                        "description": "The world's most popular userscript manager, with over 10 million users",
-                        "developers": null,
-                        "homepageURL": "https://www.tampermonkey.net/",
-                        "locales": [
-                            "zh-TW"
-                        ],
-                        "name": "Tampermonkey",
-                        "translators": null
-                    }
-                ],
-                "location": "app-profile",
-                "optionsBrowserStyle": false,
-                "optionsType": 3,
-                "optionsURL": "options.html",
-                "recommendationState": null,
-                "releaseNotesURI": "https://addons.mozilla.org/versions/updateInfo/4902640/ru-UA/",
-                "rootURI": "jar:file://$HOME/.config/firefox/extensions/staged/firefox@tampermonkey.net.xpi!/",
-                "seen": true,
-                "skinnable": false,
-                "softDisabled": false,
-                "sourceURI": "https://addons.cdn.mozilla.net/user-media/addons/683490/tampermonkey-4.9.6095-an+fx.xpi?filehash=sha256%3Aad5856846fa34e993dda92966848fd7d292279fca04e5035ec9abb554cfc2113",
-                "startupData": null,
-                "strictCompatibility": true,
-                "syncGUID": "{f0f4dee6-f145-47d7-ad07-15338e15240d}",
-                "targetApplications": [
-                    {
-                        "id": "toolkit@mozilla.org",
-                        "maxVersion": null,
-                        "minVersion": "52.0"
-                    }
-                ],
-                "targetPlatforms": [],
-                "type": "extension",
-                "updateDate": 1573852825553,
-                "updateURL": null,
-                "userDisabled": false,
-                "userPermissions": {
-                    "origins": [
-                        "<all_urls>",
-                        "file:///*.user.js"
-                    ],
-                    "permissions": [
-                        "notifications",
-                        "tabs",
-                        "idle",
-                        "webNavigation",
-                        "webRequest",
-                        "webRequestBlocking",
-                        "unlimitedStorage",
-                        "storage",
-                        "contextMenus",
-                        "clipboardWrite",
-                        "cookies",
-                        "downloads"
-                    ]
-                },
-                "version": "0.0",
-                "visible": false
-            }
-        }
+        "staged": {}
     },
     "app-system-defaults": {
         "addons": {
@@ -1407,7 +971,6 @@
                 "path": "formautofill@mozilla.org.xpi",
                 "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/formautofill@mozilla.org.xpi!/",
                 "runInSafeMode": true,
-                "telemetryKey": "formautofill%40mozilla.org:1.0",
                 "version": "0.0"
             },
             "fxmonitor@mozilla.org": {
@@ -1418,7 +981,6 @@
                 "path": "fxmonitor@mozilla.org.xpi",
                 "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/fxmonitor@mozilla.org.xpi!/",
                 "runInSafeMode": true,
-                "telemetryKey": "fxmonitor%40mozilla.org:3.0",
                 "version": "0.0"
             },
             "screenshots@mozilla.org": {
@@ -1438,7 +1000,6 @@
                         }
                     }
                 },
-                "telemetryKey": "screenshots%40mozilla.org:39.0.0",
                 "version": "0.0"
             },
             "webcompat-reporter@mozilla.org": {
@@ -1449,7 +1010,6 @@
                 "path": "webcompat-reporter@mozilla.org.xpi",
                 "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/webcompat-reporter@mozilla.org.xpi!/",
                 "runInSafeMode": true,
-                "telemetryKey": "webcompat-reporter%40mozilla.org:1.1.0",
                 "version": "0.0"
             },
             "webcompat@mozilla.org": {
@@ -1588,7 +1148,6 @@
                         }
                     }
                 },
-                "telemetryKey": "webcompat%40mozilla.org:6.3.0",
                 "version": "0.0"
             }
         },
