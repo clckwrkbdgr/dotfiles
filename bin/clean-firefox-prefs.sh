@@ -99,4 +99,6 @@ sed '/services.settings.last_update_seconds/d' | \
 sed '/services.settings.last_etag/d' | \
 sed '/browser.cache.disk.telemetry_report_ID/d' | \
 sed '/browser.startup.lastColdStartupCheck/d' | \
+sed '/services.settings.main[.][a-z-]\+[.]last_check/d' | \
+sed '/services.settings.security.onecrl.checked/d' | \
 sed 's|'"$HOME"'|$HOME|g'

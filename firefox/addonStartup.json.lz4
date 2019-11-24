@@ -659,7 +659,7 @@
                                             "xmlhttprequest"
                                         ],
                                         "urls": [
-                                            "https://sync-messages.invalid/moz-extension://1568cc5e-19be-4f82-b5ef-d791daec7916/?*"
+                                            "https://255.255.255.255/moz-extension://1568cc5e-19be-4f82-b5ef-d791daec7916/?*"
                                         ],
                                         "windowId": null
                                     },
