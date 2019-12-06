@@ -40,6 +40,7 @@ firefox/lock
 firefox/*.sqlite-shm
 firefox/*.sqlite-wal
 firefox/*.sqlite-journal
+firefox/weave/logs/error-sync-*.txt
 # Firefox cache
 firefox/_CACHE_CLEAN_
 firefox/Cache/
