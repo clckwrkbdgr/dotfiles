@@ -38,6 +38,11 @@ active_window_id="$(xprop -root | sed -n -e '/^_NET_ACTIVE/s/^[[:print:]]\{40\}/
 if xprop -id "$active_window_id" 2>/dev/null |
 	grep -q '^WM_CLASS(STRING)[[:print:]]*'"$quake_term_wmclass"
 then # hide active quake term
+	if xprop -id "$active_window_id" -notype "QUAKESTYLE_MINIMIZED" | grep TRUE; then
+		exit 0 # Already minimized
+	fi
+	xprop -id "$active_window_id" -f QUAKESTYLE_MINIMIZED 8s -set "QUAKESTYLE_MINIMIZED" TRUE
+
 	# Un-maximized before changing size.
 	wmctrl -R "$quake_term_wmclass" -x -b remove,maximized_vert,maximized_horz
 	# Resize to fit the desktop.
@@ -48,7 +53,9 @@ then # hide active quake term
 		xdotool windowmove "$activewindow" -3 -${i}0
 	done
 
-	xdotool windowminimize $(xdotool getactivewindow)
+	xdotool windowminimize "$activewindow"
+
+	xprop -id "$active_window_id" -f QUAKESTYLE_MINIMIZED 8s -set "QUAKESTYLE_MINIMIZED" FALSE
 else
 	# attempt to both focus and raise quake terminal
 	if wmctrl -R "$quake_term_wmclass" -x ; then
