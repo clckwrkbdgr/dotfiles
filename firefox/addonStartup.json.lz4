@@ -6,7 +6,6 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/amazondotcom/",
                 "runInSafeMode": true,
                 "version": "0.0"
@@ -16,7 +15,6 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/bing/",
                 "runInSafeMode": true,
                 "version": "0.0"
@@ -26,7 +24,6 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/ddg/",
                 "runInSafeMode": true,
                 "version": "0.0"
@@ -36,7 +33,6 @@
                 "enabled": false,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://gre/modules/themes/default/",
                 "runInSafeMode": true,
                 "type": "theme",
@@ -47,7 +43,6 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource:///modules/themes/dark/",
                 "runInSafeMode": true,
                 "startupData": {
@@ -130,7 +125,6 @@
                 "enabled": false,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource:///modules/themes/light/",
                 "runInSafeMode": true,
                 "type": "theme",
@@ -141,7 +135,6 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/google/",
                 "runInSafeMode": true,
                 "version": "0.0"
@@ -151,7 +144,6 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/twitter/",
                 "runInSafeMode": true,
                 "version": "0.0"
@@ -161,7 +153,6 @@
                 "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://search-extensions/wikipedia/",
                 "runInSafeMode": true,
                 "version": "0.0"

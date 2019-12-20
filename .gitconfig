@@ -17,7 +17,7 @@
 
 [filter "addonStartupLz4"]
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g' | mozLz4.py compress"
-	clean = "mozLz4.py decompress | python -m json.tool --sort-keys | sed 's/\\(\"lastModifiedTime\"\\)[^,]*\\(,\\?\\)$/\\1: 0\\2/;s/\\(\"version\"\\):[^,]*\\(,\\?\\)$/\\1: \"0.0\"\\2/' | sed '/\\(\"telemetryKey\"\\): \"[^\"]\\+\"/d' | sed '/signedState/d' | sed 's|'\"$HOME\"'|$HOME|g' "
+	clean = "mozLz4.py decompress | python -m json.tool --sort-keys | sed 's/\\(\"lastModifiedTime\"\\)[^,]*\\(,\\?\\)$/\\1: 0\\2/;s/\\(\"version\"\\):[^,]*\\(,\\?\\)$/\\1: \"0.0\"\\2/' | sed '/\\(\"telemetryKey\"\\): \"[^\"]\\+\"/d' | sed '/^ *\"path\": null,$/d' | sed '/signedState/d' | sed 's|'\"$HOME\"'|$HOME|g' "
 
 [filter "ignorewallpaper"]
 	smudge = cat
