@@ -68,6 +68,10 @@
                 "rar"
             ]
         },
+        "application/rss+xml": {
+            "action": 0,
+            "ask": true
+        },
         "application/rtf": {
             "action": 4,
             "ask": true,
