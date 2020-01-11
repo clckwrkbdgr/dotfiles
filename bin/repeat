@@ -1,0 +1,25 @@
+#!/bin/bash
+n="$1"
+if [ "$n" == '-h' -o "$n" == '--help' ]; then
+	echo "Repeat command N times"
+	echo "Usage: $0 [-i] <times> <command args...>"
+	echo "   -i --  If specified, ignores return code of each command."
+	echo "          By default exits after first failure."
+	exit
+fi
+ignore_rc=
+if [ "$n" == '-i' ]; then
+	ignore_rc=true
+	shift
+fi
+shift
+if ! echo "$n" | egrep -q '^[0-9]+$'; then
+	echo 'Expected number of times, got instead: <$n>'
+	exit 1
+fi
+
+while (( n --> 0 )); do
+	"$@"
+	rc=$?
+	[ $rc == 0 ] || exit $rc
+done
