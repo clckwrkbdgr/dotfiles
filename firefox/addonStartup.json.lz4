@@ -925,6 +925,25 @@
                 },
                 "version": "0.0"
             },
+            "{980500da-0b6d-4de9-ad90-93d17605276c}": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": "{980500da-0b6d-4de9-ad90-93d17605276c}.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B980500da-0b6d-4de9-ad90-93d17605276c%7D.xpi!/",
+                "runInSafeMode": false,
+                "startupData": {
+                    "persistentListeners": {
+                        "runtime": {
+                            "onMessage": [
+                                []
+                            ]
+                        }
+                    }
+                },
+                "version": "0.0"
+            },
             "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
                 "dependencies": [],
                 "enabled": true,

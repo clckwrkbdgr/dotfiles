@@ -354,6 +354,7 @@ user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{60f82f00-9ad5-
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{73a6fe31-595d-460b-a920-fcc0f8843232}", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}", true);
+user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{980500da-0b6d-4de9-ad90-93d17605276c}", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{d7742d87-e61d-4b78-b8a1-b469842139fa}", true);
 user_pref("font.default.x-cyrillic", "sans-serif");
 user_pref("font.default.x-user-def", "sans-serif");
