@@ -774,22 +774,6 @@
                                         "windowId": null
                                     },
                                     null
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object"
-                                        ],
-                                        "urls": [
-                                            "<all_urls>"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    null
                                 ]
                             ],
                             "onErrorOccurred": [
@@ -832,24 +816,27 @@
                                         ],
                                         "windowId": null
                                     }
-                                ],
+                                ]
+                            ],
+                            "onHeadersReceived": [
                                 [
                                     {
                                         "incognito": null,
                                         "tabId": null,
                                         "types": [
                                             "main_frame",
-                                            "sub_frame",
-                                            "object"
+                                            "sub_frame"
                                         ],
                                         "urls": [
                                             "<all_urls>"
                                         ],
                                         "windowId": null
-                                    }
-                                ]
-                            ],
-                            "onHeadersReceived": [
+                                    },
+                                    [
+                                        "blocking",
+                                        "responseHeaders"
+                                    ]
+                                ],
                                 [
                                     {
                                         "incognito": null,
