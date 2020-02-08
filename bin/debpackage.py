@@ -11,9 +11,10 @@ parser.add_argument('-v', '--version', required=True, help='Package version.')
 parser.add_argument('--maintainer', default=os.environ['USER'], help='Maintaner of the package, usually in form "NAME <name@email>". By default current OS user is picked (name only).')
 parser.add_argument('--description', help='Package description (free text).')
 
-parser.add_argument('--lib', dest='libs', nargs='+', help='Libraries to install.')
-parser.add_argument('--header', dest='headers', nargs='+', help='Include headers to install.')
-parser.add_argument('--doc', dest='docs', nargs='+', help='Docs to install.')
+parser.add_argument('--bin', dest='bins', nargs='+', default=[], help='Executables to install.')
+parser.add_argument('--lib', dest='libs', nargs='+', default=[], help='Libraries to install.')
+parser.add_argument('--header', dest='headers', nargs='+', default=[], help='Include headers to install.')
+parser.add_argument('--doc', dest='docs', nargs='+', default=[], help='Docs to install.')
 
 parser.add_argument('--build-dir', help='Directory to store intermediate files. Default is within system temp directory.')
 parser.add_argument('--dest-dir', help='Directory to store final package. Default is one level up from build-dir.')
@@ -37,6 +38,11 @@ try:
 	print('Creating build dir...')
 	settings.build_dir.mkdir(parents=True, exist_ok=True)
 
+	for binfile in settings.bins:
+		dest = settings.build_dir/'usr'/'local'/'bin'/Path(binfile).name
+		print('Copying executable: {0}'.format(binfile))
+		if not settings.dry:
+			subprocess.call(['install', '-D', binfile, str(dest)])
 	for lib in settings.libs:
 		dest = settings.build_dir/'usr'/'local'/'lib'/Path(lib).name
 		dest_version = Path(str(dest) + '.{0}'.format(settings.version))
@@ -69,7 +75,7 @@ try:
 	print('Creating manifest...')
 	debian_dir = settings.build_dir/'DEBIAN'
 	package_name = settings.name
-	if settings.libs:
+	if settings.libs and not settings.bins:
 		package_name = 'lib' + package_name
 	manifest = [
 			'Package: {0}'.format(package_name),
