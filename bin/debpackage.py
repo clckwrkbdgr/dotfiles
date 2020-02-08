@@ -21,13 +21,24 @@ parser.add_argument('--dest-dir', help='Directory to store final package. Defaul
 parser.add_argument('--arch', help='Package architecture. Default is arch of the current system.')
 
 settings = parser.parse_args()
-settings.remove_build_dir = False
+settings.remove_build_dir = None
 if settings.build_dir is None:
 	settings.build_dir = tempfile.mkdtemp()
-	settings.remove_build_dir = True
+	settings.remove_build_dir = settings.build_dir
 settings.build_dir = Path(settings.build_dir)
 if not settings.arch:
 	settings.arch = subprocess.check_output(['dpkg', '--print-architecture']).decode().strip()
+
+package_name = settings.name
+if settings.libs and not settings.bins:
+	package_name = 'lib' + package_name
+full_package_name = '{name}_{version}_{arch}'.format(
+		name=package_name,
+		version=settings.version,
+		arch=settings.arch,
+		)
+package_filename = '{name}.deb'.format(name=full_package_name)
+settings.build_dir = settings.build_dir/full_package_name
 
 try:
 	if settings.build_dir.exists():
@@ -74,9 +85,6 @@ try:
 
 	print('Creating manifest...')
 	debian_dir = settings.build_dir/'DEBIAN'
-	package_name = settings.name
-	if settings.libs and not settings.bins:
-		package_name = 'lib' + package_name
 	manifest = [
 			'Package: {0}'.format(package_name),
 			'Version: {0}'.format(settings.version),
@@ -98,20 +106,15 @@ try:
 
 	if settings.dest_dir:
 		print('Moving package...')
-		filename = '{name}_{version}_{arch}.deb'.format(
-				name=package_name,
-				version=settings.version,
-				arch=settings.arch,
-				)
 		if settings.dry:
-			print('[DRY] {0} -> {1}'.format(str(settings.build_dir/'..'/filename), settings.dest_dir))
+			print('[DRY] {0} -> {1}'.format(str(settings.build_dir/'..'/package_filename), settings.dest_dir))
 		else:
-			shutil.move(str(settings.build_dir/'..'/filename), settings.dest_dir)
+			shutil.move(str(settings.build_dir/'..'/package_filename), settings.dest_dir)
 	print('Successfully done.')
 finally:
 	if settings.remove_build_dir:
 		try:
-			shutil.rmtree(str(settings.build_dir))
+			shutil.rmtree(str(settings.remove_build_dir))
 		except Exception as e:
 			print(e)
 
