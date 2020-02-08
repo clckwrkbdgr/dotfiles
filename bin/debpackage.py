@@ -5,6 +5,7 @@ from pathlib import Path
 import argparse
 
 parser = argparse.ArgumentParser(description='Utility to create Debian package.')
+parser.add_argument('--dry', action='store_true', default=False, help='Dry run. Do not execute any actions, just log them.')
 parser.add_argument('name', help='Package name.')
 parser.add_argument('-v', '--version', required=True, help='Package version.')
 parser.add_argument('--maintainer', default=os.environ['USER'], help='Maintaner of the package, usually in form "NAME <name@email>". By default current OS user is picked (name only).')
@@ -29,35 +30,41 @@ if not settings.arch:
 
 try:
 	if settings.build_dir.exists():
-		shutil.rmtree(str(settings.build_dir))
+		if settings.dry:
+			print('[DRY] Removing old build dir')
+		else:
+			shutil.rmtree(str(settings.build_dir))
 	print('Creating build dir...')
-	settings.build_dir.mkdir(parents=True)
+	settings.build_dir.mkdir(parents=True, exist_ok=True)
 
 	for lib in settings.libs:
 		dest = settings.build_dir/'usr'/'local'/'lib'/Path(lib).name
 		dest_version = Path(str(dest) + '.{0}'.format(settings.version))
 		print('Copying lib: {0}'.format(lib))
-		subprocess.call(['install', '-D', lib, str(dest_version)])
-		os.symlink(dest_version.name, str(dest))
+		if not settings.dry:
+			subprocess.call(['install', '-D', lib, str(dest_version)])
+			os.symlink(dest_version.name, str(dest))
 	for header in settings.headers:
 		dest = settings.build_dir/'usr'/'local'/'include'/settings.name
 		dest_version = Path(str(dest) + '.{0}'.format(settings.version))
-		dest_version.mkdir(parents=True, exist_ok=True)
 		print('Copying header: {0}'.format(header))
-		subprocess.call(['install', '-Dm0644', header, str(dest_version)])
-		if not dest.exists():
-			os.symlink(dest_version.name, str(dest))
+		if not settings.dry:
+			dest_version.mkdir(parents=True, exist_ok=True)
+			subprocess.call(['install', '-Dm0644', header, str(dest_version)])
+			if not dest.exists():
+				os.symlink(dest_version.name, str(dest))
 	for doc in settings.docs:
 		dest = settings.build_dir/'usr'/'local'/'share'/'doc'/settings.name
 		dest_version = Path(str(dest) + '.{0}'.format(settings.version))
 		dest_version.mkdir(parents=True, exist_ok=True)
 		print('Copying docs: {0}'.format(doc))
-		try:
-			shutil.copy(doc, str(dest_version))
-		except IsADirectoryError:
-			shutil.copytree(doc, str(dest_version/Path(doc).name))
-		if not dest.exists():
-			os.symlink(dest_version.name, str(dest))
+		if not settings.dry:
+			try:
+				shutil.copy(doc, str(dest_version))
+			except IsADirectoryError:
+				shutil.copytree(doc, str(dest_version/Path(doc).name))
+			if not dest.exists():
+				os.symlink(dest_version.name, str(dest))
 
 	print('Creating manifest...')
 	debian_dir = settings.build_dir/'DEBIAN'
@@ -71,10 +78,17 @@ try:
 			'Maintainer: {0}'.format(settings.maintainer),
 			'Description: {0}'.format(settings.description),
 			]
-	debian_dir.mkdir(parents=True)
-	(debian_dir/'control').write_text('\n'.join(manifest) + '\n')
+	if settings.dry:
+		print('[DRY] Manifest ({0}):'.format(debian_dir/'control'))
+		print('\n'.join(manifest))
+	else:
+		debian_dir.mkdir(parents=True)
+		(debian_dir/'control').write_text('\n'.join(manifest) + '\n')
 
-	subprocess.call(['fakeroot', 'dpkg-deb', '--build', str(settings.build_dir)])
+	if settings.dry:
+		print('[DRY] {0}'.format(['fakeroot', 'dpkg-deb', '--build', str(settings.build_dir)]))
+	else:
+		subprocess.call(['fakeroot', 'dpkg-deb', '--build', str(settings.build_dir)])
 
 	if settings.dest_dir:
 		print('Moving package...')
@@ -83,7 +97,10 @@ try:
 				version=settings.version,
 				arch=settings.arch,
 				)
-		shutil.move(str(settings.build_dir/'..'/filename), settings.dest_dir)
+		if settings.dry:
+			print('[DRY] {0} -> {1}'.format(str(settings.build_dir/'..'/filename), settings.dest_dir))
+		else:
+			shutil.move(str(settings.build_dir/'..'/filename), settings.dest_dir)
 	print('Successfully done.')
 finally:
 	if settings.remove_build_dir:
