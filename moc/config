@@ -14,7 +14,7 @@ Precache = yes
 Sort			= FileName
 ReadTags = no
 FormatString		= "%a - %A / %n - %t"
-OnSongChange = "/home/umi/.local/bin/moc_submit_lastfm --artist %a --title %t --length %d --album %r --filename %f"
+OnSongChange = "/usr/local/bin/moc_submit_lastfm --artist %a --title %t --length %d --album %r --filename %f"
 
 JackOutLeft		= "alsa_pcm:playback_1"
 JackOutRight		= "alsa_pcm:playback_2"
