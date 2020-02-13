@@ -1161,6 +1161,36 @@
                                         "blocking",
                                         "requestHeaders"
                                     ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "https://www.criticalcareontario.ca/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "https://www.mobilesuica.com/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
                                 ]
                             ],
                             "onHeadersReceived": [
