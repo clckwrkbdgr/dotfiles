@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function, unicode_literals
 import os, sys, shutil, subprocess
 import argparse
 try:
@@ -17,7 +18,6 @@ def mail_command(commands):
 	if errors:
 		print(errors)
 	return 0 == p.wait()
-
 
 def get_header(mbox):
 	for line in mbox.splitlines():
