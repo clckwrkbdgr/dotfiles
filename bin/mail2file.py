@@ -63,7 +63,11 @@ def save_mail(index, destdir, custom_filters=None):
 	else:
 		destdir.mkdir(parents=True, exist_ok=True)
 		os.rename(str(mail_file), str(destdir/header))
-	shutil.rmtree(str(TEMPDIR))
+	os.chdir('/')
+	try:
+		shutil.rmtree(str(TEMPDIR))
+	except OSError as e:
+		print(e, file=sys.stderr)
 	return True
 
 def main(destdir, custom_filters=None):
