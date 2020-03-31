@@ -1,3 +1,6 @@
+all:
+	python setup.py
+
 test: test-xdg
 
 test-xdg: bin/xdg
