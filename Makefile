@@ -1,6 +1,9 @@
 all:
 	python setup.py
 
+verbose:
+	python setup.py verbose
+
 test: test-xdg
 
 test-xdg: bin/xdg
