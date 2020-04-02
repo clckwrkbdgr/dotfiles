@@ -1,27 +1,26 @@
 import os, sys, subprocess
 import configparser
 from pathlib import Path
+import logging
+trace = logging.getLogger('setup')
+trace.addHandler(logging.StreamHandler())
 
-_verbose = False
 _actions = []
 
 def unless(condition):
 	def _decorator(func):
 		def _wrapper(*args, **kwargs):
 			if (condition() if callable(condition) else condition):
-				if _verbose:
-					print('Target {0} is up to date.'.format(condition))
+				trace.info('Target {0} is up to date.'.format(condition))
 				return True
-			if _verbose:
-				print('Running action {0}'.format(func))
+			trace.info('Running action {0}'.format(func))
 			result = func(*args, **kwargs)
 			if result is None:
 				result = True
-			if _verbose:
-				if result:
-					print('Action {0} is successful.'.format(func))
-				else:
-					print('Action {0} failed.'.format(func))
+			if result:
+				trace.info('Action {0} is successful.'.format(func))
+			else:
+				trace.error('Action {0} failed.'.format(func))
 			return result
 		_actions.append(_wrapper)
 		return _wrapper
@@ -49,13 +48,12 @@ def update_git_submodules():
 
 if __name__ == '__main__':
 	args = sys.argv[1:]
-	if args == ['verbose']:
-		_verbose = True
+	if args == ['--verbose']:
+		trace.setLevel(logging.INFO)
 	os.chdir(str(Path(__file__).parent))
 	for action in _actions:
 		if not action():
-			if _verbose:
-				print('Stop.')
+			trace.warning('Stop.')
 			break
 	else:
-		print('Done.')
+		trace.info('Done.')
