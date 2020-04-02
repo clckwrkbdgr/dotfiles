@@ -1,14 +1,17 @@
 import os, sys, subprocess
 import configparser
 from pathlib import Path
+import functools
 import logging
 trace = logging.getLogger('setup')
 trace.addHandler(logging.StreamHandler())
 
+_network = True
 _actions = []
 
 def unless(condition):
 	def _decorator(func):
+		@functools.wraps(func)
 		def _wrapper(*args, **kwargs):
 			if (condition() if callable(condition) else condition):
 				trace.info('Target {0} is up to date.'.format(condition))
@@ -28,6 +31,15 @@ def unless(condition):
 
 always = unless(False)
 
+def needs_network(func):
+	@functools.wraps(func)
+	def _wrapper(*args, **kwargs):
+		if not _network:
+			trace.info('Switched off {0} because network is off.'.format(func))
+			return None
+		return func(*args, **kwargs)
+	return _wrapper
+
 ################################################################################
 
 def git_config_includes_gitconfig():
@@ -43,13 +55,20 @@ def ensure_git_config_includes_gitconfig():
 		f.write('	path=../.gitconfig\n')
 
 @always
+@needs_network
 def update_git_submodules():
 	subprocess.call(['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge'])
 
 if __name__ == '__main__':
-	args = sys.argv[1:]
-	if args == ['--verbose']:
+	import argparse
+	parser = argparse.ArgumentParser(description='Main setup script.')
+	parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Verbose output. By default will print only errors and warnings.')
+	parser.add_argument('-n', '--no-network', dest='network', action='store_false', default=True, help='Skip targets that use network (e.g. on metered network connection or when there is no network at all).')
+	args = parser.parse_args()
+	if args.verbose:
 		trace.setLevel(logging.INFO)
+	_network = args.network
+
 	os.chdir(str(Path(__file__).parent))
 	for action in _actions:
 		if not action():
