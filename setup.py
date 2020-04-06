@@ -21,7 +21,12 @@ class Make(object):
 		self._network = network
 		os.chdir(str(self._rootdir))
 		for action in make._actions:
-			if not action():
+			try:
+				result = action()
+			except Exception as e:
+				trace.error(e, exc_info=True)
+				result = False
+			if not result:
 				trace.warning('Stop.')
 				return False
 		trace.info('Done.')
@@ -93,6 +98,19 @@ def ensure_git_config_includes_gitconfig():
 @make.needs_network
 def update_git_submodules():
 	subprocess.call(['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge'])
+
+@make.always
+def test_xdg():
+	assert 0 == subprocess.call('. xdg && [ -d "$XDG_CONFIG_HOME" ]', shell=True, executable='/bin/bash')
+	assert 0 != subprocess.call('. xdg && [ -d "$XDG_DATA_HOME" ]', shell=True, executable='/bin/bash')
+	assert 0 == subprocess.call('. xdg && [ -d "$XDG_CACHE_HOME" ]', shell=True, executable='/bin/bash')
+	assert 0 == subprocess.call('xdg && [ -h ~/.bashrc ]', shell=True, executable='/bin/bash')
+	assert 0 == subprocess.call('xdg && [ -h ~/.profile ]', shell=True, executable='/bin/bash')
+	assert 0 == subprocess.call('xdg && [ -h ~/.xinitrc ]', shell=True, executable='/bin/bash')
+	assert 0 == subprocess.call('xdg && [ -h ~/.w3m ]', shell=True, executable='/bin/bash')
+	assert 0 == subprocess.call('xdg && [ -h ~/.macromedia ]', shell=True, executable='/bin/bash')
+	assert 0 == subprocess.call('xdg && [ -h ~/.adobe ]', shell=True, executable='/bin/bash')
+	assert 0 == subprocess.call('. xdg && [ -d "$XDG_CACHE_HOME/vim" ]', shell=True, executable='/bin/bash')
 
 ################################################################################
 
