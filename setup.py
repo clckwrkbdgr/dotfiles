@@ -47,6 +47,7 @@ class Make(object):
 				if condition():
 					trace.info('Target {0} is up to date.'.format(condition.__name__))
 					return True
+				trace.info('Target {0} is out to date.'.format(condition.__name__))
 				trace.info('Running action {0}'.format(func.__name__))
 				result = func(*args, **kwargs)
 				if result is None:
@@ -99,18 +100,57 @@ def ensure_git_config_includes_gitconfig():
 def update_git_submodules():
 	subprocess.call(['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge'])
 
-@make.always
+
+def bash_command(command):
+	def _actual_check(command=command):
+		return 0 == subprocess.call(command, shell=True, executable='/bin/bash')
+	_actual_check.__name__ = '`{0}`'.format(command)
+	return _actual_check
+
+@make.unless(bash_command('xdg && [ -h ~/.bashrc ]'))
 def test_xdg():
-	assert 0 == subprocess.call('. xdg && [ -d "$XDG_CONFIG_HOME" ]', shell=True, executable='/bin/bash')
-	assert 0 != subprocess.call('. xdg && [ -d "$XDG_DATA_HOME" ]', shell=True, executable='/bin/bash')
-	assert 0 == subprocess.call('. xdg && [ -d "$XDG_CACHE_HOME" ]', shell=True, executable='/bin/bash')
-	assert 0 == subprocess.call('xdg && [ -h ~/.bashrc ]', shell=True, executable='/bin/bash')
-	assert 0 == subprocess.call('xdg && [ -h ~/.profile ]', shell=True, executable='/bin/bash')
-	assert 0 == subprocess.call('xdg && [ -h ~/.xinitrc ]', shell=True, executable='/bin/bash')
-	assert 0 == subprocess.call('xdg && [ -h ~/.w3m ]', shell=True, executable='/bin/bash')
-	assert 0 == subprocess.call('xdg && [ -h ~/.macromedia ]', shell=True, executable='/bin/bash')
-	assert 0 == subprocess.call('xdg && [ -h ~/.adobe ]', shell=True, executable='/bin/bash')
-	assert 0 == subprocess.call('. xdg && [ -d "$XDG_CACHE_HOME/vim" ]', shell=True, executable='/bin/bash')
+	return False
+
+@make.unless(bash_command('. xdg && [ -d "$XDG_CONFIG_HOME" ]'))
+def test_xdg():
+	return False
+
+@make.unless(bash_command('. xdg && [ -d "$XDG_DATA_HOME" ]'))
+def test_xdg():
+	return False
+
+@make.unless(bash_command('. xdg && [ -d "$XDG_CACHE_HOME" ]'))
+def test_xdg():
+	return False
+
+@make.unless(bash_command('xdg && [ -h ~/.bashrc ]'))
+def test_xdg():
+	return False
+
+@make.unless(bash_command('xdg && [ -h ~/.profile ]'))
+def test_xdg():
+	return False
+
+@make.unless(bash_command('xdg && [ -h ~/.xinitrc ]'))
+def test_xdg():
+	return True # TODO actually isn't created by `xdg`, but should it be?
+
+@make.unless(bash_command('xdg && [ -h ~/.w3m ]'))
+def test_xdg():
+	return False
+
+@make.unless(bash_command('xdg && [ -h ~/.macromedia ]'))
+def test_xdg():
+	return False
+
+@make.unless(bash_command('xdg && [ -h ~/.adobe ]'))
+def test_xdg():
+	return False
+
+@make.unless(bash_command('. xdg && [ -d "$XDG_CACHE_HOME/vim" ]'))
+def test_xdg():
+	return False
+
 
 ################################################################################
 
