@@ -32,7 +32,7 @@ class Make(object):
 		trace.info('Done.')
 		return True
 
-	def unless(self, condition):
+	def unless(self, condition, name=None):
 		""" Decorator for function that tells Make to run the action function
 		unless condition is met.
 		Condition should a callable that returns boolean value.
@@ -40,18 +40,25 @@ class Make(object):
 		Function is expected to return object that can be casted to bool,
 		with the exception of None (e.g. when there is no return statement at all):
 		in this case None is treated as True (i.e. Ok).
+		If name is specified, it is used as name of the target,
+		otherwise name of the condition function is used.
 		"""
 		def _decorator(func):
 			@functools.wraps(func)
 			def _wrapper(*args, **kwargs):
+				condition_name = name or condition.__name__
 				if condition():
-					trace.info('Target {0} is up to date.'.format(condition.__name__))
+					trace.info('Target {0} is up to date.'.format(condition_name))
 					return True
-				trace.info('Target {0} is out to date.'.format(condition.__name__))
+				trace.info('Target {0} is out to date.'.format(condition_name))
 				trace.info('Running action {0}'.format(func.__name__))
-				result = func(*args, **kwargs)
-				if result is None:
-					result = True
+				try:
+					result = func(*args, **kwargs)
+					if result is None:
+						result = True
+				except Exception as e:
+					trace.error(e, exc_info=True)
+					result = False
 				if result:
 					trace.info('Action {0} is successful.'.format(func.__name__))
 				else:
@@ -83,6 +90,9 @@ make = Make()
 
 ################################################################################
 
+XDG_CONFIG_HOME = Path('~/.config').expanduser()
+XDG_CACHE_HOME = Path('~/.cache').expanduser()
+
 def git_config_includes_gitconfig():
 	gitconfig = configparser.ConfigParser()
 	gitconfig.read([str(Path('.git')/'config')])
@@ -106,6 +116,9 @@ def bash_command(command):
 		return 0 == subprocess.call(command, shell=True, executable='/bin/bash')
 	_actual_check.__name__ = '`{0}`'.format(command)
 	return _actual_check
+
+def is_symlink_to(src, dest):
+	return Path(src).is_symlink() and Path(src).resolve() == Path(dest).resolve()
 
 @make.unless(bash_command('xdg && [ -h ~/.bashrc ]'))
 def test_xdg():
@@ -151,6 +164,14 @@ def test_xdg():
 def test_xdg():
 	return False
 
+@make.unless(functools.partial(is_symlink_to, XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates'), XDG_CONFIG_HOME/'purple'/'certificates')
+def create_xdg_symlink():
+	dest = XDG_CACHE_HOME/'purple'/'certificates'
+	dest.parent.mkdir(parents=True, exists_ok=True)
+	src = XDG_CONFIG_HOME/'purple'/'certificates'
+	if src.exists():
+		os.rename(str(src), str(src.with_suffix('.bak')))
+	os.symlink(str(src), str(dest))
 
 ################################################################################
 
