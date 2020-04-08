@@ -2,6 +2,7 @@ import os, sys, subprocess
 import configparser
 from pathlib import Path
 import functools
+import contextlib
 import logging
 trace = logging.getLogger('setup')
 trace.addHandler(logging.StreamHandler())
@@ -91,6 +92,7 @@ make = Make()
 ################################################################################
 
 XDG_CONFIG_HOME = Path('~/.config').expanduser()
+XDG_DATA_HOME = Path('~/.local/share').expanduser()
 XDG_CACHE_HOME = Path('~/.cache').expanduser()
 
 def git_config_includes_gitconfig():
@@ -117,8 +119,29 @@ def bash_command(command):
 	_actual_check.__name__ = '`{0}`'.format(command)
 	return _actual_check
 
-def is_symlink_to(src, dest):
-	return Path(src).is_symlink() and Path(src).resolve() == Path(dest).resolve()
+@contextlib.contextmanager
+def CurrentDir(path):
+	try:
+		old_cwd = os.getcwd()
+		os.chdir(str(path))
+		yield
+	finally:
+		os.chdir(old_cwd)
+
+def is_symlink_to(dest, src):
+	def _actual_check():
+		with CurrentDir(Path(dest).parent):
+			return Path(dest).is_symlink() and Path(src).resolve() == Path(dest).resolve()
+	_actual_check.__name__ = str(dest)
+	return _actual_check
+
+def make_symlink(path, real_path):
+	real_path = Path(real_path)
+	dest.parent.mkdir(parents=True, exists_ok=True)
+	path = Path(path)
+	if path.exists():
+		os.rename(str(path), str(path.with_suffix('.bak')))
+	os.symlink(str(real_path), str(path))
 
 @make.unless(bash_command('xdg && [ -h ~/.bashrc ]'))
 def test_xdg():
@@ -164,14 +187,53 @@ def test_xdg():
 def test_xdg():
 	return False
 
-@make.unless(functools.partial(is_symlink_to, XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates'), XDG_CONFIG_HOME/'purple'/'certificates')
+@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates'))
 def create_xdg_symlink():
-	dest = XDG_CACHE_HOME/'purple'/'certificates'
-	dest.parent.mkdir(parents=True, exists_ok=True)
-	src = XDG_CONFIG_HOME/'purple'/'certificates'
-	if src.exists():
-		os.rename(str(src), str(src.with_suffix('.bak')))
-	os.symlink(str(src), str(dest))
+	make_symlink(XDG_CONFIG_HOME/'purple'/'certificates',
+			XDG_CACHE_HOME/'purple'/'certificates',
+			)
+
+@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'telegram-purple', XDG_CACHE_HOME/'purple'/'telegram-purple'))
+def create_xdg_symlink():
+	make_symlink(XDG_CONFIG_HOME/'purple'/'telegram-purple',
+			XDG_CACHE_HOME/'purple'/'telegram-purple',
+			)
+
+@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'icons', XDG_CACHE_HOME/'purple'/'icons'))
+def create_xdg_symlink():
+	make_symlink(XDG_CONFIG_HOME/'purple'/'icons',
+			XDG_CACHE_HOME/'purple'/'icons',
+			)
+
+@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml', XDG_CACHE_HOME/'purple'/'xmpp-caps.xml'))
+def create_xdg_symlink():
+	make_symlink(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml',
+			XDG_CACHE_HOME/'purple'/'xmpp-caps.xml',
+			)
+
+@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'accels', XDG_CACHE_HOME/'purple'/'accels'))
+def create_xdg_symlink():
+	make_symlink(XDG_CONFIG_HOME/'purple'/'accels',
+			XDG_CACHE_HOME/'purple'/'accels',
+			)
+
+@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'logs'))
+def create_xdg_symlink():
+	make_symlink(XDG_CONFIG_HOME/'purple'/'logs',
+			XDG_DATA_HOME/'purple'/'logs',
+			)
+
+@make.unless(is_symlink_to(XDG_CONFIG_HOME/'.freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves'))
+def create_xdg_symlink():
+	make_symlink(XDG_CONFIG_HOME/'.freeciv'/'saves',
+			XDG_DATA_HOME/'freeciv'/'saves',
+			)
+
+@make.unless(is_symlink_to(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim', Path('..')/'bundle'/'pathogen'/'autoload'/'pathogen.vim'))
+def create_xdg_symlink():
+	make_symlink(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim',
+			Path('..')/'bundle'/'pathogen'/'autoload'/'pathogen.vim'
+			)
 
 ################################################################################
 
