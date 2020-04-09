@@ -35,6 +35,7 @@
       <property name="&lt;Super&gt;h" type="string" value="backlight_off"/>
       <property name="&lt;Super&gt;KP_0" type="string" value="xdotool click 1"/>
       <property name="&lt;Super&gt;KP_Decimal" type="string" value="xdotool click 3"/>
+      <property name="&lt;Super&gt;m" type="string" value="xdg in_call.sh toggle"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">

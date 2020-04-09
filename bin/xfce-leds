@@ -76,7 +76,7 @@ if __name__ == "__main__":
 		if 'command' in settings[group]:
 			command = unquote_string(settings[group]['command'])
 			try:
-				state = 0 == subprocess.call([command])
+				state = 0 == subprocess.call(command, shell=True)
 			except FileNotFoundError:
 				sys.stderr.write("Error executing command {0}\n".format(command))
 		elif 'name' in settings[group]:
