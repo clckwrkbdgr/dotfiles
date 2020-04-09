@@ -12,13 +12,15 @@ class Make(object):
 	def __init__(self, rootdir=None):
 		""" If rootdir is not specified, uses parent dir of this script. """
 		self._rootdir = rootdir or Path(__file__).parent
+		self._dry = False
 		self._network = True
 		self._actions = []
-	def run(self, network=True):
+	def run(self, dry=False, network=True):
 		""" Runs registered actions according to the order of definition and corresponding conditions.
 		Changes directory to the rootdir (see __init__).
 		If network is False, does not execute network-dependent actions (see @needs_network).
 		"""
+		self._dry = dry
 		self._network = network
 		os.chdir(str(self._rootdir))
 		for action in make._actions:
@@ -39,15 +41,16 @@ class Make(object):
 		Context should be passed as the first argument of the action function.
 		Context is a namespace with following fields:
 		- condition  - condition function object passed to target.
+		- result  - actual result of the call of the condition function.
 		"""
 		def _decorator(func):
 			func._needs_context = True
 			return func
 		return _decorator
 
-	def unless(self, condition, name=None):
+	def when(self, condition, name=None):
 		""" Decorator for function that tells Make to run the action function
-		unless condition is met.
+		when condition is True.
 		Condition should a callable that returns boolean value.
 		Returns True upon success, False otherwise.
 		Function is expected to return object that can be casted to bool,
@@ -60,15 +63,20 @@ class Make(object):
 			@functools.wraps(func)
 			def _wrapper(*args, **kwargs):
 				condition_name = name or condition.__name__
-				if condition():
+				condition_result = condition()
+				if not condition_result:
 					trace.info('Target {0} is up to date.'.format(condition_name))
 					return True
 				trace.info('Target {0} is out to date.'.format(condition_name))
+				if self._dry:
+					trace.info('Dry run, skipping action {0}'.format(func.__name__))
+					return True
 				trace.info('Running action {0}'.format(func.__name__))
 				try:
 					if hasattr(func, '_needs_context') and func._needs_context:
 						context = types.SimpleNamespace()
 						context.condition = condition
+						context.result = condition_result
 						args = (context,) + args
 					result = func(*args, **kwargs)
 					if result is None:
@@ -84,10 +92,19 @@ class Make(object):
 			self._actions.append(_wrapper)
 			return _wrapper
 		return _decorator
+	def unless(self, condition, name=None):
+		""" Decorator for function that tells Make to run the action function
+		unless condition is met.
+		See description of when() for other details.
+		"""
+		return self.when(functools.wraps(condition)(lambda condition=condition: not condition()), name=name)
+
 	@property
 	def always(self):
 		""" Tells Make to run function always, regardless of any condition. """
-		return self.unless(lambda:False)
+		def run_always(): return False
+		run_always.__name__ = '<run always>'
+		return self.unless(run_always)
 	@property
 	def needs_network(self):
 		""" Tells Make that action needs network to be executed.
@@ -255,15 +272,39 @@ known_symlinks.append(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim')
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
+def find_unknown_symlinks(root, known_symlinks):
+	unknown = []
+	for root, dirnames, filenames in os.walk(str(root)):
+		root = Path(root)
+		for filename in filenames:
+			filename = root/filename
+			if not filename.is_symlink():
+				continue
+			try:
+				if any(filename.samefile(known) for known in known_symlinks):
+					continue
+			except:
+				pass
+			unknown.append(filename)
+	return unknown
+
+@make.when(functools.wraps(find_unknown_symlinks)(functools.partial(find_unknown_symlinks, XDG_CONFIG_HOME, known_symlinks)))
+@make.with_context
+def notify_about_unknown_symlinks(context):
+	print('Found unknown symlinks:')
+	print(context.result)
+	return not bool(context.result)
+
 ################################################################################
 
 if __name__ == '__main__':
 	import argparse
 	parser = argparse.ArgumentParser(description='Main setup script.')
 	parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Verbose output. By default will print only errors and warnings.')
-	parser.add_argument('-n', '--no-network', dest='network', action='store_false', default=True, help='Skip targets that use network (e.g. on metered network connection or when there is no network at all).')
+	parser.add_argument('-n', '--dry-run', dest='dry_run', action='store_true', default=False, help='Do not execute actions, just check conditions and report.')
+	parser.add_argument('-N', '--no-network', dest='network', action='store_false', default=True, help='Skip targets that use network (e.g. on metered network connection or when there is no network at all).')
 	args = parser.parse_args()
 	if args.verbose:
 		trace.setLevel(logging.INFO)
-	if not make.run(network=args.network):
+	if not make.run(dry=args.dry_run, network=args.network):
 		sys.exit(1)
