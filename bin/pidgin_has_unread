@@ -43,7 +43,8 @@ elif [ "$1" == "reset" ]; then
 elif [ "$1" == "show" ]; then
 	message_count
 elif [ -z "$1" ]; then
-	[ "$(message_count)" -gt 0 ] && exit 0
+	messages=$(message_count)
+	[ "${messages:-0}" -gt 0 ] && exit 0
 	exit 1
 else
 	echo "Unknown args: $@" >&2
