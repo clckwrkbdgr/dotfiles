@@ -51,17 +51,27 @@ class Make(object):
 		Context should be passed as the first argument of the action function.
 		Context is a namespace with following fields:
 		- condition  - condition function object passed to target.
+		- args  - condition's args (if there were any.
 		- result  - actual result of the call of the condition function.
 		"""
 		def _decorator(func):
 			func._needs_context = True
 			return func
 		return _decorator
+	def with_name(self, name):
+		""" Overrides name for condition.
+		By default function's __name__ is used.
+		"""
+		def _decorator(func):
+			func._condition_name = name
+			return func
+		return _decorator
 
-	def when(self, condition, name=None):
+	def when(self, condition, *condition_args):
 		""" Decorator for function that tells Make to run the action function
 		when condition is True.
 		Condition should a callable that returns boolean value.
+		If condition_args are supplied, they are passed to condition.
 		Returns True upon success, False otherwise.
 		Function is expected to return object that can be casted to bool,
 		with the exception of None (e.g. when there is no return statement at all):
@@ -72,8 +82,10 @@ class Make(object):
 		def _decorator(func):
 			@functools.wraps(func)
 			def _wrapper(*args, **kwargs):
-				condition_name = name or condition.__name__
-				condition_result = condition()
+				condition_name = condition.__name__
+				if hasattr(func, '_condition_name'):
+					condition_name = func._condition_name
+				condition_result = condition(*condition_args)
 				if not condition_result:
 					trace.info('Target {0} is up to date.'.format(condition_name))
 					return True
@@ -86,6 +98,7 @@ class Make(object):
 					if hasattr(func, '_needs_context') and func._needs_context:
 						context = types.SimpleNamespace()
 						context.condition = condition
+						context.args = condition_args
 						context.result = condition_result
 						args = (context,) + args
 					result = func(*args, **kwargs)
@@ -102,12 +115,12 @@ class Make(object):
 			self._actions.append(_wrapper)
 			return _wrapper
 		return _decorator
-	def unless(self, condition, name=None):
+	def unless(self, condition, *args):
 		""" Decorator for function that tells Make to run the action function
 		unless condition is met.
 		See description of when() for other details.
 		"""
-		return self.when(functools.wraps(condition)(lambda condition=condition: not condition()), name=name)
+		return self.when(functools.wraps(condition)(lambda *_args, condition=condition: not condition(*_args)), *args)
 
 	@property
 	def always(self):
@@ -157,10 +170,7 @@ def update_git_submodules():
 
 
 def bash_command(command):
-	def _actual_check(command=command):
-		return 0 == subprocess.call(command, shell=True, executable='/bin/bash')
-	_actual_check.__name__ = '`{0}`'.format(command)
-	return _actual_check
+	return 0 == subprocess.call(command, shell=True, executable='/bin/bash')
 
 @contextlib.contextmanager
 def CurrentDir(path):
@@ -172,112 +182,127 @@ def CurrentDir(path):
 		os.chdir(old_cwd)
 
 def is_symlink_to(dest, src):
-	def _actual_check():
-		with CurrentDir(Path(dest).parent):
-			return Path(dest).is_symlink() and Path(src).resolve() == Path(dest).resolve()
-	_actual_check.__name__ = str(dest)
-	_actual_check.dest = Path(dest)
-	_actual_check.src = Path(src)
-	return _actual_check
+	with CurrentDir(Path(dest).parent):
+		return Path(dest).is_symlink() and Path(src).resolve() == Path(dest).resolve()
 
 def make_symlink(path, real_path):
 	real_path = Path(real_path)
-	dest.parent.mkdir(parents=True, exists_ok=True)
+	real_path.parent.mkdir(parents=True, exists_ok=True)
 	path = Path(path)
+	path.parent.mkdir(parents=True, exists_ok=True)
 	if path.exists():
 		os.rename(str(path), str(path.with_suffix('.bak')))
 	os.symlink(str(real_path), str(path))
 
-@make.unless(bash_command('xdg && [ -h ~/.bashrc ]'))
+@make.unless(bash_command, 'xdg && [ -h ~/.bashrc ]')
+@make.with_name('`xdg && [ -h ~/.bashrc ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('. xdg && [ -d "$XDG_CONFIG_HOME" ]'))
+@make.unless(bash_command, '. xdg && [ -d "$XDG_CONFIG_HOME" ]')
+@make.with_name('`. xdg && [ -d "$XDG_CONFIG_HOME" ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('. xdg && [ -d "$XDG_DATA_HOME" ]'))
+@make.unless(bash_command, '. xdg && [ -d "$XDG_DATA_HOME" ]')
+@make.with_name('`. xdg && [ -d "$XDG_DATA_HOME" ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('. xdg && [ -d "$XDG_CACHE_HOME" ]'))
+@make.unless(bash_command, '. xdg && [ -d "$XDG_CACHE_HOME" ]')
+@make.with_name('`. xdg && [ -d "$XDG_CACHE_HOME" ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('xdg && [ -h ~/.bashrc ]'))
+@make.unless(bash_command, 'xdg && [ -h ~/.bashrc ]')
+@make.with_name('`xdg && [ -h ~/.bashrc ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('xdg && [ -h ~/.profile ]'))
+@make.unless(bash_command, 'xdg && [ -h ~/.profile ]')
+@make.with_name('`xdg && [ -h ~/.profile ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('xdg && [ -h ~/.xinitrc ]'))
+@make.unless(bash_command, 'xdg && [ -h ~/.xinitrc ]')
+@make.with_name('`xdg && [ -h ~/.xinitrc ]`')
 def test_xdg():
 	return True # TODO actually isn't created by `xdg`, but should it be?
 
-@make.unless(bash_command('xdg && [ -h ~/.w3m ]'))
+@make.unless(bash_command, 'xdg && [ -h ~/.w3m ]')
+@make.with_name('`xdg && [ -h ~/.w3m ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('xdg && [ -h ~/.macromedia ]'))
+@make.unless(bash_command, 'xdg && [ -h ~/.macromedia ]')
+@make.with_name('`xdg && [ -h ~/.macromedia ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('xdg && [ -h ~/.adobe ]'))
+@make.unless(bash_command, 'xdg && [ -h ~/.adobe ]')
+@make.with_name('`xdg && [ -h ~/.adobe ]`')
 def test_xdg():
 	return False
 
-@make.unless(bash_command('. xdg && [ -d "$XDG_CACHE_HOME/vim" ]'))
+@make.unless(bash_command, '. xdg && [ -d "$XDG_CACHE_HOME/vim" ]')
+@make.with_name('`. xdg && [ -d "$XDG_CACHE_HOME/vim" ]`')
 def test_xdg():
 	return False
 
 known_symlinks = []
 
 known_symlinks.append(XDG_CONFIG_HOME/'purple'/'certificates')
-@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates'))
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates')
+@make.with_name(XDG_CONFIG_HOME/'purple'/'certificates_')
 @make.with_context
 def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
+	make_symlink(*context.args)
 
 known_symlinks.append(XDG_CONFIG_HOME/'purple'/'telegram-purple')
-@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'telegram-purple', XDG_CACHE_HOME/'purple'/'telegram-purple'))
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'telegram-purple', XDG_CACHE_HOME/'purple'/'telegram-purple')
+@make.with_name(XDG_CONFIG_HOME/'purple'/'telegram-purple')
 @make.with_context
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
 known_symlinks.append(XDG_CONFIG_HOME/'purple'/'icons')
-@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'icons', XDG_CACHE_HOME/'purple'/'icons'))
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'icons', XDG_CACHE_HOME/'purple'/'icons')
+@make.with_name(XDG_CONFIG_HOME/'purple'/'icons')
 @make.with_context
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
 known_symlinks.append(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml')
-@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml', XDG_CACHE_HOME/'purple'/'xmpp-caps.xml'))
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml', XDG_CACHE_HOME/'purple'/'xmpp-caps.xml')
+@make.with_name(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml')
 @make.with_context
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
 known_symlinks.append(XDG_CONFIG_HOME/'purple'/'accels')
-@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'accels', XDG_CACHE_HOME/'purple'/'accels'))
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'accels', XDG_CACHE_HOME/'purple'/'accels')
+@make.with_name(XDG_CONFIG_HOME/'purple'/'accels')
 @make.with_context
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
 known_symlinks.append(XDG_CONFIG_HOME/'purple'/'logs')
-@make.unless(is_symlink_to(XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'logs'))
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'logs')
+@make.with_name(XDG_CONFIG_HOME/'purple'/'logs')
 @make.with_context
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
 known_symlinks.append(XDG_CONFIG_HOME/'.freeciv'/'saves')
-@make.unless(is_symlink_to(XDG_CONFIG_HOME/'.freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves'))
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'.freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
+@make.with_name(XDG_CONFIG_HOME/'.freeciv'/'saves')
 @make.with_context
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
 known_symlinks.append(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim')
-@make.unless(is_symlink_to(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim', Path('..')/'bundle'/'pathogen'/'autoload'/'pathogen.vim'))
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim', Path('..')/'bundle'/'pathogen'/'autoload'/'pathogen.vim')
+@make.with_name(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim')
 @make.with_context
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
@@ -303,7 +328,7 @@ def find_unknown_symlinks(root, known_symlinks):
 			unknown.append(filename)
 	return unknown
 
-@make.when(functools.wraps(find_unknown_symlinks)(functools.partial(find_unknown_symlinks, XDG_CONFIG_HOME, known_symlinks)))
+@make.when(find_unknown_symlinks, XDG_CONFIG_HOME, known_symlinks)
 @make.with_context
 def notify_about_unknown_symlinks(context):
 	print('Found unknown symlinks:')
