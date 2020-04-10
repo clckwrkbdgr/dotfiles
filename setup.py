@@ -282,6 +282,10 @@ known_symlinks.append(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim')
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
+# Third-party symlinks.
+known_symlinks.append(XDG_CONFIG_HOME/'vim'/'bundle'/'vimoutliner'/'README.detailed')
+known_symlinks.append(XDG_CONFIG_HOME/'firefox'/'lock')
+
 def find_unknown_symlinks(root, known_symlinks):
 	unknown = []
 	for root, dirnames, filenames in os.walk(str(root)):
@@ -294,7 +298,8 @@ def find_unknown_symlinks(root, known_symlinks):
 				if any(filename.samefile(known) for known in known_symlinks):
 					continue
 			except:
-				pass
+				if any(filename.absolute() == known.absolute() for known in known_symlinks):
+					continue
 			unknown.append(filename)
 	return unknown
 
