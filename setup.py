@@ -15,7 +15,7 @@ class Make(object):
 		self._dry = False
 		self._network = True
 		self._actions = []
-	def run(self, dry=False, network=True):
+	def run(self, targets=None, dry=False, network=True):
 		""" Runs registered actions according to the order of definition and corresponding conditions.
 		Changes directory to the rootdir (see __init__).
 		If network is False, does not execute network-dependent actions (see @needs_network).
@@ -23,7 +23,17 @@ class Make(object):
 		self._dry = dry
 		self._network = network
 		os.chdir(str(self._rootdir))
-		for action in make._actions:
+		if targets:
+			actions = []
+			for target in targets:
+				matching = [action for action in make._actions if action.__name__ == target]
+				if not matching:
+					trace.error('No such action defined: {0}'.format(target))
+					return False
+				actions.extend(matching)
+		else:
+			actions = make._actions
+		for action in actions:
 			try:
 				result = action()
 			except Exception as e:
@@ -303,8 +313,9 @@ if __name__ == '__main__':
 	parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Verbose output. By default will print only errors and warnings.')
 	parser.add_argument('-n', '--dry-run', dest='dry_run', action='store_true', default=False, help='Do not execute actions, just check conditions and report.')
 	parser.add_argument('-N', '--no-network', dest='network', action='store_false', default=True, help='Skip targets that use network (e.g. on metered network connection or when there is no network at all).')
+	parser.add_argument('targets', nargs='*', help='Targets to make. By default makes all available targets one by one.')
 	args = parser.parse_args()
 	if args.verbose:
 		trace.setLevel(logging.INFO)
-	if not make.run(dry=args.dry_run, network=args.network):
+	if not make.run(args.targets, dry=args.dry_run, network=args.network):
 		sys.exit(1)
