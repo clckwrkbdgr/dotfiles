@@ -367,7 +367,7 @@ def has_tmp_in_fstab():
 def tmp_should_be_mounted_as_tmpfs():
 	log.error('Add following line to /etc/fstab:')
 	print('tmpfs /tmp tmpfs mode=1777,nosuid,nodev 0 0')
-	return False
+	return False # TODO way to fix automatically with sudo.
 
 @functools.lru_cache()
 def has_tmp_in_mount():
@@ -380,7 +380,7 @@ def has_tmp_in_mount():
 def tmp_should_be_mounted_as_tmpfs():
 	log.error('/tmp is not mounted as tmpfs!')
 	log.error('Restart might be needed.')
-	return False
+	return False # TODO way to fix automatically with sudo.
 
 def XXkb_settings_missing_in_etc(etc_config_file):
 	Xresources = XDG_CONFIG_HOME/'Xresources'
@@ -394,7 +394,14 @@ def XXkb_should_be_set_in_etc(context):
 	trace.error('These XXkb config lines are not present in {0}:'.format(context.args[-1]))
 	for line in context.result:
 		print(line)
-	return False
+	return False # TODO way to fix automatically with sudo.
+
+@make.unless(is_symlink_to, '/etc/lastfmsubmitd.conf', XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf')
+@make.with_name('/etc/lastfmsubmitd.conf')
+@make.with_context
+def lastfmsubmitd_config_should_be_linked_to_etc(context):
+	trace.error('{0} is not symlink to {1}'.format(context.args[0], context.args[1]))
+	return False # TODO way to fix automatically with sudo.
 
 ################################################################################
 
