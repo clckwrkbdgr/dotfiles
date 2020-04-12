@@ -4,8 +4,29 @@ from pathlib import Path
 import functools, types
 import contextlib
 import logging
+try:
+	import termcolor
+except ImportError:
+	termcolor = types.SimpleNamespace()
+	termcolor.colored = lambda s, *args, **kwargs: s
+
 trace = logging.getLogger('setup')
-trace.addHandler(logging.StreamHandler())
+class ColoredFormatter(logging.Formatter):
+	COLORS = {
+			'DEBUG': 'blue',
+			'INFO': 'green',
+			'WARNING': 'yellow',
+			'CRITICAL': 'magenta',
+			'ERROR': 'red',
+			}
+	def format(self, record):
+		return termcolor.colored(
+				super(ColoredFormatter, self).format(record),
+				ColoredFormatter.COLORS.get(record.levelname, 'white'),
+				)
+_colored_stdout_handler = logging.StreamHandler()
+_colored_stdout_handler.setFormatter(ColoredFormatter())
+trace.addHandler(_colored_stdout_handler)
 
 class Make(object):
 	""" Decorator factory and repository for setup actions."""
@@ -89,11 +110,11 @@ class Make(object):
 				if not condition_result:
 					trace.info('Target {0} is up to date.'.format(condition_name))
 					return True
-				trace.info('Target {0} is out to date.'.format(condition_name))
+				trace.warning('Target {0} is out of date.'.format(condition_name))
 				if self._dry:
-					trace.info('Dry run, skipping action {0}'.format(func.__name__))
+					trace.debug('Dry run, skipping action {0}'.format(func.__name__))
 					return True
-				trace.info('Running action {0}'.format(func.__name__))
+				trace.debug('Running action {0}'.format(func.__name__))
 				try:
 					if hasattr(func, '_needs_context') and func._needs_context:
 						context = types.SimpleNamespace()
@@ -137,7 +158,7 @@ class Make(object):
 			@functools.wraps(func)
 			def _wrapper(*args, **kwargs):
 				if not self._network:
-					trace.info('Switched off {0} because network is off.'.format(func.__name__))
+					trace.warning('Switched off {0} because network is off.'.format(func.__name__))
 					return None
 				return func(*args, **kwargs)
 			return _wrapper
@@ -372,6 +393,6 @@ if __name__ == '__main__':
 	parser.add_argument('targets', nargs='*', help='Targets to make. By default makes all available targets one by one.')
 	args = parser.parse_args()
 	if args.verbose:
-		trace.setLevel(logging.INFO)
+		trace.setLevel(logging.DEBUG)
 	if not make.run(args.targets, dry=args.dry_run, network=args.network):
 		sys.exit(1)
