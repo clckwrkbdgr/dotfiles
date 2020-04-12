@@ -331,9 +331,35 @@ def find_unknown_symlinks(root, known_symlinks):
 @make.when(find_unknown_symlinks, XDG_CONFIG_HOME, known_symlinks)
 @make.with_context
 def notify_about_unknown_symlinks(context):
-	print('Found unknown symlinks:')
-	print(context.result)
+	log.error('Found unknown symlinks:')
+	log.error(context.result)
 	return not bool(context.result)
+
+@functools.lru_cache()
+def has_tmp_in_fstab():
+	for line in Path('/etc/fstab').read_text().splitlines():
+		if line.split()[:2] == ['tmpfs', '/tmp']:
+			return True
+	return False
+
+@make.unless(has_tmp_in_fstab)
+def check_tmp_fs():
+	log.error('Add following line to /etc/fstab:')
+	log.error('tmpfs /tmp tmpfs mode=1777,nosuid,nodev 0 0')
+	return False
+
+@functools.lru_cache()
+def has_tmp_in_mount():
+	for line in subprocess.check_output(['mount']).decode().splitlines():
+		if line.split()[:3] == ['tmpfs', 'on', '/tmp']:
+			return True
+	return False
+
+@make.unless(has_tmp_in_mount)
+def check_tmp_fs():
+	log.error('/tmp is not mounted as tmpfs!')
+	log.error('Restart might be needed.')
+	return False
 
 ################################################################################
 
