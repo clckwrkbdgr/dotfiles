@@ -403,6 +403,39 @@ def lastfmsubmitd_config_should_be_linked_to_etc(context):
 	trace.error('{0} is not symlink to {1}'.format(context.args[0], context.args[1]))
 	return False # TODO way to fix automatically with sudo.
 
+LASTFMSUBMITD_MONIT = """\
+check process lastfmsubmitd with pidfile /var/run/lastfm/lastfmsubmitd.pid
+  start program = "/usr/sbin/service lastfmsubmitd restart"
+  stop program = "/usr/sbin/service lastfmsubmitd stop"
+  group lastfm
+"""
+MONIT_CONF_DIR = Path('/etc/monit/conf.d/')
+
+def file_has_content(filename, content):
+	filename = Path(filename)
+	if not filename.is_file():
+		return False
+	if filename.read_text() != content:
+		return False
+	return True
+
+@make.unless(file_has_content, MONIT_CONF_DIR/'lastfmsubmitd', LASTFMSUBMITD_MONIT)
+@make.with_name(MONIT_CONF_DIR/'lastfmsubmitd')
+@make.with_context
+def monit_should_contain_lastfmsubmitd_entry(context):
+	trace.error('{0} is missing or does not contain following content:'.format(context.args[0]))
+	print(context.args[1])
+	return False # TODO way to fix automatically with sudo.
+
+@make.unless(os.path.isdir, '/run/lastfm')
+@make.with_name('/run/lastfm')
+@make.with_context
+def lastfmsubmitd_runtime_dir_should_exist(context):
+	trace.error('Directory {0} is missing.'.format(context.args[0]))
+	trace.error('Create it and restart lastfmsubmitd service:')
+	print('sudo /usr/sbin/service lastfmsubmitd restart')
+	return False # TODO way to fix automatically with sudo.
+
 ################################################################################
 
 if __name__ == '__main__':
