@@ -364,9 +364,9 @@ def has_tmp_in_fstab():
 	return False
 
 @make.unless(has_tmp_in_fstab)
-def check_tmp_fs():
+def tmp_should_be_mounted_as_tmpfs():
 	log.error('Add following line to /etc/fstab:')
-	log.error('tmpfs /tmp tmpfs mode=1777,nosuid,nodev 0 0')
+	print('tmpfs /tmp tmpfs mode=1777,nosuid,nodev 0 0')
 	return False
 
 @functools.lru_cache()
@@ -377,9 +377,23 @@ def has_tmp_in_mount():
 	return False
 
 @make.unless(has_tmp_in_mount)
-def check_tmp_fs():
+def tmp_should_be_mounted_as_tmpfs():
 	log.error('/tmp is not mounted as tmpfs!')
 	log.error('Restart might be needed.')
+	return False
+
+def XXkb_settings_missing_in_etc(etc_config_file):
+	Xresources = XDG_CONFIG_HOME/'Xresources'
+	local_XXkb = set([line for line in Xresources.read_text().splitlines() if line.startswith('XXkb.')])
+	missing = local_XXkb - set(Path(etc_config_file).read_text().splitlines())
+	return missing
+
+@make.when(XXkb_settings_missing_in_etc, '/etc/X11/app-defaults/XXkb')
+@make.with_context
+def XXkb_should_be_set_in_etc(context):
+	trace.error('These XXkb config lines are not present in {0}:'.format(context.args[-1]))
+	for line in context.result:
+		print(line)
 	return False
 
 ################################################################################
