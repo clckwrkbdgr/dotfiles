@@ -42,8 +42,10 @@ svn() { /usr/bin/svn --config-dir "$XDG_CONFIG_HOME/subversion" "$@"; }
 export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
 export VIMPERATOR_RUNTIME="$XDG_CONFIG_HOME/vimperator"
 export VIMINIT='let $MYVIMRC="'"$XDG_CONFIG_HOME"'/vim/vimrc" | source $MYVIMRC'
-if [ "$0" == "bash" ]; then
-	case "$SHELL" in *bash*) eval `dircolors "$XDG_CONFIG_HOME/dir_colors"` ;; esac
+if [ -n "$BASH" ]; then
+	if [ "$0" == "bash" ]; then
+		case "$SHELL" in *bash*) eval `dircolors "$XDG_CONFIG_HOME/dir_colors"` ;; esac
+	fi
 fi
 export MAILRC=~/.config/mailx/mailrc
 dosbox() { /usr/bin/dosbox -conf $XDG_CONFIG_HOME/dosbox/dosbox-0.74.conf "$@"; }
@@ -115,6 +117,8 @@ export ICEAUTHORITY="$XDG_RUNTIME_DIR/ICEauthority"
 
 # If supplied, run command in XDG-compliant environment.
 # If XDG_HOME is set, it substitutes original HOME variable for the command invokation.
-[ "$0" == "$BASH_SOURCE" -a -n "$1" ] && HOME=${XDG_HOME:-$HOME} "$@"
+if [ -n "$BASH" ]; then
+	[ "$0" == "$BASH_SOURCE" -a -n "$1" ] && HOME=${XDG_HOME:-$HOME} "$@"
+fi
 
 true # To return EXIT_SUCCESS
