@@ -436,6 +436,10 @@ def lastfmsubmitd_runtime_dir_should_exist(context):
 	print('sudo /usr/sbin/service lastfmsubmitd restart')
 	return False # TODO way to fix automatically with sudo.
 
+@make.always
+def update_crontab():
+	return 0 == subprocess.call(['update_crontab.py'])
+
 ################################################################################
 
 if __name__ == '__main__':
