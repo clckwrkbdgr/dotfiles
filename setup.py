@@ -144,13 +144,7 @@ class Make(object):
 		return self.when(functools.wraps(condition)(lambda *_args, condition=condition: not condition(*_args)), *args)
 
 	@property
-	def always(self):
-		""" Tells Make to run function always, regardless of any condition. """
-		def run_always(): return False
-		run_always.__name__ = '<run always>'
-		return self.unless(run_always)
-	@property
-	def needs_network(self):
+	def needs_network(self): # TODO not used anymore, should be removed?
 		""" Tells Make that action needs network to be executed.
 		Otherwise it should be skipped.
 		"""
@@ -179,16 +173,20 @@ def git_config_includes_gitconfig():
 
 @make.unless(git_config_includes_gitconfig)
 def ensure_git_config_includes_gitconfig():
-	(Path('.git')/'config').read_text().splitlines()
 	with (Path('.git')/'config').open('a+') as f:
 		f.write('[include]\n')
 		f.write('	path=../.gitconfig\n')
 
-@make.always
-@make.needs_network
-def update_git_submodules():
-	subprocess.call(['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge'])
+def git_submodules_are_configured():
+	gitconfig = configparser.ConfigParser()
+	gitconfig.read([str(Path('.git')/'config')])
+	gitmodules = configparser.ConfigParser()
+	gitmodules.read(['.gitmodules'])
+	return not (set(gitmodules.keys()) - set(gitconfig.keys()))
 
+@make.unless(git_submodules_are_configured)
+def init_git_submodules():
+	return 0 == subprocess.call(['git', 'submodule', 'init'])
 
 def bash_command(command):
 	return 0 == subprocess.call(command, shell=True, executable='/bin/bash')
@@ -436,7 +434,12 @@ def lastfmsubmitd_runtime_dir_should_exist(context):
 	print('sudo /usr/sbin/service lastfmsubmitd restart')
 	return False # TODO way to fix automatically with sudo.
 
-@make.always
+def crontab_is_set():
+	current_crontab = subprocess.check_output(['crontab', '-l'])
+	basic_crontab = (XDG_CONFIG_HOME/'crontab').read_bytes()
+	return basic_crontab in current_crontab
+
+@make.unless(crontab_is_set)
 def update_crontab():
 	return 0 == subprocess.call(['update_crontab.py'])
 
@@ -447,7 +450,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Main setup script.')
 	parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Verbose output. By default will print only errors and warnings.')
 	parser.add_argument('-n', '--dry-run', dest='dry_run', action='store_true', default=False, help='Do not execute actions, just check conditions and report.')
-	parser.add_argument('-N', '--no-network', dest='network', action='store_false', default=True, help='Skip targets that use network (e.g. on metered network connection or when there is no network at all).')
+	parser.add_argument('-N', '--no-network', dest='network', action='store_false', default=True, help='Skip targets that use network (e.g. on metered network connection or when there is no network at all).') # TODO isn't used anymore, should be removed?
 	parser.add_argument('targets', nargs='*', help='Targets to make. By default makes all available targets one by one.')
 	args = parser.parse_args()
 	if args.verbose:
