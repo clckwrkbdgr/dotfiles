@@ -443,6 +443,19 @@ def crontab_is_set():
 def update_crontab():
 	return 0 == subprocess.call(['update_crontab.py'])
 
+def patch_is_applied(destfile, patch):
+	with CurrentDir(Path(destfile).parent):
+		return 0 == subprocess.call(['patch', '-R', '-s', '-f', '--dry-run', str(destfile), '-i', str(patch)], stdout=subprocess.DEVNULL)
+
+def apply_patch(destfile, patch):
+	return 0 == subprocess.call(['patch', str(destfile), '-i', str(patch)])
+
+@make.unless(patch_is_applied, Path('/usr/bin/when').expanduser(), XDG_CONFIG_HOME/'patch'/'when-1.1.36-xdg.patch')
+@make.with_context
+def patch_when(context):
+	return apply_patch(*context.args) # TODO needs sudo
+
+
 ################################################################################
 
 if __name__ == '__main__':
