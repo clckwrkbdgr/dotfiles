@@ -1,64 +1,11 @@
-# .bashrc
-
-# Source global definitions
-if [ -f /etc/bashrc ]; then
-	. /etc/bashrc
-fi
+export HISTCONTROL=ignoredups
 
 # Section for XDG directory support.
-. ~/.config/bin/xdg
+. ~/.config/bin/xdg # TODO should source here only the shell-specific part, not the full runner script.
 
+. "$XDG_CONFIG_HOME/bash/aliases.bash"
 
-# User specific aliases and functions
-if env | grep -q VIMRUNTIME; then IS_VIM="(vim)"; else IS_VIM=""; fi
-export EDITOR=vim
-export PAGER=less
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
-export LC_COLLATE=C # For `ls' not to mix upper and lower case letters.
-export SDL_VIDEO_CENTERED=1
-export GREP_COLOR='1;32'
-export HISTCONTROL=ignoredups
-export MAILPATH="/var/mail/$USER"
-export PYGAME_HIDE_SUPPORT_PROMPT=true
-alias rm='rm -i'
-alias mv='mv -i'
-alias cp='cp -i'
-alias ls='ls --color=auto -F'
-alias shuffle='find . -type f | sort -R | tail'
-alias s='search.sh'
-alias isodate='date +%Y-%m-%dT%H:%M:%S'
-alias ranger-ctime='ranger --cmd="set sort ctime" --cmd="set sort_reverse true"'
-alias qiv='qiv -f -t -i'
-alias grep='grep --color=auto'
-
-# Prompt
-WHITE='\[\033[1;37m\]'
-RED='\[\033[1;31m\]'
-NORMAL='\[\033[0m\]'
-xterm_title() { echo "\[\033]0;$1\a\]"; }
-strip_escape_sequences() { sed 's%\\033\(\[[0-9]\+\(;[0-9]\+\)\?m\|\][0-9]\+;\)%%g;s%\\\[\\\]%%g'; }
-strip_unimportant_PS1_stuff() { sed 's/\\u@\\h://;s/\\s-\\v//g;s/\\[Wwa$]//g;s/ \+$//;s/\$(list_dotfiles)//g'; }
-PS1=$(echo "$PS1" | strip_unimportant_PS1_stuff | strip_escape_sequences)
-MY_SHELL_LEVEL=$((SHLVL-2)) # For GUI interactive shells: 1 for GUI + 1 for terminal
-if [ "$MY_SHELL_LEVEL" -le 0 ]; then
-	MY_SHELL_LEVEL=
-else
-	if [ "$RANGER_LEVEL" != "$PREV_RANGER_LEVEL" ]; then
-		export PREV_RANGER_LEVEL=$RANGER_LEVEL
-		# Ranger apparently starts login bash and loads default PS1, so all previous stacks are lost.
-		MY_SHELL_LEVEL="(ranger-$RANGER_LEVEL)"
-	elif [ "$TMUX" != "$PREV_TMUX" ]; then
-		export PREV_TMUX=$TMUX
-		MY_SHELL_LEVEL="(tmux)"
-	else
-		MY_SHELL_LEVEL="(bash)"
-	fi
-fi
-export PS1="${RED}\$(list_dotfiles)${MY_SHELL_LEVEL}${PS1}${WHITE}${IS_VIM}"'\W\$'"${NORMAL} "
-#export PS1="${RED}\$(list_dotfiles)${WHITE}${IS_VIM}${PS1}"'\W\$'"${NORMAL} "'$(xterm_title \w)'
-export PS2="${WHITE}>${NORMAL} " # >
-export PS4="${WHITE}+${NORMAL} " # +
-unset WHITE RED NORMAL
+. "$XDG_CONFIG_HOME/bash/prompt.bash"
 
 # User private settings.
-[ -f ~/.local/profile ] && source ~/.local/profile
+[ -f ~/.local/bashrc ] && source ~/.local/bashrc

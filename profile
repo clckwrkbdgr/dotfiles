@@ -1,22 +1,36 @@
-#!/bin/sh
-
 [ -z "$LC_CTYPE" ] && export LC_CTYPE=en_US.utf8
-
-# if running bash
-if [ -n "$BASH_VERSION" ]; then
-    # include .bashrc if it exists
-    if [ -f "$HOME/.bashrc" ]; then
-	. "$HOME/.bashrc"
-    fi
-fi
+export LC_COLLATE=C # For `ls' not to mix upper and lower case letters.
+[ -z "$MAILPATH" ] && export MAILPATH="/var/mail/$USER"
+export SDL_VIDEO_CENTERED=1
+export PYGAME_HIDE_SUPPORT_PROMPT=true
+[ -z "$PKG_CONFIG_PATH" ] && export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+export EDITOR=vim
+export PAGER=less
+export GREP_COLOR='1;32'
 
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/bin" ] ; then
-    PATH="$HOME/bin:$PATH"
+	PATH="$HOME/bin:$PATH"
 fi
 if [ -d "$HOME/.config/bin" ] ; then
-    PATH="$HOME/.config/bin:$PATH"
+	PATH="$HOME/.config/bin:$PATH"
 fi
 if [ -d "$HOME/.local/bin" ] ; then
-    PATH="$HOME/.local/bin:$PATH"
+	PATH="$HOME/.local/bin:$PATH"
+fi
+export PATH
+
+# Section for XDG directory support.
+. ~/.config/bin/xdg # TODO should source here only the environment-specific part, not the full runner script.
+
+# User private settings.
+[ -f ~/.local/profile ] && source ~/.local/profile
+
+# For interactive login shell it's better to source shell rc.
+if [ -n "$BASH_VERSION" ]; then
+	if [ -n "$PS1" ]; then
+		if [ -f "$HOME/.bashrc" ]; then
+			. "$HOME/.bashrc"
+		fi
+	fi
 fi

@@ -1,0 +1,11 @@
+# User specific aliases.
+alias rm='rm -i'
+alias mv='mv -i'
+alias cp='cp -i'
+alias ls='ls --color=auto -F'
+alias shuffle='find . -type f | sort -R | tail'
+alias s='search.sh'
+alias isodate='date +%Y-%m-%dT%H:%M:%S'
+alias ranger-ctime='ranger --cmd="set sort ctime" --cmd="set sort_reverse true"'
+alias qiv='qiv -f -t -i'
+alias grep='grep --color=auto'
