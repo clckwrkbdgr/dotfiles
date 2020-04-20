@@ -24,7 +24,7 @@
 
 ## [L] Login shell
 
-**Login shell** (whether interactive or not) is a shell opened for logging user in, either physically via local terminal, or remotely e.g. via ssh. This shell starts for user session and sources set of files _once_. It should prepare full environment that will be available to all subprocesses.
+**Login shell** (whether interactive or not) is a shell opened for logging user in, either physically via local terminal, or remotely e.g. via ssh. This shell starts for user session and sources set of files _once_. It should prepare full environment that will be propagated to all subprocesses. GUI sessions usually also start non-interactive login shell which perform login via DM (e.g. `xdm`), thus the environment prepared with `*profile` is inherited by any application started using desktop icons, menus, DM keybindings or any other GUI way.
 
 No executable program (mail check, greetings etc) is expected here (even for interactive login shells). Use non-login source files for that purpose. The only exception is session-related programs that should be called only once: `ssh-agent`, `screen`/`tmux` etc.
 
@@ -53,7 +53,7 @@ However, for original Born shell (`/bin/sh`) and Korn shell (`ksh`) environment 
 
 **Non-login shell** (interactive only) is a shell started explicitly by user within its user session. E.g. opening subshell from command line, or starting interactive shell from subprocess (`:sh` in Vim).
 
-Such shells re-execute startup file sequences for each new (sub)process.
+Such shells re-execute startup file sequences for each new (sub)process. E.g. if some existing enviroment variables get expanded, they will be for each level of subshell, which may result in needless duplication. Settings like these are better to be placed to `.profile`.
 
 Shell configuration related to user interaction is done here: aliases, functions, prompt, shell options etc.
 
