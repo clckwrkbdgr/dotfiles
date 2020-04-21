@@ -1,3 +1,9 @@
+#!/bin/sh
+[ -z "$SHELL" ] && export SHELL=/bin/bash
+[ -z "$MAILTO" ] && export MAILTO=$LOGNAME
+[ -z "$TERM" ] && export TERM=xterm
+[ -z "$DISPLAY" ] && export DISPLAY=:0.0
+
 [ -z "$LC_CTYPE" ] && export LC_CTYPE=en_US.utf8
 export LC_COLLATE=C # For `ls' not to mix upper and lower case letters.
 [ -z "$MAILPATH" ] && export MAILPATH="/var/mail/$USER"
@@ -24,7 +30,7 @@ export PATH
 . ~/.config/bin/xdg # TODO should source here only the environment-specific part, not the full runner script.
 
 # User private settings.
-[ -f ~/.local/profile ] && source ~/.local/profile
+[ -f ~/.local/profile ] && . ~/.local/profile
 
 # For interactive login shell it's better to source shell rc.
 if [ -n "$BASH_VERSION" ]; then
