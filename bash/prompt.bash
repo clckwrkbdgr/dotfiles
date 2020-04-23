@@ -18,7 +18,8 @@ if [ -n "$TMUX" ]; then
 fi
 
 # Current dir state/info.
-PS_dir="\$(list_dotfiles)"
+. "$XDG_CONFIG_HOME/bash/dotfiles_info.bash"
+PS_dir="\$(dotfiles_info)"
 
 # Main prompt settings.
 PS1='\W\$'
