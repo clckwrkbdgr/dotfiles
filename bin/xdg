@@ -2,23 +2,9 @@
 # Script for XDG directory support.
 # Tries to make XDG-compliant environment.
 
-# Basic XDG structure.
-export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
-export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
-export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
-export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
-# Non-standard setting for logs/history/app state etc.
-# See https://stackoverflow.com/a/27965014/2128769
-#     https://wiki.debian.org/XDGBaseDirectorySpecification#state
-export XDG_STATE_HOME=${XDG_STATE_HOME:-$HOME/.state}
-# Obsolete/deprecated settings.
-export XDG_LOG_HOME=${XDG_STATE_HOME}
-
-# Ensuring physical XDG structure presence.
-[ -d "$XDG_CONFIG_HOME" ] || mkdir -p "$XDG_CONFIG_HOME"
-[ -d "$XDG_CACHE_HOME"  ] || mkdir -p "$XDG_CACHE_HOME"
-[ -d "$XDG_DATA_HOME"   ] || mkdir -p "$XDG_DATA_HOME"
-[ -d "$XDG_STATE_HOME"  ] || mkdir -p "$XDG_STATE_HOME"
+. ~/.config/xdg/base.sh
+. ~/.config/xdg/config.sh
+. ~/.config/xdg/data.sh
 
 # Fixes for hardcoded homedir dotfiles.
 fix_hardcoded_dotfile() {
@@ -33,32 +19,23 @@ fix_hardcoded_dotfile() {
 # Configurations. Should be stored under VCS.
 fix_hardcoded_dotfile ~/.bashrc "$XDG_CONFIG_HOME/bash/bashrc"
 fix_hardcoded_dotfile ~/.profile "$XDG_CONFIG_HOME/profile"
-export GIMP2_DIRECTORY="$XDG_CONFIG_HOME/gimp"
-export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
 mocp() { /usr/bin/mocp -C "$XDG_CONFIG_HOME/moc/config" "$@"; }
 [ -n "$BASH" ] && export -f mocp
 svn() { /usr/bin/svn --config-dir "$XDG_CONFIG_HOME/subversion" "$@"; }
 [ -n "$BASH" ] && export -f svn
-export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
-export VIMPERATOR_RUNTIME="$XDG_CONFIG_HOME/vimperator"
-export VIMINIT='let $MYVIMRC="'"$XDG_CONFIG_HOME"'/vim/vimrc" | source $MYVIMRC'
 if [ -n "$BASH" ]; then
 	if [ "$0" == "bash" ]; then
 		case "$SHELL" in *bash*) eval `dircolors "$XDG_CONFIG_HOME/dir_colors"` ;; esac
 	fi
 fi
-export MAILRC=~/.config/mailx/mailrc
 dosbox() { /usr/bin/dosbox -conf $XDG_CONFIG_HOME/dosbox/dosbox-0.74.conf "$@"; }
 [ -n "$BASH" ] && export -f dosbox
 prboom() { /usr/local/games/prboom-plus -config $XDG_CONFIG_HOME/prboom-plus/prboom-plus.cfg -save $XDG_DATA_HOME/prboom-plus "$@"; }
 [ -n "$BASH" ] && export -f prboom
-export PENTADACTYL_RUNTIME=$XDG_CONFIG_HOME/pentadactyl
 sylpheed() { /usr/bin/sylpheed --configdir $XDG_CONFIG_HOME/sylpheed-2.0 "$@"; }
 [ -n "$BASH" ] && export -f sylpheed
-export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 # TODO .w3m : hardcoded
 fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
-export XRE_PROFILE_PATH="$XDG_CONFIG_HOME/firefox"
 # TODO .mozilla : for some reason ~/.mozilla/{extensions,firefox} are getting recreated on every launch, empty and useless
 # TODO .gnome2 : apparently firefox using this?
 # TODO .gnome2_private : apparently firefox using this?
@@ -74,8 +51,6 @@ esac
 
 # Local data. Should be stored in some backup or outer storage.
 export WINEPREFIX=/opt/wine-$USER
-export GNUPGHOME="$XDG_DATA_HOME"/gnupg
-export ENCHANT_CONFIG_DIR="$XDG_DATA_HOME"/enchant
 # TODO .dropbox : hardcoded
 # TODO .dropbox-dist : hardcoded
 # TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
@@ -98,9 +73,6 @@ pidgin() {
 	/usr/bin/pidgin --config=$XDG_CONFIG_HOME/purple "$@";
 }
 [ -n "$BASH" ] && export -f pidgin
-export FREECIV_SAVE_PATH="$XDG_DATA_HOME"/freeciv/saves
-export FREECIV_SCENARIO_PATH="$XDG_DATA_HOME"/freeciv/scenarios:/usr/share/freeciv/scenarios:/usr/share/games/freeciv/scenarios:/usr/local/share/freeciv/scenarios
-export FREECIV_DATA_PATH="$XDG_DATA_HOME"/freeciv:/usr/share/freeciv:/usr/share/games/freeciv:/usr/local/share/freeciv
 
 # These could easily be cleared at any time without loss of any important data.
 export LESSHISTFILE="$XDG_STATE_HOME/less_history"
