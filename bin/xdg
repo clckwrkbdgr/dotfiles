@@ -22,8 +22,6 @@ fix_hardcoded_dotfile() {
 # Configurations. Should be stored under VCS.
 fix_hardcoded_dotfile ~/.bashrc "$XDG_CONFIG_HOME/bash/bashrc"
 fix_hardcoded_dotfile ~/.profile "$XDG_CONFIG_HOME/profile"
-mocp() { /usr/bin/mocp -C "$XDG_CONFIG_HOME/moc/config" "$@"; }
-[ -n "$BASH" ] && export -f mocp
 svn() { /usr/bin/svn --config-dir "$XDG_CONFIG_HOME/subversion" "$@"; }
 [ -n "$BASH" ] && export -f svn
 if [ -n "$BASH" ]; then

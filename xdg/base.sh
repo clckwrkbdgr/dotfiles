@@ -15,3 +15,6 @@ export XDG_LOG_HOME=${XDG_STATE_HOME}
 [ -d "$XDG_CACHE_HOME"  ] || mkdir -p "$XDG_CACHE_HOME"
 [ -d "$XDG_DATA_HOME"   ] || mkdir -p "$XDG_DATA_HOME"
 [ -d "$XDG_STATE_HOME"  ] || mkdir -p "$XDG_STATE_HOME"
+
+# Path to custom XDG wrappers for known cases.
+export PATH="$XDG_CONFIG_HOME/xdg/bin:$PATH"

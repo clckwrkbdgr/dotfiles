@@ -1,0 +1,19 @@
+#!/bin/sh
+strip_from_path() { # <binpath directory>
+	[ -z "$1" ] && return 1
+	PATH="`echo "$PATH" | tr ':' '\n' | fgrep -v "${1}" | tr '\n' ':'`"
+}
+
+strip_current_path() {
+	strip_from_path "`dirname "$0"`"
+}
+
+exec_basic_executable() { # <args...>
+	strip_current_path
+	export PATH
+	executable_basename="`basename "$0"`"
+	[ -n "$DEBUG_XDG" ] && which "$executable_basename"
+	exec "$executable_basename" "$@"
+}
+
+exec_basic_executable -C "$XDG_CONFIG_HOME/moc/config" "$@"
