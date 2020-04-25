@@ -18,7 +18,7 @@ if [ -n "$TMUX" ]; then
 fi
 
 # Current dir state/info.
-. "$XDG_CONFIG_HOME/bash/dotfiles_info.bash"
+. "$XDG_CONFIG_HOME/bash/dotfiles_info.inc.bash"
 PS_dir="\$(dotfiles_info)"
 
 # Main prompt settings.
@@ -27,7 +27,7 @@ PS2=">"
 PS4="+"
 
 # Coloring.
-. "$XDG_CONFIG_HOME/bash/colors.bash"
+. "$XDG_CONFIG_HOME/bash/colors.inc.bash"
 export PS1="\[${bold_yellow}\]${PS_dir}\[${bold_red}\]${PS_sub}\[${bold_white}\]${PS1}\[${reset_color}\] "
 export PS2="\[${bold_white}\]${PS2}\[${reset_color}\] "
 export PS4="\[${bold_white}\]${PS4}\[${reset_color}\] "
