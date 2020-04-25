@@ -8,6 +8,7 @@
 . ~/.config/xdg/state.inc.sh
 . ~/.config/xdg/cache.inc.sh
 . ~/.config/xdg/runtime.inc.sh
+. ~/.config/xdg/path.inc.sh
 
 # Fixes for hardcoded homedir dotfiles.
 fix_hardcoded_dotfile() {
