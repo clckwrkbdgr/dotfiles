@@ -1,4 +1,5 @@
 # Customizations for XDG compliance: XDG_DATA_HOME
+# Local data. Should be stored in some backup or outer storage.
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export ENCHANT_CONFIG_DIR="$XDG_DATA_HOME"/enchant
 export FREECIV_SAVE_PATH="$XDG_DATA_HOME"/freeciv/saves

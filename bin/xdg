@@ -5,6 +5,9 @@
 . ~/.config/xdg/base.sh
 . ~/.config/xdg/config.sh
 . ~/.config/xdg/data.sh
+. ~/.config/xdg/state.sh
+. ~/.config/xdg/cache.sh
+. ~/.config/xdg/runtime.sh
 
 # Fixes for hardcoded homedir dotfiles.
 fix_hardcoded_dotfile() {
@@ -75,17 +78,11 @@ pidgin() {
 [ -n "$BASH" ] && export -f pidgin
 
 # These could easily be cleared at any time without loss of any important data.
-export LESSHISTFILE="$XDG_STATE_HOME/less_history"
-export RLWRAP_HOME="$XDG_STATE_HOME/rlwrap_history"
-export HISTFILE="$XDG_STATE_HOME/bash_history"
-mkdir -p "$XDG_CACHE_HOME/vim"
 wget() { /usr/bin/wget --hsts-file "$XDG_CACHE_HOME/wget-hsts" "$@"; }
 [ -n "$BASH" ] && export -f wget
 
 # These are valid only for one session and could placed even in RAM.
 # TODO .dbus : ~/.config/xfce4/xinitrc will probably handle dbus-launch, how to pass XDG_RUNTIME_DIR to it?
-export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
-export ICEAUTHORITY="$XDG_RUNTIME_DIR/ICEauthority"
 
 # If supplied, run command in XDG-compliant environment.
 # If XDG_HOME is set, it substitutes original HOME variable for the command invokation.

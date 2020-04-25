@@ -1,4 +1,5 @@
 # Customizations for XDG compliance: XDG_CONFIG_HOME
+# Configurations. Should be stored under VCS.
 export GIMP2_DIRECTORY="$XDG_CONFIG_HOME/gimp"
 export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
 export VIMPERATOR_INIT=":source $XDG_CONFIG_HOME/vimperator/vimperatorrc"
