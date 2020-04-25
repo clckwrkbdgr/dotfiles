@@ -2,12 +2,12 @@
 # Script for XDG directory support.
 # Tries to make XDG-compliant environment.
 
-. ~/.config/xdg/base.sh
-. ~/.config/xdg/config.sh
-. ~/.config/xdg/data.sh
-. ~/.config/xdg/state.sh
-. ~/.config/xdg/cache.sh
-. ~/.config/xdg/runtime.sh
+. ~/.config/xdg/base.inc.sh
+. ~/.config/xdg/config.inc.sh
+. ~/.config/xdg/data.inc.sh
+. ~/.config/xdg/state.inc.sh
+. ~/.config/xdg/cache.inc.sh
+. ~/.config/xdg/runtime.inc.sh
 
 # Fixes for hardcoded homedir dotfiles.
 fix_hardcoded_dotfile() {
