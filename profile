@@ -13,6 +13,7 @@ export PYGAME_HIDE_SUPPORT_PROMPT=true
 export EDITOR=vim
 export PAGER=less
 export GREP_COLOR='1;32'
+export WINEPREFIX=/opt/wine-$USER
 
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/bin" ] ; then

@@ -35,7 +35,6 @@ fix_hardcoded_dotfile ~/.freeciv "$XDG_CONFIG_HOME/freeciv"
 fix_hardcoded_dotfile "$XDG_CONFIG_HOME/freeciv/saves" "$XDG_DATA_HOME/freeciv/saves"
 
 # Local data. Should be stored in some backup or outer storage.
-export WINEPREFIX=/opt/wine-$USER
 # TODO .dropbox : hardcoded
 # TODO .dropbox-dist : hardcoded
 # TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
