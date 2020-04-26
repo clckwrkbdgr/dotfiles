@@ -24,11 +24,6 @@ fix_hardcoded_dotfile() {
 # Configurations. Should be stored under VCS.
 fix_hardcoded_dotfile ~/.bashrc "$XDG_CONFIG_HOME/bash/bashrc"
 fix_hardcoded_dotfile ~/.profile "$XDG_CONFIG_HOME/profile"
-if [ -n "$BASH" ]; then
-	if [ "$0" == "bash" ]; then
-		case "$SHELL" in *bash*) eval `dircolors "$XDG_CONFIG_HOME/dir_colors"` ;; esac
-	fi
-fi
 # TODO .w3m : hardcoded
 fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
 # TODO .mozilla : for some reason ~/.mozilla/{extensions,firefox} are getting recreated on every launch, empty and useless

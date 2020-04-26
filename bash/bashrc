@@ -7,5 +7,7 @@ export HISTCONTROL=ignoredups
 
 . "$XDG_CONFIG_HOME/bash/prompt.inc.bash"
 
+eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
+
 # User private settings.
 [ -f ~/.local/bashrc ] && source ~/.local/bashrc
