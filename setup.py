@@ -213,62 +213,42 @@ def make_symlink(path, real_path):
 		os.rename(str(path), str(path.with_suffix('.bak')))
 	os.symlink(str(real_path), str(path))
 
-@make.unless(bash_command, 'xdg && [ -h ~/.bashrc ]')
-@make.with_name('`xdg && [ -h ~/.bashrc ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, '. xdg && [ -d "$XDG_CONFIG_HOME" ]')
-@make.with_name('`. xdg && [ -d "$XDG_CONFIG_HOME" ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, '. xdg && [ -d "$XDG_DATA_HOME" ]')
-@make.with_name('`. xdg && [ -d "$XDG_DATA_HOME" ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, '. xdg && [ -d "$XDG_CACHE_HOME" ]')
-@make.with_name('`. xdg && [ -d "$XDG_CACHE_HOME" ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, 'xdg && [ -h ~/.bashrc ]')
-@make.with_name('`xdg && [ -h ~/.bashrc ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, 'xdg && [ -h ~/.profile ]')
-@make.with_name('`xdg && [ -h ~/.profile ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, 'xdg && [ -h ~/.xinitrc ]')
-@make.with_name('`xdg && [ -h ~/.xinitrc ]`')
-def test_xdg():
-	return True # TODO actually isn't created by `xdg`, but should it be?
-
-@make.unless(bash_command, 'xdg && [ -h ~/.w3m ]')
-@make.with_name('`xdg && [ -h ~/.w3m ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, 'xdg && [ -h ~/.macromedia ]')
-@make.with_name('`xdg && [ -h ~/.macromedia ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, 'xdg && [ -h ~/.adobe ]')
-@make.with_name('`xdg && [ -h ~/.adobe ]`')
-def test_xdg():
-	return False
-
-@make.unless(bash_command, '. xdg && [ -d "$XDG_CACHE_HOME/vim" ]')
-@make.with_name('`. xdg && [ -d "$XDG_CACHE_HOME/vim" ]`')
-def test_xdg():
-	return False
-
 known_symlinks = []
+
+known_symlinks.append(Path.home()/'.macromedia')
+@make.unless(is_symlink_to, Path.home()/'.macromedia', XDG_CONFIG_HOME/'macromedia')
+@make.with_name(Path.home()/'.macromedia')
+@make.with_context
+def create_xdg_symlink(context):
+	make_symlink(context.condition.dest, context.condition.src)
+
+known_symlinks.append(Path.home()/'.adobe')
+@make.unless(is_symlink_to, Path.home()/'.adobe', XDG_CONFIG_HOME/'adobe')
+@make.with_name(Path.home()/'.adobe')
+@make.with_context
+def create_xdg_symlink(context):
+	make_symlink(context.condition.dest, context.condition.src)
+
+known_symlinks.append(Path.home()/'.w3m')
+@make.unless(is_symlink_to, Path.home()/'.w3m', XDG_CONFIG_HOME/'w3m')
+@make.with_name(Path.home()/'.w3m')
+@make.with_context
+def create_xdg_symlink(context):
+	make_symlink(context.condition.dest, context.condition.src)
+
+known_symlinks.append(Path.home()/'.profile')
+@make.unless(is_symlink_to, Path.home()/'.profile', XDG_CONFIG_HOME/'profile')
+@make.with_name(Path.home()/'.profile')
+@make.with_context
+def create_xdg_symlink(context):
+	make_symlink(context.condition.dest, context.condition.src)
+
+known_symlinks.append(Path.home()/'.bashrc')
+@make.unless(is_symlink_to, Path.home()/'.bashrc', XDG_CONFIG_HOME/'bash'/'bashrc')
+@make.with_name(Path.home()/'.bashrc')
+@make.with_context
+def create_xdg_symlink(context):
+	make_symlink(context.condition.dest, context.condition.src)
 
 known_symlinks.append(XDG_CONFIG_HOME/'purple'/'certificates')
 @make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates')
@@ -312,9 +292,16 @@ known_symlinks.append(XDG_CONFIG_HOME/'purple'/'logs')
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)
 
-known_symlinks.append(XDG_CONFIG_HOME/'.freeciv'/'saves')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'.freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
-@make.with_name(XDG_CONFIG_HOME/'.freeciv'/'saves')
+known_symlinks.append(Path.home()/'.freeciv')
+@make.unless(is_symlink_to, Path.home()/'.freeciv', XDG_CONFIG_HOME/'freeciv')
+@make.with_name(Path.home()/'.freeciv')
+@make.with_context
+def create_xdg_symlink(context):
+	make_symlink(context.condition.dest, context.condition.src)
+
+known_symlinks.append(XDG_CONFIG_HOME/'freeciv'/'saves')
+@make.unless(is_symlink_to, XDG_CONFIG_HOME/'freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
+@make.with_name(XDG_CONFIG_HOME/'freeciv'/'saves')
 @make.with_context
 def create_xdg_symlink(context):
 	make_symlink(context.condition.dest, context.condition.src)

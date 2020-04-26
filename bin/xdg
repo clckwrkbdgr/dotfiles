@@ -10,51 +10,9 @@
 . ~/.config/xdg/runtime.inc.sh
 . ~/.config/xdg/path.inc.sh
 
-# Fixes for hardcoded homedir dotfiles.
-fix_hardcoded_dotfile() {
-	homedir_location="$1"
-	xdg_location="$2"
-	if [ "`readlink "$homedir_location"`" != "$xdg_location" ]; then
-		mv -b "$homedir_location" "${homedir_location}.bak"
-		mkdir -p "$(dirname "$xdg_location")"
-		ln -s "$xdg_location" "$homedir_location"
-	fi
-}
-
-# Configurations. Should be stored under VCS.
-fix_hardcoded_dotfile ~/.bashrc "$XDG_CONFIG_HOME/bash/bashrc"
-fix_hardcoded_dotfile ~/.profile "$XDG_CONFIG_HOME/profile"
-# TODO .w3m : hardcoded
-fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
-# TODO .mozilla : for some reason ~/.mozilla/{extensions,firefox} are getting recreated on every launch, empty and useless
-# TODO .gnome2 : apparently firefox using this?
-# TODO .gnome2_private : apparently firefox using this?
-# TODO .gstreamer-0.10 : apparently firefox using this???
-# TODO .themes : apparently firefox using this?
-fix_hardcoded_dotfile ~/.freeciv "$XDG_CONFIG_HOME/freeciv"
-fix_hardcoded_dotfile "$XDG_CONFIG_HOME/freeciv/saves" "$XDG_DATA_HOME/freeciv/saves"
-
-# Local data. Should be stored in some backup or outer storage.
-# TODO .dropbox : hardcoded
-# TODO .dropbox-dist : hardcoded
-# TODO .macromedia : WONTFIX - flash player for linux is not supported anymore.
-fix_hardcoded_dotfile ~/.macromedia "$XDG_DATA_HOME/macromedia"
-# TODO .adobe : WONTFIX - flash player for linux is not supported anymore.
-fix_hardcoded_dotfile ~/.adobe "$XDG_DATA_HOME/macromedia"
-fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/logs" "$XDG_DATA_HOME/purple/logs"
-fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/accels"        "$XDG_CACHE_HOME/purple/accels"
-fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/certificates"  "$XDG_CACHE_HOME/purple/certificates"
-fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/icons"         "$XDG_CACHE_HOME/purple/icons"
-fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/xmpp-caps.xml" "$XDG_CACHE_HOME/purple/xmpp-caps.xml"
-fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/telegram-purple" "$XDG_CACHE_HOME/purple/telegram-purple"
-
-# These are valid only for one session and could placed even in RAM.
-# TODO .dbus : ~/.config/xfce4/xinitrc will probably handle dbus-launch, how to pass XDG_RUNTIME_DIR to it?
-
 # If supplied, run command in XDG-compliant environment.
-# If XDG_HOME is set, it substitutes original HOME variable for the command invokation.
 if [ -n "$BASH" ]; then
-	[ "$0" == "$BASH_SOURCE" -a -n "$1" ] && "$@"
+	if [ "$0" == "$BASH_SOURCE" -a -n "$1" ]; then
+		exec "$@"
+	fi
 fi
-
-true # To return EXIT_SUCCESS
