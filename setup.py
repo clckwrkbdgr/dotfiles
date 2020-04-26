@@ -213,109 +213,55 @@ def make_symlink(path, real_path):
 		os.rename(str(path), str(path.with_suffix('.bak')))
 	os.symlink(str(real_path), str(path))
 
-known_symlinks = []
+class XDGSymlinks:
+	""" Manages known XDG symlinks in XDG_CONFIG_HOME. """
+	def __init__(self):
+		self.known = []
+	def ensure(self, symlink, real_file):
+		""" Creates target 'ensure_xdg_symlink' to ensure that
+		symlink exists and points to real_file. If not, symlink is created.
+		Also tracks given symlink as known.
+		"""
+		self.known.append(symlink)
+		def ensure_xdg_symlink(context):
+			make_symlink(context.condition.dest, context.condition.src)
+		ensure_xdg_symlink = make.with_context(ensure_xdg_symlink)
+		ensure_xdg_symlink = make.with_name(symlink)(ensure_xdg_symlink)
+		ensure_xdg_symlink = make.unless(is_symlink_to, symlink, real_file)(ensure_xdg_symlink)
+	def ignore(self, symlink):
+		""" Marks symlink as known without any actions.
+		Useful for third-party symlinks.
+		"""
+		self.known.append(symlink)
+	def is_known(self, filename):
+		""" Checks if filename is amongst known symlinks. """
+		try:
+			return any(filename.samefile(known) for known in self.known)
+		except:
+			return any(filename.absolute() == known.absolute() for known in self.known)
 
-known_symlinks.append(Path.home()/'.macromedia')
-@make.unless(is_symlink_to, Path.home()/'.macromedia', XDG_CONFIG_HOME/'macromedia')
-@make.with_name(Path.home()/'.macromedia')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
+known_symlinks = XDGSymlinks()
 
-known_symlinks.append(Path.home()/'.adobe')
-@make.unless(is_symlink_to, Path.home()/'.adobe', XDG_CONFIG_HOME/'adobe')
-@make.with_name(Path.home()/'.adobe')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
+known_symlinks.ensure(Path.home()/'.macromedia', XDG_DATA_HOME/'macromedia')
+known_symlinks.ensure(Path.home()/'.adobe', XDG_DATA_HOME/'macromedia')
+known_symlinks.ensure(Path.home()/'.w3m', XDG_CONFIG_HOME/'w3m')
+known_symlinks.ensure(Path.home()/'.profile', XDG_CONFIG_HOME/'profile')
+known_symlinks.ensure(Path.home()/'.bashrc', XDG_CONFIG_HOME/'bash'/'bashrc')
 
-known_symlinks.append(Path.home()/'.w3m')
-@make.unless(is_symlink_to, Path.home()/'.w3m', XDG_CONFIG_HOME/'w3m')
-@make.with_name(Path.home()/'.w3m')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
+known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates')
+known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'telegram-purple', XDG_CACHE_HOME/'purple'/'telegram-purple')
+known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'icons', XDG_CACHE_HOME/'purple'/'icons')
+known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml', XDG_CACHE_HOME/'purple'/'xmpp-caps.xml')
+known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'accels', XDG_CACHE_HOME/'purple'/'accels')
+known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'logs')
 
-known_symlinks.append(Path.home()/'.profile')
-@make.unless(is_symlink_to, Path.home()/'.profile', XDG_CONFIG_HOME/'profile')
-@make.with_name(Path.home()/'.profile')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(Path.home()/'.bashrc')
-@make.unless(is_symlink_to, Path.home()/'.bashrc', XDG_CONFIG_HOME/'bash'/'bashrc')
-@make.with_name(Path.home()/'.bashrc')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(XDG_CONFIG_HOME/'purple'/'certificates')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates')
-@make.with_name(XDG_CONFIG_HOME/'purple'/'certificates_')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(*context.args)
-
-known_symlinks.append(XDG_CONFIG_HOME/'purple'/'telegram-purple')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'telegram-purple', XDG_CACHE_HOME/'purple'/'telegram-purple')
-@make.with_name(XDG_CONFIG_HOME/'purple'/'telegram-purple')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(XDG_CONFIG_HOME/'purple'/'icons')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'icons', XDG_CACHE_HOME/'purple'/'icons')
-@make.with_name(XDG_CONFIG_HOME/'purple'/'icons')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml', XDG_CACHE_HOME/'purple'/'xmpp-caps.xml')
-@make.with_name(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(XDG_CONFIG_HOME/'purple'/'accels')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'accels', XDG_CACHE_HOME/'purple'/'accels')
-@make.with_name(XDG_CONFIG_HOME/'purple'/'accels')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(XDG_CONFIG_HOME/'purple'/'logs')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'logs')
-@make.with_name(XDG_CONFIG_HOME/'purple'/'logs')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(Path.home()/'.freeciv')
-@make.unless(is_symlink_to, Path.home()/'.freeciv', XDG_CONFIG_HOME/'freeciv')
-@make.with_name(Path.home()/'.freeciv')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(XDG_CONFIG_HOME/'freeciv'/'saves')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
-@make.with_name(XDG_CONFIG_HOME/'freeciv'/'saves')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
-
-known_symlinks.append(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim')
-@make.unless(is_symlink_to, XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim', Path('..')/'bundle'/'pathogen'/'autoload'/'pathogen.vim')
-@make.with_name(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim')
-@make.with_context
-def create_xdg_symlink(context):
-	make_symlink(context.condition.dest, context.condition.src)
+known_symlinks.ensure(Path.home()/'.freeciv', XDG_CONFIG_HOME/'freeciv')
+known_symlinks.ensure(XDG_CONFIG_HOME/'freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
+known_symlinks.ensure(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim', Path('..')/'bundle'/'pathogen'/'autoload'/'pathogen.vim')
 
 # Third-party symlinks.
-known_symlinks.append(XDG_CONFIG_HOME/'vim'/'bundle'/'vimoutliner'/'README.detailed')
-known_symlinks.append(XDG_CONFIG_HOME/'firefox'/'lock')
+known_symlinks.ignore(XDG_CONFIG_HOME/'vim'/'bundle'/'vimoutliner'/'README.detailed')
+known_symlinks.ignore(XDG_CONFIG_HOME/'firefox'/'lock')
 
 def find_unknown_symlinks(root, known_symlinks):
 	unknown = []
@@ -325,12 +271,8 @@ def find_unknown_symlinks(root, known_symlinks):
 			filename = root/filename
 			if not filename.is_symlink():
 				continue
-			try:
-				if any(filename.samefile(known) for known in known_symlinks):
-					continue
-			except:
-				if any(filename.absolute() == known.absolute() for known in known_symlinks):
-					continue
+			if known_symlinks.is_known(filename):
+				continue
 			unknown.append(filename)
 	return unknown
 
