@@ -31,13 +31,8 @@ fix_hardcoded_dotfile ~/.w3m "$XDG_CONFIG_HOME/w3m"
 # TODO .gnome2_private : apparently firefox using this?
 # TODO .gstreamer-0.10 : apparently firefox using this???
 # TODO .themes : apparently firefox using this?
-case "$1" in
-	# Exception for freeciv-* clients:
-	freeciv-*)
-		export XDG_HOME=${XDG_HOME:-~/.config}
-		;;
-esac
-fix_hardcoded_dotfile "$XDG_CONFIG_HOME/.freeciv/saves" "$XDG_DATA_HOME/freeciv/saves"
+fix_hardcoded_dotfile ~/.freeciv "$XDG_CONFIG_HOME/freeciv"
+fix_hardcoded_dotfile "$XDG_CONFIG_HOME/freeciv/saves" "$XDG_DATA_HOME/freeciv/saves"
 
 # Local data. Should be stored in some backup or outer storage.
 export WINEPREFIX=/opt/wine-$USER
@@ -60,7 +55,7 @@ fix_hardcoded_dotfile "$XDG_CONFIG_HOME/purple/telegram-purple" "$XDG_CACHE_HOME
 # If supplied, run command in XDG-compliant environment.
 # If XDG_HOME is set, it substitutes original HOME variable for the command invokation.
 if [ -n "$BASH" ]; then
-	[ "$0" == "$BASH_SOURCE" -a -n "$1" ] && HOME=${XDG_HOME:-$HOME} "$@"
+	[ "$0" == "$BASH_SOURCE" -a -n "$1" ] && "$@"
 fi
 
 true # To return EXIT_SUCCESS
