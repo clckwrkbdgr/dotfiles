@@ -1,0 +1,3 @@
+#!/bin/sh
+. "$XDG_CONFIG_HOME/xdg/path.inc.sh"
+exec_basic_executable -config $XDG_CONFIG_HOME/prboom-plus/prboom-plus.cfg -save $XDG_DATA_HOME/prboom-plus "$@"
