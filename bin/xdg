@@ -1,14 +1,15 @@
 #!/bin/bash
-# Script for XDG directory support.
-# Tries to make XDG-compliant environment.
+# Script to ensure up-to-date XDG environment.
+# Needed primarily for crontab or DE actions (keybindings etc)
+# because XDG environment is loaded once a session in login shell (via profile).
+# Has two different usage cases:
+# - Can be sourced in current shell to load latest changes in XDG environment.
+# - Can be used as runnable script to run programs in such environment.
+# Besides these, it has no point.
+# Both results can also be achieved using ~/.config/bin/crontab-env.cmd
+# TODO need to rename crontab-env into something like with-profile or with-user-env (?)
 
-. ~/.config/xdg/base.inc.sh
-. ~/.config/xdg/config.inc.sh
-. ~/.config/xdg/data.inc.sh
-. ~/.config/xdg/state.inc.sh
-. ~/.config/xdg/cache.inc.sh
-. ~/.config/xdg/runtime.inc.sh
-. ~/.config/xdg/path.inc.sh
+. ~/.config/xdg/xdg.inc.sh
 
 # If supplied, run command in XDG-compliant environment.
 if [ -n "$BASH" ]; then

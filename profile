@@ -28,7 +28,7 @@ fi
 export PATH
 
 # Section for XDG directory support.
-. ~/.config/bin/xdg # TODO should source here only the environment-specific part, not the full runner script.
+. ~/.config/xdg/xdg.inc.sh
 
 # User private settings.
 [ -f ~/.local/profile ] && . ~/.local/profile

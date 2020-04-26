@@ -1,8 +1,5 @@
 export HISTCONTROL=ignoredups
 
-# Section for XDG directory support.
-. ~/.config/bin/xdg # TODO should source here only the shell-specific part, not the full runner script.
-
 . "$XDG_CONFIG_HOME/bash/aliases.inc.bash"
 
 . "$XDG_CONFIG_HOME/bash/prompt.inc.bash"
