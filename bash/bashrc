@@ -4,6 +4,8 @@ export HISTCONTROL=ignoredups
 
 . "$XDG_CONFIG_HOME/bash/prompt.inc.bash"
 
+. "$XDG_CONFIG_HOME/xdg/xdg.inc.sh" # TODO temp measures until there is a way to update environment in running DE.
+
 eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
 
 # User private settings.
