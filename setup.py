@@ -9,6 +9,7 @@ try:
 except ImportError:
 	termcolor = types.SimpleNamespace()
 	termcolor.colored = lambda s, *args, **kwargs: s
+import clckwrkbdgr.fs
 
 trace = logging.getLogger('setup')
 class ColoredFormatter(logging.Formatter):
@@ -191,17 +192,8 @@ def init_git_submodules():
 def bash_command(command):
 	return 0 == subprocess.call(command, shell=True, executable='/bin/bash')
 
-@contextlib.contextmanager
-def CurrentDir(path):
-	try:
-		old_cwd = os.getcwd()
-		os.chdir(str(path))
-		yield
-	finally:
-		os.chdir(old_cwd)
-
 def is_symlink_to(dest, src):
-	with CurrentDir(Path(dest).parent):
+	with clckwrkbdgr.fs.CurrentDir(Path(dest).parent):
 		return Path(dest).is_symlink() and Path(src).resolve() == Path(dest).resolve()
 
 def make_symlink(path, real_path):
@@ -373,7 +365,7 @@ def update_crontab():
 	return 0 == subprocess.call(['update_crontab.py'])
 
 def patch_is_applied(destfile, patch):
-	with CurrentDir(Path(destfile).parent):
+	with clckwrkbdgr.fs.CurrentDir(Path(destfile).parent):
 		return 0 == subprocess.call(['patch', '-R', '-s', '-f', '--dry-run', str(destfile), '-i', str(patch)], stdout=subprocess.DEVNULL)
 
 def apply_patch(destfile, patch):
