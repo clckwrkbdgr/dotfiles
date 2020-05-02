@@ -249,6 +249,8 @@ known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'l
 
 known_symlinks.ensure(Path.home()/'.freeciv', XDG_CONFIG_HOME/'freeciv')
 known_symlinks.ensure(XDG_CONFIG_HOME/'freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
+
+known_symlinks.ensure(XDG_CONFIG_HOME/'xfce4'/'terminal', XDG_CONFIG_HOME/'Terminal')
 known_symlinks.ensure(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim', Path('..')/'bundle'/'pathogen'/'autoload'/'pathogen.vim')
 
 # Third-party symlinks.
@@ -259,10 +261,11 @@ def find_unknown_symlinks(root, known_symlinks):
 	unknown = []
 	for root, dirnames, filenames in os.walk(str(root)):
 		root = Path(root)
-		for filename in filenames:
+		for filename in filenames + dirnames:
 			filename = root/filename
 			if not filename.is_symlink():
 				continue
+			trace.debug(filename)
 			if known_symlinks.is_known(filename):
 				continue
 			unknown.append(filename)
@@ -271,8 +274,8 @@ def find_unknown_symlinks(root, known_symlinks):
 @make.when(find_unknown_symlinks, XDG_CONFIG_HOME, known_symlinks)
 @make.with_context
 def notify_about_unknown_symlinks(context):
-	log.error('Found unknown symlinks:')
-	log.error(context.result)
+	trace.error('Found unknown symlinks:')
+	trace.error(context.result)
 	return not bool(context.result)
 
 @functools.lru_cache()
@@ -284,7 +287,7 @@ def has_tmp_in_fstab():
 
 @make.unless(has_tmp_in_fstab)
 def tmp_should_be_mounted_as_tmpfs():
-	log.error('Add following line to /etc/fstab:')
+	trace.error('Add following line to /etc/fstab:')
 	print('tmpfs /tmp tmpfs mode=1777,nosuid,nodev 0 0')
 	return False # TODO way to fix automatically with sudo.
 
@@ -297,8 +300,8 @@ def has_tmp_in_mount():
 
 @make.unless(has_tmp_in_mount)
 def tmp_should_be_mounted_as_tmpfs():
-	log.error('/tmp is not mounted as tmpfs!')
-	log.error('Restart might be needed.')
+	trace.error('/tmp is not mounted as tmpfs!')
+	trace.error('Restart might be needed.')
 	return False # TODO way to fix automatically with sudo.
 
 def XXkb_settings_missing_in_etc(etc_config_file):
