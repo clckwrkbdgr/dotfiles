@@ -16,6 +16,9 @@
 # click::run "$@"
 #
 # Flags '-h' and '--help' are built-in and print command-line usage info based on registered arguments.
+#
+# NOTE: There might be only one main click::command in the whole shell instance.
+#       If two commands are initiated, the result is undefined!
 
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 
@@ -174,7 +177,6 @@ click::run() {
 	current_arg_pos=0
 	option_re='^-.+'
 	while [ -n "$1" ]; do
-		echo "<$1>"
 		arg="$1"
 		matched=''
 		if [ "$arg" == '-h' -o "$arg" == '--help' ]; then
