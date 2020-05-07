@@ -1107,21 +1107,6 @@
                                         "tabId": null,
                                         "types": null,
                                         "urls": [
-                                            "*://supportforms.embarcadero.com/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "requestHeaders"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
                                             "*://*.att.tv/*"
                                         ],
                                         "windowId": null
@@ -1191,6 +1176,21 @@
                                         "blocking",
                                         "requestHeaders"
                                     ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "https://*.pixton.com/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
                                 ]
                             ],
                             "onHeadersReceived": [
@@ -1200,7 +1200,6 @@
                                         "tabId": null,
                                         "types": null,
                                         "urls": [
-                                            "https://*.linkedin.com/tscp-serving/dtag*",
                                             "https://ads-us.rd.linksynergy.com/as.php*",
                                             "https://www.office.com/logout?sid*"
                                         ],
