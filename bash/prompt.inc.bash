@@ -1,10 +1,13 @@
 # Current subshell info: parent processes, shells, terminals etc.
 PS_sub=''
 [ -n "$VIMRUNTIME" ] && PS_sub="${PS_sub}(vim)"
-MY_SHELL_LEVEL=$((SHLVL-2)) # For GUI interactive shells: 1 for GUI + 1 for terminal
-if [ "$MY_SHELL_LEVEL" -gt 0 ]; then
-	PS_sub="${PS_sub}(bash+$MY_SHELL_LEVEL)"
+if [ -z "$DISPLAY_SHLVL" ]; then
+	DISPLAY_SHLVL=$((SHLVL-2)) # For GUI interactive shells: 1 for GUI + 1 for terminal
 fi
+if [ "$DISPLAY_SHLVL" -gt 0 ]; then
+	PS_sub="${PS_sub}(bash+$DISPLAY_SHLVL)"
+fi
+unset DISPLAY_SHLVL
 if [ -n "$RANGER_LEVEL" ]; then
 	fixed_ranger_level=$((RANGER_LEVEL-1))
 	if [ "$fixed_ranger_level" -gt 0 ]; then
