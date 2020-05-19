@@ -6,6 +6,7 @@
 	test_test() {
 		echo 'executed'
 	}
+	UNITTEST_QUIET=true
 	output=$(unittest::run)
 	[ "$output" == 'executed' ]
 ) || panic 'Test is not executed!'
@@ -15,11 +16,12 @@
 		echo 'first'
 	}
 	test_second() {
-		echo 'first'
+		echo 'second'
 	}
 	TMPFILE=$(mktemp)
 	echo -e "first\nsecond" >"$TMPFILE"
 	trap "rm $TMPFILE" EXIT
+	UNITTEST_QUIET=true
 	unittest::run | diff - "$TMPFILE"
 ) || panic 'Tests are not executed in order of definition!'
 
@@ -27,12 +29,13 @@
 	custom_test_test() {
 		echo 'executed'
 	}
+	UNITTEST_QUIET=true
 	output=$(unittest::run custom_test)
 	[ "$output" == 'executed' ]
 ) || panic 'Custom test prefix is not recognized!'
 
 (
-	setup() {
+	setUp() {
 		echo 'setup'
 	}
 	test_first() {
@@ -44,11 +47,12 @@
 	TMPFILE=$(mktemp)
 	echo -e "setup\nfirst\nsetup\nsecond" >"$TMPFILE"
 	trap "rm $TMPFILE" EXIT
+	UNITTEST_QUIET=true
 	unittest::run | diff - "$TMPFILE"
 ) || panic 'Setup action is not executed for each test!'
 
 (
-	teardown() {
+	tearDown() {
 		echo 'teardown'
 	}
 	test_first() {
@@ -60,14 +64,15 @@
 	TMPFILE=$(mktemp)
 	echo -e "first\nteardown\nsecond\nteardown" >"$TMPFILE"
 	trap "rm $TMPFILE" EXIT
+	UNITTEST_QUIET=true
 	unittest::run | diff - "$TMPFILE"
 ) || panic 'Teardown action is not executed for each test!'
 
 (
-	setup() {
+	setUp() {
 		echo 'setup'
 	}
-	teardown() {
+	tearDown() {
 		echo 'teardown'
 	}
 	test_first() {
@@ -80,6 +85,7 @@
 	TMPFILE=$(mktemp)
 	echo -e "setup\nteardown\nsetup\nsecond\nteardown" >"$TMPFILE"
 	trap "rm $TMPFILE" EXIT
+	UNITTEST_QUIET=true
 	( unittest::run ) | diff - "$TMPFILE"
 ) || panic 'Teardown action is not executed in case of fatal error!'
 
@@ -88,6 +94,7 @@
 	test_first() {
 		export UNITTEST_EXPORTED_VALUE=1
 	}
+	UNITTEST_QUIET=true
 	unittest::run
 	[ -z "$UNITTEST_EXPORTED_VALUE" ]
 ) || panic 'Environment from the test is not isolated and available after!'
@@ -117,11 +124,11 @@
 		exit 1
 	}
 	TMPFILE=$(mktemp)
-	echo -e "first\nsecond" >"$TMPFILE"
+	echo -e "first" >"$TMPFILE"
 	trap "rm $TMPFILE" EXIT
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run | diff - "$TMPFILE" 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Failures are not displayed in stats!'
@@ -142,7 +149,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_differ: Assert failed:\nFiles are not the same:\ndiff $FIRST_TMPFILE $SECOND_TMPFILE\n---\na\n+++\nc" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Files are not checked to be the same!'
@@ -163,7 +170,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_same: Assert failed:\nFiles do not differ:\ndiff $FIRST_TMPFILE $SECOND_TMPFILE\na\nb" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Files are not checked to be different!'
@@ -182,7 +189,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_differ: Assert failed:\nStrings are not same:\nExpected: first\nActual: second" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Strings are not checked to be same!'
@@ -201,7 +208,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_same: Assert failed:\nStrings do not differ:\nfirst" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Strings are not checked to be different!'
@@ -216,7 +223,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_not_empty: Assert failed:\nString is not empty:\ncontent" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Strings are not checked to be empty!'
@@ -231,7 +238,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_empty: Assert failed:\nString is empty!" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Strings are not checked to be not empty!'
@@ -246,7 +253,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_differs: Assert failed:\nCommand output differs:\necho -e \"first\\nsecond\"\n---\nfirst\nsecond\n+++\ndiffers" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Command output is not checked against expected value!'
@@ -264,7 +271,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_differs: Assert failed:\nCommand output differs:\necho -e \"first\\nsecond\"\n---\nfirst\nsecond\n+++\ndiffers" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Command output is not checked against expected stdin!'
@@ -279,7 +286,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_differs: Assert failed:\nCommand return code differs:\nexit 0\nExpected: 1\nActual: 0" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Command return code is not checked!'
@@ -294,7 +301,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_differs: Assert failed:\nCommand did not exit with success:\nexit 1\nActual exit code: 1" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Command success is not checked!'
@@ -309,7 +316,7 @@
 
 	TMPSTATFILE=$(mktemp)
 	echo -e "test_differs: Assert failed:\nCommand did not exit with failure:\nexit 0\nActual exit code: 0" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 tests(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 2>&1 ) 3>&2 2>&1 1>&3  | diff - "$TMPSTATFILE"
 ) || panic 'Command failure is not checked!'
