@@ -672,34 +672,6 @@
                                         "incognito": null,
                                         "tabId": null,
                                         "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "script",
-                                            "xslt",
-                                            "xbl",
-                                            "font",
-                                            "object",
-                                            "object_subrequest",
-                                            "xmlhttprequest",
-                                            "ping",
-                                            "beacon",
-                                            "media",
-                                            "other"
-                                        ],
-                                        "urls": [
-                                            "<all_urls>"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
                                             "csp_report"
                                         ],
                                         "urls": [
@@ -737,21 +709,7 @@
                                     {
                                         "incognito": null,
                                         "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "script",
-                                            "xslt",
-                                            "xbl",
-                                            "font",
-                                            "object",
-                                            "object_subrequest",
-                                            "xmlhttprequest",
-                                            "ping",
-                                            "beacon",
-                                            "media",
-                                            "other"
-                                        ],
+                                        "types": null,
                                         "urls": [
                                             "<all_urls>"
                                         ],
@@ -781,21 +739,7 @@
                                     {
                                         "incognito": null,
                                         "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "script",
-                                            "xslt",
-                                            "xbl",
-                                            "font",
-                                            "object",
-                                            "object_subrequest",
-                                            "xmlhttprequest",
-                                            "ping",
-                                            "beacon",
-                                            "media",
-                                            "other"
-                                        ],
+                                        "types": null,
                                         "urls": [
                                             "<all_urls>"
                                         ],
