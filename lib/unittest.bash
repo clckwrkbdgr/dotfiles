@@ -1,3 +1,19 @@
+assertFilesSame() { # <actual> <expected>
+	if [ ! -f "$1" ]; then
+		echo "First file does not exist: $1" >&2
+		exit 1
+	fi
+	if [ ! -f "$2" ]; then
+		echo "Second file does not exist: $2" >&2
+		exit 1
+	fi
+	diff -q "$1" "$2" >/dev/null && exit 0
+	echo "${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Files are not the same:' >&2
+	diff -u "$1" "$2" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/' >&2
+	exit 1
+}
+
 unittest::run() {
 	# Usage: [<prefix>]
 	#   <prefix>  - marks shell functions to execute as unit tests. Default is 'test_'
