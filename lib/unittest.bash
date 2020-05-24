@@ -79,13 +79,72 @@ assertOutputEqual() { # <command> <expected_output>
 	else
 		echo -e "$expected_output" >"$expected_output_file"
 	fi
-	eval "$shell_command" >"$actual_output_file"
+	( eval "$shell_command" >"$actual_output_file" )
 
 	diff -q "$expected_output_file" "$actual_output_file" >/dev/null && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command output differs:' >&2
 	echo "$shell_command" >&2
 	diff -u "$expected_output_file" "$actual_output_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s/^\(--- \).*$/\1[expected]/;2s/^\(+++ \).*/\1[actual]/' >&2
+	exit 1
+}
+
+assertReturnCode() { # <expected_rc> <command>
+	local shell_command="$2"
+	if [ -z "$shell_command" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+		exit 1
+	fi
+	local expected_rc="$1"
+	if [ -z "$expected_rc" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is empty!" >&2
+		exit 1
+	fi
+	local number_re='^[0-9]+$'
+	if ! [[ "$expected_rc" =~ $number_re ]]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is not a number!" >&2
+		exit 1
+	fi
+	( eval "$shell_command" )
+	rc=$?
+	[ "$expected_rc" -eq "$rc" ] && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Command return code differs:' >&2
+	echo "$shell_command" >&2
+	echo "Expected: $expected_rc" >&2
+	echo "Actual: $rc" >&2
+	exit 1
+}
+
+assertExitSuccess() { # <command>
+	local shell_command="$1"
+	if [ -z "$shell_command" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+		exit 1
+	fi
+	( eval "$shell_command" )
+	rc=$?
+	[ "$rc" -eq 0 ] && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Command did not exit with success:' >&2
+	echo "$shell_command" >&2
+	echo "Actual exit code: $rc" >&2
+	exit 1
+}
+
+assertExitFailure() { # <command>
+	local shell_command="$1"
+	if [ -z "$shell_command" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+		exit 1
+	fi
+	( eval "$shell_command" )
+	rc=$?
+	[ "$rc" -ne 0 ] && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Command did not exit with failure:' >&2
+	echo "$shell_command" >&2
+	echo "Actual exit code: $rc" >&2
 	exit 1
 }
 

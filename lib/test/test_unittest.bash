@@ -278,10 +278,10 @@
 
 (
 	test_same() {
-		assertReturnCode 'exit 1' 1
+		assertReturnCode 1 'exit 1'
 	}
 	test_differs() {
-		assertReturnCode 'exit 0' 1
+		assertReturnCode 1 'exit 0'
 	}
 
 	TMPSTATFILE=$(mktemp)
@@ -300,7 +300,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "$0:299:test_differs: Assert failed:\nCommand did not exit with success:\nexit 1\nActual exit code: 1" >>"$TMPSTATFILE"
+	echo -e "$0:299:test_failure: Assert failed:\nCommand did not exit with success:\nexit 1\nActual exit code: 1" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -315,7 +315,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "$0:311:test_differs: Assert failed:\nCommand did not exit with failure:\nexit 0\nActual exit code: 0" >>"$TMPSTATFILE"
+	echo -e "$0:311:test_success: Assert failed:\nCommand did not exit with failure:\nexit 0\nActual exit code: 0" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
