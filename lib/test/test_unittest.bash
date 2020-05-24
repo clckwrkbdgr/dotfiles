@@ -148,7 +148,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_differ: Assert failed:\nFiles are not the same:\n--- $FIRST_TMPFILE\n+++ $SECOND_TMPFILE\n@@ -1,2 +1,2 @@\n-a\n+c\n b" >>"$TMPSTATFILE"
+	echo -e "$0:147:test_differ: Assert failed:\nFiles are not the same:\n--- $FIRST_TMPFILE\n+++ $SECOND_TMPFILE\n@@ -1,2 +1,2 @@\n-a\n+c\n b" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -169,7 +169,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_same: Assert failed:\nFiles do not differ:\ndiff $FIRST_TMPFILE $SECOND_TMPFILE\na\nb" >>"$TMPSTATFILE"
+	echo -e "$0:163:test_same: Assert failed:\nFiles do not differ:\n--- $FIRST_TMPFILE\n+++ $SECOND_TMPFILE\na\nb" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -179,16 +179,16 @@
 	test_same() {
 		FIRST='first'
 		SECOND='first'
-		assertStringsSame "$FIRST" "$SECOND"
+		assertStringsEqual "$FIRST" "$SECOND"
 	}
 	test_differ() {
 		FIRST='first'
 		SECOND='second'
-		assertStringsSame "$FIRST" "$SECOND"
+		assertStringsEqual "$FIRST" "$SECOND"
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_differ: Assert failed:\nStrings are not same:\nExpected: first\nActual: second" >>"$TMPSTATFILE"
+	echo -e "$0:187:test_differ: Assert failed:\nStrings are not equal:\nExpected: 'first'\nActual: 'second'" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -198,16 +198,16 @@
 	test_same() {
 		FIRST='first'
 		SECOND='first'
-		assertStringsSame "$FIRST" "$SECOND"
+		assertStringsNotEqual "$FIRST" "$SECOND"
 	}
 	test_differ() {
 		FIRST='first'
 		SECOND='second'
-		assertStringsSame "$FIRST" "$SECOND"
+		assertStringsNotEqual "$FIRST" "$SECOND"
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_same: Assert failed:\nStrings do not differ:\nfirst" >>"$TMPSTATFILE"
+	echo -e "$0:201:test_same: Assert failed:\nStrings do not differ:\n'first'" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -222,7 +222,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_not_empty: Assert failed:\nString is not empty:\ncontent" >>"$TMPSTATFILE"
+	echo -e "$0:221:test_not_empty: Assert failed:\nString is not empty:\n'content'" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -237,7 +237,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_empty: Assert failed:\nString is empty!" >>"$TMPSTATFILE"
+	echo -e "$0:233:test_empty: Assert failed:\nString is empty!" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -245,14 +245,14 @@
 
 (
 	test_same() {
-		assertOutputSame 'echo -e "first\nsecond"' "first\nsecond"
+		assertOutputEqual 'echo -e "first\nsecond"' "first\nsecond"
 	}
 	test_differs() {
-		assertOutputSame 'echo -e "first\nsecond"' "differs"
+		assertOutputEqual 'echo -e "first\nsecond"' "differs"
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_differs: Assert failed:\nCommand output differs:\necho -e \"first\\nsecond\"\n---\nfirst\nsecond\n+++\ndiffers" >>"$TMPSTATFILE"
+	echo -e "$0:251:test_differs: Assert failed:\nCommand output differs:\necho -e \"first\\\nsecond\"\n--- [expected]\n+++ [actual]\n@@ -1 +1,2 @@\n-differs\n+first\n+second" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -260,18 +260,18 @@
 
 (
 	test_same() {
-		echo "first\nsecond" | assertOutputSame 'echo -e "first\nsecond"' -
+		echo -e "first\nsecond" | assertOutputEqual 'echo -e "first\nsecond"' -
 	}
 	test_dash_on_stdin() {
-		echo -- - | assertOutputSame 'echo -- -' -
+		echo -- - | assertOutputEqual 'echo -- -' -
 	}
 	test_differs() {
-		echo "differs" | assertOutputSame 'echo -e "first\nsecond"' -
+		echo "differs" | assertOutputEqual 'echo -e "first\nsecond"' -
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_differs: Assert failed:\nCommand output differs:\necho -e \"first\\nsecond\"\n---\nfirst\nsecond\n+++\ndiffers" >>"$TMPSTATFILE"
-	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
+	echo -e "$0:269:test_differs: Assert failed:\nCommand output differs:\necho -e \"first\\\nsecond\"\n--- [expected]\n+++ [actual]\n@@ -1 +1,2 @@\n-differs\n+first\n+second" >>"$TMPSTATFILE"
+	echo -e "Executed: 3 test(s).\nSuccessful: 2 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
 ) || panic 'Command output is not checked against expected stdin!'
@@ -285,7 +285,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_differs: Assert failed:\nCommand return code differs:\nexit 0\nExpected: 1\nActual: 0" >>"$TMPSTATFILE"
+	echo -e "$0:284:test_differs: Assert failed:\nCommand return code differs:\nexit 0\nExpected: 1\nActual: 0" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -300,7 +300,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_differs: Assert failed:\nCommand did not exit with success:\nexit 1\nActual exit code: 1" >>"$TMPSTATFILE"
+	echo -e "$0:299:test_differs: Assert failed:\nCommand did not exit with success:\nexit 1\nActual exit code: 1" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"
@@ -315,7 +315,7 @@
 	}
 
 	TMPSTATFILE=$(mktemp)
-	echo -e "test_differs: Assert failed:\nCommand did not exit with failure:\nexit 0\nActual exit code: 0" >>"$TMPSTATFILE"
+	echo -e "$0:311:test_differs: Assert failed:\nCommand did not exit with failure:\nexit 0\nActual exit code: 0" >>"$TMPSTATFILE"
 	echo -e "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL" >>"$TMPSTATFILE"
 	trap "rm $TMPSTATFILE" EXIT
 	( unittest::run 3>&2 2>&1 1>&3 ) | diff - "$TMPSTATFILE"

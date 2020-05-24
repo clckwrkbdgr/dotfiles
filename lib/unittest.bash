@@ -1,16 +1,91 @@
 assertFilesSame() { # <actual> <expected>
 	if [ ! -f "$1" ]; then
-		echo "First file does not exist: $1" >&2
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: First file does not exist: $1" >&2
 		exit 1
 	fi
 	if [ ! -f "$2" ]; then
-		echo "Second file does not exist: $2" >&2
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Second file does not exist: $2" >&2
 		exit 1
 	fi
-	diff -q "$1" "$2" >/dev/null && exit 0
-	echo "${FUNCNAME[1]}: Assert failed:" >&2
+	diff -q "$1" "$2" >/dev/null && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Files are not the same:' >&2
 	diff -u "$1" "$2" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/' >&2
+	exit 1
+}
+
+assertFilesDiffer() { # <actual> <expected>
+	if [ ! -f "$1" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: First file does not exist: $1" >&2
+		exit 1
+	fi
+	if [ ! -f "$2" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Second file does not exist: $2" >&2
+		exit 1
+	fi
+	diff -q "$1" "$2" >/dev/null || return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Files do not differ:' >&2
+	echo "--- $1" >&2
+	echo "+++ $2" >&2
+	cat "$1" >&2
+	exit 1
+}
+
+assertStringsEqual() { # <actual> <expected>
+	[ "$1" == "$2" ] && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Strings are not equal:' >&2
+	echo "Expected: '$1'" >&2
+	echo "Actual: '$2'" >&2
+	exit 1
+}
+
+assertStringsNotEqual() { # <actual> <expected>
+	[ "$1" != "$2" ] && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Strings do not differ:' >&2
+	echo "'$1'" >&2
+	exit 1
+}
+
+assertStringEmpty() { # <value>
+	[ -z "$1" ] && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'String is not empty:' >&2
+	echo "'$1'" >&2
+	exit 1
+}
+
+assertStringNotEmpty() { # <value>
+	[ -n "$1" ] && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'String is empty!' >&2
+	exit 1
+}
+
+assertOutputEqual() { # <command> <expected_output>
+	local shell_command="$1"
+	if [ -z "$shell_command" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+		exit 1
+	fi
+	local expected_output="$2"
+	local actual_output_file=$(mktemp)
+	local expected_output_file=$(mktemp)
+	trap "rm '$actual_output_file' '$expected_output_file'" EXIT
+	if [ "$expected_output" == '-' ]; then
+		cat >"$expected_output_file"
+	else
+		echo -e "$expected_output" >"$expected_output_file"
+	fi
+	eval "$shell_command" >"$actual_output_file"
+
+	diff -q "$expected_output_file" "$actual_output_file" >/dev/null && return 0
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Command output differs:' >&2
+	echo "$shell_command" >&2
+	diff -u "$expected_output_file" "$actual_output_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s/^\(--- \).*$/\1[expected]/;2s/^\(+++ \).*/\1[actual]/' >&2
 	exit 1
 }
 
