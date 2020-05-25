@@ -73,7 +73,7 @@ assertOutputEqual() { # <command> <expected_output>
 	local expected_output="$2"
 	local actual_output_file=$(mktemp)
 	local expected_output_file=$(mktemp)
-	trap "rm '$actual_output_file' '$expected_output_file'" EXIT
+	trap "rm -f '$actual_output_file' '$expected_output_file'" EXIT
 	if [ "$expected_output" == '-' ]; then
 		cat >"$expected_output_file"
 	else
