@@ -305,6 +305,29 @@ FAIL
 EOF
 }
 
+selftest_assert_return_code_of_previous_command_assert() {
+	test_ok() {
+		assertOutputEqual 'echo test; exit 1' 'test'
+		assertReturnCode 1
+	}
+	test_fail() {
+		assertOutputEqual 'echo test; exit 1' 'test'
+		assertReturnCode 0
+	}
+
+	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+$0:$(($LINENO-3)):test_fail: Assert failed:
+Command return code differs:
+echo test; exit 1
+Expected: 0
+Actual: 1
+Executed: 2 test(s).
+Successful: 1 test(s).
+Failures: 1 test(s).
+FAIL
+EOF
+}
+
 selftest_assert_return_code() {
 	test_same() {
 		assertReturnCode 1 'exit 1'

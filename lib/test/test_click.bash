@@ -1,82 +1,77 @@
 #!/bin/bash
 . "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/unittest.bash"
 
-set -o pipefail
-# TODO unit-testing framework for bash
+should_print_usage_info() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
 
-TMPFILE="/tmp/test_click.txt"
-trap 'rm -f "$TMPFILE"' EXIT
-
-(
-. "$XDG_CONFIG_HOME/lib/click.bash"
-
-click::command test_click 'Description.'
-test_click() {
-	:
-}
-cat >"$TMPFILE" <<EOF
-Usage: test/test_click.bash
+	click::command test_click 'Description.'
+	test_click() {
+		:
+	}
+	assertOutputEqual 'click::run -h 2>&1' - <<EOF
+Usage: $0
 Description.
 EOF
-click::run -h 2>&1 | diff "$TMPFILE" -
-) || panic 'Differs.'
+}
 
-(
-. "$XDG_CONFIG_HOME/lib/click.bash"
+should_fail_when_short_flag_is_missing() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
 
-cat >"$TMPFILE" <<EOF
+	assertOutputEqual 'click::flag 2>&1' -  <<EOF
 Short flag is required!
 EOF
-	click::flag 2>&1 | diff "$TMPFILE" -
-) && panic 'RC is 1'
+	assertReturnCode 1
+}
 
-(
-. "$XDG_CONFIG_HOME/lib/click.bash"
+should_fail_if_flag_does_not_start_with_single_dash() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
 
-cat >"$TMPFILE" <<EOF
+	assertOutputEqual "click::flag 'a' 2>&1" -<<EOF
 Expected short flag in format '-<single char>', got instead: 'a'
 EOF
-	click::flag 'a' 2>&1 | diff "$TMPFILE" -
-) && panic 'RC is 1'
+	assertReturnCode 1
+}
 
-(
-. "$XDG_CONFIG_HOME/lib/click.bash"
+should_fail_if_long_flag_does_not_start_with_dashes() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
 
-cat >"$TMPFILE" <<EOF
+	assertOutputEqual "click::flag '-a' 'no-dashes' 2>&1" - <<EOF
 Expected long flag in format '--<name>', got instead: 'no-dashes'
 EOF
-	click::flag '-a' 'no-dashes' 2>&1 | diff "$TMPFILE" -
-) && panic 'RC is 1'
-
-(
-. "$XDG_CONFIG_HOME/lib/click.bash"
-
-click::command test_click
-click::option '-o' '--option' 
-click::flag '-f' '--flag' 
-click::argument 'name'
-test_click() {
-	[ -n "${CLICK_ARGS[flag]}" ] || panic 'flag is false'
-	[ "${CLICK_ARGS[option]}" == option_value ] || panic option_value
-	[ "${CLICK_ARGS[name]}" == argument_value ] || panic argument_value
+	assertReturnCode 1
 }
 
-click::run -o option_value -f argument_value
-) || panic 'RC is not 0'
+should_parse_options_and_flags() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
 
-(
-. "$XDG_CONFIG_HOME/lib/click.bash"
+	click::command test_click
+	click::option '-o' '--option' 
+	click::flag '-f' '--flag' 
+	click::argument 'name'
+	test_click() {
+		assertStringNotEmpty "${CLICK_ARGS[flag]}"
+		assertStringsEqual "${CLICK_ARGS[option]}" 'option_value'
+		assertStringsEqual "${CLICK_ARGS[name]}" 'argument_value'
+	}
 
-click::command test_click
-click::argument 'first'
-click::argument 'second'
-click::argument 'third'
-test_click() {
-	[ "${CLICK_ARGS[first]}" == arg1 ] || panic arg1
-	[ "${CLICK_ARGS[second]}" == arg2 ] || panic arg2
-	[ "${CLICK_ARGS[third]}" == arg3 ] || panic arg3
+	assertExitSuccess 'click::run -o option_value -f argument_value'
 }
 
-click::run arg1 arg2 arg3
-) || panic 'RC is not 0'
+should_parse_positionals() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
 
+	click::command test_click
+	click::argument 'first'
+	click::argument 'second'
+	click::argument 'third'
+	test_click() {
+		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
+		assertStringsEqual "${CLICK_ARGS[second]}" 'arg2'
+		assertStringsEqual "${CLICK_ARGS[third]}" 'arg3'
+	}
+
+	assertExitSuccess 'click::run arg1 arg2 arg3'
+}
+
+unittest::run should_

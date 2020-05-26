@@ -92,12 +92,15 @@ assertStringNotEmpty() { # <value>
 }
 
 assertOutputEqual() { # <command> <expected_output>
-	# Asserts that given command produces expected output
+	# Asserts that given command produces expected output.
 	# If output param is specified as '-', read expected output from stdin:
 	#   assertOutputEqual 'cat some_file' <<EOF
 	#   ...well, you know.
 	#   EOF
+	# Otherwise expected output param may contain escape sequences (e.g. \n)
 	# Command is executed in subshell, so `exit` is fine.
+	# Return code is ignored, but stored in internals
+	# so it can be checked later with assertReturnCode, assertExitSuccess, assertExitFailure without <command> arg (see description of corresponding function).
 	# Prints the diff along with the message.
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
@@ -114,6 +117,8 @@ assertOutputEqual() { # <command> <expected_output>
 		echo -e "$expected_output" >"$expected_output_file"
 	fi
 	( eval "$shell_command" >"$actual_output_file" )
+	_UNITTEST_LAST_RC=$?
+	_UNITTEST_LAST_COMMAND="$shell_command"
 
 	diff -q "$expected_output_file" "$actual_output_file" >/dev/null && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
@@ -126,11 +131,14 @@ assertOutputEqual() { # <command> <expected_output>
 assertReturnCode() { # <expected_rc> <command>
 	# Asserts that command exits with expected return code.
 	# RC should obviously be a number.
+	# If command is omitted, result of previous assertOutputEqual is used, if there was one.
 	# Command is executed in subshell, so `exit` is fine.
 	local shell_command="$2"
 	if [ -z "$shell_command" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
-		exit 1
+		if [ -z "${_UNITTEST_LAST_RC}" ]; then
+			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+			exit 1
+		fi
 	fi
 	local expected_rc="$1"
 	if [ -z "$expected_rc" ]; then
@@ -142,8 +150,15 @@ assertReturnCode() { # <expected_rc> <command>
 		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is not a number!" >&2
 		exit 1
 	fi
-	( eval "$shell_command" )
-	rc=$?
+	if [ -z "${_UNITTEST_LAST_RC}" ]; then
+		( eval "$shell_command" )
+		rc=$?
+	else
+		shell_command="${_UNITTEST_LAST_COMMAND}"
+		rc="${_UNITTEST_LAST_RC}"
+		_UNITTEST_LAST_COMMAND=
+		_UNITTEST_LAST_RC=
+	fi
 	[ "$expected_rc" -eq "$rc" ] && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command return code differs:' >&2
@@ -155,14 +170,23 @@ assertReturnCode() { # <expected_rc> <command>
 
 assertExitSuccess() { # <command>
 	# Asserts that given command exits with RC=0
-	# See assertReturnCode for other details.
+	# Otherwise follows assertReturnCode.
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
-		exit 1
+		if [ -z "${_UNITTEST_LAST_RC}" ]; then
+			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+			exit 1
+		fi
 	fi
-	( eval "$shell_command" )
-	rc=$?
+	if [ -z "${_UNITTEST_LAST_RC}" ]; then
+		( eval "$shell_command" )
+		rc=$?
+	else
+		shell_command="${_UNITTEST_LAST_COMMAND}"
+		rc="${_UNITTEST_LAST_RC}"
+		_UNITTEST_LAST_COMMAND=
+		_UNITTEST_LAST_RC=
+	fi
 	[ "$rc" -eq 0 ] && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command did not exit with success:' >&2
@@ -173,14 +197,23 @@ assertExitSuccess() { # <command>
 
 assertExitFailure() { # <command>
 	# Asserts that given command exits with non-zero RC.
-	# See assertReturnCode for other details.
+	# Otherwise follows assertReturnCode.
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
-		exit 1
+		if [ -z "${_UNITTEST_LAST_RC}" ]; then
+			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+			exit 1
+		fi
 	fi
-	( eval "$shell_command" )
-	rc=$?
+	if [ -z "${_UNITTEST_LAST_RC}" ]; then
+		( eval "$shell_command" )
+		rc=$?
+	else
+		shell_command="${_UNITTEST_LAST_COMMAND}"
+		rc="${_UNITTEST_LAST_RC}"
+		_UNITTEST_LAST_COMMAND=
+		_UNITTEST_LAST_RC=
+	fi
 	[ "$rc" -ne 0 ] && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command did not exit with failure:' >&2
