@@ -1,4 +1,24 @@
+# Unit-testing framework for Bash
+# Basic usage:
+# Each file is a separate test suite.
+# Define test case functions:
+#   test_something() {
+#      do some actions here;
+#      assertResults using number of built-in assertions;
+#   }
+# Functions setUp and tearDown are supported.
+# Run unit tests:
+#   unittest::run
+# See specific functions for details.
+#
+# Test case functions are perfomed in subshell, so both exit or return are fine.
+# All built-in assertions exit upon failure (with corresponding message to stderr).
+# Messages use common format '<filename>:<line number>:<failed test case>:...
+
 assertFilesSame() { # <actual> <expected>
+	# Asserts that two files hold the same content.
+	# Prints diff between files with the message.
+	# Also fails if any of the files are missing.
 	if [ ! -f "$1" ]; then
 		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: First file does not exist: $1" >&2
 		exit 1
@@ -15,6 +35,9 @@ assertFilesSame() { # <actual> <expected>
 }
 
 assertFilesDiffer() { # <actual> <expected>
+	# Asserts that two files are not the same.
+	# Prints content of the file(s) with the message.
+	# Also fails if any of the files are missing.
 	if [ ! -f "$1" ]; then
 		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: First file does not exist: $1" >&2
 		exit 1
@@ -33,6 +56,7 @@ assertFilesDiffer() { # <actual> <expected>
 }
 
 assertStringsEqual() { # <actual> <expected>
+	# Asserts that two given values are equal.
 	[ "$1" == "$2" ] && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Strings are not equal:' >&2
@@ -42,6 +66,7 @@ assertStringsEqual() { # <actual> <expected>
 }
 
 assertStringsNotEqual() { # <actual> <expected>
+	# Asserts that two given values are not equal.
 	[ "$1" != "$2" ] && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Strings do not differ:' >&2
@@ -50,6 +75,7 @@ assertStringsNotEqual() { # <actual> <expected>
 }
 
 assertStringEmpty() { # <value>
+	# Asserts that given value is an empty string.
 	[ -z "$1" ] && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'String is not empty:' >&2
@@ -58,6 +84,7 @@ assertStringEmpty() { # <value>
 }
 
 assertStringNotEmpty() { # <value>
+	# Asserts that given value is not an empty string.
 	[ -n "$1" ] && return 0
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'String is empty!' >&2
@@ -65,6 +92,13 @@ assertStringNotEmpty() { # <value>
 }
 
 assertOutputEqual() { # <command> <expected_output>
+	# Asserts that given command produces expected output
+	# If output param is specified as '-', read expected output from stdin:
+	#   assertOutputEqual 'cat some_file' <<EOF
+	#   ...well, you know.
+	#   EOF
+	# Command is executed in subshell, so `exit` is fine.
+	# Prints the diff along with the message.
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
 		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
@@ -90,6 +124,9 @@ assertOutputEqual() { # <command> <expected_output>
 }
 
 assertReturnCode() { # <expected_rc> <command>
+	# Asserts that command exits with expected return code.
+	# RC should obviously be a number.
+	# Command is executed in subshell, so `exit` is fine.
 	local shell_command="$2"
 	if [ -z "$shell_command" ]; then
 		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
@@ -117,6 +154,8 @@ assertReturnCode() { # <expected_rc> <command>
 }
 
 assertExitSuccess() { # <command>
+	# Asserts that given command exits with RC=0
+	# See assertReturnCode for other details.
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
 		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
@@ -133,6 +172,8 @@ assertExitSuccess() { # <command>
 }
 
 assertExitFailure() { # <command>
+	# Asserts that given command exits with non-zero RC.
+	# See assertReturnCode for other details.
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
 		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
@@ -149,8 +190,13 @@ assertExitFailure() { # <command>
 }
 
 unittest::run() {
+	# Main unittest runner.
 	# Usage: [<prefix>]
 	#   <prefix>  - marks shell functions to execute as unit tests. Default is 'test_'
+	# Runs all functions in local namespace that starts with specified prefix.
+	# Note: Order of functions is undefined.
+	# Prints statistics at the end: total cases, successes and failures.
+	# Exit code is amount of failed test cases.
 	# Set $UNITTEST_QUIET to omit final statistics.
 
 	local prefix="${1:-test_}"
