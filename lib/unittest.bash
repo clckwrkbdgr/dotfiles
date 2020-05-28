@@ -14,6 +14,7 @@
 # Test case functions are perfomed in subshell, so both exit or return are fine.
 # All built-in assertions exit upon failure (with corresponding message to stderr).
 # Messages use common format '<filename>:<line number>:<failed test case>:...
+. "$XDG_CONFIG_HOME/lib/utils.bash"
 
 assertFilesSame() { # <actual> <expected>
 	# Asserts that two files hold the same content.
@@ -110,21 +111,28 @@ assertOutputEqual() { # <command> <expected_output>
 	local expected_output="$2"
 	local actual_output_file=$(mktemp)
 	local expected_output_file=$(mktemp)
-	trap "rm -f '$actual_output_file' '$expected_output_file'" EXIT
-	if [ "$expected_output" == '-' ]; then
-		cat >"$expected_output_file"
-	else
-		echo -e "$expected_output" >"$expected_output_file"
-	fi
-	( eval "$shell_command" >"$actual_output_file" )
+	(
+		if [ "$expected_output" == '-' ]; then
+			cat >"$expected_output_file"
+		else
+			echo -e "$expected_output" >"$expected_output_file"
+		fi
+		( eval "$shell_command" >"$actual_output_file" )
+	)
 	_UNITTEST_LAST_RC=$?
 	_UNITTEST_LAST_COMMAND="$shell_command"
 
-	diff -q "$expected_output_file" "$actual_output_file" >/dev/null && return 0
+	diff -q "$expected_output_file" "$actual_output_file" >/dev/null
+	local diff_ok=$?
+	if [ "$diff_ok" -eq 0 ]; then
+		rm -f "$actual_output_file" "$expected_output_file"
+		return 0
+	fi
 	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command output differs:' >&2
 	echo "$shell_command" >&2
 	diff -u "$expected_output_file" "$actual_output_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s/^\(--- \).*$/\1[expected]/;2s/^\(+++ \).*/\1[actual]/' >&2
+	rm -f "$actual_output_file" "$expected_output_file"
 	exit 1
 }
 
@@ -253,7 +261,7 @@ unittest::run() {
 				setUp
 			fi
 			if [ -n "$has_tearDown" ]; then
-				trap tearDown EXIT
+				finally tearDown
 			fi
 			"$function_name"
 		)
