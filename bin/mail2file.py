@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 from __future__ import print_function, unicode_literals
 import os, sys, shutil, subprocess
+import getpass
 import argparse
 try:
 	from pathlib2 import Path
 except ImportError:
 	from pathlib import Path
 
-MAILBOX = Path(os.environ.get('MAILPATH', Path('/var/mail')/os.getlogin()))
+MAILBOX = Path(os.environ.get('MAILPATH', Path('/var/mail')/getpass.getuser()))
 MAILBOX_BAK = Path.home()/'.cache'/'mbox.{0}'.format(os.getpid()) # TODO xdg or tmp?
 TEMPDIR = Path.home()/'.cache'/'mail.{0}'.format(os.getpid()) # TODO xdg or tmp?
 

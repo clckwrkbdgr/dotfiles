@@ -1,5 +1,6 @@
 #!/bin/sh
 [ -z "$SHELL" ] && export SHELL=/bin/bash
+[ -z "$USER" ] && export USER=$LOGNAME
 [ -z "$MAILTO" ] && export MAILTO=$LOGNAME
 [ -z "$TERM" ] && export TERM=xterm
 [ -z "$DISPLAY" ] && export DISPLAY=:0.0
