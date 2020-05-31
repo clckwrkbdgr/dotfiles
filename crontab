@@ -1,1 +1,1 @@
-0	*	*	*	*	~/.config/bin/crontab-env.cmd ~/.config/bin/update_crontab.py
+0	*	*	*	*	~/.config/bin/user-env.cmd ~/.config/bin/update_crontab.py
