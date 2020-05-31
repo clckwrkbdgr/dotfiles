@@ -9,6 +9,10 @@
 # Both results can also be achieved using ~/.config/bin/crontab-env.cmd
 # TODO need to rename crontab-env into something like with-profile or with-user-env (?)
 
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+
+deprecated 'Use either `$XDG_CONFIG_HOME/bin/user-env.cmd` or `. ~/.config/xdg/xdg.inc.sh`'
+
 . ~/.config/xdg/xdg.inc.sh
 
 # If supplied, run command in XDG-compliant environment.
