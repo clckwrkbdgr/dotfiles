@@ -4,7 +4,12 @@ export HISTCONTROL=ignoredups
 
 . "$XDG_CONFIG_HOME/bash/prompt.inc.bash"
 
-. "$XDG_CONFIG_HOME/xdg/xdg.inc.sh" # TODO temp measures until there is a way to update environment in running DE.
+# TODO temp measures until there is a way to update environment in running DE.
+. ~/.config/lib/xdg.bash
+for xdgsourcefile in ~/.config/xdg/*.sh; do
+	grep -q '^deprecated' "$xdgsourcefile" && continue # TODO deprecated source files should be removed
+	. "$xdgsourcefile"
+done
 
 eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
 

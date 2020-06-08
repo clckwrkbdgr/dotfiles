@@ -1,3 +1,3 @@
-#!/bin/sh
-. "$XDG_CONFIG_HOME/xdg/path.inc.sh"
-exec_basic_executable -conf $XDG_CONFIG_HOME/dosbox/dosbox-0.74.conf "$@"
+#!/bin/bash
+. "$XDG_CONFIG_HOME/lib/path.bash"
+path::exec_base -conf $XDG_CONFIG_HOME/dosbox/dosbox-0.74.conf "$@"

@@ -1,14 +1,18 @@
 # Utility functions that allow to run executable from binpath other that the current one.
+. "$XDG_CONFIG_HOME/lib/utils.bash"
 
 # Removes given dirname from the $PATH.
 strip_from_path() { # <binpath directory>
-	[ -z "$1" ] && return 1
-	PATH="`echo "$PATH" | tr ':' '\n' | fgrep -v "${1}" | tr '\n' ':'`"
+	deprecated 'Use path::strip from $XDG_CONFIG_HOME/lib/path.bash'
+	. "$XDG_CONFIG_HOME/lib/path.bash"
+	path::strip
 }
 
 # Strips current script's directory from the $PATH.
 strip_current_path() {
-	strip_from_path "`dirname "$0"`"
+	deprecated 'Use path::strip_current from $XDG_CONFIG_HOME/lib/path.bash'
+	. "$XDG_CONFIG_HOME/lib/path.bash"
+	path::strip_current
 }
 
 # Main function.
@@ -19,9 +23,7 @@ strip_current_path() {
 # . "$XDG_CONFIG_HOME/xdg/path.inc.sh" # -- optional, as it should be sourced from the main XDG script.
 # exec_basic_executable <custom_args> "$@"
 exec_basic_executable() { # <args...>
-	strip_current_path
-	export PATH
-	executable_basename="`basename "$0"`"
-	[ -n "$DEBUG_XDG" ] && which "$executable_basename"
-	exec "$executable_basename" "$@"
+	deprecated 'Use path::exec_base from $XDG_CONFIG_HOME/lib/path.bash'
+	. "$XDG_CONFIG_HOME/lib/path.bash"
+	path::exec_base "$@"
 }

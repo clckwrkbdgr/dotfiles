@@ -30,7 +30,11 @@ fi
 export PATH
 
 # Section for XDG directory support.
-. ~/.config/xdg/xdg.inc.sh
+. ~/.config/lib/xdg.bash
+for xdgsourcefile in ~/.config/xdg/*.sh; do
+	grep -q '^deprecated' "$xdgsourcefile" && continue # TODO deprecated source files should be removed
+	. "$xdgsourcefile"
+done
 
 # User private settings.
 [ -f ~/.local/profile ] && . ~/.local/profile

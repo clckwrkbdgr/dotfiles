@@ -7,3 +7,6 @@
 . ~/.config/xdg/cache.inc.sh
 . ~/.config/xdg/runtime.inc.sh
 . ~/.config/xdg/path.inc.sh
+
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+deprecated 'Source all ~/.config/xdg/*.sh files instead'
