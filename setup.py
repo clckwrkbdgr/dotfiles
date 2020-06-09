@@ -7,8 +7,7 @@ import logging
 try:
 	import termcolor
 except ImportError:
-	termcolor = types.SimpleNamespace()
-	termcolor.colored = lambda s, *args, **kwargs: s
+	import clckwrkbdgr.dummy as termcolor
 import clckwrkbdgr.fs
 
 trace = logging.getLogger('setup')
