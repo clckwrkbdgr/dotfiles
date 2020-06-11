@@ -1,3 +1,4 @@
+#!/bin/bash
 . "$XDG_CONFIG_HOME/lib/unittest.bash"
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 
@@ -23,7 +24,7 @@ should_warn_about_deprecated_function() {
 	deprecated_function() {
 		deprecated "Place your text here"
 	}
-	assertOutputEqual 'deprecated_function 2>&1' "$0:24:function deprecated_function is deprecated: Place your text here"
+	assertOutputEqual 'deprecated_function 2>&1' "$0:$(($LINENO-2)):function deprecated_function is deprecated: Place your text here"
 }
 
 should_warn_about_deprecated_script() {

@@ -1,3 +1,4 @@
+#!/bin/bash
 . "$XDG_CONFIG_HOME/lib/unittest.bash"
 . "$XDG_CONFIG_HOME/lib/path.bash"
 

@@ -9,7 +9,7 @@ test-python:
 test-bash:
 	# TODO specific bash test like PYTEST
 	@echo 'Running test for bash scripts'
-	@for scriptname in test/test_*.bash; do $$scriptname || exit 1; done
+	@for scriptname in test/test_*.bash; do echo $$scriptname; $$scriptname || exit 1; done
 
 # TODO some QUIET env var instead, and merge these two sets of rules.
 quiet-test: quiet-test-python quiet-test-bash
@@ -20,6 +20,6 @@ quiet-test-python:
 	@coverage report -m
 
 quiet-test-bash:
-	@for scriptname in test/test_*.bash; do $$scriptname || exit 1; done
+	@for scriptname in test/test_*.bash; do echo $$scriptname; $$scriptname || exit 1; done
 
 .PHONY: test
