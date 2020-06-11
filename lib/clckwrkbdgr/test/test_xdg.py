@@ -10,10 +10,20 @@ import clckwrkbdgr.xdg as xdg
 
 class TestXDGUtils(unittest.TestCase):
 	@mock.patch('pathlib.Path.mkdir')
-	def should_cache_subdir_path(self, mkdir_mock):
+	def should_create_subdir_path(self, mkdir_mock):
 		XDG_TMP = Path(tempfile.gettempdir())
 		self.assertEqual(xdg._save_XDG_path(XDG_TMP, 'test_xdg'), XDG_TMP/'test_xdg')
-		self.assertEqual(xdg._save_XDG_path(XDG_TMP, 'test_xdg'), XDG_TMP/'test_xdg')
+		mkdir_mock.assert_called_once_with(parents=True, exist_ok=True)
+	@mock.patch('pathlib.Path.mkdir')
+	def should_create_subdir_path_with_multiple_parts(self, mkdir_mock):
+		XDG_TMP = Path(tempfile.gettempdir())
+		self.assertEqual(xdg._save_XDG_path(XDG_TMP, 'test_xdg', 'subdir'), XDG_TMP/'test_xdg'/'subdir')
+		mkdir_mock.assert_called_once_with(parents=True, exist_ok=True)
+	@mock.patch('pathlib.Path.mkdir')
+	def should_cache_subdir_path(self, mkdir_mock):
+		XDG_TMP = Path(tempfile.gettempdir())
+		self.assertEqual(xdg._save_XDG_path(XDG_TMP, 'test_xdg_cached'), XDG_TMP/'test_xdg_cached')
+		self.assertEqual(xdg._save_XDG_path(XDG_TMP, 'test_xdg_cached'), XDG_TMP/'test_xdg_cached')
 		mkdir_mock.assert_called_once_with(parents=True, exist_ok=True)
 	@mock.patch('pathlib.Path.mkdir')
 	def should_create_subdir_for_config_path(self, mkdir_mock):

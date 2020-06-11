@@ -28,13 +28,13 @@ if not XDG_STATE_HOME.is_dir(): # pragma: no cover
     XDG_STATE_HOME.mkdir(parents=True, exist_ok=True)
 
 @functools.lru_cache()
-def _save_XDG_path(xdg_dir, dirname):
-    subdir = xdg_dir/dirname
+def _save_XDG_path(xdg_dir, *dirname):
+    subdir = Path(xdg_dir).joinpath(*dirname)
     subdir.mkdir(parents=True, exist_ok=True)
     return subdir
 
-def save_config_path(dirname): return _save_XDG_path(XDG_CONFIG_HOME, dirname)
-def save_data_path(dirname): return _save_XDG_path(XDG_DATA_HOME, dirname)
-def save_cache_path(dirname): return _save_XDG_path(XDG_CACHE_HOME, dirname)
-def save_state_path(dirname): return _save_XDG_path(XDG_STATE_HOME, dirname)
-def save_runtime_path(dirname): return _save_XDG_path(XDG_RUNTIME_DIR, dirname)
+def save_config_path(*dirname): return _save_XDG_path(XDG_CONFIG_HOME, *dirname)
+def save_data_path(*dirname): return _save_XDG_path(XDG_DATA_HOME, *dirname)
+def save_cache_path(*dirname): return _save_XDG_path(XDG_CACHE_HOME, *dirname)
+def save_state_path(*dirname): return _save_XDG_path(XDG_STATE_HOME, *dirname)
+def save_runtime_path(*dirname): return _save_XDG_path(XDG_RUNTIME_DIR, *dirname)
