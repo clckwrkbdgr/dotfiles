@@ -3,6 +3,7 @@ import os, sys, subprocess
 import re
 import configparser
 from PIL import Image
+from clckwrkbdgr import xdg
 
 """
 Each section in ini-file is a separate LED.
@@ -18,15 +19,7 @@ character_on = 'S'
 character_off = ' '
 """
 
-def get_config_file(*args):
-    xdg_config_dir = os.environ.get('XDG_CONFIG_HOME')
-    if not xdg_config_dir:
-        xdg_config_dir = os.path.join(os.path.expanduser("~"), ".config")
-    app_config_dir = os.path.join(xdg_config_dir, "xfce4")
-    os.makedirs(app_config_dir, exist_ok=True)
-    return os.path.join(app_config_dir, "xfce-leds.ini")
-
-def get_cache_dir():
+def get_cache_dir(): # TODO xdg module
     xdg_cache_dir = os.environ.get('XDG_CACHE_HOME')
     if not xdg_cache_dir:
         xdg_cache_dir = os.path.join(os.path.expanduser("~"), ".cache")
@@ -64,8 +57,9 @@ if __name__ == "__main__":
 	leds = read_xset_led_status()
 
 	settings = configparser.SafeConfigParser()
-	settings.read([get_config_file()])
-	config_mtime = os.path.getmtime(get_config_file())
+	config_file = xdg.save_config_path('xfce4')/"xfce-leds.ini"
+	settings.read([str(config_file)])
+	config_mtime = os.path.getmtime(str(config_file))
 	tooltip = ''
 	images = []
 	states = ''
@@ -106,9 +100,9 @@ if __name__ == "__main__":
 
 		state_symbol = chr(ord('A') + index)
 		states += state_symbol.upper() if state else state_symbol.lower()
-	state_image_path = os.path.join(get_cache_dir(), "leds_{0}.png".format(states))
-	image_exists = os.path.exists(state_image_path)
-	image_is_too_old = image_exists and config_mtime > os.path.getmtime(state_image_path)
+	state_image_path = xdg.save_cache_path('xfce4', 'leds')/"leds_{0}.png".format(states)
+	image_exists = state_image_path.exists()
+	image_is_too_old = image_exists and config_mtime > os.path.getmtime(str(state_image_path))
 	if image_is_too_old:
 		sys.stderr.write("Image is too old.\n")
 	if not image_exists or image_is_too_old:
@@ -119,5 +113,5 @@ if __name__ == "__main__":
 		band = Image.new('RGBA', (full_width, full_height))
 		for index, frame in enumerate(frames):
 			band.paste(frame, (frame_width * index, 0))
-		band.save(state_image_path)
+		band.save(str(state_image_path))
 	sys.stdout.write("<img>{0}</img>\n<tool>{1}</tool>\n".format(state_image_path, tooltip))
