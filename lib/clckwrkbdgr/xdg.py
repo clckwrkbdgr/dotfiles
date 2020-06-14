@@ -1,31 +1,40 @@
 import os
 import getpass
 import functools
+import platform
+from collections import namedtuple
 try:
     from pathlib2 import Path
 except ImportError: # pragma: no cover
     from pathlib import Path
 import xdg.BaseDirectory
 
+_XDGDir = namedtuple('_XDGDir', 'name path ensure')
 # Basic XDG structure.
-XDG_CONFIG_HOME = Path(os.environ.get('XDG_CONFIG_HOME', Path('~').expanduser()/'.config'))
-XDG_DATA_HOME = Path(os.environ.get('XDG_DATA_HOME', Path('~').expanduser()/'.local'/'share'))
-XDG_CACHE_HOME = Path(os.environ.get('XDG_CACHE_HOME', Path('~').expanduser()/'.cache'))
-XDG_RUNTIME_DIR = Path(os.environ.get('XDG_RUNTIME_DIR ', Path('/run')/'user'/getpass.getuser()))
+_dir_data = [
+        _XDGDir('XDG_CONFIG_HOME', Path('~').expanduser()/'.config', True),
+        _XDGDir('XDG_DATA_HOME', Path('~').expanduser()/'.local'/'share', True),
+        _XDGDir('XDG_CACHE_HOME', Path('~').expanduser()/'.cache', True),
+        ]
+if platform.system() == 'Windows':
+    _dir_data += [
+        _XDGDir('XDG_RUNTIME_DIR', Path(os.environ.get('TEMP', os.environ['USERPROFILE'])), False), # FIXME Proper default value.
+        ]
+else:
+    _dir_data += [
+        _XDGDir('XDG_RUNTIME_DIR', Path('/run')/'user'/getpass.getuser(), False),
+        ]
 # Non-standard setting for logs/history/app state etc.
 # See https://stackoverflow.com/a/27965014/2128769
 #     https://wiki.debian.org/XDGBaseDirectorySpecification#state
-XDG_STATE_HOME = Path(os.environ.get('XDG_STATE_HOME', Path('~').expanduser()/'.state'))
+_dir_data += [
+        _XDGDir('XDG_STATE_HOME', Path('~').expanduser()/'.state', True),
+        ]
 
-# Ensuring physical XDG structure presence.
-if not XDG_CONFIG_HOME.is_dir(): # pragma: no cover
-    XDG_CONFIG_HOME.mkdir(parents=True, exist_ok=True)
-if not XDG_CACHE_HOME.is_dir(): # pragma: no cover
-    XDG_CACHE_HOME.mkdir(parents=True, exist_ok=True)
-if not XDG_DATA_HOME.is_dir(): # pragma: no cover
-    XDG_DATA_HOME.mkdir(parents=True, exist_ok=True)
-if not XDG_STATE_HOME.is_dir(): # pragma: no cover
-    XDG_STATE_HOME.mkdir(parents=True, exist_ok=True)
+for name, path, ensure in _dir_data: # pragma: no cover
+    globals()[name] = Path(os.environ.get(name, path))
+    if ensure:
+        globals()[name].mkdir(parents=True, exist_ok=True)
 
 @functools.lru_cache()
 def _save_XDG_path(xdg_dir, *dirname):
