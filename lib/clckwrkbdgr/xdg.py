@@ -7,7 +7,6 @@ try:
     from pathlib2 import Path
 except ImportError: # pragma: no cover
     from pathlib import Path
-import xdg.BaseDirectory
 
 _XDGDir = namedtuple('_XDGDir', 'name path ensure')
 # Basic XDG structure.
