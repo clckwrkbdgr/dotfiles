@@ -1,13 +1,19 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
-import unittest.mock
-unittest.mock.patch.TEST_PREFIX = 'should'
+try:
+	import unittest.mock as mock
+except ImportError: # pragma: no cover
+	import mock
+mock.patch.TEST_PREFIX = 'should'
 import os
 import clckwrkbdgr.fs
-from pathlib import Path
+try:
+	from pathlib2 import Path
+except ImportError: # pragma: no cover
+	from pathlib import Path
 
-@unittest.mock.patch('os.getcwd', return_value='old')
-@unittest.mock.patch('os.chdir')
+@mock.patch('os.getcwd', return_value='old')
+@mock.patch('os.chdir')
 class TestPathUtils(unittest.TestCase):
 	def should_change_current_dir(self, mock_getcwd, mock_chdir):
 		with clckwrkbdgr.fs.CurrentDir('new'):

@@ -3,9 +3,9 @@ import time
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import contextlib
-try:
+try: # pragma: no cover
 	from pathlib2 import Path
-except ImportError: # pragma: py3 only
+except ImportError: # pragma: no cover
 	from pathlib import Path
 import clckwrkbdgr.fs
 import clckwrkbdgr.pyshell as pyshell

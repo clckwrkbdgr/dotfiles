@@ -7,9 +7,9 @@ try:
 except AttributeError: # pragma: no cover
 	subprocess.DEVNULL = open(os.devnull, 'w')
 import inspect
-try:
+try: # pragma: no cover
 	from pathlib2 import Path
-except ImportError: # pragma: py3 only
+except ImportError: # pragma: no cover
 	from pathlib import Path
 import six
 try:
@@ -189,7 +189,7 @@ class PyShell(object):
 		if stdin is not None:
 			DEBUG("STDIN redirection is ON")
 			kwargs['stdin'] = subprocess.PIPE
-			if not isinstance(stdin, six.binary_type): # pragma: py3 only
+			if not isinstance(stdin, six.binary_type): # pragma: no cover -- py3 only
 				DEBUG("Converting stdin content to bytes...")
 				try:
 					stdin = str(stdin).encode()

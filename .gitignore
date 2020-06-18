@@ -1,6 +1,7 @@
 # Temp files.
 .*.swp
 *.pyo
+*.pyc
 __pycache__/
 
 # W3m stores everything in config dir.

@@ -1,10 +1,18 @@
 test: test-python test-bash
 	
-test-python:
+test-python: test-python3 test-python2
+
+test-python3:
 	@mkdir -p ~/.cache/pytest/config
-	@echo "Running test for PYTEST='$${PYTEST}'"
-	@coverage run -m unittest "$${PYTEST:-discover}"
-	@coverage report -m
+	@echo "Running Py3 tests for PYTEST='$${PYTEST}'"
+	@python3 -m coverage run -m unittest "$${PYTEST:-discover}"
+	@python3 -m coverage report -m
+
+test-python2:
+	@mkdir -p ~/.cache/pytest/config
+	@echo "Running Py2 tests for PYTEST='$${PYTEST}'"
+	@python2 -m coverage run -m unittest "$${PYTEST:-discover}"
+	@python2 -m coverage report -m
 
 test-bash:
 	# TODO specific bash test like PYTEST

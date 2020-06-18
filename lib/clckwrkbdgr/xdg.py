@@ -7,6 +7,7 @@ try:
     from pathlib2 import Path
 except ImportError: # pragma: no cover
     from pathlib import Path
+import clckwrkbdgr._six
 
 _XDGDir = namedtuple('_XDGDir', 'name path ensure')
 # Basic XDG structure.
@@ -15,11 +16,11 @@ _dir_data = [
         _XDGDir('XDG_DATA_HOME', Path('~').expanduser()/'.local'/'share', True),
         _XDGDir('XDG_CACHE_HOME', Path('~').expanduser()/'.cache', True),
         ]
-if platform.system() == 'Windows':
+if platform.system() == 'Windows': # pragma: no cover -- Windows only.
     _dir_data += [
         _XDGDir('XDG_RUNTIME_DIR', Path(os.environ.get('TEMP', os.environ['USERPROFILE'])), False), # FIXME Proper default value.
         ]
-else:
+else: # pragma: no cover -- Unix only.
     _dir_data += [
         _XDGDir('XDG_RUNTIME_DIR', Path('/run')/'user'/getpass.getuser(), False),
         ]
