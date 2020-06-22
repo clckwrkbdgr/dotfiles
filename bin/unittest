@@ -1,0 +1,48 @@
+#!/usr/bin/python
+import sys, subprocess
+import configparser
+try:
+	from pathlib2 import Path
+except ImportError: # pragma: no cover
+	from pathlib import Path
+try:
+	import termcolor
+except ImportError: # pragma: no cover
+	import dummy as termcolor
+
+def python_2_unittest(test):
+	rc = subprocess.call(['python2', '-m', 'coverage', 'run', '-m', 'unittest', test or 'discover'])
+	rc += subprocess.call(['python2', '-m', 'coverage', 'report', '-m'])
+	return rc
+
+def python_3_unittest(test):
+	rc = subprocess.call(['python3', '-m', 'coverage', 'run', '-m', 'unittest', test or 'discover'])
+	rc += subprocess.call(['python3', '-m', 'coverage', 'report', '-m'])
+	return rc
+
+if __name__ == '__main__':
+	setup_cfg = configparser.SafeConfigParser()
+	setup_cfg.read(['setup.cfg'])
+	if 'unittest' in setup_cfg:
+		if 'data_dir' in setup_cfg['unittest']:
+			data_dir = setup_cfg['unittest']['data_dir']
+			Path(data_dir).expanduser().mkdir(parents=True, exist_ok=True)
+
+	tests = sys.argv[1:] or [None]
+	suites = [
+			('py2', python_2_unittest),
+			('py3', python_3_unittest),
+			]
+	rc = 0
+	for suite_name, runner in suites:
+		for test in tests:
+			print(termcolor.colored('Running {0} tests for: {1}'.format(suite_name, test or '<autodiscovery>'), 'blue'))
+			result = runner(test)
+			rc += result
+			if result == 0:
+				print(termcolor.colored('Success.', 'green'))
+			else:
+				print(termcolor.colored('RC: {0}'.format(result), 'red'))
+	if rc != 0:
+		print(termcolor.colored('Total RC: {0}'.format(rc), 'red'))
+	sys.exit(rc)
