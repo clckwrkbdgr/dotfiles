@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys, subprocess
 import configparser
 try:
@@ -10,17 +10,67 @@ try:
 except ImportError: # pragma: no cover
 	import dummy as termcolor
 
+class Registry(object):
+	""" Registry of functions with optional set of attributes.
+	Usage:
+	registry = Registry('name', 'some_other_attr')
+	@registry('foo', 'bar')
+	def function(arbitrary_args...):
+		...
+	for func in registry:
+		func(...)
+		func.name
+		func.some_other_attr
+		....
+	"""
+	def __init__(self, *required_keywords):
+		""" If required_keywords are specified,
+		each decorator will expect a set of unnamed arguments of the same size.
+		Keywords and arguments are matched correspondingly as attributes.
+		See __call__ for details about attributes.
+		"""
+		self._list = []
+		self._required_keywords = required_keywords or []
+	def __iter__(self):
+		""" Yields registered functions.
+		Attributes are available as ordinary attributes of function objects:
+		for func in registry:
+			func.name
+			func.some_other_attr
+			...
+		"""
+		return iter(self._list)
+	def __call__(self, *required_attrs, **attrs):
+		""" Registers function with attributes.
+		If some attributes are passed as unnamed arguments, they are matched with
+		corresponding keyword from Registry definition.
+		Attribute name should be proper Python keyword,
+		as they will be available as ordinary attribute of function object.
+		"""
+		assert len(required_attrs) == len(self._required_keywords), 'Number of supplied unnamed arguments {0} does not correspond defined number of required keywords {1}'.format(repr(required_attrs), repr(self._required_keywords))
+		attrs.update(dict(zip(self._required_keywords, required_attrs)))
+		def _real_wrapper(func):
+			for attr_name, attr_value in attrs.items():
+				setattr(func, attr_name, attr_value)
+			self._list.append(func)
+			return func
+		return _real_wrapper
+
+test_suite = Registry('name')
+
+@test_suite('py2')
 def python_2_unittest(test):
 	rc = subprocess.call(['python2', '-m', 'coverage', 'run', '-m', 'unittest', test or 'discover'])
 	rc += subprocess.call(['python2', '-m', 'coverage', 'report', '-m'])
 	return rc
 
+@test_suite('py3')
 def python_3_unittest(test):
 	rc = subprocess.call(['python3', '-m', 'coverage', 'run', '-m', 'unittest', test or 'discover'])
 	rc += subprocess.call(['python3', '-m', 'coverage', 'report', '-m'])
 	return rc
 
-if __name__ == '__main__':
+if __name__ == '__main__': # TODO click
 	setup_cfg = configparser.SafeConfigParser()
 	setup_cfg.read(['setup.cfg'])
 	if 'unittest' in setup_cfg:
@@ -29,14 +79,10 @@ if __name__ == '__main__':
 			Path(data_dir).expanduser().mkdir(parents=True, exist_ok=True)
 
 	tests = sys.argv[1:] or [None]
-	suites = [
-			('py2', python_2_unittest),
-			('py3', python_3_unittest),
-			]
 	rc = 0
-	for suite_name, runner in suites:
+	for runner in test_suite:
 		for test in tests:
-			print(termcolor.colored('Running {0} tests for: {1}'.format(suite_name, test or '<autodiscovery>'), 'blue'))
+			print(termcolor.colored('Running {0} tests for: {1}'.format(runner.name, test or '<autodiscovery>'), 'blue'))
 			result = runner(test)
 			rc += result
 			if result == 0:
