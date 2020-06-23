@@ -59,13 +59,13 @@ class Registry(object):
 
 test_suite = Registry('name')
 
-#@test_suite('py2')
+@test_suite('py2')
 def python_2_unittest(test):
 	rc = subprocess.call(['python2', '-m', 'coverage', 'run', '-m', 'unittest', test or 'discover'])
 	rc += subprocess.call(['python2', '-m', 'coverage', 'report', '-m'])
 	return rc
 
-#@test_suite('py3')
+@test_suite('py3')
 def python_3_unittest(test):
 	rc = subprocess.call(['python3', '-m', 'coverage', 'run', '-m', 'unittest', test or 'discover'])
 	rc += subprocess.call(['python3', '-m', 'coverage', 'report', '-m'])

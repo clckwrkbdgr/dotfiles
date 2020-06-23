@@ -1,171 +1,172 @@
 #!/bin/bash
+. "$XDG_CONFIG_HOME/lib/unittest.bash"
 
-function assert_files_equal() { # <file_actual> <file_expected>
-	actual="$1"
-	expected="$2"
-	tput setf 4 # red
-	export LANGUAGE=en_US:en # To make `diff` output 'printable'.
-	diff "$expected" "$actual" | cat -vet
-	rc=$?
-	tput sgr0
-	return "$rc"
+should_smudge_home_dir_in_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "First: ${HOME}\nSecond: ${HOME}" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' enviro <'$test_file'" - <<EOF
+First: \$HOME
+Second: \$HOME
+EOF
 }
 
-### TESTS
-
-function setup() {
-	testdir=$(mktemp -d -p $XDG_RUNTIME_DIR)
-	pushd "$testdir" >/dev/null
+should_restore_home_dir_in_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e 'First: $HOME\nSecond: $HOME' >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' restore <'$test_file'" - <<EOF
+First: ${HOME}
+Second: ${HOME}
+EOF
 }
 
-function teardown() {
-	popd >/dev/null
-	rm -rf "$testdir"
-}
-
-function should_smudge_home_dir_in_plain_text() {
-	echo -e 'First: $HOME\nSecond: $HOME' >expected.txt
-	echo -e "First: ${HOME}\nSecond: ${HOME}" >test.txt
-	filterconf -f 'txt' enviro <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
-}
-
-function should_restore_home_dir_in_plain_text() {
-	echo -e "First: ${HOME}\nSecond: ${HOME}" >expected.txt
-	echo -e 'First: $HOME\nSecond: $HOME' >test.txt
-	filterconf -f 'txt' restore <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
-}
-
-function should_smudge_custom_env_var() {
-	echo -e 'First: $XHOME\nSecond: $XHOME' >expected.txt
+should_smudge_custom_env_var() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
 	XHOME=$HOME
-	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >test.txt
-	filterconf -f 'txt' -e 'XHOME=echo $HOME' enviro <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo \$HOME' enviro <'$test_file'" - <<EOF
+First: \$XHOME
+Second: \$XHOME
+EOF
 }
 
-function should_restore_custom_env_var() {
+should_restore_custom_env_var() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
 	XHOME=$HOME
-	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >expected.txt
-	echo -e 'First: $XHOME\nSecond: $XHOME' >test.txt
-	filterconf -f 'txt' -e 'XHOME=echo $HOME' restore <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+	echo -e 'First: $XHOME\nSecond: $XHOME' >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo $HOME' restore <'$test_file'" - <<EOF
+First: ${XHOME}
+Second: ${XHOME}
+EOF
 }
 
-function should_smudge_several_custom_env_vars() {
-	echo -e 'First: $XHOME\nSecond: $USERNAME' >expected.txt
+should_smudge_several_custom_env_vars() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
 	XHOME=$HOME
-	echo -e "First: ${XHOME}\nSecond: ${USER}" >test.txt
-	filterconf -f 'txt' -e 'XHOME=echo $HOME' -e 'USERNAME=$USER' enviro <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+	echo -e "First: ${XHOME}\nSecond: ${USER}" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo \$HOME' -e 'USERNAME=\$USER' enviro <'$test_file'" - <<EOF
+First: \$XHOME
+Second: \$USERNAME
+EOF
 }
 
-function should_restore_several_custom_env_vars() {
+should_restore_several_custom_env_vars() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
 	XHOME=$HOME
-	echo -e "First: ${XHOME}\nSecond: ${USER}" >expected.txt
-	echo -e 'First: $XHOME\nSecond: $USERNAME' >test.txt
-	filterconf -f 'txt' -e 'XHOME=echo $HOME' -e 'USERNAME=$USER' restore <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+	echo -e 'First: $XHOME\nSecond: $USERNAME' >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo \$HOME' -e 'USERNAME=\$USER' restore <'$test_file'" - <<EOF
+First: ${XHOME}
+Second: ${USER}
+EOF
 }
 
-function should_sort_plain_text() {
-	echo -e 'a\nb\nc' >expected.txt
-	echo -e "b\nc\na" >test.txt
-	filterconf -f 'txt' sort <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+should_sort_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "b\nc\na" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' sort <'$test_file'" - <<EOF
+a
+b
+c
+EOF
 }
 
-function should_delete_value_from_plain_text() {
-	echo -e 'a\nc' >expected.txt
-	echo -e "a\nb\nc" >test.txt
-	filterconf -f 'txt' delete 'b' <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+should_delete_value_from_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "a\nb\nc" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' delete 'b' <'$test_file'" - <<EOF
+a
+c
+EOF
 }
 
-function should_delete_multiple_values_from_plain_text() {
-	echo -e 'a' >expected.txt
-	echo -e "a\nb\nc" >test.txt
-	filterconf -f 'txt' delete 'b' 'c' <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+should_delete_multiple_values_from_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "a\nb\nc" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' delete 'b' 'c' <'$test_file'" - <<EOF
+a
+EOF
 }
 
-function should_delete_line_with_substring_from_plain_text() {
-	echo -e 'first\nthird' >expected.txt
-	echo -e "first\nsecond\nthird" >test.txt
-	filterconf -f 'txt' delete 'eco' <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+should_delete_line_with_substring_from_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "first\nsecond\nthird" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' delete 'eco' <'$test_file'" - <<EOF
+first
+third
+EOF
 }
 
-function should_delete_regex_from_plain_text() {
-	echo -e 'first\nthird' >expected.txt
-	echo -e "first\nsecond\nthird" >test.txt
-	filterconf -f 'txt' delete '^se.on+d$' --pattern-type 'regex' <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+should_delete_regex_from_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "first\nsecond\nthird" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' delete '^se.on+d$' --pattern-type 'regex' <'$test_file'" - <<EOF
+first
+third
+EOF
 }
 
-function should_replace_substring_in_plain_text() {
-	echo -e 'first\n2nd\nthird' >expected.txt
-	echo -e "first\nsecond\nthird" >test.txt
-	filterconf -f 'txt' replace 'seco' --with '2' <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+should_replace_substring_in_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "first\nsecond\nthird" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' replace 'seco' --with '2' <'$test_file'" - <<EOF
+first
+2nd
+third
+EOF
 }
 
-function should_replace_regex_in_plain_text() {
-	echo -e 'first\n2nd\nthird' >expected.txt
-	echo -e "first\nsecond\nthird" >test.txt
-	filterconf -f 'txt' replace '^seco([a-z]+)$' --pattern-type 'regex' --with '2\1' <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+should_replace_regex_in_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "first\nsecond\nthird" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' replace '^seco([a-z]+)$' --pattern-type 'regex' --with '2\1' <'$test_file'" - <<EOF
+first
+2nd
+third
+EOF
 }
 
-function should_prettify_plain_text() {
-	echo -e 'first\n  second\n\tthird' >expected.txt
-	echo -e "first\n  second\n\tthird" >test.txt
-	filterconf -f 'txt' pretty <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+should_prettify_plain_text() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	echo -e "first\n  second\n\tthird" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' pretty <'$test_file'" - <<EOF
+first
+  second
+	third
+EOF
 }
 
-function should_perform_multiple_commands() {
-	echo '# Comment' >script.sh
-	echo 'delete --pattern-type regex "^.*remove"' >>script.sh
-	echo 'sort' >>script.sh
-	echo 'replace --pattern-type regex "seco(nd)" --with "2\1"' >>script.sh
+should_perform_multiple_commands() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	local script_sh=$(mktemp)
+	finally "rm -f '$script_sh'"
+	cat >"$script_sh" <<EOF
+# Comment
+delete --pattern-type regex "^.*remove"
+sort
+replace --pattern-type regex "seco(nd)" --with "2\1"
+EOF
+	chmod +x "$script_sh"
 
-	echo -e 'first\n2nd\nthird' >expected.txt
-	echo -e "second\nthird\nto remove\nfirst" >test.txt
-	filterconf -f 'txt' script 'script.sh' <test.txt >actual.txt
-	assert_files_equal "actual.txt" "expected.txt"
+	echo -e "second\nthird\nto remove\nfirst" >"$test_file"
+	assertOutputEqual "filterconf -f 'txt' script '$script_sh' <'$test_file'" - <<EOF
+first
+2nd
+third
+EOF
 }
 
-### MAIN
-
-function perform_test() { # <test name>
-	type setup | grep -q 'shell function' && setup
-
-	echo ">>> $1"
-	"$1"
-	rc=$?
-
-	type teardown | grep -q 'shell function' && teardown
-
-	return "$rc"
-}
-
-perform_test should_smudge_home_dir_in_plain_text
-perform_test should_restore_home_dir_in_plain_text
-perform_test should_smudge_custom_env_var
-perform_test should_restore_custom_env_var
-perform_test should_smudge_several_custom_env_vars
-perform_test should_restore_several_custom_env_vars
-
-perform_test should_sort_plain_text
-perform_test should_delete_value_from_plain_text
-perform_test should_delete_multiple_values_from_plain_text
-perform_test should_delete_line_with_substring_from_plain_text
-perform_test should_delete_regex_from_plain_text
-perform_test should_replace_substring_in_plain_text
-perform_test should_replace_regex_in_plain_text
-perform_test should_prettify_plain_text
-
-perform_test should_perform_multiple_commands
-
+unittest::run should_
