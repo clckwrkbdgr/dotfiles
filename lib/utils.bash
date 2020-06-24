@@ -34,3 +34,15 @@ deprecated() {
 		echo "$0:${BASH_LINENO[0]}:function ${FUNCNAME[1]} is deprecated: $@" >&2
 	fi
 }
+
+is_sourced() {
+	# Bash-only.
+	# Returns 0 if current file is being sourced from another file.
+	# Returns non-zero if current file is the main script that is being executed.
+	if [ -n "$BASH" ]; then
+		if [ "$0" == "$BASH_SOURCE" ]; then
+			return 0
+		fi
+	fi
+	return 1
+}

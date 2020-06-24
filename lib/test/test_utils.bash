@@ -51,4 +51,30 @@ EOF
 	assertOutputEqual "bash $tmpscript 2>&1" "$tmpsource:2:script is deprecated: This whole sourced file."
 }
 
+should_detect_sourced_file() {
+	local tmpsource=$(mktemp)
+	finally "rm -f '$tmpsource'"
+	cat >"$tmpsource" <<EOF
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+is_sourced && IS_SOURCED=true
+EOF
+	local tmpscript=$(mktemp)
+	finally "rm -f '$tmpscript'"
+	cat >"$tmpscript" <<EOF
+. "$tmpsource"
+[ -n "\$IS_SOURCED" ]
+EOF
+	assertExitFailure "bash $tmpscript"
+}
+
+should_detect_main_script_file() {
+	local tmpscript=$(mktemp)
+	finally "rm -f '$tmpscript'"
+	cat >"$tmpscript" <<EOF
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+is_sourced
+EOF
+	assertExitFailure "bash $tmpscript"
+}
+
 unittest::run should_
