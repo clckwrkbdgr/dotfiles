@@ -7,7 +7,7 @@ selftest_execute_single_test() {
 		echo 'executed'
 	}
 	UNITTEST_QUIET=true
-	output=$(unittest::run)
+	output=$(FORCE_SOURCED_UNITTESTS=1 unittest::run)
 	assertStringsEqual "$output" 'executed'
 }
 
@@ -19,7 +19,7 @@ selftest_execute_multiple_tests() {
 		echo 'second'
 	}
 	UNITTEST_QUIET=true
-	assertOutputEqual unittest::run "first\nsecond"
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run' "first\nsecond"
 }
 
 selftest_custom_test_prefix() {
@@ -27,7 +27,7 @@ selftest_custom_test_prefix() {
 		echo 'executed'
 	}
 	UNITTEST_QUIET=true
-	assertOutputEqual 'unittest::run custom_test' 'executed'
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run custom_test' 'executed'
 }
 
 selftest_execute_setUp() {
@@ -41,7 +41,7 @@ selftest_execute_setUp() {
 		echo 'second'
 	}
 	UNITTEST_QUIET=true
-	assertOutputEqual unittest::run "setup\nfirst\nsetup\nsecond"
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run' "setup\nfirst\nsetup\nsecond"
 }
 
 selftest_execute_tearDown() {
@@ -55,7 +55,7 @@ selftest_execute_tearDown() {
 		echo 'second'
 	}
 	UNITTEST_QUIET=true
-	assertOutputEqual unittest::run "first\nteardown\nsecond\nteardown"
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run' "first\nteardown\nsecond\nteardown"
 }
 
 selftest_execute_tearDown_on_unexpected_exit() {
@@ -73,7 +73,7 @@ selftest_execute_tearDown_on_unexpected_exit() {
 		echo 'second'
 	}
 	UNITTEST_QUIET=true
-	assertOutputEqual unittest::run "setup\nteardown\nsetup\nsecond\nteardown"
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run' "setup\nteardown\nsetup\nsecond\nteardown"
 }
 
 selftest_forget_internal_environment() {
@@ -82,7 +82,7 @@ selftest_forget_internal_environment() {
 		export UNITTEST_EXPORTED_VALUE=1
 	}
 	UNITTEST_QUIET=true
-	unittest::run
+	FORCE_SOURCED_UNITTESTS=1 unittest::run
 	assertStringEmpty "$UNITTEST_EXPORTED_VALUE"
 }
 
@@ -93,7 +93,7 @@ selftest_print_unittest_run_stats() {
 	test_second() {
 		true
 	}
-	assertOutputEqual 'unittest::run 2>&1' "Executed: 2 test(s).\nSuccessful: 2 test(s).\nOK"
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' "Executed: 2 test(s).\nSuccessful: 2 test(s).\nOK"
 }
 
 selftest_display_failure_count() {
@@ -103,7 +103,7 @@ selftest_display_failure_count() {
 	test_second() {
 		false
 	}
-	assertOutputEqual 'unittest::run 2>&1' "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL"
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' "Executed: 2 test(s).\nSuccessful: 1 test(s).\nFailures: 1 test(s).\nFAIL"
 }
 
 selftest_assert_files_same() {
@@ -122,7 +122,7 @@ selftest_assert_files_same() {
 		assertFilesSame "$FIRST_TMPFILE" "$SECOND_TMPFILE"
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-3)):test_differ: Assert failed:
 Files are not the same:
 --- $FIRST_TMPFILE
@@ -154,7 +154,7 @@ selftest_assert_files_different() {
 		assertFilesDiffer "$FIRST_TMPFILE" "$SECOND_TMPFILE"
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-9)):test_same: Assert failed:
 Files do not differ:
 --- $FIRST_TMPFILE
@@ -180,7 +180,7 @@ selftest_assert_strings_equal() {
 		assertStringsEqual "$FIRST" "$SECOND"
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-3)):test_differ: Assert failed:
 Strings are not equal:
 Expected: 'first'
@@ -204,7 +204,7 @@ selftest_assert_strings_not_equal() {
 		assertStringsNotEqual "$FIRST" "$SECOND"
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-8)):test_same: Assert failed:
 Strings do not differ:
 'first'
@@ -223,7 +223,7 @@ selftest_assert_string_empty() {
 		assertStringEmpty "content"
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-3)):test_not_empty: Assert failed:
 String is not empty:
 'content'
@@ -242,7 +242,7 @@ selftest_assert_string_not_empty() {
 		assertStringNotEmpty "content"
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-6)):test_empty: Assert failed:
 String is empty!
 Executed: 2 test(s).
@@ -260,7 +260,7 @@ selftest_assert_output_equal() {
 		assertOutputEqual 'echo -e "first\nsecond"' "differs"
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-3)):test_differs: Assert failed:
 Command output differs:
 echo -e "first\nsecond"
@@ -270,6 +270,29 @@ echo -e "first\nsecond"
 -differs
 +first
 +second
+Executed: 2 test(s).
+Successful: 1 test(s).
+Failures: 1 test(s).
+FAIL
+EOF
+}
+
+selftest_assert_output_empty() {
+	test_empty() {
+		assertOutputEmpty 'echo -n ""'
+	}
+	test_not_empty() {
+		assertOutputEmpty 'echo ""'
+	}
+
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
+$0:$(($LINENO-3)):test_not_empty: Assert failed:
+Command output is not empty:
+echo ""
+--- [expected: empty]
++++ [actual]
+@@ -0,0 +1 @@
++
 Executed: 2 test(s).
 Successful: 1 test(s).
 Failures: 1 test(s).
@@ -288,7 +311,7 @@ selftest_assert_output_equal_stdin() {
 		echo "differs" | assertOutputEqual 'echo -e "first\nsecond"' -
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-3)):test_differs: Assert failed:
 Command output differs:
 echo -e "first\nsecond"
@@ -315,7 +338,7 @@ selftest_assert_return_code_of_previous_command_assert() {
 		assertReturnCode 0
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-3)):test_fail: Assert failed:
 Command return code differs:
 echo test; exit 1
@@ -336,7 +359,7 @@ selftest_assert_return_code() {
 		assertReturnCode 1 'exit 0'
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-3)):test_differs: Assert failed:
 Command return code differs:
 exit 0
@@ -357,7 +380,7 @@ selftest_assert_exit_success() {
 		assertExitSuccess 'exit 1'
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-3)):test_failure: Assert failed:
 Command did not exit with success:
 exit 1
@@ -377,7 +400,7 @@ selftest_assert_exit_failure() {
 		assertExitFailure 'exit 1'
 	}
 
-	assertOutputEqual 'unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
 $0:$(($LINENO-6)):test_success: Assert failed:
 Command did not exit with failure:
 exit 0
@@ -387,6 +410,26 @@ Successful: 1 test(s).
 Failures: 1 test(s).
 FAIL
 EOF
+}
+
+selftest_skip_test_runner_in_sourced_files() {
+	tmpsource=$(mktemp)
+	tmpscript=$(mktemp)
+	finally "rm -f '$tmpsource' '$tmpscript'"
+	cat >"$tmpsource" <<EOF
+#!/bin/bash
+. "$XDG_CONFIG_HOME/lib/unittest.bash"
+test_case() {
+	assertStringsEqual A not-A
+}
+unittest::run test_
+EOF
+	cat >"$tmpscript" <<EOF
+. "$tmpsource"
+EOF
+	chmod +x "$tmpscript"
+
+	assertOutputEmpty "'$tmpscript' 2>&1"
 }
 
 unittest::run selftest_

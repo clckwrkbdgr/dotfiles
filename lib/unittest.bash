@@ -136,6 +136,36 @@ assertOutputEqual() { # <command> <expected_output>
 	exit 1
 }
 
+assertOutputEmpty() { # <command>
+	# Asserts that given command produces empty output (without even newlines).
+	# See assertOutputEqual for other details.
+	local shell_command="$1"
+	if [ -z "$shell_command" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+		exit 1
+	fi
+	local actual_output_file=$(mktemp)
+	local expected_empty_file=$(mktemp)
+	(
+		( eval "$shell_command" >"$actual_output_file" )
+	)
+	_UNITTEST_LAST_RC=$?
+	_UNITTEST_LAST_COMMAND="$shell_command"
+
+	diff -q "$expected_empty_file" "$actual_output_file" >/dev/null
+	local diff_ok=$?
+	if [ "$diff_ok" -eq 0 ]; then
+		rm -f "$actual_output_file" "$expected_empty_file"
+		return 0
+	fi
+	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo 'Command output is not empty:' >&2
+	echo "$shell_command" >&2
+	diff -u "$expected_empty_file" "$actual_output_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s/^\(--- \).*$/\1[expected: empty]/;2s/^\(+++ \).*/\1[actual]/' >&2
+	rm -f "$actual_output_file" "$expected_empty_file"
+	exit 1
+}
+
 assertReturnCode() { # <expected_rc> <command>
 	# Asserts that command exits with expected return code.
 	# RC should obviously be a number.
@@ -235,10 +265,14 @@ unittest::run() {
 	# Usage: [<prefix>]
 	#   <prefix>  - marks shell functions to execute as unit tests. Default is 'test_'
 	# Runs all functions in local namespace that starts with specified prefix.
-	# Note: Order of functions is undefined.
+	# NOTE: Order of functions is undefined.
 	# Prints statistics at the end: total cases, successes and failures.
 	# Exit code is amount of failed test cases.
 	# Set $UNITTEST_QUIET to omit final statistics.
+	# NOTE: Is not executed in sourced files! Works only from the main script.
+	if [ -z "$FORCE_SOURCED_UNITTESTS" ]; then
+		is_sourced "${BASH_SOURCE[1]}" && return 0
+	fi
 
 	local prefix="${1:-test_}"
 	# TODO use click

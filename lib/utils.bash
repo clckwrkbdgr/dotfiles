@@ -39,8 +39,16 @@ is_sourced() {
 	# Bash-only.
 	# Returns 0 if current file is being sourced from another file.
 	# Returns non-zero if current file is the main script that is being executed.
+	# If this function is called from another function,
+	# which may be called for another sourced file,
+	# you may want to explicitly specify current BASH_SOURCE.
+	# Usage:
+	#   is_source [<BASH_SOURCE>]
+	local bash_source="${1:-${BASH_SOURCE[1]}}"
 	if [ -n "$BASH" ]; then
-		if [ "$0" == "$BASH_SOURCE" ]; then
+		#echo "0 = $0"
+		#echo "bash_source = $bash_source"
+		if [ "$0" != "$bash_source" ]; then
 			return 0
 		fi
 	fi

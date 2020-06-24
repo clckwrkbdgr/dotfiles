@@ -61,19 +61,49 @@ EOF
 	local tmpscript=$(mktemp)
 	finally "rm -f '$tmpscript'"
 	cat >"$tmpscript" <<EOF
+#!/bin/bash
 . "$tmpsource"
 [ -n "\$IS_SOURCED" ]
 EOF
-	assertExitFailure "bash $tmpscript"
+	chmod +x "$tmpscript"
+	assertExitSuccess "bash $tmpscript"
+}
+
+should_detect_sourced_file_from_nested_function() {
+	local tmpbase=$(mktemp)
+	finally "rm -f '$tmpbase'"
+	cat >"$tmpbase" <<EOF
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+top_function() {
+	is_sourced \$BASH_SOURCE
+}
+EOF
+	local tmpsource=$(mktemp)
+	finally "rm -f '$tmpsource'"
+	cat >"$tmpsource" <<EOF
+. "$tmpbase"
+top_function && IS_SOURCED=true
+EOF
+	local tmpscript=$(mktemp)
+	finally "rm -f '$tmpscript'"
+	cat >"$tmpscript" <<EOF
+#!/bin/bash
+. "$tmpsource"
+[ -n "\$IS_SOURCED" ]
+EOF
+	chmod +x "$tmpscript"
+	assertExitSuccess "bash $tmpscript"
 }
 
 should_detect_main_script_file() {
 	local tmpscript=$(mktemp)
 	finally "rm -f '$tmpscript'"
 	cat >"$tmpscript" <<EOF
+#!/bin/bash
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 is_sourced
 EOF
+	chmod +x "$tmpscript"
 	assertExitFailure "bash $tmpscript"
 }
 
