@@ -345,7 +345,7 @@ unittest::list() {
 		. "$filename" || panic "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: error while sourcing $filename" 
 		prefix="${LAST_UNITTEST_PREFIX}"
 		if [ -z "$prefix" ]; then
-			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: cannot detect test case prefix, possibly unittest::run is not defined!" >&2
+			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: cannot detect test case prefix in $filename, possibly unittest::run is not defined!" >&2
 			exit 1
 		fi
 
@@ -357,3 +357,36 @@ unittest::list() {
 		done
 	)
 }
+
+unittest::discover() {
+	# Searchs for files with bash unit tests and executes them.
+	# Usage: unittest::discover [<shell pattern>]
+	#   <shell pattern>  - pattern to match test files (default is 'test_*.bash')
+	# Return code is a sum of return codes of each found and executed test file.
+	local pattern="${1:-test_*.bash}"
+	find . -type f -name "$pattern" | (
+		total_rc=0
+		while read filename; do
+			(
+				bash "$filename"
+			)
+			rc=$?
+			total_rc=$((total_rc + rc))
+		done
+		exit $total_rc
+	)
+	return ${PIPESTATUS[1]}
+}
+
+if ! is_sourced; then
+	if [ -z "$1" ]; then
+		unittest::discover
+		exit $?
+	elif [ "$1" == 'discover' ]; then
+		shift
+		unittest::discover "$1"
+		exit $?
+	else
+		panic 'Not implemented'
+	fi
+fi
