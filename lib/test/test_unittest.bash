@@ -432,4 +432,38 @@ EOF
 	assertOutputEmpty "'$tmpscript' 2>&1"
 }
 
+selftest_list_defined_test_cases() {
+	tmpsource=$(mktemp)
+	finally "rm -f '$tmpsource'"
+	cat >"$tmpsource" <<EOF
+#!/bin/bash
+. "$XDG_CONFIG_HOME/lib/unittest.bash"
+test_success() {
+	assertExitSuccess 'exit 0'
+}
+test_failure() {
+	assertExitSuccess 'exit 1'
+}
+unittest::run
+EOF
+
+	assertOutputEqual "unittest::list '$tmpsource' 2>&1" - <<EOF
+test_failure
+test_success
+EOF
+
+	cat >"$tmpsource" <<EOF
+#!/bin/bash
+. "$XDG_CONFIG_HOME/lib/unittest.bash"
+should_ignore_previous_tests() {
+	assertExitSuccess 'exit 0'
+}
+unittest::run should_
+EOF
+
+	assertOutputEqual "unittest::list '$tmpsource' 2>&1" - <<EOF
+should_ignore_previous_tests
+EOF
+}
+
 unittest::run selftest_

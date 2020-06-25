@@ -270,11 +270,13 @@ unittest::run() {
 	# Exit code is amount of failed test cases.
 	# Set $UNITTEST_QUIET to omit final statistics.
 	# NOTE: Is not executed in sourced files! Works only from the main script.
+	local prefix="${1:-test_}"
+	LAST_UNITTEST_PREFIX="$prefix"
+
 	if [ -z "$FORCE_SOURCED_UNITTESTS" ]; then
 		is_sourced "${BASH_SOURCE[1]}" && return 0
 	fi
 
-	local prefix="${1:-test_}"
 	# TODO use click
 	local quiet="$UNITTEST_QUIET"
 
@@ -325,4 +327,33 @@ unittest::run() {
 		return $failed
 	fi
 	return 0
+}
+
+unittest::list() {
+	# Prints all test cases defined in specified file to stdout.
+	# Usage: unittest::list <test_file.bash>
+	#   <prefix>  - marks shell functions to execute as unit tests.
+	#               If not specified, will try to use prefix from the last
+	#               unittest::run call, otherwise default 'test_' is used.
+	# NOTE: Order of functions is undefined.
+	local filename="$1"
+	if [ -z "$filename" ]; then
+		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: filename is not specified!" >&2
+		return 1
+	fi
+	(
+		. "$filename" || panic "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: error while sourcing $filename" 
+		prefix="${LAST_UNITTEST_PREFIX}"
+		if [ -z "$prefix" ]; then
+			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: cannot detect test case prefix, possibly unittest::run is not defined!" >&2
+			exit 1
+		fi
+
+		for function_name in $(compgen -A function); do
+			if [ "${function_name##$prefix}" == "${function_name}" ]; then
+				continue
+			fi
+			echo "$function_name"
+		done
+	)
 }
