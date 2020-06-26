@@ -400,6 +400,7 @@ If test case is not specified, all test cases in the file are executed."
 			exit $?
 		fi
 
+		[ -n "${CLICK_ARGS[quiet]}" ] && UNITTEST_QUIET=true
 		test_spec="${CLICK_ARGS[test_spec]}"
 		find . -type f | (
 			total_rc=0
