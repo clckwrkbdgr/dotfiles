@@ -24,15 +24,15 @@ assertFilesSame() { # <actual> <expected>
 	# Prints diff between files with the message.
 	# Also fails if any of the files are missing.
 	if [ ! -f "$1" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: First file does not exist: $1" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: First file does not exist: $1" >&2
 		exit 1
 	fi
 	if [ ! -f "$2" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Second file does not exist: $2" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Second file does not exist: $2" >&2
 		exit 1
 	fi
 	diff -q "$1" "$2" >/dev/null && return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Files are not the same:' >&2
 	diff -u "$1" "$2" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/' >&2
 	exit 1
@@ -43,15 +43,15 @@ assertFilesDiffer() { # <actual> <expected>
 	# Prints content of the file(s) with the message.
 	# Also fails if any of the files are missing.
 	if [ ! -f "$1" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: First file does not exist: $1" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: First file does not exist: $1" >&2
 		exit 1
 	fi
 	if [ ! -f "$2" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Second file does not exist: $2" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Second file does not exist: $2" >&2
 		exit 1
 	fi
 	diff -q "$1" "$2" >/dev/null || return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Files do not differ:' >&2
 	echo "--- $1" >&2
 	echo "+++ $2" >&2
@@ -62,7 +62,7 @@ assertFilesDiffer() { # <actual> <expected>
 assertStringsEqual() { # <actual> <expected>
 	# Asserts that two given values are equal.
 	[ "$1" == "$2" ] && return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Strings are not equal:' >&2
 	echo "Expected: '$1'" >&2
 	echo "Actual: '$2'" >&2
@@ -72,7 +72,7 @@ assertStringsEqual() { # <actual> <expected>
 assertStringsNotEqual() { # <actual> <expected>
 	# Asserts that two given values are not equal.
 	[ "$1" != "$2" ] && return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Strings do not differ:' >&2
 	echo "'$1'" >&2
 	exit 1
@@ -81,7 +81,7 @@ assertStringsNotEqual() { # <actual> <expected>
 assertStringEmpty() { # <value>
 	# Asserts that given value is an empty string.
 	[ -z "$1" ] && return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'String is not empty:' >&2
 	echo "'$1'" >&2
 	exit 1
@@ -90,7 +90,7 @@ assertStringEmpty() { # <value>
 assertStringNotEmpty() { # <value>
 	# Asserts that given value is not an empty string.
 	[ -n "$1" ] && return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'String is empty!' >&2
 	exit 1
 }
@@ -108,7 +108,7 @@ assertOutputEqual() { # <command> <expected_output>
 	# Prints the diff along with the message.
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
 		exit 1
 	fi
 	local expected_output="$2"
@@ -131,7 +131,7 @@ assertOutputEqual() { # <command> <expected_output>
 		rm -f "$actual_output_file" "$expected_output_file"
 		return 0
 	fi
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command output differs:' >&2
 	echo "$shell_command" >&2
 	diff -u "$expected_output_file" "$actual_output_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s/^\(--- \).*$/\1[expected]/;2s/^\(+++ \).*/\1[actual]/' >&2
@@ -144,7 +144,7 @@ assertOutputEmpty() { # <command>
 	# See assertOutputEqual for other details.
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
 		exit 1
 	fi
 	local actual_output_file=$(mktemp)
@@ -161,7 +161,7 @@ assertOutputEmpty() { # <command>
 		rm -f "$actual_output_file" "$expected_empty_file"
 		return 0
 	fi
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command output is not empty:' >&2
 	echo "$shell_command" >&2
 	diff -u "$expected_empty_file" "$actual_output_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s/^\(--- \).*$/\1[expected: empty]/;2s/^\(+++ \).*/\1[actual]/' >&2
@@ -177,18 +177,18 @@ assertReturnCode() { # <expected_rc> <command>
 	local shell_command="$2"
 	if [ -z "$shell_command" ]; then
 		if [ -z "${_UNITTEST_LAST_RC}" ]; then
-			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+			echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
 			exit 1
 		fi
 	fi
 	local expected_rc="$1"
 	if [ -z "$expected_rc" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is empty!" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is empty!" >&2
 		exit 1
 	fi
 	local number_re='^[0-9]+$'
 	if ! [[ "$expected_rc" =~ $number_re ]]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is not a number!" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is not a number!" >&2
 		exit 1
 	fi
 	if [ -z "${_UNITTEST_LAST_RC}" ]; then
@@ -201,7 +201,7 @@ assertReturnCode() { # <expected_rc> <command>
 		_UNITTEST_LAST_RC=
 	fi
 	[ "$expected_rc" -eq "$rc" ] && return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command return code differs:' >&2
 	echo "$shell_command" >&2
 	echo "Expected: $expected_rc" >&2
@@ -215,7 +215,7 @@ assertExitSuccess() { # <command>
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
 		if [ -z "${_UNITTEST_LAST_RC}" ]; then
-			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+			echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
 			exit 1
 		fi
 	fi
@@ -229,7 +229,7 @@ assertExitSuccess() { # <command>
 		_UNITTEST_LAST_RC=
 	fi
 	[ "$rc" -eq 0 ] && return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command did not exit with success:' >&2
 	echo "$shell_command" >&2
 	echo "Actual exit code: $rc" >&2
@@ -242,7 +242,7 @@ assertExitFailure() { # <command>
 	local shell_command="$1"
 	if [ -z "$shell_command" ]; then
 		if [ -z "${_UNITTEST_LAST_RC}" ]; then
-			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
+			echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Shell command is empty!" >&2
 			exit 1
 		fi
 	fi
@@ -256,7 +256,7 @@ assertExitFailure() { # <command>
 		_UNITTEST_LAST_RC=
 	fi
 	[ "$rc" -ne 0 ] && return 0
-	echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
+	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command did not exit with failure:' >&2
 	echo "$shell_command" >&2
 	echo "Actual exit code: $rc" >&2
@@ -340,11 +340,11 @@ unittest::list() {
 	local filename="$1"
 	(
 		if [ -n "$filename" ]; then
-			. "$filename" || panic "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: error while sourcing $filename" 
+			. "$filename" || panic "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: error while sourcing $filename"
 		fi
 		prefix="${LAST_UNITTEST_PREFIX}"
 		if [ -z "$prefix" ]; then
-			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: cannot detect test case prefix in $filename, possibly unittest::run is not defined!" >&2
+			echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: cannot detect test case prefix in $filename, possibly unittest::run is not defined!" >&2
 			exit 1
 		fi
 

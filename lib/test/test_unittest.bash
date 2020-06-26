@@ -123,7 +123,7 @@ selftest_assert_files_same() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_differ: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_differ: Assert failed:
 Files are not the same:
 --- $FIRST_TMPFILE
 +++ $SECOND_TMPFILE
@@ -155,7 +155,7 @@ selftest_assert_files_different() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-9)):test_same: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-9)):test_same: Assert failed:
 Files do not differ:
 --- $FIRST_TMPFILE
 +++ $SECOND_TMPFILE
@@ -181,7 +181,7 @@ selftest_assert_strings_equal() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_differ: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_differ: Assert failed:
 Strings are not equal:
 Expected: 'first'
 Actual: 'second'
@@ -205,7 +205,7 @@ selftest_assert_strings_not_equal() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-8)):test_same: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-8)):test_same: Assert failed:
 Strings do not differ:
 'first'
 Executed: 2 test(s).
@@ -224,7 +224,7 @@ selftest_assert_string_empty() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_not_empty: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_not_empty: Assert failed:
 String is not empty:
 'content'
 Executed: 2 test(s).
@@ -243,7 +243,7 @@ selftest_assert_string_not_empty() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-6)):test_empty: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-6)):test_empty: Assert failed:
 String is empty!
 Executed: 2 test(s).
 Successful: 1 test(s).
@@ -261,7 +261,7 @@ selftest_assert_output_equal() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_differs: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_differs: Assert failed:
 Command output differs:
 echo -e "first\nsecond"
 --- [expected]
@@ -286,7 +286,7 @@ selftest_assert_output_empty() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_not_empty: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_not_empty: Assert failed:
 Command output is not empty:
 echo ""
 --- [expected: empty]
@@ -312,7 +312,7 @@ selftest_assert_output_equal_stdin() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_differs: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_differs: Assert failed:
 Command output differs:
 echo -e "first\nsecond"
 --- [expected]
@@ -339,7 +339,7 @@ selftest_assert_return_code_of_previous_command_assert() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_fail: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_fail: Assert failed:
 Command return code differs:
 echo test; exit 1
 Expected: 0
@@ -360,7 +360,7 @@ selftest_assert_return_code() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_differs: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_differs: Assert failed:
 Command return code differs:
 exit 0
 Expected: 1
@@ -381,7 +381,7 @@ selftest_assert_exit_success() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-3)):test_failure: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-3)):test_failure: Assert failed:
 Command did not exit with success:
 exit 1
 Actual exit code: 1
@@ -401,7 +401,7 @@ selftest_assert_exit_failure() {
 	}
 
 	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
-$0:$(($LINENO-6)):test_success: Assert failed:
+${BASH_SOURCE[0]}:$(($LINENO-6)):test_success: Assert failed:
 Command did not exit with failure:
 exit 0
 Actual exit code: 0
