@@ -7,6 +7,14 @@ should_panic() {
 	assertExitFailure
 }
 
+should_check_if_string_starts_with_prefix() {
+	assertExitSuccess 'startswith "foo bar" "foo b"'
+	assertExitSuccess 'startswith "foo bar" "foo bar"'
+	assertExitSuccess 'startswith "foo bar" ""'
+	assertExitSuccess 'startswith "" ""'
+	assertExitFailure 'startswith "foo bar" "foo bA"'
+}
+
 should_perform_actions_finally() {
 	assertOutputEqual "( finally 'echo finally'; echo 'test' )" "test\nfinally"
 }

@@ -4,6 +4,16 @@ panic() { # <message text>
 	exit 1
 }
 
+startswith() {
+	# Usage:
+	#   startswith "string" "prefix"
+	# Returns 0 if <string> starts with <prefix>, non-zero otherwise.
+	case "$1" in
+		"$2"*) return 0;;
+		*) return 1;;
+	esac
+}
+
 _finally_init () {
 	# Defines shell actions to be performed upon exit
 	# from the current scope (function, subshell).
