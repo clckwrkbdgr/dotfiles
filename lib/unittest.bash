@@ -377,28 +377,30 @@ unittest::discover() {
 	return ${PIPESTATUS[1]}
 }
 
-if ! is_sourced; then # TODO click
-	if [ -z "$1" ]; then
-		# Runs unit test discovery with default pattern (test_*.bash)
-		unittest::discover
-		exit $?
-	elif [ "$1" == 'discover' ]; then
-		# Runs unit test discovery with specified pattern.
-		shift
-		unittest::discover "$1"
-		exit $?
-	else
-		# Runs unit tests matching specified Python-like test_spec:
-		#   <dir>.<subdir>...<test_file>[.<test_case_spec>]
-		# For bash unit tests modules match directories
-		# and are separated with dots (.) instead of slashes (/).
-		# Module part should match exact dir path.
-		# Test case spec is optional.
-		# It may specify only beginning of the test case (e.g. test_, test_s etc),
-		# or full test case name (test_something).
-		# Any test case matching given prefix will be executed.
-		# If test case is not specified, all test cases in the file are executed.
-		test_spec="$1"
+if ! is_sourced; then
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+	click::command unittest_main 'Runs bash unit tests.'
+	click::flag '-q' '--quiet' '' 'Produce less output, notify only about errors.'
+	click::argument 'test_spec' "Unit test specification.
+By default discovery is performed.
+Test spec follows Python format:
+  <dir>.<subdir>...<test_file>[.<test_case_spec>].
+For bash unit tests modules match directories
+and are separated with dots (.) instead of slashes (/).
+Module part should match exact dir path.
+Test case part is optional.
+It may specify only beginning of the test case (e.g. test_, test_s etc),
+or full test case name (test_something).
+Any test case matching given prefix will be executed.
+If test case is not specified, all test cases in the file are executed."
+	# TODO [not-required-arguments] click::argument 'test_file_pattern' 'Pattern for test files (only for explicit "discover" action. By default test_*.bash are used.'
+	unittest_main() {
+		if [ -z "${CLICK_ARGS[test_spec]}" -o "${CLICK_ARGS[test_spec]}" == 'discover' ]; then
+			unittest::discover "${CLICK_ARGS[test_file_pattern]}"
+			exit $?
+		fi
+
+		test_spec="${CLICK_ARGS[test_spec]}"
 		find . -type f | (
 			total_rc=0
 			while read filename; do
@@ -424,6 +426,8 @@ if ! is_sourced; then # TODO click
 			done
 			exit $total_rc
 		)
-		exit ${PIPESTATUS[1]}
-	fi
+		return ${PIPESTATUS[1]}
+	}
+
+	click::run "$@"
 fi
