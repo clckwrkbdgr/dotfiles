@@ -14,6 +14,9 @@
 # Test case functions are perfomed in subshell, so both exit or return are fine.
 # All built-in assertions exit upon failure (with corresponding message to stderr).
 # Messages use common format '<filename>:<line number>:<failed test case>:...
+[ -n "$unittest_bash_is_already_sourced" ] && return
+unittest_bash_is_already_sourced=1
+
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 
 assertFilesSame() { # <actual> <expected>
@@ -331,18 +334,14 @@ unittest::run() {
 
 unittest::list() {
 	# Prints all test cases defined in specified file to stdout.
-	# Usage: unittest::list <test_file.bash>
-	#   <prefix>  - marks shell functions to execute as unit tests.
-	#               If not specified, will try to use prefix from the last
-	#               unittest::run call, otherwise default 'test_' is used.
+	# Usage: unittest::list [<test_file.bash>]
+	#   <test_file>  - Load specified test file instead of listing current scope.
 	# NOTE: Order of functions is undefined.
 	local filename="$1"
-	if [ -z "$filename" ]; then
-		echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: filename is not specified!" >&2
-		return 1
-	fi
 	(
-		. "$filename" || panic "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: error while sourcing $filename" 
+		if [ -n "$filename" ]; then
+			. "$filename" || panic "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: error while sourcing $filename" 
+		fi
 		prefix="${LAST_UNITTEST_PREFIX}"
 		if [ -z "$prefix" ]; then
 			echo "$0:${BASH_LINENO[0]}:${FUNCNAME[1]}: cannot detect test case prefix in $filename, possibly unittest::run is not defined!" >&2
@@ -378,15 +377,53 @@ unittest::discover() {
 	return ${PIPESTATUS[1]}
 }
 
-if ! is_sourced; then
+if ! is_sourced; then # TODO click
 	if [ -z "$1" ]; then
+		# Runs unit test discovery with default pattern (test_*.bash)
 		unittest::discover
 		exit $?
 	elif [ "$1" == 'discover' ]; then
+		# Runs unit test discovery with specified pattern.
 		shift
 		unittest::discover "$1"
 		exit $?
 	else
-		panic 'Not implemented'
+		# Runs unit tests matching specified Python-like test_spec:
+		#   <dir>.<subdir>...<test_file>[.<test_case_spec>]
+		# For bash unit tests modules match directories
+		# and are separated with dots (.) instead of slashes (/).
+		# Module part should match exact dir path.
+		# Test case spec is optional.
+		# It may specify only beginning of the test case (e.g. test_, test_s etc),
+		# or full test case name (test_something).
+		# Any test case matching given prefix will be executed.
+		# If test case is not specified, all test cases in the file are executed.
+		test_spec="$1"
+		find . -type f | (
+			total_rc=0
+			while read filename; do
+				module_name="$(echo "$filename" | sed 's/^[.]\///;s/\//./g;s/[.]bash$//')"
+				startswith "$test_spec" "$module_name" || continue
+				(
+					. "$filename"
+					if [ "$module_name" == "$test_spec" ]; then
+						unittest::run "${LAST_UNITTEST_PREFIX}"
+					else
+						unittest::list | while read test_case; do
+							startswith "${module_name}.$test_case" "$test_spec" && exit 1
+							continue
+						done
+						if [ $? == 1 ]; then
+							test_case="${test_spec#${module_name}.}"
+							unittest::run "$test_case"
+						fi
+					fi
+				)
+				rc=$?
+				total_rc=$((total_rc + rc))
+			done
+			exit $total_rc
+		)
+		exit ${PIPESTATUS[1]}
 	fi
 fi

@@ -466,4 +466,27 @@ should_ignore_previous_tests
 EOF
 }
 
+selftest_list_defined_test_cases_in_current_scope() {
+	tmpsource=$(mktemp)
+	finally "rm -f '$tmpsource'"
+	cat >"$tmpsource" <<EOF
+#!/bin/bash
+. "$XDG_CONFIG_HOME/lib/unittest.bash"
+test_success() {
+	assertExitSuccess 'exit 0'
+}
+test_failure() {
+	assertExitSuccess 'exit 1'
+}
+unittest::run
+
+unittest::list
+EOF
+
+	assertOutputEqual ". '$tmpsource' 2>&1" - <<EOF
+test_failure
+test_success
+EOF
+}
+
 unittest::run selftest_

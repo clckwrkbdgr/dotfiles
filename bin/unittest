@@ -10,6 +10,7 @@ try:
 	import termcolor
 except ImportError: # pragma: no cover
 	import dummy as termcolor
+import clckwrkbdgr.xdg as xdg
 
 class Registry(object):
 	""" Registry of functions with optional set of attributes.
@@ -72,36 +73,9 @@ def python_3_unittest(test):
 	return rc
 
 @test_suite('bash')
-def bash_unittest(test): # TODO merge all this into unittest.bash
-	found = []
-	for root, dirnames, filenames in os.walk('.'):
-		root = Path(root)
-		for filename in filenames:
-			if not filename.endswith('.bash'):
-				continue
-			filename = root/filename
-			module_name = '.'.join(filename.parts)
-			assert module_name.endswith('.bash'), repr(module_name)
-			module_name = module_name[:-5]
-			if test and not test.startswith(module_name):
-				continue
-			# TODO call test_*.bash with some argument like '--list'
-			# TODO to get actual list of test cases in the module
-			lines = filename.read_text().splitlines()
-			unittest_run = [line.startswith('unittest::run') for line in lines]
-			if not unittest_run:
-				continue
-			prefixes = {(parts[1] if len(parts) > 1 else 'test_') for parts in map(str.split, lines)}
-			test_cases = list(itertools.chain.from_iterable([line for line in lines if line.startswith(prefix)] for prefix in prefixes))
-			if test and len(test) > len(module_name):
-				# FIXME cannot run specific test yet.
-				matching_cases = [case for case in test_cases if (module_name + '.' + case).startswith(test)]
-				if not matching_cases:
-					continue
-			found.append(filename)
-	rc = 0
-	for filename in found:
-		rc += subprocess.call(['bash', str(filename)])
+def bash_unittest(test):
+	unittest_bash = xdg.XDG_CONFIG_HOME/'lib'/'unittest.bash'
+	rc = subprocess.call(['bash', str(unittest_bash), test or 'discover'])
 	return rc
 
 if __name__ == '__main__': # TODO click
