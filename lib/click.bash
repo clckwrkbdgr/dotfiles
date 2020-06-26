@@ -37,6 +37,7 @@ click::command() {
 	# Params: <main command callback> <help>
 	# E.g.: 'shell_function' 'The purpose of the script.'
 	# Callback must be a real shell function, may be defined at any point but before call to click::run
+	# Help message may contain escaped symbols compatible with 'echo -e'
 	[ -z "$1" ] && panic 'click::command did not receive an argument!'
 	_click_command="$1"
 	_click_help="$2"
@@ -49,6 +50,7 @@ click::flag() {
 	# If flag name is empty, long option name is used if present, short option char otherwise.
 	# Parsed flag argument in CLICK_ARGS is empty (by default) or non-empty when specified.
 	# Use test [ -n "${CLICK_ARGS[flag_name]}" ]
+	# Help message may contain escaped symbols compatible with 'echo -e'
 	short="$1"
 	short_re='^-[a-z0-9]$'
 	[ -z "$short" ] && panic 'Short flag is required!'
@@ -66,6 +68,7 @@ click::flag() {
 			name=${short#-}
 		fi
 	fi
+	help="$4"
 	# TODO: required flags
 	_click_type["$name"]='flag'
 	_click_help["$name"]="$help"
@@ -79,6 +82,7 @@ click::option() {
 	# E.g.:   '-o' '--option' 'option_name' 'nothing' 'Description of the option behavior.'
 	# If option name is empty, long option name is used if present, short option char otherwise.
 	# If option was not specified at command line, CLICK_ARGS will contain default value.
+	# Help message may contain escaped symbols compatible with 'echo -e'
 	short="$1"
 	[ -z "$short" ] && panic 'Short option is required!'
 	short_re='^-[a-z0-9]$'
@@ -97,6 +101,7 @@ click::option() {
 		fi
 	fi
 	default="$4"
+	help="$5"
 	# TODO: required options
 	# TODO: multi values (nargs)
 	# TODO: predefined list of choices
@@ -112,8 +117,10 @@ click::argument() {
 	# Params: <name> <help>
 	# E.g.:   'filename' 'Name of the input file.'
 	# All positionals must be consumed.
+	# Help message may contain escaped symbols compatible with 'echo -e'
 	name="$1"
 	[ -z "$name" ] && panic 'Argument name is required!'
+	help="$2"
 	# TODO: nargs
 	_click_type["$name"]='argument'
 	_click_help["$name"]="$help"
@@ -138,22 +145,26 @@ click::usage() {
 	done
 	echo "Usage: $usage"
 	if [ -n "${_click_help}" ]; then
-		echo "${_click_help}"
+		echo -e "${_click_help}"
+	fi
+	if [ "${#_click_type[@]}" -ne 0 ]; then
+		echo 'Parameters:'
 	fi
 	for name in "${!_click_type[@]}"; do
 		if [ ${_click_type[$name]} == 'option' -o ${_click_type[$name]} == 'flag' ]; then
-			echo "${_click_short[$name]}"
+			echo -n "  ${_click_short[$name]}"
 			if [ -n "${_click_long[$name]}" ]; then
-				echo "${_click_long[$name]}"
+				echo -n ", ${_click_long[$name]}"
 			fi
+			echo
 		elif [ ${_click_type[$name]} == 'argument' ]; then
-			echo "$name"
+			echo "  <$name>"
 		fi
-		echo "${_click_help[$name]}"
+		echo -e "${_click_help[$name]}" | sed 's/^/        /' # FIXME this is the only external command in the whole file.
 		if [ ${_click_type[$name]} == 'option' ]; then
-			echo "Default is '${_click_default[$name]}'."
+			echo "        Default is '${_click_default[$name]}'."
 		elif [ ${_click_type[$name]} == 'flag' ]; then
-			echo "Default is false."
+			echo "        Default is false."
 		fi
 	done
 }
