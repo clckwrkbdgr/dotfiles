@@ -3,6 +3,7 @@ import os, sys, subprocess
 import re, fnmatch
 import inspect
 import argparse, shlex
+from collections import OrderedDict
 
 class UnfoldArgList(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string=None):
@@ -17,8 +18,8 @@ class Environment(object):
 	See --enviro argument.
 	"""
 	def __init__(self):
-		self.envvars = {} # name: value
-		self.known_vars = {} # name: lambda
+		self.envvars = OrderedDict() # name: value
+		self.known_vars = OrderedDict() # name: lambda
 	def known_names(self):
 		""" Returns list of names of the known variables. """
 		return self.known_vars.keys()

@@ -24,9 +24,9 @@ EOF
 should_smudge_custom_env_var() {
 	local test_file=$(mktemp)
 	finally "rm -f '$test_file'"
-	XHOME=$HOME
+	XHOME="$LOGNAME"
 	echo -e "First: ${XHOME}\nSecond: ${XHOME}" >"$test_file"
-	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo \$HOME' enviro <'$test_file'" - <<EOF
+	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo \$LOGNAME' enviro <'$test_file'" - <<EOF
 First: \$XHOME
 Second: \$XHOME
 EOF
@@ -35,9 +35,9 @@ EOF
 should_restore_custom_env_var() {
 	local test_file=$(mktemp)
 	finally "rm -f '$test_file'"
-	XHOME=$HOME
+	XHOME="$LOGNAME"
 	echo -e 'First: $XHOME\nSecond: $XHOME' >"$test_file"
-	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo $HOME' restore <'$test_file'" - <<EOF
+	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo \$LOGNAME' restore <'$test_file'" - <<EOF
 First: ${XHOME}
 Second: ${XHOME}
 EOF
@@ -46,9 +46,9 @@ EOF
 should_smudge_several_custom_env_vars() {
 	local test_file=$(mktemp)
 	finally "rm -f '$test_file'"
-	XHOME=$HOME
+	export XHOME="xhome"
 	echo -e "First: ${XHOME}\nSecond: ${USER}" >"$test_file"
-	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=echo \$HOME' -e 'USERNAME=\$USER' enviro <'$test_file'" - <<EOF
+	assertOutputEqual "filterconf -f 'txt' -e 'XHOME=\$XHOME' -e 'USERNAME=\$USER' enviro <'$test_file'" - <<EOF
 First: \$XHOME
 Second: \$USERNAME
 EOF
