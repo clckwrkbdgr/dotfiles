@@ -6,6 +6,7 @@ try:
 	from pathlib2 import Path
 except ImportError: # pragma: no cover
 	from pathlib import Path
+import click
 try:
 	import termcolor
 except ImportError: # pragma: no cover
@@ -61,24 +62,44 @@ class Registry(object):
 test_suite = Registry('name')
 
 @test_suite('py2')
-def python_2_unittest(test):
-	rc = subprocess.call(['python2', '-m', 'coverage', 'run', '-m', 'unittest', test or 'discover'])
-	rc += subprocess.call(['python2', '-m', 'coverage', 'report', '-m'])
+def python_2_unittest(test, quiet=False):
+	args = ['python2', '-m', 'coverage', 'run', '-m', 'unittest']
+	if test:
+		if quiet:
+			args += ['--quiet']
+		args += [test]
+	else:
+		args += ['discover'] # FIXME py2 discover does not recognize --quiet.
+	rc = subprocess.call(args)
+	rc += subprocess.call(['python2', '-m', 'coverage', 'report', '-m']) # FIXME coverage report has no support for quiet run.
 	return rc
 
 @test_suite('py3')
-def python_3_unittest(test):
-	rc = subprocess.call(['python3', '-m', 'coverage', 'run', '-m', 'unittest', test or 'discover'])
-	rc += subprocess.call(['python3', '-m', 'coverage', 'report', '-m'])
+def python_3_unittest(test, quiet=False):
+	args = ['python3', '-m', 'coverage', 'run', '-m', 'unittest']
+	if test:
+		if quiet:
+			args += ['--quiet']
+		args += [test]
+	else:
+		args += ['discover']
+		if quiet:
+			args += ['--quiet']
+	rc = subprocess.call(args)
+	rc += subprocess.call(['python3', '-m', 'coverage', 'report', '-m']) # FIXME coverage report has no support for quiet run.
 	return rc
 
 @test_suite('bash')
-def bash_unittest(test):
+def bash_unittest(test, quiet=False):
 	unittest_bash = xdg.XDG_CONFIG_HOME/'lib'/'unittest.bash'
-	rc = subprocess.call(['bash', str(unittest_bash), test or 'discover'])
+	args = ['bash', str(unittest_bash)]
+	if quiet:
+		args += ['--quiet']
+	args += [test or 'discover']
+	rc = subprocess.call(args)
 	return rc
 
-if __name__ == '__main__': # TODO click
+def ensure_test_data_dir():
 	setup_cfg = configparser.SafeConfigParser()
 	setup_cfg.read(['setup.cfg'])
 	if 'unittest' in setup_cfg:
@@ -86,17 +107,41 @@ if __name__ == '__main__': # TODO click
 			data_dir = setup_cfg['unittest']['data_dir']
 			Path(data_dir).expanduser().mkdir(parents=True, exist_ok=True)
 
-	tests = sys.argv[1:] or [None]
+@click.command()
+@click.argument('tests', nargs=-1)
+@click.option('-q', '--quiet', is_flag=True, default=False,
+		help='Quiet run (less output, report errors only)')
+@click.option('-p', '--platform', default=['all'], multiple=True,
+		type=click.Choice(['all'] + [_.name for _ in test_suite], case_sensitive=False),
+		help='List of testing platforms to execute tests for.')
+def main(tests, quiet=False, platform=None):
+	""" Runs specified test suites/modules/cases in current directory
+	for a number of known platforms/languages.
+	See list of supported platforms in --platform option description.
+	TESTS are a list of test specifications conforming to Python unittest spec:
+	   module.submodule...[.TestClass][.test_case]
+	If test specs are omitted, complete discovery is executed (depends on corresponding platform).
+	"""
+	ensure_test_data_dir()
+	tests = tests or [None]
+
 	rc = 0
 	for runner in test_suite:
+		if not ('all' in platform or runner.name in platform):
+			continue
 		for test in tests:
-			print(termcolor.colored('Running {0} tests for: {1}'.format(runner.name, test or '<autodiscovery>'), 'blue'))
-			result = runner(test)
+			if not quiet:
+				print(termcolor.colored('Running {0} tests for: {1}'.format(runner.name, test or '<autodiscovery>'), 'blue'))
+			result = runner(test, quiet=quiet)
 			rc += result
-			if result == 0:
-				print(termcolor.colored('Success.', 'green'))
-			else:
-				print(termcolor.colored('RC: {0}'.format(result), 'red'))
-	if rc != 0:
+			if not quiet:
+				if result == 0:
+					print(termcolor.colored('Success.', 'green'))
+				else:
+					print(termcolor.colored('RC: {0}'.format(result), 'red'))
+	if not quiet and rc != 0:
 		print(termcolor.colored('Total RC: {0}'.format(rc), 'red'))
 	sys.exit(rc)
+
+if __name__ == '__main__':
+	main()
