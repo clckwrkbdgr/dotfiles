@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, sys, subprocess
+import re
 import itertools
 import configparser
 try:
@@ -61,22 +62,66 @@ class Registry(object):
 
 test_suite = Registry('name')
 
+PYTHON_UNITTEST_QUIET_PATTERNS = list(map(re.compile, [
+	'^-{70}$',
+	'^Ran \d+ tests in [0-9.]+s$',
+	'^$',
+	'^OK$',
+	]))
+PYTHON_2_UNITTEST_QUIET_PATTERNS = list(map(re.compile, [
+	'^[.]+$',
+	'^-{70}$',
+	'^Ran \d+ tests in [0-9.]+s$',
+	'^$',
+	'^OK$',
+	]))
+PYTHON_COVERAGE_QUIET_PATTERNS = list(map(re.compile, [
+	'^Name +Stmts +Miss +Cover +Missing$',
+	'^-{37}$',
+	'^-{37}$',
+	'^TOTAL +[0-9]+ +0 +100%$',
+	'^$',
+	'^.*due to complete coverage[.]$'
+	]))
+
+def quiet_call(args, quiet_stdout_patterns=None, quiet_stderr_patterns=None):
+	process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	stdout, stderr = process.communicate(None)
+	rc = process.wait()
+	buffers_to_check = [
+			(stdout, quiet_stdout_patterns, sys.stdout),
+			(stderr, quiet_stderr_patterns, sys.stderr),
+			]
+	for buffer, patterns, stream in buffers_to_check:
+		do_print = True
+		if buffer and patterns:
+			lines = buffer.decode('utf-8', 'replace').splitlines()
+			if len(lines) == len(patterns):
+				if all(pattern.match(line) for line, pattern in zip(lines, patterns)):
+					do_print = False
+		if buffer and do_print:
+			stream.buffer.write(buffer)
+	return rc
+
 @test_suite('py2')
 def python_2_unittest(test, quiet=False):
-	args = ['python2', '-m', 'coverage', 'run', '-m', 'unittest']
+	args = ['python2', '-m', 'coverage', 'run', '--source=.', '-m', 'unittest']
 	if test:
 		if quiet:
 			args += ['--quiet']
 		args += [test]
 	else:
 		args += ['discover'] # FIXME py2 discover does not recognize --quiet.
-	rc = subprocess.call(args)
-	rc += subprocess.call(['python2', '-m', 'coverage', 'report', '-m']) # FIXME coverage report has no support for quiet run.
-	return rc
+	rc = quiet_call(args,
+			quiet_stderr_patterns=PYTHON_2_UNITTEST_QUIET_PATTERNS if quiet else None)
+	if rc != 0:
+		return rc
+	return quiet_call(['python2', '-m', 'coverage', 'report', '-m'],
+			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None)
 
 @test_suite('py3')
 def python_3_unittest(test, quiet=False):
-	args = ['python3', '-m', 'coverage', 'run', '-m', 'unittest']
+	args = ['python3', '-m', 'coverage', 'run', '--source=.', '-m', 'unittest']
 	if test:
 		if quiet:
 			args += ['--quiet']
@@ -85,9 +130,12 @@ def python_3_unittest(test, quiet=False):
 		args += ['discover']
 		if quiet:
 			args += ['--quiet']
-	rc = subprocess.call(args)
-	rc += subprocess.call(['python3', '-m', 'coverage', 'report', '-m']) # FIXME coverage report has no support for quiet run.
-	return rc
+	rc = quiet_call(args,
+			quiet_stderr_patterns=PYTHON_UNITTEST_QUIET_PATTERNS if quiet else None)
+	if rc != 0:
+		return rc
+	return quiet_call(['python3', '-m', 'coverage', 'report', '-m'],
+			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None)
 
 @test_suite('bash')
 def bash_unittest(test, quiet=False):
