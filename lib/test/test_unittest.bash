@@ -87,6 +87,7 @@ selftest_forget_internal_environment() {
 }
 
 selftest_print_unittest_run_stats() {
+	export UNITTEST_QUIET=
 	test_first() {
 		true
 	}
@@ -97,6 +98,7 @@ selftest_print_unittest_run_stats() {
 }
 
 selftest_display_failure_count() {
+	export UNITTEST_QUIET=
 	test_first() {
 		true
 	}
@@ -107,6 +109,7 @@ selftest_display_failure_count() {
 }
 
 selftest_assert_files_same() {
+	export UNITTEST_QUIET=
 	FIRST_TMPFILE=$(mktemp)
 	SECOND_TMPFILE=$(mktemp)
 	test_same() {
@@ -139,6 +142,7 @@ EOF
 }
 
 selftest_assert_files_different() {
+	export UNITTEST_QUIET=
 	FIRST_TMPFILE=$(mktemp)
 	SECOND_TMPFILE=$(mktemp)
 	test_same() {
@@ -169,6 +173,7 @@ EOF
 }
 
 selftest_assert_strings_equal() {
+	export UNITTEST_QUIET=
 	test_same() {
 		FIRST='first'
 		SECOND='first'
@@ -193,6 +198,7 @@ EOF
 }
 
 selftest_assert_strings_not_equal() {
+	export UNITTEST_QUIET=
 	test_same() {
 		FIRST='first'
 		SECOND='first'
@@ -216,6 +222,7 @@ EOF
 }
 
 selftest_assert_string_empty() {
+	export UNITTEST_QUIET=
 	test_empty() {
 		assertStringEmpty ""
 	}
@@ -235,6 +242,7 @@ EOF
 }
 
 selftest_assert_string_not_empty() {
+	export UNITTEST_QUIET=
 	test_empty() {
 		assertStringNotEmpty ""
 	}
@@ -253,6 +261,7 @@ EOF
 }
 
 selftest_assert_output_equal() {
+	export UNITTEST_QUIET=
 	test_same() {
 		assertOutputEqual 'echo -e "first\nsecond"' "first\nsecond"
 	}
@@ -278,6 +287,7 @@ EOF
 }
 
 selftest_assert_output_empty() {
+	export UNITTEST_QUIET=
 	test_empty() {
 		assertOutputEmpty 'echo -n ""'
 	}
@@ -301,6 +311,7 @@ EOF
 }
 
 selftest_assert_output_equal_stdin() {
+	export UNITTEST_QUIET=
 	test_same() {
 		echo -e "first\nsecond" | assertOutputEqual 'echo -e "first\nsecond"' -
 	}
@@ -329,6 +340,7 @@ EOF
 }
 
 selftest_assert_return_code_of_previous_command_assert() {
+	export UNITTEST_QUIET=
 	test_ok() {
 		assertOutputEqual 'echo test; exit 1' 'test'
 		assertReturnCode 1
@@ -352,6 +364,7 @@ EOF
 }
 
 selftest_assert_return_code() {
+	export UNITTEST_QUIET=
 	test_same() {
 		assertReturnCode 1 'exit 1'
 	}
@@ -373,6 +386,7 @@ EOF
 }
 
 selftest_assert_exit_success() {
+	export UNITTEST_QUIET=
 	test_success() {
 		assertExitSuccess 'exit 0'
 	}
@@ -393,6 +407,7 @@ EOF
 }
 
 selftest_assert_exit_failure() {
+	export UNITTEST_QUIET=
 	test_success() {
 		assertExitFailure 'exit 0'
 	}
@@ -422,6 +437,7 @@ selftest_skip_test_runner_in_sourced_files() {
 test_case() {
 	assertStringsEqual A not-A
 }
+export UNITTEST_QUIET=
 unittest::run test_
 EOF
 	cat >"$tmpscript" <<EOF
@@ -444,6 +460,7 @@ test_success() {
 test_failure() {
 	assertExitSuccess 'exit 1'
 }
+export UNITTEST_QUIET=
 unittest::run
 EOF
 
@@ -458,6 +475,7 @@ EOF
 should_ignore_previous_tests() {
 	assertExitSuccess 'exit 0'
 }
+export UNITTEST_QUIET=
 unittest::run should_
 EOF
 
@@ -478,6 +496,7 @@ test_success() {
 test_failure() {
 	assertExitSuccess 'exit 1'
 }
+export UNITTEST_QUIET=
 unittest::run
 
 unittest::list
