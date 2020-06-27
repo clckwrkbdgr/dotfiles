@@ -1,71 +1,78 @@
 #!/bin/bash
+. "$XDG_CONFIG_HOME/lib/unittest.bash"
 
-### DATA
-
-function lorem_ipsum() {
-cat <<EOF
+should_zip_simple_text_file() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	cat >"$test_file" <<EOF
 Lorem ipsum
 Dolores sit amet
 EOF
+	local test_zip=$(mktemp --dry-run --suffix .zip)
+	finally "rm -f '$test_zip'"
+	local expected_file=$(mktemp)
+	finally "rm -f '$expected_file'"
+
+	local zip_content_test_file=${test_file#/}
+	(
+	echo $(cat "$test_file" | wc -c)"|utf-8|$zip_content_test_file"
+	cat "$test_file"
+	echo # Content separator.
+	) >"$expected_file"
+
+	zip "$test_zip" "$test_file" | grep -v '^  adding:' >&2
+
+	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip'" -
 }
 
-function ryba_utf8() {
-cat <<EOF
+should_zip_utf8() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	cat >"$test_file" <<EOF
 Лорем ипсум
 Долорес сит амет
 EOF
+	local test_zip=$(mktemp --dry-run --suffix .zip)
+	finally "rm -f '$test_zip'"
+	local expected_file=$(mktemp)
+	finally "rm -f '$expected_file'"
+
+	local zip_content_test_file=${test_file#/}
+	(
+	echo $(cat "$test_file" | wc -c)"|utf-8|$zip_content_test_file"
+	cat "$test_file"
+	echo # Content separator.
+	) >"$expected_file"
+
+	zip "$test_zip" "$test_file" | grep -v '^  adding:' >&2
+
+	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip'" -
 }
 
-### TESTS
+should_zip_cp1251() {
+	local test_file=$(mktemp)
+	finally "rm -f '$test_file'"
+	cat <<EOF | iconv -f 'utf-8' -t 'cp1251' >"$test_file"
+Лорем ипсум
+Долорес сит амет
+EOF
+	local test_zip=$(mktemp --dry-run --suffix .zip)
+	finally "rm -f '$test_zip'"
+	local expected_file=$(mktemp)
+	finally "rm -f '$expected_file'"
 
-function should_zip_simple_text_file() {
-lorem_ipsum >'test.txt'
-echo $(cat 'test.txt' | wc -c)'|utf-8|test.txt'
-cat 'test.txt'
-echo # Content separator.
+	local zip_content_test_file=${test_file#/}
+	size=$(cat "$test_file" | base64 | wc -c)
+	size=$((size-1))
+	(
+	echo "$size|base64|$zip_content_test_file"
+	cat "$test_file" | base64 | tr -d '\n'
+	echo # Content separator.
+	) >"$expected_file"
 
-zip "test.zip" "test.txt" >&2
+	zip "$test_zip" "$test_file" | grep -v '^  adding:' >&2
+
+	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip'" -
 }
 
-function should_zip_utf8() {
-ryba_utf8 >'test.txt'
-echo $(cat 'test.txt' | wc -c)'|utf-8|test.txt'
-cat 'test.txt'
-echo # Content separator.
-
-zip "test.zip" "test.txt" >&2
-}
-
-function should_zip_cp1251() {
-ryba_utf8 | iconv -f 'utf-8' -t 'cp1251' >'test.txt'
-size=$(cat 'test.txt' | base64 | wc -c)
-size=$((size-1))
-echo $size'|base64|test.txt'
-cat 'test.txt' | base64 | tr -d '\n'
-echo # Content separator.
-
-zip "test.zip" "test.txt" >&2
-}
-
-### MAIN
-
-testdir=$(mktemp -d)
-pushd "$testdir" >/dev/null
-
-function perform_test() { # <test name>
-	echo ">>> $1"
-	"$1" >"expected.txt"
-	tput setf 4 # red
-	zipdump dump "test.zip" | diff "expected.txt" - | cat -vet
-	rc=$?
-	tput sgr0
-	rm -f "test.zip"
-	return "$rc"
-}
-
-perform_test should_zip_simple_text_file
-perform_test should_zip_utf8
-perform_test should_zip_cp1251
-
-popd >/dev/null
-rm -rf "$testdir"
+unittest::run should_
