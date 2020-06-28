@@ -1,0 +1,5 @@
+#!/bin/bash
+dailyupdate_dir="${0}.d"
+find "$dailyupdate_dir" -type f | sort | while read jobfile; do
+	"$jobfile"
+done
