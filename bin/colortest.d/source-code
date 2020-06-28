@@ -1,0 +1,15 @@
+#!/bin/bash
+# Prints simple source code snippet with syntax highlighting.
+. "$XDG_CONFIG_HOME/lib/colors.bash"
+color::init on
+
+echo -e "${purple}#include <iostream>${white}"
+echo -e ""
+echo -e "${blue}/** Example of comment."
+echo -e " */${white}"
+echo -e ""
+echo -e "${green}int${white} main(${green}int${white} argc, ${green}char${white} ** argv)"
+echo -e "{"
+echo -e "   std::cout << ${red}\"Hello colors!\"${white} << std::endl;"
+echo -e "   ${yellow}return${white} ${cyan}0${white};"
+echo -e "}"
