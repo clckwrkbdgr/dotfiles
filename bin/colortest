@@ -1,0 +1,21 @@
+#!/bin/bash
+# Script to test colors in the terminal.
+# Uses different scenarios defined in "./colortest.d/*"
+
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+
+colortest_dir="${0}.d"
+scenario="$1"
+
+if [ -z "$scenario" ]; then
+	pushd "$colortest_dir" >/dev/null || panic "Cannot find directory with colortest scenarios: $colortest_dir"
+	echo "Usage: $0 <colortest scenario>"
+	echo "Available scenarios in $colortest_dir:"
+	ls -1
+	popd >/dev/null
+	exit 0
+fi
+
+[ -f "$colortest_dir/$scenario" ] || panic "Cannot find scenario in $colortest_dir: $scenario"
+[ -x "$colortest_dir/$scenario" ] || panic "Colortest scenario file $colortest_dir/$scenario does not have executable permissions."
+"$colortest_dir/$scenario"
