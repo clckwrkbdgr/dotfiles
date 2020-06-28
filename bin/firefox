@@ -12,7 +12,9 @@ windows_by_pid() { # <pid>
 		if [ -z "$window_name" ]; then
 			continue
 		fi
-		echo $window_id
+		if xprop -id "$window_id" | grep -q _NET_WM_DESKTOP; then
+			echo $window_id
+		fi
 	done
 }
 
@@ -23,8 +25,8 @@ windows_by_process_names() { # <list of pnames>
 }
 
 bring_to_top() { # <process name(s)>
-	windows_by_process_names "$@" | while read window_id; do
-		if ! xdotool windowactivate "$window_id" 2>&1 | fgrep -q 'XGetWindowProperty[_NET_WM_DESKTOP] failed (code=1)'; then
+	windows_by_process_names "$@" | tail -1 | while read window_id; do
+		if xdotool windowactivate "$window_id"; then
 			return 0
 		fi
 	done
