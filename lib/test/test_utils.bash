@@ -15,6 +15,14 @@ should_check_if_string_starts_with_prefix() {
 	assertExitFailure 'startswith "foo bar" "foo bA"'
 }
 
+should_trim_whitespaces() {
+	assertStringsEqual "$(trim "foo")" 'foo'
+	assertStringsEqual "$(trim "foo  ")" 'foo'
+	assertStringsEqual "$(trim "  foo")" 'foo'
+	assertStringsEqual "$(trim "  foo  ")" 'foo'
+	assertStringsEqual "$(trim "  with  spaces  ")" 'with  spaces'
+}
+
 should_perform_actions_finally() {
 	assertOutputEqual "( finally 'echo finally'; echo 'test' )" "test\nfinally"
 }

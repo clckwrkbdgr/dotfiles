@@ -14,6 +14,15 @@ startswith() {
 	esac
 }
 
+trim() {
+	# Removes heading and trailing whitespaces from the given values.
+	# Prints result to stdout.
+	local value="$*"
+	value="${value#"${value%%[![:space:]]*}"}"
+	value="${value%"${value##*[![:space:]]}"}"
+	printf '%s' "$value"
+}
+
 _finally_init () {
 	# Defines shell actions to be performed upon exit
 	# from the current scope (function, subshell).
