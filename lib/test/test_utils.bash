@@ -23,6 +23,15 @@ should_trim_whitespaces() {
 	assertStringsEqual "$(trim "  with  spaces  ")" 'with  spaces'
 }
 
+should_find_item_in_array() {
+	array=("foo"  "bar"  "value with spaces")
+	assertExitSuccess 'item_in foo "${array[@]}"'
+	assertExitSuccess 'item_in bar "${array[@]}"'
+	assertExitFailure 'item_in MISSING "${array[@]}"'
+	assertExitSuccess 'item_in "value with spaces" "${array[@]}"'
+	assertExitFailure 'item_in "  foo" "${array[@]}"'
+}
+
 should_perform_actions_finally() {
 	assertOutputEqual "( finally 'echo finally'; echo 'test' )" "test\nfinally"
 }

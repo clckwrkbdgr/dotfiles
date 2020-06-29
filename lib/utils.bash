@@ -23,6 +23,17 @@ trim() {
 	printf '%s' "$value"
 }
 
+item_in () {
+	# Checks if given value is contained in given array.
+	# Usage:
+	#   item_in "value" "${array[@]}"
+	# Origin: https://stackoverflow.com/a/8574392/2128769
+	local item match="$1"
+	shift
+	for item; do [[ "$item" == "$match" ]] && return 0; done
+	return 1
+}
+
 _finally_init () {
 	# Defines shell actions to be performed upon exit
 	# from the current scope (function, subshell).
