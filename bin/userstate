@@ -1,98 +1,46 @@
-#!/bin/bash
-. "$XDG_CONFIG_HOME/lib/utils.bash"
-. "$XDG_CONFIG_HOME/lib/click.bash"
+#!/usr/bin/env python
+import sys
+import click
+import clckwrkbdgr.userstate
 
-userstate_dir="$XDG_STATE_HOME/userstate"
-mkdir -p "$userstate_dir"
+@click.command()
+@click.argument('userstate_command') # TODO multi-command click instead of this.
+@click.argument('flag')
+def main(userstate_command, flag):
+	""" Manages userspace state flags, e.g. to indicate some global state to other applications.
+	Userstate commands:
 
-declare -a known_userstate_markers
+	- get <flag>: returns 0 if flag is set, otherwise 1.
 
-read_config_file() { # <userstate.cfg>
-	# Config file is a plain-test file with markers defined on separate lines.
-	# Marker should be a correct C identificator:
-	# - only letters, digits and underscore;
-	# - cannot start with digit.
-	# Comments (starting with #) are supported:
-	#   first_marker
-	#   # Comment.
-	#   second_marker # Inlined comment.
-	# Returns number of successfully read markers.
-	configfile="$1"
-	[ -f "$configfile" ] || return 0
-	local id_pattern="^[a-zA-Z_][a-zA-Z_0-9]*$"
-	while IFS='\n' read line; do
-		[[ -z "$line" ]] && continue
-		local comment="^ *#.*$"
-		[[ "$line" =~ $comment ]] && continue
-		local value="$(trim "${line%#*}")"
-		if ! [[ "$value" =~ $id_pattern ]]; then
-			echo "Marker name does not follow C identificator pattern: $value" >&2
-			continue
-		fi
-		known_userstate_markers+=("$value")
-	done <"$configfile"
-	return 0
-}
+	- set <flag>: sets flag.
 
-read_config_file "$XDG_CONFIG_HOME/userstate.cfg"
-read_config_file "$HOME/.local/userstate.cfg"
+	- unset <flag>: unsets flag.
 
-click::command main 'Manages userspace state flags, e.g. to indicate some global state to other applications.'
-click::argument 'userstate_command' 'Userstate command: get, set, unset, list' # TODO multi-command click instead of this.
-click::argument 'flag' 'Flag to operate on. For list command it can be "all" or "current".'
-main() {
-	case ${CLICK_ARGS[userstate_command]} in # TODO multi-command click instead of this.
-		get)
-			if ! item_in "${CLICK_ARGS[flag]}" "${known_userstate_markers[@]}"; then
-				panic "Unknown userstate marker found: '${CLICK_ARGS[flag]}'"
-			fi
-			if [ -f "$userstate_dir/${CLICK_ARGS[flag]}" ]; then
-				exit 0
-			else
-				exit 1
-			fi
-			;;
-		set)
-			if ! item_in "${CLICK_ARGS[flag]}" "${known_userstate_markers[@]}"; then
-				panic "Unknown userstate marker found: '${CLICK_ARGS[flag]}'"
-			fi
-			if [ ! -f "$userstate_dir/${CLICK_ARGS[flag]}" ]; then
-				touch "$userstate_dir/${CLICK_ARGS[flag]}"
-			fi
-			;;
-		unset)
-			if ! item_in "${CLICK_ARGS[flag]}" "${known_userstate_markers[@]}"; then
-				panic "Unknown userstate marker found: '${CLICK_ARGS[flag]}'"
-			fi
-			if [ -f "$userstate_dir/${CLICK_ARGS[flag]}" ]; then
-				rm -f "$userstate_dir/${CLICK_ARGS[flag]}"
-			fi
-			;;
-		list)
-			if [ ${CLICK_ARGS[flag]} == 'all' ]; then
-				for value in "${known_userstate_markers[@]}"; do
-					echo "$value"
-				done
-			elif [ ${CLICK_ARGS[flag]} == 'current' ]; then
-				pushd "$userstate_dir" >/dev/null || panic "Cannot list directory with current markers: $userstate_dir"
-				if [ $(find . -type f | wc -l) -gt 0 ]; then
-					for marker in *; do
-						if ! item_in "$marker" "${known_userstate_markers[@]}"; then
-							echo "Unknown userstate marker found: '$marker'" >&2
-							continue
-						fi
-						echo "$marker"
-					done
-				fi
-				popd >/dev/null
-			else
-				panic "Unknown list specificator: '${CLICK_ARGS[flag]}'. Could be either 'all' or 'current'"
-			fi
-			;;
-		*)
-			panic "Unknown command: ${CLICK_ARGS[userstate_command]}. See '$0 -h' for details"
-			;;
-	esac
-}
+	- list {all|current}: lists all known markers or all currently set ones.
+	"""
+	if userstate_command == 'get':
+		sys.exit(0 if clckwrkbdgr.userstate.get_flag(flag) else 1)
+	elif userstate_command == 'set':
+		sys.exit(0 if clckwrkbdgr.userstate.set_flag(flag) else 1)
+	elif userstate_command == 'unset':
+		sys.exit(0 if clckwrkbdgr.userstate.unset_flag(flag) else 1)
+	elif userstate_command == 'list':
+		if flag == 'all':
+			for entry in clckwrkbdgr.userstate.list_all_flags():
+				print(entry)
+		elif flag == 'current':
+			try:
+				for entry in clckwrkbdgr.userstate.list_current_flags():
+					print(entry)
+			except:
+				sys.exit(1)
+		else:
+			print("Unknown list specificator: '{flag}'. Could be either 'all' or 'current'".format(flag=flag))
+			sys.exit(1)
+	else:
+		print("Unknown command: {userstate_command}. See '{app} -h' for details".format(userstate_command=userstate_command, app=sys.argv[0]))
+		sys.exit(1)
 
-click::run "$@"
+if __name__ == '__main__':
+	main()
+
