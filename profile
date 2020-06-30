@@ -8,6 +8,7 @@
 [ -z "$LC_CTYPE" ] && export LC_CTYPE=en_US.utf8
 export LC_COLLATE=C # For `ls' not to mix upper and lower case letters.
 [ -z "$MAILPATH" ] && export MAILPATH="/var/mail/$USER"
+[ -z "$TEMP" ] && export TEMP=/tmp
 export SDL_VIDEO_CENTERED=1
 export PYGAME_HIDE_SUPPORT_PROMPT=true
 [ -z "$PKG_CONFIG_PATH" ] && export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
