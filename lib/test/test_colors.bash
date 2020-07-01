@@ -35,8 +35,11 @@ should_force_init_colors() {
 should_autodetect_tty_for_colors() {
 	color::init off
 	assertStringsEqual "${red}" ''
-	color::init auto
-	assertStringsEqual "${red}" '\033[0;31m'
+	# No way to fake TTY for bash functions without starting another process.
+	if [ -t 1 ]; then
+		color::init auto
+		assertStringsEqual "${red}" '\033[0;31m'
+	fi
 	(
 		color::init auto
 		assertStringsEqual "${red}" ''

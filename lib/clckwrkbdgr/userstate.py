@@ -10,7 +10,7 @@ userstate_dir = xdg.save_state_path("userstate")
 
 known_userstate_markers = []
 
-def read_config_file(configfile):
+def read_config_file(configfile): # pragma: no cover -- TODO reads FS
 	"""
 	Config file is a plain-test file with markers defined on separate lines.
 	Marker should be a correct C identificator:
@@ -39,7 +39,7 @@ def read_config_file(configfile):
 		valid_markers += 1
 	return valid_markers
 
-def get_flag(flag):
+def get_flag(flag): # pragma: no cover -- TODO operates on global state.
 	""" Returns True if flag is known and is set, False otherwise. """
 	if flag not in known_userstate_markers:
 		print("Unknown userstate marker found: '{0}'".format(flag), file=sys.stderr) # TODO use logging.warning instead.
@@ -47,7 +47,7 @@ def get_flag(flag):
 	flag_file = userstate_dir/flag
 	return flag_file.is_file()
 
-def set_flag(flag, value=True):
+def set_flag(flag, value=True): # pragma: no cover -- TODO operates on global state.
 	""" Sets flag to specified state (default is True). """
 	if flag not in known_userstate_markers:
 		print("Unknown userstate marker found: '{0}'".format(flag), file=sys.stderr)
@@ -59,15 +59,15 @@ def set_flag(flag, value=True):
 		os.unlink(str(flag_file))
 	return True
 
-def unset_flag(flag):
+def unset_flag(flag): # pragma: no cover -- TODO operates on global state.
 	""" Unsets flag. Equivalent of set_flag(flag, False). """
 	return set_flag(flag, False)
 
-def list_all_flags():
+def list_all_flags(): # pragma: no cover -- TODO operates on global state.
 	""" Returns list of all known flags. """
 	return known_userstate_markers[:]
 
-def list_current_flags():
+def list_current_flags(): # pragma: no cover -- TODO operates on global state.
 	""" Yields currently set flags.
 	Raises exception when directory is inaccessible.
 	"""
