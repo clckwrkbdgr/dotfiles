@@ -101,6 +101,8 @@ def quiet_call(args, quiet_stdout_patterns=None, quiet_stderr_patterns=None):
 					do_print = False
 		if buffer and do_print:
 			stream.buffer.write(buffer)
+	sys.stdout.flush()
+	sys.stderr.flush()
 	return rc
 
 @test_suite('py2')
