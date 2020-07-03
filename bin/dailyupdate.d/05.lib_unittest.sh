@@ -1,3 +1,5 @@
 #!/bin/sh
 cd "$XDG_CONFIG_HOME/lib"
-unittest -q
+quiet=-q
+[ -n "$DAILYUPDATE_VERBOSE" ] && quiet=
+unittest $quiet
