@@ -22,7 +22,7 @@ should_reset_previously_instated_color_mode() {
 		color::reset
 		echo -e "No more color, no more light."
 	}
-	assertOutputEqual paint_it_red "${red}Vision red...\n${reset_color}No more color, no more light."
+	assertOutputEqual 'paint_it_red 2>/dev/null' "${red}Vision red...\n${reset_color}No more color, no more light."
 }
 
 should_force_init_colors() {
