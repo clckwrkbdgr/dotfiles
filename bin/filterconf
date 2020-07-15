@@ -4,6 +4,7 @@ import re, fnmatch
 import inspect
 import argparse, shlex
 from collections import OrderedDict
+from clckwrkbdgr import utils
 
 class UnfoldArgList(argparse.Action):
 	def __call__(self, parser, namespace, values, option_string=None):
@@ -255,6 +256,7 @@ def perform_action(filter, settings):
 				pass
 	return filter
 
+@utils.returns_exit_code
 def main():
 	settings = parse_args()
 	envvars = prepare_envvars(settings.enviro)
@@ -275,6 +277,4 @@ def main():
 	sys.stdout.write(content)
 
 if __name__ == "__main__":
-	ok = main()
-	if ok is not None and not ok:
-		sys.exit(1)
+	sys.exit(main())
