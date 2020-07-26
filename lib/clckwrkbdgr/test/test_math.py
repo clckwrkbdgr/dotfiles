@@ -98,10 +98,18 @@ class TestMatrix(unittest.TestCase):
 	def should_get_cell_value(self):
 		m = Matrix((2, 2), default='*')
 		self.assertEqual(m.cell((0, 0)), '*')
+		with self.assertRaises(KeyError):
+			m.cell((-1, -1))
+		with self.assertRaises(KeyError):
+			m.cell((1, 10))
 	def should_set_cell_value(self):
 		m = Matrix((2, 2), default=' ')
 		m.set_cell((0, 0), '*')
 		self.assertEqual(m.cell((0, 0)), '*')
+		with self.assertRaises(KeyError):
+			m.set_cell((-1, -1), 'a')
+		with self.assertRaises(KeyError):
+			m.set_cell((1, 10), 'a')
 	def should_iterate_over_indexes(self):
 		m = Matrix((2, 2))
 		indexes = ' '.join(''.join(map(str, index)) for index in m)
