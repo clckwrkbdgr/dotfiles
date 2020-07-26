@@ -91,13 +91,14 @@ class Matrix(object):
 	"""
 	def __init__(self, dims, default=None):
 		""" Creates Matrix with specified dimensions (iterable len=2) and fills with specified default value:
-		Matrix( (3, 3), default='.')
-		Matrix( Size(3, 3), default='.')
+		a = Matrix( (3, 3), default='.')
+		b = Matrix( Size(3, 3), default='.')
+		c = Matrix(b) # Creates deepcopy of another matrix.
 		"""
 		if isinstance(dims, Matrix):
 			other = dims
 			self.dims = copy.copy(other.dims)
-			self.data = copy.copy(other.data)
+			self.data = copy.deepcopy(other.data)
 			return
 		self.resize(dims, default=default)
 	def resize(self, dims, default=None):
@@ -139,6 +140,40 @@ class Matrix(object):
 		if not self.valid(pos):
 			raise KeyError('Invalid cell position: {0}'.format(pos))
 		self.data[pos.x + pos.y * self.dims.width] = value
-	def __iter__(self):
+	def keys(self):
 		""" Iterates over all available positions. """
 		return iter(map(Point, itertools.product(range(self.dims.width), range(self.dims.height))))
+	def values(self):
+		""" Iterates over all available values. """
+		return iter(self.data)
+	def __iter__(self):
+		""" Iterates over all available positions, see keys(). """
+		return self.keys()
+	@classmethod
+	def fromstring(cls, multiline_string, transformer=None):
+		""" Creates matrix from mutiline string.
+		All lines should be of equal width, otherwise ValueError is raised.
+		If transformer is specified, it should be callable that takes single argument (single string char) and transforms into matrix element. By default stored as string chars.
+		"""
+		lines = multiline_string.splitlines()
+		width, height = max(map(len, lines)), len(lines)
+		if any(len(line) != width for line in lines):
+			raise ValueError('Not all lines are of equal width ({0})'.format(width))
+		m = cls(Size(width, height))
+		if not transformer:
+			transformer = lambda c: c
+		m.data = list(transformer(c) for c in itertools.chain.from_iterable(lines))
+		return m
+	def tostring(self, transformer=None):
+		""" Returns multiline string representation of matrix.
+		Each line represents single row.
+		If transformer is specified, it should be callable that takes matrix element and converts to string representation. By default usual str() is used.
+		"""
+		result = ''
+		if not transformer:
+			transformer = str
+		for start in range(0, len(self.data), self.dims[0]):
+			for c in self.data[start:start+self.dims[0]]:
+				result += transformer(c)
+			result += '\n'
+		return result

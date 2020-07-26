@@ -2,6 +2,7 @@ import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import json
 import jsonpickle
+import textwrap
 import clckwrkbdgr.math
 from clckwrkbdgr.math import Point, Size, Matrix
 
@@ -112,5 +113,59 @@ class TestMatrix(unittest.TestCase):
 			m.set_cell((1, 10), 'a')
 	def should_iterate_over_indexes(self):
 		m = Matrix((2, 2))
+		m.data = list('abcd')
 		indexes = ' '.join(''.join(map(str, index)) for index in m)
 		self.assertEqual(indexes, '00 01 10 11')
+		indexes = ' '.join(''.join(map(str, index)) for index in m.keys())
+		self.assertEqual(indexes, '00 01 10 11')
+		values = ' '.join(m.values())
+		self.assertEqual(values, 'a b c d')
+	def should_construct_matrix_from_multiline_string(self):
+		data = textwrap.dedent("""\
+				.X.X.
+				XXXXX
+				""")
+		m = Matrix.fromstring(data)
+		self.assertEqual(m.width(), 5)
+		self.assertEqual(m.height(), 2)
+		self.assertEqual(m.data, [
+			'.', 'X', '.', 'X', '.',
+			'X', 'X', 'X', 'X', 'X',
+			])
+
+		with self.assertRaises(ValueError):
+			Matrix.fromstring("short\nlong")
+
+		data = textwrap.dedent("""\
+				.a.b.
+				cabcd
+				""")
+		m = Matrix.fromstring(data, transformer=lambda c: -1 if c == '.' else ord(c) - ord('a'))
+		self.assertEqual(m.width(), 5)
+		self.assertEqual(m.height(), 2)
+		self.assertEqual(m.data, [
+			-1, 0, -1, 1, -1,
+			2, 0, 1, 2, 3,
+			])
+	def should_convert_matrix_to_string(self):
+		m = Matrix((5, 2))
+		m.data = [
+			'.', 'X', '.', 'X', '.',
+			'X', 'X', 'X', 'X', 'X',
+			]
+		expected = textwrap.dedent("""\
+				.X.X.
+				XXXXX
+				""")
+		self.assertEqual(m.tostring(), expected)
+
+		m = Matrix((5, 2))
+		m.data = [
+			-1, 0, -1, 1, -1,
+			2, 0, 1, 2, 3,
+			]
+		expected = textwrap.dedent("""\
+				.a.b.
+				cabcd
+				""")
+		self.assertEqual(m.tostring(transformer=lambda c: '.' if c < 0 else chr(c + ord('a'))), expected)
