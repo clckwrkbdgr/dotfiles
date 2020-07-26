@@ -62,19 +62,21 @@ class Registry(object):
 
 test_suite = Registry('name')
 
-PYTHON_UNITTEST_QUIET_PATTERNS = list(map(re.compile, [
-	'^-{70}$',
-	'^Ran \d+ tests in [0-9.]+s$',
-	'^$',
-	'^OK$',
-	]))
-PYTHON_2_UNITTEST_QUIET_PATTERNS = list(map(re.compile, [
-	'^[.]+$',
-	'^-{70}$',
-	'^Ran \d+ tests in [0-9.]+s$',
-	'^$',
-	'^OK$',
-	]))
+PYTHON_UNITTEST_QUIET_PATTERNS = {
+		'2' : list(map(re.compile, [
+			'^[.]+$',
+			'^-{70}$',
+			'^Ran \d+ tests in [0-9.]+s$',
+			'^$',
+			'^OK$',
+			])),
+		'3' : list(map(re.compile, [
+			'^-{70}$',
+			'^Ran \d+ tests in [0-9.]+s$',
+			'^$',
+			'^OK$',
+			])),
+		}
 PYTHON_COVERAGE_QUIET_PATTERNS = list(map(re.compile, [
 	'^Name +Stmts +Miss +Cover +Missing$',
 	'^-{37}$',
@@ -105,39 +107,36 @@ def quiet_call(args, quiet_stdout_patterns=None, quiet_stderr_patterns=None):
 	sys.stderr.flush()
 	return rc
 
-@test_suite('py2')
-def python_2_unittest(test, quiet=False):
-	args = ['python2', '-m', 'coverage', 'run', '--source=.', '-m', 'unittest']
-	if test:
-		if quiet:
-			args += ['--quiet']
-		args += [test]
-	else:
-		args += ['discover'] # FIXME py2 discover does not recognize --quiet.
-	rc = quiet_call(args,
-			quiet_stderr_patterns=PYTHON_2_UNITTEST_QUIET_PATTERNS if quiet else None)
-	if rc != 0:
-		return rc
-	return quiet_call(['python2', '-m', 'coverage', 'report', '-m'],
-			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None)
+def run_python_unittests(version, test, quiet=False):
+	allowed_versions = ['2', '3']
+	assert version in allowed_versions, 'Unknown python version {0}, choose from following: {1}'.format(version, allowed_versions)
 
-@test_suite('py3')
-def python_3_unittest(test, quiet=False):
-	args = ['python3', '-m', 'coverage', 'run', '--source=.', '-m', 'unittest']
+	args = ['python{0}'.format(version), '-m', 'coverage', 'run']
+	if not test:
+		args += ['--source=.']
+	args += ['-m', 'unittest']
 	if test:
 		if quiet:
 			args += ['--quiet']
 		args += [test]
 	else:
 		args += ['discover']
-		if quiet:
+		if version == '3' and quiet: # FIXME py2 discover does not recognize --quiet.
 			args += ['--quiet']
 	rc = quiet_call(args,
-			quiet_stderr_patterns=PYTHON_UNITTEST_QUIET_PATTERNS if quiet else None)
+			quiet_stderr_patterns=PYTHON_UNITTEST_QUIET_PATTERNS[version] if quiet else None)
 	if rc != 0:
 		return rc
-	return quiet_call(['python3', '-m', 'coverage', 'report', '-m'],
+	return quiet_call(['python{0}'.format(version), '-m', 'coverage', 'report', '-m'],
 			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None)
+
+@test_suite('py2')
+def python_2_unittest(test, quiet=False):
+	return run_python_unittests('2', test, quiet=quiet)
+
+@test_suite('py3')
+def python_3_unittest(test, quiet=False):
+	return run_python_unittests('3', test, quiet=quiet)
 
 @test_suite('bash')
 def bash_unittest(test, quiet=False):
