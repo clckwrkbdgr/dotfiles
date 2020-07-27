@@ -120,6 +120,15 @@ class TestMatrix(unittest.TestCase):
 		self.assertEqual(indexes, '00 01 10 11')
 		values = ' '.join(m.values())
 		self.assertEqual(values, 'a b c d')
+	def should_transform_matrix(self):
+		original = Matrix.fromstring('01\n23')
+		processed = original.transform(int)
+		self.assertEqual(processed.width(), 2)
+		self.assertEqual(processed.height(), 2)
+		self.assertEqual(processed.data, [
+			0, 1,
+			2, 3,
+			])
 	def should_construct_matrix_from_multiline_string(self):
 		data = textwrap.dedent("""\
 				.X.X.
@@ -169,3 +178,12 @@ class TestMatrix(unittest.TestCase):
 				cabcd
 				""")
 		self.assertEqual(m.tostring(transformer=lambda c: '.' if c < 0 else chr(c + ord('a'))), expected)
+
+class TestAlgorithms(unittest.TestCase):
+	def should_get_neighbours(self):
+		m = Matrix.fromstring('01\n23')
+		neighbours = list(clckwrkbdgr.math.get_neighbours(m, (0, 0)))
+		self.assertEqual(neighbours, [Point(1, 0), Point(0, 1)])
+
+		neighbours = list(clckwrkbdgr.math.get_neighbours(m, (0, 0), check=lambda c: int(c) > 1))
+		self.assertEqual(neighbours, [Point(0, 1)])

@@ -149,6 +149,13 @@ class Matrix(object):
 	def __iter__(self):
 		""" Iterates over all available positions, see keys(). """
 		return self.keys()
+	def transform(self, transformer):
+		""" Returns new instance of matrix with same dimensions
+		and transformer(c) applied for each cell.
+		"""
+		new_matrix = Matrix(self.dims)
+		new_matrix.data = [transformer(copy.deepcopy(c)) for c in self.data]
+		return new_matrix
 	@classmethod
 	def fromstring(cls, multiline_string, transformer=None):
 		""" Creates matrix from mutiline string.
@@ -177,3 +184,22 @@ class Matrix(object):
 				result += transformer(c)
 			result += '\n'
 		return result
+
+def get_neighbours(matrix, pos, check=None):
+	""" Yields points adjacent to given pos (valid points only).
+	If check is not none, it is applied to value at each pos
+	and yields only if callable returns True.
+	"""
+	pos = Point(pos)
+	neighbours = [
+			pos + Point(1, 0),
+			pos + Point(0, 1),
+			pos - Point(1, 0),
+			pos - Point(0, 1),
+			]
+	for p in neighbours:
+		if not matrix.valid(p):
+			continue
+		if check and not check(matrix.cell(p)):
+			continue
+		yield p
