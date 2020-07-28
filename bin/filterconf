@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 import os, sys, subprocess
-import types
+import types, functools
 import re, fnmatch
 import inspect
 import shlex
 from collections import OrderedDict
 import click
 from clckwrkbdgr import utils
-
-""" Script to filter configuration files.
-Can process content with actions like sorting, replacing value,
-deleting value etc, see ACTIONS below.
-"""
 
 class Environment(object):
 	""" Keeps track of variables which can be used in config substitution.
@@ -163,7 +158,7 @@ def prepare_envvars(enviro_args):
 			envvars.register(name, lambda command=value: subprocess.check_output(command, shell=True).decode('utf-8', 'replace').rstrip('\n'))
 	return envvars
 
-@click.group(epilog=EPILOG, help=__doc__)
+@click.group(epilog=EPILOG)
 @click.option('-f', '--format', required=True, type=click.Choice(FORMATS.keys()),
 		callback=lambda ctx, param, value: FORMATS[value],
 		help="Format of configuration file. "
@@ -181,44 +176,75 @@ def prepare_envvars(enviro_args):
 @click.pass_context
 @utils.returns_exit_code
 def main(ctx, format=None, enviro=None):
+	""" Script to filter configuration files.
+	Can process content with actions like sorting, replacing value,
+	deleting value etc, see ACTIONS below.
+	"""
 	ctx.ensure_object(types.SimpleNamespace)
 	ctx.obj.envvars = prepare_envvars(enviro)
 	ctx.obj.format = format
 
-@main.command()
-@click.pass_obj
-def restore(settings):
-	""" Restore filtered config file to normal state instead of filtering. """
-	content = sys.stdin.read()
-	for name in settings.envvars.known_names():
-		placeholder = '${0}'.format(name)
-		if placeholder in content:
-			content = content.replace(placeholder, settings.envvars.get(name))
-	sys.stdout.write(content)
+def with_stdin_content(enviro_action=None):
+	""" Reads stdin content and adds to context object under .content.
+	After execution writes content back to stdout.
+	If enviro_action = 'expand', expands environment variables in .envvars.
+	If enviro_action = 'restore', smudges environment variables in .envvars.
+	If incoming context object already has .content, all content actions are skipped.
+	"""
+	def _actual(func):
+		@functools.wraps(func)
+		def _wrapper(settings, *args, **kwargs):
+			has_content = hasattr(settings, 'content')
+			if not has_content:
+				settings.content = sys.stdin.read()
+				if enviro_action == 'expand':
+					for name in settings.envvars.known_names():
+						placeholder = '${0}'.format(name)
+						settings.content = settings.content.replace(settings.envvars.get(name), placeholder)
+				elif enviro_action == 'restore':
+					for name in settings.envvars.known_names():
+						placeholder = '${0}'.format(name)
+						if placeholder in settings.content:
+							settings.content = settings.content.replace(placeholder, settings.envvars.get(name))
+				elif enviro_action is not None:
+					raise ValueError("enviro_action should be either None, 'expand' or 'restore'")
+			try:
+				rc = func(settings, *args, **kwargs)
+			finally:
+				if not has_content:
+					sys.stdout.write(settings.content)
+					delattr(settings, 'content')
+			return rc
+		return _wrapper
+	return _actual
 
 @main.command()
 @click.pass_obj
+@with_stdin_content(enviro_action='restore')
+@utils.returns_exit_code
+def restore(settings):
+	""" Restore filtered config file to normal state instead of filtering. """
+	pass
+
+@main.command()
+@click.pass_obj
+@with_stdin_content(enviro_action='expand')
+@utils.returns_exit_code
 def enviro(settings):
 	""" Dummy action for the cases when only environment variables are needed to be expanded.
 	Every other action will do the same expansion but "enviro" will do nothing except that.
 	"""
-	content = sys.stdin.read()
-	for name in settings.envvars.known_names():
-		placeholder = '${0}'.format(name)
-		content = content.replace(settings.envvars.get(name), placeholder)
-	sys.stdout.write(content)
+	pass
 
 @main.command()
 @click.pass_obj
+@with_stdin_content(enviro_action='expand')
+@utils.returns_exit_code
 def sort(settings):
 	""" Sort content depending on format. """
-	content = sys.stdin.read()
-	for name in settings.envvars.known_names():
-		placeholder = '${0}'.format(name)
-		content = content.replace(settings.envvars.get(name), placeholder)
-	filter = settings.format(content)
+	filter = settings.format(settings.content)
 	filter.sort()
-	sys.stdout.write(filter.content)
+	settings.content = filter.content
 
 @main.command()
 @click.argument('patterns', nargs=-1)
@@ -226,16 +252,14 @@ def sort(settings):
 			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
 			)
 @click.pass_obj
+@with_stdin_content(enviro_action='expand')
+@utils.returns_exit_code
 def delete(settings, patterns, pattern_type=None):
 	""" Delete entries that match specified patterns/paths (depends on format). """
-	content = sys.stdin.read()
-	for name in settings.envvars.known_names():
-		placeholder = '${0}'.format(name)
-		content = content.replace(settings.envvars.get(name), placeholder)
-	filter = settings.format(content)
+	filter = settings.format(settings.content)
 	for pattern in patterns:
 		filter.delete(pattern, pattern_type)
-	sys.stdout.write(filter.content)
+	settings.content = filter.content
 
 @main.command()
 @click.argument('pattern')
@@ -246,55 +270,49 @@ def delete(settings, patterns, pattern_type=None):
 			help="Value to substitute. May contain references to the original value like refgroups for regexes (depends on format and pattern type)."
 			)
 @click.pass_obj
+@with_stdin_content(enviro_action='expand')
+@utils.returns_exit_code
 def replace(settings, pattern, pattern_type=None, with_value=None):
 	""" Replace entry specified by pattern/path with another value (depends on format). """
-	content = sys.stdin.read()
-	for name in settings.envvars.known_names():
-		placeholder = '${0}'.format(name)
-		content = content.replace(settings.envvars.get(name), placeholder)
-	filter = settings.format(content)
+	filter = settings.format(settings.content)
 	filter.replace(pattern, with_value, pattern_type)
-	sys.stdout.write(filter.content)
+	settings.content = filter.content
 
 @main.command()
 @click.pass_obj
+@with_stdin_content(enviro_action='expand')
+@utils.returns_exit_code
 def pretty(settings):
 	""" Prettify content depending on format. """
-	content = sys.stdin.read()
-	for name in settings.envvars.known_names():
-		placeholder = '${0}'.format(name)
-		content = content.replace(settings.envvars.get(name), placeholder)
-	filter = settings.format(content)
+	filter = settings.format(settings.content)
 	filter.pretty()
-	sys.stdout.write(filter.content)
+	settings.content = filter.content
 
 @main.command()
 @click.argument('filename')
 @click.pass_obj
+@with_stdin_content(enviro_action='expand')
+@utils.returns_exit_code
 def script(settings, filename):
 	""" Run several commands, stored in script file.
 	Commands are applied in the given order.
 	Format and enviro options do not need to be specified for each command,
 	they are taken from main command line.
 	"""
-	content = sys.stdin.read()
-	for name in settings.envvars.known_names():
-		placeholder = '${0}'.format(name)
-		content = content.replace(settings.envvars.get(name), placeholder)
-	filter = settings.format(content)
 	with open(filename) as f:
 		for line in f:
 			if not line.strip() or line.lstrip().startswith('#'):
 				continue
 			try:
-				args = shlex.split(line)
-				args = ['--format', settings.format]
-				rc = main(args=args, standalone_mode=False)
+				command_name, *args = shlex.split(line)
+				command = globals()[command_name]
+				if not isinstance(command, click.core.Command):
+					raise ValueError('Unknown command: {0}. See usage for list of available commands.'.format(command))
+				rc = command(args=args, standalone_mode=False, obj=settings)
 			except SystemExit as e:
 				rc = e.code
 			if rc != 0:
 				return rc
-	sys.stdout.write(filter.content)
 
 if __name__ == "__main__":
 	main()
