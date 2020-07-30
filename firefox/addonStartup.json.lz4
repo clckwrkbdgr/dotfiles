@@ -672,23 +672,6 @@
                                         "incognito": null,
                                         "tabId": null,
                                         "types": [
-                                            "csp_report"
-                                        ],
-                                        "urls": [
-                                            "https://noscript-csp.invalid/__NoScript_Probe__/"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "requestBody"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
                                             "main_frame",
                                             "sub_frame",
                                             "object"

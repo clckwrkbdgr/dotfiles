@@ -102,4 +102,5 @@ sed '/browser.startup.lastColdStartupCheck/d' | \
 sed '/services.settings.main[.][a-z-]\+[.]last_check/d' | \
 sed '/services.settings.security.onecrl.checked/d' | \
 sed '/browser.bookmarks.editDialog.confirmationHintShowCount/d' | \
+sed '/devtools.netmonitor.panes-network-details-height/d' | \
 sed 's|'"$HOME"'|$HOME|g'
