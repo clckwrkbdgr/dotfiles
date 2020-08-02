@@ -201,7 +201,7 @@ class RawEpilogGroup(click.Group):
 		"or command which prints value to stdout, e.g.: `HOME=echo $HOME`. "
 		"By default only $HOME is recognized.")
 @click.pass_context
-@utils.returns_exit_code
+@utils.exits_with_return_value
 def main(ctx, format=None, enviro=None):
 	""" Script to filter configuration files.
 	Can process content with actions like sorting, replacing value,
@@ -248,7 +248,7 @@ def with_stdin_content(enviro_action=None):
 @main.command()
 @click.pass_obj
 @with_stdin_content(enviro_action='restore')
-@utils.returns_exit_code
+@utils.exits_with_return_value
 def restore(settings):
 	""" Restore filtered config file to normal state instead of filtering. """
 	pass
@@ -256,7 +256,7 @@ def restore(settings):
 @main.command()
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
-@utils.returns_exit_code
+@utils.exits_with_return_value
 def enviro(settings):
 	""" Dummy action for the cases when only environment variables are needed to be expanded.
 	Every other action will do the same expansion but "enviro" will do nothing except that.
@@ -266,7 +266,7 @@ def enviro(settings):
 @main.command()
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
-@utils.returns_exit_code
+@utils.exits_with_return_value
 def sort(settings):
 	""" Sort content depending on format. """
 	filter = settings.format(settings.content)
@@ -280,7 +280,7 @@ def sort(settings):
 			)
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
-@utils.returns_exit_code
+@utils.exits_with_return_value
 def delete(settings, patterns, pattern_type=None):
 	""" Delete entries that match specified patterns/paths (depends on format). """
 	filter = settings.format(settings.content)
@@ -298,7 +298,7 @@ def delete(settings, patterns, pattern_type=None):
 			)
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
-@utils.returns_exit_code
+@utils.exits_with_return_value
 def replace(settings, pattern, pattern_type=None, with_value=None):
 	""" Replace entry specified by pattern/path with another value (depends on format). """
 	filter = settings.format(settings.content)
@@ -308,7 +308,7 @@ def replace(settings, pattern, pattern_type=None, with_value=None):
 @main.command()
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
-@utils.returns_exit_code
+@utils.exits_with_return_value
 def pretty(settings):
 	""" Prettify content depending on format. """
 	filter = settings.format(settings.content)
@@ -319,7 +319,7 @@ def pretty(settings):
 @click.argument('filename')
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
-@utils.returns_exit_code
+@utils.exits_with_return_value
 def script(settings, filename):
 	""" Run several commands, stored in script file.
 	Commands are applied in the given order.

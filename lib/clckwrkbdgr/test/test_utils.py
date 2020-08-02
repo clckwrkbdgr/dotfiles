@@ -30,3 +30,22 @@ class TestExitCode(unittest.TestCase):
 		self.assertEqual(func(False), 1)
 		self.assertEqual(func(0), 0)
 		self.assertEqual(func(1), 1)
+	def should_immediately_exit_from_function_with_converted_return_value(self):
+		@utils.exits_with_return_value
+		def func(value):
+			return value
+		with self.assertRaises(SystemExit) as e:
+			func(None)
+		self.assertEqual(e.exception.code, 0)
+		with self.assertRaises(SystemExit) as e:
+			func(True)
+		self.assertEqual(e.exception.code, 0)
+		with self.assertRaises(SystemExit) as e:
+			func(False)
+		self.assertEqual(e.exception.code, 1)
+		with self.assertRaises(SystemExit) as e:
+			func(0)
+		self.assertEqual(e.exception.code, 0)
+		with self.assertRaises(SystemExit) as e:
+			func(1)
+		self.assertEqual(e.exception.code, 1)
