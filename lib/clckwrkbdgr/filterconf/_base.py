@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import inspect
 
 class Environment(object):
 	""" Keeps track of variables which can be used in config substitution.

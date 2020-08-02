@@ -7,6 +7,7 @@ import shlex
 from collections import OrderedDict
 import click
 from clckwrkbdgr import utils
+from clckwrkbdgr.collections import AutoRegistry
 from clckwrkbdgr.click import RawEpilogGroup
 from clckwrkbdgr.filterconf import Environment, ConfigFilter
 
@@ -38,21 +39,7 @@ scheme:
 	delete value by setting name (including regex in names)
 	"""
 
-class ConfigFilterRegistry:
-	def __init__(self):
-		self._registry = {}
-	def __call__(self, filter_name):
-		def _actual(cls):
-			assert filter_name not in self._registry, 'Cannot add another ConfigFilter class under name {0}'.format(repr(filter_name))
-			self._registry[filter_name] = cls
-			return cls
-		return _actual
-	def __getitem__(self, name):
-		return self._registry[name]
-	def known_names(self):
-		return list(self._registry.keys())
-
-config_filter = ConfigFilterRegistry()
+config_filter = AutoRegistry()
 
 @config_filter('txt')
 class PlainText(ConfigFilter):
@@ -111,7 +98,7 @@ class PlainText(ConfigFilter):
 
 def get_epilog():
 	result = 'FORMATS:\n'
-	for name in config_filter.known_names():
+	for name in config_filter:
 		filterclass = config_filter[name]
 		result +=   '  {0}  - '.format(name)
 		result += '\n         '.join(filterclass.description().splitlines())
@@ -137,11 +124,11 @@ def prepare_envvars(enviro_args):
 	return envvars
 
 @click.group(cls=RawEpilogGroup, epilog=get_epilog())
-@click.option('-f', '--format', required=True, type=click.Choice(config_filter.known_names()),
+@click.option('-f', '--format', required=True, type=click.Choice(list(config_filter)),
 		callback=lambda ctx, param, value: config_filter[value],
 		help="Format of configuration file. "
 		"See last section FORMATS for description of formats and actions. "
-		"Supported formats: " + ', '.join(config_filter.known_names()))
+		"Supported formats: " + ', '.join(config_filter.keys()))
 @click.option('-e', '--enviro', multiple=True, default=[],
 		help="Custom variable for usage in filtering. "
 		"Its value will be substitude with its name wherever found upon "
