@@ -378,6 +378,34 @@ def apply_patch(destfile, patch):
 def patch_when(context):
 	return apply_patch(*context.args) # TODO needs sudo
 
+@functools.lru_cache()
+def get_site_module_path():
+	return Path(subprocess.check_output(['python', '-c', 'import site; print(site.__file__)']).decode().strip())
+
+UNPATCHED_PYTHON_HISTORY_CODE = """\
+            history = os.path.join(os.path.expanduser('~'),
+                                   '.python_history')
+"""
+
+PATCHED_PYTHON_HISTORY_CODE = """\
+            history = os.path.join(os.path.expanduser('~/.state'),
+                                   '.python_history')
+"""
+
+def python_site_module_is_patched_for_readline():
+	return UNPATCHED_PYTHON_HISTORY_CODE not in get_site_module_path().read_text()
+
+@make.unless(python_site_module_is_patched_for_readline)
+def python_site_module_should_be_patched_to_store_repl_history_in_state_dir():
+	trace.error('.python_history code is not patched and it will be created each time REPL is executed')
+	trace.error('Update following file with following code:')
+	print('--- {0}'.format(get_site_module_path()))
+	print('+++ {0}'.format(get_site_module_path()))
+	for line in UNPATCHED_PYTHON_HISTORY_CODE.splitlines():
+		print('-' + line)
+	for line in PATCHED_PYTHON_HISTORY_CODE.splitlines():
+		print('+' + line)
+	return False # TODO way to fix automatically with sudo.
 
 ################################################################################
 
