@@ -195,7 +195,7 @@ def prepare_envvars(enviro_args):
 		"or command which prints value to stdout, e.g.: `HOME=echo $HOME`. "
 		"By default only $HOME is recognized.")
 @click.pass_context
-@utils.exits_with_return_value
+@utils.returns_exit_code
 def main(ctx, format=None, enviro=None):
 	""" Script to filter configuration files.
 	Can process content with actions like sorting, replacing value,
