@@ -80,6 +80,23 @@ class ConfigFilter:
 	def pretty(self):
 		raise NotImplementedError
 
+class ConfigFilterRegistry:
+	def __init__(self):
+		self._registry = {}
+	def __call__(self, filter_name):
+		def _actual(cls):
+			assert filter_name not in self._registry, 'Cannot add another ConfigFilter class under name {0}'.format(repr(filter_name))
+			self._registry[filter_name] = cls
+			return cls
+		return _actual
+	def __getitem__(self, name):
+		return self._registry[name]
+	def known_names(self):
+		return list(self._registry.keys())
+
+config_filter = ConfigFilterRegistry()
+
+@config_filter('txt')
 class PlainText(ConfigFilter):
 	""" Plain-text config (or unknown format). """
 	def sort(self):
@@ -134,10 +151,13 @@ class PlainText(ConfigFilter):
 		""" Plain text cannot be prettified. """
 		pass
 
-FORMATS = {
-		'txt' : PlainText,
-		}
-EPILOG = 'FORMATS:\n' + '\n'.join(['{0}  - {1}'.format(key, filterclass.description()) for key, filterclass in FORMATS.items()])
+def get_epilog():
+	result = 'FORMATS:\n'
+	for name in config_filter.known_names():
+		filterclass = config_filter[name]
+		result +=   '  {0}  - '.format(name)
+		result += '\n         '.join(filterclass.description().splitlines())
+	return result
 
 def prepare_envvars(enviro_args):
 	""" Registers requested environment variables and returns prepared Environment.
@@ -158,12 +178,19 @@ def prepare_envvars(enviro_args):
 			envvars.register(name, lambda command=value: subprocess.check_output(command, shell=True).decode('utf-8', 'replace').rstrip('\n'))
 	return envvars
 
-@click.group(epilog=EPILOG)
-@click.option('-f', '--format', required=True, type=click.Choice(FORMATS.keys()),
-		callback=lambda ctx, param, value: FORMATS[value],
+class RawEpilogGroup(click.Group):
+	def format_epilog(self, ctx, formatter):
+		if self.epilog:
+			formatter.write_paragraph()
+			for line in self.epilog.split('\n'):
+				formatter.write_text(line)
+
+@click.group(cls=RawEpilogGroup, epilog=get_epilog())
+@click.option('-f', '--format', required=True, type=click.Choice(config_filter.known_names()),
+		callback=lambda ctx, param, value: config_filter[value],
 		help="Format of configuration file. "
 		"See last section FORMATS for description of formats and actions. "
-		"Supported formats: " + ', '.join(FORMATS.keys()))
+		"Supported formats: " + ', '.join(config_filter.known_names()))
 @click.option('-e', '--enviro', multiple=True, default=[],
 		help="Custom variable for usage in filtering. "
 		"Its value will be substitude with its name wherever found upon "
@@ -305,7 +332,10 @@ def script(settings, filename):
 				continue
 			try:
 				command_name, *args = shlex.split(line)
-				command = globals()[command_name]
+				try:
+					command = globals()[command_name]
+				except KeyError:
+					raise ValueError('Unknown command: {0}. See usage for list of available commands.'.format(command))
 				if not isinstance(command, click.core.Command):
 					raise ValueError('Unknown command: {0}. See usage for list of available commands.'.format(command))
 				rc = command(args=args, standalone_mode=False, obj=settings)
