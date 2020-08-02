@@ -7,6 +7,7 @@ import shlex
 from collections import OrderedDict
 import click
 from clckwrkbdgr import utils
+from clckwrkbdgr.click import RawEpilogGroup
 
 class Environment(object):
 	""" Keeps track of variables which can be used in config substitution.
@@ -177,13 +178,6 @@ def prepare_envvars(enviro_args):
 		else:
 			envvars.register(name, lambda command=value: subprocess.check_output(command, shell=True).decode('utf-8', 'replace').rstrip('\n'))
 	return envvars
-
-class RawEpilogGroup(click.Group):
-	def format_epilog(self, ctx, formatter):
-		if self.epilog:
-			formatter.write_paragraph()
-			for line in self.epilog.split('\n'):
-				formatter.write_text(line)
 
 @click.group(cls=RawEpilogGroup, epilog=get_epilog())
 @click.option('-f', '--format', required=True, type=click.Choice(config_filter.known_names()),
