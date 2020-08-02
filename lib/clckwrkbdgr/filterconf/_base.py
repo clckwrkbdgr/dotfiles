@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import inspect
+from clckwrkbdgr.collections import AutoRegistry
 
 class Environment(object):
 	""" Keeps track of variables which can be used in config substitution.
@@ -27,7 +28,7 @@ class ConfigFilter:
 	Should be created for specific content.
 	Supports several actions performed on this content, see ACTIONS in args.
 	"""
-	def __init__(self, content):
+	def __init__(self, content): # pragma: no cover
 		self.content = content
 	@classmethod
 	def description(filterclass):
@@ -36,11 +37,14 @@ class ConfigFilter:
 				inspect.getdoc(filterclass.sort),
 				]
 		return '\n'.join(docs)
-	def sort(self):
+	def sort(self): # pragma: no cover
 		raise NotImplementedError
-	def delete(self, pattern, pattern_type=None):
+	def delete(self, pattern, pattern_type=None): # pragma: no cover
 		raise NotImplementedError
-	def replace(self, pattern, substitute, pattern_type=None):
+	def replace(self, pattern, substitute, pattern_type=None): # pragma: no cover
 		raise NotImplementedError
-	def pretty(self):
+	def pretty(self): # pragma: no cover
 		raise NotImplementedError
+
+config_filter = AutoRegistry()
+
