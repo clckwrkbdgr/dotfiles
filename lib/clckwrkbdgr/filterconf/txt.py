@@ -1,57 +1,47 @@
 import re, fnmatch
+import contextlib
 from . import ConfigFilter, config_filter
+
+def convert_pattern(pattern, pattern_type=None):
+	""" Returns compiled regex object. """
+	if pattern_type == 'regex':
+		return re.compile(pattern)
+	elif pattern_type == 'wildcard':
+		return re.compile(fnmatch.translate(pattern))
+	return re.compile(re.escape(pattern))
 
 @config_filter('txt')
 class PlainText(ConfigFilter):
 	""" Plain-text config (or unknown format). """
+	@contextlib.contextmanager
+	def AutoSplitlines(self):
+		""" Splits self.content to self.lines and joins them back upon exit.
+		Remembers if original text value of attribute ended with newline
+		and restores it upon exit.
+		"""
+		try:
+			ends_with_cr = self.content.endswith('\n')
+			self.lines = self.content.splitlines()
+			yield
+		finally:
+			self.content = '\n'.join(self.lines)
+			if ends_with_cr:
+				self.content += '\n'
 	def sort(self):
 		""" Sorting is performed by lines alphabetically. """
-		ends_with_cr = self.content.endswith('\n')
-		self.content = '\n'.join(sorted(self.content.splitlines()))
-		if ends_with_cr:
-			self.content += '\n'
+		with self.AutoSplitlines():
+			self.lines = sorted(self.lines)
 	def delete(self, pattern, pattern_type=None):
 		""" Removes lines that contain specified substring/regex/wildcard. """
-		ends_with_cr = self.content.endswith('\n')
-		lines = self.content.splitlines()
-
-		if pattern_type == 'regex':
-			pattern = re.compile(pattern)
-		elif pattern_type == 'wildcard':
-			pattern = fnmatch.translate(pattern)
-		else:
-			class DummyPattern:
-				def __init__(self, expr):
-					self.expr = expr
-				def match(self, line):
-					return self.expr in line
-			pattern = DummyPattern(pattern)
-
-		lines = [line for line in lines if not pattern.match(line)]
-		self.content = '\n'.join(lines)
-		if ends_with_cr:
-			self.content += '\n'
+		pattern = convert_pattern(pattern, pattern_type)
+		with self.AutoSplitlines():
+			self.lines = [line for line in self.lines if not pattern.match(line)]
 	def replace(self, pattern, substitute, pattern_type=None):
 		""" Replaces value specified by substring/regex with substitute. """
-		ends_with_cr = self.content.endswith('\n')
-		lines = self.content.splitlines()
-
-		if pattern_type == 'regex':
-			pattern = re.compile(pattern)
-		else:
-			class DummyPattern:
-				def __init__(self, expr):
-					self.expr = expr
-				def match(self, line):
-					return self.expr in line
-				def sub(self, repl, line):
-					return line.replace(self.expr, repl)
-			pattern = DummyPattern(pattern)
-		lines = [(pattern.sub(substitute, line) if pattern.match(line) else line) for line in lines]
-
-		self.content = '\n'.join(lines)
-		if ends_with_cr:
-			self.content += '\n'
+		pattern = convert_pattern(pattern, pattern_type)
+		with self.AutoSplitlines():
+			self.lines = [(pattern.sub(substitute, line) if pattern.match(line) else line) for line in self.lines]
 	def pretty(self):
 		""" Plain text cannot be prettified. """
-		pass
+		if not self.content.endswith('\n'):
+			self.content += '\n'
