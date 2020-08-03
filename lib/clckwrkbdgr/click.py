@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import click
 
 """ Custom extensions for click CLI API. """
