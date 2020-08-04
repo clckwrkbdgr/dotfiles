@@ -35,12 +35,12 @@ class PlainText(ConfigFilter):
 		""" Removes lines that contain specified substring/regex/wildcard. """
 		pattern = convert_pattern(pattern, pattern_type)
 		with self.AutoSplitlines():
-			self.lines = [line for line in self.lines if not pattern.match(line)]
+			self.lines = [line for line in self.lines if not pattern.search(line)]
 	def replace(self, pattern, substitute, pattern_type=None):
 		""" Replaces value specified by substring/regex with substitute. """
 		pattern = convert_pattern(pattern, pattern_type)
 		with self.AutoSplitlines():
-			self.lines = [(pattern.sub(substitute, line) if pattern.match(line) else line) for line in self.lines]
+			self.lines = [(pattern.sub(substitute, line) if pattern.search(line) else line) for line in self.lines]
 	def pretty(self):
 		""" Plain text cannot be prettified. """
 		if not self.content.endswith('\n'):
