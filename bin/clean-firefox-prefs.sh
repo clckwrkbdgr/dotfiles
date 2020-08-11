@@ -39,6 +39,7 @@ sed '/extensions.getAddons.cache.lastUpdate/d' | \
 sed '/idle.lastDailyNotification/d' | \
 sed '/toolkit.startup.last_success/d' | \
 sed '/toolkit.telemetry.[^.]\+ID/d' | \
+sed '/permissions.eventTelemetry.salt/d' | \
 sed '/storage.vacuum.last.places.sqlite/d' | \
 sed '/storage.vacuum.last.index/d' | \
 sed '/places.database.lastMaintenance/d' | \
