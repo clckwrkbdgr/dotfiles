@@ -133,7 +133,7 @@ fi
 test -f "$XDG_CONFIG_HOME/xinitrc" && . "$XDG_CONFIG_HOME/xinitrc"
 
 # Section for XDG directory support.
-test -f ~/.config/bin/xdg && . ~/.config/bin/xdg
+test -f ~/.config/xdg/xdg.inc.sh && . ~/.config/xdg/xdg.inc.sh
 
 # launch gpg-agent or ssh-agent if enabled.
 ssh_agent_enabled=`xfconf-query -c xfce4-session -p /startup/ssh-agent/enabled 2> /dev/null`

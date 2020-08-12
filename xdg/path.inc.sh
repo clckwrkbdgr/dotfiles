@@ -1,6 +1,8 @@
 # Utility functions that allow to run executable from binpath other that the current one.
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 
+# TODO make it POSIX shell compliant
+
 # Removes given dirname from the $PATH.
 strip_from_path() { # <binpath directory>
 	deprecated 'Use path::strip from $XDG_CONFIG_HOME/lib/path.bash'

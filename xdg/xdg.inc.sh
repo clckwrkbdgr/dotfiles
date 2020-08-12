@@ -6,7 +6,9 @@
 . ~/.config/xdg/state.inc.sh
 . ~/.config/xdg/cache.inc.sh
 . ~/.config/xdg/runtime.inc.sh
-. ~/.config/xdg/path.inc.sh
+if [ -n "$BASH" ]; then
+	. ~/.config/xdg/path.inc.sh
+fi
 
-. "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/utils.sh"
 deprecated 'Source all ~/.config/xdg/*.sh files instead'

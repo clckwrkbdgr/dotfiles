@@ -1,3 +1,4 @@
+#!/bin/bash
 # Unit-testing framework for Bash
 # Basic usage:
 # Each file is a separate test suite.
