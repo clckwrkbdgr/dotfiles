@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$XDG_CONFIG_HOME/lib/utils.bash"
 MESSAGES_TO_STORE=20 # To store in message log.
 MESSAGE_LOG_FILE="${XDG_STATE_HOME:-$HOME/.state}/notification.log"
 TITLE=notification
@@ -14,6 +15,11 @@ usage() {
 	echo "      Prints previous $MESSAGES_TO_STORE messages."
 	echo "  $(basename ${0}) -h"
 	echo "      Prints this message and exits."
+	echo
+	echo "If message starts with word enclosed in brackets, the content is treated as special tag."
+	echo "Currently recognized tags:"
+	echo "- [P]: override quiet mode even if it was requisted on command line."
+	echo "Tags are removed from text."
 }
 
 if [ "$*" == "-l" ]; then
@@ -34,6 +40,15 @@ while getopts ":hqt:i:l" opt; do
 done
 shift $((OPTIND-1))
 
+text="$@"
+while startswith "$text" '['; do
+	tag="$(echo "$text" | sed 's/^\[\([^]]*\)\].*/\1/')"
+	if [ "$tag" == 'P' ]; then
+		QUIET=
+	fi
+	text="$(echo "$text" | sed 's/^\[[^]]*\]//')"
+done
+
 PREV_VOLUME="$(volume)"
 if [ "$QUIET" != true -a "$PREV_VOLUME" -gt 75 ]; then
 	volume 75
@@ -43,11 +58,11 @@ fi
 
 [ "$QUIET" != true ] && play_signal &
 if [ -n "$1" ]; then
-	notify-send "$TITLE" "$@" --icon="$ICON" &
+	notify-send "$TITLE" "$text" --icon="$ICON" &
 	TEMPFILE="$(mktemp)"
-	echo "$(date) <${TITLE}> $@" >>"$MESSAGE_LOG_FILE"
+	echo "$(date) <${TITLE}> $text" >>"$MESSAGE_LOG_FILE"
 	tail -n "$MESSAGES_TO_STORE" "$MESSAGE_LOG_FILE" >"$TEMPFILE" && mv -f "$TEMPFILE" "$MESSAGE_LOG_FILE"
-	[ "$QUIET" != true ] && text-to-speech "$@"
+	[ "$QUIET" != true ] && text-to-speech "$text"
 fi
 
 if [ -n "$PREV_VOLUME" ]; then
