@@ -95,6 +95,7 @@ firefox/weave/toFetch/tabs.json
 firefox/favicons.sqlite
 firefox/blocklists/addons.json
 # Firefox local/share
+firefox/sessionstore.jsonlz4
 firefox/gm_scripts/Display_LaTeX/display-latex.user.js
 firefox/key3.db
 firefox/secmod.db
