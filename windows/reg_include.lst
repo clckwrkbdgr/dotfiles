@@ -1,0 +1,68 @@
+HKEY_CURRENT_USER\Console\CtrlKeyShortcutsDisabled
+HKEY_CURRENT_USER\Console\CursorColor
+HKEY_CURRENT_USER\Console\CursorSize
+HKEY_CURRENT_USER\Console\DefaultBackground
+HKEY_CURRENT_USER\Console\DefaultForeground
+HKEY_CURRENT_USER\Console\EnableColorSelection
+HKEY_CURRENT_USER\Console\ExtendedEditKeyCustom
+HKEY_CURRENT_USER\Console\FilterOnPaste
+HKEY_CURRENT_USER\Console\ForceV2
+HKEY_CURRENT_USER\Console\FullScreen
+HKEY_CURRENT_USER\Console\HistoryBufferSize
+HKEY_CURRENT_USER\Console\HistoryNoDup
+HKEY_CURRENT_USER\Console\InsertMode
+HKEY_CURRENT_USER\Console\LineSelection
+HKEY_CURRENT_USER\Console\LineWrap
+HKEY_CURRENT_USER\Console\LoadConIme
+HKEY_CURRENT_USER\Console\NumberOfHistoryBuffers
+HKEY_CURRENT_USER\Console\PopupColors
+HKEY_CURRENT_USER\Console\ScreenColors
+HKEY_CURRENT_USER\Console\ScrollScale
+HKEY_CURRENT_USER\Console\TerminalScrolling
+HKEY_CURRENT_USER\Console\TrimLeadingZeros
+HKEY_CURRENT_USER\Console\WindowAlpha
+HKEY_CURRENT_USER\Console\WordDelimiters
+HKEY_CURRENT_USER\Console\ColorTable00
+HKEY_CURRENT_USER\Console\ColorTable01
+HKEY_CURRENT_USER\Console\ColorTable02
+HKEY_CURRENT_USER\Console\ColorTable03
+HKEY_CURRENT_USER\Console\ColorTable04
+HKEY_CURRENT_USER\Console\ColorTable05
+HKEY_CURRENT_USER\Console\ColorTable06
+HKEY_CURRENT_USER\Console\ColorTable07
+HKEY_CURRENT_USER\Console\ColorTable08
+HKEY_CURRENT_USER\Console\ColorTable09
+HKEY_CURRENT_USER\Console\ColorTable10
+HKEY_CURRENT_USER\Console\ColorTable11
+HKEY_CURRENT_USER\Console\ColorTable12
+HKEY_CURRENT_USER\Console\ColorTable13
+HKEY_CURRENT_USER\Console\ColorTable14
+HKEY_CURRENT_USER\Console\ColorTable15
+HKEY_CURRENT_USER\Console\ExtendedEditKey
+HKEY_CURRENT_USER\Console\FaceName
+HKEY_CURRENT_USER\Console\FontFamily
+HKEY_CURRENT_USER\Console\FontSize
+HKEY_CURRENT_USER\Console\FontWeight
+HKEY_CURRENT_USER\Console\QuickEdit
+HKEY_CURRENT_USER\Console\ScreenBufferSize
+HKEY_CURRENT_USER\Console\WindowSize
+HKEY_CURRENT_USER\Console\CurrentPage
+HKEY_CURRENT_USER\Control Panel\Colors
+HKEY_CURRENT_USER\Control Panel\Desktop
+HKEY_CURRENT_USER\Control Panel\Desktop\Colors
+HKEY_CURRENT_USER\Control Panel\International
+HKEY_CURRENT_USER\Control Panel\Keyboard
+HKEY_CURRENT_USER\Control Panel\Mouse
+HKEY_CURRENT_USER\Software\Far2
+HKEY_CURRENT_USER\Environment\HOME
+HKEY_CURRENT_USER\Environment\Path
+HKEY_CURRENT_USER\Environment\PIP_CONFIG_FILE
+HKEY_CURRENT_USER\Environment\PYTHONPATH
+HKEY_CURRENT_USER\Environment\PYTHONWARNINGS
+HKEY_CURRENT_USER\Environment\SVN_EXPERIMENTAL_COMMANDS
+HKEY_CURRENT_USER\Environment\TEMP
+HKEY_CURRENT_USER\Environment\TMP
+HKEY_CURRENT_USER\Environment\TMPDIR
+HKEY_CURRENT_USER\Environment\VIMINIT
+HKEY_CURRENT_USER\Environment\XDG_CONFIG_HOME
+HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Office\16.0\Lync\DisabledShortcutKeysCheckBoxes

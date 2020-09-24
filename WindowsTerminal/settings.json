@@ -1,0 +1,133 @@
+{
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+    "alwaysShowTabs" : false,
+    "defaultProfile" : "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
+    "initialCols" : 80,
+    "initialRows" : 24,
+    "initialPosition" : "maximized",
+    "snapToGridOnResize" : true,
+    "keybindings" : 
+    [
+        {
+            "command" : "newTab",
+            "keys" : 
+            [
+                "ctrl+t"
+            ]
+        },
+        {
+            "command" : "nextTab",
+            "keys" : 
+            [
+                "ctrl+tab"
+            ]
+        },
+        {
+            "command" : "prevTab",
+            "keys" : 
+            [
+                "ctrl+shift+tab"
+            ]
+        },
+        {
+            "command" : "scrollDownPage",
+            "keys" : 
+            [
+                "ctrl+pgdn"
+            ]
+        },
+        {
+            "command" : "scrollUpPage",
+            "keys" : 
+            [
+                "ctrl+pgup"
+            ]
+        }
+    ],
+    "theme" : "system",
+    "showTabsInTitlebar" : true,
+    "copyOnSelect" : true,
+    "showTerminalTitleInTitlebar" : true,
+    "disabledProfileSources": [
+        "Windows.Terminal.Azure"
+    ],
+    "profiles" : 
+    [
+        {
+            "acrylicOpacity" : 0.5,
+            "background" : "#2E3436",
+            "closeOnExit" : true,
+            "colorScheme" : "Dim",
+            "commandline" : "python d:\\.local\\bin\\far.py",
+            "cursorColor" : "#FFFFFF",
+            "cursorShape" : "filledBox",
+            "fontFace" : "Consolas",
+            "fontSize" : 11,
+            "guid" : "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
+            "historySize" : 9001,
+            "icon" : "file://D:/.local/share/icons/far.png",
+            "name" : "Far",
+            "padding" : "0, 0, 0, 0",
+            "snapOnInput" : true,
+            "useAcrylic" : false
+        },
+        {
+            "acrylicOpacity" : 0.75,
+            "closeOnExit" : true,
+            "colorScheme" : "Dim",
+            "commandline" : "cmd.exe",
+            "cursorColor" : "#FFFFFF",
+            "cursorShape" : "filledBox",
+            "fontFace" : "Consolas",
+            "fontSize" : 11,
+            "guid" : "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+            "historySize" : 9001,
+            "icon" : "ms-appx:///ProfileIcons/{0caa0dad-35be-5f56-a8ff-afceeeaa6101}.png",
+            "name" : "cmd",
+            "padding" : "0, 0, 0, 0",
+            "snapOnInput" : true,
+            "useAcrylic" : true
+        },
+        {
+            "acrylicOpacity" : 0.5,
+            "closeOnExit" : true,
+            "colorScheme" : "Dim",
+            "commandline" : "wsl.exe -d Debian",
+            "cursorColor" : "#FFFFFF",
+            "cursorShape" : "filledBox",
+            "fontFace" : "Consolas",
+            "fontSize" : 11,
+            "guid" : "{58ad8b0c-3ef8-5f4d-bc6f-13e4c00f2530}",
+            "historySize" : 9001,
+            "icon" : "ms-appx:///ProfileIcons/{9acb9455-ca41-5af7-950f-6bca1bc9722f}.png",
+            "name" : "WSL",
+            "padding" : "0, 0, 0, 0",
+            "snapOnInput" : true,
+            "useAcrylic" : false
+        }
+    ],
+    "schemes" : 
+    [
+        {
+            "name" : "Dim",
+            "foreground" : "#D3D7CF",
+            "background" : "#2E3436",
+            "black" : "#2E3436",
+            "blue" : "#3465A4",
+            "brightBlack" : "#555753",
+            "brightBlue" : "#729FCF",
+            "brightCyan" : "#34E2E2",
+            "brightGreen" : "#8AE234",
+            "brightPurple" : "#AD7FA8",
+            "brightRed" : "#EF2929",
+            "brightWhite" : "#EEEEEC",
+            "brightYellow" : "#FCE94F",
+            "cyan" : "#06989A",
+            "green" : "#4E9A06",
+            "purple" : "#75507B",
+            "red" : "#CC0000",
+            "white" : "#D3D7CF",
+            "yellow" : "#C4A000"
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+HKEY_CURRENT_USER\Software\Far2\PluginsCache
+HKEY_CURRENT_USER\Software\Far2\SavedFolderHistory
+HKEY_CURRENT_USER\Software\Far2\UserMenu
+HKEY_CURRENT_USER\Software\Far2\Panel\Left\Folder
+HKEY_CURRENT_USER\Software\Far2\Panel\Left\CurFile
+HKEY_CURRENT_USER\Software\Far2\Panel\Right\Folder
+HKEY_CURRENT_USER\Software\Far2\Panel\Right\CurFile
+HKEY_CURRENT_USER\Software\Far2\FolderShortcuts
+HKEY_CURRENT_USER\Control Panel\Desktop\CoolSwitchColumns
+HKEY_CURRENT_USER\Control Panel\Desktop\CoolSwitchRows
+HKEY_CURRENT_USER\Control Panel\Desktop\WallpaperOriginX
+HKEY_CURRENT_USER\Control Panel\Desktop\WallpaperOriginY
+HKEY_CURRENT_USER\Control Panel\Desktop\WallpaperStyle
+HKEY_CURRENT_USER\Control Panel\Desktop\WallPaper
+HKEY_CURRENT_USER\Control Panel\Desktop\UserPreferencesMask
+HKEY_CURRENT_USER\Control Panel\Desktop\LastUpdated
+HKEY_CURRENT_USER\Control Panel\Desktop\PreferredUILanguages
+HKEY_CURRENT_USER\Control Panel\Desktop\LanguageConfiguration
+HKEY_CURRENT_USER\Control Panel\Desktop\PerMonitorSettings
+HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics
+HKEY_CURRENT_USER\Control Panel\Desktop\MuiCached
+HKEY_CURRENT_USER\Control Panel\International\sCountry
+HKEY_CURRENT_USER\Control Panel\International\User Profile
+HKEY_CURRENT_USER\Control Panel\International\User Profile System Backup
