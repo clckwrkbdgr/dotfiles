@@ -43,7 +43,7 @@ firefox/*.sqlite-shm
 firefox/*.sqlite-wal
 firefox/*.sqlite-journal
 firefox/weave/logs/error-sync-*.txt
-# Firefox cache
+# Firefox cache/state
 firefox/_CACHE_CLEAN_
 firefox/Cache/
 firefox/OfflineCache/
@@ -94,6 +94,11 @@ firefox/weave/failed/tabs.json
 firefox/weave/toFetch/tabs.json
 firefox/favicons.sqlite
 firefox/blocklists/addons.json
+firefox/serviceworker.txt
+firefox/protections.sqlite
+firefox/security_state/data.safe.bin
+firefox/settings/main/ms-language-packs/asrouter.ftl
+firefox/shield-preference-experiments.json
 # Firefox local/share
 firefox/sessionstore.jsonlz4
 firefox/gm_scripts/Display_LaTeX/display-latex.user.js
