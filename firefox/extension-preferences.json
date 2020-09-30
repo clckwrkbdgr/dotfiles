@@ -23,6 +23,12 @@
             "internal:privateBrowsingAllowed"
         ]
     },
+    "doh-rollout@mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
     "firefox-compact-dark@mozilla.org": {
         "origins": [],
         "permissions": [

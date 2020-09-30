@@ -104,4 +104,10 @@ sed '/services.settings.main[.][a-z-]\+[.]last_check/d' | \
 sed '/services.settings.security.onecrl.checked/d' | \
 sed '/browser.bookmarks.editDialog.confirmationHintShowCount/d' | \
 sed '/devtools.netmonitor.panes-network-details-height/d' | \
+sed '/app.normandy.migrationsApplied/d' | \
+sed '/app.normandy.user_id/d' | \
+sed '/dom.push.userAgentID/d' | \
+sed '/plugin.flash./d' | \
+sed '/security.remote_settings.intermediates.checked/d' | \
+sed '/security.remote_settings.crlite_filters.checked/d' | \
 sed 's|'"$HOME"'|$HOME|g'

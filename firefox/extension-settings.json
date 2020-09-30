@@ -17,12 +17,7 @@
     },
     "prefs": {
         "network.networkPredictionEnabled": {
-            "initialValue": {
-                "network.dns.disablePrefetch": false,
-                "network.http.speculative-parallel-limit": 6,
-                "network.predictor.enabled": true,
-                "network.prefetch-next": true
-            },
+            "initialValue": {},
             "precedenceList": [
                 {
                     "enabled": true,
@@ -34,10 +29,7 @@
         },
         "privacy.containers": {
             "initialValue": {
-                "privacy.userContext.enabled": false,
-                "privacy.userContext.extension": "",
                 "privacy.userContext.longPressBehavior": 0,
-                "privacy.userContext.ui.enabled": false,
                 "privacy.usercontext.about_newtab_segregation.enabled": false
             },
             "precedenceList": [
@@ -50,9 +42,7 @@
             ]
         },
         "websites.hyperlinkAuditingEnabled": {
-            "initialValue": {
-                "browser.send_pings": false
-            },
+            "initialValue": {},
             "precedenceList": [
                 {
                     "enabled": true,

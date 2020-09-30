@@ -174,15 +174,51 @@
                     "chromeEntries": [
                         [
                             "locale",
-                            "necko",
+                            "devtools-shared",
                             "ru",
-                            "chrome/ru/locale/ru/necko/"
+                            "browser/chrome/ru/locale/ru/devtools/shared/"
                         ],
                         [
                             "locale",
-                            "pdf.js",
+                            "pippki",
                             "ru",
-                            "browser/chrome/ru/locale/pdfviewer/"
+                            "chrome/ru/locale/ru/pippki/"
+                        ],
+                        [
+                            "locale",
+                            "pluginproblem",
+                            "ru",
+                            "chrome/ru/locale/ru/pluginproblem/"
+                        ],
+                        [
+                            "locale",
+                            "global-platform",
+                            "ru",
+                            "chrome/ru/locale/ru/global-platform/unix/"
+                        ],
+                        [
+                            "locale",
+                            "weave",
+                            "ru",
+                            "chrome/ru/locale/ru/services/"
+                        ],
+                        [
+                            "locale",
+                            "browser",
+                            "ru",
+                            "browser/chrome/ru/locale/browser/"
+                        ],
+                        [
+                            "locale",
+                            "formautofill",
+                            "ru",
+                            "browser/features/formautofill@mozilla.org/ru/locale/ru/"
+                        ],
+                        [
+                            "locale",
+                            "report-site-issue",
+                            "ru",
+                            "browser/features/webcompat-reporter@mozilla.org/ru/locale/ru/"
                         ],
                         [
                             "locale",
@@ -192,15 +228,45 @@
                         ],
                         [
                             "locale",
-                            "devtools",
+                            "browser-region",
                             "ru",
-                            "browser/chrome/ru/locale/ru/devtools/client/"
+                            "browser/chrome/ru/locale/browser-region/"
+                        ],
+                        [
+                            "locale",
+                            "passwordmgr",
+                            "ru",
+                            "chrome/ru/locale/ru/passwordmgr/"
+                        ],
+                        [
+                            "locale",
+                            "autoconfig",
+                            "ru",
+                            "chrome/ru/locale/ru/autoconfig/"
+                        ],
+                        [
+                            "locale",
+                            "necko",
+                            "ru",
+                            "chrome/ru/locale/ru/necko/"
                         ],
                         [
                             "locale",
                             "pipnss",
                             "ru",
                             "chrome/ru/locale/ru/pipnss/"
+                        ],
+                        [
+                            "locale",
+                            "branding",
+                            "ru",
+                            "browser/chrome/ru/locale/branding/"
+                        ],
+                        [
+                            "locale",
+                            "places",
+                            "ru",
+                            "chrome/ru/locale/ru/places/"
                         ],
                         [
                             "locale",
@@ -216,93 +282,21 @@
                         ],
                         [
                             "locale",
-                            "branding",
-                            "ru",
-                            "browser/chrome/ru/locale/branding/"
-                        ],
-                        [
-                            "locale",
-                            "fxmonitor",
-                            "ru",
-                            "browser/features/fxmonitor@mozilla.org/ru/locale/ru/"
-                        ],
-                        [
-                            "locale",
-                            "autoconfig",
-                            "ru",
-                            "chrome/ru/locale/ru/autoconfig/"
-                        ],
-                        [
-                            "locale",
-                            "devtools-shared",
-                            "ru",
-                            "browser/chrome/ru/locale/ru/devtools/shared/"
-                        ],
-                        [
-                            "locale",
-                            "global-platform",
-                            "ru",
-                            "chrome/ru/locale/ru/global-platform/unix/"
-                        ],
-                        [
-                            "locale",
-                            "browser-region",
-                            "ru",
-                            "browser/chrome/ru/locale/browser-region/"
-                        ],
-                        [
-                            "locale",
                             "mozapps",
                             "ru",
                             "chrome/ru/locale/ru/mozapps/"
                         ],
                         [
                             "locale",
-                            "pluginproblem",
+                            "pdf.js",
                             "ru",
-                            "chrome/ru/locale/ru/pluginproblem/"
+                            "browser/chrome/ru/locale/pdfviewer/"
                         ],
                         [
                             "locale",
-                            "formautofill",
+                            "devtools",
                             "ru",
-                            "browser/features/formautofill@mozilla.org/ru/locale/ru/"
-                        ],
-                        [
-                            "locale",
-                            "weave",
-                            "ru",
-                            "chrome/ru/locale/ru/services/"
-                        ],
-                        [
-                            "locale",
-                            "places",
-                            "ru",
-                            "chrome/ru/locale/ru/places/"
-                        ],
-                        [
-                            "locale",
-                            "passwordmgr",
-                            "ru",
-                            "chrome/ru/locale/ru/passwordmgr/"
-                        ],
-                        [
-                            "locale",
-                            "report-site-issue",
-                            "ru",
-                            "browser/features/webcompat-reporter@mozilla.org/ru/locale/ru/"
-                        ],
-                        [
-                            "locale",
-                            "pippki",
-                            "ru",
-                            "chrome/ru/locale/ru/pippki/"
-                        ],
-                        [
-                            "locale",
-                            "browser",
-                            "ru",
-                            "browser/chrome/ru/locale/browser/"
+                            "browser/chrome/ru/locale/ru/devtools/client/"
                         ]
                     ],
                     "l10nRegistrySources": {
@@ -333,13 +327,7 @@
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/@mutelinks.xpi!/",
                 "runInSafeMode": false,
                 "startupData": {
-                    "persistentListeners": {
-                        "runtime": {
-                            "onMessage": [
-                                []
-                            ]
-                        }
-                    }
+                    "persistentListeners": {}
                 },
                 "version": "0.0"
             },
@@ -353,14 +341,6 @@
                 "runInSafeMode": false,
                 "startupData": {
                     "persistentListeners": {
-                        "runtime": {
-                            "onConnect": [
-                                []
-                            ],
-                            "onMessage": [
-                                []
-                            ]
-                        },
                         "webRequest": {
                             "onBeforeRedirect": [
                                 [
@@ -503,13 +483,7 @@
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/godville-ui-plus@erinome.net.xpi!/",
                 "runInSafeMode": false,
                 "startupData": {
-                    "persistentListeners": {
-                        "runtime": {
-                            "onMessage": [
-                                []
-                            ]
-                        }
-                    }
+                    "persistentListeners": {}
                 },
                 "version": "0.0"
             },
@@ -523,11 +497,6 @@
                 "runInSafeMode": false,
                 "startupData": {
                     "persistentListeners": {
-                        "runtime": {
-                            "onConnect": [
-                                []
-                            ]
-                        },
                         "webRequest": {
                             "onBeforeRequest": [
                                 [
@@ -641,14 +610,6 @@
                 "runInSafeMode": false,
                 "startupData": {
                     "persistentListeners": {
-                        "runtime": {
-                            "onConnect": [
-                                []
-                            ],
-                            "onMessage": [
-                                []
-                            ]
-                        },
                         "webRequest": {
                             "onBeforeRequest": [
                                 [
@@ -818,16 +779,7 @@
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B7a7a4a92-a2a0-41d1-9fd7-1e92480d612d%7D.xpi!/",
                 "runInSafeMode": false,
                 "startupData": {
-                    "persistentListeners": {
-                        "runtime": {
-                            "onConnect": [
-                                []
-                            ],
-                            "onMessage": [
-                                []
-                            ]
-                        }
-                    }
+                    "persistentListeners": {}
                 },
                 "version": "0.0"
             },
@@ -841,11 +793,6 @@
                 "runInSafeMode": false,
                 "startupData": {
                     "persistentListeners": {
-                        "runtime": {
-                            "onConnect": [
-                                []
-                            ]
-                        },
                         "webRequest": {
                             "onBeforeRequest": [
                                 [
@@ -879,13 +826,7 @@
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B980500da-0b6d-4de9-ad90-93d17605276c%7D.xpi!/",
                 "runInSafeMode": false,
                 "startupData": {
-                    "persistentListeners": {
-                        "runtime": {
-                            "onMessage": [
-                                []
-                            ]
-                        }
-                    }
+                    "persistentListeners": {}
                 },
                 "version": "0.0"
             },
@@ -898,16 +839,7 @@
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7Bd7742d87-e61d-4b78-b8a1-b469842139fa%7D.xpi!/",
                 "runInSafeMode": false,
                 "startupData": {
-                    "persistentListeners": {
-                        "runtime": {
-                            "onConnect": [
-                                []
-                            ],
-                            "onMessage": [
-                                []
-                            ]
-                        }
-                    }
+                    "persistentListeners": {}
                 },
                 "version": "0.0"
             },
@@ -927,6 +859,16 @@
     },
     "app-system-defaults": {
         "addons": {
+            "doh-rollout@mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": "doh-rollout@mozilla.org.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/doh-rollout@mozilla.org.xpi!/",
+                "runInSafeMode": true,
+                "version": "0.0"
+            },
             "formautofill@mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
@@ -934,16 +876,6 @@
                 "loader": null,
                 "path": "formautofill@mozilla.org.xpi",
                 "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/formautofill@mozilla.org.xpi!/",
-                "runInSafeMode": true,
-                "version": "0.0"
-            },
-            "fxmonitor@mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "fxmonitor@mozilla.org.xpi",
-                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/fxmonitor@mozilla.org.xpi!/",
                 "runInSafeMode": true,
                 "version": "0.0"
             },
@@ -956,13 +888,7 @@
                 "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/screenshots@mozilla.org.xpi!/",
                 "runInSafeMode": true,
                 "startupData": {
-                    "persistentListeners": {
-                        "runtime": {
-                            "onMessage": [
-                                []
-                            ]
-                        }
-                    }
+                    "persistentListeners": {}
                 },
                 "version": "0.0"
             },
@@ -986,14 +912,6 @@
                 "runInSafeMode": true,
                 "startupData": {
                     "persistentListeners": {
-                        "runtime": {
-                            "onConnect": [
-                                []
-                            ],
-                            "onMessage": [
-                                []
-                            ]
-                        },
                         "webRequest": {
                             "onBeforeSendHeaders": [
                                 [
@@ -1003,23 +921,6 @@
                                         "types": null,
                                         "urls": [
                                             "*://webcompat-addon-testbed.herokuapp.com/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "requestHeaders"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
-                                            "*://*.santander.co.uk/*",
-                                            "*://bob.santanderbank.com/*",
-                                            "*://rolb.santanderbank.com/*"
                                         ],
                                         "windowId": null
                                     },
