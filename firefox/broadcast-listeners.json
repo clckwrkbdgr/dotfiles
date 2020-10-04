@@ -5,7 +5,6 @@
                 "moduleURI": "resource://services-settings/remote-settings.js",
                 "symbolName": "remoteSettingsBroadcastHandler"
             },
-            "version": "\"1601560632724\""
         }
     },
     "version": 1

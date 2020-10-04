@@ -110,4 +110,5 @@ sed '/dom.push.userAgentID/d' | \
 sed '/plugin.flash./d' | \
 sed '/security.remote_settings.intermediates.checked/d' | \
 sed '/security.remote_settings.crlite_filters.checked/d' | \
+sed '/devtools.netmonitor.columnsData/d' | \
 sed 's|'"$HOME"'|$HOME|g'
