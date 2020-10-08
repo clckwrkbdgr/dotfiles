@@ -157,8 +157,7 @@
                 "runInSafeMode": true,
                 "version": "0.0"
             }
-        },
-        "staged": {}
+        }
     },
     "app-global": {
         "addons": {
@@ -313,8 +312,7 @@
             }
         },
         "checkStartupModifications": true,
-        "path": "/usr/lib/firefox-esr/browser/extensions",
-        "staged": {}
+        "path": "/usr/lib/firefox-esr/browser/extensions"
     },
     "app-profile": {
         "addons": {
@@ -854,8 +852,7 @@
                 "version": "0.0"
             }
         },
-        "path": "$HOME/.config/firefox/extensions",
-        "staged": {}
+        "path": "$HOME/.config/firefox/extensions"
     },
     "app-system-defaults": {
         "addons": {
@@ -1045,7 +1042,6 @@
                 "version": "0.0"
             }
         },
-        "path": "/usr/lib/firefox-esr/browser/features",
-        "staged": {}
+        "path": "/usr/lib/firefox-esr/browser/features"
     }
 }
