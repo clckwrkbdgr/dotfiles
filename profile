@@ -16,7 +16,11 @@ export EDITOR=vim
 export PAGER=less
 export GREP_COLOR='1;32'
 export WINEPREFIX=/opt/wine-$USER
-export PYTHONPATH="$HOME/.local/lib:$HOME/.config/lib:$PYTHONPATH"
+if [ -n "$PYTHONPATH" ]; then
+	export PYTHONPATH="$HOME/.local/lib:$HOME/.config/lib:$PYTHONPATH"
+else
+	export PYTHONPATH="$HOME/.local/lib:$HOME/.config/lib"
+fi
 
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/bin" ] ; then
