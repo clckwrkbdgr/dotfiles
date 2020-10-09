@@ -42,8 +42,10 @@ for xdgsourcefile in ~/.config/xdg/*.sh; do
 	. "$xdgsourcefile"
 done
 
-# User private settings.
+# User/platform/host specific settings.
 [ -f ~/.local/profile ] && . ~/.local/profile
+[ -f ~/.local/profile.`uname` ] && . ~/.local/profile.`uname`
+[ -f ~/.local/profile.`hostname` ] && . ~/.local/profile.`hostname`
 
 # For interactive login shell it's better to source shell rc.
 if [ -n "$BASH_VERSION" ]; then
