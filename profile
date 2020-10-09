@@ -21,6 +21,7 @@ if [ -n "$PYTHONPATH" ]; then
 else
 	export PYTHONPATH="$HOME/.local/lib:$HOME/.config/lib"
 fi
+export PYTHONWARNINGS=ignore:DEPRECATION::pip._internal.cli.base_command,always::DeprecationWarning
 
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/bin" ] ; then
