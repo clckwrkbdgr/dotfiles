@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+import os, sys, re
+import click
+import termcolor
+from pathlib import Path
+from clckwrkbdgr import utils
+
+@click.group()
+def cli():
+	pass
+
+@cli.command()
+@utils.exits_with_return_value
+def search():
+	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
+	for root, dirs, files in os.walk('.'):
+		if sys.stderr.isatty():
+			sys.stderr.write(root)
+			sys.stderr.write('\r')
+		for filename in files:
+			filename = (Path(root)/filename)
+			if filename.suffix in ['.sqlite']:
+				continue
+			try:
+				if not filename.exists():
+					continue
+				for index, line in enumerate(filename.read_bytes().splitlines(), 1):
+					try:
+						line = line.decode('utf-8', 'replace')
+						matches = MARKERS.split(line)
+						if len(matches) > 1:
+							sys.stdout.write(termcolor.colored(filename, 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(index), 'green') + termcolor.colored(':', 'cyan'))
+							is_marker = False
+							for m in matches:
+								if is_marker:
+									m = termcolor.colored(m, 'green', attrs=['bold'])
+								sys.stdout.write(m)
+								is_marker = not is_marker
+							sys.stdout.write('\n')
+					except Exception as e:
+						print(termcolor.colored(filename, 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(e), 'red'))
+						continue
+			except Exception as e:
+				print(termcolor.colored(filename, 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(e), 'red'))
+				continue
+
+if __name__ == '__main__':
+	cli()
