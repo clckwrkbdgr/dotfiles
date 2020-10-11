@@ -149,7 +149,7 @@ def bash_unittest(test, quiet=False):
 	return rc
 
 def ensure_test_data_dir():
-	setup_cfg = configparser.SafeConfigParser()
+	setup_cfg = configparser.ConfigParser()
 	setup_cfg.read(['setup.cfg'])
 	if 'unittest' in setup_cfg:
 		if 'data_dir' in setup_cfg['unittest']:
