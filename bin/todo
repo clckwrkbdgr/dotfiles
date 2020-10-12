@@ -12,6 +12,9 @@ def cli():
 @cli.command()
 @utils.exits_with_return_value
 def search():
+	if not sys.stderr.isatty():
+		os.environ['ANSI_COLORS_DISABLED'] = '1'
+
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
 	for root, dirs, files in os.walk('.'):
 		if sys.stderr.isatty():
