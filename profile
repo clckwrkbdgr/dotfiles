@@ -55,3 +55,12 @@ if [ -n "$BASH_VERSION" ]; then
 		fi
 	fi
 fi
+
+# Optionally run custom shell command instead of $SHELL.
+# Variable expands without quotes as list of tokens, so spaces in arguments should be properly escaped.
+if [ -n "$CUSTOM_SHELL_COMMAND" ]; then
+	if [ -z "$CUSTOM_SHELL_OPENED" ]; then
+		export CUSTOM_SHELL_OPENED=1
+		exec ${CUSTOM_SHELL_COMMAND}
+	fi
+fi
