@@ -32,7 +32,7 @@ def search():
 						line = line.decode('utf-8', 'replace')
 						matches = MARKERS.split(line)
 						if len(matches) > 1:
-							sys.stdout.write(termcolor.colored(filename, 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(index), 'green') + termcolor.colored(':', 'cyan'))
+							sys.stdout.write(termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(index), 'green') + termcolor.colored(':', 'cyan'))
 							is_marker = False
 							for m in matches:
 								if is_marker:
@@ -41,10 +41,10 @@ def search():
 								is_marker = not is_marker
 							sys.stdout.write('\n')
 					except Exception as e:
-						print(termcolor.colored(filename, 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(e), 'red'))
+						print(termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(e), 'red'))
 						continue
 			except Exception as e:
-				print(termcolor.colored(filename, 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(e), 'red'))
+				print(termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(e), 'red'))
 				continue
 
 if __name__ == '__main__':
