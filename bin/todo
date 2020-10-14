@@ -10,19 +10,26 @@ def cli():
 	pass
 
 @cli.command()
+@click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
 @utils.exits_with_return_value
-def search():
+def search(exclude=None):
+	exclude = [Path(path).absolute() for path in (exclude or [])]
+	print(exclude)
 	if not sys.stderr.isatty():
 		os.environ['ANSI_COLORS_DISABLED'] = '1'
 
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
 	for root, dirs, files in os.walk('.'):
+		dirs[:] = [dirname for dirname in dirs if dirname not in ['.git']]
+		dirs[:] = [dirname for dirname in dirs if (Path(root)/dirname).absolute() not in exclude]
 		if sys.stderr.isatty():
 			sys.stderr.write(root)
 			sys.stderr.write('\r')
 		for filename in files:
 			filename = (Path(root)/filename)
-			if filename.suffix in ['.sqlite']:
+			if filename.absolute() in exclude:
+				continue
+			if filename.suffix in ['.sqlite', '.pyc']:
 				continue
 			try:
 				if not filename.exists():
