@@ -24,7 +24,7 @@ function cdfind() {
 export -f cdfind
 
 if ! which tree >/dev/null 2>&1; then
-	tree() {
+	function tree() {
 		find "${@:-.}" | sed -e 'sI/$II; sI[^/]*/I|- Ig; sI- |I  |Ig'
 	}
 	export -f tree
@@ -33,7 +33,7 @@ else
 fi
 
 if ! which dos2unix >/dev/null 2>&1; then
-	dos2unix() {
+	function dos2unix() {
 		tmp="/tmp/tmp-dos2unix-$RANDOM.tmp"
 		sed 's/$//g' <"$1" >"$tmp"
 		mv -f "$tmp" "$1"
