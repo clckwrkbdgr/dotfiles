@@ -39,7 +39,7 @@ def which(program, find_all=False): # pragma: no cover -- TODO separate module f
 		path = path.strip('"')
 		exe_file = Path(path)/program
 		for ext in EXECUTABLE_EXT:
-			fullpath = exe_file.with_suffix(ext) if ext else exe_file
+			fullpath = exe_file.with_suffix(ext) if ext and ext != '.' else exe_file
 			if fullpath.is_file() and os.access(str(fullpath), os.X_OK):
 				if find_all:
 					result.append(fullpath)
