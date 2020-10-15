@@ -6,6 +6,8 @@ panic() {
 	exit 1
 }
 
+custom_hosts_file=~/.local/known_hosts.lst
+
 usage() {
 cat >&2 <<EOF
 Checks network availability.
@@ -16,7 +18,11 @@ Usage: $0 [-h <host>] [-c <count>] [-i <interface>]
 	       When set to 0, pings infinitely until the first success.
      -i  - specific network interface to use. See 'ip link show' or 'netstat -a'.
 	       Available interfaces: $(ip link show | grep '^[^ ]' | cut -d ' ' -f 2 | sed 's/://' | tr '\n' ' ')
-Known hosts:
+By default tries hosts:
+  8.8.8.8 # Google DNS
+  8.8.4.4 # Google DNS
+Loads additional hosts from file $custom_hosts_file (if present).
+Lines should be in format '<ip> # <optional comment>'
 $(known_hosts)
 EOF
 }
@@ -25,10 +31,8 @@ known_hosts() {
 cat <<EOF
 8.8.8.8 # Google DNS
 8.8.4.4 # Google DNS
-139.130.4.5 # Australian primary NS
-208.67.222.222 # OpenDNS
-208.67.220.220 # OpenDNS
 EOF
+	[ -f "$custom_hosts_file" ] && cat "$custom_hosts_file"
 }
 
 random_host() {
