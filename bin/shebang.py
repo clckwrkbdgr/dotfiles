@@ -9,15 +9,16 @@ Can be used on Windows to run executable files without extensions:
 	assoc .=shebang
 	setx /m PATHEXT "%PATHEXT%;."
 3. Reboot.
+4. If it does not help (in Windows 8+), see `windows/shebang.reg` for additional tweaks.
 
-For Windows it can run as Windows paths (C:\...), so Unix-like strings.
-For latter, it knows some predefined interpreters (python/python2/python3),
+For Windows it can run both Windows paths (C:\...) and Unix-like paths (/...).
+For latter, it knows some predefined interpreters (sh/bash/python/python2/python3),
 and also can detect /usr/bin/env and use its argument as command.
 """
 from __future__ import print_function
 import os, sys, subprocess, shlex
+import platform
 import logging
-
 
 args = sys.argv[1:]
 if args and args[0] == '--debug':
@@ -37,11 +38,21 @@ except Exception as e:
 	sys.exit(1)
 if not headline.startswith(b'#!'):
 	logging.error('shebang: file "{0}" does not start with shebang'.format(command))
+	if platform.system() == 'Windows':
+		editor = os.environ.get('EDITOR', 'C:\\Windows\\notepad.exe')
+		logging.debug('using editor "{0}"'.format(editor))
+		command_line = [editor, command]
+		try:
+			rc = subprocess.call(command_line)
+		except Exception as e:
+			logging.error('shebang: failed to execute command {1}: {0}'.format(e, command_line))
+			sys.exit(1)
+		logging.debug('rc: {0}'.format(rc))
+		sys.exit(rc)
 	sys.exit(1)
 interpreter = headline[2:].strip()
 logging.debug('interpreter: {0}'.format(repr(interpreter)))
 if not os.path.exists(interpreter):
-	import platform
 	if platform.system() == 'Windows':
 		logging.debug('Detected Windows. Trying to convert shebang interpreter...')
 		if interpreter.startswith(b'/usr/bin/env '):
@@ -55,6 +66,22 @@ if not os.path.exists(interpreter):
 					}
 			if interpreter in builtin_interpreters:
 				interpreter = builtin_interpreters[interpreter]
+				logging.debug('known interpreter: running as {0}'.format(repr(interpreter)))
+			builtin_interpreters_with_translated_paths = {
+					b'/bin/sh' : b'sh',
+					b'/bin/bash' : b'bash',
+					}
+			if interpreter in builtin_interpreters_with_translated_paths:
+				translated_command = command.replace('\\', '/')
+				parts = translated_command.split('/')
+				if parts and len(parts[0]) == 2 and parts[0].endswith(':'):
+					# Apparently works only under WSL.
+					# FIXME there is also Cygwin bash (which is also being used in Git for Windows).
+					parts[0] = '/mnt/' + parts[0][0].lower()
+					translated_command = '/'.join(parts)
+				logging.debug('translating path to executable: {0} => {1}'.format(repr(command), repr(translated_command)))
+				command = translated_command
+				interpreter = builtin_interpreters_with_translated_paths[interpreter]
 				logging.debug('known interpreter: running as {0}'.format(repr(interpreter)))
 interpreter = shlex.split(interpreter.decode(errors='replace'))
 command_line = interpreter + [command] + args

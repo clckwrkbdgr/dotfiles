@@ -1,0 +1,76 @@
+Windows Registry Editor Version 5.00
+
+; Definition of Shebang class.
+
+[HKEY_CLASSES_ROOT\shebang]
+
+[HKEY_CLASSES_ROOT\shebang\Shell]
+
+[HKEY_CLASSES_ROOT\shebang\Shell\Open]
+
+; Sadly it does not expand enviroment variables.
+; So before uploading replace USERPROFILE with actual value for your user.
+; Or better yet, move or symlink shebang.py somewhere in common shared directory,
+; like C:\Windows.
+
+[HKEY_CLASSES_ROOT\shebang\Shell\Open\Command]
+@="\"C:\\WINDOWS\\py.exe\" \"%USERPROFILE%\\.config\\bin\\shebang.py\" \"%L\" %*"
+
+; "No Extension" extension
+
+[HKEY_CLASSES_ROOT\.]
+@="shebang"
+
+; Just in case. GUI methods create layout like this.
+
+[HKEY_CLASSES_ROOT\.\Shell]
+
+[HKEY_CLASSES_ROOT\.\Shell\Open]
+
+[HKEY_CLASSES_ROOT\.\Shell\Open\Command]
+@=hex(2):73,00,68,00,65,00,62,00,61,00,6e,00,67,00,20,00,00,00
+
+; In Windows 8+ extension should be also defined in Explorer key.
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.]
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.\OpenWithList]
+
+; The ProgId value should be defined in this list first.
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.\OpenWithProgids]
+"shebang"=hex(0):
+
+; Now picking value from OpenWithProgids list.
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.\UserChoice]
+"ProgId"="shebang"
+
+; Let's register proper extension just in case (for debugging purposes etc): *.shebang
+; All steps are exactly the same.
+
+[HKEY_CLASSES_ROOT\.shebang]
+@="shebang"
+
+[HKEY_CLASSES_ROOT\.shebang\Shell]
+
+[HKEY_CLASSES_ROOT\.shebang\Shell\Open]
+
+[HKEY_CLASSES_ROOT\.shebang\Shell\Open\Command]
+@=hex(2):73,00,68,00,65,00,62,00,61,00,6e,00,67,00,20,00,00,00
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.shebang]
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.shebang\OpenWithList]
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.shebang\OpenWithProgids]
+"shebang"=hex:
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.shebang\UserChoice]
+"ProgId"="shebang"
+
+; Bonus: for 'Open with' toast notifications that Windows pops up sometimes when unknown file is opened.
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts]
+"shebang_."=dword:00000000
+"shebang_.shebang"=dword:00000000
