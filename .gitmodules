@@ -7,3 +7,12 @@
 [submodule "vim/bundle/vim-textile"]
 	path = vim/bundle/vim-textile
 	url = https://github.com/amiorin/vim-textile.git
+[submodule "vim/bundle/detectindent"]
+	path = vim/bundle/detectindent
+	url = https://github.com/ciaranm/detectindent.git
+[submodule "vim/bundle/vim-qfedit"]
+	path = vim/bundle/vim-qfedit
+	url = https://github.com/itchyny/vim-qfedit
+[submodule "vim/bundle/vim-surround"]
+	path = vim/bundle/vim-surround
+	url = https://github.com/tpope/vim-surround.git
