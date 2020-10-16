@@ -106,3 +106,8 @@
 [filter "mc_ini"]
 	smudge = cat
 	clean = "sed 's|ftpfs_password=.*|ftpfs_password=anonymous@|'"
+
+# TODO to filterconf
+[filter "svn_config"]
+	smudge = cat
+	clean = "sed '/### <INCLUDE/,/### >INCLUDE/d;' | sed '${/^$/d}'"

@@ -17,6 +17,7 @@ purple/prefs.xml filter=pidgin_prefs
 .freeciv-client-rc-2.4 filter=freeciv_rc
 openttd/openttd.cfg filter=openttd_config
 openttd/windows.cfg filter=openttd_config
+subversion/config filter=svn_config
 gtk-2.0/gtkfilechooser.ini filter=gtkfilechooser
 gimp/menurc filter=gimp_menurc
 gimp/pluginrc filter=gimp_pluginrc
