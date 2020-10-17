@@ -217,7 +217,7 @@ class XDGSymlinks:
 		def ensure_xdg_symlink(context):
 			make_symlink(context.condition.dest, context.condition.src)
 		ensure_xdg_symlink = make.with_context(ensure_xdg_symlink)
-		ensure_xdg_symlink = make.with_name(symlink)(ensure_xdg_symlink)
+		ensure_xdg_symlink = make.with_name(symlink)
 		ensure_xdg_symlink = make.unless(is_symlink_to, symlink, real_file)(ensure_xdg_symlink)
 	def ignore(self, symlink):
 		""" Marks symlink as known without any actions.
