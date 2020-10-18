@@ -2,6 +2,7 @@
 import os, sys, shutil
 import subprocess, tempfile
 import functools
+import configparser
 from pathlib import Path
 import click
 
@@ -10,7 +11,7 @@ def get_current_arch():
 	return subprocess.check_output(['dpkg', '--print-architecture']).decode().strip()
 
 class Package(object):
-	def __init__(self, name, version):
+	def __init__(self, name, version, arch=None):
 		""" Init package with given name and version and default data. """
 		self.name = name
 		self.version = version
@@ -18,7 +19,7 @@ class Package(object):
 		self.bins = []
 		self.docs = []
 		self.headers = []
-		self.arch = get_current_arch()
+		self.arch = arch or get_current_arch()
 		self.maintainer = os.environ['USER']
 		self.description = ''
 	def set_maintainer(self, maintainer):
@@ -157,22 +158,67 @@ class Builder(AbstractBuilder):
 	def fakeroot(self, path):
 		subprocess.call(['fakeroot', 'dpkg-deb', '--build', str(path)])
 
+def load_config_value(parser, category, name, default_value=None):
+    if category not in parser:
+        return default_value
+    if name not in parser[category]:
+        return default_value
+    return parser[category][name]
+
 @click.command()
-@click.argument('package_name')
+@click.argument('package_name', required=False)
 @click.option('-v', '--version', required=True, help='Package version.')
+@click.option('-f', '--setup-file', default='setup.cfg', help='Path to custom setup.cfg file with instructions for building Debian package. See usage for details.')
 @click.option('--dry', is_flag=True, help='Dry run. Do not execute any actions, just log them.')
-@click.option('--maintainer', default=os.environ['USER'], help='Maintaner of the package, usually in form "NAME <name@email>". By default current OS user is picked (name only).')
-@click.option('--description', help='Package description (free text).')
-@click.option('--bin', 'bins', multiple=True, help='Executables to install.')
-@click.option('--lib', 'libs', multiple=True, help='Libraries to install.')
-@click.option('--header', 'headers', multiple=True, help='Include headers to install.')
-@click.option('--doc', 'docs', multiple=True, help='Docs to install.')
+@click.option('--maintainer', help='Maintaner of the package, usually in form "NAME <name@email>". By default current OS user is picked (name only). If setup.cfg exists, maintainer is constructed from `metadata.author` and `metadata.author_email`')
+@click.option('--description', help='Package description (free text). If setup.cfg exists, description is taken from `metadata.description`') # TODO long_description
+@click.option('--bin', 'bins', multiple=True, help='Executables to install. If setup.cfg is specified, value of `debian.bins` (multiline) is included.')
+@click.option('--lib', 'libs', multiple=True, help='Libraries to install. If setup.cfg is specified, value of `debian.libs` (multiline) is included.')
+@click.option('--header', 'headers', multiple=True, help='Include headers to install. If setup.cfg is specified, value of `debian.headers` (multiline) is included.')
+@click.option('--doc', 'docs', multiple=True, help='Docs to install. If setup.cfg is specified, value of `debian.docs` (multiline) is included.')
+@click.option('--arch', help='Package architecture. Default is arch of the current system. If setup.cfg is specified, value of `debian.arch` is used.')
 @click.option('--build-dir', help='Directory to store intermediate files. Default is within system temp directory.')
 @click.option('--dest-dir', help='Directory to store final package. Default is one level up from build-dir.')
-@click.option('--arch', help='Package architecture. Default is arch of the current system.')
-def cli(package_name, version=None, dry=False, maintainer=None, description=None, bins=None, libs=None, headers=None, docs=None, build_dir=None, dest_dir=None, arch=None):
-	""" Utility to create Debian package. """
-	package = Package(package_name, version)
+def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintainer=None, description=None, bins=None, libs=None, headers=None, docs=None, build_dir=None, dest_dir=None, arch=None):
+	""" Utility to create Debian package.
+
+	If there is a 'setup.cfg' file in current directory (alternative path can be specified via command line option --setup-file),
+	utility will try to extract instructions for building Debian package from that file.
+	Package name is extracted from `metadata.name`.
+	Values for other parameters are specified in corresponding help message.
+	For the purpose of this script, non-standard category `debian` is looked up in `setup.cfg`.
+
+	Command-line options take precendence over values from setup.cfg.
+	"""
+	setup_cfg = configparser.ConfigParser()
+	setup_cfg.read([setup_file])
+	package_name = package_name or load_config_value(setup_cfg, 'metadata', 'name')
+	if not maintainer:
+		author = load_config_value(setup_cfg, 'metadata', 'author')
+		email = load_config_value(setup_cfg, 'metadata', 'author_email')
+		if email:
+			email = '<{0}>'.format(email)
+		maintainer = ' '.join(filter(lambda _:_, [author, email]))
+		if not maintainer:
+			maintainer = os.environ['USER']
+	description = description or load_config_value(setup_cfg, 'metadata', 'description')
+	arch = arch or load_config_value(setup_cfg, 'debian', 'arch')
+	get_multiline_value = lambda _value: filter(
+			lambda _:_,
+			map(
+				str.strip,
+				load_config_value(setup_cfg, 'debian', _value, default_value='').splitlines()
+			)
+			)
+	bins = list(bins) + list(get_multiline_value('bins'))
+	libs = list(libs) + list(get_multiline_value('libs'))
+	headers = list(headers) + list(get_multiline_value('headers'))
+	docs = list(docs) + list(get_multiline_value('docs'))
+
+	if package_name is None:
+		raise click.ClickException('Package name was not specified neither on command line, nor in setup.cfg file!')
+
+	package = Package(package_name, version, arch=arch)
 	package.add_libs(libs)
 	package.add_bins(bins)
 	package.add_docs(docs)
