@@ -1,6 +1,8 @@
 #!/bin/bash
+. "$XDG_CONFIG_HOME/lib/utils.bash"
 filename=$1
 symlink_content=$(mktemp)
+finally "rm -f '$symlink_content'"
 readlink "$filename" > "$symlink_content"
 
 ${EDITOR:-vi} "$symlink_content"
