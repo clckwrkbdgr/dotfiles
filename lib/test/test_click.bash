@@ -174,5 +174,47 @@ Parameters:
 EOF
 }
 
+should_consume_all_positionals_for_nargs() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first'
+	click::argument 'second'
+	click::argument 'third' --nargs=-1
+	test_click() {
+		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
+		assertStringsEqual "${CLICK_ARGS[second]}" 'arg2'
+		assertStringsEqual "${CLICK_ARGS[third]}" 'arg3 arg3.1 arg3.2'
+		assertStringsEqual "${#CLICK_NARGS[@]}" 3
+		assertStringsEqual "${CLICK_NARGS[0]}" 'arg3'
+		assertStringsEqual "${CLICK_NARGS[1]}" 'arg3.1'
+		assertStringsEqual "${CLICK_NARGS[2]}" 'arg3.2'
+	}
+
+	assertExitSuccess 'click::run arg1 arg2 arg3 arg3.1 arg3.2'
+}
+
+should_allow_only_negative_one_nargs() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first'
+	assertOutputEqual "click::argument 'second' --nargs=1 2>&1" - <<EOF
+Parameter nargs supports only value -1 for arguments: second nargs=1
+EOF
+	assertReturnCode 1
+}
+
+should_allow_nargs_positional_only_at_the_end() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first'
+	click::argument 'second' --nargs=-1
+	assertOutputEqual "click::argument 'third' 2>&1" - <<EOF
+There was already defined an argument with nargs=-1: second
+EOF
+	assertReturnCode 1
+}
 
 unittest::run should_

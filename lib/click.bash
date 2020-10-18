@@ -28,6 +28,7 @@ declare -A _click_type # 'flag', 'option', 'argument'
 declare -A _click_help
 declare -A _click_short
 declare -A _click_long
+_click_narg_argument='' # Name of argument with nargs=-1
 declare -A _click_default
 _click_positional_count=0
 declare -A _click_arg_pos
@@ -186,16 +187,23 @@ click::option() {
 
 click::argument() {
 	# Registers positional argument.
-	# Params: <name> --help=<help>
+	# Params: <name> --nargs=-1 --help=<help>
 	#     Or: <name> <help>
 	# E.g.:   'filename' 'Name of the input file.'
 	# All positionals must be consumed.
+	# The only valid value for nargs is -1 (or default empty value).
+	# There can be only one argument with nargs=-1 and it should be the last argument.
+	# It will consume all arguments till the end.
 	# Help message may contain escaped symbols compatible with 'echo -e'
-	click::miniclick 'name' -- help -- "$@"
+	click::miniclick 'name' -- help nargs -- "$@"
 
 	[ -z "$name" ] && panic 'Argument name is required!'
+	[ -n "$nargs" -a "$nargs" != '-1' ] && panic "Parameter nargs supports only value -1 for arguments: $name nargs=$nargs"
+	[ -n "$_click_narg_argument" ] && panic "There was already defined an argument with nargs=-1: $_click_narg_argument"
 
-	# TODO: nargs
+	if [ "$nargs" == '-1' ]; then
+		_click_narg_argument="$name"
+	fi
 	_click_type["$name"]='argument'
 	_click_help["$name"]="$help"
 	_click_arg_pos["$name"]="${_click_positional_count}"
@@ -246,6 +254,12 @@ click::usage() {
 # Main associative array of collected CLI args.
 # Access: ${CLICK_ARGS[arg_name]}
 declare -A CLICK_ARGS
+
+# Sequence of values for argument with nargs=1 if there was one.
+# Access: ${CLICK_NARGS[i]}
+# Total number: ${#CLICK_NARGS[@]}
+# Iterate over: ${CLICK_NARGS[@]}
+declare -a CLICK_NARGS
 
 click::run() {
 	# Parses CLI arguments, calls registered command.
@@ -298,8 +312,17 @@ click::run() {
 			for name in "${!_click_type[@]}"; do
 				if [ ${_click_type[$name]} == 'argument' ]; then
 					if [ ${_click_arg_pos[$name]} == "$current_arg_pos" ]; then
-						CLICK_ARGS["$name"]="$1"
-						current_arg_pos=$((current_arg_pos + 1))
+						if [ "$_click_narg_argument" == "$name" ]; then
+							CLICK_NARGS+=("$1")
+							if [ -n "${CLICK_ARGS["$name"]}" ]; then
+								CLICK_ARGS["$name"]="${CLICK_ARGS["$name"]} $1"
+							else
+								CLICK_ARGS["$name"]="$1"
+							fi
+						else
+							CLICK_ARGS["$name"]="$1"
+							current_arg_pos=$((current_arg_pos + 1))
+						fi
 						matched=true
 						break
 					fi
@@ -313,6 +336,9 @@ click::run() {
 		fi
 		shift
 	done
+	if [ "${#CLICK_NARGS[@]}" -gt 0 ]; then
+		current_arg_pos=$((current_arg_pos + 1))
+	fi
 	if [ $current_arg_pos -lt ${_click_positional_count} ]; then
 		for name in "${!_click_type[@]}"; do
 			if [ ${_click_type[$name]} == 'argument' ]; then
