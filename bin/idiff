@@ -1,12 +1,27 @@
 #!/usr/bin/python3
 import sys, difflib
-icase_lines = lambda f: [line.lower().title() for line in f.readlines()]
-with open(sys.argv[1], encoding='utf-8') as left, open(sys.argv[2], encoding='utf-8') as right:
-	delta = difflib.unified_diff(icase_lines(left), icase_lines(right))
-	try:
-		line = next(delta)
-		sys.stdout.write(line)
-		sys.stdout.writelines(delta)
-		sys.exit(1)
-	except StopIteration:
-		sys.exit(0)
+import click
+
+def icase_lines(f):
+	return [line.lower().title() for line in f.readlines()]
+
+@click.command()
+@click.argument('left_file')
+@click.argument('right_file')
+def cli(left_file, right_file):
+	""" Compares two files line by line ignoring case difference.
+	
+	Replacement for `diff -i` on platforms where diff does not recognize this option.
+	"""
+	with open(left_file, encoding='utf-8') as left, open(right_file, encoding='utf-8') as right:
+		delta = difflib.unified_diff(icase_lines(left), icase_lines(right))
+		try:
+			line = next(delta)
+			sys.stdout.write(line)
+			sys.stdout.writelines(delta)
+			sys.exit(1)
+		except StopIteration:
+			sys.exit(0)
+
+if __name__ == '__main__':
+	cli()
