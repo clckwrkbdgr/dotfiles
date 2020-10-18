@@ -32,6 +32,76 @@ declare -A _click_default
 _click_positional_count=0
 declare -A _click_arg_pos
 
+click::miniclick() {
+	# Parses arguments in very simple way.
+	# Params: <positionals...> -- <keyword args...> -- "$@"
+	# E.g.: 'short' 'long' 'name' -- 'default' 'help' -- "$@"
+	# Sets variables with corresponding names.
+	# Expects command line with positionals fully filled first,
+	# and then keyword arguments:
+	# - either passed as potisionals in order of definition,
+	# - or passed as double-dashes named arguments: --arg=<value> in any order
+	# WARNING: Both double-dashed delimiters should be present
+	#          even if positionals or keywords are not required!
+	# Missing arguments are silently ignored and reset to empty values.
+	# E.g.: -o --option option_name --help=Description
+	# will result in:
+	#   short=-o
+	#   long=--option
+	#   name=option_name
+	#   default=
+	#   help=Message
+	# Any unknown extra argument will result in panic.
+	declare -a _miniargs
+	while [ -n "$1" -a "$1" != '--' ]; do
+		_miniargs+=("$1")
+		eval "$1=''"
+		shift
+	done
+	[ -z "$1" ] && panic "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: miniclick: cannot find first double-dashed separator!"
+	shift
+	declare -a _minikwargs
+	while [ -n "$1" -a "$1" != '--' ]; do
+		_minikwargs+=("$1")
+		eval "$1=''"
+		shift
+	done
+	[ -z "$1" ] && panic "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: miniclick: cannot find second double-dashed separator!"
+	shift
+	_current_arg=0
+	_current_kwarg=0
+	for arg in "$@"; do
+		if [ -n "$_current_arg" ]; then
+			eval "${_miniargs[$_current_arg]}='$arg'"
+			_current_arg=$((_current_arg+1))
+			if [ $_current_arg -ge ${#_miniargs[@]} ]; then
+				_current_arg=''
+			fi
+			continue
+		fi
+		if [ -n "$_current_kwarg" ]; then
+			for _kwarg in "${_minikwargs[@]}"; do
+				_doubledashed="--${_kwarg}="
+				if startswith "$arg" "$_doubledashed"; then
+					arg=${arg##$_doubledashed}
+					eval "${_kwarg}='$arg'"
+					break
+				fi
+				_doubledashed=""
+			done
+			[ -n "$_doubledashed" ] && continue
+
+			eval "${_minikwargs[$_current_kwarg]}='$arg'"
+			_current_kwarg=$((_current_kwarg+1))
+			if [ $_current_kwarg -ge ${#_minikwargs[@]} ]; then
+				_current_kwarg=''
+			fi
+			continue
+		fi
+		panic "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: miniclick: unknown unnamed param: '$arg'"
+	done
+}
+
 click::command() {
 	# Registers main command function.
 	# Params: <main command callback> <help>
@@ -45,22 +115,24 @@ click::command() {
 
 click::flag() {
 	# Registers flag argument (true/false)
-	# Params: <short> <long> <name> <help>
+	# Params: <short> <long> <name> --help=<help>
+	#     Or: <short> <long> <name> <help>
 	# E.g.:   '-f' '--flag' 'flag_name' 'Sets flag.'
 	# If flag name is empty, long option name is used if present, short option char otherwise.
 	# Parsed flag argument in CLICK_ARGS is empty (by default) or non-empty when specified.
 	# Use test [ -n "${CLICK_ARGS[flag_name]}" ]
 	# Help message may contain escaped symbols compatible with 'echo -e'
-	short="$1"
+	click::miniclick 'short' 'long' 'name' -- help -- "$@"
+
 	short_re='^-[a-z0-9]$'
 	[ -z "$short" ] && panic 'Short flag is required!'
 	[[ "${short}" =~ $short_re ]] || panic "Expected short flag in format '-<single char>', got instead: '${short}'"
-	long="$2"
+
 	if [ -n "$long" ]; then
 		long_re='^--[a-z0-9][a-z0-9_-]+$'
 		[[ "${long}" =~ $long_re ]] || panic "Expected long flag in format '--<name>', got instead: '${long}'"
 	fi
-	name="$3"
+
 	if [ -z "$name" ]; then
 		if [ -n "$long" ]; then
 			name=${long#--}
@@ -68,7 +140,6 @@ click::flag() {
 			name=${short#-}
 		fi
 	fi
-	help="$4"
 	# TODO: required flags
 	_click_type["$name"]='flag'
 	_click_help["$name"]="$help"
@@ -78,21 +149,23 @@ click::flag() {
 
 click::option() {
 	# Registers option argument (with value).
-	# Params: <short> <long> <name> <default> <help>
+	# Params: <short> <long> <name> --default=<default> --help=<help>
+	#     Or: <short> <long> <name> <default> <help>
 	# E.g.:   '-o' '--option' 'option_name' 'nothing' 'Description of the option behavior.'
 	# If option name is empty, long option name is used if present, short option char otherwise.
 	# If option was not specified at command line, CLICK_ARGS will contain default value.
 	# Help message may contain escaped symbols compatible with 'echo -e'
-	short="$1"
+	click::miniclick 'short' 'long' 'name' -- default help -- "$@"
+
 	[ -z "$short" ] && panic 'Short option is required!'
 	short_re='^-[a-z0-9]$'
 	[[ "${short}" =~ $short_re ]] || panic "Expected short option in format '-<single char>', got instead: '${short}'"
-	long="$2"
+
 	if [ -n "$long" ]; then
 		long_re='^--[a-z0-9][a-z0-9_-]+$'
 		[[ "${long}" =~ $long_re ]] || panic "Expected long option in format '--<name>', got instead: '${long}'"
 	fi
-	name="$3"
+
 	if [ -z "$name" ]; then
 		if [ -n "$long" ]; then
 			name=${long#--}
@@ -100,8 +173,7 @@ click::option() {
 			name=${short#-}
 		fi
 	fi
-	default="$4"
-	help="$5"
+
 	# TODO: required options
 	# TODO: multi values (nargs)
 	# TODO: predefined list of choices
@@ -114,13 +186,15 @@ click::option() {
 
 click::argument() {
 	# Registers positional argument.
-	# Params: <name> <help>
+	# Params: <name> --help=<help>
+	#     Or: <name> <help>
 	# E.g.:   'filename' 'Name of the input file.'
 	# All positionals must be consumed.
 	# Help message may contain escaped symbols compatible with 'echo -e'
-	name="$1"
+	click::miniclick 'name' -- help -- "$@"
+
 	[ -z "$name" ] && panic 'Argument name is required!'
-	help="$2"
+
 	# TODO: nargs
 	_click_type["$name"]='argument'
 	_click_help["$name"]="$help"
