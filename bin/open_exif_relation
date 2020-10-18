@@ -1,19 +1,20 @@
 #!/bin/bash
-if [ -z "$1" ]; then
-	echo "$0 - opens URL stored in EXIT::relation tag for specified image file(s)"
-	echo "Usage: $0 <image file> [<image file> ...]"
-	exit 1
-fi
+. "$XDG_CONFIG_HOME/lib/click.bash"
 
-declare -a relations
+click::command cli "opens URL stored in EXIT::relation tag for specified image file(s)"
+click::argument 'image_file' --nargs=-1
+cli() {
+	declare -a relations
 
-for filename in "$@"; do
-	relation=$(exiftool -s3 -relation "$filename")
-	if [ -z "$relation" ]; then
-		echo "$filename: No EXIF::relation tag." >&2
-		continue
-	fi
-	relations+=("$relation")
-done
+	for filename in "${CLICK_NARGS[@]}"; do
+		relation=$(exiftool -s3 -relation "$filename")
+		if [ -z "$relation" ]; then
+			echo "$filename: No EXIF::relation tag." >&2
+			continue
+		fi
+		relations+=("$relation")
+	done
+	x-www-browser "${relations[@]}"
+}
 
-x-www-browser "${relations[@]}"
+click::run "$@"
