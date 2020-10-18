@@ -126,7 +126,7 @@ class Make(object):
 					if result is None:
 						result = True
 				except Exception as e:
-					trace.error(e, exc_info=True)
+					trace.error(e, exc_info=e)
 					result = False
 				if result:
 					trace.info('Action {0} is successful.'.format(func.__name__))
@@ -215,9 +215,10 @@ class XDGSymlinks:
 		"""
 		self.known.append(symlink)
 		def ensure_xdg_symlink(context):
-			make_symlink(context.condition.dest, context.condition.src)
+			dest, src = context.args
+			make_symlink(dest, src)
 		ensure_xdg_symlink = make.with_context(ensure_xdg_symlink)
-		ensure_xdg_symlink = make.with_name(symlink)
+		ensure_xdg_symlink = make.with_name(symlink)(ensure_xdg_symlink)
 		ensure_xdg_symlink = make.unless(is_symlink_to, symlink, real_file)(ensure_xdg_symlink)
 	def ignore(self, symlink):
 		""" Marks symlink as known without any actions.
