@@ -1,6 +1,7 @@
 #!/bin/sh
-if upower -i /org/freedesktop/UPower/devices/DisplayDevice | grep state | grep -q dis; then
+. "$XDG_CONFIG_HOME/lib/workstation.sh"
+if workstation_on_battery; then
 	notification -t Power 'Connect laptop to charger before locking workstation!'
 else
-	xflock4
+	workstation_lock
 fi
