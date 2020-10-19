@@ -197,9 +197,9 @@ def is_symlink_to(dest, src):
 
 def make_symlink(path, real_path):
 	real_path = Path(real_path)
-	real_path.parent.mkdir(parents=True, exists_ok=True)
+	real_path.parent.mkdir(parents=True, exist_ok=True)
 	path = Path(path)
-	path.parent.mkdir(parents=True, exists_ok=True)
+	path.parent.mkdir(parents=True, exist_ok=True)
 	if path.exists():
 		os.rename(str(path), str(path.with_suffix('.bak')))
 	os.symlink(str(real_path), str(path))
