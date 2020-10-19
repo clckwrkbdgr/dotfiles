@@ -1,34 +1,5 @@
 #!/bin/bash
-current_volume() {
-	if amixer get "$CHANNEL" | grep -q 'Front Left'; then
-		amixer get "$CHANNEL" | sed '/^ *Front\ Left: /{s/^.*\[\(.*\)%\].*/\1/;p;};d;'
-	else
-		amixer get "$CHANNEL" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)%\].*/\1/;p;};d;'
-	fi
-}
-
-current_volume_status() {
-	if amixer get "$CHANNEL" | grep -q 'Front Left'; then
-		amixer get "$CHANNEL" | awk '$2 == "Left:" { print $NF; }'
-	else
-		amixer get "$CHANNEL" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)\]$/\1/;p;};d;'
-	fi
-}
-
-set_volume() {
-	CHANNEL="$1"
-	VOLUME="$2"
-	if [ "$VOLUME" -lt 0 -o "$VOLUME" -gt 150 ]; then
-		echo "Invalid volume level: $VOLUME, expected to be in range of 0..150" >&2
-		return 1
-	fi
-	if [ "$VOLUME" -lt 100 ]; then
-		amixer set "$CHANNEL" ${VOLUME}% >/dev/null
-	else
-		pactl set-sink-volume 0 ${VOLUME}%
-	fi
-	return 0
-}
+. "$XDG_CONFIG_HOME/lib/sound.bash"
 
 if [ "$1" == "-h" ]; then
 	echo "Usage: volume [-n] { up | down | [reset] <level> } [-c command arg arg... ] "
@@ -42,15 +13,15 @@ if [ "$1" == "-n" ]; then
 fi
 
 CHANNEL=Master
-STEP=5%
+STEP=5
 OLD_VOLUME=$(current_volume)
-OLD_STATUS=$(current_volume_status)
+OLD_STATUS=$(current_channel_status)
 
 if [ "$1" == "up" ]; then
-	amixer set "$CHANNEL" $STEP+ >/dev/null
+	volume_up "$CHANNEL" "$STEP"
 	shift
 elif [ "$1" == "down" ]; then
-	amixer set "$CHANNEL" $STEP- >/dev/null
+	volume_down "$CHANNEL" "$STEP"
 	shift
 elif [ "$1" == "reset" ]; then
 	set_volume "$CHANNEL" "${2}"
@@ -63,7 +34,7 @@ else
 fi
 
 VOLUME=$(current_volume)
-STATUS=$(current_volume_status)
+STATUS=$(current_channel_status)
 if [ "$VOLUME" == "$OLD_VOLUME" -a "$STATUS" == "$OLD_STATUS" ]; then
 	SHOW_NOTIFICATION_POPUP=false
 fi
