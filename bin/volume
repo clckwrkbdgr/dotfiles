@@ -1,74 +1,93 @@
 #!/bin/bash
 . "$XDG_CONFIG_HOME/lib/sound.bash"
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/click.bash"
 
-if [ "$1" == "-h" ]; then
-	echo "Usage: volume [-n] { up | down | [reset] <level> } [-c command arg arg... ] "
-	echo "    -n  - display notification about volume change (sometimes built-in one does not work)."
-	echo "Without arguments will print current volume level."
-	exit 0
-fi
-if [ "$1" == "-n" ]; then
-	SHOW_NOTIFICATION_POPUP=true
-	shift
-fi
+channel=Master
+default_volume=50
+step=5
 
-CHANNEL=Master
-STEP=5
-OLD_VOLUME=$(current_volume)
-OLD_STATUS=$(current_channel_status)
-
-if [ "$1" == "up" ]; then
-	volume_up "$CHANNEL" "$STEP"
-	shift
-elif [ "$1" == "down" ]; then
-	volume_down "$CHANNEL" "$STEP"
-	shift
-elif [ "$1" == "reset" ]; then
-	set_volume "$CHANNEL" "${2}"
-	shift 2
-elif echo "$1" | grep -q '^[0-9]\+$'; then
-	set_volume "$CHANNEL" "${1}"
-	shift
-else
-	current_volume
-fi
-
-VOLUME=$(current_volume)
-STATUS=$(current_channel_status)
-if [ "$VOLUME" == "$OLD_VOLUME" -a "$STATUS" == "$OLD_STATUS" ]; then
-	SHOW_NOTIFICATION_POPUP=false
-fi
-
-if [ "$SHOW_NOTIFICATION_POPUP" == true ]; then
-	if [ "$STATUS" = '[off]' ]; then
-		ICON=audio-volume-muted
-	elif [ "$VOLUME" -eq 0 ]; then
-		ICON=audio-volume-muted
-	elif [ "$VOLUME" -lt 33 ]; then
-		ICON=audio-volume-low
-	elif [ "$VOLUME" -lt 66 ]; then
-		ICON=audio-volume-medium
-	else
-		ICON=audio-volume-high
+click::command cli 'Controls volume level.'
+click::flag '-n' '' 'notify' --help='display notification about volume change (sometimes built-in one does not work)'
+click::argument 'command' --default='print current volume' --help='{ up | down | [reset] <level> }
+up - increases volume by specified percents. Default is 5.
+down - decreases volume by specified percents. Default is 5.
+reset - resets volume level to specified value. Default is 50.
+Without arguments will just print current volume level and exit.'
+click::argument 'level' --default=auto --help='Value for specified command (see <command>)'
+cli() {
+	if [ -n "${CLICK_ARGS[notify]}" ]; then
+		show_notification_popup=true
 	fi
-	LINE=$(echo $VOLUME | python3 -c 'i=int(input())//5;print("["+"|"*i+"-"*(20-i)+"] ")')
-	LINE="${LINE} ${VOLUME}%"
-
-	if which aosd_cat >/dev/null; then
-		echo "$LINE" | aosd_cat -d 2 -x 0 -y -745 -e 0 -t 0 -b 255 -B black -R orange -f 0 -u 2000 -o 0 -d 2 &
-	else
-		# Workaround for xfce4-notifyd: kill previous notification popup to display new one in its place.
-		wmctrl -l | grep xfce4-notifyd | awk '{print $1}' | while read wnd_id; do
-			xdotool windowkill "$wnd_id"
-		done
-		notify-send "Volume" -i "$ICON" "$LINE" &
+	value="${CLICK_ARGS[level]}"
+	if [ "$value" == 'auto' ]; then
+		value=''
 	fi
+
+	old_volume=$(current_volume)
+	old_status=$(current_channel_status)
+
+	if [ "${CLICK_ARGS[command]}" == "print current volume" ]; then
+		current_volume
+	elif [ "${CLICK_ARGS[command]}" == "up" ]; then
+		volume_up "$channel" "${value:-$step}"
+	elif [ "${CLICK_ARGS[command]}" == "down" ]; then
+		volume_down "$channel" "${value:-$step}"
+	elif [ "${CLICK_ARGS[command]}" == "reset" ]; then
+		set_volume "$channel" "${value:-$default_volume}"
+	elif echo "${CLICK_ARGS[command]}" | grep -q '^[0-9]\+$'; then
+		set_volume "$channel" "${CLICK_ARGS[command]}"
+	else
+		panic "Unknown volume command: ${CLICK_ARGS[command]}"
+	fi
+
+	volume=$(current_volume)
+	status=$(current_channel_status)
+	if [ "$volume" == "$old_volume" -a "$status" == "$old_status" ]; then
+		show_notification_popup=false
+	fi
+
+	if [ "$show_notification_popup" == true ]; then
+		if [ "$status" = '[off]' ]; then
+			icon=audio-volume-muted
+		elif [ "$volume" -eq 0 ]; then
+			icon=audio-volume-muted
+		elif [ "$volume" -lt 33 ]; then
+			icon=audio-volume-low
+		elif [ "$volume" -lt 66 ]; then
+			icon=audio-volume-medium
+		else
+			icon=audio-volume-high
+		fi
+		line=$(echo $volume | python3 -c 'i=int(input())//5;print("["+"|"*i+"-"*(20-i)+"] ")')
+		line="${line} ${volume}%"
+
+		if which aosd_cat >/dev/null; then
+			echo "$line" | aosd_cat -d 2 -x 0 -y -745 -e 0 -t 0 -b 255 -B black -R orange -f 0 -u 2000 -o 0 -d 2 &
+		else
+			# Workaround for xfce4-notifyd: kill previous notification popup to display new one in its place.
+			wmctrl -l | grep xfce4-notifyd | awk '{print $1}' | while read wnd_id; do
+				xdotool windowkill "$wnd_id"
+			done
+			notify-send "Volume" -i "$icon" "$line" &
+		fi
+	fi
+}
+
+if item_in '-c' "$@"; then # FIXME workaround for options with nargs. Should actually deprecate this way.
+	declare -a actual_args
+	while [ -n "$1" -a "$1" != '-c' ]; do
+		actual_args+=("$1")
+		shift
+	done
+	shift # To skip '-c'
+	old_volume=$(current_volume)
+	(
+		click::run "${actual_args[@]}"
+	) # To ignore exit in click.
+	finally "set_volume '$channel' '$old_volume'"
+	"$@" # Run actual command.
+	exit $?
 fi
 
-if [ "$1" == '-c' ]; then
-	shift
-	"$@"
-	RC=$?
-	set_volume "$CHANNEL" "$OLD_VOLUME"
-	exit $RC
-fi
+click::run "$@"
