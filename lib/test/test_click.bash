@@ -217,4 +217,48 @@ EOF
 	assertReturnCode 1
 }
 
+should_allow_default_value_for_positionals() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first'
+	click::argument 'second' --default=default
+	test_click() {
+		assertStringsEqual "${CLICK_ARGS[first]}" 'value'
+		assertStringsEqual "${CLICK_ARGS[second]}" 'default'
+	}
+
+	assertExitSuccess 'click::run value'
+}
+
+should_allow_default_value_for_positionals_only_at_the_end() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first' --default=default
+	click::argument 'second'
+	test_click() {
+		:
+	}
+
+	assertOutputEqual "click::run 'value' 2>&1" - <<EOF
+Positional argument is expected: 'second'
+EOF
+	assertReturnCode 1
+}
+
+should_allow_default_values_for_several_tailing_positionals() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first' --default=default_first
+	click::argument 'second' --default=default_second
+	test_click() {
+		assertStringsEqual "${CLICK_ARGS[first]}" 'default_first'
+		assertStringsEqual "${CLICK_ARGS[second]}" 'default_second'
+	}
+
+	assertExitSuccess 'click::run'
+}
+
 unittest::run should_

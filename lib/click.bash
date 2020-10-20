@@ -187,15 +187,21 @@ click::option() {
 
 click::argument() {
 	# Registers positional argument.
-	# Params: <name> --nargs=-1 --help=<help>
+	# Params: <name> --nargs=-1 --default=<default_value> --help=<help>
 	#     Or: <name> <help>
 	# E.g.:   'filename' 'Name of the input file.'
 	# All positionals must be consumed.
+	# Exceptions are only arguments with default values.
+	# If argument is missing, default value is taken,
+	# but only if there is no futher arguments at all.
+	# Default value cannot be empty!
+	#
 	# The only valid value for nargs is -1 (or default empty value).
 	# There can be only one argument with nargs=-1 and it should be the last argument.
 	# It will consume all arguments till the end.
+	#
 	# Help message may contain escaped symbols compatible with 'echo -e'
-	click::miniclick 'name' -- help nargs -- "$@"
+	click::miniclick 'name' -- help nargs default -- "$@"
 
 	[ -z "$name" ] && panic 'Argument name is required!'
 	[ -n "$nargs" -a "$nargs" != '-1' ] && panic "Parameter nargs supports only value -1 for arguments: $name nargs=$nargs"
@@ -206,6 +212,7 @@ click::argument() {
 	fi
 	_click_type["$name"]='argument'
 	_click_help["$name"]="$help"
+	_click_default["$name"]="$default"
 	_click_arg_pos["$name"]="${_click_positional_count}"
 	_click_positional_count=$((_click_positional_count + 1))
 }
@@ -245,6 +252,10 @@ click::usage() {
 		echo -e "${_click_help[$name]}" | sed 's/^/        /' # FIXME this is the only external command in the whole file.
 		if [ ${_click_type[$name]} == 'option' ]; then
 			echo "        Default is '${_click_default[$name]}'."
+		elif [ ${_click_type[$name]} == 'argument' ]; then
+			if [ -n "${_click_default[$name]}" ]; then
+				echo "        Default is '${_click_default[$name]}'."
+			fi
 		elif [ ${_click_type[$name]} == 'flag' ]; then
 			echo "        Default is false."
 		fi
@@ -339,15 +350,21 @@ click::run() {
 	if [ "${#CLICK_NARGS[@]}" -gt 0 ]; then
 		current_arg_pos=$((current_arg_pos + 1))
 	fi
-	if [ $current_arg_pos -lt ${_click_positional_count} ]; then
+	while [ $current_arg_pos -lt ${_click_positional_count} ]; do
 		for name in "${!_click_type[@]}"; do
 			if [ ${_click_type[$name]} == 'argument' ]; then
 				if [ ${_click_arg_pos[$name]} == "$current_arg_pos" ]; then
-					panic "Positional argument is expected: '$name'"
+					if [ -n "${_click_default[$name]}" ]; then
+						CLICK_ARGS["$name"]="${_click_default[$name]}"
+						break
+					else
+						panic "Positional argument is expected: '$name'"
+					fi
 				fi
 			fi
 		done
-	fi
+		current_arg_pos=$((current_arg_pos + 1))
+	done
 
 	"${_click_command}"
 	exit $?
