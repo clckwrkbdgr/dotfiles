@@ -1,23 +1,45 @@
 set nocompatible " Reset many settings; should be at the very first line.
 
 set backupdir=~/.cache/vim,~/,/tmp
-set viminfo='100,<50,s10,h,n~/.cache/vim/viminfo
-set viminfo+=n~/.cache/vim/viminfo
-set runtimepath=~/.config/vim,~/.config/vim/after,$VIM,$VIMRUNTIME
-let g:netrw_home=$XDG_CACHE_HOME.'/vim'
+if has('win32')
+  set directory=$TEMP,c:\tmp,c:\temp,.
+  set viminfo='100,<50,s10,h,rA:,rB:,n$TEMP/viminfo
+endif
+if !has('win32')
+	set directory=/var/tmp//,.,/tmp//
+endif
+if !has('win32')
+  set shell=bash
+  if v:version > 600
+     set viminfo='100,<50,s10,h,n~/.cache/vim/viminfo
+  else
+     set viminfo='100,h,n~/.cache/vim/viminfo
+  endif
+endif
+set runtimepath+=~/.config/vim
+set runtimepath+=~/.config/vim/after
+if has('win32')
+   let g:netrw_home=$USERPROFILE.'/.cache/vim'
+endif
+if !has('win32')
+   let g:netrw_home=$XDG_CACHE_HOME.'/vim'
+endif
 
 autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") |   exe "normal g`\"" | endif
 au BufRead,BufNewFile *.md set filetype=markdown
 au BufRead,BufNewFile *.tilespec,*.spec set filetype=dosini
 
+" Remap Ctrl-J as Escape for: normal, insert, operator (y, d etc), visual, command-line
 nnoremap <C-J> <Esc>
 inoremap <C-J> <Esc>
 onoremap <C-J> <Esc>
 vnoremap <C-J> <Esc>
 cnoremap <C-J> <Esc>
 
-map <S-Insert> <MiddleMouse> " Make shift-insert work like in Xterm
-map! <S-Insert> <MiddleMouse> " Make shift-insert work like in Xterm
+if !has('win32')
+	map <S-Insert> <MiddleMouse> " Make shift-insert work like in Xterm
+	map! <S-Insert> <MiddleMouse> " Make shift-insert work like in Xterm
+endif
 map <C-a> :e %:p:s,.h$,.X123X,:s,.cpp$,.h,:s,.X123X$,.cpp,<CR> " switching between .h and .cpp files that in the SAME directory.
 nmap <Space> <PageDown>
 nmap <C-L> :make<up><CR>
@@ -26,7 +48,8 @@ nmap QQ :w<CR>
 inoremap <C-Space> <C-^>
 nmap <C-p> :tabnew<Bar>setlocal buftype=nofile<Bar>read !xclip -o<CR>
 
-call pathogen#infect()
+silent! call pathogen#infect()
+silent! call pathogen#helptags()
 set backspace=indent,eol,start " allow backspacing over everything in insert mode
 set history=50		" keep 50 lines of command line history
 set incsearch		" do incremental searching
@@ -44,7 +67,6 @@ set foldmethod=syntax " autofolds
 set autoindent
 set smartindent
 set pastetoggle=<F5>
-set directory=/var/tmp//,.,/tmp//
 syntax on
 nohl
 
@@ -56,8 +78,14 @@ hi FoldColumn ctermfg=cyan
 filetype plugin indent on
 au FileType python set tabstop=4 | set noexpandtab
 au FileType python call ftplugin#python#PyIndentAutoCfg()
-let g:xml_syntax_folding=1
-au FileType xml setlocal foldmethod=syntax
+au FileType votl set softtabstop=4
+augroup XML
+    autocmd!
+    autocmd FileType xml let g:xml_syntax_folding=1
+    autocmd FileType xml setlocal foldmethod=syntax
+    autocmd FileType xml :syntax on
+    autocmd FileType xml :%foldopen!
+augroup END
 au FileType html setlocal foldmethod=syntax
 au FileType votl setlocal foldlevel=0
 let maplocalleader=",," " Vim Outliner leader key.
