@@ -111,4 +111,5 @@ sed '/plugin.flash./d' | \
 sed '/security.remote_settings.intermediates.checked/d' | \
 sed '/security.remote_settings.crlite_filters.checked/d' | \
 sed '/devtools.netmonitor.columnsData/d' | \
+sed '/devtools.debugger.prefs-schema-version/d' | \
 sed 's|'"$HOME"'|$HOME|g'
