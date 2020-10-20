@@ -251,7 +251,6 @@ known_symlinks.ensure(Path.home()/'.freeciv', XDG_CONFIG_HOME/'freeciv')
 known_symlinks.ensure(XDG_CONFIG_HOME/'freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
 
 known_symlinks.ensure(XDG_CONFIG_HOME/'xfce4'/'terminal', XDG_CONFIG_HOME/'Terminal')
-known_symlinks.ensure(XDG_CONFIG_HOME/'vim'/'autoload'/'pathogen.vim', Path('..')/'bundle'/'pathogen'/'autoload'/'pathogen.vim')
 
 # Third-party symlinks.
 known_symlinks.ignore(XDG_CONFIG_HOME/'vim'/'bundle'/'vimoutliner'/'README.detailed')
