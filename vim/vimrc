@@ -55,12 +55,16 @@ set history=50		" keep 50 lines of command line history
 set incsearch		" do incremental searching
 set hlsearch
 set nobackup
+if has('win32')
+   set nowritebackup
+endif
 set keymap=russian-jcukenwin " Toggle with C-^
 set iminsert=0
 set imsearch=0
 set iskeyword=@,48-57,_,192-255
 set shiftwidth=4
 set tabstop=4
+set softtabstop=4
 set scrolloff=7
 set fo+=cr " perhaps will helps with newline after comments.
 set foldmethod=syntax " autofolds
@@ -75,6 +79,7 @@ hi Folded ctermfg=cyan
 hi FoldColumn ctermbg=none
 hi FoldColumn ctermfg=cyan
 
+filetype on
 filetype plugin indent on
 au FileType python set tabstop=4 | set noexpandtab
 au FileType python call ftplugin#python#PyIndentAutoCfg()
@@ -92,3 +97,109 @@ let maplocalleader=",," " Vim Outliner leader key.
 set foldcolumn=0
 
 set background=light " fixes too bright colours in urxvt
+set nonumber
+set encoding=utf-8
+
+if has("win32")
+  inoremap # X<BS>#
+endif
+
+if has("gui_running")
+  colorscheme desert
+  set guifont=DejaVu_Sans_Mono:h10
+  set guioptions-=m " remove menu bar
+  set guioptions-=T " remove toolbar
+  set guioptions-=r " remove right-hand scroll bar
+  set guioptions-=L " remove left-hand scroll bar
+  set guioptions-=e " use console-like tab bar
+endif
+
+fun! s:DetectJython()
+   let shebang = matchstr(getline(1), '#!/usr/bin/env jython')
+   if shebang != ""
+      set ft=python
+   endif
+endfun
+autocmd BufNewFile,BufRead * call s:DetectJython() " Detecting Jython syntax
+
+let g:detectindent_preferred_when_mixed = 1
+let g:detectindent_preferred_indent = &tabstop
+let g:detectindent_preferred_expandtab = 0
+
+au FileType make set noexpandtab
+au FileType c set expandtab
+au FileType cpp set expandtab
+au FileType changelog set expandtab
+au FileType python set noexpandtab
+au FileType python set foldmethod=indent
+au FileType python set efm=%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m,%Z%m
+au FileType python DetectIndent
+au BufRead,BufNewFile *.md setfiletype markdown
+au FileType markdown set noexpandtab
+au BufRead,BufNewFile *.xsh setfiletype python
+if !has('win32')
+  au FileType cpp set foldmarker={,}
+  au FileType cpp set foldmethod=marker
+endif
+
+function! RestoreCursorPositionForFile()
+   if line("`\"") <= line("$")
+      silent! normal! g`"
+      return 1
+   endif
+endfunction
+
+augroup restore_cursor_position
+   autocmd!
+   autocmd BufWinEnter * call RestoreCursorPositionForFile()
+augroup END
+
+if has('win32')
+  " Avoid mswin.vim making Ctrl-v act as paste
+  noremap <C-V> <C-V>
+  set mouse=c " Disable mouse clicks.
+  set fileformats=unix,dos
+endif
+
+if has("gui_running")
+   cmap <S-Insert> <C-R>+
+   set guicursor+=v:-blockCursor
+endif
+
+if has("gui_running")
+  runtime restore.vim
+endif
+
+" In case of old vim that has no support for Pathogen.
+if !exists("DetectIndent")
+   " Return 1 if using tabs for indents, or 0 otherwise.
+   function PyIsTabIndent()
+     let lnum = 1
+     let got_cols = 0  " 1 if previous lines ended with columns
+     while lnum <= 100
+       let line = getline(lnum)
+       let lnum = lnum + 1
+       if got_cols == 1
+         if line =~ "^\t\t"  " two tabs to prevent false positives
+           return 1
+         endif
+       endif
+       if line =~ ":\s*$"
+         let got_cols = 1
+       else
+         let got_cols = 0
+       endif
+     endwhile
+     return 0
+   endfunction
+
+	function MyDetectIndent()
+      " Check current buffer and configure for tab or space indents.
+      if PyIsTabIndent()
+         set noexpandtab
+      else
+         set expandtab
+      endif
+	endfunction
+	command! -bar -nargs=0 DetectIndent call MyDetectIndent()
+endif
