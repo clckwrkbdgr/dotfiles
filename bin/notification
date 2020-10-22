@@ -1,70 +1,63 @@
 #!/bin/bash
 . "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/click.bash"
+
 MESSAGES_TO_STORE=20 # To store in message log.
 MESSAGE_LOG_FILE="${XDG_STATE_HOME:-$HOME/.state}/notification.log"
-TITLE=notification
-ICON=
+MAX_VOLUME=75 # After that volume will be decreased for the time of notification.
 
-usage() {
-	echo "Usage:"
-	echo "  $(basename ${0}) [-q] [-t title] [-i icon] <text>"
-	echo "      Displays notification pop-up, plays signal sound and reads message aloud."
-	echo "      Also stores last $MESSAGES_TO_STORE messages in log."
-	echo "      -q  - quiet mode (no sounds/voice)."
-	echo "  $(basename ${0}) -l"
-	echo "      Prints previous $MESSAGES_TO_STORE messages."
-	echo "  $(basename ${0}) -h"
-	echo "      Prints this message and exits."
-	echo
-	echo "If message starts with word enclosed in brackets, the content is treated as special tag."
-	echo "Currently recognized tags:"
-	echo "- [P]: override quiet mode even if it was requisted on command line."
-	echo "Tags are removed from text."
+click::command cli 'Displays notification pop-up, plays signal sound and reads message aloud.'
+click::epilog      "Also stores last $MESSAGES_TO_STORE messages in log."
+click::epilog      "If message starts with word enclosed in brackets, the content is treated as special tag."
+click::epilog      "Currently recognized tags:"
+click::epilog      "- [P]: override quiet mode even if it was requisted on command line."
+click::epilog      "Tags are removed from text."
+click::flag '-l' "" 'list_log' --help="Prints previous $MESSAGES_TO_STORE messages."
+click::flag '-q' "" 'quiet' --help="quiet mode (no sounds/voice)."
+click::option '-t' "" 'title' --default='notification' --help="Optional title."
+click::option '-i' "" 'icon' --help="Optional icon."
+click::argument 'text' --default='Beep!' --help="Message to display."
+cli() {
+	if [ "${CLICK_ARGS[list_log]}" ]; then
+		if [ -n "${CLICK_ARGS[text]}" ]; then
+			panic "ERROR: Option -l cannot be used with other options."
+		fi
+		cat "$MESSAGE_LOG_FILE"
+		exit 0
+	fi
+	quiet="${CLICK_ARGS[quiet]}"
+	title="${CLICK_ARGS[title]}"
+	icon="${CLICK_ARGS[icon]}"
+	text="${CLICK_ARGS[text]}"
+	while startswith "$text" '['; do
+		tag="$(echo "$text" | sed 's/^\[\([^]]*\)\].*/\1/')"
+		if [ "$tag" == 'P' ]; then
+			quiet=
+		fi
+		text="$(echo "$text" | sed 's/^\[[^]]*\]//')"
+	done
+
+	prev_volume="$(volume)"
+	if [ -z "$quiet" -a "$prev_volume" -gt "$MAX_VOLUME" ]; then
+		volume "$MAX_VOLUME"
+	else
+		unset prev_volume
+	fi
+
+	[ "$quiet" != true ] && play_signal &
+
+	if [ -n "$text" ]; then
+		notify-send "$title" "$text" --icon="$icon" &
+		tempfile="$(mktemp)"
+		finally "rm -f '$tempfile'"
+		echo "$(date) <${TITLE}> $text" >>"$MESSAGE_LOG_FILE"
+		tail -n "$MESSAGES_TO_STORE" "$MESSAGE_LOG_FILE" >"$tempfile" && mv -f "$tempfile" "$MESSAGE_LOG_FILE"
+		[ "$quiet" != true ] && text-to-speech "$text"
+	fi
+
+	if [ -n "$prev_volume" ]; then
+		volume "$prev_volume"
+	fi
 }
 
-if [ "$*" == "-l" ]; then
-	cat "$MESSAGE_LOG_FILE"
-	exit 0
-fi
-
-while getopts ":hqt:i:l" opt; do
-	case "$opt" in
-		h) usage; exit 0;;
-		l) echo "ERROR: Option -l cannot be used with other options." >&2; usage >&2; exit 1;;
-		t) TITLE=$OPTARG;;
-		i) ICON=$OPTARG;;
-		q) QUIET=true;;
-		\?) echo "Invalid option -$OPTARG"; exit 1;;
-		:) echo "Parameter is missing for -$OPTARG"; exit 1;;
-	esac
-done
-shift $((OPTIND-1))
-
-text="$@"
-while startswith "$text" '['; do
-	tag="$(echo "$text" | sed 's/^\[\([^]]*\)\].*/\1/')"
-	if [ "$tag" == 'P' ]; then
-		QUIET=
-	fi
-	text="$(echo "$text" | sed 's/^\[[^]]*\]//')"
-done
-
-PREV_VOLUME="$(volume)"
-if [ "$QUIET" != true -a "$PREV_VOLUME" -gt 75 ]; then
-	volume 75
-else
-	unset PREV_VOLUME
-fi
-
-[ "$QUIET" != true ] && play_signal &
-if [ -n "$1" ]; then
-	notify-send "$TITLE" "$text" --icon="$ICON" &
-	TEMPFILE="$(mktemp)"
-	echo "$(date) <${TITLE}> $text" >>"$MESSAGE_LOG_FILE"
-	tail -n "$MESSAGES_TO_STORE" "$MESSAGE_LOG_FILE" >"$TEMPFILE" && mv -f "$TEMPFILE" "$MESSAGE_LOG_FILE"
-	[ "$QUIET" != true ] && text-to-speech "$text"
-fi
-
-if [ -n "$PREV_VOLUME" ]; then
-	volume "$PREV_VOLUME"
-fi
+click::run "$@"
