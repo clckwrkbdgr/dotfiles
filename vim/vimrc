@@ -203,3 +203,8 @@ if !exists("DetectIndent")
 	endfunction
 	command! -bar -nargs=0 DetectIndent call MyDetectIndent()
 endif
+
+let $MYLOCALVIMRC=$HOME . "/.local/vimrc"
+if filereadable($MYLOCALVIMRC)
+	source $MYLOCALVIMRC
+endif
