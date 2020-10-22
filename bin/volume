@@ -59,18 +59,8 @@ cli() {
 		else
 			icon=audio-volume-high
 		fi
-		line=$(echo $volume | python3 -c 'i=int(input())//5;print("["+"|"*i+"-"*(20-i)+"] ")')
-		line="${line} ${volume}%"
-
-		if which aosd_cat >/dev/null; then
-			echo "$line" | aosd_cat -d 2 -x 0 -y -745 -e 0 -t 0 -b 255 -B black -R orange -f 0 -u 2000 -o 0 -d 2 &
-		else
-			# Workaround for xfce4-notifyd: kill previous notification popup to display new one in its place.
-			wmctrl -l | grep xfce4-notifyd | awk '{print $1}' | while read wnd_id; do
-				xdotool windowkill "$wnd_id"
-			done
-			notify-send "Volume" -i "$icon" "$line" &
-		fi
+		line=$(echo $volume | python3 -c 'v=int(input());i=v//5;print("{"+"|"*i+"-"*(20-i)+"} " + str(v) + "%")')
+		notification -q --fixed -t "Volume" -i "$icon" "$line"
 	fi
 }
 

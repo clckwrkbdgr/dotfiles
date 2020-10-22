@@ -14,6 +14,7 @@ click::epilog      "- [P]: override quiet mode even if it was requisted on comma
 click::epilog      "Tags are removed from text."
 click::flag '-l' "" 'list_log' --help="Prints previous $MESSAGES_TO_STORE messages."
 click::flag '-q' "" 'quiet' --help="quiet mode (no sounds/voice)."
+click::flag '-f' "--fixed" '' --help="Fixed position. Replaces previous notification if it is still displayed."
 click::option '-t' "" 'title' --default='notification' --help="Optional title."
 click::option '-i' "" 'icon' --help="Optional icon."
 click::argument 'text' --default='Beep!' --help="Message to display."
@@ -47,11 +48,28 @@ cli() {
 	[ "$quiet" != true ] && play_signal &
 
 	if [ -n "$text" ]; then
-		notify-send "$title" "$text" --icon="$icon" &
+		if [ -n "${CLICK_ARGS[fixed]}" ]; then
+			if which aosd_cat >/dev/null; then
+				echo "$text" | aosd_cat -x 0 -y -745 --padding 2 --shadow-offset 0 \
+					--transparency 0 --back-opacity 255 --back-color black --fore-color orange \
+					--fade-in 0 --fade-full 1500 --fade-out 0 \
+					&
+			else
+				# Workaround for xfce4-notifyd: kill previous notification popup to display new one in its place.
+				wmctrl -l | grep xfce4-notifyd | awk '{print $1}' | while read wnd_id; do
+					xdotool windowkill "$wnd_id"
+				done
+				notify-send "$title" "$text" --icon="$icon" &
+			fi
+		else
+			notify-send "$title" "$text" --icon="$icon" &
+		fi
+
 		tempfile="$(mktemp)"
 		finally "rm -f '$tempfile'"
 		echo "$(date) <${TITLE}> $text" >>"$MESSAGE_LOG_FILE"
 		tail -n "$MESSAGES_TO_STORE" "$MESSAGE_LOG_FILE" >"$tempfile" && mv -f "$tempfile" "$MESSAGE_LOG_FILE"
+
 		[ "$quiet" != true ] && text-to-speech "$text"
 	fi
 
