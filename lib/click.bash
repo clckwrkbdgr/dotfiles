@@ -3,6 +3,7 @@
 #
 # Example of usage:
 # click::command bash_function 'Does the thing'
+# click::epilog 'Epilog will be displayed at the bottom of the usage info'
 # click::option '-o' '--option' 'option_name' 'default value' 'Help message for option'
 # click::flag '-f' '--flag' 'flag_name' 'Help message for flag'
 # click::argument 'arg_name' 'Help message for argument'
@@ -23,7 +24,8 @@
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 
 _click_command=''
-_click_help=''
+_click_command_help=''
+_click_command_epilog=''
 declare -A _click_type # 'flag', 'option', 'argument'
 declare -A _click_help
 declare -A _click_short
@@ -111,7 +113,18 @@ click::command() {
 	# Help message may contain escaped symbols compatible with 'echo -e'
 	[ -z "$1" ] && panic 'click::command did not receive an argument!'
 	_click_command="$1"
-	_click_help="$2"
+	_click_command_help="${_click_command_help}\n$2"
+}
+
+click::epilog() {
+	# Adds text to epilog.
+	# Params: <text>
+	# It will be appended to any already exiting epilog, so epilog calls may stack:
+	#   click::epilog 'First line'
+	#   click::epilog 'Second line\nThird line'
+	# Epilog message may also contain escaped symbols compatible with 'echo -e'
+	[ -z "$1" ] && panic 'click::epilog did not receive an argument!'
+	_click_command_epilog="$1"
 }
 
 click::flag() {
@@ -233,8 +246,8 @@ click::usage() {
 		fi
 	done
 	echo "Usage: $usage"
-	if [ -n "${_click_help}" ]; then
-		echo -e "${_click_help}"
+	if [ -n "${_click_command_help}" ]; then
+		echo -e "${_click_command_help}"
 	fi
 	if [ "${#_click_type[@]}" -ne 0 ]; then
 		echo 'Parameters:'
@@ -260,6 +273,9 @@ click::usage() {
 			echo "        Default is false."
 		fi
 	done
+	if [ -n "${_click_command_epilog}" ]; then
+		echo -e "${_click_command_epilog}"
+	fi
 }
 
 # Main associative array of collected CLI args.
@@ -296,22 +312,22 @@ click::run() {
 		if [[ "$arg" =~ $option_re ]]; then
 			for name in "${!_click_type[@]}"; do
 				if [ ${_click_type[$name]} == 'flag' ]; then
-					if [ ${_click_short[$name]} == "$arg" ]; then
+					if [ "${_click_short[$name]}" == "$arg" ]; then
 						CLICK_ARGS["$name"]='true'
 						matched=true
 						break
-					elif [ ${_click_long[$name]} == "$arg" ]; then
+					elif [ "${_click_long[$name]}" == "$arg" ]; then
 						CLICK_ARGS["$name"]='true'
 						matched=true
 						break
 					fi
 				elif [ ${_click_type[$name]} == 'option' ]; then
-					if [ ${_click_short[$name]} == "$arg" ]; then
+					if [ "${_click_short[$name]}" == "$arg" ]; then
 						shift # TODO: check that next value is present and is a value, not an option key.
 						CLICK_ARGS["$name"]="$1"
 						matched=true
 						break
-					elif [ ${_click_long[$name]} == "$arg" ]; then
+					elif [ "${_click_long[$name]}" == "$arg" ]; then
 						shift # TODO: check that next value is present and is a value, not an option key.
 						CLICK_ARGS["$name"]="$1"
 						matched=true
