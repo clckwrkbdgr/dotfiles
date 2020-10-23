@@ -38,7 +38,7 @@ declare -A _click_arg_pos
 click::miniclick() {
 	# Parses arguments in very simple way.
 	# Params: <positionals...> -- <keyword args...> -- "$@"
-	# E.g.: 'short' 'long' 'name' -- 'default' 'help' -- "$@"
+	# E.g.: 'short' 'long' 'name' -- 'default' 'epilog' 'help' -- "$@"
 	# Sets variables with corresponding names.
 	# Expects command line with positionals fully filled first,
 	# and then keyword arguments:
@@ -46,13 +46,15 @@ click::miniclick() {
 	# - or passed as double-dashes named arguments: --arg=<value> in any order
 	# WARNING: Both double-dashed delimiters should be present
 	#          even if positionals or keywords are not required!
-	# Missing arguments are silently ignored and reset to empty values.
-	# E.g.: -o --option option_name --help=Description
+	# Missing arguments are silently ignored and become unset.
+	# It can be tested e.g. with [ -z "${argname+x}" ] to check if arg is set.
+	# E.g.: -o --option option_name --epilog='' --help=Description
 	# will result in:
 	#   short=-o
 	#   long=--option
 	#   name=option_name
-	#   default=
+	#   default=  (actually unset)
+	#   epilog=   (set but empty)
 	#   help=Message
 	# Any unknown extra argument will result in panic.
 	declare -a _miniargs
@@ -66,7 +68,7 @@ click::miniclick() {
 	declare -a _minikwargs
 	while [ -n "$1" -a "$1" != '--' ]; do
 		_minikwargs+=("$1")
-		eval "$1=''"
+		eval "unset $1"
 		shift
 	done
 	[ -z "$1" ] && panic "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: miniclick: cannot find second double-dashed separator!"
@@ -138,12 +140,12 @@ click::flag() {
 	# Help message may contain escaped symbols compatible with 'echo -e'
 	click::miniclick 'short' 'long' 'name' -- help -- "$@"
 
-	short_re='^-[a-z0-9]$'
+	short_re='^-[A-Za-z0-9]$'
 	[ -z "$short" ] && panic 'Short flag is required!'
 	[[ "${short}" =~ $short_re ]] || panic "Expected short flag in format '-<single char>', got instead: '${short}'"
 
 	if [ -n "$long" ]; then
-		long_re='^--[a-z0-9][a-z0-9_-]+$'
+		long_re='^--[A-Za-z0-9][A-Za-z0-9_-]+$'
 		[[ "${long}" =~ $long_re ]] || panic "Expected long flag in format '--<name>', got instead: '${long}'"
 	fi
 
@@ -207,7 +209,7 @@ click::argument() {
 	# Exceptions are only arguments with default values.
 	# If argument is missing, default value is taken,
 	# but only if there is no futher arguments at all.
-	# Default value cannot be empty!
+	# Default value can be empty (--default=''). In this case argument is still considered not required and will be initialiazed with empty value.
 	#
 	# The only valid value for nargs is -1 (or default empty value).
 	# There can be only one argument with nargs=-1 and it should be the last argument.
@@ -225,7 +227,9 @@ click::argument() {
 	fi
 	_click_type["$name"]='argument'
 	_click_help["$name"]="$help"
-	_click_default["$name"]="$default"
+	if [ -n "${default+has_value}" ]; then
+		_click_default["$name"]="$default"
+	fi
 	_click_arg_pos["$name"]="${_click_positional_count}"
 	_click_positional_count=$((_click_positional_count + 1))
 }
@@ -370,7 +374,7 @@ click::run() {
 		for name in "${!_click_type[@]}"; do
 			if [ ${_click_type[$name]} == 'argument' ]; then
 				if [ ${_click_arg_pos[$name]} == "$current_arg_pos" ]; then
-					if [ -n "${_click_default[$name]}" ]; then
+					if [ -n "${_click_default[$name]+has_value}" ]; then
 						CLICK_ARGS["$name"]="${_click_default[$name]}"
 						break
 					else

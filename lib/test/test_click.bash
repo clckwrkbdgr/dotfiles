@@ -48,21 +48,21 @@ should_for_miniclick_ignore_missing_parameters() {
 	short=DEFAULT
 	long=DEFAULT
 	name=DEFAULT
-	default=DEFAULT
+	unset default
 	help=DEFAULT
 	test_click() {
 		click::miniclick 'short' 'long' 'name' -- 'default' 'help' -- "$@"
 		echo "short=<$short>"
 		echo "long=<$long>"
 		echo "name=<$name>"
-		echo "default=<$default>"
+		[ -z "${default+unset}" ] && echo "default=<unset>"
 		echo "help=<$help>"
 	}
 	assertOutputEqual 'test_click -o --option 2>&1' - <<EOF
 short=<-o>
 long=<--option>
 name=<>
-default=<>
+default=<unset>
 help=<>
 EOF
 }
@@ -226,6 +226,20 @@ should_allow_default_value_for_positionals() {
 	test_click() {
 		assertStringsEqual "${CLICK_ARGS[first]}" 'value'
 		assertStringsEqual "${CLICK_ARGS[second]}" 'default'
+	}
+
+	assertExitSuccess 'click::run value'
+}
+
+should_allow_empty_default_value_for_positionals() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first'
+	click::argument 'second' --default=''
+	test_click() {
+		assertStringsEqual "${CLICK_ARGS[first]}" 'value'
+		assertStringsEqual "${CLICK_ARGS[second]}" ''
 	}
 
 	assertExitSuccess 'click::run value'
