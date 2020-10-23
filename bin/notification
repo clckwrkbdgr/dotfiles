@@ -15,9 +15,10 @@ click::epilog      "Tags are removed from text."
 click::flag '-l' "" 'list_log' --help="Prints previous $MESSAGES_TO_STORE messages."
 click::flag '-q' "" 'quiet' --help="quiet mode (no sounds/voice)."
 click::flag '-f' "--fixed" '' --help="Fixed position. Replaces previous notification if it is still displayed."
+click::flag '-N' "--no-history" 'no_history' --help="Do not store this notification in history."
 click::option '-t' "" 'title' --default='notification' --help="Optional title."
 click::option '-i' "" 'icon' --help="Optional icon."
-click::argument 'text' --default='Beep!' --help="Message to display."
+click::argument 'text' --default='' --help="Message to display."
 cli() {
 	if [ "${CLICK_ARGS[list_log]}" ]; then
 		if [ -n "${CLICK_ARGS[text]}" ]; then
@@ -65,10 +66,12 @@ cli() {
 			notify-send "$title" "$text" --icon="$icon" &
 		fi
 
-		tempfile="$(mktemp)"
-		finally "rm -f '$tempfile'"
-		echo "$(date) <${TITLE}> $text" >>"$MESSAGE_LOG_FILE"
-		tail -n "$MESSAGES_TO_STORE" "$MESSAGE_LOG_FILE" >"$tempfile" && mv -f "$tempfile" "$MESSAGE_LOG_FILE"
+		if [ -z "${CLICK_ARGS[no_history]}" ]; then
+			tempfile="$(mktemp)"
+			finally "rm -f '$tempfile'"
+			echo "$(date) <${title}> $text" >>"$MESSAGE_LOG_FILE"
+			tail -n "$MESSAGES_TO_STORE" "$MESSAGE_LOG_FILE" >"$tempfile" && mv -f "$tempfile" "$MESSAGE_LOG_FILE"
+		fi
 
 		[ "$quiet" != true ] && text-to-speech "$text"
 	fi
