@@ -113,7 +113,7 @@ click::command() {
 	# Help message may contain escaped symbols compatible with 'echo -e'
 	[ -z "$1" ] && panic 'click::command did not receive an argument!'
 	_click_command="$1"
-	_click_command_help="${_click_command_help}\n$2"
+	_click_command_help="${_click_command_help}${_click_command_help:+\n}$2"
 }
 
 click::epilog() {
