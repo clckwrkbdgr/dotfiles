@@ -161,6 +161,12 @@ libreoffice/4/user/database/biblio/biblio.dbt
 libreoffice/4/user/database/biblio.odb
 libreoffice/4/user/database/evolocal.odb
 libreoffice/4/user/registrymodifications.xcu
+libreoffice/4/user/extensions/bundled/extensions.pmap
+libreoffice/4/user/pack/*.pack
+libreoffice/4/user/pack/*/*.pack
+libreoffice/4/user/pack/*/*/*.pack
+libreoffice/4/user/config/*.fmt
+libreoffice/4/user/config/javasettings_Linux_*.xml
 # FreeRDP
 freerdp/known_hosts
 # Enchant (for some reason does not recognize $ENCHANT_CONFIG_DIR)

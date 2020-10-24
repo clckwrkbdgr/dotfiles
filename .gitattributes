@@ -27,3 +27,4 @@ xfce4/xfce4-screenshooter filter=expand_homedir
 *.bau diff
 mc/ini filter=mc_ini
 *.reg diff
+libreoffice/4/user/extensions/bundled/registry/*/*.xml filter=pretty_xml

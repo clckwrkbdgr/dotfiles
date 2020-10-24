@@ -51,6 +51,10 @@
 	smudge = cat
 	clean = "python -m json.tool --sort-keys"
 
+[filter "pretty_xml"]
+	smudge = cat
+	clean = "xmllint --format -"
+
 [filter "firefox_pref_js"]
 	smudge = clean-firefox-prefs.sh --restore
 	clean = clean-firefox-prefs.sh
