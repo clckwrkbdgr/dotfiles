@@ -2,7 +2,6 @@
 import os, sys, io
 import base64
 import zipfile
-import argparse
 import clckwrkbdgr.utils
 
 # Metainfo line format:
@@ -45,23 +44,38 @@ def load_zip(text, archive):
         text.read(1) # Content separator
     archive.close()
 
-if __name__ == "__main__":
-    args = argparse.ArgumentParser(description='A tool to dump zip file content to text and load it back.')
-    commands = args.add_subparsers(dest='command')
-    dump_args = commands.add_parser('dump', help='Dumps zip file content converted to text to stdout.')
-    dump_args.add_argument('filename', nargs='?', default=None, help='ZIP file to dump content of. If not specified or "-", stdin is used.')
-    load_args = commands.add_parser('load', help='Converts text representation of zip file to actual archive and sends to stdout.')
-    load_args.add_argument('filename', nargs='?', default=None, help='ZIP file to dump content to. If not specified or "-", stdout is used.')
+import click
 
-    settings = args.parse_args()
+@click.group()
+def cli():
+    """ A tool to dump zip file content to text and load it back. """
+    pass
 
+@cli.command()
+@click.argument('filename', required=False)
+def dump(filename=None):
+    """ Dumps zip file content converted to text to stdout.
+
+    Expectes ZIP file name to dump content of.
+    If not specified or "-", stdin is used.
+    """
     bin_stdout = io.open(sys.stdout.fileno(), 'wb')
+    with clckwrkbdgr.utils.fileinput(filename, 'rb') as f:
+        # Fix for Windows: zip fails to seek on piped input.
+        f = io.BytesIO(f.read())
+        dump_zip(f, bin_stdout)
 
-    if settings.command == 'dump':
-        with clckwrkbdgr.utils.fileinput(settings.filename, 'rb') as f:
-            # Fix for Windows: zip fails to seek on piped input.
-            f = io.BytesIO(f.read())
-            dump_zip(f, bin_stdout)
-    elif settings.command == 'load':
-        with clckwrkbdgr.utils.fileinput(settings.filename, 'rb') as f:
-            load_zip(f, bin_stdout)
+@cli.command()
+@click.argument('filename', required=False)
+def load(filename=None):
+    """ Converts text representation of zip file to actual archive and sends to stdout.
+
+    Expectes ZIP file to dump content to.
+    If not specified or "-", stdout is used.
+    """
+    bin_stdout = io.open(sys.stdout.fileno(), 'wb')
+    with clckwrkbdgr.utils.fileinput(filename, 'rb') as f:
+        load_zip(f, bin_stdout)
+
+if __name__ == "__main__":
+    cli()
