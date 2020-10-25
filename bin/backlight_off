@@ -1,3 +1,4 @@
 #!/bin/sh
-sleep 1 # To wait until all keys are released.
+XINPUT_DEVICE_NAME='AT Translated Set 2 keyboard'
+while xinput query-state "$XINPUT_DEVICE_NAME" | fgrep -q '=down'; do : ; done # To wait until all keys are released.
 xset dpms force off
