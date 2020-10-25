@@ -1,25 +1,23 @@
 #!/bin/bash
-n="$1"
-if [ "$n" == '-h' -o "$n" == '--help' ]; then
-	echo "Repeat command N times"
-	echo "Usage: $0 [-i] <times> <command args...>"
-	echo "   -i --  If specified, ignores return code of each command."
-	echo "          By default exits after first failure."
-	exit
-fi
-ignore_rc=
-if [ "$n" == '-i' ]; then
-	ignore_rc=true
-	shift
-fi
-shift
-if ! echo "$n" | egrep -q '^[0-9]+$'; then
-	echo 'Expected number of times, got instead: <$n>'
-	exit 1
-fi
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/click.bash"
 
-while (( n --> 0 )); do
-	"$@"
-	rc=$?
-	[ $rc == 0 ] || exit $rc
-done
+click::command cli 'Repeat command N times'
+click::flag '-i' '' 'ignore_rc' --help='If specified, ignores return code of each command.
+	By default exits after first failure.'
+click::argument 'times'
+click::argument 'command_args' --nargs=-1
+cli() {
+	ignore_rc=${CLICK_ARGS[ignore_rc]}
+	if ! echo "${CLICK_ARGS[times]}" | egrep -q '^[0-9]+$'; then
+		panic "Expected number of times, got instead: <${CLICK_ARGS[times]}>"
+	fi
+	n="${CLICK_ARGS[times]}"
+	while (( n --> 0 )); do
+		"${CLICK_NARGS[@]}"
+		rc=$?
+		[ $rc != 0 -a -z "$ignore_rc" ] && exit $rc
+	done
+}
+
+click::run "$@"
