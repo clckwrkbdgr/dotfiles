@@ -4,7 +4,7 @@
 
 MESSAGES_TO_STORE=20 # To store in message log.
 MESSAGE_LOG_FILE="${XDG_STATE_HOME:-$HOME/.state}/notification.log"
-MAX_VOLUME=75 # After that volume will be decreased for the time of notification.
+MAX_VOLUME=60 # After that volume will be decreased for the time of notification.
 
 click::command cli 'Displays notification pop-up, plays signal sound and reads message aloud.'
 click::epilog      "Also stores last $MESSAGES_TO_STORE messages in log."
