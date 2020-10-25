@@ -1,14 +1,23 @@
 #!/bin/bash
+. "$XDG_CONFIG_HOME/lib/click.bash"
+
 actual-decode() {
 	url_encoded="${1//+/ }"
 	printf '%b' "${url_encoded//%/\\x}"
 }
 
-DATA=$1
-if [ -z "$DATA" ]; then
-	while read line; do
+click::command cli 'Decodes data encoded with urlencode.'
+click::argument 'data' --default='' --help='If data is not specified as argument, reads lines from stdin.'
+cli() {
+	(
+		if [ -z "${CLICK_ARGS[data]}" ]; then
+			echo "${CLICK_ARGS[data]}"
+		else
+			cat
+		fi
+	) | while read line; do
 		actual-decode "$line"
 	done
-else
-	actual-decode "$DATA"
-fi
+}
+
+click::run "$@"
