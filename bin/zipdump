@@ -3,6 +3,7 @@ import os, sys, io
 import base64
 import zipfile
 import argparse
+import clckwrkbdgr.utils
 
 # Metainfo line format:
 # {length}|<reserved>|filename...
@@ -54,20 +55,13 @@ if __name__ == "__main__":
 
     settings = args.parse_args()
 
-    bin_stdin = io.open(sys.stdin.fileno(), 'rb')
     bin_stdout = io.open(sys.stdout.fileno(), 'wb')
 
     if settings.command == 'dump':
-        if not settings.filename or settings.filename == '-':
+        with clckwrkbdgr.utils.fileinput(settings.filename, 'rb') as f:
             # Fix for Windows: zip fails to seek on piped input.
-            bin_stdin = io.BytesIO(bin_stdin.read())
-            dump_zip(bin_stdin, bin_stdout)
-        else:
-            with open(settings.filename, 'rb') as f:
-                dump_zip(f, bin_stdout)
+            f = io.BytesIO(f.read())
+            dump_zip(f, bin_stdout)
     elif settings.command == 'load':
-        if not settings.filename or settings.filename == '-':
-            load_zip(bin_stdin, bin_stdout)
-        else:
-            with open(settings.filename, 'r') as f:
-                load_zip(f, bin_stdout)
+        with clckwrkbdgr.utils.fileinput(settings.filename, 'rb') as f:
+            load_zip(f, bin_stdout)

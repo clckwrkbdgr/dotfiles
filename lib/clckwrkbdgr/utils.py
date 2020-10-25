@@ -1,5 +1,6 @@
 import sys
 import functools
+import contextlib
 
 def convert_to_exit_code(value):
 	""" Converts value to a valid exit code parameter for sys.exit()
@@ -44,3 +45,47 @@ def exits_with_return_value(function):
 		exit_code = convert_to_exit_code(return_value)
 		sys.exit(exit_code)
 	return _wrapper
+
+@contextlib.contextmanager
+def fileinput(filename, mode=None): # pragma: no cover -- TODO uses sys.stdin, needs mocks.
+	""" Creates context for reading specified file.
+	If filename is None, empty or '-', reads stdin instead.
+	If mode is binary (default is text) and stdin is used, re-opens stdin in binary mode.
+	"""
+	f = None
+	try:
+		if not filename or filename == '-':
+			if 'b' in mode:
+				import io
+				bin_stdin = io.open(sys.stdin.fileno(), 'rb')
+				yield bin_stdin
+			else:
+				yield sys.stdin
+		else:
+			f = open(filename, mode)
+			yield f
+	finally:
+		if f:
+			f.close()
+
+@contextlib.contextmanager
+def fileoutput(filename, mode=None): # pragma: no cover -- TODO uses sys.stdout, needs mocks
+	""" Creates context for writing to specified file.
+	If filename is None, empty or '-', writes to stdout instead.
+	If mode is binary (default is text) and stdout is used, re-opens stdout in binary mode.
+	"""
+	f = None
+	try:
+		if not filename or filename == '-':
+			if 'b' in mode:
+				import io
+				bin_stdout = io.open(sys.stdin.fileno(), 'wb')
+				yield bin_stdout
+			else:
+				yield sys.stdout
+		else:
+			f = open(filename, mode)
+			yield f
+	finally:
+		if f:
+			f.close()
