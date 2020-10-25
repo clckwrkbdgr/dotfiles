@@ -1,13 +1,23 @@
 #!/bin/bash
-if [ "$1" == "--dump" ]; then
-	TMPFILE=$(mktemp)
-	cat > "$TMPFILE"
-	echo '.dump' | sqlite3 "$TMPFILE" | sed 's/replace(\(.*\),'"'"'\\r'"'"',char(13))/\1/;s/replace(\(.*\),'"'"'\\n'"'"',char(10))/\1/;s/\(\\r\)\?\\n/\n/g' | dos2unix
-elif [ "$1" == "--load" ]; then
-	TMPFILE=$(mktemp)
-	dos2unix | sqlite3 "$TMPFILE" # Read DB schema from stdin and populate DB.
-	cat "$TMPFILE"
-else
-	[ -z "$1" ] && echo "No command specified." >&2 || echo "Unknown command $1." >&2
-	echo "Usage: sqlitedump { --load | --dump }" >&2
-fi
+. "$XDG_CONFIG_HOME/lib/click.bash"
+
+click::command cli 'Stdin filter to dump/load SQLite databases from/to text.'
+click::flag '-d' '--dump' ''
+click::flag '-l' '--load' ''
+cli() {
+	if [ -n "${CLICK_ARGS[dump]}" ]; then
+		TMPFILE=$(mktemp)
+		finally "rm -f '$TMPFILE'"
+		cat > "$TMPFILE"
+		echo '.dump' | sqlite3 "$TMPFILE" | sed 's/replace(\(.*\),'"'"'\\r'"'"',char(13))/\1/;s/replace(\(.*\),'"'"'\\n'"'"',char(10))/\1/;s/\(\\r\)\?\\n/\n/g' | dos2unix
+	elif [ -n "${CLICK_ARGS[load]}" ]; then
+		TMPFILE=$(mktemp)
+		finally "rm -f '$TMPFILE'"
+		dos2unix | sqlite3 "$TMPFILE" # Read DB schema from stdin and populate DB.
+		cat "$TMPFILE"
+	else
+		panic "$0: No command specified. See '$0 -h'"
+	fi
+}
+
+click::run "$@"
