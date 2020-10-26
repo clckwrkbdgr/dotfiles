@@ -84,3 +84,9 @@ is_sourced() {
 	fi
 	return 1
 }
+
+as_uri() {
+	# Converts local file path to URI: file://...
+	# File must exist.
+	python -c 'import sys,pathlib; print(pathlib.Path(sys.argv[1]).resolve().as_uri())' "$1"
+}

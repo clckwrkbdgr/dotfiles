@@ -132,4 +132,8 @@ EOF
 	assertExitFailure "bash $tmpscript"
 }
 
+should_convert_file_path_to_uri() {
+	assertStringsEqual "$(as_uri "$0")" "file://$0"
+}
+
 unittest::run should_
