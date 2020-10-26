@@ -227,7 +227,7 @@ click::argument() {
 	fi
 	_click_type["$name"]='argument'
 	_click_help["$name"]="$help"
-	if [ -n "${default+has_value}" ]; then
+	if [ -n "${default+has_value}" -o "$nargs" == '-1' ]; then
 		_click_default["$name"]="$default"
 	fi
 	_click_arg_pos["$name"]="${_click_positional_count}"

@@ -214,6 +214,23 @@ should_consume_even_arguments_with_dash_for_nargs() {
 	assertExitSuccess 'click::run arg1 arg2 arg3 --arg3.1 -arg3.2'
 }
 
+should_allow_zero_given_arguments_for_nargs() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first'
+	click::argument 'second'
+	click::argument 'third' --nargs=-1
+	test_click() {
+		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
+		assertStringsEqual "${CLICK_ARGS[second]}" 'arg2'
+		assertStringsEqual "${#CLICK_NARGS[@]}" 0
+		assertStringsEqual "${CLICK_ARGS[third]}" ''
+	}
+
+	assertExitSuccess 'click::run arg1 arg2'
+}
+
 should_allow_only_negative_one_nargs() {
 	. "$XDG_CONFIG_HOME/lib/click.bash"
 
