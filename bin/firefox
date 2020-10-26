@@ -1,70 +1,39 @@
 #!/bin/bash
-processes_by_names() { # <list of pnames>
-	for pname in "$@"; do
-		pgrep "$pname"
-	done
+. "$XDG_CONFIG_HOME/lib/windowmanager.bash"
+. "$XDG_CONFIG_HOME/lib/click.bash"
+
+browser=${firefox_binary:-/usr/bin/firefox-esr}
+pnames="${firefox_pnames:-firefox-esr x-www-browser iceweasel}"
+
+click::command cli 'Firefox CLI interface.'
+click::flag '-H' '--hide' '' --help='Do not activate browser window.'
+click::flag '-A' '--activate' '' --help='Activate browser window. Without urls will just bring existing window to top. Overrides --hide if both are present.'
+click::argument 'urls' --nargs=-1 --help='URL(s) to open. May be a local file path. May be an *.url file: treated like a *.desktop entry, searches for URL field.'
+cli() {
+	if [ -n "${CLICK_ARGS[activate]}" -a -n "${CLICK_ARGS[hide]}" ]; then
+		CLICK_ARGS[hide]=''
+	fi
+	
+	[ -z "${CLICK_ARGS[hide]}" ] && bring_to_top_by_pnames $pnames
+
+	if [ -n "${CLICK_ARGS[activate]}" -a 0 -eq "${#CLICK_NARGS[@]}" ]; then
+		return 0
+	fi
+
+	for f in "${CLICK_NARGS[@]}"; do
+		if [ -f "$f" ]; then
+			if echo "$f" | grep -q '[.]url$'; then
+				( set -o pipefail;
+					grep 'URL' "$1" | sed 's/^URL *= *//'
+				) && continue
+			fi
+		fi
+		if [ -f "$f" ]; then
+			f="$(as_uri "$f")"
+		fi
+		echo "${f}" | sed 's/\r//g'
+	done | xargs -d '\n' $browser --
 }
 
-windows_by_pid() { # <pid>
-	pid=$1
-	xdotool search --pid "$pid" | while read window_id; do
-		window_name="$(xdotool getwindowname $window_id)"
-		if [ -z "$window_name" ]; then
-			continue
-		fi
-		if xprop -id "$window_id" | grep -q _NET_WM_DESKTOP; then
-			echo $window_id
-		fi
-	done
-}
+click::run "$@"
 
-windows_by_process_names() { # <list of pnames>
-	processes_by_names "$@" | while read pid; do
-		windows_by_pid "$pid"
-	done
-}
-
-bring_to_top() { # <process name(s)>
-	windows_by_process_names "$@" | tail -1 | while read window_id; do
-		if xdotool windowactivate "$window_id"; then
-			return 0
-		fi
-	done
-	return 1
-}
-
-#ulimit -Sm 4000000
-#ulimit -Sv 1000000
-
-browser=${firefox_binary:-/usr/bin/iceweasel}
-pnames="${firefox_pnames:-iceweasel firefox-esr x-www-browser}"
-
-for f in "$@"; do
-	if [ "${f}" == '--hide' ]; then
-		HIDE=true
-	elif [ "${f}" == '--activate' ]; then
-		ACTIVATE=true
-		HIDE=false
-	fi
-done
-[ "$HIDE" != true ] && bring_to_top $pnames
-
-if [ "$ACTIVATE" == true -a "$#" == 1 ]; then
-	exit
-fi
-for f in "$@"; do
-	if [ "${f}" == '--hide' ]; then
-		continue
-	fi
-	if [ -f "$f" ]; then
-		if echo "$f" | grep -q '[.]url$'; then
-			( set -o pipefail;
-				grep 'URL' "$1" | sed 's/^URL *= *//'
-			) && continue
-		fi
-	fi
-	if [ -f "$f" ]; then
-		f="$(python -c 'import sys,pathlib; print(pathlib.Path(sys.argv[1]).resolve().as_uri())' "$f")"
-	fi
-	echo "${f}" | sed 's/\r//g'
-done | xargs -d '\n' $browser --
