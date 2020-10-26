@@ -36,8 +36,15 @@ class SparseCheckout(object):
 			f.write(content)
 
 def branch_is_behind_remote(branch):
-	output = subprocess.check_output('git for-each-ref --format="%(push:track)" refs/heads/{0}'.format(branch))
-	return b'behind' in output
+	try:
+		output = subprocess.check_output(['git', 'for-each-ref', '--format="%(push:track)"', 'refs/heads/{0}'.format(branch)], stderr=subprocess.STDOUT)
+		return b'behind' in output
+	except subprocess.CalledProcessError as e:
+		if b'unknown field name' in e.output:
+			output = subprocess.check_output(['git', 'status', '-sb'.format(branch)])
+			return b'behind' in output
+		else:
+			raise
 
 if __name__ == "__main__":
 	# Fetch remote updates status only.
