@@ -28,6 +28,15 @@ set_wallpaper() {
 	$(current_desktop_environment)::set_wallpaper "$@"
 }
 
+get_wallpaper() {
+	# Prints current wallpaper for current DE (detected automatically).
+	$(current_desktop_environment)::get_wallpaper "$@"
+}
+
+xfce4::get_wallpaper() {
+	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image
+}
+
 xfce4::set_wallpaper() {
 	# Sets wallpaper for XFCE DE.
 	wallpfile="$1"

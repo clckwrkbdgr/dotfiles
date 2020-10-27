@@ -5,6 +5,10 @@
 click::command cli 'Sets specified wallpaper or chooses random if multiple files/directories are specified.'
 click::argument 'file_or_dir' --nargs=-1 --default='' 'Wallpaper file or directory with wallpapers. Without arguments prints current wallpaper.'
 cli() {
+	if [ -z "${CLICK_ARGS[file_or_dir]}" ]; then
+		get_wallpaper
+		return
+	fi
 	wallpfile=$(find "${CLICK_NARGS[@]}" -type f | shuf | head -1)
 	if [ ! -e "$wallpfile" ]; then
 		panic "File was not found: $wallpfile"
