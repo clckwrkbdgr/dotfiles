@@ -1,6 +1,6 @@
 #!/bin/bash
-. "$XDG_CONFIG_HOME/lib/utils.bash"
 . "$XDG_CONFIG_HOME/lib/click.bash"
+. "$XDG_CONFIG_HOME/lib/desktop.bash"
 
 click::command cli 'Sets specified wallpaper or chooses random if multiple files/directories are specified.'
 click::argument 'file_or_dir' --nargs=-1 --default='' 'Wallpaper file or directory with wallpapers. Without arguments prints current wallpaper.'
@@ -11,11 +11,7 @@ cli() {
 	fi
 	wallpfile="$(realpath "$wallpfile")"
 	export_dbus
-
-	#gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$WALLPFILE"
-	#gsettings set org.gnome.desktop.background picture-uri "file://$WALLPFILE"
-	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image -s "$wallpfile"
-	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/image-style -s 4 # Scaled
+	set_wallpaper "$wallpfile"
 }
 
 click::run "$@"

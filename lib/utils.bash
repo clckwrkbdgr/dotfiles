@@ -90,14 +90,3 @@ as_uri() {
 	# File must exist.
 	python -c 'import sys,pathlib; print(pathlib.Path(sys.argv[1]).resolve().as_uri())' "$1"
 }
-
-export_dbus() {
-	# Export environment variables via DBUS for XFCE4 or Gnome.
-	user=$(whoami)
-	pid="$(pgrep -u $user xfce4-session) $(pgrep -u $user gnome-panel)"
-	for dbusenv in $pid; do
-		DBUS_SESSION_BUS_ADDRESS=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$dbusenv/environ | tr -d '\000' | sed -e 's/DBUS_SESSION_BUS_ADDRESS=//')
-		data="DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
-		eval " export $data"
-	done
-}
