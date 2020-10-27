@@ -39,4 +39,12 @@ if ! which dos2unix >/dev/null 2>&1; then
 		mv -f "$tmp" "$1"
 		rm -f "$tmp"
 	}
+	export -f dos2unix
+fi
+
+if ! which realpath >/dev/null 2>&1; then
+	function realpath() {
+		echo "$(cd "$(dirname "$1")"; pwd -P)/$(basename "$1")"
+	}
+	export -f realpath
 fi

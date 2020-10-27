@@ -133,7 +133,8 @@ EOF
 }
 
 should_convert_file_path_to_uri() {
-	assertStringsEqual "$(as_uri "$0")" "file://$0"
+	this_file="$(realpath "$0")"
+	assertStringsEqual "$(as_uri "$this_file")" "file://$this_file"
 }
 
 unittest::run should_
