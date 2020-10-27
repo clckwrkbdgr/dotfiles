@@ -1,27 +1,21 @@
 #!/bin/bash
-if [ -z "$1" ]; then
-	echo "Sets specified wallpaper or chooses random if multiple files/directories are specified."
-	echo "Usage: wallpaper <file/dir> [<file/dir> ...]"
-	exit 1
-fi
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/click.bash"
 
-WALLPFILE=$(find "$@" -type f | shuf | head -1)
+click::command cli 'Sets specified wallpaper or chooses random if multiple files/directories are specified.'
+click::argument 'file_or_dir' --nargs=-1 --default='' 'Wallpaper file or directory with wallpapers. Without arguments prints current wallpaper.'
+cli() {
+	wallpfile=$(find "${CLICK_NARGS[@]}" -type f | shuf | head -1)
+	if [ ! -e "$wallpfile" ]; then
+		panic "File was not found: $wallpfile"
+	fi
+	wallpfile="$(realpath "$wallpfile")"
+	export_dbus
 
-if [ ! -e "$WALLPFILE" ]; then
-	echo "File was not found: $WALLPFILE"
-	exit 1
-fi
+	#gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$WALLPFILE"
+	#gsettings set org.gnome.desktop.background picture-uri "file://$WALLPFILE"
+	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image -s "$wallpfile"
+	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/image-style -s 4 # Scaled
+}
 
-# Export variables via DBUS.
-user=$(whoami)
-pid="$(pgrep -u $user xfce4-session) $(pgrep -u $user gnome-panel)"
-for dbusenv in $pid; do
-	DBUS_SESSION_BUS_ADDRESS=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$dbusenv/environ | tr -d '\000' | sed -e 's/DBUS_SESSION_BUS_ADDRESS=//')
-	data="DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
-	eval " export $data"
-done
-
-#gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$WALLPFILE"
-#gsettings set org.gnome.desktop.background picture-uri "file://$WALLPFILE"
-xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image -s "$WALLPFILE"
-xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/image-style -s 4 # Scaled
+click::run "$@"
