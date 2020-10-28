@@ -43,7 +43,7 @@ def save_mail(index, destdir, custom_filters=None):
 	os.chdir(str(TEMPDIR))
 	mail_file = Path(str(index))
 	if mail_file.exists():
-		shutil.remove(str(mail_file))
+		os.unlink(str(mail_file))
 	if not mail_command(["save {index}".format(index=index), 'delete {index}'.format(index=index)]):
 		print("Cannot save first message.", file=sys.stderr)
 		return False
@@ -59,7 +59,7 @@ def save_mail(index, destdir, custom_filters=None):
 		counter += 1
 	for command in custom_filters:
 		if not run_custom_filter(command, mail_file):
-			shutil.remove(str(mail_file))
+			os.unlink(str(mail_file))
 			break
 	else:
 		destdir.mkdir(parents=True, exist_ok=True)
@@ -84,7 +84,7 @@ def main(destdir, custom_filters=None):
 		if repeats <= 0:
 			print("Loop detected: cannot save first mail, stopping after 1000 iterations.", file=sys.stderr)
 			return False
-	os.remove(str(MAILBOX_BAK))
+	os.unlink(str(MAILBOX_BAK))
 	return True
 
 if __name__ == '__main__': # TODO click
