@@ -151,7 +151,7 @@ endfunction
 
 augroup restore_cursor_position
    autocmd!
-   autocmd BufWinEnter * call RestoreCursorPositionForFile()
+   autocmd BufWinEnter * silent! call RestoreCursorPositionForFile()
 augroup END
 
 if has('win32')
