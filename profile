@@ -48,7 +48,12 @@ done
 [ -f ~/.local/profile.`hostname` ] && . ~/.local/profile.`hostname`
 
 # For interactive login shell it's better to source shell rc.
-if [ -n "$BASH_VERSION" -a "$0" != /bin/sh ]; then
+if [ -n "$BASH_VERSION" ]; then
+	case :$SHELLOPTS: in
+		*:posix:*) export BASH_POSIX_MODE=on ;;
+	esac
+fi
+if [ -n "$BASH_VERSION" -a -z "$BASH_POSIX_MODE" ]; then
 	if [ -n "$PS1" ]; then
 		if [ -f "$HOME/.bashrc" ]; then
 			. "$HOME/.bashrc"
