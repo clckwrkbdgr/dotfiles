@@ -1,9 +1,12 @@
 # Utility functions that allow to run executable from binpath other that the current one.
 
-# Removes given dirname from the $PATH.
-path::strip() { # <binpath directory>
+# Removes given dirname from the $PATH (or specified variable).
+path::strip() { # <binpath directory> [<path variable name, default is PATH>]
 	[ -z "$1" ] && return 1
-	PATH="`echo "$PATH" | tr ':' '\n' | fgrep -v "${1}" | tr '\n' ':' | sed 's/:*$//'`"
+	varname="${2:-PATH}"
+	eval "value=\"\$${varname}\""
+	value="`echo "$value" | tr ':' '\n' | fgrep -v "${1}" | tr '\n' ':' | sed 's/:*$//'`"
+	eval "${varname}='$value'"
 }
 
 # Strips current script's directory from the $PATH.
