@@ -312,4 +312,26 @@ should_allow_default_values_for_several_tailing_positionals() {
 	assertExitSuccess 'click::run'
 }
 
+should_treat_all_params_as_positionals_after_double_dash() {
+	. "$XDG_CONFIG_HOME/lib/click.bash"
+
+	click::command test_click
+	click::argument 'first'
+	click::option -o --option option_name
+	click::argument 'second'
+	click::argument 'third' --nargs=-1
+	test_click() {
+		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
+		assertStringsEqual "${CLICK_ARGS[second]}" '--option'
+		assertStringsEqual "${CLICK_ARGS[third]}" 'arg3 -o arg3.2'
+		assertStringsEqual "${#CLICK_NARGS[@]}" 3
+		assertStringsEqual "${CLICK_NARGS[0]}" 'arg3'
+		assertStringsEqual "${CLICK_NARGS[1]}" '-o'
+		assertStringsEqual "${CLICK_NARGS[2]}" 'arg3.2'
+	}
+
+	assertExitSuccess 'click::run arg1 -- --option arg3 -o arg3.2'
+}
+
+
 unittest::run should_

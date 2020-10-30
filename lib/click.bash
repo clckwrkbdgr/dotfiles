@@ -305,6 +305,7 @@ click::run() {
 		CLICK_ARGS["$name"]="${_click_default[$name]}"
 	done
 	current_arg_pos=0
+	found_double_dash=
 	option_re='^-.+'
 	while [ -n "$1" ]; do
 		arg="$1"
@@ -313,12 +314,17 @@ click::run() {
 			click::usage >&2
 			exit 0
 		fi
-		if [ "${#CLICK_NARGS[@]}" -gt 0 ]; then
+		if [ "$arg" == '--' ]; then
+			found_double_dash=true
+			shift
+			continue
+		fi
+		if [ -z "$found_double_dash" -a "${#CLICK_NARGS[@]}" -gt 0 ]; then
 			CLICK_NARGS+=("$1")
 			name="$_click_narg_argument"
 			CLICK_ARGS["$name"]="${CLICK_ARGS["$name"]} $1"
 			matched=true
-		elif [[ "$arg" =~ $option_re ]]; then
+		elif [ -z "$found_double_dash" ] && [[ "$arg" =~ $option_re ]]; then
 			for name in "${!_click_type[@]}"; do
 				if [ ${_click_type[$name]} == 'flag' ]; then
 					if [ "${_click_short[$name]}" == "$arg" ]; then
