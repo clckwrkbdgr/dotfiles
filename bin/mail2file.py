@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals
 import os, sys, shutil, subprocess
 import getpass
 import logging
+import functools, contextlib
 import email.parser
 try:
 	from pathlib2 import Path
@@ -13,7 +14,6 @@ import clckwrkbdgr.utils, clckwrkbdgr.fs
 
 MAILBOX = Path(os.environ.get('MAILPATH', Path('/var/mail')/getpass.getuser()))
 MAILBOX_BAK = xdg.save_cache_path()/'mbox.{0}'.format(os.getpid())
-TEMPDIR = xdg.save_cache_path('mail.{0}'.format(os.getpid()))
 
 def mail_command(commands):
 	MAIL_COMMAND = ['mail', '-N']
@@ -40,8 +40,6 @@ def save_mail(index, destdir, custom_filters=None):
 	destdir = Path(destdir)
 	custom_filters = custom_filters or []
 
-	TEMPDIR.mkdir(parents=True, exist_ok=True)
-	os.chdir(str(TEMPDIR))
 	mail_file = Path(str(index))
 	if mail_file.exists():
 		os.unlink(str(mail_file))
@@ -53,7 +51,7 @@ def save_mail(index, destdir, custom_filters=None):
 		return False
 	try:
 		eml = email.parser.BytesHeaderParser().parsebytes(mail_file.read_bytes())
-		orig_header = eml['Subject']
+		orig_header = clckwrkbdgr.fs.make_valid_filename(eml['Subject'])
 		header = orig_header
 		counter = 0
 		while (destdir/header).exists():
@@ -66,14 +64,9 @@ def save_mail(index, destdir, custom_filters=None):
 		else:
 			destdir.mkdir(parents=True, exist_ok=True)
 			os.rename(str(mail_file), str(destdir/header))
-		os.chdir('/')
 	except:
 		logging.exception('Failed to process saved mail file {0}. Backup of original mbox is stored at {1}'.format(mail_file, MAILBOX_BAK))
 		return False
-	try:
-		shutil.rmtree(str(TEMPDIR))
-	except OSError as e:
-		logging.exception('Failed to remove temp dir.')
 	return True
 
 import click
@@ -93,13 +86,20 @@ def main(destdir, custom_filters=None):
 		return True
 	repeats = 1000
 	shutil.copy(str(MAILBOX), str(MAILBOX_BAK))
+	TEMPDIR = xdg.save_cache_path('mail.{0}'.format(os.getpid()))
+	os.chdir(str(TEMPDIR))
 	while MAILBOX.stat().st_size != 0:
 		if not save_mail(1, destdir, custom_filters=custom_filters):
-			break
+			return False
 		repeats -= 1
 		if repeats <= 0:
 			print("Loop detected: cannot save first mail, stopping after 1000 iterations.", file=sys.stderr)
 			return False
+	try:
+		os.chdir('/')
+		shutil.rmtree(str(TEMPDIR))
+	except OSError as e:
+		logging.exception('Failed to remove temp dir.')
 	os.unlink(str(MAILBOX_BAK))
 	return True
 
