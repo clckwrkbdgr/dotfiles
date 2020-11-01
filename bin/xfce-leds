@@ -2,8 +2,10 @@
 import os, sys, subprocess
 import re
 import configparser
+import logging
+import click
 from PIL import Image
-from clckwrkbdgr import xdg
+from clckwrkbdgr import xdg, utils
 
 """
 Each section in ini-file is a separate LED.
@@ -19,29 +21,12 @@ character_on = 'S'
 character_off = ' '
 """
 
-def get_cache_dir(): # TODO xdg module
-    xdg_cache_dir = os.environ.get('XDG_CACHE_HOME')
-    if not xdg_cache_dir:
-        xdg_cache_dir = os.path.join(os.path.expanduser("~"), ".cache")
-    app_cache_dir = os.path.join(xdg_cache_dir, "xfce4", "leds")
-    os.makedirs(app_cache_dir, exist_ok=True)
-    return app_cache_dir
-
-def unquote_string(string):
-	string = string.strip()
-	if string.startswith('"') and string.endswith('"'):
-		string = string[1:-1]
-	if string.startswith("'") and string.endswith("'"):
-		string = string[1:-1]
-	# Apparently 'unicode_escape' returns string with corrupted utf-8 encoding.
-	return bytes(string, "utf-8").decode('unicode_escape').encode("latin1").decode("utf-8")
-
 def read_xset_led_status():
 	xset = subprocess.Popen(["xset", "q"], stdout=subprocess.PIPE)
 	out, err = xset.communicate()
 	if xset.returncode != 0:
 		if err:
-			print('error: {0}'.format(err))
+			logging.error('failed to read xset state: {0}'.format(err))
 
 	out = out.decode('utf-8')
 	out = out.splitlines()[3:8]
@@ -53,60 +38,88 @@ def read_xset_led_status():
 				leds[m.groups()[1]] = m.groups()[2] == 'on'
 	return leds
 
-if __name__ == "__main__":
+class Config(object):
+	class Group(object):
+		def __init__(self, state_symbol, character_on, character_off, image_on, image_off, command=None, name=None):
+			self.state_symbol = state_symbol
+			self.command = command
+			self.name = name
+			self.character_on = character_on
+			self.character_off = character_off
+			self.image_on = os.path.expanduser(image_on)
+			self.image_off = os.path.expanduser(image_off)
+		def get_character(self, is_on):
+			return self.character_on if is_on else self.character_off
+		def get_image(self, is_on):
+			return self.image_on if is_on else self.image_off
+
+	def __init__(self, filename):
+		self.filename = filename
+		self.parser = configparser.ConfigParser()
+		self.parser.read([str(self.filename)])
+	def last_update(self):
+		return os.path.getmtime(str(self.filename))
+	def _read_value(self, category, setting_name, default_value=None):
+		value = category.get(setting_name)
+		if value is None:
+			logging.error("Missing setting {1} for group {0}.\n".format(repr(name), repr(setting_name)))
+			return default_value
+		return utils.unquote_string(value, fix_unicode_escape=True)
+	def all_groups(self):
+		for index, name in enumerate(self.parser):
+			if name == 'DEFAULT':
+				continue
+			state_symbol = chr(ord('A') + index)
+			group = self.parser[name]
+			command, name = None, None
+			if 'command' in group:
+				command = utils.unquote_string(group['command'], fix_unicode_escape=True)
+			elif 'name' in group:
+				name = utils.unquote_string(group['name'], fix_unicode_escape=True)
+			else:
+				logging.error("Unknown group {0}. Where's command or name?\n".format(group))
+				continue
+			group = Config.Group(state_symbol,
+					character_on=self._read_value(group, 'character_on', default_value=' '),
+					character_off=self._read_value(group, 'character_off', default_value=' '),
+					image_on=self._read_value(group, 'image_on'),
+					image_off=self._read_value(group, 'image_off'),
+					command=command, name=name,
+					)
+			yield group
+
+@click.command()
+def cli():
 	leds = read_xset_led_status()
 
-	settings = configparser.SafeConfigParser()
 	config_file = xdg.save_config_path('xfce4')/"xfce-leds.ini"
-	settings.read([str(config_file)])
-	config_mtime = os.path.getmtime(str(config_file))
+	settings = Config(config_file)
 	tooltip = ''
 	images = []
 	states = ''
-	for index, group in enumerate(settings):
-		if group == 'DEFAULT':
-			continue
+	for group in settings.all_groups():
 		state = False
-		if 'command' in settings[group]:
-			command = unquote_string(settings[group]['command'])
+		if group.command:
 			try:
-				state = 0 == subprocess.call(command, shell=True)
+				state = 0 == subprocess.call(group.command, shell=True)
 			except FileNotFoundError:
-				sys.stderr.write("Error executing command {0}\n".format(command))
-		elif 'name' in settings[group]:
-			name = unquote_string(settings[group]['name'])
-			if name in leds:
-				state = leds[name]
+				logging.error("Error executing command {0}\n".format(repr(group.command)))
+		elif group.name:
+			if group.name in leds:
+				state = leds[group.name]
 			else:
-				sys.stderr.write("Unknown led {0}\n".format(name))
-		else:
-			sys.stderr.write("Unknown group {0}. Where's command or name?\n".format(group))
+				logging.error("Unknown led {0}\n".format(group.name))
 
-		char_setting = 'character_on' if state else 'character_off'
-		character = ' '
-		if char_setting in settings[group]:
-			character = unquote_string(settings[group][char_setting])
-		else:
-			sys.stderr.write("Missing setting {1} for group {0}.\n".format(group, char_setting))
-		tooltip += character
-
-		image_setting = 'image_on' if state else 'image_off'
-		image = ' '
-		if image_setting in settings[group]:
-			image = os.path.expanduser(unquote_string(settings[group][image_setting]))
-		else:
-			sys.stderr.write("Missing setting {1} for group {0}.\n".format(group, image_setting))
-		images.append(image)
-
-		state_symbol = chr(ord('A') + index)
-		states += state_symbol.upper() if state else state_symbol.lower()
+		tooltip += group.get_character(state)
+		images.append(group.get_image(state))
+		states += group.state_symbol.upper() if state else group.state_symbol.lower()
 	state_image_path = xdg.save_cache_path('xfce4', 'leds')/"leds_{0}.png".format(states)
 	image_exists = state_image_path.exists()
-	image_is_too_old = image_exists and config_mtime > os.path.getmtime(str(state_image_path))
+	image_is_too_old = image_exists and settings.last_update() > os.path.getmtime(str(state_image_path))
 	if image_is_too_old:
-		sys.stderr.write("Image is too old.\n")
+		logging.error("Image is too old.\n")
 	if not image_exists or image_is_too_old:
-		frames = [Image.open(image) for image in images]
+		frames = [Image.open(image) for image in images if image]
 		widths = [image.width for image in frames]
 		full_width, frame_width = sum(widths), max(widths)
 		full_height = max([image.width for image in frames])
@@ -115,3 +128,6 @@ if __name__ == "__main__":
 			band.paste(frame, (frame_width * index, 0))
 		band.save(str(state_image_path))
 	sys.stdout.write("<img>{0}</img>\n<tool>{1}</tool>\n".format(state_image_path, tooltip))
+
+if __name__ == "__main__":
+	cli()
