@@ -89,3 +89,14 @@ def fileoutput(filename, mode=None): # pragma: no cover -- TODO uses sys.stdout,
 	finally:
 		if f:
 			f.close()
+
+def unquote_string(string, fix_unicode_escape=False):
+	string = string.strip()
+	if string.startswith('"') and string.endswith('"'):
+		string = string[1:-1]
+	if string.startswith("'") and string.endswith("'"):
+		string = string[1:-1]
+	# Apparently 'unicode_escape' returns string with corrupted utf-8 encoding.
+	if fix_unicode_escape:
+		string = bytes(string, "utf-8").decode('unicode_escape').encode("latin1").decode("utf-8")
+	return string
