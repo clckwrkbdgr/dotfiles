@@ -88,6 +88,27 @@ class Config(object):
 					)
 			yield group
 
+def join_image_strip(image_files, output_file):
+	""" Join multiple image files into a single horizontal strip. """
+	frames = [Image.open(str(image)) for image in image_files if image]
+	widths = [image.width for image in frames]
+	full_width, frame_width = sum(widths), max(widths)
+	full_height = max([image.width for image in frames])
+	band = Image.new('RGBA', (full_width, full_height))
+	for index, frame in enumerate(frames):
+		band.paste(frame, (frame_width * index, 0))
+	band.save(str(output_file))
+
+def get_state_image(states, last_update):
+	state_image_path = xdg.save_cache_path('xfce4', 'leds')/"leds_{0}.png".format(states)
+	image_exists = state_image_path.exists()
+	image_is_too_old = image_exists and last_update > os.path.getmtime(str(state_image_path))
+	if image_is_too_old:
+		logging.debug("Image is too old.")
+	if not image_exists or image_is_too_old:
+		join_image_strip(images, state_image_path)
+	return state_image_path
+
 @click.command()
 def cli():
 	leds = read_xset_led_status()
@@ -113,20 +134,7 @@ def cli():
 		tooltip += group.get_character(state)
 		images.append(group.get_image(state))
 		states += group.state_symbol.upper() if state else group.state_symbol.lower()
-	state_image_path = xdg.save_cache_path('xfce4', 'leds')/"leds_{0}.png".format(states)
-	image_exists = state_image_path.exists()
-	image_is_too_old = image_exists and settings.last_update() > os.path.getmtime(str(state_image_path))
-	if image_is_too_old:
-		logging.debug("Image is too old.")
-	if not image_exists or image_is_too_old:
-		frames = [Image.open(image) for image in images if image]
-		widths = [image.width for image in frames]
-		full_width, frame_width = sum(widths), max(widths)
-		full_height = max([image.width for image in frames])
-		band = Image.new('RGBA', (full_width, full_height))
-		for index, frame in enumerate(frames):
-			band.paste(frame, (frame_width * index, 0))
-		band.save(str(state_image_path))
+	state_image_path = get_state_image(states, settings.last_update())
 	sys.stdout.write("<img>{0}</img>\n<tool>{1}</tool>\n".format(state_image_path, tooltip))
 
 if __name__ == "__main__":
