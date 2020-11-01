@@ -51,21 +51,25 @@ def save_mail(index, destdir, custom_filters=None):
 	if not mail_file.exists():
 		logging.error("Cannot save first message.")
 		return False
-	eml = email.parser.BytesHeaderParser().parsebytes(mail_file.read_bytes())
-	orig_header = eml['Subject']
-	header = orig_header
-	counter = 0
-	while (destdir/header).exists():
-		header = "{0}_{1}".format(orig_header, counter)
-		counter += 1
-	for command in custom_filters:
-		if not run_custom_filter(command, mail_file):
-			os.unlink(str(mail_file))
-			break
-	else:
-		destdir.mkdir(parents=True, exist_ok=True)
-		os.rename(str(mail_file), str(destdir/header))
-	os.chdir('/')
+	try:
+		eml = email.parser.BytesHeaderParser().parsebytes(mail_file.read_bytes())
+		orig_header = eml['Subject']
+		header = orig_header
+		counter = 0
+		while (destdir/header).exists():
+			header = "{0}_{1}".format(orig_header, counter)
+			counter += 1
+		for command in custom_filters:
+			if not run_custom_filter(command, mail_file):
+				os.unlink(str(mail_file))
+				break
+		else:
+			destdir.mkdir(parents=True, exist_ok=True)
+			os.rename(str(mail_file), str(destdir/header))
+		os.chdir('/')
+	except:
+		logging.exception('Failed to process saved mail file {0}. Backup of original mbox is stored at {1}'.format(mail_file, MAILBOX_BAK))
+		return False
 	try:
 		shutil.rmtree(str(TEMPDIR))
 	except OSError as e:
@@ -90,7 +94,8 @@ def main(destdir, custom_filters=None):
 	repeats = 1000
 	shutil.copy(str(MAILBOX), str(MAILBOX_BAK))
 	while MAILBOX.stat().st_size != 0:
-		save_mail(1, destdir, custom_filters=custom_filters)
+		if not save_mail(1, destdir, custom_filters=custom_filters):
+			break
 		repeats -= 1
 		if repeats <= 0:
 			print("Loop detected: cannot save first mail, stopping after 1000 iterations.", file=sys.stderr)
