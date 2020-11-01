@@ -2,7 +2,7 @@
 from __future__ import print_function, unicode_literals
 import os, sys, shutil, subprocess
 import getpass
-import argparse
+import logging
 try:
 	from pathlib2 import Path
 except ImportError:
@@ -19,7 +19,7 @@ def mail_command(commands):
 	p = subprocess.Popen(MAIL_COMMAND, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 	_, errors = p.communicate('\n'.join(commands).encode('utf-8', 'replace'))
 	if errors:
-		print(errors)
+		logging.error(errors)
 	return 0 == p.wait()
 
 def get_header(mbox):
@@ -57,10 +57,10 @@ def save_mail(index, destdir, custom_filters=None):
 	if mail_file.exists():
 		os.unlink(str(mail_file))
 	if not mail_command(["save {index}".format(index=index), 'delete {index}'.format(index=index)]):
-		print("Cannot save first message.", file=sys.stderr)
+		logging.error("Cannot save first message.")
 		return False
 	if not mail_file.exists():
-		print("Cannot save first message.", file=sys.stderr)
+		logging.error("Cannot save first message.")
 		return False
 	content = mail_file.read_bytes().decode('utf-8', 'replace')
 	orig_header = get_header(content)
@@ -80,7 +80,7 @@ def save_mail(index, destdir, custom_filters=None):
 	try:
 		shutil.rmtree(str(TEMPDIR))
 	except OSError as e:
-		print(e, file=sys.stderr)
+		logging.exception('Failed to remove temp dir.')
 	return True
 
 import click
