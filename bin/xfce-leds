@@ -62,7 +62,7 @@ class Config(object):
 	def _read_value(self, category, setting_name, default_value=None):
 		value = category.get(setting_name)
 		if value is None:
-			logging.error("Missing setting {1} for group {0}.\n".format(repr(name), repr(setting_name)))
+			logging.error("Missing setting {1} for group {0}.".format(repr(name), repr(setting_name)))
 			return default_value
 		return utils.unquote_string(value, fix_unicode_escape=True)
 	def all_groups(self):
@@ -77,7 +77,7 @@ class Config(object):
 			elif 'name' in group:
 				name = utils.unquote_string(group['name'], fix_unicode_escape=True)
 			else:
-				logging.error("Unknown group {0}. Where's command or name?\n".format(group))
+				logging.error("Unknown group {0}. Where's command or name?".format(group))
 				continue
 			group = Config.Group(state_symbol,
 					character_on=self._read_value(group, 'character_on', default_value=' '),
@@ -103,12 +103,12 @@ def cli():
 			try:
 				state = 0 == subprocess.call(group.command, shell=True)
 			except FileNotFoundError:
-				logging.error("Error executing command {0}\n".format(repr(group.command)))
+				logging.error("Error executing command {0}".format(repr(group.command)))
 		elif group.name:
 			if group.name in leds:
 				state = leds[group.name]
 			else:
-				logging.error("Unknown led {0}\n".format(group.name))
+				logging.error("Unknown led {0}".format(group.name))
 
 		tooltip += group.get_character(state)
 		images.append(group.get_image(state))
@@ -117,7 +117,7 @@ def cli():
 	image_exists = state_image_path.exists()
 	image_is_too_old = image_exists and settings.last_update() > os.path.getmtime(str(state_image_path))
 	if image_is_too_old:
-		logging.error("Image is too old.\n")
+		logging.debug("Image is too old.")
 	if not image_exists or image_is_too_old:
 		frames = [Image.open(image) for image in images if image]
 		widths = [image.width for image in frames]
