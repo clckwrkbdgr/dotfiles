@@ -9,3 +9,7 @@ def CurrentDir(path):
 		yield
 	finally:
 		os.chdir(old_cwd)
+
+def make_valid_filename(name):
+	""" Converts given name to a valid filename. """
+	return name.replace('/', '_')

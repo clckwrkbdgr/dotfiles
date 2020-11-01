@@ -7,10 +7,12 @@ try:
 	from pathlib2 import Path
 except ImportError:
 	from pathlib import Path
+from clckwrkbdgr import xdg
+import clckwrkbdgr.utils, clckwrkbdgr.fs
 
 MAILBOX = Path(os.environ.get('MAILPATH', Path('/var/mail')/getpass.getuser()))
-MAILBOX_BAK = Path.home()/'.cache'/'mbox.{0}'.format(os.getpid()) # TODO xdg or tmp?
-TEMPDIR = Path.home()/'.cache'/'mail.{0}'.format(os.getpid()) # TODO xdg or tmp?
+MAILBOX_BAK = xdg.save_cache_path()/'mbox.{0}'.format(os.getpid())
+TEMPDIR = xdg.save_cache_path('mail.{0}'.format(os.getpid()))
 
 def mail_command(commands):
 	MAIL_COMMAND = ['mail', '-N']
@@ -23,7 +25,7 @@ def mail_command(commands):
 def get_header(mbox):
 	for line in mbox.splitlines():
 		if line.startswith('Subject: '):
-			return line.split(' ', 1)[-1].replace('/', '_') # TODO move it out of here and make check_os_file_name(filename)
+			return clckwrkbdgr.fs.make_valid_filename(line.split(' ', 1)[-1])
 	return None
 
 def print_body(mbox):
@@ -33,7 +35,17 @@ def print_body(mbox):
 	return mbox[body_start+1:]
 
 def run_custom_filter(command, filename):
-	return 0 == subprocess.call([command, str(filename)])
+	""" Runs custom filter command on given file.
+	Command should take filename as $1 and return non-zero if file should be removed.
+
+	Returns True if mail file should be left untouched,
+	otherwise False if it should be removed.
+	"""
+	try:
+		return 0 == subprocess.call([command, str(filename)])
+	except Exception as e:
+		logging.exception('Failed to run custom filter.')
+		return True
 
 def save_mail(index, destdir, custom_filters=None):
 	destdir = Path(destdir)
@@ -71,7 +83,17 @@ def save_mail(index, destdir, custom_filters=None):
 		print(e, file=sys.stderr)
 	return True
 
+import click
+
+@click.command()
+@click.argument('destdir')
+@click.option('--filter', 'custom_filters', multiple=True, help='Custom filters for mail messages. Each command should take single argument (file name, mbox format) and return EXIT_FAILURE (non-zero) in case if file should be removed. Filters are applied in order of specification. Filter command can alter file content.')
+@clckwrkbdgr.utils.exits_with_return_value
 def main(destdir, custom_filters=None):
+	""" Saves Unix mailbox to a set of files.
+
+	Destination directory will be created if does not exist.
+	"""
 	if not MAILBOX.exists():
 		return True
 	if MAILBOX.stat().st_size == 0:
@@ -87,10 +109,5 @@ def main(destdir, custom_filters=None):
 	os.unlink(str(MAILBOX_BAK))
 	return True
 
-if __name__ == '__main__': # TODO click
-	parser = argparse.ArgumentParser(description='Saves Unix mailbox to a set of files.')
-	parser.add_argument('destdir', help='Destination directory. Will be created if does not exist.')
-	parser.add_argument('--filter', nargs='+', help='Custom filters for mail messages. Each command should take single argument (file name, mbox format) and return EXIT_FAILURE (non-zero) in case if file should be removed. Filters are applied in order of specification. Filter command can alter file content.')
-	settings = parser.parse_args()
-	if not main(settings.destdir, custom_filters=settings.filter):
-		sys.exit(1)
+if __name__ == '__main__':
+	main()
