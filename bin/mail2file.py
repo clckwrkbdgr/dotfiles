@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals
 import os, sys, shutil, subprocess
 import getpass
 import logging
+import email.parser
 try:
 	from pathlib2 import Path
 except ImportError:
@@ -21,18 +22,6 @@ def mail_command(commands):
 	if errors:
 		logging.error(errors)
 	return 0 == p.wait()
-
-def get_header(mbox):
-	for line in mbox.splitlines():
-		if line.startswith('Subject: '):
-			return clckwrkbdgr.fs.make_valid_filename(line.split(' ', 1)[-1])
-	return None
-
-def print_body(mbox):
-	body_start = mbox.find('\n\n')
-	if body_start < 0:
-		return None
-	return mbox[body_start+1:]
 
 def run_custom_filter(command, filename):
 	""" Runs custom filter command on given file.
@@ -62,8 +51,8 @@ def save_mail(index, destdir, custom_filters=None):
 	if not mail_file.exists():
 		logging.error("Cannot save first message.")
 		return False
-	content = mail_file.read_bytes().decode('utf-8', 'replace')
-	orig_header = get_header(content)
+	eml = email.parser.BytesHeaderParser().parsebytes(mail_file.read_bytes())
+	orig_header = eml['Subject']
 	header = orig_header
 	counter = 0
 	while (destdir/header).exists():
