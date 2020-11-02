@@ -7,9 +7,11 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 import os
 import clckwrkbdgr.fs
-try:
+try: # pragma: no cover
+	import pathlib2 as pathlib
 	from pathlib2 import Path
 except ImportError: # pragma: no cover
+	import pathlib
 	from pathlib import Path
 
 @mock.patch('os.getcwd', return_value='old')
@@ -27,3 +29,6 @@ class TestPathUtils(unittest.TestCase):
 class TestFSUtils(unittest.TestCase):
 	def should_create_valid_filename(self):
 		self.assertEqual(clckwrkbdgr.fs.make_valid_filename('name/with/slashes'), 'name_with_slashes')
+	@mock.patch(pathlib.__name__ + '.Path.exists', side_effect=(True, True, True, False))
+	def should_create_unique_name(self, *mocks):
+		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('foo.bar'), Path('foo.2.bar'))

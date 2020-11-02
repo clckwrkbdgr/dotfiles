@@ -54,19 +54,14 @@ def save_mail(index, destdir, custom_filters=None):
 			eml = email.parser.BytesHeaderParser().parsebytes(mail_file.read_bytes())
 		except AttributeError: # pragma: no cover -- py2 compatibility
 			eml = email.parser.Parser().parsestr(mail_file.read_bytes().decode('utf-8', 'replace'), headersonly=True)
-		orig_header = clckwrkbdgr.fs.make_valid_filename(eml['Subject'])
-		header = orig_header
-		counter = 0
-		while (destdir/header).exists():
-			header = "{0}_{1}".format(orig_header, counter)
-			counter += 1
 		for command in custom_filters:
 			if not run_custom_filter(command, mail_file):
 				os.unlink(str(mail_file))
 				break
 		else:
+			destfile = destdir/clckwrkbdgr.fs.make_unique_filename(eml['Subject'])
 			destdir.mkdir(parents=True, exist_ok=True)
-			os.rename(str(mail_file), str(destdir/header))
+			os.rename(str(mail_file), str(destfile))
 	except:
 		logging.exception('Failed to process saved mail file {0}. Backup of original mbox is stored at {1}'.format(mail_file, MAILBOX_BAK))
 		return False
