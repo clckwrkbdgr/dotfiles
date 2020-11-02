@@ -97,6 +97,6 @@ def unquote_string(string, fix_unicode_escape=False):
 	if string.startswith("'") and string.endswith("'"):
 		string = string[1:-1]
 	# Apparently 'unicode_escape' returns string with corrupted utf-8 encoding.
-	if fix_unicode_escape:
+	if fix_unicode_escape: # pragma: no cover -- TODO what's this for? Came from xfce-leds while reading ini.
 		string = bytes(string, "utf-8").decode('unicode_escape').encode("latin1").decode("utf-8")
 	return string

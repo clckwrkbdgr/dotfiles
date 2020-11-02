@@ -23,3 +23,7 @@ class TestPathUtils(unittest.TestCase):
 		with clckwrkbdgr.fs.CurrentDir(Path('new')):
 			self.assertEqual(os.chdir.call_args, (('new',),))
 		self.assertEqual(os.chdir.call_args, (('old',),))
+
+class TestFSUtils(unittest.TestCase):
+	def should_create_valid_filename(self):
+		self.assertEqual(clckwrkbdgr.fs.make_valid_filename('name/with/slashes'), 'name_with_slashes')

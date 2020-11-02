@@ -49,3 +49,9 @@ class TestExitCode(unittest.TestCase):
 		with self.assertRaises(SystemExit) as e:
 			func(1)
 		self.assertEqual(e.exception.code, 1)
+
+class TestStringUtils(unittest.TestCase):
+	def should_unquote_string(self):
+		self.assertEqual(utils.unquote_string('"foobar"'), 'foobar')
+		self.assertEqual(utils.unquote_string("'foobar'"), 'foobar')
+		self.assertEqual(utils.unquote_string("'foobar"), "'foobar")
