@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function, unicode_literals
+from __future__ import print_function
 import os, sys, shutil, subprocess
 import getpass
 import logging
@@ -50,7 +50,10 @@ def save_mail(index, destdir, custom_filters=None):
 		logging.error("Cannot save first message.")
 		return False
 	try:
-		eml = email.parser.BytesHeaderParser().parsebytes(mail_file.read_bytes())
+		try:
+			eml = email.parser.BytesHeaderParser().parsebytes(mail_file.read_bytes())
+		except AttributeError: # pragma: no cover -- py2 compatibility
+			eml = email.parser.Parser().parsestr(mail_file.read_bytes().decode('utf-8', 'replace'), headersonly=True)
 		orig_header = clckwrkbdgr.fs.make_valid_filename(eml['Subject'])
 		header = orig_header
 		counter = 0
