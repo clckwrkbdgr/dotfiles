@@ -137,4 +137,20 @@ should_convert_file_path_to_uri() {
 	assertStringsEqual "$(as_uri "$this_file")" "file://$this_file"
 }
 
+should_truncate() {
+	local tmplogfile=$(mktemp)
+	finally "rm -f '$tmplogfile'"
+	cat >"$tmplogfile" <<EOF
+first
+second
+third
+last
+EOF
+	truncate_logfile "$tmplogfile" 2
+	assertOutputEqual "cat '$tmplogfile'" - <<EOF
+third
+last
+EOF
+}
+
 unittest::run should_

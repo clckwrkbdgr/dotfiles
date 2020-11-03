@@ -90,3 +90,19 @@ as_uri() {
 	# File must exist.
 	python -c 'import sys,pathlib; print(pathlib.Path(sys.argv[1]).resolve().as_uri())' "$1"
 }
+
+truncate_logfile() {
+	# Shrinks given file to the last N lines.
+	# Usage:
+	#   truncate_logfile my.log 50
+	[ -z "${1}${2}" ] && return 1
+	local _total_lines=$(wc -l <"$1")
+	[ "${_total_lines}" -le "${2}" ] && return 0
+	if sed --version 2>&1 | grep -q GNU; then
+		sed -i "1,$((_total_lines-${2:-0}))d" "$1"
+	else
+		local tempfile="$(mktemp)"
+		finally "rm -f '$tempfile'"
+		tail -n "${2}" "$1" >"$tempfile" && mv -f "$tempfile" "$1"
+	fi
+}
