@@ -22,6 +22,7 @@
 #       If two commands are initiated, the result is undefined!
 
 . "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/miniclick.bash"
 
 _click_command=''
 _click_command_help=''
@@ -36,75 +37,7 @@ _click_positional_count=0
 declare -A _click_arg_pos
 
 click::miniclick() {
-	# Parses arguments in very simple way.
-	# Params: <positionals...> -- <keyword args...> -- "$@"
-	# E.g.: 'short' 'long' 'name' -- 'default' 'epilog' 'help' -- "$@"
-	# Sets variables with corresponding names.
-	# Expects command line with positionals fully filled first,
-	# and then keyword arguments:
-	# - either passed as potisionals in order of definition,
-	# - or passed as double-dashes named arguments: --arg=<value> in any order
-	# WARNING: Both double-dashed delimiters should be present
-	#          even if positionals or keywords are not required!
-	# Missing arguments are silently ignored and become unset.
-	# It can be tested e.g. with [ -z "${argname+x}" ] to check if arg is set.
-	# E.g.: -o --option option_name --epilog='' --help=Description
-	# will result in:
-	#   short=-o
-	#   long=--option
-	#   name=option_name
-	#   default=  (actually unset)
-	#   epilog=   (set but empty)
-	#   help=Message
-	# Any unknown extra argument will result in panic.
-	declare -a _miniargs
-	while [ -n "$1" -a "$1" != '--' ]; do
-		_miniargs+=("$1")
-		eval "$1=''"
-		shift
-	done
-	[ -z "$1" ] && panic "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: miniclick: cannot find first double-dashed separator!"
-	shift
-	declare -a _minikwargs
-	while [ -n "$1" -a "$1" != '--' ]; do
-		_minikwargs+=("$1")
-		eval "unset $1"
-		shift
-	done
-	[ -z "$1" ] && panic "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: miniclick: cannot find second double-dashed separator!"
-	shift
-	_current_arg=0
-	_current_kwarg=0
-	for arg in "$@"; do
-		if [ -n "$_current_arg" ]; then
-			eval "${_miniargs[$_current_arg]}='$arg'"
-			_current_arg=$((_current_arg+1))
-			if [ $_current_arg -ge ${#_miniargs[@]} ]; then
-				_current_arg=''
-			fi
-			continue
-		fi
-		if [ -n "$_current_kwarg" ]; then
-			for _kwarg in "${_minikwargs[@]}"; do
-				_doubledashed="--${_kwarg}="
-				if startswith "$arg" "$_doubledashed"; then
-					arg=${arg##$_doubledashed}
-					eval "${_kwarg}='$arg'"
-					break
-				fi
-				_doubledashed=""
-			done
-			[ -n "$_doubledashed" ] && continue
-
-			eval "${_minikwargs[$_current_kwarg]}='$arg'"
-			_current_kwarg=$((_current_kwarg+1))
-			if [ $_current_kwarg -ge ${#_minikwargs[@]} ]; then
-				_current_kwarg=''
-			fi
-			continue
-		fi
-		panic "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: miniclick: unknown unnamed param: '$arg'"
-	done
+	miniclick "$@"
 }
 
 click::command() {
@@ -138,7 +71,7 @@ click::flag() {
 	# Parsed flag argument in CLICK_ARGS is empty (by default) or non-empty when specified.
 	# Use test [ -n "${CLICK_ARGS[flag_name]}" ]
 	# Help message may contain escaped symbols compatible with 'echo -e'
-	click::miniclick 'short' 'long' 'name' -- help -- "$@"
+	click::miniclick short long name --help -- "$@"
 
 	short_re='^-[A-Za-z0-9]$'
 	[ -z "$short" ] && panic 'Short flag is required!'
@@ -171,7 +104,7 @@ click::option() {
 	# If option name is empty, long option name is used if present, short option char otherwise.
 	# If option was not specified at command line, CLICK_ARGS will contain default value.
 	# Help message may contain escaped symbols compatible with 'echo -e'
-	click::miniclick 'short' 'long' 'name' -- default help -- "$@"
+	click::miniclick short long name --default --help -- "$@"
 
 	[ -z "$short" ] && panic 'Short option is required!'
 	short_re='^-[a-z0-9]$'
@@ -216,7 +149,7 @@ click::argument() {
 	# It will consume all arguments till the end.
 	#
 	# Help message may contain escaped symbols compatible with 'echo -e'
-	click::miniclick 'name' -- help nargs default -- "$@"
+	click::miniclick name --help --nargs --default -- "$@"
 
 	[ -z "$name" ] && panic 'Argument name is required!'
 	[ -n "$nargs" -a "$nargs" != '-1' ] && panic "Parameter nargs supports only value -1 for arguments: $name nargs=$nargs"
