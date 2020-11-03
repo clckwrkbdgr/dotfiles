@@ -1,10 +1,43 @@
 #!/bin/bash
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 . "$XDG_CONFIG_HOME/lib/click.bash"
+. "$XDG_CONFIG_HOME/lib/miniclick.bash"
 
 MESSAGES_TO_STORE=20 # To store in message log.
 MESSAGE_LOG_FILE="${XDG_STATE_HOME:-$HOME/.state}/notification.log"
 MAX_VOLUME=60 # After that volume will be decreased for the time of notification.
+
+display_notification() { miniclick title text --icon -- "$@"
+	# Display normal floating notification.
+	notify-send "$title" "$text" --icon="$icon"
+}
+
+display_fixed_notification() { miniclick title text --icon -- "$@"
+	# Display sticky floating notification (top-left corner of the screen).
+	if which aosd_cat >/dev/null; then
+		echo "$text" | aosd_cat -x 0 -y -745 --padding 2 --shadow-offset 0 \
+			--transparency 0 --back-opacity 255 --back-color black --fore-color orange \
+			--fade-in 0 --fade-full 1500 --fade-out 0
+	else
+		# Workaround for xfce4-notifyd: kill previous notification popup to display new one in its place.
+		wmctrl -l | grep xfce4-notifyd | awk '{print $1}' | while read wnd_id; do
+			xdotool windowkill "$wnd_id"
+		done
+		notify-send "$title" "$text" --icon="$icon"
+	fi
+}
+
+parse_special_tags() { miniclick text -- "$@"
+	# Parses special tags in notification text.
+	# May modify variables in current context (including $text)
+	while startswith "$text" '['; do
+		tag="$(echo "$text" | sed 's/^\[\([^]]*\)\].*/\1/')"
+		if [ "$tag" == 'P' ]; then
+			quiet=
+		fi
+		text="$(echo "$text" | sed 's/^\[[^]]*\]//')"
+	done
+}
 
 click::command cli 'Displays notification pop-up, plays signal sound and reads message aloud.'
 click::epilog      "Also stores last $MESSAGES_TO_STORE messages in log."
@@ -31,53 +64,32 @@ cli() {
 	title="${CLICK_ARGS[title]}"
 	icon="${CLICK_ARGS[icon]}"
 	text="${CLICK_ARGS[text]}"
-	while startswith "$text" '['; do
-		tag="$(echo "$text" | sed 's/^\[\([^]]*\)\].*/\1/')"
-		if [ "$tag" == 'P' ]; then
-			quiet=
-		fi
-		text="$(echo "$text" | sed 's/^\[[^]]*\]//')"
-	done
 
-	prev_volume="$(volume)"
-	if [ -z "$quiet" -a "$prev_volume" -gt "$MAX_VOLUME" ]; then
-		volume "$MAX_VOLUME"
-	else
-		unset prev_volume
+	parse_special_tags "$text"
+
+	if [ -z "$quiet" ]; then
+		prev_volume="$(volume)"
+		if [ "$prev_volume" -gt "$MAX_VOLUME" ]; then
+			volume "$MAX_VOLUME"
+			finally "volume '$prev_volume'"
+		fi
 	fi
 
-	[ "$quiet" != true ] && play_signal &
+	[ -z "$quiet" ] && play_signal &
 
 	if [ -n "$text" ]; then
 		if [ -n "${CLICK_ARGS[fixed]}" ]; then
-			if which aosd_cat >/dev/null; then
-				echo "$text" | aosd_cat -x 0 -y -745 --padding 2 --shadow-offset 0 \
-					--transparency 0 --back-opacity 255 --back-color black --fore-color orange \
-					--fade-in 0 --fade-full 1500 --fade-out 0 \
-					&
-			else
-				# Workaround for xfce4-notifyd: kill previous notification popup to display new one in its place.
-				wmctrl -l | grep xfce4-notifyd | awk '{print $1}' | while read wnd_id; do
-					xdotool windowkill "$wnd_id"
-				done
-				notify-send "$title" "$text" --icon="$icon" &
-			fi
+			display_fixed_notification "$title" "$text" --icon="$icon" &
 		else
-			notify-send "$title" "$text" --icon="$icon" &
+			display_notification "$title" "$text" --icon="$icon" &
 		fi
 
 		if [ -z "${CLICK_ARGS[no_history]}" ]; then
-			tempfile="$(mktemp)"
-			finally "rm -f '$tempfile'"
 			echo "$(date) <${title}> $text" >>"$MESSAGE_LOG_FILE"
-			tail -n "$MESSAGES_TO_STORE" "$MESSAGE_LOG_FILE" >"$tempfile" && mv -f "$tempfile" "$MESSAGE_LOG_FILE"
+			truncate_logfile "$MESSAGE_LOG_FILE" "$MESSAGES_TO_STORE"
 		fi
 
-		[ "$quiet" != true ] && text-to-speech "$text"
-	fi
-
-	if [ -n "$prev_volume" ]; then
-		volume "$prev_volume"
+		[ -z "$quiet" ] && text-to-speech "$text"
 	fi
 }
 
