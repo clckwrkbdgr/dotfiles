@@ -9,7 +9,7 @@ MAX_VOLUME=50 # After that volume will be decreased for the time of notification
 
 [ -f ~/.local/dotfiles.rc ] && . ~/.local/dotfiles.rc # FIXME !! INSECURE !! Need a function or even a module to parse/access configuration: rc, ini, xml, json.
 
-display_notification() { miniclick title text --icon -- "$@"
+display_default_notification() { miniclick title text --icon -- "$@"
 	# Display normal floating notification.
 	notify-send "$title" "$text" --icon="$icon"
 }
@@ -26,6 +26,17 @@ display_fixed_notification() { miniclick title text --icon -- "$@"
 			xdotool windowkill "$wnd_id"
 		done
 		notify-send "$title" "$text" --icon="$icon"
+	fi
+}
+
+display_strong_notification() { miniclick title text --icon -- "$@"
+	# Display strong notification that require user's attention.
+	if which zenity >/dev/null 2>&1; then
+		zenity --info --title="$title" --text="$text" ${icon:+--icon-name="$icon"}
+	else
+		# Fallback option: display default notification and send mail so notification will not disappear unattended.
+		echo "$text" | mail -s "$title" $LOGNAME
+		display_default_notification "$title" "$text" --icon="$icon"
 	fi
 }
 
@@ -49,7 +60,12 @@ click::epilog      "- [P]: override quiet mode even if it was requisted on comma
 click::epilog      "Tags are removed from text."
 click::flag '-l' "" 'list_log' --help="Prints previous $MESSAGES_TO_STORE messages."
 click::flag '-q' "" 'quiet' --help="quiet mode (no sounds/voice)."
-click::flag '-f' "--fixed" '' --help="Fixed position. Replaces previous notification if it is still displayed."
+click::option '-T' "--type" 'notification_type' --default=default --help="Type of notification message. Available values:
+- default - Standard pop-up notification bubble.
+- fixed   - Fixed position on screen (top-left corner). Replaces previous notification if it is still displayed.
+- strong  - Notification that require confirmation to close. Usually a dialog with OK button.
+"
+click::flag '-f' "--fixed" '' --help="Deprecated, left for compatibility. Equivalent for --type=fixed."
 click::flag '-N' "--no-history" 'no_history' --help="Do not store this notification in history."
 click::option '-t' "" 'title' --default='notification' --help="Optional title."
 click::option '-i' "" 'icon' --help="Optional icon."
@@ -67,6 +83,19 @@ cli() {
 	icon="${CLICK_ARGS[icon]}"
 	text="${CLICK_ARGS[text]}"
 
+	display_notification=display_default_notification
+	if [ "${CLICK_ARGS[notification_type]}" == 'default' ]; then
+		display_notification=display_default_notification
+	elif [ "${CLICK_ARGS[notification_type]}" == 'fixed' ]; then
+		display_notification=display_fixed_notification
+	elif [ "${CLICK_ARGS[notification_type]}" == 'strong' ]; then
+		display_notification=display_strong_notification
+	fi
+	if [ -n "${CLICK_ARGS[fixed]}" ]; then
+		deprecated 'Option --fixed is deprecated. Use --type=fixed instead.'
+		display_notification=display_fixed_notification
+	fi
+
 	parse_special_tags "$text"
 
 	if [ -z "$quiet" ]; then
@@ -80,11 +109,7 @@ cli() {
 	[ -z "$quiet" ] && play_signal &
 
 	if [ -n "$text" ]; then
-		if [ -n "${CLICK_ARGS[fixed]}" ]; then
-			display_fixed_notification "$title" "$text" --icon="$icon" &
-		else
-			display_notification "$title" "$text" --icon="$icon" &
-		fi
+		$display_notification "$title" "$text" --icon="$icon" &
 
 		if [ -z "${CLICK_ARGS[no_history]}" ]; then
 			echo "$(date) <${title}> $text" >>"$MESSAGE_LOG_FILE"
