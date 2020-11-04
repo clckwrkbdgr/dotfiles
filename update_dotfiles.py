@@ -6,7 +6,10 @@ class Stash(object):
 		os.system("git stash")
 		return self
 	def __exit__(self, e, t, tb):
-		os.system("git stash pop")
+		if 0 != os.system("git stash pop"):
+			# Resolving merge conflicts 'manually' to prevent leaving conflict markers in the code.
+			os.system("git checkout --theirs .")
+			os.system("git stash drop")
 
 class GitFile(object):
 	def __init__(self, branch, path):
