@@ -5,7 +5,9 @@
 
 MESSAGES_TO_STORE=20 # To store in message log.
 MESSAGE_LOG_FILE="${XDG_STATE_HOME:-$HOME/.state}/notification.log"
-MAX_VOLUME=60 # After that volume will be decreased for the time of notification.
+MAX_VOLUME=50 # After that volume will be decreased for the time of notification.
+
+[ -f ~/.local/dotfiles.rc ] && . ~/.local/dotfiles.rc # FIXME !! INSECURE !! Need a function or even a module to parse/access configuration: rc, ini, xml, json.
 
 display_notification() { miniclick title text --icon -- "$@"
 	# Display normal floating notification.
