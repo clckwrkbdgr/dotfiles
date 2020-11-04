@@ -24,7 +24,7 @@ def make_unique_filename(name):
 	Returns Path object.
 	May return original name when fails to construct a unique name.
 	"""
-	name = Path(make_valid_filename(name))
+	name = Path(name)
 	parent, stem, ext = name.parent, name.stem, name.suffix
 	result = name
 	for counter in range(0, 1000): # Very large number.

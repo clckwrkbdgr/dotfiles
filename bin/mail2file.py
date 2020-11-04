@@ -2,6 +2,7 @@
 from __future__ import print_function
 import os, sys, shutil, subprocess
 import getpass
+import datetime
 import logging
 import functools, contextlib
 import email.parser
@@ -59,7 +60,9 @@ def save_mail(index, destdir, custom_filters=None):
 				os.unlink(str(mail_file))
 				break
 		else:
-			destfile = destdir/clckwrkbdgr.fs.make_unique_filename(eml['Subject'])
+			name = eml['Subject'] or 'mail.{0}.{1}'.format(os.getpid(), datetime.datetime.now().isoformat())
+			name = clckwrkbdgr.fs.make_valid_filename(name)
+			destfile = clckwrkbdgr.fs.make_unique_filename(destdir/name)
 			destdir.mkdir(parents=True, exist_ok=True)
 			os.rename(str(mail_file), str(destfile))
 	except:
