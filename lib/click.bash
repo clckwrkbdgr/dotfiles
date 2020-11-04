@@ -107,11 +107,11 @@ click::option() {
 	click::miniclick short long name --default --help -- "$@"
 
 	[ -z "$short" ] && panic 'Short option is required!'
-	short_re='^-[a-z0-9]$'
+	short_re='^-[A-Za-z0-9]$'
 	[[ "${short}" =~ $short_re ]] || panic "Expected short option in format '-<single char>', got instead: '${short}'"
 
 	if [ -n "$long" ]; then
-		long_re='^--[a-z0-9][a-z0-9_-]+$'
+		long_re='^--[A-Za-z0-9][A-Za-z0-9_-]+$'
 		[[ "${long}" =~ $long_re ]] || panic "Expected long option in format '--<name>', got instead: '${long}'"
 	fi
 
