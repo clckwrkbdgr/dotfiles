@@ -1,4 +1,5 @@
 #!/bin/sh
 # Soung Naming Specification: http://0pointer.de/public/sound-naming-spec.html
-SIGNAL_SOUND="$XDG_DATA_HOME/sounds/bell-window-system.wav"
-aplay -q "$SIGNAL_SOUND"
+signal_sound="${1:-bell-window-system}"
+signal_sound="$XDG_DATA_HOME/sounds/${signal_sound}.wav"
+aplay -q "$signal_sound"
