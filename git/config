@@ -6,6 +6,7 @@
 
 [core]
 	pager = less
+	quotepath = off
 
 [alias]
 	st = status
