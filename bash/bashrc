@@ -11,7 +11,8 @@ for xdgsourcefile in ~/.config/xdg/*.sh; do
 	. "$xdgsourcefile"
 done
 
-eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
+# TODO have custom compat version of 'dircolors' to produce LS_COLORS in this case.
+which dircolors >/dev/null 2>&1 && eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
 
 # User private settings.
 [ -f ~/.local/bashrc ] && source ~/.local/bashrc
