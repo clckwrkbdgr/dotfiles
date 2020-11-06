@@ -82,7 +82,9 @@ hi FoldColumn ctermfg=cyan
 filetype on
 filetype plugin indent on
 au FileType python set tabstop=4 | set noexpandtab
-au FileType python call ftplugin#python#PyIndentAutoCfg()
+if v:version >= 700
+	au FileType python call ftplugin#python#PyIndentAutoCfg()
+endif
 au FileType votl set softtabstop=4
 augroup XML
     autocmd!
