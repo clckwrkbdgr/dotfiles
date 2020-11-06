@@ -91,7 +91,7 @@ augroup XML
     autocmd FileType xml let g:xml_syntax_folding=1
     autocmd FileType xml setlocal foldmethod=syntax
     autocmd FileType xml :syntax on
-    autocmd FileType xml :%foldopen!
+    autocmd FileType xml :silent! %foldopen!
 augroup END
 au FileType html setlocal foldmethod=syntax
 au FileType votl setlocal foldlevel=0
@@ -206,7 +206,9 @@ if !exists("DetectIndent")
 	command! -bar -nargs=0 DetectIndent call MyDetectIndent()
 endif
 
-let $MYLOCALVIMRC=$HOME . "/.local/vimrc"
+if empty($MYLOCALVIMRC)
+	let $MYLOCALVIMRC=$HOME . "/.local/vimrc"
+endif
 if filereadable($MYLOCALVIMRC)
 	source $MYLOCALVIMRC
 endif
