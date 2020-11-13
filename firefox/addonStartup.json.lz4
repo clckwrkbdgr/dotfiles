@@ -173,27 +173,9 @@
                     "chromeEntries": [
                         [
                             "locale",
-                            "places",
+                            "alerts",
                             "ru",
-                            "chrome/ru/locale/ru/places/"
-                        ],
-                        [
-                            "locale",
-                            "passwordmgr",
-                            "ru",
-                            "chrome/ru/locale/ru/passwordmgr/"
-                        ],
-                        [
-                            "locale",
-                            "formautofill",
-                            "ru",
-                            "browser/features/formautofill@mozilla.org/ru/locale/ru/"
-                        ],
-                        [
-                            "locale",
-                            "pdf.js",
-                            "ru",
-                            "browser/chrome/ru/locale/pdfviewer/"
+                            "chrome/ru/locale/ru/alerts/"
                         ],
                         [
                             "locale",
@@ -203,69 +185,15 @@
                         ],
                         [
                             "locale",
-                            "alerts",
-                            "ru",
-                            "chrome/ru/locale/ru/alerts/"
-                        ],
-                        [
-                            "locale",
-                            "devtools-startup",
-                            "ru",
-                            "browser/chrome/ru/locale/ru/devtools/startup/"
-                        ],
-                        [
-                            "locale",
-                            "pippki",
-                            "ru",
-                            "chrome/ru/locale/ru/pippki/"
-                        ],
-                        [
-                            "locale",
-                            "global-platform",
-                            "ru",
-                            "chrome/ru/locale/ru/global-platform/unix/"
-                        ],
-                        [
-                            "locale",
-                            "global",
-                            "ru",
-                            "chrome/ru/locale/ru/global/"
-                        ],
-                        [
-                            "locale",
-                            "browser",
-                            "ru",
-                            "browser/chrome/ru/locale/browser/"
-                        ],
-                        [
-                            "locale",
-                            "devtools-shared",
-                            "ru",
-                            "browser/chrome/ru/locale/ru/devtools/shared/"
-                        ],
-                        [
-                            "locale",
-                            "mozapps",
-                            "ru",
-                            "chrome/ru/locale/ru/mozapps/"
-                        ],
-                        [
-                            "locale",
-                            "report-site-issue",
-                            "ru",
-                            "browser/features/webcompat-reporter@mozilla.org/ru/locale/ru/"
-                        ],
-                        [
-                            "locale",
                             "branding",
                             "ru",
                             "browser/chrome/ru/locale/branding/"
                         ],
                         [
                             "locale",
-                            "pluginproblem",
+                            "browser",
                             "ru",
-                            "chrome/ru/locale/ru/pluginproblem/"
+                            "browser/chrome/ru/locale/browser/"
                         ],
                         [
                             "locale",
@@ -281,9 +209,57 @@
                         ],
                         [
                             "locale",
-                            "weave",
+                            "devtools-shared",
                             "ru",
-                            "chrome/ru/locale/ru/services/"
+                            "browser/chrome/ru/locale/ru/devtools/shared/"
+                        ],
+                        [
+                            "locale",
+                            "devtools-startup",
+                            "ru",
+                            "browser/chrome/ru/locale/ru/devtools/startup/"
+                        ],
+                        [
+                            "locale",
+                            "formautofill",
+                            "ru",
+                            "browser/features/formautofill@mozilla.org/ru/locale/ru/"
+                        ],
+                        [
+                            "locale",
+                            "global",
+                            "ru",
+                            "chrome/ru/locale/ru/global/"
+                        ],
+                        [
+                            "locale",
+                            "global-platform",
+                            "ru",
+                            "chrome/ru/locale/ru/global-platform/unix/"
+                        ],
+                        [
+                            "locale",
+                            "mozapps",
+                            "ru",
+                            "chrome/ru/locale/ru/mozapps/"
+                        ],
+                        [
+                            "locale",
+                            "necko",
+                            "ru",
+                            "chrome/ru/locale/ru/necko/"
+                        ],
+                        [
+                            "locale",
+                            "passwordmgr",
+                            "ru",
+                            "chrome/ru/locale/ru/passwordmgr/"
+                        ],
+                        [
+                            "locale",
+                            "pdf.js",
+                            "ru",
+                            "browser/chrome/ru/locale/pdfviewer/"
                         ],
                         [
                             "locale",
@@ -293,9 +269,33 @@
                         ],
                         [
                             "locale",
-                            "necko",
+                            "pippki",
                             "ru",
-                            "chrome/ru/locale/ru/necko/"
+                            "chrome/ru/locale/ru/pippki/"
+                        ],
+                        [
+                            "locale",
+                            "places",
+                            "ru",
+                            "chrome/ru/locale/ru/places/"
+                        ],
+                        [
+                            "locale",
+                            "pluginproblem",
+                            "ru",
+                            "chrome/ru/locale/ru/pluginproblem/"
+                        ],
+                        [
+                            "locale",
+                            "report-site-issue",
+                            "ru",
+                            "browser/features/webcompat-reporter@mozilla.org/ru/locale/ru/"
+                        ],
+                        [
+                            "locale",
+                            "weave",
+                            "ru",
+                            "chrome/ru/locale/ru/services/"
                         ]
                     ],
                     "l10nRegistrySources": {
