@@ -1,6 +1,8 @@
 {
     "$schema": "https://aka.ms/terminal-profiles-schema",
     "alwaysShowTabs" : false,
+    "tabSwitcherMode" : false,
+    "useTabSwitcher" : false,
     "defaultProfile" : "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
     "initialCols" : 80,
     "initialRows" : 24,
