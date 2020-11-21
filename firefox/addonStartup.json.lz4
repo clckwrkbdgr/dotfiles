@@ -485,6 +485,16 @@
                 },
                 "version": "0.0"
             },
+            "ruffle-player-extension@ruffle.rs": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": "ruffle-player-extension@ruffle.rs.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/ruffle-player-extension@ruffle.rs.xpi!/",
+                "runInSafeMode": false,
+                "version": "0.0"
+            },
             "uBlock0@raymondhill.net": {
                 "dependencies": [],
                 "enabled": true,

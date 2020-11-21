@@ -349,6 +349,7 @@ user_pref("extensions.webcompat.perform_ua_overrides", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.@mutelinks", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.doh-rollout@mozilla.org", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.firefox@tampermonkey.net", true);
+user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.ruffle-player-extension@ruffle.rs", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.uBlock0@raymondhill.net", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{60f82f00-9ad5-4de5-b31c-b16a47c51558}", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{73a6fe31-595d-460b-a920-fcc0f8843232}", true);
