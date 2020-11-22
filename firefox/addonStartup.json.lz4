@@ -684,22 +684,6 @@
                                         "windowId": null
                                     },
                                     null
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object"
-                                        ],
-                                        "urls": [
-                                            "<all_urls>"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    null
                                 ]
                             ],
                             "onErrorOccurred": [
@@ -725,21 +709,6 @@
                                         ],
                                         "urls": [
                                             "*://*/*"
-                                        ],
-                                        "windowId": null
-                                    }
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object"
-                                        ],
-                                        "urls": [
-                                            "<all_urls>"
                                         ],
                                         "windowId": null
                                     }
