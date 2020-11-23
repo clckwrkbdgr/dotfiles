@@ -21,6 +21,13 @@
  *   }
  * Example output (to stderr by default):
  *   12345678:my_source_file.c:5:my_function: Begin, arg=[foo]
+ *
+ * Example of working with different streams:
+ *   // Will append to mylogfile.log
+ *   FILE * mylogfile = fopen("mylogfile.log", "a+");
+ *   BADGER_CURRENT_LOG_STREAM(mylogfile)
+ *   // Will write to stderr directly even if 'stderr' is redefined.
+ *   BADGER_CURRENT_LOG_STREAM(BADGER_GET_DIRECT_STDERR());
  */
 
 /*******************************************************************************
@@ -143,6 +150,20 @@ FILE * BADGER_CURRENT_LOG_STREAM(FILE * stream)
       return value;
    }
    return value = stream;
+}
+
+/** Returns stream for file descriptor=2 directly regardles of where
+ * 'stderr' points to. It can be useful if application overrides default
+ * 'stderr', like FastCGI does.
+ */
+BADGER_STATIC_FUNCTION
+FILE * BADGER_GET_DIRECT_STDERR(void)
+{
+   FILE * direct_stderr = NULL;
+   if(!direct_stderr) {
+      direct_stderr = fdopen(2, "w");
+   }
+   return direct_stderr;
 }
 
 /*******************************************************************************
