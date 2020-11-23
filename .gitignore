@@ -169,6 +169,7 @@ libreoffice/4/user/config/*.fmt
 libreoffice/4/user/config/javasettings_Linux_*.xml
 # FreeRDP
 freerdp/known_hosts
+freerdp/known_hosts2
 # Enchant (for some reason does not recognize $ENCHANT_CONFIG_DIR)
 enchant/*.dic
 enchant/*.exc
