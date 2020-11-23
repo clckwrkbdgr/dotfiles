@@ -15,6 +15,7 @@ path::strip_current() {
 }
 
 # Main function.
+# This version replaces current process (using shell builtin `exec`)
 # Should be called from a script put somewhere to $PATH.
 # Script should be named exactly as the original (basic) executable.
 # Example (e.g. for mocp it should be name exactly 'mocp'):
@@ -30,3 +31,19 @@ path::exec_base() { # <args...>
 	exec "$executable_basename" "$@"
 }
 
+# Main function.
+# This version executes command, waits for it to finish and return RC.
+# Should be called from a script put somewhere to $PATH.
+# Script should be named exactly as the original (basic) executable.
+# Example (e.g. for mocp it should be name exactly 'mocp'):
+# #!/bin/sh
+# . "$XDG_CONFIG_HOME/lib/path.bash"
+# path::run_base <custom_args> "$@"
+path::run_base() { # <args...>
+	path::strip_current
+	[ -n "$DEBUG_XDG" ] && echo "$PATH"
+	export PATH
+	executable_basename="`basename "$0"`"
+	[ -n "$DEBUG_XDG" ] && which "$executable_basename"
+	"$executable_basename" "$@"
+}

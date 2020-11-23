@@ -1,0 +1,6 @@
+#!/bin/bash
+. "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/path.bash"
+tput smcup
+finally 'tput rmcup'
+path::run_base "$@"
