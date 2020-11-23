@@ -19,7 +19,7 @@
  *   {
  *      BADGER_TRACE("Begin, arg=[%s]", arg);
  *   }
- * Example output (to stderr by default): 
+ * Example output (to stderr by default):
  *   12345678:my_source_file.c:5:my_function: Begin, arg=[foo]
  */
 
@@ -97,7 +97,10 @@ void BADGER_VFPRINTF(FILE * outfile,
    {
       return;
    }
-   static long long pid = BADGER_PID();
+   static long long pid = 0;
+   if(pid == 0) {
+       pid = BADGER_PID();
+   }
    if(isatty(fileno(outfile))) {
       fprintf(outfile, BADGER_MAGENTA "%lld" BADGER_NOCOLOR
             ":" BADGER_GREEN "%s" BADGER_NOCOLOR
