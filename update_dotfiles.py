@@ -44,8 +44,15 @@ def branch_is_behind_remote(branch):
 		return b'behind' in output
 	except subprocess.CalledProcessError as e:
 		if b'unknown field name' in e.output:
-			output = subprocess.check_output(['git', 'status', '-sb'.format(branch)])
-			return b'behind' in output
+			# Too old Git. Trying to check branches upstream status manually.
+			with open('.git/refs/heads/{0}'.format(branch), 'rb') as f:
+				local = f.read()
+			if not os.path.exists('.git/refs/remotes/origin/{0}'.format(branch)):
+				print("Upstream for branch '{0}' is not found!".format(branch))
+				return False
+			with open('.git/refs/remotes/origin/{0}'.format(branch), 'rb') as f:
+				remote = f.read()
+			return remote != local
 		else:
 			raise
 
