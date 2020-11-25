@@ -166,6 +166,46 @@ FILE * BADGER_GET_DIRECT_STDERR(void)
    return direct_stderr;
 }
 
+/** Returns default trace file name for usage in BADGER_GET_TRACE_FILE().
+ * Default location is $HOME/badger.debug.trace
+ * If $TTY_USERNAME is defined (e.g. for SSH connections),
+ * trace files is stored in subdir: $HOME/$TTY_USERNAME/badger.debug.trace
+ */
+BADGER_STATIC_FUNCTION
+const char * BADGER_DEFAULT_TRACE_FILE_NAME(void)
+{
+   static char path[255] = {0};
+   if(!path[0]) {
+      strcpy(path, getenv("HOME"));
+      if(getenv("TTY_USERNAME")) {
+         strcat(path, "/");
+         strcat(path, getenv("TTY_USERNAME"));
+         mkdir(path, 0755);
+      }
+      strcat(path, "/badger.debug.trace");
+   }
+   return path;
+}
+
+/** Returns main file stream for given filename.
+ * Opens file for given filename if wasn't opened before.
+ * See BADGER_DEFAULT_TRACE_FILE_NAME() for default trace file.
+ */
+BADGER_STATIC_FUNCTION
+FILE * BADGER_GET_TRACE_FILE(const char * filename)
+{
+   static FILE * logfile = NULL;
+   if(!logfile) {
+      logfile = fopen(filename, "a+");
+      if(!logfile) {
+         fprintf(stderr, "Failed to open %s\n", filename);
+         fflush(stderr);
+         return NULL;
+      }
+   }
+   return logfile;
+}
+
 /*******************************************************************************
  * MAIN */
 
