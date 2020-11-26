@@ -47,6 +47,10 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+#include <sys/types.h> /* For pid_t */
+#include <sys/stat.h> /* For mkdir */
 
 /* #include <unistd.h> */
 #ifdef __cplusplus
@@ -66,6 +70,17 @@
   extern pid_t getpid(void) __THROW;
   extern int isatty (int __fd) __THROW;
 #endif //C++
+
+/* #include <stdlib.h> */
+#ifdef __cplusplus
+#  ifdef __GNUC__
+     extern "C" char * getenv(const char*) throw();
+#  else
+     extern "C" char * getenv(const char*);
+#  endif
+#else
+  extern char * getenv(const char*);
+#endif
 
 /*******************************************************************************
  * HELPERS */
