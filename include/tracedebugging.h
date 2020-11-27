@@ -71,6 +71,7 @@
 #include <stdarg.h>
 #include <sys/types.h> /* For pid_t */
 #include <sys/stat.h> /* For mkdir */
+#include <time.h>
 
 /* #include <unistd.h> */
 #if defined(_WIN32)
@@ -168,6 +169,12 @@ void BADGER_VFPRINTF(FILE * outfile,
 #else
    static const int use_colors = 0;
 #endif
+   time_t timestamp = time(NULL);
+   struct tm * tm_info = localtime(&timestamp);
+   char time_buffer[24] = {0};
+   strftime(time_buffer, sizeof(time_buffer) - 1, "%Y-%m-%d %H:%M:%S", tm_info);
+
+   fprintf(outfile, "%s:", time_buffer);
    fprintf(outfile, BADGER_TRACE_FORMAT(use_colors), pid, filename, line_number, func_name);
    vfprintf(outfile, format, args);
    fprintf(outfile, "\n");
