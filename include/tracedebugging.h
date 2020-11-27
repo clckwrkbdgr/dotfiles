@@ -137,13 +137,14 @@ BADGER_STATIC_FUNCTION
 const char * BADGER_TRACE_FORMAT(int use_colors)
 {
    if(use_colors) {
-      return BADGER_MAGENTA "%lld" BADGER_NOCOLOR
+      return BADGER_MAGENTA "%s" BADGER_NOCOLOR
+            ":" BADGER_YELLOW "%lld(%llx)" BADGER_NOCOLOR
             ":" BADGER_GREEN "%s" BADGER_NOCOLOR
             ":" BADGER_BLUE "%d" BADGER_NOCOLOR
             ":" BADGER_CYAN "%s" BADGER_NOCOLOR
             ":" " ";
    } else {
-      return "%lld:%s:%d:%s: ";
+      return "%s:%lld(%llx):%s:%d:%s: ";
    }
 }
 
@@ -164,6 +165,11 @@ void BADGER_VFPRINTF(FILE * outfile,
    if(pid == 0) {
        pid = BADGER_PID();
    }
+#if defined(_WIN32)
+   long long thread_id =  = GetCurrentThreadId();
+#else
+   static const long long thread_id = 0xA;
+#endif
 #ifndef _WIN32
    int use_colors = isatty(fileno(outfile));
 #else
@@ -174,8 +180,7 @@ void BADGER_VFPRINTF(FILE * outfile,
    char time_buffer[24] = {0};
    strftime(time_buffer, sizeof(time_buffer) - 1, "%Y-%m-%d %H:%M:%S", tm_info);
 
-   fprintf(outfile, "%s:", time_buffer);
-   fprintf(outfile, BADGER_TRACE_FORMAT(use_colors), pid, filename, line_number, func_name);
+   fprintf(outfile, BADGER_TRACE_FORMAT(use_colors), time_buffer, pid, thread_id, filename, line_number, func_name);
    vfprintf(outfile, format, args);
    fprintf(outfile, "\n");
    fflush(outfile);
