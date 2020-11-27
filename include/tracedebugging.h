@@ -39,6 +39,26 @@
 #define BADGER_STATIC_FUNCTION static /*inline */ /* AIX does not have pragmas to ignore 'unused' warnings */
 #endif
 
+#if defined(__cplusplus)
+#  if defined(_WIN32)
+#    define BADGER_EXTERN extern "C" __declspec(dllimport)
+#  else
+#    define BADGER_EXTERN extern "C"
+#  endif
+#else
+#  if defined(_WIN32)
+#    define BADGER_EXTERN __declspec(dllimport)
+#  else
+#    define BADGER_EXTERN extern
+#  endif
+#endif
+
+#ifdef __cplusplus
+# define BADGER_NOTHROW throw()
+#else
+# define BADGER_NOTHROW
+#endif
+
 /*******************************************************************************
  * SYSTEM STUFF */
 
@@ -53,33 +73,31 @@
 #include <sys/stat.h> /* For mkdir */
 
 /* #include <unistd.h> */
-#ifdef __cplusplus
-#  ifdef __GNUC__
-#    ifdef _AIX
-       extern "C" pid_t getpid(void);
-       extern "C" int isatty (int __fd);
-#    else
-       extern "C" pid_t getpid(void) __THROW;
-       extern "C" int isatty (int __fd) __THROW;
-#    endif//AIX
+#if defined(_WIN32)
+   BADGER_EXTERN
+   unsigned long
+   __stdcall
+   GetCurrentProcessId(void);
+#elif defined(__GNUC__)
+#  ifdef _AIX
+     BADGER_EXTERN pid_t getpid(void);
+     BADGER_EXTERN int isatty (int __fd);
 #  else
-     extern "C" pid_t getpid(void) __THROW;
-     extern "C" int isatty (int __fd) __THROW;
-#  endif//GNUC
+     BADGER_EXTERN pid_t getpid(void) __THROW;
+     BADGER_EXTERN int isatty (int __fd) __THROW;
+#  endif//AIX
 #else
-  extern pid_t getpid(void) __THROW;
-  extern int isatty (int __fd) __THROW;
-#endif //C++
+   BADGER_EXTERN pid_t getpid(void) __THROW;
+   BADGER_EXTERN int isatty (int __fd) __THROW;
+#endif//GNUC
 
 /* #include <stdlib.h> */
-#ifdef __cplusplus
-#  ifdef __GNUC__
-     extern "C" char * getenv(const char*) throw();
-#  else
-     extern "C" char * getenv(const char*);
-#  endif
+#if defined(_WIN32)
+   BADGER_EXTERN char * getenv(const char*);
+#elif defined(__GNUC__)
+   BADGER_EXTERN char * getenv(const char*) BADGER_NOTHROW;
 #else
-  extern char * getenv(const char*);
+   BADGER_EXTERN char * getenv(const char*);
 #endif
 
 /*******************************************************************************
@@ -101,9 +119,31 @@ long long BADGER_PID()
    static long long pid = 0;
    if(!pid)
    {
+#ifndef _WIN32
       pid = getpid();
+#else
+      pid = GetCurrentProcessId();
+#endif//_WIN32
    }
    return pid;
+}
+
+/** Returns base info prefix format string
+ * (filename, line, pid etc.; ends with a space).
+ * If use_colors is non-zero, add color escape sequences.
+ */
+BADGER_STATIC_FUNCTION
+const char * BADGER_TRACE_FORMAT(int use_colors)
+{
+   if(use_colors) {
+      return BADGER_MAGENTA "%lld" BADGER_NOCOLOR
+            ":" BADGER_GREEN "%s" BADGER_NOCOLOR
+            ":" BADGER_BLUE "%d" BADGER_NOCOLOR
+            ":" BADGER_CYAN "%s" BADGER_NOCOLOR
+            ":" " ";
+   } else {
+      return "%lld:%s:%d:%s: ";
+   }
 }
 
 /** Base function: prints formatted message with varargs to specified stream.
@@ -123,15 +163,12 @@ void BADGER_VFPRINTF(FILE * outfile,
    if(pid == 0) {
        pid = BADGER_PID();
    }
-   if(isatty(fileno(outfile))) {
-      fprintf(outfile, BADGER_MAGENTA "%lld" BADGER_NOCOLOR
-            ":" BADGER_GREEN "%s" BADGER_NOCOLOR
-            ":" BADGER_BLUE "%d" BADGER_NOCOLOR
-            ":" BADGER_CYAN "%s" BADGER_NOCOLOR
-            ":" " ", pid, filename, line_number, func_name);
-   } else {
-      fprintf(outfile, "%lld:%s:%d:%s: ", pid, filename, line_number, func_name);
-   }
+#ifndef _WIN32
+   int use_colors = isatty(fileno(outfile));
+#else
+   static const int use_colors = 0;
+#endif
+   fprintf(outfile, BADGER_TRACE_FORMAT(use_colors), pid, filename, line_number, func_name);
    vfprintf(outfile, format, args);
    fprintf(outfile, "\n");
    fflush(outfile);
@@ -191,6 +228,7 @@ const char * BADGER_DEFAULT_TRACE_FILE_NAME(void)
 {
    static char path[255] = {0};
    if(!path[0]) {
+#ifndef _WIN32
       strcpy(path, getenv("HOME"));
       if(getenv("TTY_USERNAME")) {
          strcat(path, "/");
@@ -198,6 +236,10 @@ const char * BADGER_DEFAULT_TRACE_FILE_NAME(void)
          mkdir(path, 0755);
       }
       strcat(path, "/badger.debug.trace");
+#else
+      strcpy(path, getenv("TEMP"));
+      strcat(path, "/badger.debug.trace");
+#endif//_WIN32
    }
    return path;
 }
