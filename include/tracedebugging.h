@@ -59,6 +59,11 @@
 # define BADGER_NOTHROW
 #endif
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4505) // Unreferenced local function has been removed
+#endif
+
 /*******************************************************************************
  * SYSTEM STUFF */
 
@@ -79,6 +84,10 @@
    unsigned long
    __stdcall
    GetCurrentProcessId(void);
+   BADGER_EXTERN
+   unsigned long
+   __stdcall
+   GetCurrentThreadId(void);
 #elif defined(__GNUC__)
 #  ifdef _AIX
      BADGER_EXTERN pid_t getpid(void);
@@ -157,27 +166,45 @@ void BADGER_VFPRINTF(FILE * outfile,
       const char * filename, int line_number, const char * func_name,
       const char * format, va_list args)
 {
-   if(outfile == NULL)
-   {
-      return;
-   }
    static long long pid = 0;
-   if(pid == 0) {
-       pid = BADGER_PID();
-   }
 #if defined(_WIN32)
-   long long thread_id =  = GetCurrentThreadId();
+   long long thread_id = 0;
 #else
    static const long long thread_id = 0xA;
 #endif
 #ifndef _WIN32
-   int use_colors = isatty(fileno(outfile));
+   int use_colors = 0;
 #else
    static const int use_colors = 0;
 #endif
-   time_t timestamp = time(NULL);
-   struct tm * tm_info = localtime(&timestamp);
+   time_t timestamp;
+#ifndef _WIN32
+   struct tm * tm_info = NULL;
+#else
+   struct tm tm_buffer;
+   struct tm * tm_info = &tm_buffer;
+#endif
    char time_buffer[24] = {0};
+
+   if(outfile == NULL)
+   {
+      return;
+   }
+   if(pid == 0) {
+       pid = BADGER_PID();
+   }
+#if defined(_WIN32)
+   thread_id = GetCurrentThreadId();
+#endif
+#ifndef _WIN32
+   use_colors = isatty(fileno(outfile));
+#endif
+   timestamp = time(NULL);
+#ifndef _WIN32
+   tm_info = localtime(&timestamp);
+#else
+   localtime_s(tm_info, &timestamp);
+#endif
    strftime(time_buffer, sizeof(time_buffer) - 1, "%Y-%m-%d %H:%M:%S", tm_info);
 
    fprintf(outfile, BADGER_TRACE_FORMAT(use_colors), time_buffer, pid, thread_id, filename, line_number, func_name);
@@ -225,7 +252,11 @@ FILE * BADGER_GET_DIRECT_STDERR(void)
 {
    FILE * direct_stderr = NULL;
    if(!direct_stderr) {
+#ifndef _WIN32
       direct_stderr = fdopen(2, "w");
+#else
+      direct_stderr = _fdopen(2, "w");
+#endif
    }
    return direct_stderr;
 }
@@ -249,8 +280,8 @@ const char * BADGER_DEFAULT_TRACE_FILE_NAME(void)
       }
       strcat(path, "/badger.debug.trace");
 #else
-      strcpy(path, getenv("TEMP"));
-      strcat(path, "/badger.debug.trace");
+      strcpy_s(path, sizeof(path) - 1, getenv("TEMP"));
+      strcat_s(path, sizeof(path) - 1, "/badger.debug.trace");
 #endif//_WIN32
    }
    return path;
@@ -265,7 +296,11 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
 {
    static FILE * logfile = NULL;
    if(!logfile) {
+#ifndef _WIN32
       logfile = fopen(filename, "a+");
+#else
+      fopen_s(&logfile, filename, "a+");
+#endif
       if(!logfile) {
          fprintf(stderr, "Failed to open %s\n", filename);
          fflush(stderr);
@@ -290,3 +325,16 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
  *   message - printf-formatted message.
  */
 #define BADGER_TRACE(...) BADGER_FPRINTF(BADGER_CURRENT_LOG_STREAM(NULL), __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+
+/*******************************************************************************
+ * FINALIZE */
+
+#ifdef _WIN32
+#pragma warning(pop) // For C4505 (unreferenced local function has been removed)
+// On some version it still does not work, so forcing usage:
+static void * BADGER__UNUSED_FUNCTION_1 = (void*)BADGER_FPRINTF;
+static void * BADGER__UNUSED_FUNCTION_2 = (void*)BADGER_CURRENT_LOG_STREAM;
+static void * BADGER__UNUSED_FUNCTION_3 = (void*)BADGER_GET_DIRECT_STDERR;
+static void * BADGER__UNUSED_FUNCTION_4 = (void*)BADGER_DEFAULT_TRACE_FILE_NAME;
+static void * BADGER__UNUSED_FUNCTION_5 = (void*)BADGER_GET_TRACE_FILE;
+#endif
