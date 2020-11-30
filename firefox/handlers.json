@@ -15,6 +15,10 @@
                 "brf"
             ]
         },
+        "application/epub+zip": {
+            "action": 0,
+            "ask": true
+        },
         "application/force-download": {
             "action": 0,
             "ask": true,
