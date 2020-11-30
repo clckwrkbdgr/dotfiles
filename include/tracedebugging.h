@@ -9,8 +9,16 @@
  * usually defined in environment variable CFLAGS or CXXFLAGS:
  * - GCC: `-include /path/to/custom/include/tracedebugging.h`
  * - xlC: `-qinclude /path/to/custom/include/tracedebugging.h`
- * NOTE: Some implementations may require adding include directory explicitly:
- * `-I /path/to/custom/include`
+ * - MSVS: `/FI/path/to/custom/include/tracedebugging.h`
+ *   For MSVS there is no such global variable like for *nix/Makefile,
+ *   but there should be global user property file, usually:
+ *   `$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props`.
+ *   Values of these variables should be checked for every VS version,
+ *   usually `UserRootDir = %LOCALAPPDATA%/Microsoft/MSBuild/v4.0`.
+ *   Just add node `/ItemDefinitionGroup/ClCompile/ForcedIncludeFiles`
+ *   with value `/path/to/custom/include/tracedebugging.h;%(ForcedIncludeFiles)`
+ * NOTE: Some implementations may require to explicitly specify
+ *       include directory, e.g.: * `-I /path/to/custom/include`
  *
  * All symbols here (functions, macros) are named with prefix BADGER_.
  *
