@@ -109,6 +109,17 @@
    BADGER_EXTERN int isatty (int __fd) __THROW;
 #endif//GNUC
 
+#if defined(_WIN32)
+   BADGER_EXTERN
+      __declspec(allocator)
+      __declspec(restrict)
+      void * malloc (size_t __size);
+   BADGER_EXTERN void free (void *__ptr);
+#else
+   BADGER_EXTERN void * malloc (size_t __size) __THROW;
+   BADGER_EXTERN void free (void *__ptr) __THROW;
+#endif
+
 /* #include <stdlib.h> */
 #if defined(_WIN32)
    BADGER_EXTERN char * getenv(const char*);
@@ -116,6 +127,15 @@
    BADGER_EXTERN char * getenv(const char*) BADGER_NOTHROW;
 #else
    BADGER_EXTERN char * getenv(const char*);
+#endif
+
+#ifdef _WIN32
+BADGER_EXTERN
+void
+__stdcall
+OutputDebugStringA(
+    const char * lpOutputString
+    );
 #endif
 
 /*******************************************************************************
@@ -146,6 +166,51 @@ long long BADGER_PID()
    return pid;
 }
 
+/** Returns current thread ID. */
+BADGER_STATIC_FUNCTION
+long long BADGER_THREAD_ID()
+{
+#ifndef _WIN32
+   return 0xA;
+#else
+   return GetCurrentThreadId();
+#endif//_WIN32
+}
+
+BADGER_STATIC_FUNCTION
+const char * BADGER_TIMESTAMP(char * time_str_buffer, size_t buffer_size)
+{
+   time_t timestamp;
+#ifndef _WIN32
+   struct tm * tm_info = NULL;
+#else
+   struct tm tm_buffer;
+   struct tm * tm_info = &tm_buffer;
+#endif
+   timestamp = time(NULL);
+#ifndef _WIN32
+   tm_info = localtime(&timestamp);
+#else
+   localtime_s(tm_info, &timestamp);
+#endif
+   strftime(time_str_buffer, buffer_size - 1, "%Y-%m-%d %H:%M:%S", tm_info);
+   time_str_buffer[buffer_size - 1] = 0;
+   return time_str_buffer;
+}
+
+/** Returns 1 (TRUE) if stream supports color sequences.
+ */
+BADGER_STATIC_FUNCTION
+int BADGER_USE_COLORS(FILE * stream)
+{
+#ifndef _WIN32
+   return isatty(fileno(stream));
+#else
+   (void)stream;
+   return 0;
+#endif
+}
+
 /** Returns base info prefix format string
  * (filename, line, pid etc.; ends with a space).
  * If use_colors is non-zero, add color escape sequences.
@@ -165,6 +230,57 @@ const char * BADGER_TRACE_FORMAT(int use_colors)
    }
 }
 
+/** Creates string with trace header.
+ * Default format is: <pid>:<filename>:<line_number>:<func_name>:
+ * Header ends with a space.
+ * Memory is auto-allocated to fit the full header.
+ * WARNING: Memory should be freed by caller!
+ */
+BADGER_STATIC_FUNCTION
+char * BADGER_GET_TRACE_HEADER(
+      const char * filename, int line_number, const char * func_name,
+      int use_colors
+      )
+{
+   char time_buffer[24] = {0};
+   const char * format = NULL;
+   size_t needed = 0;
+   char * buffer = NULL;
+   format = BADGER_TRACE_FORMAT(use_colors),
+   BADGER_TIMESTAMP(time_buffer, sizeof(time_buffer));
+
+   needed = snprintf(NULL, 0, format,
+         time_buffer, BADGER_PID(), BADGER_THREAD_ID(),
+         filename, line_number, func_name);
+   buffer = (char*)malloc(needed + 1);
+
+   snprintf(buffer, needed + 1, format,
+         time_buffer, BADGER_PID(), BADGER_THREAD_ID(),
+         filename, line_number, func_name);
+   buffer[needed] = '\0';
+
+   return buffer;
+}
+
+/** Returns formatted debug trace line.
+ * Memory is auto-allocated to fit the full line.
+ * WARNING: Memory should be freed by caller!
+ */
+BADGER_STATIC_FUNCTION
+char * BADGER_VSNPRINTF(const char * format, va_list args)
+{
+   size_t needed = 0;
+   char * buffer = NULL;
+
+   needed = vsnprintf(NULL, 0, format, args);
+   buffer = (char*)malloc(needed + 1);
+
+   vsnprintf(buffer, needed + 1, format, args);
+   buffer[needed] = '\0';
+
+   return buffer;
+}
+
 /** Base function: prints formatted message with varargs to specified stream.
  * Default format is: <pid>:<filename>:<line_number>:<func_name>:<message...>
  * If outfile is a TTY, prints colored info fields.
@@ -174,50 +290,33 @@ void BADGER_VFPRINTF(FILE * outfile,
       const char * filename, int line_number, const char * func_name,
       const char * format, va_list args)
 {
-   static long long pid = 0;
-#if defined(_WIN32)
-   long long thread_id = 0;
-#else
-   static const long long thread_id = 0xA;
-#endif
-#ifndef _WIN32
-   int use_colors = 0;
-#else
-   static const int use_colors = 0;
-#endif
-   time_t timestamp;
-#ifndef _WIN32
-   struct tm * tm_info = NULL;
-#else
-   struct tm tm_buffer;
-   struct tm * tm_info = &tm_buffer;
-#endif
-   char time_buffer[24] = {0};
-
+   char * header;
+   char * message;
    if(outfile == NULL)
    {
       return;
    }
-   if(pid == 0) {
-       pid = BADGER_PID();
-   }
-#if defined(_WIN32)
-   thread_id = GetCurrentThreadId();
-#endif
-#ifndef _WIN32
-   use_colors = isatty(fileno(outfile));
-#endif
-   timestamp = time(NULL);
-#ifndef _WIN32
-   tm_info = localtime(&timestamp);
-#else
-   localtime_s(tm_info, &timestamp);
-#endif
-   strftime(time_buffer, sizeof(time_buffer) - 1, "%Y-%m-%d %H:%M:%S", tm_info);
 
-   fprintf(outfile, BADGER_TRACE_FORMAT(use_colors), time_buffer, pid, thread_id, filename, line_number, func_name);
-   vfprintf(outfile, format, args);
-   fprintf(outfile, "\n");
+   header = BADGER_GET_TRACE_HEADER(filename, line_number, func_name,
+         BADGER_USE_COLORS(outfile)
+         );
+   fputs(header, outfile);
+#ifdef _WIN32
+   OutputDebugStringA(header);
+#endif
+   free((void*)header);
+
+   message = BADGER_VSNPRINTF(format, args);
+   fputs(message, outfile);
+#ifdef _WIN32
+   OutputDebugStringA(message);
+#endif
+   free((void*)message);
+
+   fputs("\n", outfile);
+#ifdef _WIN32
+   OutputDebugStringA("\n");
+#endif
    fflush(outfile);
 }
 
@@ -324,8 +423,9 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
 /** Printf-like macro to print arguments to the current stream.
  * (see BADGER_CURRENT_LOG_STREAM, default is stderr)
  * Default format is following:
- *   <pid>:<filename>:<ln>:<func>: <message...>
+ *   <date/time>:<pid>:<filename>:<ln>:<func>: <message...>
  * Where:
+ *   date/time - ISO repr. of current timestamp;
  *   pid - current process ID;
  *   filename - source file name;
  *   ln - number of line where trace is placed;
