@@ -72,6 +72,17 @@
 #pragma warning(disable : 4505) // Unreferenced local function has been removed
 #endif
 
+#if defined(_WIN32) && defined(__cplusplus) && ((_MANAGED == 1) || (_M_CEE == 1))
+# define BADGER_WIN_CLR // MSVC++ /clr mode.
+#endif
+
+/*******************************************************************************
+ * INITIALIZE */
+
+#ifdef BADGER_WIN_CLR
+#pragma unmanaged
+#endif
+
 /*******************************************************************************
  * SYSTEM STUFF */
 
@@ -436,6 +447,10 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
 
 /*******************************************************************************
  * FINALIZE */
+
+#ifdef BADGER_WIN_CLR
+#pragma managed
+#endif
 
 #ifdef _WIN32
 #pragma warning(pop) // For C4505 (unreferenced local function has been removed)
