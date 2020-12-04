@@ -122,7 +122,9 @@
 
 #if defined(_WIN32)
    BADGER_EXTERN
+#     if _MSC_VER >= 1900 // VS2015+
       __declspec(allocator)
+#     endif
       __declspec(restrict)
       void * malloc (size_t __size);
    BADGER_EXTERN void free (void *__ptr);
@@ -260,6 +262,9 @@ char * BADGER_GET_TRACE_HEADER(
    format = BADGER_TRACE_FORMAT(use_colors),
    BADGER_TIMESTAMP(time_buffer, sizeof(time_buffer));
 
+#if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
+# define snprintf _snprintf
+#endif
    needed = snprintf(NULL, 0, format,
          time_buffer, BADGER_PID(), BADGER_THREAD_ID(),
          filename, line_number, func_name);
@@ -269,6 +274,9 @@ char * BADGER_GET_TRACE_HEADER(
          time_buffer, BADGER_PID(), BADGER_THREAD_ID(),
          filename, line_number, func_name);
    buffer[needed] = '\0';
+#if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
+# undef snprintf
+#endif
 
    return buffer;
 }
