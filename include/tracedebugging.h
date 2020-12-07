@@ -124,10 +124,16 @@
    BADGER_EXTERN
 #     if _MSC_VER >= 1900 // VS2015+
       __declspec(allocator)
+#     else
+      __declspec(noalias)
 #     endif
       __declspec(restrict)
       void * malloc (size_t __size);
-   BADGER_EXTERN void free (void *__ptr);
+   BADGER_EXTERN
+#     if _MSC_VER < 1900 // VS2015+
+      __declspec(noalias)
+#     endif
+      void free (void *__ptr);
 #else
    BADGER_EXTERN void * malloc (size_t __size) __THROW;
    BADGER_EXTERN void free (void *__ptr) __THROW;
@@ -263,7 +269,7 @@ char * BADGER_GET_TRACE_HEADER(
    BADGER_TIMESTAMP(time_buffer, sizeof(time_buffer));
 
 #if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
-# define snprintf _snprintf
+# define snprintf(buffer, size, ...) _snprintf_s(buffer, size, size, __VA_ARGS__)
 #endif
    needed = snprintf(NULL, 0, format,
          time_buffer, BADGER_PID(), BADGER_THREAD_ID(),
@@ -291,11 +297,17 @@ char * BADGER_VSNPRINTF(const char * format, va_list args)
    size_t needed = 0;
    char * buffer = NULL;
 
+#if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
+# define vsnprintf(buffer, size, ...) vsnprintf_s(buffer, size, size, __VA_ARGS__)
+#endif
    needed = vsnprintf(NULL, 0, format, args);
    buffer = (char*)malloc(needed + 1);
 
    vsnprintf(buffer, needed + 1, format, args);
    buffer[needed] = '\0';
+#if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
+# undef vsnprintf
+#endif
 
    return buffer;
 }
@@ -460,7 +472,7 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
 #pragma managed
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(__cplusplus)
 #pragma warning(pop) // For C4505 (unreferenced local function has been removed)
 // On some version it still does not work, so forcing usage:
 static void * BADGER__UNUSED_FUNCTION_1 = (void*)BADGER_FPRINTF;
