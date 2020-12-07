@@ -10,6 +10,7 @@
     "snapToGridOnResize" : true,
     "keybindings" : 
     [
+        {"command":null,"keys":["alt+c"]},
         {
             "command" : "newTab",
             "keys" : 
