@@ -469,15 +469,17 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
  * FINALIZE */
 
 #ifdef BADGER_WIN_CLR
-#pragma managed
+#  pragma managed
 #endif
 
 #if defined(_WIN32) && defined(__cplusplus)
-#pragma warning(pop) // For C4505 (unreferenced local function has been removed)
+#  pragma warning(pop) // For C4505 (unreferenced local function has been removed)
+#  if _MSC_VER >= 1900 // VS2015+
 // On some version it still does not work, so forcing usage:
 static void * BADGER__UNUSED_FUNCTION_1 = (void*)BADGER_FPRINTF;
 static void * BADGER__UNUSED_FUNCTION_2 = (void*)BADGER_CURRENT_LOG_STREAM;
 static void * BADGER__UNUSED_FUNCTION_3 = (void*)BADGER_GET_DIRECT_STDERR;
 static void * BADGER__UNUSED_FUNCTION_4 = (void*)BADGER_DEFAULT_TRACE_FILE_NAME;
 static void * BADGER__UNUSED_FUNCTION_5 = (void*)BADGER_GET_TRACE_FILE;
+#  endif//VS2015+
 #endif
