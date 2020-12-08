@@ -36,6 +36,22 @@
  *   BADGER_CURRENT_LOG_STREAM(mylogfile)
  *   // Will write to stderr directly even if 'stderr' is redefined.
  *   BADGER_CURRENT_LOG_STREAM(BADGER_GET_DIRECT_STDERR());
+ *
+ * Example of profiling:
+ *   {
+ *      BADGER_PROFILE_START("Entering scope", ...);
+ *      ...
+ *      BADGER_PROFILE("Tick...", ...);
+ *      for(...)
+ *      {
+ *         ...
+ *         BADGER_PROFILE("Tick...", ...);
+ *      }
+ *      ...
+ *      BADGER_PROFILE("Tick...", ...);
+ *      ...
+ *      BADGER_PROFILE("Done");
+ *   }
  */
 
 /*******************************************************************************
@@ -157,6 +173,24 @@ OutputDebugStringA(
     );
 #endif
 
+#ifdef _WIN32
+union _LARGE_INTEGER;
+
+BADGER_EXTERN
+int
+__stdcall
+QueryPerformanceCounter(
+    union _LARGE_INTEGER * lpPerformanceCount
+    );
+
+BADGER_EXTERN
+int
+__stdcall
+QueryPerformanceFrequency(
+    union _LARGE_INTEGER * lpFrequency
+    );
+#endif
+
 /*******************************************************************************
  * HELPERS */
 
@@ -249,44 +283,6 @@ const char * BADGER_TRACE_FORMAT(int use_colors)
    }
 }
 
-/** Creates string with trace header.
- * Default format is: <pid>:<filename>:<line_number>:<func_name>:
- * Header ends with a space.
- * Memory is auto-allocated to fit the full header.
- * WARNING: Memory should be freed by caller!
- */
-BADGER_STATIC_FUNCTION
-char * BADGER_GET_TRACE_HEADER(
-      const char * filename, int line_number, const char * func_name,
-      int use_colors
-      )
-{
-   char time_buffer[24] = {0};
-   const char * format = NULL;
-   size_t needed = 0;
-   char * buffer = NULL;
-   format = BADGER_TRACE_FORMAT(use_colors),
-   BADGER_TIMESTAMP(time_buffer, sizeof(time_buffer));
-
-#if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
-# define snprintf(buffer, size, ...) _snprintf_s(buffer, size, size, __VA_ARGS__)
-#endif
-   needed = snprintf(NULL, 0, format,
-         time_buffer, BADGER_PID(), BADGER_THREAD_ID(),
-         filename, line_number, func_name);
-   buffer = (char*)malloc(needed + 1);
-
-   snprintf(buffer, needed + 1, format,
-         time_buffer, BADGER_PID(), BADGER_THREAD_ID(),
-         filename, line_number, func_name);
-   buffer[needed] = '\0';
-#if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
-# undef snprintf
-#endif
-
-   return buffer;
-}
-
 /** Returns formatted debug trace line.
  * Memory is auto-allocated to fit the full line.
  * WARNING: Memory should be freed by caller!
@@ -312,15 +308,66 @@ char * BADGER_VSNPRINTF(const char * format, va_list args)
    return buffer;
 }
 
-/** Base function: prints formatted message with varargs to specified stream.
+/** Returns formatted debug trace line.
+ * Memory is auto-allocated to fit the full line.
+ * WARNING: Memory should be freed by caller!
+ */
+BADGER_STATIC_FUNCTION
+char * BADGER_SNPRINTF(const char * format, ...)
+{
+   va_list args;
+   char * result = NULL;
+   va_start(args, format);
+   result = BADGER_VSNPRINTF(format, args);
+   va_end(args);
+   return result;
+}
+
+/** Creates string with trace header.
+ * Default format is: <pid>:<filename>:<line_number>:<func_name>:
+ * Header ends with a space.
+ * Memory is auto-allocated to fit the full header.
+ * WARNING: Memory should be freed by caller!
+ */
+BADGER_STATIC_FUNCTION
+char * BADGER_GET_TRACE_HEADER(
+      const char * filename, int line_number, const char * func_name,
+      int use_colors
+      )
+{
+   char time_buffer[24] = {0};
+   const char * format = NULL;
+   format = BADGER_TRACE_FORMAT(use_colors),
+   BADGER_TIMESTAMP(time_buffer, sizeof(time_buffer));
+
+   return BADGER_SNPRINTF(format,
+         time_buffer, BADGER_PID(), BADGER_THREAD_ID(),
+         filename, line_number, func_name);
+}
+
+/** Puts string to outfile.
+ * No line break is added.
+ * On Windows additionally prints it to debug console.
+ */
+BADGER_STATIC_FUNCTION
+void BADGER_FPUTS(FILE * outfile, const char * text)
+{
+   fputs(text, outfile);
+#ifdef _WIN32
+   OutputDebugStringA(text);
+#endif
+}
+
+/** Base function: prints formatted message to specified file.
  * Default format is: <pid>:<filename>:<line_number>:<func_name>:<message...>
  * If outfile is a TTY, prints colored info fields.
  */
 BADGER_STATIC_FUNCTION
-void BADGER_VFPRINTF(FILE * outfile,
+void BADGER_FPRINTF(FILE * outfile,
       const char * filename, int line_number, const char * func_name,
-      const char * format, va_list args)
+      const char * format, ...)
 {
+   va_list args;
    char * header;
    char * message;
    if(outfile == NULL)
@@ -331,34 +378,17 @@ void BADGER_VFPRINTF(FILE * outfile,
    header = BADGER_GET_TRACE_HEADER(filename, line_number, func_name,
          BADGER_USE_COLORS(outfile)
          );
-   fputs(header, outfile);
-#ifdef _WIN32
-   OutputDebugStringA(header);
-#endif
+   BADGER_FPUTS(outfile, header);
    free((void*)header);
 
+   va_start(args, format);
    message = BADGER_VSNPRINTF(format, args);
-   fputs(message, outfile);
-#ifdef _WIN32
-   OutputDebugStringA(message);
-#endif
+   va_end(args);
+   BADGER_FPUTS(outfile, message);
    free((void*)message);
 
-   fputs("\n", outfile);
-#ifdef _WIN32
-   OutputDebugStringA("\n");
-#endif
+   BADGER_FPUTS(outfile, "\n");
    fflush(outfile);
-}
-
-/** Base function: prints formatted message to specified file. */
-BADGER_STATIC_FUNCTION
-void BADGER_FPRINTF(FILE * outfile, const char * filename, int line_number, const char * func_name, const char * format, ...)
-{
-   va_list args;
-   va_start(args, format);
-   BADGER_VFPRINTF(outfile, filename, line_number, func_name, format, args);
-   va_end(args);
 }
 
 /** Returns current logging stream if parameter is NULL.
@@ -449,6 +479,143 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
 }
 
 /*******************************************************************************
+ * PROFILING */
+
+#if defined(_WIN32) && defined(__cplusplus)
+
+typedef long long BADGER_ULTRA_TIME;
+
+/** Returns current timestamp with microseconds. */
+BADGER_STATIC_FUNCTION
+BADGER_ULTRA_TIME BADGER_GET_ULTRA_TIMESTAMP(void)
+{
+   static BADGER_ULTRA_TIME frequency = 0;
+   if(!frequency) {
+     QueryPerformanceFrequency((union _LARGE_INTEGER *)&frequency);
+   }
+   BADGER_ULTRA_TIME current;
+   QueryPerformanceCounter((union _LARGE_INTEGER *)&current);
+   current = current * 1000000 / frequency;
+   return current;
+}
+
+/** Converts ultra timestamp with microseconds to long long. */
+BADGER_STATIC_FUNCTION
+long long BADGER_ULTRA_TIME_TO_LLONG(BADGER_ULTRA_TIME timestamp)
+{
+   return timestamp;
+}
+
+/** Profile tracking data. */
+struct BADGER_PROFILE_STAMP
+{
+   BADGER_ULTRA_TIME start;
+   BADGER_ULTRA_TIME last;
+};
+
+/** Prints formatted trace like BADGER_FPRINTF with additional
+ * time profiling info.
+ * Creates and returns BADGER_PROFILE_STAMP structure,
+ * initialized to the start of the function.
+ */
+BADGER_STATIC_FUNCTION
+struct BADGER_PROFILE_STAMP
+BADGER_PROFILE_INIT_FPRINTF(FILE * outfile,
+      const char * filename, int line_number, const char * func_name,
+      const char * format, ...)
+{
+   va_list args;
+   char * header;
+   char * time_profile;
+   char * message;
+   struct BADGER_PROFILE_STAMP stamp;
+   if(outfile == NULL)
+   {
+      memset(&stamp, 0, sizeof(stamp));
+      return stamp;
+   }
+   stamp.start = BADGER_GET_ULTRA_TIMESTAMP();
+   stamp.last = stamp.start;
+
+   header = BADGER_GET_TRACE_HEADER(filename, line_number, func_name,
+         BADGER_USE_COLORS(outfile)
+         );
+   BADGER_FPUTS(outfile, header);
+   free((void*)header);
+
+   time_profile = BADGER_SNPRINTF(
+         "[profile started at %lld] ",
+         BADGER_ULTRA_TIME_TO_LLONG(stamp.start)
+         );
+   BADGER_FPUTS(outfile, time_profile);
+   free((void*)time_profile);
+
+   va_start(args, format);
+   message = BADGER_VSNPRINTF(format, args);
+   va_end(args);
+   BADGER_FPUTS(outfile, message);
+   free((void*)message);
+
+   BADGER_FPUTS(outfile, "\n");
+   fflush(outfile);
+
+   return stamp;
+}
+
+/** Prints formatted trace like BADGER_FPRINTF with additional
+ * time profiling info.
+ * Updates received BADGER_PROFILE_STAMP.last
+ * with current timestamp.
+ * Prints time passed since the last call and since the start call.
+ */
+BADGER_STATIC_FUNCTION
+void
+BADGER_PROFILE_FPRINTF(
+      struct BADGER_PROFILE_STAMP * stamp,
+      FILE * outfile,
+      const char * filename, int line_number, const char * func_name,
+      const char * format, ...)
+{
+   va_list args;
+   char * header;
+   BADGER_ULTRA_TIME now;
+   char * time_profile;
+   char * message;
+   if(outfile == NULL)
+   {
+      return;
+   }
+   now = BADGER_GET_ULTRA_TIMESTAMP();
+
+   header = BADGER_GET_TRACE_HEADER(filename, line_number, func_name,
+         BADGER_USE_COLORS(outfile)
+         );
+   BADGER_FPUTS(outfile, header);
+   free((void*)header);
+
+   time_profile = BADGER_SNPRINTF(
+         "[passed: %lld msec, total: %lld msec] ",
+         BADGER_ULTRA_TIME_TO_LLONG(now - stamp->last),
+         BADGER_ULTRA_TIME_TO_LLONG(now - stamp->start)
+         );
+   BADGER_FPUTS(outfile, time_profile);
+   free((void*)time_profile);
+
+   va_start(args, format);
+   message = BADGER_VSNPRINTF(format, args);
+   va_end(args);
+   BADGER_FPUTS(outfile, message);
+   free((void*)message);
+
+   BADGER_FPUTS(outfile, "\n");
+   fflush(outfile);
+
+   stamp->last = now;
+}
+
+#endif//_WIN32 && __cplusplus
+
+/*******************************************************************************
  * MAIN */
 
 /** Printf-like macro to print arguments to the current stream.
@@ -463,7 +630,31 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
  *   func - name of the function where traces is placed;
  *   message - printf-formatted message.
  */
-#define BADGER_TRACE(...) BADGER_FPRINTF(BADGER_CURRENT_LOG_STREAM(NULL), __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+#define BADGER_TRACE(...) \
+   BADGER_FPRINTF(BADGER_CURRENT_LOG_STREAM(NULL), \
+         __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+
+/** Function to start profiling in scope.
+ * Required for BADGER_PROFILE() calls (see below).
+ * May print optional trace (using printf-like formatting).
+ * Whole messsage is formatted using same functionality as in BADGER_TRACE().
+ */
+#define BADGER_PROFILE_START(...) \
+   struct BADGER_PROFILE_STAMP BADGER_PROFILE_STAMP_VARIABLE = \
+   BADGER_PROFILE_INIT_FPRINTF(BADGER_CURRENT_LOG_STREAM(NULL), \
+         __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+
+/** Main profiling function.
+ * Requires initial call to BADGER_PROFILE_START().
+ * Prints time in microseconds passed since the last call
+ * and since the initial call to BADGER_PROFILE_START().
+ * May print optional trace (using printf-like formatting).
+ * Whole messsage is formatted using same functionality as in BADGER_TRACE().
+ */
+#define BADGER_PROFILE(...) \
+   BADGER_PROFILE_FPRINTF(&BADGER_PROFILE_STAMP_VARIABLE, \
+         BADGER_CURRENT_LOG_STREAM(NULL), \
+         __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 
 /*******************************************************************************
  * FINALIZE */
