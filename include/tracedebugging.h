@@ -294,9 +294,12 @@ char * BADGER_VSNPRINTF(const char * format, va_list args)
    char * buffer = NULL;
 
 #if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
+# define vscprintf(...) _vscprintf(__VA_ARGS__)
 # define vsnprintf(buffer, size, ...) vsnprintf_s(buffer, size, size, __VA_ARGS__)
+#else
+# define vscprintf(...) vsnprintf(NULL, 0, __VA_ARGS__)
 #endif
-   needed = vsnprintf(NULL, 0, format, args);
+   needed = vscprintf(format, args);
    buffer = (char*)malloc(needed + 1);
 
    vsnprintf(buffer, needed + 1, format, args);
@@ -304,6 +307,7 @@ char * BADGER_VSNPRINTF(const char * format, va_list args)
 #if defined(_WIN32) && _MSC_VER < 1900 // MSVS 2015+
 # undef vsnprintf
 #endif
+#undef vscprintf
 
    return buffer;
 }
@@ -467,7 +471,7 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
 #ifndef _WIN32
       logfile = fopen(filename, "a+");
 #else
-      fopen_s(&logfile, filename, "a+");
+      logfile = _fsopen(filename, "a+", 0x40); // _SH_DENYNO to allow shared access.
 #endif
       if(!logfile) {
          fprintf(stderr, "Failed to open %s\n", filename);
@@ -665,12 +669,12 @@ BADGER_PROFILE_FPRINTF(
 
 #if defined(_WIN32) && defined(__cplusplus)
 #  pragma warning(pop) // For C4505 (unreferenced local function has been removed)
-#  if _MSC_VER >= 1900 // VS2015+
 // On some version it still does not work, so forcing usage:
 static void * BADGER__UNUSED_FUNCTION_1 = (void*)BADGER_FPRINTF;
 static void * BADGER__UNUSED_FUNCTION_2 = (void*)BADGER_CURRENT_LOG_STREAM;
 static void * BADGER__UNUSED_FUNCTION_3 = (void*)BADGER_GET_DIRECT_STDERR;
 static void * BADGER__UNUSED_FUNCTION_4 = (void*)BADGER_DEFAULT_TRACE_FILE_NAME;
 static void * BADGER__UNUSED_FUNCTION_5 = (void*)BADGER_GET_TRACE_FILE;
-#  endif//VS2015+
+static void * BADGER__UNUSED_FUNCTION_6 = (void*)BADGER_PROFILE_INIT_FPRINTF;
+static void * BADGER__UNUSED_FUNCTION_7 = (void*)BADGER_PROFILE_FPRINTF;
 #endif
