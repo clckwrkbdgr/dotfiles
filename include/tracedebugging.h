@@ -670,11 +670,11 @@ BADGER_PROFILE_FPRINTF(
 #if defined(_WIN32) && defined(__cplusplus)
 #  pragma warning(pop) // For C4505 (unreferenced local function has been removed)
 // On some version it still does not work, so forcing usage:
-static void * BADGER__UNUSED_FUNCTION_1 = reinterpret_cast<void*>(BADGER_FPRINTF);
-static void * BADGER__UNUSED_FUNCTION_2 = reinterpret_cast<void*>(BADGER_CURRENT_LOG_STREAM);
-static void * BADGER__UNUSED_FUNCTION_3 = reinterpret_cast<void*>(BADGER_GET_DIRECT_STDERR);
-static void * BADGER__UNUSED_FUNCTION_4 = reinterpret_cast<void*>(BADGER_DEFAULT_TRACE_FILE_NAME);
-static void * BADGER__UNUSED_FUNCTION_5 = reinterpret_cast<void*>(BADGER_GET_TRACE_FILE);
-static void * BADGER__UNUSED_FUNCTION_6 = reinterpret_cast<void*>(BADGER_PROFILE_INIT_FPRINTF);
-static void * BADGER__UNUSED_FUNCTION_7 = reinterpret_cast<void*>(BADGER_PROFILE_FPRINTF);
+static long long BADGER__UNUSED_FUNCTION_1 = reinterpret_cast<long long>(BADGER_FPRINTF);
+static long long BADGER__UNUSED_FUNCTION_2 = reinterpret_cast<long long>(BADGER_CURRENT_LOG_STREAM);
+static long long BADGER__UNUSED_FUNCTION_3 = reinterpret_cast<long long>(BADGER_GET_DIRECT_STDERR);
+static long long BADGER__UNUSED_FUNCTION_4 = reinterpret_cast<long long>(BADGER_DEFAULT_TRACE_FILE_NAME);
+static long long BADGER__UNUSED_FUNCTION_5 = reinterpret_cast<long long>(BADGER_GET_TRACE_FILE);
+static long long BADGER__UNUSED_FUNCTION_6 = reinterpret_cast<long long>(BADGER_PROFILE_INIT_FPRINTF);
+static long long BADGER__UNUSED_FUNCTION_7 = reinterpret_cast<long long>(BADGER_PROFILE_FPRINTF);
 #endif
