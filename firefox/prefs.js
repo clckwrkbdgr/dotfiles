@@ -343,6 +343,7 @@ user_pref("extensions.stylish.firstRun", 3);
 user_pref("extensions.systemAddonSet", "{\"schema\":1,\"addons\":{}}");
 user_pref("extensions.ui.dictionary.hidden", true);
 user_pref("extensions.ui.experiment.hidden", true);
+user_pref("extensions.ui.extension.hidden", false);
 user_pref("extensions.ui.locale.hidden", false);
 user_pref("extensions.update.notifyUser", false);
 user_pref("extensions.vimperator.firsttime", false);
