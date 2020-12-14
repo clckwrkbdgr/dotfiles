@@ -1,26 +1,43 @@
+SHELLMETAS=qwertyuiopasdfghjklzxcvbnm" *?<>|"
+
 CC=vcvarsall cl
 CXX=vcvarsall cl
-LDFLAGS=/link $(CUSTOM_LDFLAGS)
-BINEXT=.exe
+AR=vcvarsall lib
+RC=rc
+LDFLAGS=/link $(LIBS:+".lib") $(CUSTOM_LDFLAGS)
 WARNFLAGS=/W4 /WX
-CFLAGS=/EHsc $(WARNFLAGS) $(CUSTOM_CFLAGS)
-CXXFLAGS=/EHsc $(WARNFLAGS) $(CUSTOM_CXXFLAGS)
+CFLAGS=/EHsc $(WARNFLAGS) $(INCLUDES:^"/I") $(CUSTOM_CFLAGS)
+CXXFLAGS=/EHsc $(WARNFLAGS) $(INCLUDES:^"/I") $(CUSTOM_CXXFLAGS)
 
-BUILD_OBJECTS=$(OBJECTS:+".obj")
+BUILD_OBJECTS=$(OBJECTS:+".obj") $(RESOURCES:+".RES")
 
-run:: $(TARGET)
-	$(TARGET)$(BINEXT)
+EXECUTABLE=$(TARGET).exe
+SHARED_LIB=$(TARGET).dll
+STATIC_LIB=$(TARGET).lib
 
-$(TARGET): $(TARGET)$(BINEXT)
+run:: $(EXECUTABLE)
+	$(EXECUTABLE)
 
-$(TARGET)$(BINEXT): $(BUILD_OBJECTS)
-	$(CXX) $< $(LDFLAGS)
+$(EXECUTABLE): $(BUILD_OBJECTS)
+	$(CXX) $^ $(LDFLAGS) /OUT:$(EXECUTABLE)
+
+$(STATIC_LIB): $(BUILD_OBJECTS)
+	$(AR) $^ /OUT:$(STATIC_LIB)
+
+$(SHARED_LIB): $(BUILD_OBJECTS)
+	$(CXX) /LD /DLL $^ $(LDFLAGS) /OUT:$(SHARED_LIB)
+
+%.rc: %_resource.h
+	touch $@
+
+%.RES: %.rc %_resource.h
+	$(RC) $<
 
 %.obj: %.c
-	$(CXX) -c $^ $(CXXFLAGS)
-
-%.obj: %.cpp
 	$(CXX) -c $^ $(CFLAGS)
 
+%.obj: %.cpp
+	$(CXX) -c $^ $(CXXFLAGS)
+
 clean::
-	rm -f $(TARGET)$(BINEXT) *.obj
+	rm -f $(EXECUTABLE) $(STATIC_LIB) $(SHARED_LIB) *.obj *.RES
