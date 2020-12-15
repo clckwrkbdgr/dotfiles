@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, sys, subprocess
+import os, sys, subprocess, platform
 import re
 import itertools
 import configparser
@@ -66,13 +66,13 @@ PYTHON_UNITTEST_QUIET_PATTERNS = {
 		'2' : list(map(re.compile, [
 			'^[.]+$',
 			'^-{70}$',
-			'^Ran \d+ tests in [0-9.]+s$',
+			r'^Ran \d+ tests in [0-9.]+s$',
 			'^$',
 			'^OK$',
 			])),
 		'3' : list(map(re.compile, [
 			'^-{70}$',
-			'^Ran \d+ tests in [0-9.]+s$',
+			r'^Ran \d+ tests in [0-9.]+s$',
 			'^$',
 			'^OK$',
 			])),
@@ -111,7 +111,12 @@ def run_python_unittests(version, test, quiet=False):
 	allowed_versions = ['2', '3']
 	assert version in allowed_versions, 'Unknown python version {0}, choose from following: {1}'.format(version, allowed_versions)
 
-	args = ['python{0}'.format(version), '-m', 'coverage', 'run']
+	if platform.system() == 'Windows':
+		python_runner = ['py', '-{0}'.format(version)]
+	else:
+		python_runner = ['python{0}'.format(version)]
+
+	args = python_runner + ['-m', 'coverage', 'run']
 	if not test:
 		args += ['--source=.']
 	args += ['-m', 'unittest']
@@ -127,7 +132,7 @@ def run_python_unittests(version, test, quiet=False):
 			quiet_stderr_patterns=PYTHON_UNITTEST_QUIET_PATTERNS[version] if quiet else None)
 	if rc != 0:
 		return rc
-	return quiet_call(['python{0}'.format(version), '-m', 'coverage', 'report', '-m'],
+	return quiet_call(python_runner + ['-m', 'coverage', 'report', '-m'],
 			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None)
 
 @test_suite('py2')
