@@ -2,6 +2,26 @@ import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import clckwrkbdgr.utils as utils
 
+class TestDotDict(unittest.TestCase):
+	def should_access_dotdict_fields_via_dot(self):
+		d = utils.dotdict()
+		d['field'] = 'foo'
+		self.assertEqual(d.field, 'foo')
+		self.assertEqual(d['field'], 'foo')
+	def should_create_dotdict_from_base_dict(self):
+		d = utils.dotdict({'field':'foo'})
+		self.assertEqual(d.field, 'foo')
+		self.assertEqual(d['field'], 'foo')
+	def should_set_dotdict_fields_via_dot(self):
+		d = utils.dotdict({'field':'foo'})
+		d.field = 'foo'
+		self.assertEqual(d.field, 'foo')
+		self.assertEqual(d['field'], 'foo')
+	def should_convert_nested_dicts_to_dotdicts(self):
+		d = utils.dotdict({'field':'foo', 'nested' : {'subfield': 'bar'}})
+		self.assertEqual(d.field, 'foo')
+		self.assertEqual(d.nested.subfield, 'bar')
+
 class TestExitCode(unittest.TestCase):
 	def should_convert_None_to_0(self):
 		self.assertEqual(utils.convert_to_exit_code(None), 0)
