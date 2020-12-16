@@ -80,14 +80,14 @@ class TestPoint(unittest.TestCase):
 class TestMatrix(unittest.TestCase):
 	def should_create_matrix(self):
 		m = Matrix((2, 3), default='*')
-		self.assertEqual(m.size(), (2, 3))
-		self.assertEqual(m.width(), 2)
-		self.assertEqual(m.height(), 3)
+		self.assertEqual(m.size, (2, 3))
+		self.assertEqual(m.width, 2)
+		self.assertEqual(m.height, 3)
 	def should_resize_matrix(self):
 		m = Matrix((2, 3), default='*')
-		self.assertEqual(m.size(), (2, 3))
+		self.assertEqual(m.size, (2, 3))
 		m.resize((3, 2), default='_')
-		self.assertEqual(m.size(), (3, 2))
+		self.assertEqual(m.size, (3, 2))
 	def should_create_matrix_from_other_matrix(self):
 		original = Matrix((2, 2))
 		original.set_cell((0, 0), 'a')
@@ -141,8 +141,8 @@ class TestMatrix(unittest.TestCase):
 	def should_transform_matrix(self):
 		original = Matrix.fromstring('01\n23')
 		processed = original.transform(int)
-		self.assertEqual(processed.width(), 2)
-		self.assertEqual(processed.height(), 2)
+		self.assertEqual(processed.width, 2)
+		self.assertEqual(processed.height, 2)
 		self.assertEqual(processed.data, [
 			0, 1,
 			2, 3,
@@ -153,8 +153,8 @@ class TestMatrix(unittest.TestCase):
 				XXXXX
 				""")
 		m = Matrix.fromstring(data)
-		self.assertEqual(m.width(), 5)
-		self.assertEqual(m.height(), 2)
+		self.assertEqual(m.width, 5)
+		self.assertEqual(m.height, 2)
 		self.assertEqual(m.data, [
 			'.', 'X', '.', 'X', '.',
 			'X', 'X', 'X', 'X', 'X',
@@ -168,8 +168,8 @@ class TestMatrix(unittest.TestCase):
 				cabcd
 				""")
 		m = Matrix.fromstring(data, transformer=lambda c: -1 if c == '.' else ord(c) - ord('a'))
-		self.assertEqual(m.width(), 5)
-		self.assertEqual(m.height(), 2)
+		self.assertEqual(m.width, 5)
+		self.assertEqual(m.height, 2)
 		self.assertEqual(m.data, [
 			-1, 0, -1, 1, -1,
 			2, 0, 1, 2, 3,
@@ -196,6 +196,18 @@ class TestMatrix(unittest.TestCase):
 				cabcd
 				""")
 		self.assertEqual(m.tostring(transformer=lambda c: '.' if c < 0 else chr(c + ord('a'))), expected)
+	def should_fill_rectangle(self):
+		m = Matrix((10, 5), '.')
+		m.fill(Point(3, 1), Point(8, 3), 'X')
+		expected = textwrap.dedent("""\
+				..........
+				...XXXXXX.
+				...XXXXXX.
+				...XXXXXX.
+				..........
+				""")
+		actual = m.tostring()
+		self.assertEqual(actual, expected)
 
 class TestAlgorithms(unittest.TestCase):
 	def should_get_neighbours(self):

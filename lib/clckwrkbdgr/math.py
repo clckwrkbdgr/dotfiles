@@ -5,6 +5,7 @@ import operator
 import math
 from collections import namedtuple
 from functools import total_ordering
+import vintage
 
 @total_ordering
 class Vector(object):
@@ -101,6 +102,14 @@ class Size(Vector): # pragma: no cover
 	@property
 	def y(self): return self.height
 
+class CallableIntProperty(int): # pragma: no cover
+	@vintage.deprecated('Calling property as method is deprecated.')
+	def __call__(self): return self
+
+class CallableSizeProperty(Size): # pragma: no cover
+	@vintage.deprecated('Calling property as method is deprecated.')
+	def __call__(self): return self
+
 class Matrix(object):
 	""" Represents 2D matrix.
 	"""
@@ -128,13 +137,26 @@ class Matrix(object):
 		self.dims = Size(width, height)
 		# TODO maybe clearing is not the best idea, maybe I should keep old values wherever is possible.
 		self.data = [copy.deepcopy(default) for _ in range(width * height)]
+	def fill(self, topleft, downright, value):
+		""" Fills rectangle (including borders) with specified value. """
+		topleft = Point(topleft)
+		downright = Point(downright)
+		for x in range(topleft.x, downright.x + 1):
+			for y in range(topleft.y, downright.y + 1):
+				self.set_cell(Point(x, y), value)
+	def clear(self, value): # pragma: no cover
+		""" Fills the whole map with specified value. """
+		return self.fill(Point(0, 0), Point(self.width - 1, self.height - 1), value)
+	@property
 	def size(self):
 		""" Returns iterable of size (two-component). """
-		return self.dims
+		return CallableSizeProperty(self.dims)
+	@property
 	def width(self):
-		return self.dims.width
+		return CallableIntProperty(self.dims.width)
+	@property
 	def height(self):
-		return self.dims.height
+		return CallableIntProperty(self.dims.height)
 	def valid(self, pos):
 		""" Returns True if pos is within Matrix boundaries. """
 		pos = Point(pos)
