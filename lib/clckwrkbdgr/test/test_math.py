@@ -35,6 +35,10 @@ class TestVector(unittest.TestCase):
 		data = json.loads(jsonpickle.encode(p, unpicklable=False))
 		self.assertEqual(data, [1, 2])
 		self.assertEqual(jsonpickle.decode(jsonpickle.encode(p)), p)
+	def should_have_hash(self):
+		p = MyVector(1, 2)
+		other = MyVector(1, 2)
+		self.assertEqual(set([p]), set([other]))
 	def should_deserialize_old_vector(self):
 		q = jsonpickle.decode('{"py/newargs": {"py/tuple": [1, 2]}, "py/object": "clckwrkbdgr.test.test_math.MyVector", "py/seq": [1, 2]}')
 		self.assertEqual(q.first, 1)
@@ -49,6 +53,10 @@ class TestVector(unittest.TestCase):
 		self.assertTrue(MyVector(1, 2) <= MyVector(1, 2))
 		self.assertTrue(MyVector(1, 2) < MyVector(2, 2))
 		self.assertTrue(MyVector(1, 2) < MyVector(1, 3))
+	def should_get_absolute_values(self):
+		self.assertEqual(abs(MyVector(1, 2)), MyVector(1, 2))
+		self.assertEqual(abs(MyVector(-1, 2)), MyVector(1, 2))
+		self.assertEqual(abs(MyVector(-1, -2)), MyVector(1, 2))
 	def should_add_vectors(self):
 		self.assertEqual(MyVector(1, 2) + MyVector(2, 3), MyVector(3, 5))
 	def should_subtract_vectors(self):
@@ -58,6 +66,16 @@ class TestVector(unittest.TestCase):
 	def should_divide_vector(self):
 		self.assertEqual(MyVector(2, 4) / 2, MyVector(1, 2))
 		self.assertEqual(MyVector(5, 6) // 3, MyVector(1, 2))
+
+class TestPoint(unittest.TestCase):
+	def should_yield_all_surrounding_neighbours(self):
+		actual = set(Point(1, 2).neighbours())
+		expected = set(map(Point, [
+			(0, 1), (1, 1), (2, 1),
+			(0, 2), (1, 2), (2, 2),
+			(0, 3), (1, 3), (2, 3),
+			]))
+		self.assertEqual(actual, expected)
 
 class TestMatrix(unittest.TestCase):
 	def should_create_matrix(self):

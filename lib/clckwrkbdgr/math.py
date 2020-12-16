@@ -20,8 +20,10 @@ class Vector(object):
 		instance.__init__(*args)
 		return instance
 	def __init__(self, *values):
-		""" Creates vector from values:
+		""" Creates vector from values, iterables or Vector:
 		Vector(0, 1, 2, ...)
+		Vector([0, 1, 2, ...])
+		Vector(Vector(0, 1, 2, ...))
 		"""
 		if len(values) == 1:
 			if isinstance(values[0], Vector):
@@ -33,6 +35,8 @@ class Vector(object):
 		return str(self.values)
 	def __repr__(self): # pragma: no cover
 		return str(type(self)) + str(self)
+	def __hash__(self):
+		return hash(tuple(self.values))
 	def __iter__(self):
 		return iter(self.values)
 	def __getitem__(self, attr):
@@ -45,6 +49,8 @@ class Vector(object):
 		return self.values == Vector(other).values
 	def __lt__(self, other):
 		return self.values < Vector(other).values
+	def __abs__(self):
+		return type(self)(list(map(abs, self.values)))
 	def __add__(self, other):
 		return type(self)(list(map(operator.add, self.values, Vector(other).values)))
 	def __sub__(self, other):
@@ -70,6 +76,13 @@ class Point(Vector): # pragma: no cover
 	def y(self): return self.values[1]
 	@y.setter
 	def y(self, value): self.values[1] = value
+	def neighbours(self):
+		""" Returns all neighbours including the copy of original point:
+		All points in 3x3 square around the original one.
+		"""
+		for x in [-1, 0, 1]:
+			for y in [-1, 0, 1]:
+				yield Point(self.x + x, self.y + y)
 
 class Size(Vector): # pragma: no cover
 	""" Convenience type definition for 2D vector
