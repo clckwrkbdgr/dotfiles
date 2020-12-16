@@ -1,5 +1,6 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
+import pickle
 from clckwrkbdgr.collections import AutoRegistry
 from clckwrkbdgr.collections import dotdict
 
@@ -22,6 +23,13 @@ class TestDotDict(unittest.TestCase):
 		d = dotdict({'field':'foo', 'nested' : {'subfield': 'bar'}})
 		self.assertEqual(d.field, 'foo')
 		self.assertEqual(d.nested.subfield, 'bar')
+	def should_pickle_and_unpickle_dotdict(self):
+		d = dotdict({'field':'foo', 'nested' : {'subfield': 'bar'}})
+		data = pickle.dumps(d)
+		other = pickle.loads(data)
+		self.assertEqual(d, other)
+		self.assertTrue(type(other) is dotdict)
+		self.assertTrue(type(other.nested) is dotdict)
 
 class TestAutoRegistry(unittest.TestCase):
 	def should_register_entry(self):
