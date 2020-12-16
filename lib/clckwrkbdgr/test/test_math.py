@@ -187,3 +187,13 @@ class TestAlgorithms(unittest.TestCase):
 
 		neighbours = list(clckwrkbdgr.math.get_neighbours(m, (0, 0), check=lambda c: int(c) > 1))
 		self.assertEqual(neighbours, [Point(0, 1)])
+
+class TestMath(unittest.TestCase):
+	def should_extract_sign(self):
+		self.assertEqual(clckwrkbdgr.math.sign(-100), -1)
+		self.assertEqual(clckwrkbdgr.math.sign(-1), -1)
+		self.assertEqual(clckwrkbdgr.math.sign(-0.5), -1)
+		self.assertEqual(clckwrkbdgr.math.sign(0), 0)
+		self.assertEqual(clckwrkbdgr.math.sign(+0.5), 1)
+		self.assertEqual(clckwrkbdgr.math.sign(+1), +1)
+		self.assertEqual(clckwrkbdgr.math.sign(+100), +1)

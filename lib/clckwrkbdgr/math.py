@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import itertools
 import copy
 import operator
+import math
 from collections import namedtuple
 from functools import total_ordering
 
@@ -204,3 +205,9 @@ def get_neighbours(matrix, pos, check=None):
 		if check and not check(matrix.cell(p)):
 			continue
 		yield p
+
+def sign(value):
+	""" Returns -1 for negative values, +1 for positive values and 0 for zero.
+	Type of resulting value depends on type of argument.
+	"""
+	return value and type(value)(math.copysign(1, value))
