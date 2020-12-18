@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+""" Provides pipeline interfaces for utilities that do not work with stdin/stdout.
+
+Usage:
+	pipefiles <subst stdinfile> <expected stdoutfile> <args...>
+Which would do the following:
+* Read stdin data, save to <subst stdinfile>
+* Run <args...> possibly passing both file names to command via placeholders.
+* Collect <expected stdoutfile> and send its data to stdout.
+
+E.g. MSBuild toolchain utilities (C Preprocessor):
+	# command = cl /nologo /P /E /C '/Fi{stdout}' '{stdin}' <other args...>
+	# stdin  = prepro.c  -- input file has to have extension .c and an arbitrary name.
+	# stdout = prepro.i  -- output file will have the same name but extension will be changed to .i
+	<cat my data> | pipefiles prepro.c prepro.i cl /nologo /P /E /C '/Fi{stdout}' '{stdin}' <other args...> | <receive preprocessed data>
+
+If <stdin> or <stdout> name is passed as '-', random temp filename is provided.
+Args could include special placeholders {stdin} and {stdout} which
+will be replaced by corresponding file name.
+Both <stdin> and <stdout> files will be removed after execution of command.
+"""
+import os, sys, subprocess
+import tempfile
+
+if __name__ == "__main__":
+	args = sys.argv[1:]
+	if len(args) < 3:
+		print('Not enough arguments.', file=sys.stderr)
+		print(__doc__, file=sys.stderr)
+		sys.exit(1)
+	stdin = args[0]
+	stdout = args[1]
+	args = args[2:]
+
+	if stdin == '-':
+		stdin = os.path.join(tempfile.gettempdir(), tempfile.gettempprefix() + str(os.getpid()) + '.in')
+	if stdout == '-':
+		stdout = os.path.join(tempfile.gettempdir(), tempfile.gettempprefix() + str(os.getpid()) + '.out')
+
+	with open(stdin, 'wb') as f:
+		content = sys.stdin.buffer.read()
+		f.write(content)
+	args = [arg.format(stdin=stdin, stdout=stdout) for arg in args]
+	rc = subprocess.call(args, shell=True, stdout=sys.stderr)
+
+	os.unlink(stdin)
+
+	if os.path.exists(stdout):
+		with open(stdout, 'rb') as f:
+			content = f.read()
+			sys.stdout.buffer.write(content)
+		os.unlink(stdout)
+
+	sys.exit(rc)
