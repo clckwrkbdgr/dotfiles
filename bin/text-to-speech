@@ -14,7 +14,7 @@ say_mbrola() {
 say_rhvoice() {
 	IFS='\n'
 	while read line; do
-		if python3 -c 'import re,sys;sys.exit(not re.search(r"[\u0400-\u0500]", sys.argv[1]))' "$line"; then
+		if python -c 'import re,sys;sys.exit(not re.search(r"[\u0400-\u0500]", sys.argv[1]))' "$line"; then
 			echo "$line" | spd-say -e -w -o rhvoice -i +100 -p +10 -r -10 -l russian -y Anna >/dev/null
 		else
 			echo "$line" | spd-say -e -w -o rhvoice -i +100 -p +40 -r -10 -l english -y SLT >/dev/null

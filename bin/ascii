@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # Prints ascii table for characters 0..127 to stdout in nicely aligned table.
 import itertools
 

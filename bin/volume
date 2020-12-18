@@ -59,7 +59,7 @@ cli() {
 		else
 			icon=audio-volume-high
 		fi
-		line=$(echo $volume | python3 -c 'v=int(input());i=v//5;print("{"+"|"*i+"-"*(20-i)+"} " + str(v) + "%")')
+		line=$(echo $volume | python -c 'v=int(input());i=v//5;print("{"+"|"*i+"-"*(20-i)+"} " + str(v) + "%")')
 		notification -q --type fixed --no-history -t "Volume" -i "$icon" "$line"
 	fi
 }
