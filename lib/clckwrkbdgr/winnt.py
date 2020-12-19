@@ -1,4 +1,8 @@
-from ctypes import Structure, windll, c_uint, sizeof, byref
+from ctypes import Structure, c_uint, sizeof, byref
+try:
+	from ctypes import windll
+except: # pragma: no cover
+	pass
 
 class LASTINPUTINFO(Structure):
 	_fields_ = [
