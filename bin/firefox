@@ -24,7 +24,7 @@ cli() {
 		if [ -f "$f" ]; then
 			if echo "$f" | grep -q '[.]url$'; then
 				( set -o pipefail;
-					grep 'URL' "$1" | sed 's/^URL *= *//'
+					grep 'URL' "$f" | sed 's/^URL *= *//'
 				) && continue
 			fi
 		fi
