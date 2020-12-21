@@ -26,7 +26,7 @@
    REM Now we can run application in created environment.
    REM This is done primarily for Far Manager because it cannot hold environment from AutoRun cmd file,
    REM each new command line will fall back to the initial environment.
-   IF NOT [%1] == [] %*
+   IF NOT [%1] == [] call %*
 @exit/b
    # Prepares full user environment, e.g. for user jobs in crontab.
    # Re-read user profile each time, so can be used to run command
