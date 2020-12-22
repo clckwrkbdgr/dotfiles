@@ -2,6 +2,17 @@ import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import clckwrkbdgr.utils as utils
 
+class TestUtils(unittest.TestCase):
+	def should_detect_collections(self):
+		self.assertFalse(utils.is_collection(None))
+		self.assertFalse(utils.is_collection('123'))
+		self.assertFalse(utils.is_collection(123))
+		self.assertTrue(utils.is_collection([1, 2, 3]))
+		self.assertTrue(utils.is_collection((1, 2, 3)))
+		self.assertTrue(utils.is_collection({1, 2, 3}))
+		self.assertTrue(utils.is_collection({1:1, 2:2, 3:3}))
+		self.assertTrue(utils.is_collection([]))
+
 class TestExitCode(unittest.TestCase):
 	def should_convert_None_to_0(self):
 		self.assertEqual(utils.convert_to_exit_code(None), 0)

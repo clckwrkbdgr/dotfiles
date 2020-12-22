@@ -1,6 +1,7 @@
 import sys
 import functools
 import contextlib
+import six
 
 def convert_to_exit_code(value):
 	""" Converts value to a valid exit code parameter for sys.exit()
@@ -100,3 +101,15 @@ def unquote_string(string, fix_unicode_escape=False):
 	if fix_unicode_escape: # pragma: no cover -- TODO what's this for? Came from xfce-leds while reading ini.
 		string = bytes(string, "utf-8").decode('unicode_escape').encode("latin1").decode("utf-8")
 	return string
+
+def is_collection(s):
+	""" Returns True only if S is a true iterable (not string). """
+	if isinstance(s, six.string_types):
+		return False
+	if s is None:
+		return False
+	try:
+		iter(s)
+		return True
+	except TypeError:
+		return False
