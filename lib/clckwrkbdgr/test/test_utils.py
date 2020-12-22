@@ -62,6 +62,17 @@ class TestExitCode(unittest.TestCase):
 		self.assertEqual(e.exception.code, 1)
 
 class TestStringUtils(unittest.TestCase):
+	def should_quote_string(self):
+		self.assertEqual(utils.quote_string(""), '""')
+		self.assertEqual(utils.quote_string("   "), '"   "')
+		self.assertEqual(utils.quote_string("foo bar", "'"), "'foo bar'")
+		self.assertEqual(utils.quote_string("foo bar", '"'), '"foo bar"')
+		self.assertEqual(utils.quote_string("foo bar", '"'), '"foo bar"')
+		self.assertEqual(utils.quote_string("foo bar", '<', '>'), '<foo bar>')
+		self.assertEqual(utils.quote_string("foo <bar>", '<', '>'), r'<foo \<bar\>>')
+		self.assertEqual(utils.quote_string("\'foo bar\""), '"\'foo bar\\""')
+		self.assertEqual(utils.quote_string("\'foo bar\"", "'"), "'\\\'foo bar\"'")
+		self.assertEqual(utils.quote_string("\'foo bar\"", "*"), '*\'foo bar\"*')
 	def should_unquote_string(self):
 		self.assertEqual(utils.unquote_string('"foobar"'), 'foobar')
 		self.assertEqual(utils.unquote_string("'foobar'"), 'foobar')

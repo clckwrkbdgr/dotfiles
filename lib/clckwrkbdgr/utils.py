@@ -91,6 +91,16 @@ def fileoutput(filename, mode=None): # pragma: no cover -- TODO uses sys.stdout,
 		if f:
 			f.close()
 
+def quote_string(string, beginquote='"', endquote=None):
+	""" If endquote is not specified, the beginquote value is used for it. """
+	if endquote is None:
+		endquote = beginquote
+	if beginquote in string:
+		string = string.replace(beginquote, '\\'+beginquote)
+	if endquote != beginquote and endquote in string:
+		string = string.replace(endquote, '\\'+endquote)
+	return beginquote + string + endquote
+
 def unquote_string(string, fix_unicode_escape=False):
 	string = string.strip()
 	if string.startswith('"') and string.endswith('"'):
