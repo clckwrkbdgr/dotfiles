@@ -5,6 +5,25 @@ let g:screen_size_restore_pos = 1
 " For all Vim to use the same settings, change this to 0.
 let g:screen_size_by_vim_instance = 1
 
+" State of the window (maximized/restored)
+" Follows shortcut from Alt+Space window menu on Windows,
+" which depends on current language. For English it is ma[X]imize/[R]estore.
+let w:maximized = "r"
+
+" Unfortunately there is no way to get actual window state
+" or even detect Maximize/Restore event, so in order to set global state
+" user should call these functions manually.
+function! MaximizeWindow()
+   " See comment for w:maximized above.
+   let w:maximized = "x"
+   silent! execute "simalt ~".w:maximized
+endfunction
+function! RestoreWindow()
+   " See comment for w:maximized above.
+   let w:maximized = "r"
+   silent! execute "simalt ~".w:maximized
+endfunction
+
 function! ScreenFilename()
   if has('amiga')
     return "s:.vimsize"
@@ -29,6 +48,15 @@ function! ScreenRestore()
         silent! execute "winpos ".sizepos[3]." ".sizepos[4]
         return
       endif
+      if len(sizepos) == 6 && sizepos[0] == vim_instance
+        silent! execute "set columns=".sizepos[1]." lines=".sizepos[2]
+        silent! execute "winpos ".sizepos[3]." ".sizepos[4]
+        if has('win32')
+           silent! execute "simalt ~".sizepos[5]
+           let w:maximized = sizepos[5]
+        endif
+        return
+      endif
     endfor
   endif
 endfunction
@@ -39,7 +67,7 @@ function! ScreenSave()
     let vim_instance = (g:screen_size_by_vim_instance==1?(v:servername):'GVIM')
     let data = vim_instance . ' ' . &columns . ' ' . &lines . ' ' .
           \ (getwinposx()<0?0:getwinposx()) . ' ' .
-          \ (getwinposy()<0?0:getwinposy())
+          \ (getwinposy()<0?0:getwinposy()) . ' ' . w:maximized
     let f = ScreenFilename()
     if filereadable(f)
       let lines = readfile(f)
