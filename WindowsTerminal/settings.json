@@ -61,7 +61,7 @@
             "background" : "#2E3436",
             "closeOnExit" : true,
             "colorScheme" : "Dim",
-            "commandline" : "\"%USERPROFILE%\\.local\\init.cmd\" & \"C:\\Program Files\\Far Manager\\Far.exe\"",
+            "commandline" : "\"%USERPROFILE%\\.config\\bin\\user-env.cmd\" & \"C:\\Program Files\\Far Manager\\Far.exe\"",
             "cursorColor" : "#FFFFFF",
             "cursorShape" : "filledBox",
             "fontFace" : "Consolas",
