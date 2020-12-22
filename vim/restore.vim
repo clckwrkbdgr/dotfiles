@@ -8,20 +8,20 @@ let g:screen_size_by_vim_instance = 1
 " State of the window (maximized/restored)
 " Follows shortcut from Alt+Space window menu on Windows,
 " which depends on current language. For English it is ma[X]imize/[R]estore.
-let w:maximized = "r"
+let g:maximized = "r"
 
 " Unfortunately there is no way to get actual window state
 " or even detect Maximize/Restore event, so in order to set global state
 " user should call these functions manually.
 function! MaximizeWindow()
-   " See comment for w:maximized above.
-   let w:maximized = "x"
-   silent! execute "simalt ~".w:maximized
+   " See comment for g:maximized above.
+   let g:maximized = "x"
+   silent! execute "simalt ~".g:maximized
 endfunction
 function! RestoreWindow()
-   " See comment for w:maximized above.
-   let w:maximized = "r"
-   silent! execute "simalt ~".w:maximized
+   " See comment for g:maximized above.
+   let g:maximized = "r"
+   silent! execute "simalt ~".g:maximized
 endfunction
 
 function! ScreenFilename()
@@ -53,7 +53,7 @@ function! ScreenRestore()
         silent! execute "winpos ".sizepos[3]." ".sizepos[4]
         if has('win32')
            silent! execute "simalt ~".sizepos[5]
-           let w:maximized = sizepos[5]
+           let g:maximized = sizepos[5]
         endif
         return
       endif
@@ -67,7 +67,7 @@ function! ScreenSave()
     let vim_instance = (g:screen_size_by_vim_instance==1?(v:servername):'GVIM')
     let data = vim_instance . ' ' . &columns . ' ' . &lines . ' ' .
           \ (getwinposx()<0?0:getwinposx()) . ' ' .
-          \ (getwinposy()<0?0:getwinposy()) . ' ' . w:maximized
+          \ (getwinposy()<0?0:getwinposy()) . ' ' . g:maximized
     let f = ScreenFilename()
     if filereadable(f)
       let lines = readfile(f)
@@ -85,6 +85,9 @@ if !exists('g:screen_size_restore_pos')
 endif
 if !exists('g:screen_size_by_vim_instance')
   let g:screen_size_by_vim_instance = 1
+endif
+if !exists('g:maximized')
+  let g:maximized = "r"
 endif
 autocmd VimEnter * if g:screen_size_restore_pos == 1 | call ScreenRestore() | endif
 autocmd VimLeavePre * if g:screen_size_restore_pos == 1 | call ScreenSave() | endif
