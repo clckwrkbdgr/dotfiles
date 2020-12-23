@@ -14,7 +14,7 @@ class Stash(object):
 class GitFile(object):
 	def __init__(self, branch, path):
 		self.branch, self.path = branch, path
-		self.content = subprocess.check_output('git show {0}:{1}'.format(self.branch, self.path))
+		self.content = subprocess.check_output(['git', 'show', '{0}:{1}'.format(self.branch, self.path)])
 
 class SparseCheckout(object):
 	def __init__(self):
