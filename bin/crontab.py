@@ -72,7 +72,6 @@ def command_daemon(): # pragma: no cover -- TODO use crontab.run_scheduler()
 			continue
 
 		jobs = pickle.loads(DATABASE_FILE.read_bytes())
-		update_environment(jobs)
 		# Hack to retrieve crontab environment.
 		# Python-crontab appends env vars to the random jobs for some reason.
 		env = {}
