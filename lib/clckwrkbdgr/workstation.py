@@ -42,32 +42,32 @@ def onunlock():
 import click
 
 @click.group()
-def cli():
+def cli(): # pragma: no cover
 	pass
 
 @cli.command('onunlock')
 @utils.exits_with_return_value
-def command_onunlock():
+def command_onunlock(): # pragma: no cover
 	""" Performs commands intended to be run on workstation unlock event. """
 	return onunlock()
 
 @cli.command('onlock')
 @utils.exits_with_return_value
-def command_onlock():
+def command_onlock(): # pragma: no cover
 	""" Performs commands intended to be run on workstation lock event. """
 	return onlock()
 
 @cli.command('onlogin')
 @utils.exits_with_return_value
-def command_onlogin():
+def command_onlogin(): # pragma: no cover
 	""" Performs commands intended to be run on workstation login. """
 	return onlogin()
 
 @cli.command('onlogout')
 @utils.exits_with_return_value
-def command_onlogout():
+def command_onlogout(): # pragma: no cover
 	""" Performs commands intended to be run on workstation logout. """
 	return onlogout()
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
 	cli()
