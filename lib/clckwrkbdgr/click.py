@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 import click
+import six
+if six.PY2: # pragma: no cover
+	from click import *
 
 """ Custom extensions for click CLI API. """
 
