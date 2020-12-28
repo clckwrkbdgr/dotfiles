@@ -152,7 +152,7 @@ def python_3_unittest(test, quiet=False):
 def bash_unittest(test, quiet=False):
 	unittest_bash = xdg.XDG_CONFIG_HOME/'lib'/'unittest.bash'
 	if platform.system() == 'Windows':
-		# Git Bash accepts only POSIX paths with drives as /mnt/<drive>/
+		# WSL Bash accepts only POSIX paths with drives as /mnt/<drive>/
 		parts = list(unittest_bash.parts)
 		parts[0] = '/mnt/{0}'.format(unittest_bash.drive.replace(':', '').lower())
 		unittest_bash = Path(*parts).as_posix()
