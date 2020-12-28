@@ -537,24 +537,6 @@
                                     [
                                         "blocking"
                                     ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "csp_report"
-                                        ],
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "requestBody"
-                                    ]
                                 ]
                             ],
                             "onHeadersReceived": [
@@ -562,18 +544,12 @@
                                     {
                                         "incognito": null,
                                         "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object",
-                                            "image",
-                                            "imageset",
-                                            "media",
-                                            "xmlhttprequest"
-                                        ],
+                                        "types": null,
                                         "urls": [
                                             "http://*/*",
-                                            "https://*/*"
+                                            "https://*/*",
+                                            "ws://*/*",
+                                            "wss://*/*"
                                         ],
                                         "windowId": null
                                     },
