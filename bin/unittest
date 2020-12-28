@@ -113,6 +113,11 @@ def run_python_unittests(version, test, quiet=False):
 
 	if platform.system() == 'Windows':
 		python_runner = ['py', '-{0}'.format(version)]
+		rc = subprocess.call(python_runner + ['-V'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+		if rc == 103:
+			if not quiet:
+				print('Python {0} not found!'.format(version))
+			return 0
 	else:
 		python_runner = ['python{0}'.format(version)]
 
@@ -146,6 +151,13 @@ def python_3_unittest(test, quiet=False):
 @test_suite('bash')
 def bash_unittest(test, quiet=False):
 	unittest_bash = xdg.XDG_CONFIG_HOME/'lib'/'unittest.bash'
+	if platform.system() == 'Windows':
+		# Git Bash accepts only POSIX paths with drives as /mnt/<drive>/
+		parts = list(unittest_bash.parts)
+		parts[0] = '/mnt/{0}'.format(unittest_bash.drive.replace(':', '').lower())
+		unittest_bash = Path(*parts).as_posix()
+	else:
+		unittest_bash = str(unittest_bash)
 	args = ['bash', str(unittest_bash)]
 	if quiet:
 		args += ['--quiet']
