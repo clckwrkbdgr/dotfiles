@@ -17,7 +17,7 @@ class TestXDGUtils(unittest.TestCase):
 	@mock.patch(_pathlib+'.Path.mkdir')
 	def should_create_subdir_path(self, mkdir_mock):
 		XDG_TMP = Path(tempfile.gettempdir())
-		self.assertEqual(xdg._save_XDG_path(XDG_TMP, 'test_xdg'), XDG_TMP/'test_xdg')
+		self.assertEqual(xdg._save_XDG_path(XDG_TMP, 'test_base_xdg'), XDG_TMP/'test_base_xdg')
 		mkdir_mock.assert_called_once_with(parents=True, exist_ok=True)
 	@mock.patch(_pathlib+'.Path.mkdir')
 	def should_create_subdir_path_with_multiple_parts(self, mkdir_mock):
