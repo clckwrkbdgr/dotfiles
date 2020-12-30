@@ -63,6 +63,8 @@ if __name__ == "__main__":
 	if branch_is_behind_remote('master'):
 		with Stash():
 			os.system("git pull origin master")
+			os.system("git submodule init")
+			os.system("git submodule update --recursive")
 
 	if branch_is_behind_remote('loader'):
 		# Fetch loader branch in background without switching to it (and messing with current branch).
