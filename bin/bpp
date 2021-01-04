@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+""" Basic text file preprocessor.
+Recognizes C-like #include instructions.
+WARNING: Have NO protection against recursive inclusion.
+"""
+import os, sys, re
+from clckwrkbdgr.fs import CurrentDir
+
+INCLUDE = re.compile(r'^\s*#\s*include\s*["<]([^>"]+)[">]\s*$')
+
+def find_file(filename, paths):
+	for path in paths:
+		path = os.path.expanduser(path)
+		if os.path.isfile(os.path.join(path, filename)):
+			return os.path.join(path, filename)
+	return filename
+
+def preprocess(lines, include_path=None):
+	include_path = include_path or []
+	for line in lines:
+		include = INCLUDE.match(line)
+		if include:
+			try:
+				filename = include.group(1)
+				filename = os.path.expanduser(filename)
+				filename = find_file(filename, include_path)
+				with open(filename) as f:
+					with CurrentDir(os.path.dirname(filename)):
+						yield from preprocess(f)
+			except Exception as e:
+				sys.stderr.write(str(e))
+				sys.stderr.write('\n')
+			continue
+		yield line
+
+import click
+
+@click.command()
+@click.option('-I', 'include_path', multiple=True)
+@click.argument('filename', required=False)
+def cli(filename=None, include_path=None):
+	""" Runs preprocessor on given file or stdin.
+	Prints preprocesses result to stdout.
+	"""
+	include_path = include_path or []
+
+	if not filename:
+		for line in preprocess(sys.stdin, include_path=include_path):
+			sys.stdout.write(line)
+	else:
+		content = ''
+		try:
+			with open(filename) as f:
+				with CurrentDir(os.path.dirname(filename)):
+					for line in preprocess(f, include_path=include_path):
+						sys.stdout.write(line)
+		except Exception as e:
+			sys.stderr.write(str(e))
+			sys.stderr.write('\n')
+
+if __name__ == '__main__':
+	cli()
