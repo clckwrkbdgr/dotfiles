@@ -78,4 +78,16 @@ ${BASH_SOURCE[0]}:74:test_click: miniclick: unknown unnamed param: 'extra'
 EOF
 }
 
+should_parse_arguments_with_apostrophes() {
+	. "$XDG_CONFIG_HOME/lib/miniclick.bash"
+
+	test_click() {
+		miniclick text -- "$@"
+		echo "$text"
+	}
+	assertOutputEqual 'test_click "you'"'"'re" 2>&1' - <<EOF
+you're
+EOF
+}
+
 unittest::run should_
