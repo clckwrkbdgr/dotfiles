@@ -25,10 +25,11 @@ function! RestoreWindow()
 endfunction
 
 function! ScreenFilename()
+  " FIXME use XDG basedir spec instead.
   if has('amiga')
     return "s:.vimsize"
   elseif has('win32')
-    return $USERPROFILE.'\_vimsize'
+    return $LOCALAPPDATA.'\_vimsize'
   else
     return $HOME.'/.vimsize'
   endif
