@@ -5,7 +5,7 @@
     },
     "mimeTypes": {
         "application/download": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "txt",
@@ -16,43 +16,43 @@
             ]
         },
         "application/epub+zip": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/force-download": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "pdf"
             ]
         },
         "application/gtar": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/gzip": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "gz"
             ]
         },
         "application/java-archive": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "jar"
             ]
         },
         "application/json": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "json"
             ]
         },
         "application/msword": {
-            "action": 4,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "doc",
@@ -60,42 +60,42 @@
             ]
         },
         "application/pdf": {
-            "action": 3,
+            "action": 1,
             "extensions": [
                 "pdf"
             ]
         },
         "application/rar": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "rar"
             ]
         },
         "application/rss+xml": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/rtf": {
-            "action": 4,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "rtf"
             ]
         },
         "application/text": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/vnd.android.package-archive": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "apk"
             ]
         },
         "application/vnd.ms-excel": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "xls",
@@ -104,55 +104,55 @@
             ]
         },
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "xlsx"
             ]
         },
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
-            "action": 4,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "docx"
             ]
         },
         "application/x-7z-compressed": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "7z"
             ]
         },
         "application/x-bittorrent": {
-            "action": 4,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "torrent"
             ]
         },
         "application/x-bzip": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-bzip-compressed-tar": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-bzip2": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-compressed-tar": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-deb": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-debian-package": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "deb",
@@ -160,14 +160,14 @@
             ]
         },
         "application/x-dosexec": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "dll"
             ]
         },
         "application/x-excel": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "xls",
@@ -176,33 +176,33 @@
             ]
         },
         "application/x-generic": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-gzip": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-iso9660-image": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "iso"
             ]
         },
         "application/x-java-archive": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-lzma-compressed": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "lzma"
             ]
         },
         "application/x-msdos-program": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "com",
@@ -212,26 +212,26 @@
             ]
         },
         "application/x-msdownload": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-octetstream": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "fb2"
             ]
         },
         "application/x-rar": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-rar-compressed": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-shockwave-flash": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "swf",
@@ -239,14 +239,14 @@
             ]
         },
         "application/x-tar": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "tar"
             ]
         },
         "application/x-view-source": {
-            "action": 4,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "jpg",
@@ -255,11 +255,11 @@
             ]
         },
         "application/x-wine-extension-biq": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/x-xpinstall": {
-            "action": 2,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "xpi"
@@ -272,18 +272,18 @@
             ]
         },
         "application/x-xz": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "xz"
             ]
         },
         "application/x-zip": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "application/xml": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "xml",
@@ -291,14 +291,14 @@
             ]
         },
         "application/zip": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "zip"
             ]
         },
         "audio/mpeg": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "mpga",
@@ -309,32 +309,32 @@
             ]
         },
         "audio/x-aac": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "aac"
             ]
         },
         "audio/x-wav": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "wav"
             ]
         },
         "image/bmp": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "image/gif": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "gif"
             ]
         },
         "image/jpeg": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "jpeg",
@@ -343,21 +343,21 @@
             ]
         },
         "image/pcx": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "pcx"
             ]
         },
         "image/png": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "png"
             ]
         },
         "image/vnd.djvu": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "djvu",
@@ -365,21 +365,21 @@
             ]
         },
         "message/rfc822": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "eml"
             ]
         },
         "text/csv": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "csv"
             ]
         },
         "text/html": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "html",
@@ -388,7 +388,7 @@
             ]
         },
         "text/plain": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "asc",
@@ -400,44 +400,44 @@
             ]
         },
         "text/rtf": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "text/x-chdr": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "h"
             ]
         },
         "text/x-csrc": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "c"
             ]
         },
         "text/x-patch": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "text/x-python": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "py"
             ]
         },
         "text/x-shellscript": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "text/xml": {
-            "action": 0,
+            "action": 1,
             "ask": true
         },
         "unknown/unknown": {
-            "action": 2,
+            "action": 1,
             "ask": true,
             "handlers": [
                 {
@@ -447,21 +447,21 @@
             ]
         },
         "video/mp4": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "mp4"
             ]
         },
         "video/x-flv": {
-            "action": 4,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "flv"
             ]
         },
         "video/x-msvideo": {
-            "action": 0,
+            "action": 1,
             "ask": true,
             "extensions": [
                 "avi"
