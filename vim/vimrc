@@ -58,17 +58,20 @@ function! MkSession(...)
 	endif
 
 	" Collecting custom status.
-	let need_nerdtree = g:NERDTree.IsOpen()
-	NERDTreeClose " So its raw window content won't get into session.
+	"let need_nerdtree = g:NERDTree.IsOpen()
+	tabdo NERDTreeClose " So its raw window content won't get into session.
 
 	" Base mksession.
 	execute 'mksession! ' . filename
 
 	" Adding custom status.
-	if need_nerdtree
-		call writefile(readfile(filename) + ['NERDTree', 'exec "normal \<C-W>\<C-w>"'], filename)
-		NERDTree " Restore NERDTree window if needed.
-	endif
+	"if need_nerdtree
+		"TODO : rewriting session file corrupts key mapping with <CR> because
+		"it is stored as ^M, which on consequent write disappears and messes
+		"up next lines.
+		"call writefile(readfile(filename) + ['NERDTree', 'exec "normal \<C-W>\<C-w>"'], filename)
+		"NERDTree " Restore NERDTree window if needed.
+	"endif
 endfunction
 
 let g:dotsession_file_was_found = 0 " FIXME Actually should store session file name.
