@@ -23,7 +23,7 @@ except:
 import crontab
 from clckwrkbdgr.commands import run_command_and_collect_output
 
-DATABASE_FILE = Path(os.environ['USERPROFILE'])/'crontab.db'
+DATABASE_FILE = Path(os.environ['LOCALAPPDATA'])/'crontab.db' # FIXME Use XDG_STATE_HOME for Windows.
 
 @click.group(cls=click_default_group.DefaultGroup, default='auto', default_if_no_args=True)
 def cli(**extra):
