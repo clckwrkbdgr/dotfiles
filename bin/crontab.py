@@ -54,7 +54,8 @@ def command_open(): # pragma: no cover
 	return True
 
 @cli.command('daemon')
-def command_daemon(): # pragma: no cover -- TODO use crontab.run_scheduler()
+@click.option('-L', '--logdir', default=Path.home(), type=Path, help="Directory to store report logs for executed jobs.")
+def command_daemon(logdir): # pragma: no cover -- TODO use crontab.run_scheduler()
 	""" Not actually a daemon per se, not even nearly.
 	Just loads schedules and checks them against timestamp file.
 	Then runs jobs that are qualified via function job_filter(commandline)
@@ -98,7 +99,7 @@ def command_daemon(): # pragma: no cover -- TODO use crontab.run_scheduler()
 		last_run = now
 		for command in commands_to_run:
 			logging.debug("Running threaded command: {0}".format(command))
-			thread = threading.Thread(target=run_command_and_collect_output, args=(command, Path.home()))
+			thread = threading.Thread(target=run_command_and_collect_output, args=(command, logdir))
 			thread.start()
 
 if __name__ == '__main__':
