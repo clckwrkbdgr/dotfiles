@@ -18,6 +18,11 @@ $capslock up::
     sel := 0
 return 
 
+; Changes hotkeys for switching between virtual desktops
+; from default Ctrl+Win+<arrow> to Win+<arrow> like on Linux.
+LWin & Right::Send, {LCtrl up}{LWin down}{LCtrl down}{Right}{LWin up}{LCtrl up}
+LWin & Left::Send, {LCtrl up}{LWin down}{LCtrl down}{Left}{LWin up}{LCtrl up}
+
 ; Local user customizations.
 
 ; AutoHotkey cannot do conditional include
