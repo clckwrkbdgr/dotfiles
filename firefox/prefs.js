@@ -179,7 +179,6 @@ user_pref("devtools.debugger.auto-pretty-print", true);
 user_pref("devtools.editor.expandtab", false);
 user_pref("devtools.editor.tabsize", 4);
 user_pref("devtools.hud.height", 230);
-user_pref("devtools.inspector.activeSidebar", "ruleview");
 user_pref("devtools.inspector.three-pane-enabled", false);
 user_pref("devtools.onboarding.telemetry.logged", true);
 user_pref("devtools.selfxss.count", 5);
