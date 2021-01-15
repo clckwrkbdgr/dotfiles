@@ -20,6 +20,7 @@ case "$BASH_VERSION" in
       . "$XDG_CONFIG_HOME/bash/dotfiles_info.default.inc.bash"
       ;;
 esac
+export -f dotfiles_info
 
 if [ "${BASH_SOURCE[0]}" == "$0" ]; then
 	if [ "$1" == '-v' ]; then
