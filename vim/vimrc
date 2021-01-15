@@ -136,7 +136,7 @@ filetype on
 filetype plugin indent on
 au FileType python set tabstop=4 | set noexpandtab
 if v:version >= 700
-	au FileType python call ftplugin#python#PyIndentAutoCfg()
+	au FileType python silent! call ftplugin#python#PyIndentAutoCfg()
 endif
 au FileType votl set softtabstop=4
 augroup XML
