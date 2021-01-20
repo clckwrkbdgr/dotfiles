@@ -37,7 +37,10 @@ def load_zip(text, archive):
         filename = filename.decode('utf-8', 'surrogateescape')
         data = text.read(size)
         if encoding == b'utf-8':
-            data = data.encode('utf-8')
+            try:
+                data = data.encode('utf-8')
+            except AttributeError:
+                pass # Already bytes.
         elif encoding == b'base64':
             data = base64.b64decode(data)
         archive.writestr(filename, data)
@@ -63,7 +66,11 @@ def dump(filename=None):
     with clckwrkbdgr.utils.fileinput(filename, 'rb') as f:
         # Fix for Windows: zip fails to seek on piped input.
         f = io.BytesIO(f.read())
-        dump_zip(f, bin_stdout)
+        try:
+            dump_zip(f, bin_stdout)
+        except zipfile.BadZipFile as e:
+            print('{0}: {1}'.format(filename, e), file=sys.stderr)
+            sys.exit(1)
 
 @cli.command()
 @click.argument('filename', required=False)
