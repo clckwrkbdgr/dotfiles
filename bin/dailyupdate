@@ -1,60 +1,18 @@
-#!/bin/bash
-# Runs sequence of dailyupdate actions.
-# Usage:
-#   dailyupdate [-v [-v ...]] [pattern [pattern...]]
-#     -v        Verbosity level (cumulative flag), see description.
-#     pattern   Plain-text pattern (part of the file) to match
-#               job files. Job file will be executed if any of the
-#               patterns are found in its name.
-#
-# Actions are defined as job files under dailyupdate directory
-# (default location is XDG_CONFIG_HOME/bin/dailyupdate.d/)
-# Each job is just an executable file (e.g. script or binary).
-#
-# Sequence of jobs is constructed from sorted list of job file names,
-# you may name them to control this order, e.g.:
-#   '00.first.job.sh', '01.second.job', '01.another.second.job' etc.
-# There are no specific requirements for name except for sorting order.
-#
-# Job executables are executed in the current environment without alterations,
-# the only exception is $DAILYUPDATE_VERBOSE which controls verbosity of executed jobs.
-# Default level is 'fully quiet', job should produce no output except for errors.
-# Adding one character to this variable increases verbosity level:
-#   e.g. DAILYUPDATE_VERBOSE=vv
-# Another way to control verbosity is flag '-v' of this very script (see Usage).
-# It's up to the job executable how to interpret this verbosity level,
-# e.g.: 'v' is normal output, 'vv' is detailed output and 'vvv' is debug level.
-#
-# If verbosity level is >0, the main dailyupdate script will also print some info about executed actions.
+#!/usr/bin/env python
+"""
+Runs sequence of dailyupdate actions.
 
-DAILYUPDATE_VERBOSE=
-declare -a search_criteria
-for param in "$@"; do
-	if [ "$param" == '-v' ]; then
-		DAILYUPDATE_VERBOSE="${DAILYUPDATE_VERBOSE}v"
-	else
-		if [ -z "$search_criteria" ]; then
-			search_criteria+=("(")
-		else
-			search_criteria+=("-o")
-		fi
-		search_criteria+=("-name")
-		search_criteria+=("*$param*")
-	fi
-done
-if [ "${#search_criteria[@]}" -gt 0 ]; then
-	search_criteria+=(")")
-fi
-export DAILYUPDATE_VERBOSE
+See '--help' for usage.
+"""
+import os
+import click
+import clckwrkbdgr.jobsequence as JB
 
-dailyupdate_dir="${0}.d"
-if [ -n "$DAILYUPDATE_VERBOSE" ]; then
-	echo "DAILYUPDATE_VERBOSE=$DAILYUPDATE_VERBOSE"
-	echo find "$dailyupdate_dir" -type f "${search_criteria[@]}"
-fi
-find "$dailyupdate_dir" -type f "${search_criteria[@]}" | sort | while read jobfile; do
-	if [ -n "$DAILYUPDATE_VERBOSE" ]; then
-		echo "$jobfile"
-	fi
-	"$jobfile"
-done
+dailyupdate = JB.JobSequence(
+		verbose_var_name='DAILYUPDATE_VERBOSE',
+		default_job_dir=os.path.join(os.environ['XDG_CONFIG_HOME'], 'bin', 'dailyupdate.d'),
+		click=click,
+		)
+
+if __name__ == '__main__':
+	dailyupdate.cli()
