@@ -23,7 +23,7 @@ class JobSequence:
 	def __init__(self, verbose_var_name, default_job_dir, click=None):
 		self.verbose_var_name = verbose_var_name
 		self.default_job_dir = default_job_dir
-		if click is None:
+		if click is None: # pragma: no cover
 			import click
 		self.click = click
 	def verbose_option(self):
@@ -39,6 +39,7 @@ class JobSequence:
 	def patterns_argument(self):
 		return self.click.argument('patterns', nargs=-1)
 	def run(self, patterns, job_dir, verbose=0):
+		job_dir = job_dir or self.default_job_dir
 		os.environ[self.verbose_var_name] = 'v' * verbose
 		if verbose:
 			logging.getLogger().setLevel(logging.INFO if verbose == 1 else logging.DEBUG)
@@ -47,8 +48,7 @@ class JobSequence:
 		total_rc = 0
 		for entry in sorted(os.listdir(job_dir)):
 			if patterns and all(pattern not in entry for pattern in patterns):
-				if verbose:
-					logging.info("Job was not matched: {0}".format(entry))
+				logging.info("Job was not matched: {0}".format(entry))
 				continue
 			logging.info("Executing job: {0}".format(entry))
 			rc = subprocess.call([os.path.join(job_dir, entry)], shell=True)
