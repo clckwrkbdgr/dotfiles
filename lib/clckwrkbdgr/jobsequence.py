@@ -34,15 +34,22 @@ class JobSequence:
 					varname=self.verbose_var_name,
 					),
 				)
+	def dry_run_option(self):
+		return self.click.option('--dry', 'dry_run', is_flag=True, help="Dry run. Only report about actions, do not actually execute them. Implies at least one level in verbosity.")
 	def job_dir_option(self):
 		return self.click.option('-d', '--dir', 'job_dir', default=self.default_job_dir, show_default=True, help="Custom directory with job files.")
 	def patterns_argument(self):
 		return self.click.argument('patterns', nargs=-1)
-	def run(self, patterns, job_dir, verbose=0):
+	def run(self, patterns, job_dir, dry_run=False, verbose=0):
 		job_dir = job_dir or self.default_job_dir
-		os.environ[self.verbose_var_name] = 'v' * verbose
+		if dry_run:
+			verbose = max(1, verbose)
 		if verbose:
 			logging.getLogger().setLevel(logging.INFO if verbose == 1 else logging.DEBUG)
+		if not dry_run:
+			os.environ[self.verbose_var_name] = 'v' * verbose
+		else:
+			logging.info("[DRY] {0}={1}".format(self.verbose_var_name, 'v' * verbose))
 		logging.info("Verbosity level: {0}".format(verbose))
 		logging.info("Searching in directory: {0}".format(job_dir))
 		total_rc = 0
@@ -51,7 +58,11 @@ class JobSequence:
 				logging.info("Job was not matched: {0}".format(entry))
 				continue
 			logging.info("Executing job: {0}".format(entry))
-			rc = subprocess.call([os.path.join(job_dir, entry)], shell=True)
+			if not dry_run:
+				rc = subprocess.call([os.path.join(job_dir, entry)], shell=True)
+			else:
+				logging.info("[DRY] Executing: `{0}`".format(os.path.join(job_dir, entry)))
+				rc = 0
 			logging.info("RC: {0}".format(rc))
 			total_rc += rc
 		return total_rc
@@ -59,11 +70,12 @@ class JobSequence:
 	def cli(self):
 		@self.click.command(epilog=CLI_USAGE)
 		@self.verbose_option()
+		@self.dry_run_option()
 		@self.job_dir_option()
 		@self.patterns_argument()
-		def cli(patterns, job_dir=None, verbose=0):
+		def cli(patterns, job_dir=None, dry_run=False, verbose=0):
 			""" Runs sequence of job actions.
 			"""
-			rc = self.run(patterns, job_dir, verbose=verbose)
+			rc = self.run(patterns, job_dir, dry_run=dry_run, verbose=verbose)
 			sys.exit(rc)
 		return cli

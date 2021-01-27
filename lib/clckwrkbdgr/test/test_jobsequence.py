@@ -20,6 +20,11 @@ class TestJobSequence(unittest.TestCase):
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
 		result = seq.job_dir_option()
 		click.option.assert_called_once_with('-d', '--dir', 'job_dir', default='my_default_dir', show_default=True, help="Custom directory with job files.")
+	def should_generate_dry_run_option(self):
+		click = mock.MagicMock()
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		result = seq.dry_run_option()
+		click.option.assert_called_once_with('--dry', 'dry_run', is_flag=True, help="Dry run. Only report about actions, do not actually execute them. Implies at least one level in verbosity.")
 	def should_generate_patterns_argument(self):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
@@ -50,6 +55,17 @@ class TestJobSequence(unittest.TestCase):
 				mock.call([os.path.join('my_default_dir', 'bar')], shell=True),
 				mock.call([os.path.join('my_default_dir', 'foo')], shell=True),
 				])
+	@mock.patch.dict(os.environ, os.environ.copy())
+	@mock.patch('logging.info')
+	@mock.patch('subprocess.call', side_effect=[0, 0])
+	@mock.patch('os.listdir', return_value=['foo', 'bar'])
+	def should_perform_dry_run(self, os_listdir, subprocess_call, logging_info):
+		click = mock.MagicMock()
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq.run(None, None, verbose=2, dry_run=True)
+		self.assertIsNone(os.environ.get('MY_VERBOSE_VAR'))
+		os_listdir.assert_called_once_with('my_default_dir')
+		subprocess_call.assert_has_calls([])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
 	@mock.patch('subprocess.call', side_effect=[0, 0])
@@ -105,13 +121,15 @@ class TestJobSequence(unittest.TestCase):
 		seq.run = mock.MagicMock(return_value=1)
 		click.command = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 		seq.verbose_option = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
+		seq.dry_run_option = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 		seq.job_dir_option = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 		seq.patterns_argument = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 
 		seq.cli(['patterns'], None)
 
 		seq.verbose_option.assert_called_with()
+		seq.dry_run_option.assert_called_with()
 		seq.job_dir_option.assert_called_with()
 		seq.patterns_argument.assert_called_with()
-		seq.run.assert_called_once_with(['patterns'], None, verbose=0)
+		seq.run.assert_called_once_with(['patterns'], None, verbose=0, dry_run=False)
 		sys_exit.assert_called_once_with(1)
