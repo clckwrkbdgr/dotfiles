@@ -110,8 +110,8 @@ class TestJobSequence(unittest.TestCase):
 
 		seq.cli(['patterns'], None)
 
-		seq.verbose_option.assert_called_once()
-		seq.job_dir_option.assert_called_once()
-		seq.patterns_argument.assert_called_once()
+		seq.verbose_option.assert_called_with()
+		seq.job_dir_option.assert_called_with()
+		seq.patterns_argument.assert_called_with()
 		seq.run.assert_called_once_with(['patterns'], None, verbose=0)
 		sys_exit.assert_called_once_with(1)
