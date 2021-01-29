@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys, subprocess
 from pathlib import Path
 from clckwrkbdgr import xdg

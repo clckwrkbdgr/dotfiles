@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os, sys, subprocess
 import configparser
 from pathlib import Path

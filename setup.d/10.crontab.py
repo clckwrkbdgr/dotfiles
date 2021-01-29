@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys, subprocess
 from clckwrkbdgr import xdg
 
