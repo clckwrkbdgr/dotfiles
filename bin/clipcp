@@ -67,7 +67,7 @@ class LinuxClipboard:
 		""" Copies byte data to clipboard. """
 		assert type(data) is bytes
 		os.system('xclipsync')
-		xclip = subprocess.Popen(['xclip', '-o'], stdin=PIPE)
+		xclip = subprocess.Popen(['xclip', '-i', '-selection', 'clipboard'], stdin=subprocess.PIPE)
 		xclip.communicate(input=data)
 		xclip.wait()
 	def get(self):
