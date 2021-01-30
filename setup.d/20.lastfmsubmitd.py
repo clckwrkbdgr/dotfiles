@@ -10,10 +10,10 @@ def is_symlink_to(dest, src):
 	with clckwrkbdgr.fs.CurrentDir(Path(dest).parent):
 		return Path(dest).is_symlink() and Path(src).resolve() == Path(dest).resolve()
 
-if not is_symlink_to('/etc/lastfmsubmitd.conf', XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf'):
+if not is_symlink_to('/etc/lastfmsubmitd.conf', xdg.XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf'):
 	trace.error('{0} is not symlink to {1}'.format(
 		'/etc/lastfmsubmitd.conf',
-		XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf'
+		xdg.XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf'
 		))
 	sys.exit(1) # TODO way to fix automatically with sudo.
 
