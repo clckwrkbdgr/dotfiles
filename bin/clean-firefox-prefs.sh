@@ -113,4 +113,6 @@ sed '/security.remote_settings.crlite_filters.checked/d' | \
 sed '/devtools.netmonitor.columnsData/d' | \
 sed '/devtools.debugger.prefs-schema-version/d' | \
 sed '/devtools.inspector.activeSidebar/d' | \
+sed '/browser.protections_panel.infoMessage.seen/d' | \
+sed '/browser.urlbar.placeholderName.private/d' | \
 sed 's|'"$HOME"'|$HOME|g'
