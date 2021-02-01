@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 import os, sys
+import platform
+if platform.system() == 'Windows':
+	sys.exit()
 import logging
 trace = logging.getLogger('setup')
 from pathlib import Path
