@@ -1,7 +1,9 @@
 #!/usr/bin/env python
-import sys, subprocess
+import os, sys, subprocess
 import platform
 from clckwrkbdgr import xdg
+
+os.chdir(str(xdg.XDG_CONFIG_HOME/'bin'))
 
 current_crontab = subprocess.check_output(['crontab', '-l'], shell=(platform.system() == 'Windows'))
 basic_crontab = (xdg.XDG_CONFIG_HOME/'crontab').read_bytes()
