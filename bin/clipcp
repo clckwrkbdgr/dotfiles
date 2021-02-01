@@ -8,6 +8,8 @@ except ImportError:
 	from pathlib import Path
 import six
 
+BYTELINESEP = os.linesep.encode()
+
 class WindowsClipboard:
 	def copy(self, data):
 		""" Copies byte data to clipboard. """
@@ -112,11 +114,11 @@ def dump_file(force_expect_base64=False):
 	Returns pair: <filename, CRC of saved data>
 	"""
 	output = Clipboard().get()
-	filename, crc, content = output.split(b'\n', 2)
+	filename, crc, content = output.split(BYTELINESEP, 2)
 	use_base64 = False
 	if crc == b'base64':
 		use_base64 = True
-		crc, content = content.split(b'\n', 1)
+		crc, content = content.split(BYTELINESEP, 1)
 	if force_expect_base64 and not use_base64:
 		print('Expected base64 explicitly, but did not found base64 marker in data!', file=sys.stderr)
 	filename = filename.decode('utf-8').encode('latin1').decode('cp1251')
