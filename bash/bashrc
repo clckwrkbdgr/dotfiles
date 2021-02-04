@@ -1,3 +1,10 @@
+if [ -n "$WSL_DISTRO_NAME" ]; then
+   # WSL does not read profile for command mode (i.e. when started non-interactively.
+   if [ -z "$PYTHONWARNINGS" ]; then # TODO best temp. pick, should make a designated variable that definitely means that .profile was/not loaded.
+      . ~/.profile
+   fi
+fi
+
 export HISTCONTROL=ignoredups
 
 . "$XDG_CONFIG_HOME/bash/aliases.inc.bash"
