@@ -1,4 +1,6 @@
 import os, sys, subprocess, logging
+import itertools
+from pathlib import Path, PurePath
 
 CLI_USAGE = """
 Job actions are defined as executable files (scripts, binaries) under job directory (see --dir option).
@@ -12,6 +14,8 @@ you may name them to control this order, e.g.:
 
 There are no specific requirements for name except for sorting order.
 
+Job directory can be specified several times. In this case content of all directories is joined and sorted in total order.
+
 Job executables are executed in the current environment with additional environment variable for verbosity level.
 
 Default verbosity mode is 'fully quiet', each job is supposed to produce no output except for errors. It is up to the job executable how to interpret this verbosity level, e.g.: 'v' is normal output, 'vv' is detailed output and 'vvv' is debug level.
@@ -22,10 +26,16 @@ If verbosity level is >0, the main runner script will also print some info about
 class JobSequence:
 	def __init__(self, verbose_var_name, default_job_dir, click=None):
 		self.verbose_var_name = verbose_var_name
-		self.default_job_dir = default_job_dir
+		self.default_job_dirs = self._fix_job_dir_arg(default_job_dir)
 		if click is None: # pragma: no cover
 			import click
 		self.click = click
+	def _fix_job_dir_arg(self, job_dir):
+		if job_dir is None:
+			return None
+		if any(isinstance(job_dir, t) for t in [str, PurePath]):
+			return [job_dir]
+		return job_dir
 	def verbose_option(self):
 		return self.click.option('-v', '--verbose', count=True,
 				help="Verbosity level."
@@ -37,11 +47,12 @@ class JobSequence:
 	def dry_run_option(self):
 		return self.click.option('--dry', 'dry_run', is_flag=True, help="Dry run. Only report about actions, do not actually execute them. Implies at least one level in verbosity.")
 	def job_dir_option(self):
-		return self.click.option('-d', '--dir', 'job_dir', default=self.default_job_dir, show_default=True, help="Custom directory with job files.")
+		return self.click.option('-d', '--dir', 'job_dirs', multiple=True, default=self.default_job_dirs, show_default=True, help="Custom directory with job files. Can be specified several times, job files from all directories are sorted and executed in total order.")
 	def patterns_argument(self):
 		return self.click.argument('patterns', nargs=-1)
-	def run(self, patterns, job_dir, dry_run=False, verbose=0):
-		job_dir = job_dir or self.default_job_dir
+	def run(self, patterns, job_dirs, dry_run=False, verbose=0):
+		job_dirs = self._fix_job_dir_arg(job_dirs)
+		job_dirs = list(map(Path, job_dirs or self.default_job_dirs))
 		if dry_run:
 			verbose = max(1, verbose)
 		if verbose:
@@ -51,17 +62,17 @@ class JobSequence:
 		else:
 			logging.info("[DRY] {0}={1}".format(self.verbose_var_name, 'v' * verbose))
 		logging.info("Verbosity level: {0}".format(verbose))
-		logging.info("Searching in directory: {0}".format(job_dir))
+		logging.info("Searching in directories: {0}".format(job_dirs))
 		total_rc = 0
-		for entry in sorted(os.listdir(job_dir)):
-			if patterns and all(pattern not in entry for pattern in patterns):
+		for entry in sorted(itertools.chain.from_iterable(job_dir.iterdir() for job_dir in job_dirs)):
+			if patterns and all(pattern not in entry.name for pattern in patterns):
 				logging.info("Job was not matched: {0}".format(entry))
 				continue
 			logging.info("Executing job: {0}".format(entry))
 			if not dry_run:
-				rc = subprocess.call([os.path.join(job_dir, entry)], shell=True)
+				rc = subprocess.call([str(entry)], shell=True)
 			else:
-				logging.info("[DRY] Executing: `{0}`".format(os.path.join(job_dir, entry)))
+				logging.info("[DRY] Executing: `{0}`".format(entry))
 				rc = 0
 			logging.info("RC: {0}".format(rc))
 			total_rc += rc
