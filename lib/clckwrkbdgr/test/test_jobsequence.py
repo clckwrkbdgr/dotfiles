@@ -53,6 +53,31 @@ class TestJobSequence(unittest.TestCase):
 		subprocess_call.assert_not_called()
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
+	@mock.patch('subprocess.call', side_effect=[0, 0, 0, 0])
+	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
+		Path('my_default_dir') : [
+			Path('my_default_dir')/'foo.2',
+			Path('my_default_dir')/'bar',
+			],
+		Path('my_other_dir') : [
+			Path('my_other_dir')/'foo.1',
+			Path('my_other_dir')/'baz',
+			],
+		}))
+	def should_run_several_job_dirs(self, path_iterdir, subprocess_call, logging_info):
+		click = mock.MagicMock()
+		seq = JobSequence('MY_VERBOSE_VAR', ['my_default_dir', 'my_other_dir'], click=click)
+		seq.run(None, None, verbose=0)
+		self.assertEqual(os.environ['MY_VERBOSE_VAR'], '')
+		path_iterdir.assert_has_calls([])
+		subprocess_call.assert_has_calls([
+				mock.call([os.path.join('my_default_dir', 'bar')], shell=True),
+				mock.call([os.path.join('my_other_dir', 'baz')], shell=True),
+				mock.call([os.path.join('my_other_dir', 'foo.1')], shell=True),
+				mock.call([os.path.join('my_default_dir', 'foo.2')], shell=True),
+				])
+	@mock.patch.dict(os.environ, os.environ.copy())
+	@mock.patch('logging.info')
 	@mock.patch('subprocess.call', side_effect=[0, 0])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
