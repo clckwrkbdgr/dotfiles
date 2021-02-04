@@ -44,7 +44,8 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch('logging.info')
 	@mock.patch('subprocess.call')
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({'my_default_dir':[]}))
-	def should_run_job_sequence(self, path_iterdir, subprocess_call, logging_info):
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_run_job_sequence(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
 		seq.run(None, None, verbose=0)
@@ -64,7 +65,8 @@ class TestJobSequence(unittest.TestCase):
 			Path('my_other_dir')/'baz',
 			],
 		}))
-	def should_run_several_job_dirs(self, path_iterdir, subprocess_call, logging_info):
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True, True])
+	def should_run_several_job_dirs(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', ['my_default_dir', 'my_other_dir'], click=click)
 		seq.run(None, None, verbose=0)
@@ -81,11 +83,32 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch('subprocess.call', side_effect=[0, 0])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
+			Path('my_default_dir')/'foo.2',
+			Path('my_default_dir')/'bar',
+			],
+		}))
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True, False])
+	def should_skip_missing_job_dirs(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
+		click = mock.MagicMock()
+		seq = JobSequence('MY_VERBOSE_VAR', ['my_default_dir', 'my_other_dir'], click=click)
+		seq.run(None, None, verbose=0)
+		self.assertEqual(os.environ['MY_VERBOSE_VAR'], '')
+		path_iterdir.assert_has_calls([])
+		subprocess_call.assert_has_calls([
+				mock.call([os.path.join('my_default_dir', 'bar')], shell=True),
+				mock.call([os.path.join('my_default_dir', 'foo.2')], shell=True),
+				])
+	@mock.patch.dict(os.environ, os.environ.copy())
+	@mock.patch('logging.info')
+	@mock.patch('subprocess.call', side_effect=[0, 0])
+	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
+		Path('my_default_dir') : [
 			Path('my_default_dir')/'foo',
 			Path('my_default_dir')/'bar',
 			],
 		}))
-	def should_run_verbose(self, path_iterdir, subprocess_call, logging_info):
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_run_verbose(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
 		seq.run(None, None, verbose=2)
@@ -104,7 +127,8 @@ class TestJobSequence(unittest.TestCase):
 			Path('my_default_dir')/'bar',
 			],
 		}))
-	def should_perform_dry_run(self, path_iterdir, subprocess_call, logging_info):
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_perform_dry_run(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
 		seq.run(None, None, verbose=2, dry_run=True)
@@ -120,7 +144,8 @@ class TestJobSequence(unittest.TestCase):
 			Path('my_other_dir')/'bar',
 			],
 		}))
-	def should_run_on_specified_log_dir(self, path_iterdir, subprocess_call, logging_info):
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_run_on_specified_log_dir(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
 		seq.run(None, 'my_other_dir', verbose=2)
@@ -139,7 +164,8 @@ class TestJobSequence(unittest.TestCase):
 			Path('my_other_dir')/'bar',
 			],
 		}))
-	def should_collect_return_codes(self, path_iterdir, subprocess_call, logging_info):
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_collect_return_codes(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
 		rc = seq.run(None, 'my_other_dir', verbose=2)
@@ -160,7 +186,8 @@ class TestJobSequence(unittest.TestCase):
 			Path('my_other_dir')/'baz',
 			],
 		}))
-	def should_match_patterns(self, path_iterdir, subprocess_call, logging_info):
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_match_patterns(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
 		seq.run(['ba'], 'my_other_dir', verbose=2)
@@ -181,7 +208,8 @@ class TestJobSequence(unittest.TestCase):
 			Path('my_default_dir')/'baz',
 			],
 		}))
-	def should_run_cli(self, path_iterdir, subprocess_call, logging_info, sys_exit):
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_run_cli(self, path_is_dir, path_iterdir, subprocess_call, logging_info, sys_exit):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
 

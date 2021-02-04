@@ -64,7 +64,12 @@ class JobSequence:
 		logging.info("Verbosity level: {0}".format(verbose))
 		logging.info("Searching in directories: {0}".format(job_dirs))
 		total_rc = 0
-		for entry in sorted(itertools.chain.from_iterable(job_dir.iterdir() for job_dir in job_dirs), key=lambda entry: entry.name):
+		entries = (
+				job_dir.iterdir() if job_dir.is_dir() else []
+				for job_dir
+				in job_dirs
+				)
+		for entry in sorted(itertools.chain.from_iterable(entries), key=lambda entry: entry.name):
 			if patterns and all(pattern not in entry.name for pattern in patterns):
 				logging.info("Job was not matched: {0}".format(entry))
 				continue
