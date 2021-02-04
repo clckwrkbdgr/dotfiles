@@ -89,9 +89,9 @@ class JobSequence:
 		@self.dry_run_option()
 		@self.job_dir_option()
 		@self.patterns_argument()
-		def cli(patterns, job_dir=None, dry_run=False, verbose=0):
+		def cli(patterns, job_dirs=None, dry_run=False, verbose=0):
 			""" Runs sequence of job actions.
 			"""
-			rc = self.run(patterns, job_dir, dry_run=dry_run, verbose=verbose)
+			rc = self.run(patterns, job_dirs, dry_run=dry_run, verbose=verbose)
 			sys.exit(rc)
 		return cli
