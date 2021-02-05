@@ -8,8 +8,12 @@ mock.patch.TEST_PREFIX = 'should'
 
 import os, subprocess, logging
 from clckwrkbdgr.jobsequence import JobSequence
-import pathlib
-from pathlib import Path
+try: # pragma: no cover
+	import pathlib2 as pathlib
+	from pathlib2 import Path
+except ImportError: # pragma: no cover
+	import pathlib
+	from pathlib import Path
 
 def mock_iterdir(data):
 	data = {Path(key):list(map(Path, values)) for key,values in data.items()}

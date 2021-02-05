@@ -1,6 +1,9 @@
 import os, sys, subprocess, logging
 import itertools
-from pathlib import Path, PurePath
+try:
+	from pathlib2 import Path, PurePath
+except ImportError: # pragma: no cover
+	from pathlib import Path, PurePath
 
 CLI_USAGE = """
 Job actions are defined as executable files (scripts, binaries) under job directory (see --dir option).
