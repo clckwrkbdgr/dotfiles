@@ -86,7 +86,12 @@ def main(destdir, custom_filters=None):
 	if MAILBOX.stat().st_size == 0:
 		return True
 	repeats = 1000
-	shutil.copy(str(MAILBOX), str(MAILBOX_BAK))
+	try:
+		shutil.copy(str(MAILBOX), str(MAILBOX_BAK))
+	except IOError as e:
+		if e.errno == 28: # No space left on device.
+			return True # Silently ignore to not produce another cron mail.
+		raise
 	TEMPDIR = xdg.save_cache_path('mail.{0}'.format(os.getpid()))
 	os.chdir(str(TEMPDIR))
 	while MAILBOX.stat().st_size != 0:
