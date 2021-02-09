@@ -1,14 +1,30 @@
 #!/usr/bin/env python
 import os, sys
-import configparser
+try:
+	import configparser
+except ImportError:
+	import ConfigParser as configparser
 from pathlib import Path
 from clckwrkbdgr import xdg
 
 os.chdir(str(xdg.XDG_CONFIG_HOME))
 
-gitconfig = configparser.ConfigParser(strict=False)
+try:
+	gitconfig = configparser.ConfigParser(strict=False)
+except TypeError: # Py2 does not support not strict INIs.
+	import re
+	class NotStrictConfigParser(configparser.ConfigParser):
+		OPTCRE = re.compile( # Overriden to allow whitespaces before options.
+				r'\s*(?P<option>[^:=\s][^:=]*)'          # very permissive!
+				r'\s*(?P<vi>[:=])\s*'                 # any number of space/tab,
+				# followed by separator
+				# (either : or =), followed
+				# by any # space/tab
+				r'(?P<value>.*)$'                     # everything up to eol
+				)
+	gitconfig = NotStrictConfigParser()
 gitconfig.read([str(Path('.git')/'config')])
-if 'include' in gitconfig and 'path' in gitconfig['include'] and gitconfig['include']['path'] == '../.gitconfig':
+if gitconfig.has_section('include') and gitconfig.has_option('include', 'path') and gitconfig.get('include', 'path') == '../.gitconfig':
 	sys.exit()
 
 with (Path('.git')/'config').open('a+') as f:
