@@ -18,8 +18,3 @@ for sm_path in paths:
 	subprocess.call(['git', 'add', sm_path])
 subprocess.call(['git', 'commit', '-m', 'Updated submodules.'])
 subprocess.call(['git', 'stash', 'pop'])
-
-args = ['unittest']
-if not os.environ.get('DAILYUPDATE_VERBOSE'):
-	args.append("-q")
-sys.exit(subprocess.call(args))
