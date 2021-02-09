@@ -9,6 +9,9 @@ from pathlib import Path
 from clckwrkbdgr import xdg
 import clckwrkbdgr.fs
 
+if not (xdg.XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf').exists():
+	sys.exit()
+
 def is_symlink_to(dest, src):
 	with clckwrkbdgr.fs.CurrentDir(Path(dest).parent):
 		return Path(dest).is_symlink() and Path(src).resolve() == Path(dest).resolve()

@@ -4,11 +4,16 @@ import platform
 if platform.system() == 'Windows':
 	sys.exit()
 import subprocess
-import configparser
 import logging
-trace = logging.getLogger('setup')
-from pathlib import Path
+logging.basicConfig()
+trace = logging.getLogger()
+try:
+	from pathlib2 import Path
+except ImportError:
+	from pathlib import Path
 from clckwrkbdgr import xdg
+
+# TODO check if this is my maching and I have root privileges.
 
 def has_tmp_in_fstab():
 	for line in Path('/etc/fstab').read_text().splitlines():

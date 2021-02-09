@@ -5,7 +5,10 @@ if platform.system() == 'Windows':
 	sys.exit()
 import logging
 trace = logging.getLogger('setup')
-from pathlib import Path
+try:
+	from pathlib2 import Path
+except ImportError:
+	from pathlib import Path
 import clckwrkbdgr.fs
 from clckwrkbdgr.xdg import XDG_DATA_HOME, XDG_CONFIG_HOME, XDG_CACHE_HOME
 
@@ -49,23 +52,29 @@ class XDGSymlinks:
 
 known_symlinks = XDGSymlinks()
 
-known_symlinks.ensure(Path.home()/'.macromedia', XDG_DATA_HOME/'macromedia')
-known_symlinks.ensure(Path.home()/'.adobe', XDG_DATA_HOME/'macromedia')
-known_symlinks.ensure(Path.home()/'.w3m', XDG_CONFIG_HOME/'w3m')
+if (Path.home()/'.macromedia').exists():
+	known_symlinks.ensure(Path.home()/'.macromedia', XDG_DATA_HOME/'macromedia')
+if (Path.home()/'.adobe').exists():
+	known_symlinks.ensure(Path.home()/'.adobe', XDG_DATA_HOME/'macromedia')
+if (XDG_CONFIG_HOME/'w3m').exists():
+	known_symlinks.ensure(Path.home()/'.w3m', XDG_CONFIG_HOME/'w3m')
 known_symlinks.ensure(Path.home()/'.profile', XDG_CONFIG_HOME/'profile')
 known_symlinks.ensure(Path.home()/'.bashrc', XDG_CONFIG_HOME/'bash'/'bashrc')
 
-known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates')
-known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'telegram-purple', XDG_CACHE_HOME/'purple'/'telegram-purple')
-known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'icons', XDG_CACHE_HOME/'purple'/'icons')
-known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml', XDG_CACHE_HOME/'purple'/'xmpp-caps.xml')
-known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'accels', XDG_CACHE_HOME/'purple'/'accels')
-known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'logs')
+if (XDG_CONFIG_HOME/'purple').exists():
+	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates')
+	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'telegram-purple', XDG_CACHE_HOME/'purple'/'telegram-purple')
+	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'icons', XDG_CACHE_HOME/'purple'/'icons')
+	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml', XDG_CACHE_HOME/'purple'/'xmpp-caps.xml')
+	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'accels', XDG_CACHE_HOME/'purple'/'accels')
+	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'logs')
 
-known_symlinks.ensure(Path.home()/'.freeciv', XDG_CONFIG_HOME/'freeciv')
-known_symlinks.ensure(XDG_CONFIG_HOME/'freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
+if (XDG_CONFIG_HOME/'freeciv').exists():
+	known_symlinks.ensure(Path.home()/'.freeciv', XDG_CONFIG_HOME/'freeciv')
+	known_symlinks.ensure(XDG_CONFIG_HOME/'freeciv'/'saves', XDG_DATA_HOME/'freeciv'/'saves')
 
-known_symlinks.ensure(XDG_CONFIG_HOME/'xfce4'/'terminal', XDG_CONFIG_HOME/'Terminal')
+if (XDG_CONFIG_HOME/'xfce4').exists() and (XDG_CONFIG_HOME/'Terminal').exists():
+	known_symlinks.ensure(XDG_CONFIG_HOME/'xfce4'/'terminal', XDG_CONFIG_HOME/'Terminal')
 
 # Third-party symlinks.
 known_symlinks.ignore(XDG_CONFIG_HOME/'vim'/'bundle'/'vimoutliner'/'README.detailed')

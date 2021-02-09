@@ -4,15 +4,24 @@ import platform
 if platform.system() == 'Windows':
 	sys.exit()
 import logging
-trace = logging.getLogger('setup')
-from pathlib import Path
+logging.basicConfig()
+trace = logging.getLogger()
+try:
+	from pathlib2 import Path
+except ImportError:
+	from pathlib import Path
 from clckwrkbdgr import xdg
 
-etc_config_file = '/etc/X11/app-defaults/XXkb'
+# TODO check if this is my maching and I have root privileges.
+
+etc_config_file = Path('/etc/X11/app-defaults/XXkb')
+if not etc_config_file.exists():
+	trace.error('{0} is not found, cannot add XXkb settings.'.format(etc_config_file))
+	sys.exit(1) # TODO can we create this file if it is absent?
 
 Xresources = xdg.XDG_CONFIG_HOME/'Xresources'
 local_XXkb = set([line for line in Xresources.read_text().splitlines() if line.startswith('XXkb.')])
-missing = local_XXkb - set(Path(etc_config_file).read_text().splitlines())
+missing = local_XXkb - set(etc_config_file.read_text().splitlines())
 if not missing:
 	sys.exit()
 

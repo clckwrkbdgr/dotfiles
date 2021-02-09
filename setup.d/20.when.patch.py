@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import sys, subprocess
 import platform
-from pathlib import Path
+try:
+	from pathlib2 import Path
+except ImportError:
+	from pathlib import Path
 from clckwrkbdgr import xdg
 import clckwrkbdgr.fs
 
@@ -16,6 +19,10 @@ if platform.system() == 'Windows':
 	dest = Path.home()/'.local'/'bin'/'when.pl'
 else:
 	dest = Path('/usr/bin/when').expanduser()
+
+if not dest.exists():
+	sys.exit()
+
 patch = xdg.XDG_CONFIG_HOME/'patch'/'when-1.1.36-xdg.patch'
 if not patch_is_applied(dest, patch):
 	sys.exit(apply_patch(dest, patch)) # TODO needs sudo

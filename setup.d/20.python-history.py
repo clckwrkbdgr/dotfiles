@@ -8,8 +8,13 @@ trace = logging.getLogger('setup')
 from pathlib import Path
 import subprocess
 
+try:
+	subprocess.check_output(['python3', '-V'], stderr=subprocess.STDOUT)
+except OSError:
+	sys.exit()
+
 def get_site_module_path():
-	return Path(subprocess.check_output(['python', '-c', 'import site; print(site.__file__)']).decode().strip())
+	return Path(subprocess.check_output(['python3', '-c', 'import site; print(site.__file__)']).decode().strip())
 
 UNPATCHED_PYTHON_HISTORY_CODE = """\
             history = os.path.join(os.path.expanduser('~'),
