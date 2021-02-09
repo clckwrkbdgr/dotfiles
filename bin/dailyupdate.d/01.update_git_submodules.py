@@ -6,7 +6,7 @@ if userstate.get_flag('metered_network'):
 	sys.exit()
 
 os.chdir(str(xdg.XDG_CONFIG_HOME))
-subprocess.call(['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge'])
+subprocess.call(['git', 'submodule', 'update', '--init', '--remote', '--single-branch', '--recursive', '--merge'])
 submodule_info = subprocess.check_output(['git', 'submodule']).decode('utf-8', 'replace').splitlines()
 if not any(line.startswith('+') for line in submodule_info):
 	sys.exit()
