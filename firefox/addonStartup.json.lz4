@@ -763,7 +763,59 @@
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B7a7a4a92-a2a0-41d1-9fd7-1e92480d612d%7D.xpi!/",
                 "runInSafeMode": false,
                 "startupData": {
-                    "persistentListeners": {}
+                    "persistentListeners": {
+                        "webRequest": {
+                            "onBeforeSendHeaders": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame"
+                                        ],
+                                        "urls": [
+                                            "https://raw.githubusercontent.com/33kk/uso-archive/flomaster/data/usercss/*.user.css",
+                                            "*://greasyfork.org/scripts/*/code/*.user.css",
+                                            "*://sleazyfork.org/scripts/*/code/*.user.css",
+                                            "*://github.com/*/raw/*.user.css",
+                                            "*://github.com/*/raw/*.user.css?*",
+                                            "*://github.com/*/raw/*.user.styl",
+                                            "*://github.com/*/raw/*.user.styl?*",
+                                            "*://raw.githubusercontent.com/*.user.css",
+                                            "*://raw.githubusercontent.com/*.user.css?*",
+                                            "*://raw.githubusercontent.com/*.user.styl",
+                                            "*://raw.githubusercontent.com/*.user.styl?*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ]
+                            ],
+                            "onHeadersReceived": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "main_frame"
+                                        ],
+                                        "urls": [
+                                            "*://*/*.user.css",
+                                            "*://*/*.user.css?*",
+                                            "*://*/*.user.styl",
+                                            "*://*/*.user.styl?*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "responseHeaders"
+                                    ]
+                                ]
+                            ]
+                        }
+                    }
                 },
                 "version": "0.0"
             },
