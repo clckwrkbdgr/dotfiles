@@ -7,6 +7,7 @@ try:
 except ImportError:
 	from pathlib import Path
 import six
+import clckwrkbdgr.utils
 
 BYTELINESEP = os.linesep.encode()
 
@@ -91,11 +92,12 @@ def copy_file(filename, use_base64=False):
 	If use_base64 is True, forces base64 encoding with corresponding marker.
 	Returns CRC of original (not encoded) file content.
 	"""
-	filename = Path(filename)
 	data = b''
-	data += filename.name.encode('cp1251')
+	if filename:
+		data += Path(filename).name.encode('cp1251')
 	data += b'\n'
-	content = filename.read_bytes()
+	with clckwrkbdgr.utils.fileinput(filename, 'rb') as f:
+		content = f.read()
 	crc = hex(binascii.crc32(content))[2:]
 	if use_base64:
 		content = base64.b64encode(content)
@@ -122,7 +124,6 @@ def dump_file(force_expect_base64=False):
 	if force_expect_base64 and not use_base64:
 		print('Expected base64 explicitly, but did not found base64 marker in data!', file=sys.stderr)
 	filename = filename.decode('utf-8').encode('latin1').decode('cp1251')
-	filename = Path(filename)
 
 	if use_base64:
 		content = base64.b64decode(content)
@@ -134,7 +135,8 @@ def dump_file(force_expect_base64=False):
 		print('CRC do not match!', file=sys.stderr)
 		print('Incoming (expected): {0}'.format(crc), file=sys.stderr)
 		print('Actual: {0}'.format(mycrc), file=sys.stderr)
-	filename.write_bytes(content)
+	with clckwrkbdgr.utils.fileoutput(filename, 'wb') as f:
+		f.write(content)
 	return filename, mycrc
 
 import click
@@ -146,20 +148,33 @@ def cli(filename, use_base64=False):
 	""" Implements file transfer protocol via clipboard of remote connection,
 	e.g. RDP.
 	If filename is specified, copies its content into clipboard with corresponding metadata.
-	If filename is omitted, tries to extract file with metadata from clipboard and save it in current directory.
+	If filename is '-', reads content from stdin (no filename will be passed to clipboard in this case).
+	If filename is omitted, tries to extract file with metadata from clipboard and
+	save it in current directory if it has filename or print to stdout if it was received from stdin.
 
 	Most common scenario:
 	- Have two systems: host system and remote (which is connected via RDP).
 	- In any of the system: `clipcp filename`.
 	- In another system: `clipcp`
+
+	Using pipes, e.g. with Git patches:
+	- In any of the system: `git diff | clipcp -`.
+	- In another system: `clipcp | git apply`
 	"""
 	if filename is not None:
-		print(filename, file=sys.stderr)
+		if filename == '-':
+			print('<stdin>', file=sys.stderr)
+			filename = None
+		else:
+			print(filename, file=sys.stderr)
 		crc = copy_file(filename, use_base64=use_base64)
 		print(crc, file=sys.stderr)
 		return
 	filename, crc = dump_file(force_expect_base64=use_base64)
-	print(filename, file=sys.stderr)
+	if filename:
+		print(filename, file=sys.stderr)
+	else:
+		print('<stdout>', file=sys.stderr)
 	print(crc, file=sys.stderr)
 
 if __name__ == '__main__':
