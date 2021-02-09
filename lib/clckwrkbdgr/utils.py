@@ -80,7 +80,7 @@ def fileoutput(filename, mode=None): # pragma: no cover -- TODO uses sys.stdout,
 		if not filename or filename == '-':
 			if 'b' in mode:
 				import io
-				bin_stdout = io.open(sys.stdin.fileno(), 'wb')
+				bin_stdout = io.open(sys.stdout.fileno(), 'wb')
 				yield bin_stdout
 			else:
 				yield sys.stdout
