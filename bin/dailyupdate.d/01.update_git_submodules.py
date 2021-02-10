@@ -6,7 +6,14 @@ if userstate.get_flag('metered_network'):
 	sys.exit()
 
 os.chdir(str(xdg.XDG_CONFIG_HOME))
-subprocess.call(['git', 'submodule', 'update', '--init', '--remote', '--single-branch', '--recursive', '--merge'])
+
+git_version = tuple(map(int, subprocess.check_output(['git', '--version']).decode().strip().split(None, 3)[2].split('.')))
+print(git_version)
+
+args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
+if git_version >= (2, 26, 0):
+	args += ['--single-branch']
+subprocess.call(args)
 submodule_info = subprocess.check_output(['git', 'submodule']).decode('utf-8', 'replace').splitlines()
 if not any(line.startswith('+') for line in submodule_info):
 	sys.exit()
