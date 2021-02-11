@@ -8,7 +8,6 @@ if userstate.get_flag('metered_network'):
 os.chdir(str(xdg.XDG_CONFIG_HOME))
 
 git_version = tuple(map(int, subprocess.check_output(['git', '--version']).decode().strip().split(None, 3)[2].split('.')))
-print(git_version)
 
 args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
 if git_version >= (2, 26, 0):
