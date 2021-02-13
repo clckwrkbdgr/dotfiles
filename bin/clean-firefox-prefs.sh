@@ -115,4 +115,5 @@ sed '/devtools.debugger.prefs-schema-version/d' | \
 sed '/devtools.inspector.activeSidebar/d' | \
 sed '/browser.protections_panel.infoMessage.seen/d' | \
 sed '/browser.urlbar.placeholderName.private/d' | \
+sed '/findbar.highlightAll/d' | \
 sed 's|'"$HOME"'|$HOME|g'
