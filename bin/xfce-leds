@@ -3,7 +3,6 @@ import os, sys, subprocess
 import re
 import configparser
 import logging
-import click
 from PIL import Image
 from clckwrkbdgr import xdg, utils
 
@@ -99,15 +98,15 @@ def join_image_strip(image_files, output_file):
 		band.paste(frame, (frame_width * index, 0))
 	band.save(str(output_file))
 
-def get_state_image(states, last_update):
-	state_image_path = xdg.save_cache_path('xfce4', 'leds')/"leds_{0}.png".format(states)
-	image_exists = state_image_path.exists()
-	image_is_too_old = image_exists and last_update > os.path.getmtime(str(state_image_path))
-	if image_is_too_old:
-		logging.debug("Image is too old.")
-	if not image_exists or image_is_too_old:
+def get_state_image(states, images, last_update):
+	state_image_path = xdg.save_runtime_path('xfce4', 'leds')/"state.png"
+	state_path = xdg.save_runtime_path('xfce4', 'leds')/"state"
+	if not state_path.exists() or state_path.read_text() != states:
 		join_image_strip(images, state_image_path)
+		state_path.write_text(states)
 	return state_image_path
+
+import click
 
 @click.command()
 def cli():
@@ -134,7 +133,7 @@ def cli():
 		tooltip += group.get_character(state)
 		images.append(group.get_image(state))
 		states += group.state_symbol.upper() if state else group.state_symbol.lower()
-	state_image_path = get_state_image(states, settings.last_update())
+	state_image_path = get_state_image(states, images, settings.last_update())
 	sys.stdout.write("<img>{0}</img>\n<tool>{1}</tool>\n".format(state_image_path, tooltip))
 
 if __name__ == "__main__":
