@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os, sys, subprocess
+import time
 import re
 import configparser
 import logging
@@ -117,7 +118,7 @@ def recalculate_state(settings):
 		state = False
 		if group.command:
 			try:
-				state = 0 == subprocess.call(group.command, shell=True)
+				state = 0 == subprocess.call(group.command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 			except FileNotFoundError:
 				logging.error("Error executing command {0}".format(repr(group.command)))
 		elif group.name:
@@ -159,6 +160,7 @@ def cli():
 			# FIXME works only with xfce4-plugin-genmon >= 4.0.2, but there is no way to get current version of a plugin.
 			# FIXME otherwise need to set genmon to refresh rate = 1s
 			refresh_genmon_plugin('genmon-2')
+		time.sleep(1)
 
 if __name__ == "__main__":
 	cli()
