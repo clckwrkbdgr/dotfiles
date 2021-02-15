@@ -5,4 +5,3 @@ echo "<img>$STATE_IMAGE_PATH</img>"
 echo -n "<tool>"
 cat $STATE_TOOLTIP_PATH
 echo "</tool>"
-date >>~/badger.log
