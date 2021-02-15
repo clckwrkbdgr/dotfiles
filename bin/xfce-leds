@@ -107,17 +107,11 @@ def get_genmon_text():
 	STATE_TOOLTIP_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.txt"
 	return "<img>{0}</img>\n<tool>{1}</tool>\n".format(STATE_IMAGE_PATH, STATE_TOOLTIP_PATH.read_text())
 
-import click
-
-@click.command()
-def cli():
-	leds = read_xset_led_status()
-
-	config_file = xdg.save_config_path('xfce4')/"xfce-leds.ini"
-	settings = Config(config_file)
+def recalculate_state(settings):
 	tooltip = ''
 	images = []
 	states = ''
+	leds = read_xset_led_status()
 	for group in settings.all_groups():
 		state = False
 		if group.command:
@@ -134,12 +128,35 @@ def cli():
 		tooltip += group.get_character(state)
 		images.append(group.get_image(state))
 		states += group.state_symbol.upper() if state else group.state_symbol.lower()
-	if not STATE_PATH.exists() or STATE_PATH.read_text() != states:
-		join_image_strip(images, STATE_IMAGE_PATH)
-		STATE_PATH.write_text(states)
-	STATE_TOOLTIP_PATH.write_text(tooltip)
+	return tooltip, images, states
 
-	sys.stdout.write(get_genmon_text())
+def update_files(tooltip, images, states):
+	""" Returns True if state is changed. """
+	if STATE_PATH.exists() and STATE_PATH.read_text() == states:
+		return False
+	join_image_strip(images, STATE_IMAGE_PATH)
+	STATE_PATH.write_text(states)
+	STATE_TOOLTIP_PATH.write_text(tooltip)
+	return True
+
+def refresh_genmon_plugin(genmon_id):
+	subprocess.call(['xfce4-panel', '--plugin-event={0}:refresh:bool:true'.format(genmon_id)])
+
+import click
+
+@click.command()
+def cli():
+	""" Serves as daemon, updating led info when state is changes.
+	Use $XDG_CONFIG_HOME/bin/xfce-leds-genmon.sh to turn this info into output suitable for genmon plugin.
+	"""
+	config_file = xdg.save_config_path('xfce4')/"xfce-leds.ini"
+	settings = Config(config_file)
+	while True:
+		tooltip, images, states = recalculate_state(settings)
+		if update_files(tooltip, images, states):
+			# FIXME works only with xfce4-plugin-genmon >= 4.0.2, but there is no way to get current version of a plugin.
+			# FIXME otherwise need to set genmon to refresh rate = 1s
+			refresh_genmon_plugin('genmon-2')
 
 if __name__ == "__main__":
 	cli()
