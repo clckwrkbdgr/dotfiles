@@ -72,10 +72,29 @@ def save_mail(index, destdir, custom_filters=None):
 
 import click
 
+def ensure_single_instance(f):
+	@functools.wraps(f)
+	def _actual(*args, **kwargs):
+		pid_file = xdg.save_runtime_path()/'mail2file.pid'
+		if pid_file.exists():
+			pid = int(pid_file.read_text().strip())
+			try:
+				os.kill(pid, 0)
+				return True # Already running another instance.
+			except OSError:
+				pass
+		pid_file.write_text(str(os.getpid()))
+		try:
+			return f(*args, **kwargs)
+		finally:
+			os.unlink(str(pid_file))
+	return _actual
+
 @click.command()
 @click.argument('destdir')
 @click.option('--filter', 'custom_filters', multiple=True, help='Custom filters for mail messages. Each command should take single argument (file name, mbox format) and return EXIT_FAILURE (non-zero) in case if file should be removed. Filters are applied in order of specification. Filter command can alter file content.')
 @clckwrkbdgr.utils.exits_with_return_value
+@ensure_single_instance
 def main(destdir, custom_filters=None):
 	""" Saves Unix mailbox to a set of files.
 
