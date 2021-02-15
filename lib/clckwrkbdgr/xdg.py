@@ -21,6 +21,12 @@ if platform.system() == 'Windows': # pragma: no cover -- Windows only.
     _dir_data += [
         _XDGDir('XDG_RUNTIME_DIR', Path(os.environ.get('TEMP', os.environ['USERPROFILE'])), False), # FIXME Proper default value.
         ]
+elif platform.system() == 'AIX': # pragma: no cover -- AIX only.
+    if os.environ.get('XDG_RUNTIME_DIR') and not Path(os.environ['XDG_RUNTIME_DIR']).exists():
+        os.environ['XDG_RUNTIME_DIR'] = '/tmp/{0}'.format(getpass.getuser()) # TODO sync to main shell profile (xdg.sh)
+    _dir_data += [
+        _XDGDir('XDG_RUNTIME_DIR', Path('/tmp')/getpass.getuser(), False),
+        ]
 else: # pragma: no cover -- Unix only.
     _dir_data += [
         _XDGDir('XDG_RUNTIME_DIR', Path('/run')/'user'/getpass.getuser(), False),
