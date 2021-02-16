@@ -4,6 +4,7 @@ import time
 import re
 import configparser
 import logging
+from pathlib import Path
 from PIL import Image
 from clckwrkbdgr import xdg, utils
 
@@ -58,12 +59,12 @@ class Config(object):
 		def get_image(self, is_on):
 			return self.image_on if is_on else self.image_off
 
-	def __init__(self, filename):
-		self.filename = filename
+	def __init__(self, filenames):
+		self.filenames = filenames
 		self.parser = configparser.ConfigParser()
-		self.parser.read([str(self.filename)])
+		self.parser.read(list(map(str, self.filenames)))
 	def last_update(self):
-		return os.path.getmtime(str(self.filename))
+		return max(map(os.path.getmtime, map(str, self.filenames)))
 	def _read_value(self, category, setting_name, default_value=None):
 		value = category.get(setting_name)
 		if value is None:
@@ -152,8 +153,10 @@ def cli():
 	""" Serves as daemon, updating led info when state is changes.
 	Use $XDG_CONFIG_HOME/bin/xfce-leds-genmon.sh to turn this info into output suitable for genmon plugin.
 	"""
-	config_file = xdg.save_config_path('xfce4')/"xfce-leds.ini"
-	settings = Config(config_file)
+	settings = Config([
+		xdg.save_config_path('xfce4')/"xfce-leds.ini",
+		Path('~/.local').expanduser()/"xfce-leds.ini", # TODO use XDG.
+		])
 	while True:
 		tooltip, images, states = recalculate_state(settings)
 		if update_files(tooltip, images, states):
