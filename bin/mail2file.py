@@ -77,13 +77,13 @@ def ensure_single_instance(f):
 	def _actual(*args, **kwargs):
 		pid_file = xdg.save_runtime_path()/'mail2file.pid'
 		if pid_file.exists():
-			pid = int(pid_file.read_text().strip())
+			pid = int(pid_file.read_bytes().decode().strip())
 			try:
 				os.kill(pid, 0)
 				return True # Already running another instance.
 			except OSError:
 				pass
-		pid_file.write_text(str(os.getpid()))
+		pid_file.write_bytes(str(os.getpid()).encode())
 		try:
 			return f(*args, **kwargs)
 		finally:
