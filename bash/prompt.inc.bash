@@ -1,36 +1,51 @@
 # Current subshell info: parent processes, shells, terminals etc.
-PS_sub=''
-[ -n "$VIMRUNTIME" ] && PS_sub="${PS_sub}(vim)"
-if [ -z "$DISPLAY_SHLVL" ]; then
-	DISPLAY_SHLVL=$((SHLVL-2)) # For GUI interactive shells: 1 for GUI + 1 for terminal
+. "$XDG_CONFIG_HOME/lib/prompt.bash"
+
+_PS_in_vim() {
+	[ -n "$VIMRUNTIME" ] && echo "(vim)"
+}
+
+if [ -z "$_DISPLAY_SHLVL" ]; then # TODO instead of this there should be a shlvl::reset and some var to subtract, like for screen or tmux invocations.
+	_DISPLAY_SHLVL=$((SHLVL-2)) # For GUI interactive shells: 1 for GUI + 1 for terminal
 fi
-if [ "$DISPLAY_SHLVL" -gt 0 ]; then
-	PS_sub="${PS_sub}(bash+$DISPLAY_SHLVL)"
-fi
-unset DISPLAY_SHLVL
-if [ -n "$RANGER_LEVEL" ]; then
+
+_PS_shlvl() {
+	if [ "$_DISPLAY_SHLVL" -gt 0 ]; then
+		echo "(bash+$_DISPLAY_SHLVL)"
+	fi
+}
+
+_PS_ranger() {
+	[ -z "$RANGER_LEVEL" ] && return
 	fixed_ranger_level=$((RANGER_LEVEL-1))
 	if [ "$fixed_ranger_level" -gt 0 ]; then
-		PS_sub="${PS_sub}(ranger+$fixed_ranger_level)"
+		echo "(ranger+$fixed_ranger_level)"
 	else
-		PS_sub="${PS_sub}(ranger)"
+		echo "(ranger)"
 	fi
-fi
-if [ -n "$TMUX" ]; then
-	PS_sub="${PS_sub}(tmux)"
-fi
+}
+
+_PS_tmux() {
+	if [ -n "$TMUX" ]; then
+		echo "(tmux)"
+	fi
+}
+
+prompt::clear
+prompt::append_section _PS_in_vim bold_red
+prompt::append_section _PS_shlvl bold_red
+prompt::append_section _PS_ranger bold_red
+prompt::append_section _PS_tmux bold_red
 
 # Current dir state/info.
 . "$XDG_CONFIG_HOME/bash/dotfiles_info.inc.bash"
-PS_dir="\$(dotfiles_info)"
+prompt::prepend_section dotfiles_info bold_yellow
 
 # Main prompt settings.
-PS1='\W\$'
-PS2=">"
-PS4="+"
+prompt::append_section '\W' bold_white
 
-# Coloring.
-. "$XDG_CONFIG_HOME/lib/colors.bash"
-export PS1="\[${bold_yellow}\]${PS_dir}\[${bold_red}\]${PS_sub}\[${bold_white}\]${PS1}\[${reset_color}\] "
+PS2=">"
 export PS2="\[${bold_white}\]${PS2}\[${reset_color}\] "
+
+PS4="+"
 export PS4="\[${bold_white}\]${PS4}\[${reset_color}\] "
