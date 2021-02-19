@@ -123,8 +123,16 @@ def recalculate_state(settings):
 			except FileNotFoundError:
 				logging.error("Error executing command {0}".format(repr(group.command)))
 		elif group.name:
-			if group.name in leds:
-				state = leds[group.name]
+			reverse_state = False
+			name = group.name
+			if name.startswith('!'):
+				name = name[1:]
+				reverse_state = True
+
+			if name in leds:
+				state = leds[name]
+				if reverse_state:
+					state = not state
 			else:
 				logging.error("Unknown led {0}".format(group.name))
 
