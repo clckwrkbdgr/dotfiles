@@ -22,10 +22,6 @@ character_on = 'S'
 character_off = ' '
 """
 
-STATE_IMAGE_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.png"
-STATE_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state"
-STATE_TOOLTIP_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.txt"
-
 def read_xset_led_status():
 	xset = subprocess.Popen(["xset", "q"], stdout=subprocess.PIPE)
 	out, err = xset.communicate()
@@ -63,15 +59,13 @@ class Config(object):
 		self.filenames = filenames
 		self.parser = configparser.ConfigParser()
 		self.parser.read(list(map(str, self.filenames)))
-	def last_update(self):
-		return max(map(os.path.getmtime, map(str, self.filenames)))
 	def _read_value(self, category, setting_name, default_value=None):
 		value = category.get(setting_name)
 		if value is None:
 			logging.error("Missing setting {1} for group {0}.".format(repr(name), repr(setting_name)))
 			return default_value
 		return utils.unquote_string(value, fix_unicode_escape=True)
-	def all_groups(self):
+	def load_plugins(self):
 		for index, title in enumerate(self.parser):
 			if title == 'DEFAULT':
 				continue
@@ -105,17 +99,32 @@ def join_image_strip(image_files, output_file):
 		band.paste(frame, (frame_width * index, 0))
 	band.save(str(output_file))
 
-def get_genmon_text():
-	STATE_IMAGE_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.png"
-	STATE_TOOLTIP_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.txt"
-	return "<img>{0}</img>\n<tool>{1}</tool>\n".format(STATE_IMAGE_PATH, STATE_TOOLTIP_PATH.read_text())
+class GenMon:
+	IMAGE_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.png"
+	TOOLTIP_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.txt"
 
-def recalculate_state(settings):
+	def __init__(self, genmon_id):
+		self.genmon_id = genmon_id
+	def update(self, images, tooltip):
+		join_image_strip(images, GenMon.IMAGE_PATH)
+		GenMon.TOOLTIP_PATH.write_text(tooltip)
+	def refresh_plugin(self):
+		# FIXME works only with xfce4-plugin-genmon >= 4.0.2, but there is no way to get current version of a plugin.
+		# FIXME otherwise need to set genmon to refresh rate = 1s
+		subprocess.call(['xfce4-panel', '--plugin-event={0}:refresh:bool:true'.format(self.genmon_id)])
+
+	@staticmethod
+	def get_text():
+		GenMon.IMAGE_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.png"
+		GenMon.TOOLTIP_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.txt"
+		return "<img>{0}</img>\n<tool>{1}</tool>\n".format(GenMon.IMAGE_PATH, GenMon.TOOLTIP_PATH.read_text())
+
+def recalculate_state(plugins):
 	tooltip = []
 	images = []
 	states = ''
 	leds = read_xset_led_status()
-	for group in settings.all_groups():
+	for group in plugins:
 		state = False
 		if group.command:
 			try:
@@ -142,17 +151,15 @@ def recalculate_state(settings):
 		states += group.state_symbol.upper() if state else group.state_symbol.lower()
 	return '\n'.join(tooltip), images, states
 
-def update_files(tooltip, images, states):
-	""" Returns True if state is changed. """
-	if STATE_PATH.exists() and STATE_PATH.read_text() == states:
-		return False
-	join_image_strip(images, STATE_IMAGE_PATH)
-	STATE_PATH.write_text(states)
-	STATE_TOOLTIP_PATH.write_text(tooltip)
-	return True
-
-def refresh_genmon_plugin(genmon_id):
-	subprocess.call(['xfce4-panel', '--plugin-event={0}:refresh:bool:true'.format(genmon_id)])
+class PanelState:
+	def __init__(self):
+		self.state = None
+	def update_files(self, tooltip, images, states):
+		""" Returns True if state is changed. """
+		if self.state == states:
+			return False
+		self.state = states
+		return True
 
 import click
 
@@ -165,12 +172,14 @@ def cli():
 		xdg.save_config_path('xfce4')/"xfce-leds.ini",
 		Path('~/.local').expanduser()/"xfce-leds.ini", # TODO use XDG.
 		])
+	plugins = list(settings.load_plugins())
+	global_state = PanelState()
+	genmon = GenMon('genmon-2')
 	while True:
-		tooltip, images, states = recalculate_state(settings)
-		if update_files(tooltip, images, states):
-			# FIXME works only with xfce4-plugin-genmon >= 4.0.2, but there is no way to get current version of a plugin.
-			# FIXME otherwise need to set genmon to refresh rate = 1s
-			refresh_genmon_plugin('genmon-2')
+		tooltip, images, states = recalculate_state(plugins)
+		if global_state.update_files(tooltip, images, states):
+			genmon.update(images, tooltip)
+			genmon.refresh_plugin()
 		time.sleep(1)
 
 if __name__ == "__main__":
