@@ -7,6 +7,7 @@
 # Resulting PS1 will always have \$ at the end and a single trailing space: "...$ "
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 . "$XDG_CONFIG_HOME/lib/colors.bash"
+. "$XDG_CONFIG_HOME/lib/arrays.bash"
 
 declare -a _old_PS1
 
@@ -26,8 +27,8 @@ prompt::append_section() {
 	# For colors see lib/colors.bash
 	local section="$1"
 	local color="$2"
-	_prompt_sections+=($section)
-	_prompt_colors+=($color)
+	arrays::append _prompt_sections "$section"
+	arrays::append _prompt_colors "$colors"
 	prompt::refresh
 }
 
@@ -58,7 +59,7 @@ prompt::refresh() {
 	# Refreshes PS1 using defined sections.
 	# Normally isn't needed to be called manually, as other prompt::* functions refresh PS1 automatically.
 	# Resulting PS1 will always have \$ at the end and a single trailing space: "...$ "
-	_old_PS1+=("$PS1")
+	arrays::append _old_PS1 "$PS1"
 
 	_ps_generated=''
 	for _index in "${!_prompt_sections[@]}"; do
