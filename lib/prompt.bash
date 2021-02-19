@@ -28,7 +28,7 @@ prompt::append_section() {
 	local section="$1"
 	local color="$2"
 	arrays::append _prompt_sections "$section"
-	arrays::append _prompt_colors "$colors"
+	arrays::append _prompt_colors "$color"
 	prompt::refresh
 }
 
