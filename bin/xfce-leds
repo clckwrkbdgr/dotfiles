@@ -170,8 +170,11 @@ class LEDList:
 		self.items.append(item)
 		self.changed = True
 	def unset(self, item):
-		self.items.remove(item)
-		self.changed = True
+		try:
+			self.items.remove(item)
+			self.changed = True
+		except ValueError:
+			pass
 	def get(self):
 		self.changed = False
 		return self.items
