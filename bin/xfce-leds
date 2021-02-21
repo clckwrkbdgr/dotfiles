@@ -23,6 +23,8 @@ character_off = ' '
 """
 
 def read_xset_led_status():
+	if time.time() - read_xset_led_status.last_timestamp < 0.9:
+		return read_xset_led_status.data
 	xset = subprocess.Popen(["xset", "q"], stdout=subprocess.PIPE)
 	out, err = xset.communicate()
 	if xset.returncode != 0:
@@ -37,24 +39,55 @@ def read_xset_led_status():
 			m = re.match(r'(\d+) *: *([^ ][^:]+) *: *(\w+)', status)
 			if m and len(m.groups()) == 3:
 				leds[m.groups()[1]] = m.groups()[2] == 'on'
+	read_xset_led_status.data = leds
+	read_xset_led_status.last_timestamp = time.time()
 	return leds
+read_xset_led_status.data = {}
+read_xset_led_status.last_timestamp = 0
+
+class Plugin(object):
+	def __init__(self, led_list_callback, state_symbol, character_on, character_off, image_on, image_off, command=None, name=None, title=None):
+		self.state = False
+
+		self.led_list_callback = led_list_callback
+		self.state_symbol = state_symbol
+		self.command = command
+		self.title = title
+		self.name = name
+		self.character_on = character_on
+		self.character_off = character_off
+		self.image_on = os.path.expanduser(image_on)
+		self.image_off = os.path.expanduser(image_off)
+	def get_character(self, is_on):
+		return self.character_on if is_on else self.character_off
+	def get_image(self, is_on):
+		return self.image_on if is_on else self.image_off
+	def update_state(self):
+		new_state = False
+		if self.command:
+			try:
+				new_state = 0 == subprocess.call(self.command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+			except FileNotFoundError:
+				logging.error("Error executing command {0}".format(repr(self.command)))
+		elif self.name:
+			reverse_state = False
+			name = self.name
+			if name.startswith('!'):
+				name = name[1:]
+				reverse_state = True
+
+			xset = read_xset_led_status()
+			if name in xset:
+				new_state = xset[name]
+				if reverse_state:
+					new_state = not new_state
+			else:
+				logging.error("Unknown led {0}".format(self.name))
+		if self.state != new_state:
+			self.state = new_state
+			self.led_list_callback(self, self.state)
 
 class Config(object):
-	class Group(object):
-		def __init__(self, state_symbol, character_on, character_off, image_on, image_off, command=None, name=None, title=None):
-			self.state_symbol = state_symbol
-			self.command = command
-			self.title = title
-			self.name = name
-			self.character_on = character_on
-			self.character_off = character_off
-			self.image_on = os.path.expanduser(image_on)
-			self.image_off = os.path.expanduser(image_off)
-		def get_character(self, is_on):
-			return self.character_on if is_on else self.character_off
-		def get_image(self, is_on):
-			return self.image_on if is_on else self.image_off
-
 	def __init__(self, filenames):
 		self.filenames = filenames
 		self.parser = configparser.ConfigParser()
@@ -65,7 +98,7 @@ class Config(object):
 			logging.error("Missing setting {1} for group {0}.".format(repr(name), repr(setting_name)))
 			return default_value
 		return utils.unquote_string(value, fix_unicode_escape=True)
-	def load_plugins(self):
+	def load_plugins(self, led_list_callback):
 		for index, title in enumerate(self.parser):
 			if title == 'DEFAULT':
 				continue
@@ -79,7 +112,7 @@ class Config(object):
 			else:
 				logging.error("Unknown group {0}. Where's command or name?".format(group))
 				continue
-			group = Config.Group(state_symbol,
+			group = Plugin(led_list_callback, state_symbol,
 					character_on=self._read_value(group, 'character_on', default_value=' '),
 					character_off=self._read_value(group, 'character_off', default_value=' '),
 					image_on=self._read_value(group, 'image_on'),
@@ -90,6 +123,10 @@ class Config(object):
 
 def join_image_strip(image_files, output_file):
 	""" Join multiple image files into a single horizontal strip. """
+	if not image_files:
+		empty_transparent_pixel = Image.new('RGBA', (1, 1), (0, 0, 0, 0))
+		empty_transparent_pixel .save(str(output_file))
+		return
 	frames = [Image.open(str(image)) for image in image_files if image]
 	widths = [image.width for image in frames]
 	full_width, frame_width = sum(widths), max(widths)
@@ -105,7 +142,13 @@ class GenMon:
 
 	def __init__(self, genmon_id):
 		self.genmon_id = genmon_id
-	def update(self, images, tooltip):
+	def update(self, plugins):
+		tooltip = []
+		images = []
+		for group in plugins:
+			tooltip.append(group.title)
+			images.append(group.get_image(True))
+		tooltip = '\n'.join(tooltip)
 		join_image_strip(images, GenMon.IMAGE_PATH)
 		GenMon.TOOLTIP_PATH.write_text(tooltip)
 	def refresh_plugin(self):
@@ -119,47 +162,24 @@ class GenMon:
 		GenMon.TOOLTIP_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.txt"
 		return "<img>{0}</img>\n<tool>{1}</tool>\n".format(GenMon.IMAGE_PATH, GenMon.TOOLTIP_PATH.read_text())
 
-def recalculate_state(plugins):
-	tooltip = []
-	images = []
-	states = ''
-	leds = read_xset_led_status()
-	for group in plugins:
-		state = False
-		if group.command:
-			try:
-				state = 0 == subprocess.call(group.command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-			except FileNotFoundError:
-				logging.error("Error executing command {0}".format(repr(group.command)))
-		elif group.name:
-			reverse_state = False
-			name = group.name
-			if name.startswith('!'):
-				name = name[1:]
-				reverse_state = True
-
-			if name in leds:
-				state = leds[name]
-				if reverse_state:
-					state = not state
-			else:
-				logging.error("Unknown led {0}".format(group.name))
-
-		if state:
-			tooltip.append(group.title)
-		images.append(group.get_image(state))
-		states += group.state_symbol.upper() if state else group.state_symbol.lower()
-	return '\n'.join(tooltip), images, states
-
-class PanelState:
+class LEDList:
 	def __init__(self):
-		self.state = None
-	def update_files(self, tooltip, images, states):
-		""" Returns True if state is changed. """
-		if self.state == states:
-			return False
-		self.state = states
-		return True
+		self.items = []
+		self.changed = False
+	def set(self, item):
+		self.items.append(item)
+		self.changed = True
+	def unset(self, item):
+		self.items.remove(item)
+		self.changed = True
+	def get(self):
+		self.changed = False
+		return self.items
+	def callback(self, plugin, state):
+		if state:
+			self.set(plugin)
+		else:
+			self.unset(plugin)
 
 import click
 
@@ -172,13 +192,14 @@ def cli():
 		xdg.save_config_path('xfce4')/"xfce-leds.ini",
 		Path('~/.local').expanduser()/"xfce-leds.ini", # TODO use XDG.
 		])
-	plugins = list(settings.load_plugins())
-	global_state = PanelState()
+	leds = LEDList()
+	plugins = list(settings.load_plugins(leds.callback))
 	genmon = GenMon('genmon-2')
 	while True:
-		tooltip, images, states = recalculate_state(plugins)
-		if global_state.update_files(tooltip, images, states):
-			genmon.update(images, tooltip)
+		for plugin in plugins:
+			plugin.update_state()
+		if leds.changed:
+			genmon.update(leds.get())
 			genmon.refresh_plugin()
 		time.sleep(1)
 
