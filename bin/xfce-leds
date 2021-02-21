@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import os, sys, subprocess
-import time
+import time, threading
 import re
 import configparser
 import logging
@@ -165,18 +165,20 @@ class GenMon:
 class LEDList:
 	def __init__(self):
 		self.items = []
-		self.changed = False
+		self.changed = threading.Event()
+		self.lock = threading.Lock()
 	def set(self, item):
-		self.items.append(item)
-		self.changed = True
+		with self.lock:
+			self.items.append(item)
+			self.changed.set()
 	def unset(self, item):
-		try:
-			self.items.remove(item)
-			self.changed = True
-		except ValueError:
-			pass
+		with self.lock:
+			try:
+				self.items.remove(item)
+				self.changed.set()
+			except ValueError:
+				pass
 	def get(self):
-		self.changed = False
 		return self.items
 	def callback(self, plugin, state):
 		if state:
@@ -185,6 +187,18 @@ class LEDList:
 			self.unset(plugin)
 
 import click
+
+class WatcherThread(threading.Thread):
+	def __init__(self, plugins):
+		super().__init__()
+		self.plugins = plugins
+		self.running = True
+	def run(self):
+		while self.running:
+			for plugin in self.plugins:
+				plugin.update_state()
+	def stop(self):
+		self.running = False
 
 @click.command()
 def cli():
@@ -198,13 +212,18 @@ def cli():
 	leds = LEDList()
 	plugins = list(settings.load_plugins(leds.callback))
 	genmon = GenMon('genmon-2')
-	while True:
-		for plugin in plugins:
-			plugin.update_state()
-		if leds.changed:
-			genmon.update(leds.get())
-			genmon.refresh_plugin()
-		time.sleep(1)
+	watcher_thread = WatcherThread(plugins)
+	try:
+		watcher_thread.start()
+		while True:
+			leds.changed.wait()
+			with leds.lock:
+				genmon.update(leds.get())
+				genmon.refresh_plugin()
+				leds.changed.clear()
+	finally:
+		watcher_thread.stop()
+		watcher_thread.join()
 
 if __name__ == "__main__":
 	cli()
