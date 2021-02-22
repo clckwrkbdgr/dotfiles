@@ -87,7 +87,10 @@ def ensure_single_instance(f):
 		try:
 			return f(*args, **kwargs)
 		finally:
-			os.unlink(str(pid_file))
+			try:
+				os.unlink(str(pid_file))
+			except OSError:
+				pass
 	return _actual
 
 @click.command()
