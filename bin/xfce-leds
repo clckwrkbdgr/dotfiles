@@ -71,6 +71,10 @@ class Plugin(object):
 		return self.character_on if is_on else self.character_off
 	def get_image(self, is_on):
 		return self.image_on if is_on else self.image_off
+	def run_thread(self, terminator):
+		while not terminator.is_set():
+			self.update_state()
+			time.sleep(1)
 	def update_state(self):
 		new_state = False
 		if self.command:
@@ -197,17 +201,6 @@ class LEDList:
 
 import click
 
-class WatcherThread(threading.Thread):
-	def __init__(self, plugin):
-		super().__init__()
-		self.plugin = plugin
-		self.running = True
-	def run(self):
-		while self.running:
-			self.plugin.update_state()
-	def stop(self):
-		self.running = False
-
 @click.command()
 def cli():
 	""" Serves as daemon, updating led info when state is changes.
@@ -220,7 +213,8 @@ def cli():
 	leds = LEDList()
 	plugins = list(settings.load_plugins(leds.callback))
 	genmon = GenMon('genmon-2')
-	watchers = [WatcherThread(plugin) for plugin in plugins]
+	terminator = threading.Event()
+	watchers = [threading.Thread(target=plugin.run_thread, args=(terminator,)) for plugin in plugins]
 	try:
 		for watcher in watchers:
 			watcher.start()
@@ -231,8 +225,7 @@ def cli():
 				genmon.refresh_plugin()
 				leds.changed.clear()
 	finally:
-		for watcher in watchers:
-			watcher.stop()
+		terminator.set()
 		for watcher in watchers:
 			watcher.join()
 
