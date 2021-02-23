@@ -26,7 +26,7 @@ else:
         _XDGDir('XDG_DATA_HOME', Path('~').expanduser()/'.local'/'share', True),
         _XDGDir('XDG_CACHE_HOME', Path('~').expanduser()/'.cache', True),
         ]
-    elif platform.system() == 'AIX': # pragma: no cover -- AIX only.
+    if platform.system() == 'AIX': # pragma: no cover -- AIX only.
         if os.environ.get('XDG_RUNTIME_DIR') and not Path(os.environ['XDG_RUNTIME_DIR']).exists():
             os.environ['XDG_RUNTIME_DIR'] = '/tmp/{0}'.format(getpass.getuser()) # TODO sync to main shell profile (xdg.sh)
         _dir_data += [
