@@ -42,11 +42,11 @@ else:
 
 if platform.system() == 'Windows': # pragma: no cover -- Windows only.
     _dir_data += [
-        _XDGDir('XDG_STATE_HOME', Path('~').expanduser()/'.state', True),
+        _XDGDir('XDG_STATE_HOME', Path(os.environ.get('LOCALAPPDATA')), False),
         ]
 else:
     _dir_data += [
-        _XDGDir('XDG_STATE_HOME', Path(os.environ.get('LOCALAPPDATA')), False),
+        _XDGDir('XDG_STATE_HOME', Path('~').expanduser()/'.state', True),
         ]
 
 for name, path, ensure in _dir_data: # pragma: no cover
