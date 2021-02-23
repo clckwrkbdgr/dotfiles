@@ -14,28 +14,39 @@ _XDGDir = namedtuple('_XDGDir', 'name path ensure')
 # Basic XDG structure.
 _dir_data = [
         _XDGDir('XDG_CONFIG_HOME', Path('~').expanduser()/'.config', True),
-        _XDGDir('XDG_DATA_HOME', Path('~').expanduser()/'.local'/'share', True),
-        _XDGDir('XDG_CACHE_HOME', Path('~').expanduser()/'.cache', True),
         ]
 if platform.system() == 'Windows': # pragma: no cover -- Windows only.
     _dir_data += [
-        _XDGDir('XDG_RUNTIME_DIR', Path(os.environ.get('TEMP', os.environ['USERPROFILE'])), False), # FIXME Proper default value.
+        _XDGDir('XDG_DATA_HOME', Path(os.environ.get('APPDATA')), False),
+        _XDGDir('XDG_CACHE_HOME', Path(os.environ.get('LOCALAPPDATA'))/'Cache', True),
+        _XDGDir('XDG_RUNTIME_DIR', Path(os.environ.get('TEMP', os.environ['USERPROFILE'])), False),
         ]
-elif platform.system() == 'AIX': # pragma: no cover -- AIX only.
-    if os.environ.get('XDG_RUNTIME_DIR') and not Path(os.environ['XDG_RUNTIME_DIR']).exists():
-        os.environ['XDG_RUNTIME_DIR'] = '/tmp/{0}'.format(getpass.getuser()) # TODO sync to main shell profile (xdg.sh)
+else:
     _dir_data += [
-        _XDGDir('XDG_RUNTIME_DIR', Path('/tmp')/getpass.getuser(), False),
+        _XDGDir('XDG_DATA_HOME', Path('~').expanduser()/'.local'/'share', True),
+        _XDGDir('XDG_CACHE_HOME', Path('~').expanduser()/'.cache', True),
         ]
-else: # pragma: no cover -- Unix only.
-    _dir_data += [
-        _XDGDir('XDG_RUNTIME_DIR', Path('/run')/'user'/getpass.getuser(), False),
-        ]
+    elif platform.system() == 'AIX': # pragma: no cover -- AIX only.
+        if os.environ.get('XDG_RUNTIME_DIR') and not Path(os.environ['XDG_RUNTIME_DIR']).exists():
+            os.environ['XDG_RUNTIME_DIR'] = '/tmp/{0}'.format(getpass.getuser()) # TODO sync to main shell profile (xdg.sh)
+        _dir_data += [
+            _XDGDir('XDG_RUNTIME_DIR', Path('/tmp')/getpass.getuser(), False),
+            ]
+    else: # pragma: no cover -- Unix only.
+        _dir_data += [
+            _XDGDir('XDG_RUNTIME_DIR', Path('/run')/'user'/getpass.getuser(), False),
+            ]
 # Non-standard setting for logs/history/app state etc.
 # See https://stackoverflow.com/a/27965014/2128769
 #     https://wiki.debian.org/XDGBaseDirectorySpecification#state
-_dir_data += [
+
+if platform.system() == 'Windows': # pragma: no cover -- Windows only.
+    _dir_data += [
         _XDGDir('XDG_STATE_HOME', Path('~').expanduser()/'.state', True),
+        ]
+else:
+    _dir_data += [
+        _XDGDir('XDG_STATE_HOME', Path(os.environ.get('LOCALAPPDATA')), False),
         ]
 
 for name, path, ensure in _dir_data: # pragma: no cover
