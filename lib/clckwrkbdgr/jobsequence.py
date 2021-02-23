@@ -26,6 +26,27 @@ Default verbosity mode is 'fully quiet', each job is supposed to produce no outp
 If verbosity level is >0, the main runner script will also print some info about executed actions.
 """
 
+def run_job_executable(executable, header=None): # pragma: no cover -- TODO processes and stdouts.
+	"""
+	Runs executable (using shell=True), checks for stdout/stderr.
+	If there was any output, prints specified header before dumping streams.
+	Header is printed w/o line feed, so it should be included in the header manually if needed.
+	Returns pair (rc, was_output).
+	"""
+	header = header or (str(executable)+'\n')
+	process = subprocess.Popen([str(executable)], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) # TODO maybe stdin=DEVNULL? As these jobs should always be automatically.
+	stdout, stderr = process.communicate()
+	was_output = bool(stdout or stderr)
+	if was_output:
+		sys.stdout.write(header)
+		sys.stdout.flush()
+	if stdout:
+		sys.stdout.buffer.write(stdout)
+	if stderr:
+		sys.stderr.buffer.write(stderr)
+	rc = process.wait()
+	return rc, was_output
+
 class JobSequence:
 	def __init__(self, verbose_var_name, default_job_dir, click=None):
 		self.verbose_var_name = verbose_var_name
@@ -72,18 +93,25 @@ class JobSequence:
 				for job_dir
 				in job_dirs
 				)
+		was_output = False
+		main_title = Path(sys.modules['__main__'].__file__).name
 		for entry in sorted(itertools.chain.from_iterable(entries), key=lambda entry: entry.name):
 			if patterns and all(pattern not in entry.name for pattern in patterns):
 				logging.info("Job was not matched: {0}".format(entry))
 				continue
 			logging.info("Executing job: {0}".format(entry))
 			if not dry_run:
-				rc = subprocess.call([str(entry)], shell=True)
+				header = '=== {0} : {1}\n'.format(main_title, str(entry))
+				rc, job_has_output = run_job_executable(entry, header)
+				was_output = was_output or job_has_output
 			else:
 				logging.info("[DRY] Executing: `{0}`".format(entry))
 				rc = 0
 			logging.info("RC: {0}".format(rc))
 			total_rc += rc
+		if was_output: # pragma: no cover -- TODO
+			sys.stdout.write('=== {0} : [Finished]\n'.format(main_title))
+			sys.stdout.flush()
 		return total_rc
 	@property
 	def cli(self):

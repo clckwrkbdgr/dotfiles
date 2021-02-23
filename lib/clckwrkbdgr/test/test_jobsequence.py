@@ -6,7 +6,8 @@ except ImportError: # pragma: no cover
 	import mock
 mock.patch.TEST_PREFIX = 'should'
 
-import os, subprocess, logging
+import os, sys, subprocess, logging
+import clckwrkbdgr.jobsequence
 from clckwrkbdgr.jobsequence import JobSequence
 try: # pragma: no cover
 	import pathlib2 as pathlib
@@ -24,6 +25,14 @@ def mock_iterdir(data):
 	return _actual
 
 class TestJobSequence(unittest.TestCase):
+	def _job_call(self, path):
+		path = Path(path)
+		return mock.call(path,
+				'=== {0} : {1}\n'.format(
+					Path(sys.modules['__main__'].__file__).name,
+					path,
+					),
+				)
 	def should_generate_verbose_option(self):
 		click = mock.MagicMock()
 		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
@@ -46,7 +55,7 @@ class TestJobSequence(unittest.TestCase):
 		click.argument.assert_called_once_with('patterns', nargs=-1)
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call')
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable')
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({'my_default_dir':[]}))
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_run_job_sequence(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
@@ -58,7 +67,7 @@ class TestJobSequence(unittest.TestCase):
 		subprocess_call.assert_not_called()
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call', side_effect=[0, 0, 0, 0])
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False), (0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
 			Path('my_default_dir')/'foo.2',
@@ -77,14 +86,14 @@ class TestJobSequence(unittest.TestCase):
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], '')
 		path_iterdir.assert_has_calls([])
 		subprocess_call.assert_has_calls([
-				mock.call([os.path.join('my_default_dir', 'bar')], shell=True),
-				mock.call([os.path.join('my_other_dir', 'baz')], shell=True),
-				mock.call([os.path.join('my_other_dir', 'foo.1')], shell=True),
-				mock.call([os.path.join('my_default_dir', 'foo.2')], shell=True),
+				self._job_call(Path('my_default_dir', 'bar')),
+				self._job_call(Path('my_other_dir', 'baz')),
+				self._job_call(Path('my_other_dir', 'foo.1')),
+				self._job_call(Path('my_default_dir', 'foo.2')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call', side_effect=[0, 0])
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
 			Path('my_default_dir')/'foo.2',
@@ -99,12 +108,12 @@ class TestJobSequence(unittest.TestCase):
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], '')
 		path_iterdir.assert_has_calls([])
 		subprocess_call.assert_has_calls([
-				mock.call([os.path.join('my_default_dir', 'bar')], shell=True),
-				mock.call([os.path.join('my_default_dir', 'foo.2')], shell=True),
+				self._job_call(Path('my_default_dir', 'bar')),
+				self._job_call(Path('my_default_dir', 'foo.2')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call', side_effect=[0, 0])
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
 			Path('my_default_dir')/'foo',
@@ -119,12 +128,12 @@ class TestJobSequence(unittest.TestCase):
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
 		subprocess_call.assert_has_calls([
-				mock.call([os.path.join('my_default_dir', 'bar')], shell=True),
-				mock.call([os.path.join('my_default_dir', 'foo')], shell=True),
+				self._job_call(Path('my_default_dir', 'bar')),
+				self._job_call(Path('my_default_dir', 'foo')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call', side_effect=[0, 0])
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
 			Path('my_default_dir')/'foo',
@@ -141,7 +150,7 @@ class TestJobSequence(unittest.TestCase):
 		subprocess_call.assert_has_calls([])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call', side_effect=[0, 0])
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
 			Path('my_other_dir')/'foo',
@@ -156,12 +165,12 @@ class TestJobSequence(unittest.TestCase):
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
 		subprocess_call.assert_has_calls([
-				mock.call([os.path.join('my_other_dir', 'bar')], shell=True),
-				mock.call([os.path.join('my_other_dir', 'foo')], shell=True),
+				self._job_call(Path('my_other_dir', 'bar')),
+				self._job_call(Path('my_other_dir', 'foo')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call', side_effect=[1, 2])
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(1, False), (2, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
 			Path('my_other_dir')/'foo',
@@ -177,12 +186,12 @@ class TestJobSequence(unittest.TestCase):
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
 		subprocess_call.assert_has_calls([
-				mock.call([os.path.join('my_other_dir', 'bar')], shell=True),
-				mock.call([os.path.join('my_other_dir', 'foo')], shell=True),
+				self._job_call(Path('my_other_dir', 'bar')),
+				self._job_call(Path('my_other_dir', 'foo')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call', side_effect=[0, 0])
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
 			Path('my_other_dir')/'foo',
@@ -198,13 +207,13 @@ class TestJobSequence(unittest.TestCase):
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
 		subprocess_call.assert_has_calls([
-				mock.call([os.path.join('my_other_dir', 'bar')], shell=True),
-				mock.call([os.path.join('my_other_dir', 'baz')], shell=True),
+				self._job_call(Path('my_other_dir', 'bar')),
+				self._job_call(Path('my_other_dir', 'baz')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('sys.exit')
 	@mock.patch('logging.info')
-	@mock.patch('subprocess.call', side_effect=[0, 0])
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
 			Path('my_default_dir')/'foo',
