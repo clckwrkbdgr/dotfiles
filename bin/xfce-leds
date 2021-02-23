@@ -54,6 +54,51 @@ def read_xset_led_status():
 read_xset_led_status.data = {}
 read_xset_led_status.last_timestamp = 0
 
+# Plugin is a function that runs in a stand-alone thread and accepts arguments:
+# - Plugin const data (string), from configuration.
+# - Callback to update state: update_state(bool).
+#   Should be called when state is changed.
+# - Terminator object (threading.Event).
+#   Plugin function should check value of the event and stop as soon as it .is_set()
+
+def builtin_plugin_command(command, update_state, terminator):
+	state = False
+	while not terminator.is_set():
+		try:
+			new_state = 0 == subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+			if state != new_state:
+				state = new_state
+				update_state(state)
+		except FileNotFoundError:
+			logging.error("Error executing command {0}".format(repr(command)))
+		time.sleep(1)
+
+def builtin_plugin_led(led_name, update_state, terminator):
+	state = False
+	while not terminator.is_set():
+		xset = read_xset_led_status()
+		if led_name in xset:
+			new_state = xset[led_name]
+			if state != new_state:
+				state = new_state
+				update_state(state)
+		else:
+			logging.error("Unknown led {0}".format(led_name))
+		time.sleep(1)
+
+def builtin_plugin_led_off(led_name, update_state, terminator):
+	state = False
+	while not terminator.is_set():
+		xset = read_xset_led_status()
+		if led_name in xset:
+			new_state = not xset[led_name]
+			if state != new_state:
+				state = new_state
+				update_state(state)
+		else:
+			logging.error("Unknown led {0}".format(led_name))
+		time.sleep(1)
+
 class Plugin(object):
 	def __init__(self, led_list_callback, state_symbol, character_on, character_off, image_on, image_off, command=None, name=None, title=None):
 		self.state = False
@@ -67,38 +112,27 @@ class Plugin(object):
 		self.character_off = character_off
 		self.image_on = os.path.expanduser(image_on)
 		self.image_off = os.path.expanduser(image_off)
+
+		# Legacy way of setting built-in plugins (TODO some deprecated warning).
+		if self.command:
+			self.data = self.command
+			self.plugin_func = builtin_plugin_command
+		elif self.name:
+			if self.name.startswith('!'):
+				self.data = self.name[1:]
+				self.plugin_func = builtin_plugin_led_off
+			else:
+				self.data = self.name
+				self.plugin_func = builtin_plugin_led
 	def get_character(self, is_on):
 		return self.character_on if is_on else self.character_off
 	def get_image(self, is_on):
 		return self.image_on if is_on else self.image_off
 	def run_thread(self, terminator):
-		while not terminator.is_set():
-			self.update_state()
-			time.sleep(1)
-	def update_state(self):
-		new_state = False
-		if self.command:
-			try:
-				new_state = 0 == subprocess.call(self.command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-			except FileNotFoundError:
-				logging.error("Error executing command {0}".format(repr(self.command)))
-		elif self.name:
-			reverse_state = False
-			name = self.name
-			if name.startswith('!'):
-				name = name[1:]
-				reverse_state = True
-
-			xset = read_xset_led_status()
-			if name in xset:
-				new_state = xset[name]
-				if reverse_state:
-					new_state = not new_state
-			else:
-				logging.error("Unknown led {0}".format(self.name))
-		if self.state != new_state:
-			self.state = new_state
-			self.led_list_callback(self, self.state)
+		self.plugin_func(self.data,
+				lambda state: self.led_list_callback(self, state),
+				terminator
+				)
 
 class Config(object):
 	def __init__(self, filenames):
