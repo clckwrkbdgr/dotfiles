@@ -3,6 +3,7 @@
 # each section is either:
 # - a function or shell command;
 # - builtin PS1 special characters, like \W or \u.
+# - arbitrary text - should be started with double backslash: \\some-text
 # Each section may have own color (see lib/colors.bash).
 # Resulting PS1 will always have \$ at the end and a single trailing space: "...$ "
 . "$XDG_CONFIG_HOME/lib/utils.bash"
@@ -69,7 +70,9 @@ prompt::refresh() {
 			local color_value="${!color}"
 			_ps_generated="${_ps_generated}\[$color_value\]"
 		fi
-		if startswith "$section" '\'; then
+		if startswith "$section" '\\'; then
+			_ps_generated="${_ps_generated}${section##\\\\}"
+		elif startswith "$section" '\'; then
 			_ps_generated="${_ps_generated}$section"
 		else
 			_ps_generated="${_ps_generated}\$($section)"
@@ -80,4 +83,19 @@ prompt::refresh() {
 	done
 	default_PS1="\[$bold_white\]\$\[$reset_color\] "
 	export PS1="${_ps_generated}${default_PS1}"
+}
+
+prompt::list() {
+	# Lists currently defined sections (for debugging purposes).
+	for _index in "${!_prompt_sections[@]}"; do
+		local section="${_prompt_sections[_index]}"
+		local color="${_prompt_colors[_index]}"
+		if [ -z "$color" ]; then
+			echo "$section"
+		else
+			echo -n "$section "
+			local color_value="${!color}"
+			echo -e "${color_value}${color}${reset_color}"
+		fi
+	done
 }
