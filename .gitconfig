@@ -120,3 +120,8 @@
 [filter "svn_config"]
 	smudge = cat
 	clean = "sed '/### <INCLUDE/,/### >INCLUDE/d;' | sed '${/^$/d}'"
+
+# TODO to filterconf
+[filter "checkio_config"]
+	smudge = cat
+   clean = "sed '/^key *= */d;/^solutions *= */d;'"
