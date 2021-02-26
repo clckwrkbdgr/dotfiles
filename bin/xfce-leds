@@ -17,9 +17,6 @@ name = "Scroll Lock"
 # ...or name of command. Command should return 0 if 'on' and non-zero if 'off'.
 # If both command and name is specified, command will be used.
 command = "pidgin_has_unread"
-# To display in hint message and in terminal:
-character_on = 'S'
-character_off = ' '
 """
 
 def synchronized(f):
@@ -100,34 +97,13 @@ def builtin_plugin_led_off(led_name, update_state, terminator):
 		time.sleep(1)
 
 class Plugin(object):
-	def __init__(self, led_list_callback, state_symbol, character_on, character_off, image_on, image_off, command=None, name=None, title=None):
-		self.state = False
-
+	def __init__(self, led_list_callback, image, title=None, plugin_func=None, data=None):
 		self.led_list_callback = led_list_callback
-		self.state_symbol = state_symbol
-		self.command = command
 		self.title = title
-		self.name = name
-		self.character_on = character_on
-		self.character_off = character_off
-		self.image_on = os.path.expanduser(image_on)
-		self.image_off = os.path.expanduser(image_off)
+		self.image = image
+		self.data = data
+		self.plugin_func = plugin_func
 
-		# Legacy way of setting built-in plugins (TODO some deprecated warning).
-		if self.command:
-			self.data = self.command
-			self.plugin_func = builtin_plugin_command
-		elif self.name:
-			if self.name.startswith('!'):
-				self.data = self.name[1:]
-				self.plugin_func = builtin_plugin_led_off
-			else:
-				self.data = self.name
-				self.plugin_func = builtin_plugin_led
-	def get_character(self, is_on):
-		return self.character_on if is_on else self.character_off
-	def get_image(self, is_on):
-		return self.image_on if is_on else self.image_off
 	def run_thread(self, terminator):
 		self.plugin_func(self.data,
 				lambda state: self.led_list_callback(self, state),
@@ -142,29 +118,43 @@ class Config(object):
 	def _read_value(self, category, setting_name, default_value=None):
 		value = category.get(setting_name)
 		if value is None:
-			logging.error("Missing setting {1} for group {0}.".format(repr(name), repr(setting_name)))
+			if default_value is None:
+				logging.error("Missing setting {1} for group {0}.".format(repr(category), repr(setting_name)))
 			return default_value
 		return utils.unquote_string(value, fix_unicode_escape=True)
+	def parse_plugin_function(self, group):
+		plugin_func = self._read_value(group, 'plugin_func')
+		plugin_data = self._read_value(group, 'plugin_data', '')
+		if plugin_func:
+			# TODO parse plugin func definition.
+			return plugin_func, plugin_data
+		# Legacy way of setting built-in plugins (TODO some deprecated warning).
+		command, name = None, None
+		if 'command' in group:
+			command = utils.unquote_string(group['command'], fix_unicode_escape=True)
+			return builtin_plugin_command, command
+		elif 'name' in group:
+			name = utils.unquote_string(group['name'], fix_unicode_escape=True)
+			if name.startswith('!'):
+				return builtin_plugin_led_off, name[1:]
+			else:
+				return builtin_plugin_led, name
+		logging.error("Unknown group {0}. Where's command or name?".format(group))
+		return None, None
 	def load_plugins(self, led_list_callback):
 		for index, title in enumerate(self.parser):
 			if title == 'DEFAULT':
 				continue
-			state_symbol = chr(ord('A') + index)
 			group = self.parser[title]
-			command, name = None, None
-			if 'command' in group:
-				command = utils.unquote_string(group['command'], fix_unicode_escape=True)
-			elif 'name' in group:
-				name = utils.unquote_string(group['name'], fix_unicode_escape=True)
-			else:
-				logging.error("Unknown group {0}. Where's command or name?".format(group))
-				continue
-			group = Plugin(led_list_callback, state_symbol,
-					character_on=self._read_value(group, 'character_on', default_value=' '),
-					character_off=self._read_value(group, 'character_off', default_value=' '),
-					image_on=self._read_value(group, 'image_on'),
-					image_off=self._read_value(group, 'image_off'),
-					command=command, name=name, title=title,
+			plugin_func, plugin_data = self.parse_plugin_function(group)
+			image = self._read_value(group, 'image')
+			if not image:
+				# TODO deprecated warning.
+				image = self._read_value(group, 'image_on')
+			group = Plugin(led_list_callback,
+					image=os.path.expanduser(image),
+					plugin_func=plugin_func, data=plugin_data,
+					title=title,
 					)
 			yield group
 
@@ -194,7 +184,7 @@ class GenMon:
 		images = []
 		for group in plugins:
 			tooltip.append(group.title)
-			images.append(group.get_image(True))
+			images.append(group.image)
 		tooltip = '\n'.join(tooltip)
 		join_image_strip(images, GenMon.IMAGE_PATH)
 		GenMon.TOOLTIP_PATH.write_text(tooltip)
