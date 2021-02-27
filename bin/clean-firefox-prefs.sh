@@ -116,4 +116,5 @@ sed '/devtools.inspector.activeSidebar/d' | \
 sed '/browser.protections_panel.infoMessage.seen/d' | \
 sed '/browser.urlbar.placeholderName.private/d' | \
 sed '/findbar.highlightAll/d' | \
+sed '/browser.contentblocking.cfr-milestone/d' | \
 sed 's|'"$HOME"'|$HOME|g'
