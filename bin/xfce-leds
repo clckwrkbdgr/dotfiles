@@ -8,16 +8,34 @@ from pathlib import Path
 from PIL import Image
 from clckwrkbdgr import xdg, utils
 
-"""
-Each section in ini-file is a separate LED.
+CONFIG_FILES = [
+		xdg.save_config_path('xfce4')/"xfce-leds.ini",
+		Path('~/.local').expanduser()/"xfce-leds.ini", # TODO use XDG.
+		]
 
-[Scroll Lock]
-# Name from `xset q`...
-name = "Scroll Lock"
-# ...or name of command. Command should return 0 if 'on' and non-zero if 'off'.
-# If both command and name is specified, command will be used.
-command = "pidgin_has_unread"
+CONFIG_DESCRIPTION = """
+\b
+Each state is defined as plugin section in config files.
+
+\b
+[State Title]
+# Icon to show when state is On:
+icon = "/path/to/icon/file"
+# If tooltip is missing, section title is taken instead:
+tooltip = "Text to show in tooltip when state is On."
+# Path to plugin function:
+plugin_func = '~/path/to/plugin/file.py:plugin_function'
+# Or builtin plugin spec (see below for list of supported builtins):
+plugin_func = 'builtin:<builtin_function_name'
+# Plugin may be a generic function and require some specific parameters for the state:
+plugin_data = '<string data>'
+
+Plugin function is normal Python function which accepts parameters (data, callback_to_update_state, terminator_event) and should run inifinite watch loop for the state.
+It is launched in a separate thread and should exit ASAP when terminator_event.is_set().
+Data is a string defined for the state in configuration file under 'plugin_data'. By default it is empty string.
+Callback is a function of a single bool param, which should be called when state is changed: update_state(new_state). It will trigger immediate update of display.
 """
+CONFIG_DESCRIPTION += "\n\bConfig files:\n" + '\n'.join(map(str, CONFIG_FILES)) + '\n'
 
 def synchronized(f):
 	lock = threading.RLock()
@@ -51,13 +69,16 @@ def read_xset_led_status():
 read_xset_led_status.data = {}
 read_xset_led_status.last_timestamp = 0
 
-# Plugin is a function that runs in a stand-alone thread and accepts arguments:
-# - Plugin const data (string), from configuration.
-# - Callback to update state: update_state(bool).
-#   Should be called when state is changed.
-# - Terminator object (threading.Event).
-#   Plugin function should check value of the event and stop as soon as it .is_set()
+BUILTIN_FUNCTIONS = """
+\b
+Supported builtin functions:
+"""
 
+BUILTIN_FUNCTIONS += """\
+- command: runs command each 1 sec and checks return code.
+           0 means On, non-zero means Off.
+           Triggers update_state when RC has changed.
+"""
 def builtin_plugin_command(command, update_state, terminator):
 	state = False
 	while not terminator.is_set():
@@ -70,6 +91,9 @@ def builtin_plugin_command(command, update_state, terminator):
 			logging.error("Error executing command {0}".format(repr(command)))
 		time.sleep(1)
 
+BUILTIN_FUNCTIONS += """\
+- led: Checks state of a led (name is given as plugin_data).
+"""
 def builtin_plugin_led(led_name, update_state, terminator):
 	state = False
 	while not terminator.is_set():
@@ -83,6 +107,9 @@ def builtin_plugin_led(led_name, update_state, terminator):
 			logging.error("Unknown led {0}".format(led_name))
 		time.sleep(1)
 
+BUILTIN_FUNCTIONS += """\
+- led_off: Same as 'led' but inverted - yield 'On' when leds is off and vice-versa.
+"""
 def builtin_plugin_led_off(led_name, update_state, terminator):
 	state = False
 	while not terminator.is_set():
@@ -131,15 +158,17 @@ class Config(object):
 		# Legacy way of setting built-in plugins (TODO some deprecated warning).
 		command, name = None, None
 		if 'command' in group:
+			logging.warning("Config value 'command' is deprecated. Use plugin_func='builtin:command' and plugin_data='<command>' instead.")
 			command = utils.unquote_string(group['command'], fix_unicode_escape=True)
 			return builtin_plugin_command, command
 		elif 'name' in group:
+			logging.warning("Config value 'name' is deprecated. Use plugin_func='builtin:led[_off]' and plugin_data='<LED name>' instead.")
 			name = utils.unquote_string(group['name'], fix_unicode_escape=True)
 			if name.startswith('!'):
 				return builtin_plugin_led_off, name[1:]
 			else:
 				return builtin_plugin_led, name
-		logging.error("Unknown group {0}. Where's command or name?".format(group))
+		logging.error("Config section {0} does not have plugin_func defined.".format(group))
 		return None, None
 	def load_plugins(self, led_list_callback):
 		for index, title in enumerate(self.parser):
@@ -148,13 +177,14 @@ class Config(object):
 			group = self.parser[title]
 			plugin_func, plugin_data = self.parse_plugin_function(group)
 			image = self._read_value(group, 'image')
+			tooltip = self._read_value(group, 'tooltip', title)
 			if not image:
 				# TODO deprecated warning.
 				image = self._read_value(group, 'image_on')
 			group = Plugin(led_list_callback,
 					image=os.path.expanduser(image),
 					plugin_func=plugin_func, data=plugin_data,
-					title=title,
+					title=tooltip,
 					)
 			yield group
 
@@ -225,15 +255,14 @@ class LEDList:
 
 import click
 
-@click.command()
+@click.command(epilog=CONFIG_DESCRIPTION + BUILTIN_FUNCTIONS)
 def cli():
-	""" Serves as daemon, updating led info when state is changes.
+	""" User service to provide visualization of some custom state (LED state etc).
+
+	Serves as daemon, updating led info when state is changes.
 	Use $XDG_CONFIG_HOME/bin/xfce-leds-genmon.sh to turn this info into output suitable for genmon plugin.
 	"""
-	settings = Config([
-		xdg.save_config_path('xfce4')/"xfce-leds.ini",
-		Path('~/.local').expanduser()/"xfce-leds.ini", # TODO use XDG.
-		])
+	settings = Config(CONFIG_FILES)
 	leds = LEDList()
 	plugins = list(settings.load_plugins(leds.callback))
 	genmon = GenMon('genmon-2')
