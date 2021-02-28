@@ -288,11 +288,11 @@ def cli():
 		for watcher in watchers:
 			watcher.start()
 		while True:
-			leds.changed.wait()
 			with leds.lock:
 				genmon.update(leds.get())
 				genmon.refresh_plugin()
 				leds.changed.clear()
+			leds.changed.wait()
 	finally:
 		terminator.set()
 		for watcher in watchers:
