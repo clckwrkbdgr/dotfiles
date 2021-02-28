@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 from PIL import Image
 from clckwrkbdgr import xdg, utils
+import clckwrkbdgr.collections
 
 CONFIG_FILES = [
 		xdg.save_config_path('xfce4')/"xfce-leds.ini",
@@ -69,17 +70,13 @@ def read_xset_led_status():
 read_xset_led_status.data = {}
 read_xset_led_status.last_timestamp = 0
 
-BUILTIN_FUNCTIONS = """
-\b
-Supported builtin functions:
-"""
+builtins = clckwrkbdgr.collections.AutoRegistry()
 
-BUILTIN_FUNCTIONS += """\
-- command: runs command each 1 sec and checks return code.
-           0 means On, non-zero means Off.
-           Triggers update_state when RC has changed.
-"""
+@builtins('command')
 def builtin_plugin_command(command, update_state, terminator):
+	""" Runs command each 1 sec and checks return code.
+	0 means On, non-zero means Off.
+	"""
 	state = False
 	while not terminator.is_set():
 		try:
@@ -91,10 +88,9 @@ def builtin_plugin_command(command, update_state, terminator):
 			logging.error("Error executing command {0}".format(repr(command)))
 		time.sleep(1)
 
-BUILTIN_FUNCTIONS += """\
-- led: Checks state of a led (name is given as plugin_data).
-"""
+@builtins('led')
 def builtin_plugin_led(led_name, update_state, terminator):
+	""" Checks state of a led (name is given as plugin_data).  """
 	state = False
 	while not terminator.is_set():
 		xset = read_xset_led_status()
@@ -107,10 +103,9 @@ def builtin_plugin_led(led_name, update_state, terminator):
 			logging.error("Unknown led {0}".format(led_name))
 		time.sleep(1)
 
-BUILTIN_FUNCTIONS += """\
-- led_off: Same as 'led' but inverted - yield 'On' when leds is off and vice-versa.
-"""
+@builtins('led_off')
 def builtin_plugin_led_off(led_name, update_state, terminator):
+	""" Same as 'led' but inverted - yield 'On' when leds is off and vice-versa. """
 	state = False
 	while not terminator.is_set():
 		xset = read_xset_led_status()
@@ -122,6 +117,13 @@ def builtin_plugin_led_off(led_name, update_state, terminator):
 		else:
 			logging.error("Unknown led {0}".format(led_name))
 		time.sleep(1)
+
+BUILTIN_FUNCTIONS = """
+\b
+Supported builtin functions:
+"""
+for name in builtins:
+	BUILTIN_FUNCTIONS += '- {0}: {1}\n'.format(name, builtins[name].__doc__)
 
 class Plugin(object):
 	def __init__(self, led_list_callback, image, title=None, plugin_func=None, data=None):
@@ -153,9 +155,23 @@ class Config(object):
 		plugin_func = self._read_value(group, 'plugin_func')
 		plugin_data = self._read_value(group, 'plugin_data', '')
 		if plugin_func:
-			# TODO parse plugin func definition.
+			m = re.match(r'^(.+):([A-Za-z_][A-Za-z_0-9]*)$', plugin_func)
+			if not m:
+				logging.error("{0}:Cannot parse plugin_func='{1}'. Expected: '<path or literal builtin>:<function_name>'".format(group, plugin_func))
+				return None, None
+			plugin_file, plugin_func = m.groups()
+			if plugin_file == 'builtin':
+				try:
+					plugin_func = builtins[plugin_func]
+				except KeyError:
+					logging.error("{0}:Unknown builtin function '{1}'".format(group, plugin_func))
+					return None, None
+			else:
+				# TODO load plugin file.
+				logging.error('{0}:Loading plugins from files are not supported yet.'.format(group))
+				return None, None
 			return plugin_func, plugin_data
-		# Legacy way of setting built-in plugins (TODO some deprecated warning).
+		# Legacy way of setting built-in plugins.
 		command, name = None, None
 		if 'command' in group:
 			logging.warning("Config value 'command' is deprecated. Use plugin_func='builtin:command' and plugin_data='<command>' instead.")
@@ -179,7 +195,7 @@ class Config(object):
 			image = self._read_value(group, 'image')
 			tooltip = self._read_value(group, 'tooltip', title)
 			if not image:
-				# TODO deprecated warning.
+				logging.warning("{0}: Config value 'image_on' was renamed to 'image'".format(group))
 				image = self._read_value(group, 'image_on')
 			group = Plugin(led_list_callback,
 					image=os.path.expanduser(image),
