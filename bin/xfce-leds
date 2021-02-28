@@ -118,6 +118,29 @@ def builtin_plugin_led_off(led_name, update_state, terminator):
 			logging.error("Unknown led {0}".format(led_name))
 		time.sleep(1)
 
+@builtins('inotify_exists')
+def builtin_plugin_inotify_exists(path, update_state, terminator):
+	""" Monitors path (file or directory, given as plugin_data) for existence.
+	Yields 'On' when path is created, 'Off' when removed.
+	Parent path must exist! """
+	import inotify_simple as inotify
+	path = os.path.expandvars(os.path.expanduser(path))
+	if os.path.exists(path):
+		update_state(True)
+	parent, name = os.path.dirname(path), os.path.basename(path)
+
+	watcher = inotify.INotify()
+	wd = watcher.add_watch(parent, inotify.flags.CREATE | inotify.flags.DELETE)
+	while not terminator.is_set():
+		for event in watcher.read(timeout=10, read_delay=10):
+			if event.name != name:
+				continue
+			if event.mask & inotify.flags.CREATE:
+				update_state(True)
+			elif event.mask & inotify.flags.DELETE:
+				update_state(False)
+	watcher.rm_watch(wd)
+
 BUILTIN_FUNCTIONS = """
 \b
 Supported builtin functions:
@@ -252,7 +275,8 @@ class LEDList:
 		self.lock = threading.Lock()
 	def set(self, item):
 		with self.lock:
-			self.items.append(item)
+			if item not in self.items:
+				self.items.append(item)
 			self.changed.set()
 	def unset(self, item):
 		with self.lock:
