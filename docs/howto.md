@@ -102,6 +102,25 @@ if ok:
 		git merge extracted/master
 		git remote remove extracted
 
+## How to extract a set of files into a separate repo
+
+Requires <https://github.com/newren/git-filter-repo> (putting `git-filter-repo` somewhere in the PATH would be enough for the installation).
+
+1. Get list of all files throughout the repo history:
+
+		git list-history > all_files.lst
+
+2. Edit file list and leave only paths that should be extracted.
+3. Copy .git/ directory to a new location or clone bare repo. Also make a full backup: .git/ + untracked files.
+4. Filter newly created repo:
+
+		git filter-repo --paths-from-file all_files.lst
+
+5. Filter original repo:
+
+		git filter-repo --invert-paths --paths-from-file all_files.lst
+
+
 Windows
 ================================================================================
 

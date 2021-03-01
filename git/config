@@ -12,3 +12,4 @@
 [alias]
 	st = status
 	logv = log --name-status
+	log-history = ! git log --all --pretty=format: --name-only | sort -u
