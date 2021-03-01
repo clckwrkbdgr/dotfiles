@@ -120,6 +120,13 @@ Requires <https://github.com/newren/git-filter-repo> (putting `git-filter-repo` 
 
 		git filter-repo --invert-paths --paths-from-file all_files.lst
 
+## Merge two repos into same tree
+
+	cd </path/to/main/repo>
+	git remote add other </path/to/other>
+	git fetch other --tags
+	git merge --allow-unrelated-histories other/master
+	git remote remove other
 
 Windows
 ================================================================================
