@@ -130,14 +130,14 @@ def builtin_plugin_inotify_exists(path, update_state, terminator):
 	parent, name = os.path.dirname(path), os.path.basename(path)
 
 	watcher = inotify.INotify()
-	wd = watcher.add_watch(parent, inotify.flags.CREATE | inotify.flags.DELETE)
+	wd = watcher.add_watch(parent, inotify.flags.CREATE | inotify.flags.DELETE | inotify.flags.MOVED_FROM | inotify.flags.MOVED_TO)
 	while not terminator.is_set():
 		for event in watcher.read(timeout=10, read_delay=10):
 			if event.name != name:
 				continue
-			if event.mask & inotify.flags.CREATE:
+			if event.mask & (inotify.flags.CREATE | inotify.flags.MOVED_TO):
 				update_state(True)
-			elif event.mask & inotify.flags.DELETE:
+			elif event.mask & (inotify.flags.DELETE | inotify.flags.MOVED_FROM):
 				update_state(False)
 	watcher.rm_watch(wd)
 
