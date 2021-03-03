@@ -1,7 +1,9 @@
 #!/usr/bin/python
 import os, sys, subprocess
 import re
+import logging
 from collections import namedtuple
+from clckwrkbdgr import utils
 
 LOCAL_REMOTE_NAME = 'local'
 
@@ -31,7 +33,7 @@ def colored(text, color):
 SemVer = namedtuple('SemVer', 'major minor revision')
 
 class Git:
-	class Error(Exception): pass
+	class Error(RuntimeError): pass
 	def add_tag(self, new_tag, commit_message):
 		subprocess.run(["git", "tag", "-a", new_tag, "-m", commit_message])
 	def push(self, remote='origin', branch='master'):
@@ -48,27 +50,27 @@ class Git:
 	def rootdir(self):
 		git = subprocess.run(["git", "rev-parse", "--show-toplevel"], stdout=subprocess.PIPE)
 		if git.returncode != 0:
-			raise Git.Error()
+			raise Git.Error(git.args)
 		return git.stdout.decode().splitlines()[0]
 	def tags(self):
 		git = subprocess.run(["git", "tag"], stdout=subprocess.PIPE)
 		if git.returncode != 0:
-			raise Git.Error()
+			raise Git.Error(git.args)
 		return git.stdout.decode().splitlines()
 	def remotes(self):
 		git = subprocess.run(["git", "remote", "-v"], stdout=subprocess.PIPE)
 		if git.returncode != 0:
-			raise Git.Error()
+			raise Git.Error(git.args)
 		return git.stdout.decode().splitlines()
 	def status(self):
 		git = subprocess.run(["git", "status"], stdout=subprocess.PIPE)
 		if git.returncode != 0:
-			raise Git.Error()
+			raise Git.Error(git.args)
 		return git.stdout.decode().splitlines()
 	def differs(self, filename):
 		git = subprocess.run(["git", "diff", "--numstat", filename], stdout=subprocess.PIPE)
 		if git.returncode != 0:
-			raise Git.Error()
+			raise Git.Error(git.args)
 		diff = git.stdout.decode()
 		if not diff:
 			return False
@@ -78,7 +80,7 @@ class Git:
 	def branches(self):
 		git = subprocess.run(["git", "branch"], stdout=subprocess.PIPE)
 		if git.returncode != 0:
-			raise Git.Error()
+			raise Git.Error(git.args)
 		return [line[2:] for line in git.stdout.decode().splitlines()]
 
 def find_git_repos(root='.'):
@@ -97,6 +99,13 @@ class CurrentDir:
 	def __exit__(self, e, tb, i):
 		os.chdir(self.prev)
 
+import click
+
+@click.group()
+def cli():
+	""" Collection of dev project handling functions. """
+	pass
+
 def versions_from_tags(tags):
 	versions = [extract_match(re.search(r'(\d+[.]\d\+[.]\d+)', line)) for line in tags]
 	versions = filter(non_empty, tags)
@@ -113,14 +122,13 @@ def find_repo_name(remotes):
 		return None
 	return next(iter(repo_names))
 
+@cli.command()
+@click.argument('section', required=False, default=None, type=click.Choice(['major', 'minor', 'rev', 'revision']))
+@utils.exits_with_return_value
 def tag(section=None):
-	"""
-	Handles Semantic Versioning for projects.
-	Usage:
-	   tag {minor|major|rev}
-			Updates specified section of version number and adds new tag.
-	   tag
-			Lists all tags for current project.
+	""" Handles Semantic Versioning for projects.
+	Creates new tag with advancement in specified section of the version.
+	If section is not specified, lists all tags for current project.
 	"""
 	tags = Git().tags()
 	if section is None:
@@ -150,8 +158,13 @@ def tag(section=None):
 	print("Added new tag <{0}>".format(new_version))
 	return True
 
+@cli.command()
+@click.argument('section', required=False, default=None, type=click.Choice(['major', 'minor', 'rev', 'revision']))
+@utils.exits_with_return_value
 def version(section=None):
-	""" Extracts current project version from the last tag. """
+	""" Displays current project's version.
+	Extracts current project version from the last tag.
+	"""
 	versions = versions_from_tags(Git().tags())
 	if not versions:
 		return False
@@ -223,11 +236,17 @@ def git_has_changes_besides_filtered_out():
 					changes.append(filename)
 	return list(map(non_empty, changes))
 
+@cli.command()
+@click.argument('thorough', required=False, default=None, type=click.Choice(['thorough']))
+@utils.exits_with_return_value
 def status(thorough=False):
-	"""
+	""" Checks project's status.
 	Prints statuses for all projects in directory recursively.
 	Skips up-to-date projects, prints only modifications or pending commits.
+
+	With 'thorough' checks actual diffs to see if gitfilters actually produce no diff.
 	"""
+	thorough = thorough == 'thorough'
 	has_changes = git_has_changes
 	if thorough:
 		has_changes = git_has_changes_besides_filtered_out
@@ -239,6 +258,8 @@ def status(thorough=False):
 				os.system("git -c color.status=always st")
 	return True
 
+@cli.command()
+@utils.exits_with_return_value
 def push():
 	""" Pushes pending commits to remote repositories for all sub-directories recursively. """
 	BRANCH_AHEAD = [
@@ -260,8 +281,13 @@ def push():
 					Git().push(LOCAL_REMOTE_NAME, branch)
 	return True
 
+@cli.command()
+@click.argument('repo_storage_path')
+@utils.exits_with_return_value
 def addlocal(repo_storage_path):
-	""" Creates Git bare repository in local filesystem and adds it as a remote to current repo. """
+	""" Creates Git bare repository in local filesystem and adds it as a remote to current repo.
+	REPO_STORAGE_PATH is <repo local storage path>[/<repo name>[.git]]
+	"""
 	remotes = Git().remotes()
 	if any(LOCAL_REMOTE_NAME in remote for remote in remotes):
 		print("Git remote named '{0}' is already added to this repo:".format(LOCAL_REMOTE_NAME))
@@ -282,40 +308,9 @@ def addlocal(repo_storage_path):
 	Git().add_bare_remote(LOCAL_REMOTE_NAME, new_remote_path)
 	return True
 
-USAGE = """Collection of dev project handling functions.
-Usage:
-	projects tag   - lists all tags for current project.
-	projects tag [minor|major|rev]	- creates new tag with specified version advancement.
-	projects version  - displays current project's version.
-	projects status [thorough]	- checks project's status.
-	projects push  - pushes changes to remote repos.
-	projects addlocal <repo local storage path>[/<repo name>[.git]]
-		- creates bare repo in local filesystem as an additional remote.
-"""
-
-def main(command, args):
-	if command == 'tag':
-		return tag(args[0] if args else None)
-	elif command == "version":
-		return version(args[0] if args else None)
-	elif command == "status":
-		return status(args[0] == 'thorough' if args else False)
-	elif command == "push":
-		return push()
-	elif command == "addlocal":
-		return addlocal(args[0])
-	print("Unknown command: {0}".format(command))
-	print(USAGE)
-	return False
-
 if __name__ == "__main__":
-	args = sys.argv[1:]
-	if not args:
-		print(USAGE)
-		sys.exit(1)
-	command, args = args[0], args[1:]
 	try:
-		if not main(command, args):
-			sys.exit(1)
-	except Git.Error:
+		cli()
+	except Git.Error as e:
+		logging.error(e)
 		sys.exit(1)
