@@ -20,14 +20,3 @@ if git_version >= (2, 26, 0):
 	args += ['--single-branch']
 subprocess.call(args)
 submodule_info = subprocess.check_output(['git', 'submodule']).decode('utf-8', 'replace').splitlines()
-if not any(line.startswith('+') for line in submodule_info):
-	sys.exit()
-
-# Having "(new commits)" in `git submodule`.
-if False: # TODO temp. switching this annoying feature off.
-	subprocess.call(['git', 'stash', '--keep-index'])
-	paths = subprocess.check_output(['git', 'submodule', '-q', 'foreach', 'echo $sm_path']).decode('utf-8', 'replace').splitlines()
-	for sm_path in paths:
-		subprocess.call(['git', 'add', sm_path])
-	subprocess.call(['git', 'commit', '-m', 'Updated submodules.'])
-	subprocess.call(['git', 'stash', 'pop'])

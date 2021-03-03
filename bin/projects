@@ -308,6 +308,21 @@ def addlocal(repo_storage_path):
 	Git().add_bare_remote(LOCAL_REMOTE_NAME, new_remote_path)
 	return True
 
+@cli.command()
+@utils.exits_with_return_value
+def commit_submodules():
+	""" Commits updated submodules if there are any. """
+	subprocess.call(['git', 'stash', '--keep-index'])
+	paths = subprocess.check_output(['git', 'submodule', '-q', 'foreach', 'echo $sm_path']).decode('utf-8', 'replace').splitlines()
+	were_updates = False
+	for sm_path in paths:
+		if not subprocess.check_output(['git', 'st', '-q', sm_path]):
+			continue
+		were_updates = True
+		subprocess.call(['git', 'add', sm_path])
+	subprocess.call(['git', 'commit', '-m', 'Updated submodules.'])
+	subprocess.call(['git', 'stash', 'pop'])
+
 if __name__ == "__main__":
 	try:
 		cli()
