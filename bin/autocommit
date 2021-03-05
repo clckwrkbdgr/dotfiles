@@ -1,0 +1,112 @@
+#!/usr/bin/env python
+import os, sys, subprocess
+import shutil
+import json
+import logging
+try:
+	from pathlib2 import Path
+except ImportError: # pragma: py3 only
+	from pathlib import Path
+import clckwrkbdgr.fs
+
+class AutocommitError(RuntimeError):
+	pass
+
+def has_staged_files():
+	return 0 != subprocess.call(['git', 'diff', '--cached', '--quiet', '--exit-code'])
+
+def commit_one_file(path, commit_message, show_diff=False):
+	if not Path(path).exists():
+		raise AutocommitError('Cannot find file to commit in current WD: {0} ({1})'.format(path, os.getcwd()))
+	if has_staged_files():
+		raise AutocommitError('Some files are staged, cannot commit new file: {0}'.format(path))
+	if 0 == subprocess.call(['git', 'diff', '--quiet', '--exit-code', str(path)]):
+		logging.debug('{0}: No changes, skipping'.format(path))
+		return # No changes.
+	if show_diff:
+		subprocess.call(['git', '--no-pager', 'diff', str(path)])
+	subprocess.call(['git', 'add', str(path)])
+	subprocess.call(['git', 'commit', '--quiet', '-m', str(commit_message)])
+	logging.info('{0}: Committed: {1}'.format(path, commit_message))
+
+def file_has_changed(dest_path, source_path):
+	source_path = Path(source_path)
+	dest_path = Path(dest_path)
+	if not dest_path.exists():
+		logging.debug('{0}: does not exist'.format(dest_path))
+		return True
+	source_stat = source_path.stat()
+	dest_stat = dest_path.stat()
+	logging.debug('{0}: dest: {1}'.format(dest_path, dest_stat.st_mtime))
+	logging.debug('{0}: src : {1}'.format(source_path, source_stat.st_mtime))
+	if dest_stat.st_mtime < source_stat.st_mtime:
+		logging.debug('{0}: outdated.'.format(dest_path))
+		return True
+	return False
+
+def process_one_file(path, commit_message, dest_repo=None, show_diff=False):
+	if not Path(path).exists():
+		logging.debug('{0}: does not exist, skipping.'.format(path))
+		return
+	if dest_repo and dest_repo != '.':
+		logging.debug('{0}: Checking state in {1}.'.format(path, dest_repo))
+		dest_path = Path(dest_repo)/path
+		if file_has_changed(dest_path, path):
+			logging.info('{0}: Updating.'.format(dest_path))
+			shutil.copy(str(path), str(dest_path))
+	with clckwrkbdgr.fs.CurrentDir(dest_repo or '.'):
+		commit_one_file(path, commit_message, show_diff=show_diff)
+
+import click
+
+USAGE = """\b
+Configuration file should be in JSON format:
+
+\b
+{
+	# Path to history repo may contain tilde (~) or environment variables.
+	# If path is '.', file is not copied to history repo and committed to the main one.
+	'<path-to-history-repo' : {
+		'<path/to/file>' : {
+			# Default message is 'autocommit'.
+			'message' : '<Commit message>'
+			# If True, will display diff to stdout before commit. By default is False.
+			'show_diff' : <bool>
+		},
+	},
+	...
+}
+
+"""
+
+@click.command(epilog=USAGE)
+@click.option('-v', '--verbose', is_flag=True, help='Be more verbose. By default prints almost nothing.')
+@click.option('--debug', is_flag=True, help='Display debug info.')
+@click.argument('config_file', type=Path)
+def cli(config_file, verbose=False, debug=False):
+	""" Performs autocommit actions and storing history in a separate repo.
+
+	Reads configuration from CONFIG_FILE, see usage for details.
+	"""
+	if debug:
+		logging.getLogger().setLevel(logging.DEBUG)
+	elif verbose:
+		logging.getLogger().setLevel(logging.INFO)
+	os.chdir(str(config_file.parent))
+	logging.debug('Switching to main repo: {0}'.format(os.getcwd()))
+	config = json.loads(config_file.read_text())
+	for repo in config:
+		logging.debug('{0}: Processing repo...'.format(repo))
+		files = config[repo]
+		repo_path = Path(os.path.expandvars(os.path.expanduser(repo)))
+		for filename in files:
+			logging.debug('{0}: Processing file...'.format(filename))
+			props = files[filename]
+			process_one_file(filename,
+					commit_message=props.get('message', 'autocommit'),
+					dest_repo=repo_path if repo != '.' else None,
+					show_diff=props.get('show_diff', False),
+					)
+
+if __name__ == '__main__':
+	cli()
