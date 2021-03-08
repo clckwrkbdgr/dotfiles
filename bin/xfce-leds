@@ -255,7 +255,11 @@ class GenMon:
 			tooltip.append(group.title)
 			images.append(group.image)
 		tooltip = '\n'.join(tooltip)
-		join_image_strip(images, GenMon.IMAGE_PATH)
+		try:
+			join_image_strip(images, GenMon.IMAGE_PATH)
+		except:
+			import traceback
+			traceback.print_exc()
 		GenMon.TOOLTIP_PATH.write_text(tooltip)
 	def refresh_plugin(self):
 		# FIXME works only with xfce4-plugin-genmon >= 4.0.2, but there is no way to get current version of a plugin.
