@@ -7,6 +7,7 @@
     "initialCols" : 80,
     "initialRows" : 24,
     "initialPosition" : "maximized",
+    "launchMode" : "maximized",
     "snapToGridOnResize" : true,
     "keybindings" : 
     [
