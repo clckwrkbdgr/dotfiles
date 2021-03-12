@@ -419,7 +419,6 @@ user_pref("noscript.policynames", "");
 user_pref("noscript.temp", "");
 user_pref("noscript.visibleUIChecked", true);
 user_pref("pdfjs.enabledCache.initialized", true);
-user_pref("pdfjs.enabledCache.state", true);
 user_pref("pdfjs.migrationVersion", 2);
 user_pref("pdfjs.previousHandler.alwaysAskBeforeHandling", true);
 user_pref("places.history.enabled", false);
