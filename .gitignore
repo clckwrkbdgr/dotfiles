@@ -175,6 +175,7 @@ enchant/*.dic
 enchant/*.exc
 # Gimp state.
 gimp/colorrc
+gimp/sessionrc
 # Checkio
 checkio/install_steps_ff.json
 checkio/checkio_ff_plugin.py
