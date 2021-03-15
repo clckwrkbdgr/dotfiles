@@ -26,7 +26,7 @@
       <property name="position" type="string" value="p=6;x=27;y=15"/>
       <property name="position-locked" type="bool" value="true"/>
       <property name="disable-struts" type="bool" value="true"/>
-      <property name="size" type="uint" value="16"/>
+      <property name="size" type="uint" value="18"/>
       <property name="length" type="uint" value="7"/>
       <property name="length-adjust" type="bool" value="false"/>
       <property name="background-alpha" type="uint" value="0"/>
