@@ -18,7 +18,7 @@ def has_staged_files():
 def file_needs_commit(path):
 	if 0 != subprocess.call(['git', 'diff', '--quiet', '--exit-code', str(path)]):
 		return True # Unstaged, but modified.
-	if 0 != subprocess.call(['git', 'ls-files', '--error-unmatch', str(path)], stderr=subprocess.DEVNULL):
+	if 0 != subprocess.call(['git', 'ls-files', '--error-unmatch', str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
 		return True # Yet untracked.
 	return False
 
