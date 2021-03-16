@@ -15,12 +15,19 @@ class AutocommitError(RuntimeError):
 def has_staged_files():
 	return 0 != subprocess.call(['git', 'diff', '--cached', '--quiet', '--exit-code'])
 
+def file_needs_commit(path):
+	if 0 != subprocess.call(['git', 'diff', '--quiet', '--exit-code', str(path)]):
+		return True # Unstaged, but modified.
+	if 0 != subprocess.call(['git', 'ls-files', '--error-unmatch', str(path)], stderr=subprocess.DEVNULL):
+		return True # Yet untracked.
+	return False
+
 def commit_one_file(path, commit_message, show_diff=False):
 	if not Path(path).exists():
 		raise AutocommitError('Cannot find file to commit in current WD: {0} ({1})'.format(path, os.getcwd()))
 	if has_staged_files():
 		raise AutocommitError('Some files are staged, cannot commit new file: {0}'.format(path))
-	if 0 == subprocess.call(['git', 'diff', '--quiet', '--exit-code', str(path)]):
+	if not file_needs_commit(path):
 		logging.debug('{0}: No changes, skipping'.format(path))
 		return # No changes.
 	if show_diff:
