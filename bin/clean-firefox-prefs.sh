@@ -118,4 +118,5 @@ sed '/browser.urlbar.placeholderName.private/d' | \
 sed '/findbar.highlightAll/d' | \
 sed '/browser.contentblocking.cfr-milestone/d' | \
 sed '/pdfjs.enabledCache.state/d' | \
+sed '/browser.urlbar.tipShownCount.searchTip_redirect/d' | \
 sed 's|'"$HOME"'|$HOME|g'
