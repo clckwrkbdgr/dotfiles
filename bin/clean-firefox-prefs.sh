@@ -119,4 +119,5 @@ sed '/findbar.highlightAll/d' | \
 sed '/browser.contentblocking.cfr-milestone/d' | \
 sed '/pdfjs.enabledCache.state/d' | \
 sed '/browser.urlbar.tipShownCount.searchTip_redirect/d' | \
+sed '/devtools.netmonitor.persistlog/d' | \
 sed 's|'"$HOME"'|$HOME|g'
