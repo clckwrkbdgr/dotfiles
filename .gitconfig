@@ -17,7 +17,7 @@
 
 [filter "addonStartupLz4"]
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g' | mozLz4.py compress"
-	clean = "mozLz4.py decompress | python -c 'import json, sys; tree=json.loads(sys.stdin.read()); tree={key:{subkey:subvalue for subkey, subvalue in subtree.items() if subkey != \"staged\"} for key,subtree in tree.items() }; [addon[\"startupData\"][\"chromeEntries\"].sort() for addon in tree[\"app-global\"][\"addons\"].values()]; print(json.dumps(tree))' | python -m json.tool --sort-keys | sed 's/\\(\"lastModifiedTime\"\\)[^,]*\\(,\\?\\)$/\\1: 0\\2/;s/\\(\"version\"\\):[^,]*\\(,\\?\\)$/\\1: \"0.0\"\\2/' | sed '/\\(\"telemetryKey\"\\): \"[^\"]\\+\"/d' | sed '/^ *\"path\": null,$/d' | sed '/signedState/d' | sed '/\"signedDate\": /d' | sed 's|'\"$HOME\"'|$HOME|g'"
+	clean = clean-firefox-addonStartup.py
 
 [filter "firefoxBroadcastListeners"]
 	smudge = "cat"
