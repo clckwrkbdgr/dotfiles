@@ -4,6 +4,11 @@ import json
 from clckwrkbdgr import firefox
 
 def process_recursively(subtree, key_name, new_value, skip_if=None):
+	""" Processes value with given key in the subtree.
+	If new_value is None, removes key from tree, otherwise replaces old value with the new one.
+	If skip_if is specified, it should be function(value) that returns True if this specific value should not be touched.
+	Continues recursively for internal subtrees.
+	"""
 	for subkey in list(subtree.keys()):
 		if subkey == key_name:
 			if skip_if is not None and skip_if(subtree[subkey]):
@@ -15,10 +20,12 @@ def process_recursively(subtree, key_name, new_value, skip_if=None):
 		elif isinstance(subtree[subkey], dict):
 			process_recursively(subtree[subkey], key_name, new_value, skip_if=skip_if)
 
+# Parsing.
 bin_stdin = io.open(sys.stdin.fileno(), 'rb')
 data = firefox.decompress_mozLz4(bin_stdin.read())
 tree = json.loads(data.decode('utf-8'))
 
+# Staged addons.
 tree = {
 		key:{
 			subkey:subvalue
@@ -27,6 +34,8 @@ tree = {
 			}
 		for key,subtree in tree.items()
 		}
+
+# Cleaning cache/state values.
 for addon in tree["app-global"]["addons"].values():
 	addon["startupData"]["chromeEntries"].sort()
 process_recursively(tree, 'telemetryKey', None)
@@ -36,10 +45,41 @@ process_recursively(tree, 'lastModifiedTime', 0)
 process_recursively(tree, 'version', "0.0")
 process_recursively(tree, 'path', None, skip_if=lambda v: v is not None)
 
-# sed 's/\\(\"lastModifiedTime\"\\)[^,]*\\(,\\?\\)$/\\1: 0\\2/;s/\\(\"version\"\\):[^,]*\\(,\\?\\)$/\\1: \"0.0\"\\2/'
-# sed '/^ *\"path\": null,$/d'
-# sed 's|'\"$HOME\"'|$HOME|g'"
+# Cleaning artefacts left after addon update or preparation to update.
+for addon in tree["app-profile"]["addons"].values():
+	if 'startupData' not in addon:
+		continue
+	for listeners in addon['startupData'].get('persistentListeners', {}).get('webRequest', {}).values():
+		try:
+			for index, entry in enumerate(listeners):
+				if isinstance(entry, dict) or entry is None:
+					continue
+				if len(entry) > 2:
+					continue
+				if len(entry) == 2 and entry[1] is not None:
+					continue
+				if not isinstance(entry[0], dict):
+					continue
+				all_urls = {
+						"incognito": None,
+						"tabId": None,
+						"types": [
+							"main_frame",
+							"sub_frame",
+							"object"
+							],
+						"urls": [
+							"<all_urls>"
+							],
+						"windowId": None,
+						}
+				if entry[0] == all_urls:
+					listeners.pop(index)
+					break
+		except:
+			pass
 
+# Finalization and dumping.
 result = json.dumps(tree, indent=4, sort_keys=True)
 result = result.replace(os.environ['HOME'], '$HOME')
 print(result)
