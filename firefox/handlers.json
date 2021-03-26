@@ -143,6 +143,13 @@
             "action": 1,
             "ask": true
         },
+        "application/x-cbr": {
+            "action": 1,
+            "ask": true,
+            "extensions": [
+                "cbr"
+            ]
+        },
         "application/x-compressed-tar": {
             "action": 1,
             "ask": true
