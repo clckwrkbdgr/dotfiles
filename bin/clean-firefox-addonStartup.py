@@ -50,34 +50,11 @@ for addon in tree["app-profile"]["addons"].values():
 	if 'startupData' not in addon:
 		continue
 	for listeners in addon['startupData'].get('persistentListeners', {}).get('webRequest', {}).values():
-		try:
-			for index, entry in enumerate(listeners):
-				if isinstance(entry, dict) or entry is None:
-					continue
-				if len(entry) > 2:
-					continue
-				if len(entry) == 2 and entry[1] is not None:
-					continue
-				if not isinstance(entry[0], dict):
-					continue
-				all_urls = {
-						"incognito": None,
-						"tabId": None,
-						"types": [
-							"main_frame",
-							"sub_frame",
-							"object"
-							],
-						"urls": [
-							"<all_urls>"
-							],
-						"windowId": None,
-						}
-				if entry[0] == all_urls:
-					listeners.pop(index)
-					break
-		except:
-			pass
+		for entry in listeners:
+			try:
+				entry.clear()
+			except:
+				pass
 
 # Finalization and dumping.
 result = json.dumps(tree, indent=4, sort_keys=True)

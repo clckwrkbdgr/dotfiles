@@ -341,131 +341,20 @@
                     "persistentListeners": {
                         "webRequest": {
                             "onBeforeRedirect": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "xmlhttprequest"
-                                        ],
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*",
-                                            "ftp://*/*",
-                                            "file:///*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    []
-                                ]
+                                []
                             ],
                             "onBeforeSendHeaders": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "script",
-                                            "xmlhttprequest"
-                                        ],
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*",
-                                            "ftp://*/*",
-                                            "file:///*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "xmlhttprequest"
-                                        ],
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*",
-                                            "ftp://*/*",
-                                            "file:///*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "requestHeaders"
-                                    ]
-                                ]
+                                [],
+                                []
                             ],
                             "onErrorOccurred": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "xmlhttprequest"
-                                        ],
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*",
-                                            "ftp://*/*",
-                                            "file:///*"
-                                        ],
-                                        "windowId": null
-                                    }
-                                ]
+                                []
                             ],
                             "onHeadersReceived": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "xmlhttprequest"
-                                        ],
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*",
-                                            "ftp://*/*",
-                                            "file:///*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "responseHeaders"
-                                    ]
-                                ]
+                                []
                             ],
                             "onResponseStarted": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "xmlhttprequest"
-                                        ],
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*",
-                                            "ftp://*/*",
-                                            "file:///*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    []
-                                ]
+                                []
                             ]
                         }
                     }
@@ -507,57 +396,11 @@
                     "persistentListeners": {
                         "webRequest": {
                             "onBeforeRequest": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
-                                            "moz-extension://43326e01-dea5-4fc7-8835-007142b6ad25/web_accessible_resources/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*",
-                                            "ws://*/*",
-                                            "wss://*/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking"
-                                    ]
-                                ]
+                                [],
+                                []
                             ],
                             "onHeadersReceived": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
-                                            "http://*/*",
-                                            "https://*/*",
-                                            "ws://*/*",
-                                            "wss://*/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "responseHeaders"
-                                    ]
-                                ]
+                                []
                             ]
                         }
                     }
@@ -596,158 +439,30 @@
                     "persistentListeners": {
                         "webRequest": {
                             "onBeforeRequest": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "xmlhttprequest"
-                                        ],
-                                        "urls": [
-                                            "https://255.255.255.255/moz-extension://1568cc5e-19be-4f82-b5ef-d791daec7916/?*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object"
-                                        ],
-                                        "urls": [
-                                            "*://*/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "requestBody"
-                                    ]
-                                ]
+                                [],
+                                [],
+                                []
+                            ],
+                            "onBeforeSendHeaders": [
+                                []
                             ],
                             "onCompleted": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
-                                            "<all_urls>"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    null
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object"
-                                        ],
-                                        "urls": [
-                                            "*://*/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    null
-                                ]
+                                [],
+                                [],
+                                []
                             ],
                             "onErrorOccurred": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
-                                            "<all_urls>"
-                                        ],
-                                        "windowId": null
-                                    }
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object"
-                                        ],
-                                        "urls": [
-                                            "*://*/*"
-                                        ],
-                                        "windowId": null
-                                    }
-                                ]
+                                [],
+                                [],
+                                []
                             ],
                             "onHeadersReceived": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame"
-                                        ],
-                                        "urls": [
-                                            "<all_urls>"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "responseHeaders"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object"
-                                        ],
-                                        "urls": [
-                                            "<all_urls>"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "responseHeaders"
-                                    ]
-                                ]
+                                [],
+                                [],
+                                []
                             ],
                             "onResponseStarted": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame",
-                                            "sub_frame",
-                                            "object"
-                                        ],
-                                        "urls": [
-                                            "<all_urls>"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "responseHeaders"
-                                    ]
-                                ]
+                                []
                             ]
                         }
                     }
@@ -766,53 +481,10 @@
                     "persistentListeners": {
                         "webRequest": {
                             "onBeforeSendHeaders": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame"
-                                        ],
-                                        "urls": [
-                                            "https://raw.githubusercontent.com/33kk/uso-archive/flomaster/data/usercss/*.user.css",
-                                            "*://greasyfork.org/scripts/*/code/*.user.css",
-                                            "*://sleazyfork.org/scripts/*/code/*.user.css",
-                                            "*://github.com/*/raw/*.user.css",
-                                            "*://github.com/*/raw/*.user.css?*",
-                                            "*://github.com/*/raw/*.user.styl",
-                                            "*://github.com/*/raw/*.user.styl?*",
-                                            "*://raw.githubusercontent.com/*.user.css",
-                                            "*://raw.githubusercontent.com/*.user.css?*",
-                                            "*://raw.githubusercontent.com/*.user.styl",
-                                            "*://raw.githubusercontent.com/*.user.styl?*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking"
-                                    ]
-                                ]
+                                []
                             ],
                             "onHeadersReceived": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": [
-                                            "main_frame"
-                                        ],
-                                        "urls": [
-                                            "*://*/*.user.css",
-                                            "*://*/*.user.css?*",
-                                            "*://*/*.user.styl",
-                                            "*://*/*.user.styl?*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "responseHeaders"
-                                    ]
-                                ]
+                                []
                             ]
                         }
                     }
@@ -831,22 +503,7 @@
                     "persistentListeners": {
                         "webRequest": {
                             "onBeforeRequest": [
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
-                                            "https://chatvdvoem.ru/new/prb/compl*/scripts/museconfig.js",
-                                            "https://chatvdvoem.ru/new/prb/compl*/scripts/museutils.js",
-                                            "https://chatvdvoem.ru/new/prb/compl*/index.html"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking"
-                                    ]
-                                ]
+                                []
                             ]
                         }
                     }
