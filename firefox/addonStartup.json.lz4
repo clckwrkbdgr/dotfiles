@@ -340,22 +340,11 @@
                 "startupData": {
                     "persistentListeners": {
                         "webRequest": {
-                            "onBeforeRedirect": [
-                                []
-                            ],
-                            "onBeforeSendHeaders": [
-                                [],
-                                []
-                            ],
-                            "onErrorOccurred": [
-                                []
-                            ],
-                            "onHeadersReceived": [
-                                []
-                            ],
-                            "onResponseStarted": [
-                                []
-                            ]
+                            "onBeforeRedirect": [],
+                            "onBeforeSendHeaders": [],
+                            "onErrorOccurred": [],
+                            "onHeadersReceived": [],
+                            "onResponseStarted": []
                         }
                     }
                 },
@@ -395,13 +384,8 @@
                 "startupData": {
                     "persistentListeners": {
                         "webRequest": {
-                            "onBeforeRequest": [
-                                [],
-                                []
-                            ],
-                            "onHeadersReceived": [
-                                []
-                            ]
+                            "onBeforeRequest": [],
+                            "onHeadersReceived": []
                         }
                     }
                 },
@@ -438,32 +422,12 @@
                 "startupData": {
                     "persistentListeners": {
                         "webRequest": {
-                            "onBeforeRequest": [
-                                [],
-                                [],
-                                []
-                            ],
-                            "onBeforeSendHeaders": [
-                                []
-                            ],
-                            "onCompleted": [
-                                [],
-                                [],
-                                []
-                            ],
-                            "onErrorOccurred": [
-                                [],
-                                [],
-                                []
-                            ],
-                            "onHeadersReceived": [
-                                [],
-                                [],
-                                []
-                            ],
-                            "onResponseStarted": [
-                                []
-                            ]
+                            "onBeforeRequest": [],
+                            "onBeforeSendHeaders": [],
+                            "onCompleted": [],
+                            "onErrorOccurred": [],
+                            "onHeadersReceived": [],
+                            "onResponseStarted": []
                         }
                     }
                 },
@@ -480,12 +444,8 @@
                 "startupData": {
                     "persistentListeners": {
                         "webRequest": {
-                            "onBeforeSendHeaders": [
-                                []
-                            ],
-                            "onHeadersReceived": [
-                                []
-                            ]
+                            "onBeforeSendHeaders": [],
+                            "onHeadersReceived": []
                         }
                     }
                 },
@@ -502,9 +462,7 @@
                 "startupData": {
                     "persistentListeners": {
                         "webRequest": {
-                            "onBeforeRequest": [
-                                []
-                            ]
+                            "onBeforeRequest": []
                         }
                     }
                 },
