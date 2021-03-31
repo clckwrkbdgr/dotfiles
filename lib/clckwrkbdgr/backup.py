@@ -8,6 +8,9 @@ class Password(object):
 	def __init__(self, value):
 		self.__value = value
 		self.__disclosed = False
+	def __bool__(self):
+		return self.__value is not None
+	__nonzero__ = __bool__
 	@contextlib.contextmanager
 	def disclosed(self):
 		self.__disclosed = True
@@ -17,7 +20,7 @@ class Password(object):
 			self.__disclosed = False
 	def __str__(self):
 		if self.__disclosed:
-			return self.__value
+			return self.__value or ''
 		return self.DUMMY
 	def __repr__(self):
 		return "Password({0})".format(self.DUMMY)
