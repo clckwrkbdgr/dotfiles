@@ -6,8 +6,16 @@ class Password(object):
 	"""
 	DUMMY = '*'*8
 	def __init__(self, value):
-		self.__value = value
+		""" If value is None, essentially disables the password.
+		bool(Password(None)) will return False and disclosed password will be empty string.
+		"""
 		self.__disclosed = False
+		if isinstance(value, Password):
+			self.__value = value.__value
+			return
+		if value is not None and not isinstance(value, str):
+			raise TypeError('Expected password of type str, received {0}'.format(type(value)))
+		self.__value = value
 	def __bool__(self):
 		return self.__value is not None
 	__nonzero__ = __bool__

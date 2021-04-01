@@ -34,6 +34,14 @@ class TestPassword(unittest.TestCase):
 		self.assertEqual(str(none), Password.DUMMY)
 		with none.disclosed():
 			self.assertEqual(str(none), '')
+	def should_copy_password(self):
+		real_value = 'qwerty'
+		passwd = Password(Password(real_value))
+		with passwd.disclosed():
+			self.assertEqual(str(passwd), real_value)
+	def should_accept_only_strings(self):
+		with self.assertRaises(TypeError):
+			Password(list())
 	def should_protect_password_in_subprocess_args(self):
 		real_value = 'qwerty'
 		passwd = Password(real_value)
