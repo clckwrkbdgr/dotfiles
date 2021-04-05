@@ -109,10 +109,7 @@ def mark_diff(lines, old_file_name):
 			diff_context = re.match(r'^(\d+)(?:[,](\d+))?([acd])(\d+)(?:[,](\d+))?$', line)
 			start, stop = diff_context.group(1), diff_context.group(2)
 			action = diff_context.group(3)
-			if action == 'a':
-				yield '# NEW LINE'
-				yield line
-				continue
+
 			context, entry = next(entries)
 
 			prev_context = context
@@ -128,8 +125,12 @@ def mark_diff(lines, old_file_name):
 					affected.append(context)
 					context, entry = next(entries)
 
-			for context in affected:
-				yield '# {0}'.format('\\'.join(context))
+			if action == 'a':
+				for context in affected:
+					yield '# [NEW LINE(S) AFTER:] {0}'.format('\\'.join(context))
+			else:
+				for context in affected:
+					yield '# {0}'.format('\\'.join(context))
 		except Exception as e:
 			yield '# ERROR: ' + str(e)
 		yield line
