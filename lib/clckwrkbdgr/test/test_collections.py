@@ -57,4 +57,6 @@ class TestAutoRegistry(unittest.TestCase):
 		def bar_function(): # pragma: no cover
 			pass
 		self.assertEqual(set(reg.keys()), {'foo', 'bar'})
-		self.assertEqual(set(reg), {'foo', 'bar'})
+		self.assertEqual(set(reg.values()), {foo_function, bar_function})
+		self.assertEqual(set(reg), {foo_function, bar_function})
+		self.assertEqual(set(reg.items()), {('foo', foo_function), ('bar', bar_function)})

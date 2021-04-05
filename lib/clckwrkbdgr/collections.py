@@ -31,11 +31,17 @@ class AutoRegistry(object):
 		""" Returns registered entry by name. May raise KeyError. """
 		return self._entries[name]
 	def __iter__(self):
-		""" Returns iterable of all registered entry names. """
-		return iter(self.keys())
+		""" Returns iterable of all registered entry values. """
+		return iter(self.values())
 	def keys(self):
 		""" Returns iterable of all registered entry names. """
 		return self._entries.keys()
+	def values(self):
+		""" Returns iterable of all pairs of registered values. """
+		return self._entries.values()
+	def items(self):
+		""" Returns iterable of all pairs of registered names and values. """
+		return self._entries.items()
 
 class dotdict(dict):
 	""" Dict that support dotted access:
