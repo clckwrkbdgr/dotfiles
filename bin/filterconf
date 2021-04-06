@@ -48,7 +48,7 @@ scheme:
 
 def get_epilog():
 	result = 'FORMATS:\n'
-	for name in config_filter:
+	for name in config_filter.keys():
 		filterclass = config_filter[name]
 		result +=   '  {0}  - '.format(name)
 		result += '\n         '.join(filterclass.description().splitlines())
@@ -74,7 +74,7 @@ def prepare_envvars(enviro_args):
 	return envvars
 
 @click.group(cls=RawEpilogGroup, epilog=get_epilog())
-@click.option('-f', '--format', required=True, type=click.Choice(list(config_filter)),
+@click.option('-f', '--format', required=True, type=click.Choice(list(config_filter.keys())),
 		callback=lambda ctx, param, value: config_filter[value],
 		help="Format of configuration file. "
 		"See last section FORMATS for description of formats and actions. "
