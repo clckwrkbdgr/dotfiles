@@ -145,7 +145,7 @@ BUILTIN_FUNCTIONS = """
 \b
 Supported builtin functions:
 """
-for name in builtins:
+for name in builtins.keys():
 	BUILTIN_FUNCTIONS += '- {0}: {1}\n'.format(name, builtins[name].__doc__)
 
 class Plugin(object):
