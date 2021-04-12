@@ -11,8 +11,11 @@ try:
 except ImportError:
 	from pathlib import Path
 from clckwrkbdgr import xdg
+from clckwrkbdgr import commands
 
-# TODO check if this is my maching and I have root privileges.
+if not commands.has_sudo_rights():
+	trace.info('Have not sudo rights, skipping.')
+	sys.exit()
 
 etc_config_file = Path('/etc/X11/app-defaults/XXkb')
 if not etc_config_file.exists():

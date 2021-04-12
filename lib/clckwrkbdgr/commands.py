@@ -50,6 +50,14 @@ def run_command_and_collect_output(args, output_dir=None): # pragma: no cover --
 			f.write(traceback.format_exc().encode('utf-8', 'replace'))
 		return -1
 
+def has_sudo_rights():
+	try:
+		output = subprocess.check_output(['/usr/bin/sudo', '--list', '--non-interactive'], stderr=subprocess.STDOUT)
+		output = output.replace(b' ', b'')
+		return b'ALL:ALL' in output
+	except subprocess.CalledProcessError:
+		return False
+
 import click
 
 @click.command(context_settings=dict(ignore_unknown_options=True))

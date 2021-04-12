@@ -12,8 +12,11 @@ try:
 except ImportError:
 	from pathlib import Path
 from clckwrkbdgr import xdg
+from clckwrkbdgr import commands
 
-# TODO check if this is my maching and I have root privileges.
+if not commands.has_sudo_rights():
+	trace.info('Have not sudo rights, skipping.')
+	sys.exit()
 
 def has_tmp_in_fstab():
 	for line in Path('/etc/fstab').read_text().splitlines():
