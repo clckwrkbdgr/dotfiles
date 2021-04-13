@@ -125,8 +125,12 @@ def cli():
 def create_archive(sparse_checkout=None):
 	gitdir = '.git'
 	if not os.path.isdir(gitdir):
-		logging.error("Cannot find .git/ in current directory. Is should be a root of a .git repo.")
-		return False
+		if os.path.isfile('HEAD'):
+			logging.debug('.git/ is absent, but HEAD is found. Considering a bare Git repo.')
+			gitdir = '.'
+		else:
+			logging.error("Cannot find .git/ in current directory. Is should be a root of a .git repo.")
+			return False
 	sparse_checkout = sparse_checkout or os.path.join(gitdir, 'info', 'sparse-checkout')
 	if os.path.isfile(sparse_checkout):
 		with open(sparse_checkout, 'r') as f:
