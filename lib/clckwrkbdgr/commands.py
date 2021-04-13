@@ -50,7 +50,7 @@ def run_command_and_collect_output(args, output_dir=None): # pragma: no cover --
 			f.write(traceback.format_exc().encode('utf-8', 'replace'))
 		return -1
 
-def has_sudo_rights():
+def has_sudo_rights(): # pragma: no cover -- TODO executes command and parses output.
 	try:
 		output = subprocess.check_output(['/usr/bin/sudo', '--list', '--non-interactive'], stderr=subprocess.STDOUT)
 		output = output.replace(b' ', b'')
