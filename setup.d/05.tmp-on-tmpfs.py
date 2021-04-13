@@ -5,7 +5,7 @@ if platform.system() == 'Windows':
 	sys.exit()
 import subprocess
 import logging
-logging.basicConfig()
+logging.basicConfig(level=logging.DEBUG if os.environ.get('DOTFILES_SETUP_VERBOSE') else logging.WARNING)
 trace = logging.getLogger()
 try:
 	from pathlib2 import Path

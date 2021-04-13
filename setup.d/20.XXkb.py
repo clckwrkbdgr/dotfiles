@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import sys
+import os, sys
 import platform
 if platform.system() == 'Windows':
 	sys.exit()
 import logging
-logging.basicConfig()
+logging.basicConfig(level=logging.DEBUG if os.environ.get('DOTFILES_SETUP_VERBOSE') else logging.WARNING)
 trace = logging.getLogger()
 try:
 	from pathlib2 import Path

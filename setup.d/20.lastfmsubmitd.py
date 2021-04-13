@@ -4,7 +4,8 @@ import platform
 if platform.system() == 'Windows':
 	sys.exit()
 import logging
-trace = logging.getLogger('setup')
+logging.basicConfig(level=logging.DEBUG if os.environ.get('DOTFILES_SETUP_VERBOSE') else logging.WARNING)
+trace = logging.getLogger()
 from pathlib import Path
 from clckwrkbdgr import xdg
 import clckwrkbdgr.fs
