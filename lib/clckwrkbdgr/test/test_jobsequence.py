@@ -211,6 +211,46 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_other_dir', 'baz')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
+	@mock.patch('logging.info')
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
+	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
+		Path('my_other_dir') : [
+			Path('my_other_dir')/'foo',
+			Path('my_other_dir')/'bar',
+			Path('my_other_dir')/'baz',
+			],
+		}))
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_unmatch_patterns(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
+		click = mock.MagicMock()
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq.run(['!ba'], 'my_other_dir', verbose=2)
+		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
+		path_iterdir.assert_has_calls([])
+		subprocess_call.assert_has_calls([
+				self._job_call(Path('my_other_dir', 'foo')),
+				])
+	@mock.patch.dict(os.environ, os.environ.copy())
+	@mock.patch('logging.info')
+	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
+	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
+		Path('my_other_dir') : [
+			Path('my_other_dir')/'foo',
+			Path('my_other_dir')/'bar',
+			Path('my_other_dir')/'baz',
+			],
+		}))
+	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
+	def should_combine_patterns(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
+		click = mock.MagicMock()
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq.run(['ba', '!baz'], 'my_other_dir', verbose=2)
+		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
+		path_iterdir.assert_has_calls([])
+		subprocess_call.assert_has_calls([
+				self._job_call(Path('my_other_dir', 'bar')),
+				])
+	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('sys.exit')
 	@mock.patch('logging.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
