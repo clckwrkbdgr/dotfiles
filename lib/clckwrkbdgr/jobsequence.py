@@ -41,10 +41,16 @@ def run_job_executable(executable, header=None): # pragma: no cover -- TODO proc
 		sys.stdout.write(header)
 		sys.stdout.flush()
 	if stdout:
-		sys.stdout.write(stdout)
+		if hasattr(sys.stdout, 'buffer'):
+			sys.stdout.buffer.write(stdout)
+		else:
+			sys.stdout.write(stdout)
 		sys.stdout.flush()
 	if stderr:
-		sys.stderr.write(stderr)
+		if hasattr(sys.stderr, 'buffer'):
+			sys.stderr.buffer.write(stderr)
+		else:
+			sys.stderr.write(stderr)
 		sys.stderr.flush()
 	rc = process.wait()
 	return rc, was_output
