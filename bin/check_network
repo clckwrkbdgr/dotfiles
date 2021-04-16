@@ -1,87 +1,51 @@
-#!/bin/bash
-set -o pipefail
+#!/usr/bin/env python
+import sys, subprocess
+import time
+import clckwrkbdgr.net
+import clckwrkbdgr.click
 
-panic() {
-	echo "$@" >&2
-	exit 1
-}
+import click
 
-custom_hosts_file=~/.local/known_hosts.lst
-
-usage() {
-cat >&2 <<EOF
-Checks network availability.
-Usage: $0 [-h <host>] [-c <count>] [-i <interface>]
-     -h  - host (name/IP) to ping.
-           If host is not specified, it is randomly picked from predefined list of trusted locations.
-     -c  - amount of tries, by default is 1.
-	       When set to 0, pings infinitely until the first success.
-     -i  - specific network interface to use. See 'ip link show' or 'netstat -a'.
-	       Available interfaces: $(ip link show | grep '^[^ ]' | cut -d ' ' -f 2 | sed 's/://' | tr '\n' ' ')
+EPILOG = """\b
 By default tries hosts:
   8.8.8.8 # Google DNS
   8.8.4.4 # Google DNS
-Loads additional hosts from file $custom_hosts_file (if present).
+Loads additional hosts from file {custom_hosts_file} (if present).
 Lines should be in format '<ip> # <optional comment>'
-$(known_hosts)
-EOF
-}
+Known hosts (with custom):
+  """.format(custom_hosts_file=clckwrkbdgr.net.custom_hosts_file)
+EPILOG += '\n  '.join(clckwrkbdgr.net.known_hosts)
 
-known_hosts() {
-cat <<EOF
-8.8.8.8 # Google DNS
-8.8.4.4 # Google DNS
-EOF
-	[ -f "$custom_hosts_file" ] && cat "$custom_hosts_file"
-}
+def available_interfaces():
+	try:
+		output = subprocess.check_output(['ip', 'link', 'show'])
+		result = []
+		for line in output.decode('utf-8', 'replace').splitlines():
+			if line.startswith(' '):
+				continue
+			result.append(line.split(':')[1].strip())
+		return result
+	except Exception as e:
+		print(e, file=sys.stderr)
+		return []
 
-random_host() {
-	known_hosts | cut -d ' ' -f 1 | sort -R | head -1
-}
+@click.command(epilog=EPILOG)
+@click.option('-h', '--host', help='host (name/IP) to ping. If host is not specified, it is randomly picked from predefined list of trusted locations.')
+@click.option('-c', '--count', type=int, default=1, help='amount of tries, by default is 1. When set to 0, pings infinitely until the first success.')
+@click.option('-i', '--interface', help="specific network interface to use. See 'ip link show' or 'netstat -a'. Available interfaces: " + ' '.join(available_interfaces()))
+@click.option('-q', '--quiet', is_flag=True, help='No output.')
+def cli(host=None, count=None, interface=None, quiet=False):
+	""" Checks network availability. """
+	hosts = [host] if host else None
+	if count == 0:
+		count = -1 # To make it infinite.
 
-clear_ping_output() {
-	egrep --line-buffered -v 'PING ([[:alnum:]]+[.]?)+ \(([[:digit:]]+[.]?)+\) from ([[:digit:]]+[.]?)+ [a-z0-9]+: [0-9]+\([0-9]+\) bytes of data.' | \
-	egrep --line-buffered -v 'PING ([[:alnum:]]+[.]?)+ \(([[:digit:]]+[.]?)+\) [0-9]+\([0-9]+\) bytes of data.' | \
-	egrep --line-buffered -v -- '--- ([[:alnum:]]+[.]?)+ ping statistics ---' | \
-	egrep --line-buffered -v -- 'ping: Warning: source address might be selected on device other than .*' | \
-	grep --line-buffered -v '^$'
-	true
-}
+	while count != 0:
+		count -= 1
+		if clckwrkbdgr.net.check_hosts(hosts, interface=interface, verbose=not quiet):
+			return True
+		time.sleep(1)
+	sys.exit(1)
 
-check_host() {
-	HOST="${1:-127.0.0.1}"
-	INTERFACE="$2"
-	[ -n "$INTERFACE" ] && INTERFACE_ARG="-I $INTERFACE"
-	ping $INTERFACE_ARG -qc 1 "$HOST" 2>&1 | clear_ping_output
-}
-
-while getopts "h:c:i:q" optarg; do
-	case "${optarg}" in
-		h) HOST="$OPTARG" ;;
-		q) QUIET=true ;;
-		i) INTERFACE="$OPTARG" ;;
-		c) COUNT="$OPTARG"
-			echo "$COUNT" | grep -q '^[0-9]\+$' || panic 'Count argument should be a number.'
-			;;
-		*) usage; exit 1; ;;
-	esac
-done
-HOST="${HOST:-`random_host`}"
-COUNT="${COUNT:-1}"
-if [ "$COUNT" != 0 ]; then
-	COUNTER="seq $COUNT"
-else
-	COUNTER="yes"
-fi
-
-trap 'echo Interrupted; exit 1' INT
-$COUNTER | while read; do
-	if [ -z "$QUIET" ]; then
-		check_host "$HOST" "$INTERFACE" && exit 0
-	else
-		check_host "$HOST" "$INTERFACE" >/dev/null && exit 0
-	fi
-	sleep 1
-	false # Set failed state, in case this is the last attempt.
-done && exit 0
-exit 1 # All attempts failed.
+if __name__ == '__main__':
+	cli()
