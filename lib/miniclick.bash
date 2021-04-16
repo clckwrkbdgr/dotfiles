@@ -60,7 +60,7 @@ miniclick() {
 	for arg in "$@"; do
 		if [ -n "$_current_arg" ]; then
 			# Escaping value as it may contain single quote: ..'.. => ..'"'"'..
-			eval "${_miniargs[$_current_arg]}='${arg//\'/\'\"\'\"\'}'"
+			eval "${_miniargs[$_current_arg]}='"${arg//\'/\'\"\'\"\'}"'"
 			_current_arg=$((_current_arg+1))
 			if [ $_current_arg -ge ${#_miniargs[@]} ]; then
 				_current_arg=''

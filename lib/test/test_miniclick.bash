@@ -85,8 +85,8 @@ should_parse_arguments_with_apostrophes() {
 		miniclick text -- "$@"
 		echo "$text"
 	}
-	assertOutputEqual 'test_click "you'"'"'re" 2>&1' - <<EOF
-you're
+	assertOutputEqual 'test_click "I'"'"'m in space" 2>&1' - <<EOF
+I'm in space
 EOF
 }
 

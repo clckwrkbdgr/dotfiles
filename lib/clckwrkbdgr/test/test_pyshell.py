@@ -135,7 +135,8 @@ class TestPyShell(unittest.TestCase): # TODO mocks
 			output = sh.run('cat', 'definitely missing file', stdout=str, stderr='stdout')
 		output = output.replace('/usr/bin/', '')
 		output = output.replace('/bin/', '')
-		self.assertEqual(output, "cat: 'definitely missing file': No such file or directory")
+		output = output.replace("'", '')
+		self.assertEqual(output, "cat: definitely missing file: No such file or directory")
 	def should_suppress_stderr(self):
 		output = sh.run('cat', 'test', stdout=str, stderr=None)
 		self.assertEqual(output, '')

@@ -1,7 +1,10 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import json
-import jsonpickle
+try:
+	import jsonpickle
+except ImportError: # pragma: no cover
+	jsonpickle = None
 import textwrap
 import clckwrkbdgr.math
 from clckwrkbdgr.math import Point, Size, Matrix
@@ -30,7 +33,8 @@ class TestVector(unittest.TestCase):
 		p.second = 3
 		self.assertEqual(p[0], 2)
 		self.assertEqual(p[1], 3)
-	def should_serialize_vector(self):
+	@unittest.skipUnless(jsonpickle, "Jsonpickle is not detected.")
+	def should_serialize_vector_to_json(self): # pragma: no cover -- TODO needs mocks instead of just skipping.
 		p = MyVector(1, 2)
 		data = json.loads(jsonpickle.encode(p, unpicklable=False))
 		self.assertEqual(data, [1, 2])
@@ -39,7 +43,8 @@ class TestVector(unittest.TestCase):
 		p = MyVector(1, 2)
 		other = MyVector(1, 2)
 		self.assertEqual(set([p]), set([other]))
-	def should_deserialize_old_vector(self):
+	@unittest.skipUnless(jsonpickle, "Jsonpickle is not detected.")
+	def should_deserialize_old_vector(self): # pragma: no cover -- TODO needs mocks instead of just skipping.
 		q = jsonpickle.decode('{"py/newargs": {"py/tuple": [1, 2]}, "py/object": "clckwrkbdgr.test.test_math.MyVector", "py/seq": [1, 2]}')
 		self.assertEqual(q.first, 1)
 		self.assertEqual(q.second, 2)
