@@ -59,7 +59,7 @@ def knock(host, interface=None, verbose=False): # pragma: no cover -- TODO calls
 			print(line, file=sys.stderr)
 	return rc == 0
 
-def check_hosts(hosts=None, interface=None, verbose=False):
+def check_hosts(hosts=None, interface=None, verbose=False): # pragma: no cover -- TODO needs mocks.
 	""" Pings given hosts: first check any random entry, then checks all hosts one by one.
 	Returns True as soon as any host responded. False if none responded.
 	If hosts are not specified, uses global list of known hosts
