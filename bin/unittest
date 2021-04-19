@@ -72,17 +72,17 @@ test_suite = Registry('name')
 
 PYTHON_UNITTEST_QUIET_PATTERNS = {
 		'2' : list(map(re.compile, [
-			'^[.]+$',
+			'^[.s]+$',
 			'^-{70}$',
 			r'^Ran \d+ tests in [0-9.]+s$',
 			'^$',
-			'^OK$',
+			r'^OK( \(skipped=\d+\))?$',
 			])),
 		'3' : list(map(re.compile, [
 			'^-{70}$',
 			r'^Ran \d+ tests in [0-9.]+s$',
 			'^$',
-			'^OK$',
+			r'^OK( \(skipped=\d+\))?$',
 			])),
 		}
 PYTHON_COVERAGE_QUIET_PATTERNS = list(map(re.compile, [
