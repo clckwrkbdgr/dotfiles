@@ -62,6 +62,12 @@ class JobSequence:
 		if click is None: # pragma: no cover
 			import click
 		self.click = click
+	def _is_unwanted(self, filepath):
+		if filepath.name == '__pycache__':
+			return True
+		if filepath.suffix in ['.pyc']:
+			return True
+		return False
 	def _fix_job_dir_arg(self, job_dir):
 		if job_dir is None:
 			return None
@@ -111,6 +117,9 @@ class JobSequence:
 		was_output = False
 		main_title = Path(sys.modules['__main__'].__file__).name
 		for entry in sorted(itertools.chain.from_iterable(entries), key=lambda entry: entry.name):
+			if self._is_unwanted(entry):
+				logging.info("Skipping unwanted entry: {0}".format(entry))
+				continue
 			if include_patterns and all(pattern not in entry.name for pattern in include_patterns):
 				logging.info("Job was not matched by include patterns: {0}".format(entry))
 				continue
