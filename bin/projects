@@ -212,6 +212,7 @@ def git_has_changes_besides_filtered_out():
 			]
 	MODIFIED = [
 			r'^\s*modified:\s+(.*)$',
+			r'^\s*изменено:\s+(.*)( \(новые коммиты\))$',
 			r'^\s*изменено:\s+(.*)$',
 			]
 	status = skip_lines_that_contains(status, CHANGES)
