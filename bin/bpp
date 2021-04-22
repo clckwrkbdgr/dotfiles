@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-""" Basic text file preprocessor.
-Recognizes C-like #include instructions.
-WARNING: Have NO protection against recursive inclusion.
-"""
-import os, sys, re
+import os, sys, re, subprocess
 from clckwrkbdgr.fs import CurrentDir
 
 INCLUDE = re.compile(r'^\s*#\s*include\s*["<]([^>"]+)[">]\s*$')
+SHELL_COMMAND = re.compile(r'^\s*#\s*shell\s+[`]([^`]+)[`]\s*$')
 
 def find_file(filename, paths):
 	for path in paths:
@@ -31,16 +28,43 @@ def preprocess(lines, include_path=None):
 				sys.stderr.write(str(e))
 				sys.stderr.write('\n')
 			continue
+		shell_command = SHELL_COMMAND.match(line)
+		if shell_command:
+			try:
+				command = shell_command.group(1)
+				output = subprocess.check_output(command, shell=True)
+				for line in output.decode('utf-8', 'replace').splitlines():
+					yield line
+			except subprocess.CalledProcessError as e:
+				sys.stderr.buffer.write(e.stdout)
+			except Exception as e:
+				sys.stderr.write(str(e))
+				sys.stderr.write('\n')
+			continue
 		yield line
 
 import click
 
-@click.command()
+MANUAL = """
+\b
+Recognizes C-like #include instructions:
+  #include <~/.config/include/...>
+  #include "include_path_subdir/..."
+WARNING: Have NO protection against recursive inclusion.
+
+\b
+Can execute shell commands for their output:
+  #shell `...`
+WARNING: May be subjected to shell injections!
+"""
+
+@click.command(epilog=MANUAL)
 @click.option('-I', 'include_path', multiple=True)
 @click.argument('filename', required=False)
 def cli(filename=None, include_path=None):
-	""" Runs preprocessor on given file or stdin.
-	Prints preprocesses result to stdout.
+	""" Very basic text file preprocessor.
+	Runs on given file or stdin.
+	Prints preprocessed result to stdout.
 	"""
 	include_path = include_path or []
 
