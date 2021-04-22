@@ -8,6 +8,7 @@ logging.basicConfig(level=logging.DEBUG if os.environ.get('DOTFILES_SETUP_VERBOS
 trace = logging.getLogger()
 from pathlib import Path
 import subprocess
+from clckwrkbdgr import commands
 
 try:
 	subprocess.check_output(['python3', '-V'], stderr=subprocess.STDOUT)
@@ -28,6 +29,10 @@ PATCHED_PYTHON_HISTORY_CODE = """\
 """
 
 if UNPATCHED_PYTHON_HISTORY_CODE not in get_site_module_path().read_text():
+	sys.exit()
+
+if not commands.has_sudo_rights():
+	trace.info('Have no sudo rights, skipping.')
 	sys.exit()
 
 trace.error('.python_history code is not patched and it will be created each time REPL is executed')
