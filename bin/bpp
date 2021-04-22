@@ -33,7 +33,7 @@ def preprocess(lines, include_path=None):
 			try:
 				command = shell_command.group(1)
 				output = subprocess.check_output(command, shell=True)
-				for line in output.decode('utf-8', 'replace').splitlines():
+				for line in output.decode('utf-8', 'replace').splitlines(True):
 					yield line
 			except subprocess.CalledProcessError as e:
 				sys.stderr.buffer.write(e.stdout)
