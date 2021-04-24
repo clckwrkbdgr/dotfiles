@@ -669,6 +669,25 @@
                                         "blocking",
                                         "requestHeaders"
                                     ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://*.bancosantander.es/*",
+                                            "*://*.gruposantander.es/*",
+                                            "*://*.santander.co.uk/*",
+                                            "*://bob.santanderbank.com/*",
+                                            "*://rolb.santanderbank.com/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
                                 ]
                             ],
                             "onHeadersReceived": [
