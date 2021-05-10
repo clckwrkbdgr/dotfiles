@@ -51,13 +51,18 @@ def file_has_changed(dest_path, source_path):
 		return True
 	return False
 
-def process_one_file(path, commit_message, dest_repo=None, show_diff=False):
+def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_diff=False):
 	if not Path(path).exists():
 		logging.debug('{0}: does not exist, skipping.'.format(path))
 		return
 	if dest_repo and dest_repo != '.':
-		logging.debug('{0}: Checking state in {1}.'.format(path, dest_repo))
-		dest_path = Path(dest_repo)/path
+		if dest_path:
+			dest_path = Path(dest_path)
+			if dest_path.is_absolute():
+				raise RuntimeError("{0}: dest_path is absolute; it should be relative to the history repo root ({1}): {2}".format(path, dest_repo, dest_path))
+		else:
+			dest_path = Path(dest_repo)/path
+		logging.debug('{0}: Checking state in {1}.'.format(path, dest_path))
 		if file_has_changed(dest_path, path):
 			logging.info('{0}: Updating.'.format(dest_path))
 			shutil.copy(str(path), str(dest_path))
@@ -77,6 +82,8 @@ Configuration file should be in JSON format:
 		'<path/to/file>' : {
 			# Default message is 'autocommit'.
 			'message' : '<Commit message>'
+			# Path where the file will copied to. Relative to the root of the history repo. By default uses the same relative path (from the key of this dict).
+			'dest_path' : '<Commit message>'
 			# If True, will display diff to stdout before commit. By default is False.
 			'show_diff' : <bool>
 		},
@@ -113,6 +120,7 @@ def cli(config_file, verbose=False, debug=False):
 					commit_message=props.get('message', 'autocommit'),
 					dest_repo=repo_path if repo != '.' else None,
 					show_diff=props.get('show_diff', False),
+					dest_path=props.get('dest_path', None),
 					)
 
 if __name__ == '__main__':
