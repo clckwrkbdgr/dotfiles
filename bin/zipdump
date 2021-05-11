@@ -3,6 +3,10 @@ from __future__ import print_function
 import os, sys, io
 import base64
 import zipfile
+try:
+    zipfile.BadZipFile
+except AttributeError:
+    zipfile.BadZipFile = zipfile.BadZipfile
 import clckwrkbdgr.utils
 
 # Metainfo line format:
