@@ -1,6 +1,18 @@
 #!/bin/bash
 . "$XDG_CONFIG_HOME/lib/unittest.bash"
 
+if [ $(uname) == AIX ]; then
+   if which openssl >/dev/null 2>&1; then
+      base64() {
+         openssl base64
+      }
+   elif which python >/dev/null 2>&1; then
+      base64() {
+         python -m base64
+      }
+   fi
+fi
+
 should_zip_simple_text_file() {
 	local test_file=$(mktemp)
 	finally "rm -f '$test_file'"
