@@ -2,6 +2,14 @@
 . "$XDG_CONFIG_HOME/lib/unittest.bash"
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 
+if ! which realpath >/dev/null 2>&1; then
+   function realpath() { # FIXME duplicated definition; first one is in .config/bash/aliases.inc.bash. Should move all those wrappers to some common file.
+      echo "$(cd "$(dirname "$1")"; pwd -P)/$(basename "$1")"
+   }
+   export -f realpath
+fi
+
+
 should_panic() {
 	assertOutputEqual 'panic "ERROR" 2>&1; echo "this should not happen"' 'ERROR'
 	assertExitFailure
