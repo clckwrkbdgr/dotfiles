@@ -20,6 +20,37 @@ unittest_bash_is_already_sourced=1
 
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 
+if ! which mktemp >/dev/null 2>&1; then
+   mktemp() {
+      # WARNING: have no security/concurrency safety like real mktemp does.
+      while [ -n "$1" ]; do
+         if [ "$1" == '--dry-run' ]; then
+            dry_run=true
+         elif [ "$1" == '--suffix' ]; then
+            shift
+            suffix="$1"
+         elif [ "$1" == '-d' ]; then
+            shift
+            make_dir=true
+         else
+            panic "Unknown arguments to custom mktemp wrapper: $!"
+         fi
+         shift
+      done
+
+      tempdir="${TMPDIR:-${TEMP:-/tmp}}"
+      tempfile="$tempdir/tmp$$-$(od -N4 -tu /dev/random | awk 'NR==1 {print $2} {}')${suffix}"
+      if [ -z "$dry_run" ]; then
+         if [ -n "$make_dir" ]; then
+            mkdir "$tempfile"
+         else
+            touch "$tempfile"
+         fi
+      fi
+      echo "$tempfile"
+   }
+fi
+
 assertFilesSame() { # <actual> <expected>
 	# Asserts that two files hold the same content.
 	# Prints diff between files with the message.

@@ -2,14 +2,14 @@
 . "$XDG_CONFIG_HOME/lib/unittest.bash"
 . "$XDG_CONFIG_HOME/lib/path.bash"
 
-TMPBINDIR="/tmp/bin.$$"
+TMPBINDIR="$(mktemp -d)"
 
 setUp() {
 	mkdir -p "$TMPBINDIR"
 }
 
 tearDown() {
-	rm -rf "$TMPBINDIR"
+	cd .. ; rm -rf "$TMPBINDIR"
 }
 
 should_strip_directory_from_PATH() {
