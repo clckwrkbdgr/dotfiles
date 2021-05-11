@@ -1,3 +1,7 @@
+if [ $(uname) == Linux ]; then
+	_gnu_sed=true
+fi
+
 color::init() {
 	# Inits color mode.
 	# By default colors are on for TTY shells, and off for non-TTY.
@@ -65,7 +69,11 @@ color::reset() {
 
 color::strip() {
 	# Strips stdin from coloring escape sequences, returning only text.
-	sed "s%\x1b"'\(\[[0-9]\+\(;[0-9]\+\)\?m\|\][0-9]\+;\)%%g;s%\\\[\\\]%%g';
+	if [ -n "${_gnu_sed}" ]; then
+		sed "s%\x1b"'\(\[[0-9]\+\(;[0-9]\+\)\?m\|\][0-9]\+;\)%%g;s%\\\[\\\]%%g';
+	else
+		perl -pe "s%\e"'(\[[0-9]+(;[0-9]+)?m|\][0-9]+;)%%g;s%\\\[\\\]%%g'
+	fi
 }
 
 color::init auto
