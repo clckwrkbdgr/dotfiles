@@ -76,6 +76,11 @@ def dump(filename=None):
         except zipfile.BadZipFile as e:
             print('{0}: {1}'.format(filename, e), file=sys.stderr)
             sys.exit(1)
+    try:
+        # Preventing errors with "close failed in file object destructor":
+        sys.stdout.close()
+    except:
+        pass
 
 @cli.command()
 @click.argument('filename', required=False)
@@ -88,6 +93,11 @@ def load(filename=None):
     bin_stdout = io.open(sys.stdout.fileno(), 'wb')
     with clckwrkbdgr.utils.fileinput(filename, 'rb') as f:
         load_zip(f, bin_stdout)
+    try:
+        # Preventing errors with "close failed in file object destructor":
+        sys.stdout.close()
+    except:
+        pass
 
 if __name__ == "__main__":
     cli()
