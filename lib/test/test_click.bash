@@ -87,14 +87,14 @@ should_process_additional_parameters_of_definitions_of_arguments() {
 	assertOutputEqual 'click::run -h 2>&1' - <<EOF
 Usage: $0 [-o] [-f] <arg>
 Parameters:
+  <arg>
+        Argument help
   -o, --option
         Option help
         Default is 'default_value'.
   -f, --flag
         Flag help
         Default is false.
-  <arg>
-        Argument help
 EOF
 }
 

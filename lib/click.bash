@@ -189,23 +189,34 @@ click::usage() {
 	if [ "${#_click_type[@]}" -ne 0 ]; then
 		echo 'Parameters:'
 	fi
+	# First go all the arguments.
 	for name in "${!_click_type[@]}"; do
-		if [ ${_click_type[$name]} == 'option' -o ${_click_type[$name]} == 'flag' ]; then
-			echo -n "  ${_click_short[$name]}"
-			if [ -n "${_click_long[$name]}" ]; then
-				echo -n ", ${_click_long[$name]}"
-			fi
-			echo
-		elif [ ${_click_type[$name]} == 'argument' ]; then
-			echo "  <$name>"
+		if ! [ ${_click_type[$name]} == 'argument' ]; then
+			continue
 		fi
+		echo "  <$name>"
+
+		echo -e "${_click_help[$name]}" | sed 's/^/        /' # FIXME this is the only external command in the whole file.
+
+		if [ -n "${_click_default[$name]}" ]; then
+			echo "        Default is '${_click_default[$name]}'."
+		fi
+	done
+	# Only then all options and flags are listed.
+	for name in "${!_click_type[@]}"; do
+		if ! [ ${_click_type[$name]} == 'option' -o ${_click_type[$name]} == 'flag' ]; then
+			continue
+		fi
+
+		echo -n "  ${_click_short[$name]}"
+		if [ -n "${_click_long[$name]}" ]; then
+			echo -n ", ${_click_long[$name]}"
+		fi
+		echo
+
 		echo -e "${_click_help[$name]}" | sed 's/^/        /' # FIXME this is the only external command in the whole file.
 		if [ ${_click_type[$name]} == 'option' ]; then
 			echo "        Default is '${_click_default[$name]}'."
-		elif [ ${_click_type[$name]} == 'argument' ]; then
-			if [ -n "${_click_default[$name]}" ]; then
-				echo "        Default is '${_click_default[$name]}'."
-			fi
 		elif [ ${_click_type[$name]} == 'flag' ]; then
 			echo "        Default is false."
 		fi
