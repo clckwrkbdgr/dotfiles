@@ -40,11 +40,11 @@ should_exec_base_app_from_wrapper() {
 	cat >"$tmpscript" <<EOF
 #!/bin/bash
 . "\$XDG_CONFIG_HOME/lib/path.bash"
-path::exec_base -t "\$@"
+path::exec_base -vet "\$@"
 EOF
 	chmod +x "$tmpscript"
 	assertOutputEqual 'which cat' "$TMPBINDIR/cat"
-	assertOutputEqual "echo -e '\tTEST' | PATH='$TMPBINDIR:$XDG_CONFIG_HOME/bin:/usr/bin:/bin' cat" "^ITEST"
+	assertOutputEqual "echo -e '\tTEST' | PATH='$TMPBINDIR:$XDG_CONFIG_HOME/bin:/usr/bin:/bin' cat" "^ITEST$"
 }
 
 unittest::run should_
