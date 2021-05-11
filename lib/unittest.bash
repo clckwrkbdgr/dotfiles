@@ -51,6 +51,34 @@ if ! which mktemp >/dev/null 2>&1; then
    }
 fi
 
+_QUIET_DIFF='diff'
+if [ $(uname) == Linux ]; then
+	_QUIET_DIFF='diff -q'
+fi
+
+files_equal() { # <left file> <right file>
+	# Returns zero if files are equal, non-zero otherwise.
+	# Does not produce any output.
+	${_QUIET_DIFF} "$1" "$2" >/dev/null
+}
+
+if [ $(uname) == AIX ]; then
+	_FIX_SPACES_IN_UNIFIED_DIFF=';s/^\([-+ ]\) /\1/'
+	_FIX_METAINFO_IN_UNIFIED_DIFF=';s/^\(@@ -0\) /\1,0 /'
+fi
+
+unified_diff() { # <left file> <right file>
+	# Produces just the difference in lines in unified diff format:
+	# -removed line
+	# +added line
+	# Strips any header.
+	left_file="$1"
+	right_file="$2"
+	left_file_name="${3:-$1}"
+	right_file_name="${4:-$2}"
+	diff -u "$left_file" "$right_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s|^\(--- \).*$|\1'"$left_file_name"'|;2s|^\(+++ \).*|\1'"$right_file_name"'|'"${_FIX_SPACES_IN_UNIFIED_DIFF}""${_FIX_METAINFO_IN_UNIFIED_DIFF}"
+}
+
 assertFilesSame() { # <actual> <expected>
 	# Asserts that two files hold the same content.
 	# Prints diff between files with the message.
@@ -63,10 +91,10 @@ assertFilesSame() { # <actual> <expected>
 		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Second file does not exist: $2" >&2
 		exit 1
 	fi
-	diff -q "$1" "$2" >/dev/null && return 0
+	files_equal "$1" "$2" && return 0
 	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Files are not the same:' >&2
-	diff -u "$1" "$2" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/' >&2
+	unified_diff "$1" "$2" >&2
 	exit 1
 }
 
@@ -82,7 +110,7 @@ assertFilesDiffer() { # <actual> <expected>
 		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Second file does not exist: $2" >&2
 		exit 1
 	fi
-	diff -q "$1" "$2" >/dev/null || return 0
+	files_equal "$1" "$2" || return 0
 	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Files do not differ:' >&2
 	echo "--- $1" >&2
@@ -157,7 +185,7 @@ assertOutputEqual() { # <command> <expected_output>
 	_UNITTEST_LAST_RC=$?
 	_UNITTEST_LAST_COMMAND="$shell_command"
 
-	diff -q "$expected_output_file" "$actual_output_file" >/dev/null
+	files_equal "$expected_output_file" "$actual_output_file"
 	local diff_ok=$?
 	if [ "$diff_ok" -eq 0 ]; then
 		rm -f "$actual_output_file" "$expected_output_file"
@@ -166,7 +194,7 @@ assertOutputEqual() { # <command> <expected_output>
 	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command output differs:' >&2
 	echo "$shell_command" >&2
-	diff -u "$expected_output_file" "$actual_output_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s/^\(--- \).*$/\1[expected]/;2s/^\(+++ \).*/\1[actual]/' >&2
+	unified_diff "$expected_output_file" "$actual_output_file" "[expected]" "[actual]" >&2
 	rm -f "$actual_output_file" "$expected_output_file"
 	exit 1
 }
@@ -187,7 +215,7 @@ assertOutputEmpty() { # <command>
 	_UNITTEST_LAST_RC=$?
 	_UNITTEST_LAST_COMMAND="$shell_command"
 
-	diff -q "$expected_empty_file" "$actual_output_file" >/dev/null
+	files_equal "$expected_empty_file" "$actual_output_file"
 	local diff_ok=$?
 	if [ "$diff_ok" -eq 0 ]; then
 		rm -f "$actual_output_file" "$expected_empty_file"
@@ -196,7 +224,7 @@ assertOutputEmpty() { # <command>
 	echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Assert failed:" >&2
 	echo 'Command output is not empty:' >&2
 	echo "$shell_command" >&2
-	diff -u "$expected_empty_file" "$actual_output_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s/^\(--- \).*$/\1[expected: empty]/;2s/^\(+++ \).*/\1[actual]/' >&2
+	unified_diff "$expected_empty_file" "$actual_output_file" "[expected: empty]" "[actual]" >&2
 	rm -f "$actual_output_file" "$expected_empty_file"
 	exit 1
 }
@@ -384,7 +412,7 @@ unittest::list() {
 			if [ "${function_name##$prefix}" == "${function_name}" ]; then
 				continue
 			fi
-			echo "$function_name"
+			echo "$function_name" 2>/dev/null # On AIX this line may protest against writting into dead pipe.
 		done
 	)
 }
