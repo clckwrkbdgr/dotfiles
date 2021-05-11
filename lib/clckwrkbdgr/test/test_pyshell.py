@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, platform
 import time
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
@@ -136,9 +136,10 @@ class TestPyShell(unittest.TestCase): # TODO mocks
 		output = output.replace('/usr/bin/', '')
 		output = output.replace('/bin/', '')
 		output = output.replace("'", '')
-		self.assertEqual(output, "cat: definitely missing file: No such file or directory")
+		expected = "cat: cannot open definitely missing file" if platform.system() == 'AIX' else "cat: definitely missing file: No such file or directory"
+		self.assertEqual(output, expected)
 	def should_suppress_stderr(self):
-		output = sh.run('cat', 'test', stdout=str, stderr=None)
+		output = sh.run('cat', 'definitely missing file', stdout=str, stderr=None)
 		self.assertEqual(output, '')
 	def should_use_parentheses_to_run_command(self):
 		output = sh('echo', 'test', stdout=str)
