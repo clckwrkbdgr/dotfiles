@@ -1,13 +1,44 @@
 #!/usr/bin/env python
-import os, sys, re
-import click
+import os, sys, re, subprocess
+import click, click_default_group
+import json
 import termcolor
 from pathlib import Path
-from clckwrkbdgr import utils
+from clckwrkbdgr import utils, xdg
+from clckwrkbdgr.collections import dotdict
 
-@click.group()
+CONFIG_FILE_DESC = """Configuration is stored in $XDG_DATA_HOME/todo/config.json
+
+\b
+Fields:
+- editor: Command to run editor (list of arguments). Filename will be added to the end of the arg list. Default is [$EDITOR].
+- inbox_file: path to INBOX file (may contain tilde and environment variables). Default is "~/.local/share/todo/.INBOX.md"
+"""
+
+def read_config():
+	config_file = xdg.save_data_path('todo')/'config.json'
+	data = {}
+	if config_file.exists():
+		data = json.loads(config_file.read_text())
+	return dotdict(
+			inbox_file=Path(os.path.expandvars(data.get('inbox_file', "~/.local/share/todo/.INBOX.md"))).expanduser(),
+			editor=list(data.get('editor', [os.environ.get('EDITOR', 'vim')])),
+			)
+
+@click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=CONFIG_FILE_DESC)
 def cli():
 	pass
+
+@cli.command()
+@click.argument('add_notes', nargs=-1)
+@utils.exits_with_return_value
+def inbox(add_notes=None):
+	config = read_config()
+	if add_notes:
+		with config.inbox_file.open('a+') as f:
+			f.write(' '.join(add_notes) + '\n')
+		return True
+	return 0 == subprocess.call(config.editor + [config.inbox_file], shell=True)
 
 @cli.command()
 @click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
