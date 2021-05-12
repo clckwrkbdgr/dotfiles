@@ -7,26 +7,10 @@ import termcolor
 from pathlib import Path
 from clckwrkbdgr import utils, xdg
 from clckwrkbdgr.collections import dotdict
+import clckwrkbdgr.todo
+import clckwrkbdgr.todo.tasklist
 
-CONFIG_FILE_DESC = """Configuration is stored in $XDG_DATA_HOME/todo/config.json
-
-\b
-Fields:
-- editor: Command to run editor (list of arguments). Filename will be added to the end of the arg list. Default is [$EDITOR].
-- inbox_file: path to INBOX file (may contain tilde and environment variables). Default is "~/.local/share/todo/.INBOX.md"
-"""
-
-def read_config():
-	config_file = xdg.save_data_path('todo')/'config.json'
-	data = {}
-	if config_file.exists():
-		data = json.loads(config_file.read_text())
-	return dotdict(
-			inbox_file=Path(os.path.expandvars(data.get('inbox_file', "~/.local/share/todo/.INBOX.md"))).expanduser(),
-			editor=list(data.get('editor', [os.environ.get('EDITOR', 'vim')])),
-			)
-
-@click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=CONFIG_FILE_DESC)
+@click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=clckwrkbdgr.todo.CONFIG_FILE_DESC)
 def cli():
 	pass
 
@@ -34,7 +18,7 @@ def cli():
 @click.argument('add_notes', nargs=-1)
 @utils.exits_with_return_value
 def inbox(add_notes=None):
-	config = read_config()
+	config = clckwrkbdgr.todo.read_config()
 	config.inbox_file.parent.mkdir(parents=True, exist_ok=True)
 	if add_notes:
 		with config.inbox_file.open('a+') as f:
@@ -47,6 +31,19 @@ def inbox(add_notes=None):
 		# To prevent this, slashes should be forward: C:/path/to/file
 		filename = filename.replace('\\', '/')
 	return 0 == subprocess.call(config.editor + [filename], shell=True)
+
+@cli.command('sync')
+@utils.exits_with_return_value
+def sync_tasks():
+	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
+	tasklist.sync()
+
+@cli.command('list')
+@utils.exits_with_return_value
+def list_tasks():
+	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
+	for task in tasklist.list_all():
+		print(task)
 
 @cli.command()
 @click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
