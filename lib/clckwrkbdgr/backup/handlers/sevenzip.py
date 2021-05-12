@@ -2,7 +2,7 @@ import os, subprocess, shutil
 import clckwrkbdgr.backup
 import logging
 
-class SevenZipArchiver:
+class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and processes.
 	def __init__(self, context):
 		self.context = context
 	def perform(self):

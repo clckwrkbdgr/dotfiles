@@ -1,6 +1,7 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 from clckwrkbdgr.backup import Password, PasswordArg
+import clckwrkbdgr.backup.handlers.sevenzip
 
 class TestPassword(unittest.TestCase):
 	def should_hide_password_by_default(self):
