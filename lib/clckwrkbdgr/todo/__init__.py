@@ -13,7 +13,7 @@ class Task:
 		self.title = title
 	def __str__(self):
 		return self.title
-	def __rerp__(self):
+	def __rerp__(self): # pragma: no cover
 		return 'Task({0})'.format(repr(self.title))
 
 task_provider = AutoRegistry()
@@ -29,7 +29,7 @@ Fields:
 """
 
 @functools.lru_cache()
-def read_config():
+def read_config(): # pragma: no cover
 	config_file = xdg.save_data_path('todo')/'config.json'
 	data = {}
 	if config_file.exists():

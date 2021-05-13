@@ -4,13 +4,13 @@ import clckwrkbdgr.todo
 import clckwrkbdgr.todo.provider
 from clckwrkbdgr import xdg
 
-for entry in clckwrkbdgr.todo.read_config().task_providers:
+for entry in clckwrkbdgr.todo.read_config().task_providers: # pragma: no cover -- TODO really shouldn't do this in module's body.
 	try:
 		importlib.import_module(entry)
 	except Exception as e:
 		print("Failed to load task provider '{0}': {1}".format(entry, e))
 
-class TaskList:
+class TaskList: # pragma: no cover -- TODO depends on global list of task providers, also on FS.
 	def __init__(self):
 		self._filename = xdg.save_state_path('todo')/'tasklist.lst'
 	def sync(self):
