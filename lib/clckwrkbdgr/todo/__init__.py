@@ -3,7 +3,7 @@ import json
 import functools
 try:
 	from pathlib2 import Path
-except ImportError:
+except ImportError: # pragma: no cover
 	from pathlib import Path
 from clckwrkbdgr.collections import AutoRegistry, dotdict
 from clckwrkbdgr import xdg
