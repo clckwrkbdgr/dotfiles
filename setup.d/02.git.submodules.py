@@ -15,7 +15,10 @@ except ImportError:
 				# by any # space/tab
 				r'(?P<value>.*)$'                     # everything up to eol
 				)
-from pathlib import Path
+try:
+	from pathlib2 import Path
+except ImportError:
+	from pathlib import Path
 from clckwrkbdgr import xdg
 
 os.chdir(str(xdg.XDG_CONFIG_HOME))

@@ -6,7 +6,10 @@ if platform.system() == 'Windows':
 import logging
 logging.basicConfig(level=logging.DEBUG if os.environ.get('DOTFILES_SETUP_VERBOSE') else logging.WARNING)
 trace = logging.getLogger()
-from pathlib import Path
+try:
+	from pathlib2 import Path
+except ImportError:
+	from pathlib import Path
 import subprocess
 from clckwrkbdgr import commands
 
