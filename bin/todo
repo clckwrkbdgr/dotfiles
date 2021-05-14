@@ -36,14 +36,20 @@ def inbox(add_notes=None):
 @utils.exits_with_return_value
 def sync_tasks():
 	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
-	tasklist.sync()
+	return tasklist.sync()
 
 @cli.command('list')
 @utils.exits_with_return_value
 def list_tasks():
 	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
-	for task in tasklist.list_all():
+	for task in tasklist.list_all(with_seps=True):
 		print(task)
+
+@cli.command('sort')
+@utils.exits_with_return_value
+def sort_Tasks():
+	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
+	return tasklist.sort()
 
 @cli.command()
 @click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
