@@ -211,7 +211,8 @@ if !exists("DetectIndent")
 	command! -bar -nargs=0 DetectIndent call MyDetectIndent()
 endif
 
-if empty($MYLOCALVIMRC)
+" Old Vim 6.0 has no function empty()
+if match($MYLOCALVIMRC, "^\\s*$") != -1
 	let $MYLOCALVIMRC=$HOME . "/.local/vimrc"
 endif
 if filereadable($MYLOCALVIMRC)
