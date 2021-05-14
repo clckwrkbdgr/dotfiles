@@ -5,7 +5,7 @@ Utility to create/fetch git repos as plain archive on systems where git is not a
 Works for Py2/Py3, Windows/Unix. No external dependencies. Only batteries are required.
 """
 import os, sys, subprocess
-import posixpath
+import posixpath, fnmatch
 import logging
 if sys.version_info[0] == 2:
 	from urllib2 import urlopen
@@ -44,6 +44,35 @@ def update_sparse_checkout_attributes(attributes, export_ignore_files):
 	content = '\n'.join(content) + '\n'
 	with open(attributes, 'wb') as f:
 		f.write(content.encode('utf-8'))
+
+def matches_patterns(value, patterns):
+	for pattern in patterns:
+		if fnmatch.fnmatch(value, pattern):
+			return True
+	return False
+
+def list_directory(root, ignored=None):
+	patterns_to_ignore = []
+	for pattern in ignored or []:
+		if pattern.startswith('/'):
+			pattern = os.path.join('.', pattern.lstrip('/'))
+		else:
+			pattern = os.path.join('.', '**', pattern)
+		patterns_to_ignore.append(pattern)
+	for root, dirnames, filenames in os.walk(root):
+		new_dirnames = []
+		for dirname in dirnames:
+			full_name = os.path.join(root, dirname)
+			if matches_patterns(full_name, patterns_to_ignore):
+				continue
+			new_dirnames.append(dirname)
+		dirnames[:] = new_dirnames
+
+		for filename in filenames:
+			full_name = os.path.join(root, filename)
+			if matches_patterns(full_name, patterns_to_ignore):
+				continue
+			yield full_name
 
 def fetch_repo(repo_root, url):
 	"""
@@ -107,6 +136,7 @@ def cli():
 	pull_command = commands.add_parser('pull', description='Updates local copy using original remote URL.')
 	create_archive_command = commands.add_parser('create-archive', description='Creates archive for existing git repo and stores in .git/info/archive.tar.gz')
 	create_archive_command.add_argument('--sparse-checkout', help='Custom sparse-checkout file. Only files from this list will be present in generated archive. By default tries to read .git/info/sparse-checkout.')
+	status_command = commands.add_parser('status', description='Checks status of local copy. Currently only checks for "unversioned" files (i.e. missing from archive).')
 
 	args = parser.parse_args()
 	if args.quiet:
@@ -119,6 +149,8 @@ def cli():
 		return pull()
 	elif args.command == 'create-archive':
 		return create_archive(sparse_checkout=args.sparse_checkout)
+	elif args.command == 'status':
+		return status()
 	logging.error('Unknown command: {0}'.format(args.command))
 	return False
 
@@ -178,6 +210,23 @@ def pull():
 	logging.info("Pulling remote {0}...".format(url))
 	fetch_repo('.', url)
 	logging.info("Done.")
+
+def status():
+	gitdir = '.git'
+	if not os.path.exists(gitdir):
+		logging.error("Cannot find {0}. Is should be a root of a .git repo.".format(gitdir))
+		return False
+	gitdir_info = os.path.join(gitdir, 'info')
+	archive = os.path.join(gitdir_info, 'archive.tar')
+	output = subprocess.check_output(["tar", "tf", archive])
+	archived_files = set(os.path.join('.', line) for line in output.decode('utf-8', 'replace').splitlines())
+	ignored = ['/.git']
+	if os.path.isfile('.gitignore'):
+		with open('.gitignore') as f:
+			ignored += [line for line in f.read().splitlines() if line.strip() and not line.lstrip().startswith('#')]
+	local_files = set(list_directory('.', ignored=ignored))
+	for filename in local_files - archived_files:
+		print('?? {0}'.format(filename))
 
 if __name__ == '__main__':
 	rc = cli()
