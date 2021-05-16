@@ -120,4 +120,5 @@ sed '/browser.contentblocking.cfr-milestone/d' | \
 sed '/pdfjs.enabledCache.state/d' | \
 sed '/browser.urlbar.tipShownCount.searchTip_redirect/d' | \
 sed '/devtools.netmonitor.persistlog/d' | \
+sed '/devtools.toolbox.tabsOrder/d' | \
 sed 's|'"$HOME"'|$HOME|g'
