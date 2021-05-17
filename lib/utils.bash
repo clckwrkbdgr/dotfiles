@@ -110,3 +110,39 @@ truncate_logfile() {
 		tail -n "${2}" "$1" >"$tempfile" && mv -f "$tempfile" "$1"
 	fi
 }
+
+version_cmp() {
+	# Compares two dot-separated version strings (respecting sections).
+	# Returns (prints to stdout):
+	#   '<', if L < R,
+	#   '>', if L > R,
+	#   '=', if L == R
+	# Usage:
+	#   version_cmp <version L> <version R>
+	if [ -z "$1" -a -z "$2" ]; then
+		echo '='
+		return
+	fi
+	if [ -z "$1" ]; then
+		echo '<'
+		return
+	fi
+	if [ -z "$2" ]; then
+		echo '>'
+		return
+	fi
+	head1=${1%%.*}
+	head2=${2%%.*}
+	if (( $head1 < $head2 )); then
+		echo '<'
+		return
+	elif (( $head1 > $head2 )); then
+		echo '>'
+		return
+	fi
+	tail1=${1#*.}
+	[ "$tail1" == "$1" ] && tail1='' # Detecting last section (no dots left).
+	tail2=${2#*.}
+	[ "$tail2" == "$2" ] && tail2='' # Detecting last section (no dots left).
+	version_cmp "$tail1" "$tail2"
+}

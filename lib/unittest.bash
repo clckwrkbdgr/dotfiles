@@ -248,7 +248,7 @@ assertReturnCode() { # <expected_rc> <command>
 	fi
 	local number_re='^[0-9]+$'
 	if ! [[ "$expected_rc" =~ $number_re ]]; then
-		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is not a number!" >&2
+		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:${FUNCNAME[1]}: Expected return code is not a non-negative number!" >&2
 		exit 1
 	fi
 	if [ -z "${_UNITTEST_LAST_RC}" ]; then

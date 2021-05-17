@@ -161,4 +161,20 @@ last
 EOF
 }
 
+should_compare_versions() {
+	assertOutputEqual "version_cmp 1 2"         '<'
+	assertOutputEqual "version_cmp 1.0.0 2.0.0" '<'
+	assertOutputEqual "version_cmp 1.1.0 1.2.0" '<'
+	assertOutputEqual "version_cmp 1.1 1.2.0"   '<'
+	assertOutputEqual "version_cmp 1.1 1.1.0"   '<'
+
+	assertOutputEqual "version_cmp '' ''"       '='
+	assertOutputEqual "version_cmp 1 1."        '='
+	assertOutputEqual "version_cmp 1.0.0 1.0.0" '='
+	assertOutputEqual "version_cmp 0.0.0 0.0.0" '='
+
+	assertOutputEqual "version_cmp 2.0.0 1.0.0" '>'
+	assertOutputEqual "version_cmp 1.1.0 1.1"   '>'
+}
+
 unittest::run should_
