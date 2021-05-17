@@ -1,4 +1,4 @@
-import sys, subprocess
+import sys, subprocess, platform
 import importlib
 import logging
 from collections import namedtuple
@@ -44,14 +44,16 @@ class TaskList: # pragma: no cover -- TODO depends on global list of task provid
 		self._filename = xdg.save_state_path('todo')/'tasklist.lst'
 	def sort(self):
 		config = clckwrkbdgr.todo.read_config()
-		return 0 == subprocess.call(config.editor + [self._filename], shell=True)
+		return 0 == subprocess.call(config.editor + [str(self._filename)], shell=(platform.system() == 'Windows'))
 	def sync(self):
 		tasks = []
 		for provider in clckwrkbdgr.todo.task_provider:
 			for task in provider():
 				tasks.append(task.title.encode('utf-8', 'replace'))
 
-		old_lines = self._filename.read_bytes().splitlines()
+		old_lines = []
+		if self._filename.exists():
+			old_lines = self._filename.read_bytes().splitlines()
 		new_lines = []
 		changed = False
 		for keep, line in filter_task_list(old_lines, tasks):

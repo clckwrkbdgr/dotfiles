@@ -30,7 +30,7 @@ def inbox(add_notes=None):
 		# Vim changes CWD to the base dir of the file.
 		# To prevent this, slashes should be forward: C:/path/to/file
 		filename = filename.replace('\\', '/')
-	return 0 == subprocess.call(config.editor + [filename], shell=True)
+	return 0 == subprocess.call(config.editor + [filename], shell=(platform.system() == 'Windows'))
 
 @cli.command('sync')
 @utils.exits_with_return_value
