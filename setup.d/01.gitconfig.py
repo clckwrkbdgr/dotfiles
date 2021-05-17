@@ -13,6 +13,10 @@ from clckwrkbdgr import xdg
 
 os.chdir(str(xdg.XDG_CONFIG_HOME))
 
+git_config_file = Path('.git')/'config')
+if not git_config_file.is_file():
+	sys.exit()
+
 try:
 	gitconfig = configparser.ConfigParser(strict=False)
 except TypeError: # Py2 does not support not strict INIs.
@@ -27,7 +31,7 @@ except TypeError: # Py2 does not support not strict INIs.
 				r'(?P<value>.*)$'                     # everything up to eol
 				)
 	gitconfig = NotStrictConfigParser()
-gitconfig.read([str(Path('.git')/'config')])
+gitconfig.read([str(git_config_file)])
 if gitconfig.has_section('include') and gitconfig.has_option('include', 'path') and gitconfig.get('include', 'path') == '../.gitconfig':
 	sys.exit()
 
