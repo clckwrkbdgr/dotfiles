@@ -1,3 +1,16 @@
 #!/bin/bash
 . "$XDG_CONFIG_HOME/lib/path.bash"
-path::exec_base --hsts-file "$XDG_CACHE_HOME/wget-hsts" "$@"
+
+_current_version=$(path::exec_base --version | head -1 | awk '{print $NF}')
+
+_top_version=$((
+echo "${_current_version}"
+echo '1.17.0' # --hsts-file is introduced
+) | sort -t '.' -k 1,1 -k 2,2 -k 3,3 | head -1)
+
+OPTS=
+if [ ${_top_version} == ${_current_version} ]; then
+   OPTS="--hsts-file '$XDG_CACHE_HOME/wget-hsts'"
+fi
+
+path::exec_base $OPTS "$@"
