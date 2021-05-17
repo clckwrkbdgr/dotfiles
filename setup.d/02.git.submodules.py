@@ -36,4 +36,13 @@ gitmodules.read(['.gitmodules'])
 if not (set(gitmodules.sections()) - set(gitconfig.sections())):
 	sys.exit()
 
-sys.exit(subprocess.call(['git', 'submodule', 'init']))
+has_git = True
+try:
+	subprocess.check_call(['git', '-version'])
+except subprocess.CalledProcessError:
+	has_git = False
+except OSError:
+	has_git = False
+
+if has_git:
+	sys.exit(subprocess.call(['git', 'submodule', 'init']))
