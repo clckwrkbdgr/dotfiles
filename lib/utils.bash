@@ -88,7 +88,11 @@ is_sourced() {
 as_uri() {
 	# Converts local file path to URI: file://...
 	# File must exist.
-	python -c 'import sys,pathlib; print(pathlib.Path(sys.argv[1]).resolve().as_uri())' "$1"
+	local pathlib_import="pathlib"
+	if [ 2 == $(python -c 'import sys;print(sys.version_info[0])') ]; then
+		pathlib_import="pathlib2 as pathlib"
+	fi
+	python -c "import sys,${pathlib_import}; print(pathlib.Path(sys.argv[1]).resolve().as_uri())" "$1"
 }
 
 truncate_logfile() {
