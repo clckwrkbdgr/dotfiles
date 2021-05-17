@@ -21,7 +21,6 @@ should_strip_directory_from_PATH() {
 
 should_strip_current_directory_from_PATH() {
 	cd "$TMPBINDIR"
-	PATH="$XDG_CONFIG_HOME/bin:$TMPBINDIR:/usr/bin:/bin"
 	tmpscript="$(mktemp)"
 	finally "rm -f '$tmpscript'"
 	chmod +x "$tmpscript"
@@ -31,11 +30,10 @@ should_strip_current_directory_from_PATH() {
 path::strip_current
 echo "\$PATH"
 EOF
-	assertOutputEqual "$tmpscript" "$XDG_CONFIG_HOME/bin:/usr/bin:/bin"
+	assertOutputEqual "PATH='$XDG_CONFIG_HOME/bin:$TMPBINDIR:/usr/bin:/bin' $tmpscript" "$XDG_CONFIG_HOME/bin:/usr/bin:/bin"
 }
 
 should_exec_base_app_from_wrapper() {
-	PATH="$TMPBINDIR:$XDG_CONFIG_HOME/bin:/usr/bin:/bin"
 	tmpscript="$TMPBINDIR/cat"
 	cat >"$tmpscript" <<EOF
 #!/bin/bash
@@ -43,7 +41,7 @@ should_exec_base_app_from_wrapper() {
 path::exec_base -vet "\$@"
 EOF
 	chmod +x "$tmpscript"
-	assertOutputEqual 'which cat' "$TMPBINDIR/cat"
+	assertOutputEqual "PATH='$TMPBINDIR:$XDG_CONFIG_HOME/bin:/usr/bin:/bin' which cat" "$TMPBINDIR/cat"
 	assertOutputEqual "echo -e '\tTEST' | PATH='$TMPBINDIR:$XDG_CONFIG_HOME/bin:/usr/bin:/bin' cat" "^ITEST$"
 }
 
