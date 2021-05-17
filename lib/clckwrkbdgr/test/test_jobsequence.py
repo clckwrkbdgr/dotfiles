@@ -54,7 +54,7 @@ class TestJobSequence(unittest.TestCase):
 		result = seq.patterns_argument()
 		click.argument.assert_called_once_with('patterns', nargs=-1)
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable')
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({'my_default_dir':[]}))
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
@@ -66,7 +66,7 @@ class TestJobSequence(unittest.TestCase):
 		path_iterdir.assert_has_calls([])
 		subprocess_call.assert_not_called()
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False), (0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
@@ -92,7 +92,7 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_default_dir', 'foo.2')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
@@ -112,7 +112,7 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_default_dir', 'foo.2')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
@@ -132,7 +132,7 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_default_dir', 'foo')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [
@@ -149,7 +149,7 @@ class TestJobSequence(unittest.TestCase):
 		path_iterdir.assert_has_calls([])
 		subprocess_call.assert_has_calls([])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
@@ -169,7 +169,7 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_other_dir', 'foo')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(1, False), (2, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
@@ -190,7 +190,7 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_other_dir', 'foo')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
@@ -210,7 +210,7 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_other_dir', 'bar.py')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
@@ -231,7 +231,7 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_other_dir', 'baz')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
@@ -251,7 +251,7 @@ class TestJobSequence(unittest.TestCase):
 				self._job_call(Path('my_other_dir', 'foo')),
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_other_dir') : [
@@ -272,7 +272,7 @@ class TestJobSequence(unittest.TestCase):
 				])
 	@mock.patch.dict(os.environ, os.environ.copy())
 	@mock.patch('sys.exit')
-	@mock.patch('logging.info')
+	@mock.patch('logging.Logger.info')
 	@mock.patch('clckwrkbdgr.jobsequence.run_job_executable', side_effect=[(0, False), (0, False)])
 	@mock.patch.object(pathlib.Path, 'iterdir', autospec=True, side_effect=mock_iterdir({
 		Path('my_default_dir') : [

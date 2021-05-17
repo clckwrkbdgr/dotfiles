@@ -93,21 +93,23 @@ class JobSequence:
 		job_dirs = list(map(Path, job_dirs or self.default_job_dirs))
 		if dry_run:
 			verbose = max(1, verbose)
+		logging.basicConfig()
+		logger = logging.getLogger('jobsequence')
 		if verbose:
-			logging.getLogger().setLevel(logging.INFO if verbose == 1 else logging.DEBUG)
+			logger.setLevel(logging.INFO if verbose == 1 else logging.DEBUG)
 		if not dry_run:
 			os.environ[self.verbose_var_name] = 'v' * verbose
 		else:
-			logging.info("[DRY] {0}={1}".format(self.verbose_var_name, 'v' * verbose))
+			logger.info("[DRY] {0}={1}".format(self.verbose_var_name, 'v' * verbose))
 		patterns = patterns or []
 		include_patterns = [pattern for pattern in patterns if not pattern.startswith('!')]
 		exclude_patterns = [pattern[1:] for pattern in patterns if pattern.startswith('!')]
-		logging.info("Verbosity level: {0}".format(verbose))
-		logging.info("Searching in directories: {0}".format(job_dirs))
+		logger.info("Verbosity level: {0}".format(verbose))
+		logger.info("Searching in directories: {0}".format(job_dirs))
 		if include_patterns:
-			logging.info("Including patterns: {0}".format(include_patterns))
+			logger.info("Including patterns: {0}".format(include_patterns))
 		if exclude_patterns:
-			logging.info("Excluding patterns: {0}".format(exclude_patterns))
+			logger.info("Excluding patterns: {0}".format(exclude_patterns))
 		total_rc = 0
 		entries = (
 				job_dir.iterdir() if job_dir.is_dir() else []
@@ -118,23 +120,23 @@ class JobSequence:
 		main_title = Path(sys.modules['__main__'].__file__).name
 		for entry in sorted(itertools.chain.from_iterable(entries), key=lambda entry: entry.name):
 			if self._is_unwanted(entry):
-				logging.info("Skipping unwanted entry: {0}".format(entry))
+				logger.info("Skipping unwanted entry: {0}".format(entry))
 				continue
 			if include_patterns and all(pattern not in entry.name for pattern in include_patterns):
-				logging.info("Job was not matched by include patterns: {0}".format(entry))
+				logger.info("Job was not matched by include patterns: {0}".format(entry))
 				continue
 			if exclude_patterns and any(pattern in entry.name for pattern in exclude_patterns):
-				logging.info("Job was unmatched by exclude patterns: {0}".format(entry))
+				logger.info("Job was unmatched by exclude patterns: {0}".format(entry))
 				continue
-			logging.info("Executing job: {0}".format(entry))
+			logger.info("Executing job: {0}".format(entry))
 			if not dry_run:
 				header = '=== {0} : {1}\n'.format(main_title, str(entry))
 				rc, job_has_output = run_job_executable(entry, header)
 				was_output = was_output or job_has_output
 			else:
-				logging.info("[DRY] Executing: `{0}`".format(entry))
+				logger.info("[DRY] Executing: `{0}`".format(entry))
 				rc = 0
-			logging.info("RC: {0}".format(rc))
+			logger.info("RC: {0}".format(rc))
 			total_rc += rc
 		if was_output: # pragma: no cover -- TODO
 			sys.stdout.write('=== {0} : [Finished]\n'.format(main_title))
