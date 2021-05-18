@@ -13,7 +13,7 @@ from clckwrkbdgr import xdg
 
 os.chdir(str(xdg.XDG_CONFIG_HOME))
 
-git_config_file = Path('.git')/'config')
+git_config_file = Path('.git')/'config'
 if not git_config_file.is_file():
 	sys.exit()
 
