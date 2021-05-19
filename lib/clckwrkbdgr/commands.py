@@ -1,4 +1,8 @@
 import os, sys, subprocess
+try:
+	subprocess.DEVNULL
+except AttributeError: # pragma: no cover
+	subprocess.DEVNULL = open(os.devnull, 'w')
 import datetime
 import traceback
 try:
@@ -9,7 +13,9 @@ except ImportError: # pragma: no cover
 def run_command_and_collect_output(args, output_dir=None): # pragma: no cover -- TODO accesses and uses FS, subprocesses
 	""" Imitates Unix crontab job.
 
-	Runs command with arguments and collects output.
+	Runs batch command with arguments and collects output.
+	Completely disables STDIN for the process (redirects DEVNULL)
+	to prevent subprocesses being locked on waiting input.
 
 	If command returned non-zero and generated any output on stdout or stderr,
 	collects output with some additional info (similar to crontab MAILTO feature),
@@ -26,7 +32,7 @@ def run_command_and_collect_output(args, output_dir=None): # pragma: no cover --
 	try:
 		pid = hash(str(args))
 		try:
-			p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+			p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, shell=True)
 			pid = p.pid
 			command_output, _ = p.communicate()
 			assert(_ is None)
