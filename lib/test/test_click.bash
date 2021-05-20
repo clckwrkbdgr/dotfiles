@@ -50,9 +50,9 @@ should_parse_options_and_flags() {
 	click::flag '-f' '--flag' 
 	click::argument 'name'
 	test_click() {
-		assertStringNotEmpty "${CLICK_ARGS[flag]}"
-		assertStringsEqual "${CLICK_ARGS[option]}" 'option_value'
-		assertStringsEqual "${CLICK_ARGS[name]}" 'argument_value'
+		assertStringNotEmpty "$(click::arg flag)"
+		assertStringsEqual "$(click::arg option)" 'option_value'
+		assertStringsEqual "$(click::arg name)" 'argument_value'
 	}
 
 	assertExitSuccess 'click::run -o option_value -f argument_value'
@@ -66,9 +66,9 @@ should_parse_positionals() {
 	click::argument 'second'
 	click::argument 'third'
 	test_click() {
-		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
-		assertStringsEqual "${CLICK_ARGS[second]}" 'arg2'
-		assertStringsEqual "${CLICK_ARGS[third]}" 'arg3'
+		assertStringsEqual "$(click::arg first)" 'arg1'
+		assertStringsEqual "$(click::arg second)" 'arg2'
+		assertStringsEqual "$(click::arg third)" 'arg3'
 	}
 
 	assertExitSuccess 'click::run arg1 arg2 arg3'
@@ -106,9 +106,9 @@ should_consume_all_positionals_for_nargs() {
 	click::argument 'second'
 	click::argument 'third' --nargs=-1
 	test_click() {
-		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
-		assertStringsEqual "${CLICK_ARGS[second]}" 'arg2'
-		assertStringsEqual "${CLICK_ARGS[third]}" 'arg3 arg3.1 arg3.2'
+		assertStringsEqual "$(click::arg first)" 'arg1'
+		assertStringsEqual "$(click::arg second)" 'arg2'
+		assertStringsEqual "$(click::arg third)" 'arg3 arg3.1 arg3.2'
 		assertStringsEqual "${#CLICK_NARGS[@]}" 3
 		assertStringsEqual "${CLICK_NARGS[0]}" 'arg3'
 		assertStringsEqual "${CLICK_NARGS[1]}" 'arg3.1'
@@ -126,9 +126,9 @@ should_consume_even_arguments_with_dash_for_nargs() {
 	click::argument 'second'
 	click::argument 'third' --nargs=-1
 	test_click() {
-		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
-		assertStringsEqual "${CLICK_ARGS[second]}" 'arg2'
-		assertStringsEqual "${CLICK_ARGS[third]}" 'arg3 --arg3.1 -arg3.2'
+		assertStringsEqual "$(click::arg first)" 'arg1'
+		assertStringsEqual "$(click::arg second)" 'arg2'
+		assertStringsEqual "$(click::arg third)" 'arg3 --arg3.1 -arg3.2'
 		assertStringsEqual "${#CLICK_NARGS[@]}" 3
 		assertStringsEqual "${CLICK_NARGS[0]}" 'arg3'
 		assertStringsEqual "${CLICK_NARGS[1]}" '--arg3.1'
@@ -146,10 +146,10 @@ should_allow_zero_given_arguments_for_nargs() {
 	click::argument 'second'
 	click::argument 'third' --nargs=-1
 	test_click() {
-		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
-		assertStringsEqual "${CLICK_ARGS[second]}" 'arg2'
+		assertStringsEqual "$(click::arg first)" 'arg1'
+		assertStringsEqual "$(click::arg second)" 'arg2'
 		assertStringsEqual "${#CLICK_NARGS[@]}" 0
-		assertStringsEqual "${CLICK_ARGS[third]}" ''
+		assertStringsEqual "$(click::arg third)" ''
 	}
 
 	assertExitSuccess 'click::run arg1 arg2'
@@ -185,8 +185,8 @@ should_allow_default_value_for_positionals() {
 	click::argument 'first'
 	click::argument 'second' --default=default
 	test_click() {
-		assertStringsEqual "${CLICK_ARGS[first]}" 'value'
-		assertStringsEqual "${CLICK_ARGS[second]}" 'default'
+		assertStringsEqual "$(click::arg first)" 'value'
+		assertStringsEqual "$(click::arg second)" 'default'
 	}
 
 	assertExitSuccess 'click::run value'
@@ -199,8 +199,8 @@ should_allow_empty_default_value_for_positionals() {
 	click::argument 'first'
 	click::argument 'second' --default=''
 	test_click() {
-		assertStringsEqual "${CLICK_ARGS[first]}" 'value'
-		assertStringsEqual "${CLICK_ARGS[second]}" ''
+		assertStringsEqual "$(click::arg first)" 'value'
+		assertStringsEqual "$(click::arg second)" ''
 	}
 
 	assertExitSuccess 'click::run value'
@@ -229,8 +229,8 @@ should_allow_default_values_for_several_tailing_positionals() {
 	click::argument 'first' --default=default_first
 	click::argument 'second' --default=default_second
 	test_click() {
-		assertStringsEqual "${CLICK_ARGS[first]}" 'default_first'
-		assertStringsEqual "${CLICK_ARGS[second]}" 'default_second'
+		assertStringsEqual "$(click::arg first)" 'default_first'
+		assertStringsEqual "$(click::arg second)" 'default_second'
 	}
 
 	assertExitSuccess 'click::run'
@@ -245,9 +245,9 @@ should_treat_all_params_as_positionals_after_double_dash() {
 	click::argument 'second'
 	click::argument 'third' --nargs=-1
 	test_click() {
-		assertStringsEqual "${CLICK_ARGS[first]}" 'arg1'
-		assertStringsEqual "${CLICK_ARGS[second]}" '--option'
-		assertStringsEqual "${CLICK_ARGS[third]}" 'arg3 -o arg3.2'
+		assertStringsEqual "$(click::arg first)" 'arg1'
+		assertStringsEqual "$(click::arg second)" '--option'
+		assertStringsEqual "$(click::arg third)" 'arg3 -o arg3.2'
 		assertStringsEqual "${#CLICK_NARGS[@]}" 3
 		assertStringsEqual "${CLICK_NARGS[0]}" 'arg3'
 		assertStringsEqual "${CLICK_NARGS[1]}" '-o'

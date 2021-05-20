@@ -226,9 +226,14 @@ click::usage() {
 	fi
 }
 
-# Main associative array of collected CLI args.
-# Access: ${CLICK_ARGS[arg_name]}
 declare -A CLICK_ARGS
+
+click::arg() {
+	# Prints value for the specified argument name.
+	# Usage: click::arg <arg_name>
+	local arg_name="$1"
+	echo "${CLICK_ARGS[$arg_name]}"
+}
 
 # Sequence of values for argument with nargs=1 if there was one.
 # Access: ${CLICK_NARGS[i]}
