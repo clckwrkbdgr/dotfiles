@@ -112,7 +112,7 @@ def fetch_repo(repo_root, url):
 
 	logging.info("Unpacking archive...")
 	subprocess.call(["gzip", "-d", os.path.join(gitdir_info, 'archive.tar.gz')])
-	subprocess.call(["tar", "-xf", os.path.join(gitdir_info, 'archive.tar')])
+	subprocess.call(["tar", "-xpf", os.path.join(gitdir_info, 'archive.tar')])
 
 	logging.info("Removing empty directories...")
 	for line in reversed(subprocess.check_output(["tar", "-tf", os.path.join(gitdir_info, 'archive.tar')]).decode('utf-8', 'replace').splitlines()):
