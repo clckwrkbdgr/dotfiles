@@ -471,14 +471,14 @@ Any test case matching given prefix will be executed.
 If test case is not specified, all test cases in the file are executed."
 	# TODO [not-required-arguments] click::argument 'test_file_pattern' 'Pattern for test files (only for explicit "discover" action. By default test_*.bash are used.'
 	unittest_main() {
-		[ -n "${CLICK_ARGS[quiet]}" ] && export UNITTEST_QUIET=true
+		[ -n "$(click::arg quiet)" ] && export UNITTEST_QUIET=true
 
-		if [ -z "${CLICK_ARGS[test_spec]}" -o "${CLICK_ARGS[test_spec]}" == 'discover' ]; then
-			unittest::discover "${CLICK_ARGS[test_file_pattern]}"
+		if [ -z "$(click::arg test_spec)" -o "$(click::arg test_spec)" == 'discover' ]; then
+			unittest::discover "$(click::arg test_file_pattern)"
 			exit $?
 		fi
 
-		test_spec="${CLICK_ARGS[test_spec]}"
+		test_spec="$(click::arg test_spec)"
 		find . -type f | (
 			total_rc=0
 			while read filename; do
