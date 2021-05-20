@@ -84,8 +84,24 @@ should_process_additional_parameters_of_definitions_of_arguments() {
 	test_click() {
 		:
 	}
-	assertOutputEqual 'click::run -h 2>&1' - <<EOF
-Usage: $0 [-o] [-f] <arg>
+
+	sort_usage() {
+		# Different versions of Bash sort arrays in different orders.
+		sed 's/^Usage: .*$/01Usage: <list of args stripped>/' | \
+			sed 's/.*Parameter.*/02&/' | \
+			sed 's/^  <arg>.*/03&/' | \
+			sed 's/.*Argument.*/04&/' | \
+			sed 's/.*-option.*/05&/' | \
+			sed 's/.*Option.*/06&/' | \
+			sed 's/.*default_value.*/07&/' | \
+			sed 's/.*flag.*/08&/' | \
+			sed 's/.*Flag.*/09&/' | \
+			sed 's/.*false.*/10&/' | \
+			sort -k 1,2 | cut -c 3-
+	}
+
+	assertOutputEqual 'click::run -h 2>&1 | sort_usage' - <<EOF
+Usage: <list of args stripped>
 Parameters:
   <arg>
         Argument help
