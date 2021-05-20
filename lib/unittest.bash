@@ -76,7 +76,23 @@ unified_diff() { # <left file> <right file>
 	right_file="$2"
 	left_file_name="${3:-$1}"
 	right_file_name="${4:-$2}"
-	diff -u "$left_file" "$right_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s|^\(--- \).*$|\1'"$left_file_name"'|;2s|^\(+++ \).*|\1'"$right_file_name"'|'"${_FIX_SPACES_IN_UNIFIED_DIFF}""${_FIX_METAINFO_IN_UNIFIED_DIFF}"
+	if which python >/dev/null 2>/dev/null; then
+		python -c 'import sys, difflib; sys.stdout.writelines(difflib.unified_diff(open(sys.argv[1]).readlines(), open(sys.argv[2]).readlines(), sys.argv[3], sys.argv[4]))' "$left_file" "$right_file" "$left_file_name" "$right_file_name"
+	elif [ $(uname) == AIX -a $(uname -v) == 5 ]; then
+		# AIX 5.* diff does not support unified diff option.
+		# Trying to emulate.
+		# Unfortunately, it does not properly support context.
+		echo "--- $left_file_name"
+		echo "+++ $right_file_name"
+		diff "$left_file" "$right_file" | \
+			sed '/^---$/d;'\
+'s/^\([0-9][0-9]*\)c\([0-9][0-9,]*\)/@@ -\1 +\2 @@/;'\
+'s/^\([0-9][0-9]*\)a\([0-9][0-9,]*\)/@@ -\1,0 +\2 @@/;'\
+'s/^< \(.*\)$/-\1/;'\
+'s/^> \(.*\)$/+\1/;'
+	else
+		diff -u "$left_file" "$right_file" | sed 's/^\([-+][-+][-+] .*\)\t[^\t]\+/\1/;1s|^\(--- \).*$|\1'"$left_file_name"'|;2s|^\(+++ \).*|\1'"$right_file_name"'|'"${_FIX_SPACES_IN_UNIFIED_DIFF}""${_FIX_METAINFO_IN_UNIFIED_DIFF}"
+	fi
 }
 
 assertFilesSame() { # <actual> <expected>
