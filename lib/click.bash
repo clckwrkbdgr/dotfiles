@@ -269,7 +269,7 @@ click::run() {
 			continue
 		fi
 		if [ -z "$found_double_dash" -a "${#CLICK_NARGS[@]}" -gt 0 ]; then
-			CLICK_NARGS+=("$1")
+			arrays::append CLICK_NARGS "$1"
 			name="$_click_narg_argument"
 			CLICK_ARGS["$name"]="${CLICK_ARGS["$name"]} $1"
 			matched=true
@@ -304,7 +304,7 @@ click::run() {
 				if [ ${_click_type[$name]} == 'argument' ]; then
 					if [ ${_click_arg_pos[$name]} == "$current_arg_pos" ]; then
 						if [ "$_click_narg_argument" == "$name" ]; then
-							CLICK_NARGS+=("$1")
+							arrays::append CLICK_NARGS "$1"
 							if [ -n "${CLICK_ARGS["$name"]}" ]; then
 								CLICK_ARGS["$name"]="${CLICK_ARGS["$name"]} $1"
 							else
