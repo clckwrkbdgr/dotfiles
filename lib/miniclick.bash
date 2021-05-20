@@ -15,6 +15,7 @@
 # my_function 'foo' 'bar' 'option_value' --another-option='another_value'
 
 . "$XDG_CONFIG_HOME/lib/utils.bash"
+. "$XDG_CONFIG_HOME/lib/arrays.bash"
 
 miniclick() {
 	# Params: <positionals...> -- <keyword args...> -- "$@"
@@ -44,10 +45,10 @@ miniclick() {
 		local _name="$1"
 		if startswith "$_name" '--'; then
 			local _name=${_name##--}
-			_minikwargs+=("${_name}")
+			arrays::append _minikwargs "${_name}"
 			eval "unset ${_name}"
 		else
-			_miniargs+=("${_name}")
+			arrays::append _miniargs "${_name}"
 			eval "${_name}=''"
 		fi
 		shift
