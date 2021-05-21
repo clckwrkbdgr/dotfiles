@@ -1,6 +1,7 @@
 import sys, subprocess, platform
 import importlib
 import logging
+logger = logging.getLogger('todo')
 from collections import namedtuple
 import clckwrkbdgr.todo
 import clckwrkbdgr.todo.provider
@@ -24,16 +25,16 @@ def filter_task_list(original, current):
 	for line in original:
 		if not line.strip():
 			if prev is None:
-				logging.debug("Empty line at the beginning, skipping.")
+				logger.debug("Empty line at the beginning, skipping.")
 				yield False, line
 			elif not prev.strip():
-				logging.debug("Consequent empty line, skipping.")
+				logger.debug("Consequent empty line, skipping.")
 				yield False, line
 			else:
 				yield True, line
 				prev = line
 		elif line not in current:
-			logging.debug("Task is not present anymore: {0}".format(line))
+			logger.debug("Task is not present anymore: {0}".format(line))
 			yield False, line
 		else:
 			yield True, line
@@ -46,23 +47,36 @@ class TaskList: # pragma: no cover -- TODO depends on global list of task provid
 		config = clckwrkbdgr.todo.read_config()
 		return 0 == subprocess.call(config.editor + [str(self._filename)], shell=(platform.system() == 'Windows'))
 	def sync(self):
+		logger.debug('Sync...')
 		tasks = []
 		for provider in clckwrkbdgr.todo.task_provider:
 			for task in provider():
+				logger.debug('Provider {0}: {1}'.format(provider.__name__ if hasattr(provider, '__name__') else provider, task))
 				tasks.append(task.title.encode('utf-8', 'replace'))
 
 		old_lines = []
 		if self._filename.exists():
+			logger.debug('Reading old lines...')
 			old_lines = self._filename.read_bytes().splitlines()
 		new_lines = []
 		changed = False
 		for keep, line in filter_task_list(old_lines, tasks):
-			if keep or keep is None:
+			if keep:
+				logger.debug('Keeping line: {0}'.format(line))
 				new_lines.append(line)
-			if not keep:
+			elif keep is None:
+				logger.debug('Adding line: {0}'.format(line))
+				new_lines.append(line)
+				changed = True
+			else: # False
+				logger.debug('Removed line: {0}'.format(line))
 				changed = True
 		if changed:
+			logger.debug('Tasklist is changed, rewritting task file...')
 			self._filename.write_bytes(b'\n'.join(new_lines).rstrip() + b'\n')
+		else:
+			logger.debug('Tasklist is NOT changed.')
+		logger.debug('Sync done.')
 	def list_all(self, with_seps=False):
 		if not self._filename.exists():
 			return

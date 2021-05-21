@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import os, sys, re, subprocess
+import logging
+logger = logging.getLogger('todo')
 import platform
 import click, click_default_group
 import json
@@ -11,8 +13,12 @@ import clckwrkbdgr.todo
 import clckwrkbdgr.todo.tasklist
 
 @click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=clckwrkbdgr.todo.CONFIG_FILE_DESC)
-def cli():
-	pass
+@click.option('--debug', is_flag=True, help='Enables debug output.')
+def cli(debug=False):
+	handler = logging.StreamHandler() # TODO custom formatter to display level, module, logger name etc.; and generic clckwrkbdgr module for such loggers.
+	logger.addHandler(handler)
+	if debug:
+		logger.setLevel(logging.DEBUG)
 
 @cli.command()
 @click.argument('add_notes', nargs=-1)
@@ -36,7 +42,8 @@ def inbox(add_notes=None):
 @utils.exits_with_return_value
 def sync_tasks():
 	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
-	return tasklist.sync()
+	ok = tasklist.sync()
+	return ok
 
 @cli.command('list')
 @utils.exits_with_return_value
