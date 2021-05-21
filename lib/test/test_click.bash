@@ -274,4 +274,4 @@ should_treat_all_params_as_positionals_after_double_dash() {
 }
 
 
-unittest::run should_
+unittest::run ${1:-should_}

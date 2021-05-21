@@ -21,32 +21,15 @@
 # NOTE: There might be only one main click::command in the whole shell instance.
 #       If two commands are initiated, the result is undefined!
 
-case "$BASH_VERSION" in
-	3.*)
-		# Sadly, this script relies on associative arrays
-		# and the amount of changes is far too great to merge both scripts,
-		# so for Bash 3 (where there are not associative arrays)
-		# a separate "compat" script.
-		. "$XDG_CONFIG_HOME/lib/click.3.bash"
-		return $?
-		;;
-esac
-
-
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 . "$XDG_CONFIG_HOME/lib/miniclick.bash"
 
 _click_command=''
 _click_command_help=''
 _click_command_epilog=''
-declare -A _click_type # 'flag', 'option', 'argument'
-declare -A _click_help
-declare -A _click_short
-declare -A _click_long
+# _click_type_* # 'flag', 'option', 'argument'
 _click_narg_argument='' # Name of argument with nargs=-1
-declare -A _click_default
 _click_positional_count=0
-declare -A _click_arg_pos
 
 click::miniclick() {
 	miniclick "$@"
@@ -102,10 +85,10 @@ click::flag() {
 		fi
 	fi
 	# TODO: required flags
-	_click_type["$name"]='flag'
-	_click_help["$name"]="$help"
-	_click_short["$name"]="$short"
-	_click_long["$name"]="$long"
+	eval "_click_type__$name"='flag'
+	eval "_click_help__$name"="'$help'"
+	eval "_click_short__$name"="'$short'"
+	eval "_click_long__$name"="'$long'"
 }
 
 click::option() {
@@ -138,11 +121,11 @@ click::option() {
 	# TODO: required options
 	# TODO: multi values (nargs)
 	# TODO: predefined list of choices
-	_click_type["$name"]='option'
-	_click_help["$name"]="$help"
-	_click_short["$name"]="$short"
-	_click_long["$name"]="$long"
-	_click_default["$name"]="$default"
+	eval "_click_type__$name"='option'
+	eval "_click_help__$name"="'$help'"
+	eval "_click_short__$name"="'$short'"
+	eval "_click_long__$name"="'$long'"
+	eval "_click_default__$name"="'$default'"
 }
 
 click::argument() {
@@ -170,12 +153,12 @@ click::argument() {
 	if [ "$nargs" == '-1' ]; then
 		_click_narg_argument="$name"
 	fi
-	_click_type["$name"]='argument'
-	_click_help["$name"]="$help"
+	eval "_click_type__$name"='argument'
+	eval "_click_help__$name"="'$help'"
 	if [ -n "${default+has_value}" -o "$nargs" == '-1' ]; then
-		_click_default["$name"]="$default"
+		eval "_click_default__$name"="$default"
 	fi
-	_click_arg_pos["$name"]="${_click_positional_count}"
+	eval "_click_arg_pos__$name"="'${_click_positional_count}'"
 	_click_positional_count=$((_click_positional_count + 1))
 }
 
@@ -184,13 +167,20 @@ click::argument() {
 click::usage() {
 	# Prints usage message.
 	usage="$0"
-	for name in "${!_click_type[@]}"; do
-		if [ ${_click_type[$name]} == 'option' -o ${_click_type[$name]} == 'flag' ]; then
-			usage="$usage [${_click_short[$name]}]"
+	has_args=
+	for name in ${!_click_type__*}; do
+		name=${name#*__}
+		_n=_click_type__$name
+		if [ ${!_n} == 'option' -o ${!_n} == 'flag' ]; then
+			_n=_click_short__$name
+			usage="$usage [${!_n}]"
 		fi
+		has_args=true
 	done
-	for name in "${!_click_type[@]}"; do
-		if [ ${_click_type[$name]} == 'argument' ]; then
+	for name in ${!_click_type__*}; do
+		name=${name#*__}
+		_n=_click_type__$name
+		if [ "${!_n}" == 'argument' ]; then
 			usage="$usage <$name>"
 		fi
 	done
@@ -198,38 +188,48 @@ click::usage() {
 	if [ -n "${_click_command_help}" ]; then
 		echo -e "${_click_command_help}"
 	fi
-	if [ "${#_click_type[@]}" -ne 0 ]; then
+	if [ -n "$has_args" ]; then
 		echo 'Parameters:'
 	fi
 	# First go all the arguments.
-	for name in "${!_click_type[@]}"; do
-		if ! [ ${_click_type[$name]} == 'argument' ]; then
+	for name in ${!_click_type__*}; do
+		name=${name#*__}
+		_n=_click_type__$name
+		if ! [ "${!_n}" == 'argument' ]; then
 			continue
 		fi
 		echo "  <$name>"
 
-		echo -e "${_click_help[$name]}" | sed 's/^/        /' # FIXME this is the only external command in the whole file.
+		_n=_click_help__$name
+		echo -e "${!_n}" | sed 's/^/        /' # FIXME this is the only external command in the whole file.
 
-		if [ -n "${_click_default[$name]}" ]; then
-			echo "        Default is '${_click_default[$name]}'."
+		_n=_click_default__$name
+		if [ -n "${!_n}" ]; then
+			echo "        Default is '${!_n}'."
 		fi
 	done
 	# Only then all options and flags are listed.
-	for name in "${!_click_type[@]}"; do
-		if ! [ ${_click_type[$name]} == 'option' -o ${_click_type[$name]} == 'flag' ]; then
+	for name in ${!_click_type__*}; do
+		name=${name#*__}
+		_n_type=_click_type__$name
+		if ! [ "${!_n_type}" == 'option' -o "${!_n_type}" == 'flag' ]; then
 			continue
 		fi
 
-		echo -n "  ${_click_short[$name]}"
-		if [ -n "${_click_long[$name]}" ]; then
-			echo -n ", ${_click_long[$name]}"
+		_n=_click_short__$name
+		echo -n "  ${!_n}"
+		_n=_click_long__$name
+		if [ -n "${!_n}" ]; then
+			echo -n ", ${!_n}"
 		fi
 		echo
 
-		echo -e "${_click_help[$name]}" | sed 's/^/        /' # FIXME this is the only external command in the whole file.
-		if [ ${_click_type[$name]} == 'option' ]; then
-			echo "        Default is '${_click_default[$name]}'."
-		elif [ ${_click_type[$name]} == 'flag' ]; then
+		_n=_click_help__$name
+		echo -e "${!_n}" | sed 's/^/        /' # FIXME this is the only external command in the whole file.
+		if [ ${!_n_type} == 'option' ]; then
+			_n=_click_default__$name
+			echo "        Default is '${!_n}'."
+		elif [ ${!_n_type} == 'flag' ]; then
 			echo "        Default is false."
 		fi
 	done
@@ -238,13 +238,12 @@ click::usage() {
 	fi
 }
 
-declare -A CLICK_ARGS
+# Main associative array of collected CLI args.
+# Access: ${CLICK_ARGS[arg_name]}
 
 click::arg() {
-	# Prints value for the specified argument name.
-	# Usage: click::arg <arg_name>
-	local arg_name="$1"
-	echo "${CLICK_ARGS[$arg_name]}"
+	_n=CLICK_ARGS__$1
+	echo "${!_n}"
 }
 
 # Sequence of values for argument with nargs=1 if there was one.
@@ -254,16 +253,18 @@ click::arg() {
 declare -a CLICK_NARGS
 
 click::run() {
-	# Parses CLI arguments, calls registered command.
-	# Usage: <list of arguments>
-	# Any set of arguments can be passed.
-	# Pass "$@" from the main script for real CLI args.
-	if [ "$(LC_ALL=C type -t "${_click_command}")" != 'function' ]; then
-		panic "click::command does not point to an existing shell function: '${_click_command}'" >&2
-	fi
+# Parses CLI arguments, calls registered command.
+# Usage: <list of arguments>
+# Any set of arguments can be passed.
+# Pass "$@" from the main script for real CLI args.
+if [ "$(LC_ALL=C type -t "${_click_command}")" != 'function' ]; then
+	panic "click::command does not point to an existing shell function: '${_click_command}'" >&2
+fi
 
-	for name in "${!_click_type[@]}"; do
-		CLICK_ARGS["$name"]="${_click_default[$name]}"
+	for name in ${!_click_type__*}; do
+		name=${name#*__}
+		_n=_click_default__$name
+		eval "CLICK_ARGS__$name"="'${!_n}'"
 	done
 	current_arg_pos=0
 	found_double_dash=
@@ -283,47 +284,56 @@ click::run() {
 		if [ -z "$found_double_dash" -a "${#CLICK_NARGS[@]}" -gt 0 ]; then
 			arrays::append CLICK_NARGS "$1"
 			name="$_click_narg_argument"
-			CLICK_ARGS["$name"]="${CLICK_ARGS["$name"]} $1"
+			_n=CLICK_ARGS__$name
+			eval "CLICK_ARGS__$name"="'${!_n} $1'"
 			matched=true
 		elif [ -z "$found_double_dash" ] && [[ "$arg" =~ $option_re ]]; then
-			for name in "${!_click_type[@]}"; do
-				if [ ${_click_type[$name]} == 'flag' ]; then
-					if [ "${_click_short[$name]}" == "$arg" ]; then
-						CLICK_ARGS["$name"]='true'
+			for name in ${!_click_type__*}; do
+				name=${name#*__}
+				_n=_click_type__$name
+				_is_short=_click_short__$name
+				_is_long=_click_long__$name
+				if [ "${!_n}" == 'flag' ]; then
+					if [ "${!_is_short}" == "$arg" ]; then
+						eval "CLICK_ARGS__$name"='true'
 						matched=true
 						break
-					elif [ "${_click_long[$name]}" == "$arg" ]; then
-						CLICK_ARGS["$name"]='true'
+					elif [ "${!_is_long}" == "$arg" ]; then
+						eval "CLICK_ARGS__$name"='true'
 						matched=true
 						break
 					fi
-				elif [ ${_click_type[$name]} == 'option' ]; then
-					if [ "${_click_short[$name]}" == "$arg" ]; then
+				elif [ "${!_n}" == 'option' ]; then
+					if [ "${!_is_short}" == "$arg" ]; then
 						shift # TODO: check that next value is present and is a value, not an option key.
-						CLICK_ARGS["$name"]="$1"
+						eval "CLICK_ARGS__$name"="'$1'"
 						matched=true
 						break
-					elif [ "${_click_long[$name]}" == "$arg" ]; then
+					elif [ "${!_is_long}" == "$arg" ]; then
 						shift # TODO: check that next value is present and is a value, not an option key.
-						CLICK_ARGS["$name"]="$1"
+						eval "CLICK_ARGS__$name"="'$1'"
 						matched=true
 						break
 					fi
 				fi
 			done
 		else
-			for name in "${!_click_type[@]}"; do
-				if [ ${_click_type[$name]} == 'argument' ]; then
-					if [ ${_click_arg_pos[$name]} == "$current_arg_pos" ]; then
+			for name in ${!_click_type__*}; do
+				name=${name#*__}
+				_n=_click_type__$name
+				if [ ${!_n} == 'argument' ]; then
+					_n=_click_arg_pos__$name
+					if [ ${!_n} == "$current_arg_pos" ]; then
 						if [ "$_click_narg_argument" == "$name" ]; then
 							arrays::append CLICK_NARGS "$1"
-							if [ -n "${CLICK_ARGS["$name"]}" ]; then
-								CLICK_ARGS["$name"]="${CLICK_ARGS["$name"]} $1"
+							_n=CLICK_ARGS__$name
+							if [ -n "${!_n}" ]; then
+								eval "CLICK_ARGS__$name"="'${!_n} $1'"
 							else
-								CLICK_ARGS["$name"]="$1"
+								eval "CLICK_ARGS__$name"="'$1'"
 							fi
 						else
-							CLICK_ARGS["$name"]="$1"
+							eval "CLICK_ARGS__$name"="'$1'"
 							current_arg_pos=$((current_arg_pos + 1))
 						fi
 						matched=true
@@ -343,11 +353,15 @@ click::run() {
 		current_arg_pos=$((current_arg_pos + 1))
 	fi
 	while [ $current_arg_pos -lt ${_click_positional_count} ]; do
-		for name in "${!_click_type[@]}"; do
-			if [ ${_click_type[$name]} == 'argument' ]; then
-				if [ ${_click_arg_pos[$name]} == "$current_arg_pos" ]; then
-					if [ -n "${_click_default[$name]+has_value}" ]; then
-						CLICK_ARGS["$name"]="${_click_default[$name]}"
+		for name in ${!_click_type__*}; do
+			name=${name#*__}
+			_n=_click_type__$name
+			if [ "${!_n}" == 'argument' ]; then
+				_n=_click_arg_pos__$name
+				if [ ${!_n} == "$current_arg_pos" ]; then
+					_n=_click_default__$name
+					if [ -n "${!_n+has_value}" ]; then
+						eval "CLICK_ARGS__$name"="'${!_n}'"
 						break
 					else
 						panic "Positional argument is expected: '$name'"
