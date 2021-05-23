@@ -63,7 +63,7 @@ set nobackup
 if has('win32')
    set nowritebackup
 endif
-set keymap=russian-jcukenwin " Toggle with C-^
+set keymap=russian-badger " Toggle with C-^
 set iminsert=0
 set imsearch=0
 set iskeyword=@,48-57,_,192-255
