@@ -329,6 +329,14 @@
                 "wav"
             ]
         },
+        "binary/octet-stream": {
+            "action": 1,
+            "ask": true,
+            "extensions": [
+                "deb",
+                "udeb"
+            ]
+        },
         "image/bmp": {
             "action": 1,
             "ask": true
