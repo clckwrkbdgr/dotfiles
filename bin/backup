@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+import logging
+import json
+import inspect
+try:
+	from pathlib2 import Path
+except ImportError: # pragma: py3 only
+	from pathlib import Path
+from clckwrkbdgr import utils
+import clckwrkbdgr.backup
+import clckwrkbdgr.backup.handlers.sevenzip
+
+CONFIG_FILE_DESC = """\b
+Syntax of config file (JSON):
+	{
+		"<root>" : {
+			<backup context fields>
+		},
+		"<another root>": {
+			...
+		}
+	}
+"""
+
+def process_location(root, settings):
+	context = clckwrkbdgr.backup.Config(root=root, **settings)
+	action = clckwrkbdgr.backup.handlers.sevenzip.SevenZipArchiver(context)
+
+	logging.info('Archiving...')
+	if not action.perform():
+		return False
+	logging.info('Checking...')
+	if not action.check():
+		return False
+	logging.info('Copying archive to remote locations...')
+	if not action.deploy():
+		return False
+	logging.info('Done.')
+	return True
+
+import click
+
+@click.command(epilog=CONFIG_FILE_DESC + '\n\b\n' + inspect.getdoc(clckwrkbdgr.backup.Config))
+@click.argument('config_file', type=Path)
+@utils.exits_with_return_value
+def cli(config_file):
+	""" Performs backup according to specified configuration.
+	"""
+	presets = json.loads(config_file.read_text())
+	errors = 0
+	for root, settings in presets.items():
+		root = Path(root)
+		if not root.is_absolute():
+			root = config_file.parent/root
+		if not process_location(root, settings):
+			errors += 1
+	return errors
+
+if __name__ == '__main__':
+	cli()
