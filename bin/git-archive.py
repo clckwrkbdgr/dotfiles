@@ -122,6 +122,13 @@ def fetch_repo(repo_root, url):
 			os.rmdir(line)
 
 	if os.path.exists(os.path.join(gitdir_info, 'archive.tar.bak')):
+		logging.info("Checking removed archived files...")
+		old_content = subprocess.check_output(['tar', '-tf', os.path.join(gitdir_info, 'archive.tar.bak')]).decode('utf-8', 'replace').splitlines()
+		new_content = subprocess.check_output(['tar', '-tf', os.path.join(gitdir_info, 'archive.tar')]).decode('utf-8', 'replace').splitlines()
+		for removed_file in set(old_content) - set(new_content):
+			if os.path.isfile(removed_file):
+				logging.warning('D  {0}'.format(removed_file))
+
 		os.unlink(os.path.join(gitdir_info, 'archive.tar.bak'))
 
 import argparse
