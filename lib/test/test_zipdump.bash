@@ -62,9 +62,16 @@ EOF
 }
 
 should_zip_cp1251() {
+	enc_from=utf-8
+	enc_to=cp1251
+	if [ "$(uname -s -r -v 2>/dev/null)" == 'AIX 3 5' ]; then
+		enc_from=UTF-8
+		enc_to=CP1251
+	fi
+
 	local test_file=$(mktemp)
 	finally "rm -f '$test_file'"
-	cat <<EOF | iconv -f 'utf-8' -t 'cp1251' >"$test_file"
+	cat <<EOF | iconv -f "$enc_from" -t "$enc_to" >"$test_file"
 Лорем ипсум
 Долорес сит амет
 EOF
