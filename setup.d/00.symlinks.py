@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 import os, sys
-import platform
-if platform.system() == 'Windows':
-	sys.exit()
-import logging
-logging.basicConfig(level=logging.DEBUG if os.environ.get('DOTFILES_SETUP_VERBOSE') else logging.WARNING)
-trace = logging.getLogger()
 try:
 	from pathlib2 import Path
 except ImportError:
 	from pathlib import Path
 import clckwrkbdgr.fs
 from clckwrkbdgr.xdg import XDG_DATA_HOME, XDG_CONFIG_HOME, XDG_CACHE_HOME
+import clckwrkbdgr.jobsequence.context
+context = clckwrkbdgr.jobsequence.context.init(
+		verbose_var='DOTFILES_SETUP_VERBOSE',
+		skip_platforms='Windows',
+		)
+trace = context # compat
 
 def is_symlink_to(dest, src):
 	with clckwrkbdgr.fs.CurrentDir(Path(dest).parent):

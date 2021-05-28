@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 import os, sys
-import platform
-if platform.system() == 'Windows':
-	sys.exit()
 import subprocess
 import logging
 logging.basicConfig(level=logging.DEBUG if os.environ.get('DOTFILES_SETUP_VERBOSE') else logging.WARNING)
@@ -13,6 +10,11 @@ except ImportError:
 	from pathlib import Path
 from clckwrkbdgr import xdg
 from clckwrkbdgr import commands
+import clckwrkbdgr.jobsequence.context
+trace = context = clckwrkbdgr.jobsequence.context.init(
+		verbose_var='DOTFILES_SETUP_VERBOSE',
+		skip_platforms='Windows',
+		)
 
 if not commands.has_sudo_rights():
 	trace.info('Have not sudo rights, skipping.')

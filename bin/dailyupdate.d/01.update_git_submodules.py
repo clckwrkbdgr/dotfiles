@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import os, sys, subprocess
-import logging
 from clckwrkbdgr import xdg, userstate
-logging.basicConfig(level=logging.DEBUG if os.environ.get('DAILYUPDATE_VERBOSE') else logging.WARNING)
+import clckwrkbdgr.jobsequence.context
+context = clckwrkbdgr.jobsequence.context.init(
+		working_dir=xdg.XDG_CONFIG_HOME,
+		verbose_var='DAILYUPDATE_VERBOSE',
+		)
 
 if userstate.get_flag('metered_network'):
 	sys.exit()
-
-os.chdir(str(xdg.XDG_CONFIG_HOME))
 
 def safe_int(value):
 	try:
@@ -18,7 +19,7 @@ def safe_int(value):
 try:
 	git_version = tuple(map(safe_int, subprocess.check_output(['git', '--version']).decode().strip().split(None, 3)[2].split('.')))
 except OSError as e:
-	logging.info('Failed to detect Git version: {0}'.format(e))
+	context.info('Failed to detect Git version: {0}'.format(e))
 	sys.exit()
 
 args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']

@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 import os, sys
-import platform
-if platform.system() == 'Windows':
-	sys.exit()
-import logging
-logging.basicConfig(level=logging.DEBUG if os.environ.get('DOTFILES_SETUP_VERBOSE') else logging.WARNING)
-trace = logging.getLogger()
 try:
 	from pathlib2 import Path
 except ImportError:
 	from pathlib import Path
 from clckwrkbdgr import xdg
 import clckwrkbdgr.fs
+import clckwrkbdgr.jobsequence.context
+trace = context = clckwrkbdgr.jobsequence.context.init(
+		verbose_var='DOTFILES_SETUP_VERBOSE',
+		skip_platforms='Windows',
+		)
 
 if not (xdg.XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf').exists():
 	sys.exit()

@@ -2,9 +2,9 @@
 import os, sys, subprocess
 import platform
 from clckwrkbdgr import xdg
+import clckwrkbdgr.jobsequence.context
+context = clckwrkbdgr.jobsequence.context.init(
+		working_dir=xdg.XDG_CONFIG_HOME/'lib',
+		)
 
-os.chdir(str(xdg.XDG_CONFIG_HOME/'lib'))
-args = ['unittest']
-if not os.environ.get('DAILYUPDATE_VERBOSE'):
-	args.append("-q")
-sys.exit(subprocess.call(args, shell=(platform.system()=='Windows')))
+sys.exit(subprocess.call(['unittest'] + context.quiet_arg("-q"), shell=(platform.system()=='Windows')))

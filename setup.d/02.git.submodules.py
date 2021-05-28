@@ -20,8 +20,11 @@ try:
 except ImportError:
 	from pathlib import Path
 from clckwrkbdgr import xdg
+import clckwrkbdgr.jobsequence.context
+context = clckwrkbdgr.jobsequence.context.init(
+		working_dir=xdg.XDG_CONFIG_HOME,
+		)
 
-os.chdir(str(xdg.XDG_CONFIG_HOME))
 
 try:
 	gitconfig = configparser.ConfigParser(strict=False)

@@ -10,8 +10,10 @@ try:
 except ImportError:
 	from pathlib import Path
 from clckwrkbdgr import xdg
-
-os.chdir(str(xdg.XDG_CONFIG_HOME))
+import clckwrkbdgr.jobsequence.context
+context = clckwrkbdgr.jobsequence.context.init(
+		working_dir=xdg.XDG_CONFIG_HOME,
+		)
 
 git_config_file = Path('.git')/'config'
 if not git_config_file.is_file():
