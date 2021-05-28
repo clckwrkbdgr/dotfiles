@@ -1,7 +1,7 @@
 import os
 import logging
 
-class Context:
+class Context: # pragma: no cover -- TODO need mocks
 	def __init__(self, verbose_level=None, logger_name='jobsequence'):
 		self._verbose_level = verbose_level
 
@@ -55,7 +55,7 @@ class Context:
 		""" Same as context.logger.critical() """
 		return self._logger.critical(*args, **kwargs)
 
-def init(working_dir=None, verbose_var=None, logger_name=None, only_platforms=None, skip_platforms=None):
+def init(working_dir=None, verbose_var=None, logger_name=None, only_platforms=None, skip_platforms=None): # pragma: no cover -- TODO need mocks
 	""" Inits jobsequence context (see Context).
 	If working_dir is specified, it is set as current directory.
 	If verbose_var is specified, it will be used to check verbosity level for this jobsequence (e.g. DAILYUPDATE_VERBOSE).
