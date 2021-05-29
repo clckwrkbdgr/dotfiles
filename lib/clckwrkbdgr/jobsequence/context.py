@@ -16,7 +16,7 @@ class Context: # pragma: no cover -- TODO need mocks
 	@property
 	def quiet(self):
 		""" Returns True is verbosity level is less than 1. """
-		return self._verbose_level > 0
+		return self._verbose_level == 0
 	@property
 	def verbose(self):
 		""" Returns verbosity level as int value.
@@ -29,7 +29,7 @@ class Context: # pragma: no cover -- TODO need mocks
 		See also debug(), info(), warning(), error(), critical().
 		"""
 		return self._logger
-	def queit_arg(self, *args):
+	def quiet_arg(self, *args):
 		""" Returns list of given args if quiet, otherwise empty list. """
 		if self.verbose:
 			return []
