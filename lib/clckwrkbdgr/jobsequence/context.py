@@ -1,4 +1,4 @@
-import os
+import os, sys
 import logging
 
 class Context: # pragma: no cover -- TODO need mocks
