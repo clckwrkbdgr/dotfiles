@@ -7,11 +7,15 @@ import clckwrkbdgr.todo
 import clckwrkbdgr.todo.provider
 from clckwrkbdgr import xdg
 
-for entry in clckwrkbdgr.todo.read_config().task_providers: # pragma: no cover -- TODO really shouldn't do this in module's body.
-	try:
-		importlib.import_module(entry)
-	except Exception as e:
-		print("Failed to load task provider '{0}': {1}".format(entry, e))
+def force_load_task_providers(providers=None): # pragma: no cover -- TODO really shouldn't do this in module's body.
+	""" Loads all known task providers (registered via @task_provider).
+	If providers are given (list of module names), they are loaded instead.
+	"""
+	for entry in (providers or clckwrkbdgr.todo.read_config().task_providers):
+		try:
+			importlib.import_module(entry)
+		except Exception as e:
+			print("Failed to load task provider '{0}': {1}".format(entry, e))
 
 def filter_task_list(original, current):
 	""" Checks each line from original list against current.
@@ -41,7 +45,8 @@ def filter_task_list(original, current):
 			prev = line
 
 class TaskList: # pragma: no cover -- TODO depends on global list of task providers, also on FS.
-	def __init__(self):
+	def __init__(self, _providers=None):
+		force_load_task_providers(providers=_providers)
 		self._filename = xdg.save_state_path('todo')/'tasklist.lst'
 	def sort(self):
 		config = clckwrkbdgr.todo.read_config()
