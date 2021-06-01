@@ -22,6 +22,16 @@ if platform.system() == 'Windows': # pragma: no cover -- Windows only.
         _XDGDir('XDG_RUNTIME_DIR', Path(os.environ.get('TEMP', os.environ['USERPROFILE'])), False),
         _XDGDir('XDG_STATE_HOME', Path(os.environ.get('LOCALAPPDATA')), False),
         ]
+    try:
+        import clckwrkbdgr.winnt.shell
+        default_desktop_dir = clckwrkbdgr.winnt.shell.Desktop
+    except:
+        import traceback
+        traceback.print_exc()
+        default_desktop_dir = Path('~').expanduser()/'Desktop'
+    _dir_data += [
+        _XDGDir('XDG_DESKTOP_DIR', default_desktop_dir, False),
+        ]
 else: # pragma: no cover -- Unix only.
     _dir_data += [
         _XDGDir('XDG_DATA_HOME', Path('~').expanduser()/'.local'/'share', True),
@@ -38,9 +48,12 @@ else: # pragma: no cover -- Unix only.
         _dir_data += [
             _XDGDir('XDG_RUNTIME_DIR', Path('/run')/'user'/getpass.getuser(), False),
             ]
+    _dir_data += [
+        _XDGDir('XDG_DESKTOP_DIR', Path('~').expanduser()/'Desktop', True),
+        ]
 
 for name, path, ensure in _dir_data: # pragma: no cover
-    globals()[name] = Path(os.environ.get(name, path))
+    globals()[name] = Path(os.environ.get(name, str(path)))
     if ensure:
         globals()[name].mkdir(parents=True, exist_ok=True)
 
