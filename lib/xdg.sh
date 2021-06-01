@@ -3,9 +3,6 @@ export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
 export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
 export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
-# Non-standard setting for logs/history/app state etc.
-# See https://stackoverflow.com/a/27965014/2128769
-#     https://wiki.debian.org/XDGBaseDirectorySpecification#state
 export XDG_STATE_HOME=${XDG_STATE_HOME:-$HOME/.state}
 # Obsolete/deprecated settings.
 export XDG_LOG_HOME=${XDG_STATE_HOME}
