@@ -1,7 +1,15 @@
 import os, sys
 import logging
+import atexit
+
+def _comply_about_accumulated_return_code():
+	if Context._global_return_code != 0:
+		print('[jobsequence.context: Return code {0} was prepared but Context.done() was not called]'.format(Context._global_return_code), file=sys.stderr)
+atexit.register(_comply_about_accumulated_return_code)
 
 class Context: # pragma: no cover -- TODO need mocks
+	_global_return_code = 0
+
 	def __init__(self, verbose_level=None, logger_name='jobsequence'):
 		self._verbose_level = verbose_level
 
@@ -13,6 +21,49 @@ class Context: # pragma: no cover -- TODO need mocks
 			self._logger.setLevel(logging.INFO)
 		elif self._verbose_level > 1:
 			self._logger.setLevel(logging.DEBUG)
+		self._returncode = 0
+	def done(self):
+		""" Immediately exit with accumulated return code.
+		By default it will be success.
+		See also operator __or__
+		If there was some accumulated return code, but this function was never called,
+		atexit handler will comply about this fact.
+		"""
+		Context._global_return_code = 0
+		sys.exit(self._returncode)
+	def die(self, message, rc=1):
+		""" Immediately exit with failure code and given error message. """
+		self.critical(message)
+		Context._global_return_code = 0
+		sys.exit(rc)
+	def __or__(self, returncode):
+		""" Collects given value as a return code and adds to the global return code.
+		Specific values of True or False are treated as 0 and 1 respectfully.
+		Sign is collected too and at least one negative return code
+		will result in overall negative return code.
+
+		>>> context | subprocess.call(...) # returns 1
+		>>> context | subprocess.call(...) # returns -5
+		>>> context.done() # exits with -6
+		"""
+		if returncode is True:
+			returncode = 0
+		elif returncode is False:
+			returncode = 1
+		try:
+			returncode = int(returncode)
+		except:
+			import traceback
+			traceback.print_exc()
+			returncode = 1
+		if returncode < 0 and self._returncode > 0:
+			self._returncode = -self._returncode
+		returncode = abs(returncode)
+		if self._returncode < 0:
+			self._returncode -= returncode
+		else:
+			self._returncode += returncode
+		Context._global_return_code = self._returncode
 	@property
 	def quiet(self):
 		""" Returns True is verbosity level is less than 1. """
