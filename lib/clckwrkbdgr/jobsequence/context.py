@@ -80,7 +80,7 @@ def init(working_dir=None, verbose_var=None, logger_name=None, only_platforms=No
 			sys.exit()
 	verbose_level = 0
 	if verbose_var:
-		verbose_var = len(os.environ.get(verbose_var, ''))
+		verbose_level = len(os.environ.get(verbose_var, ''))
 	return Context(
 			verbose_level=verbose_level,
 			logger_name=logger_name,
