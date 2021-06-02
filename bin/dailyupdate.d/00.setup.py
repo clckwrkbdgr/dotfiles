@@ -7,4 +7,5 @@ context = clckwrkbdgr.jobsequence.context.init(
 		verbose_var='DAILYUPDATE_VERBOSE',
 		)
 
-sys.exit(subprocess.call([sys.executable, 'setup.py'] + context.verbose_arg("--verbose")))
+context | subprocess.call([sys.executable, 'setup.py'] + context.verbose_arg("--verbose"))
+context.done()

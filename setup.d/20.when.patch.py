@@ -21,8 +21,9 @@ else:
 	dest = Path('/usr/bin/when').expanduser()
 
 if not dest.exists():
-	sys.exit()
+	context.done()
 
 patch = xdg.XDG_CONFIG_HOME/'patch'/'when-1.1.36-xdg.patch'
 if not patch_is_applied(dest, patch):
-	sys.exit(apply_patch(dest, patch)) # TODO needs sudo
+	context | apply_patch(dest, patch) # TODO needs sudo
+	context.done()

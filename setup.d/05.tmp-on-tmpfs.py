@@ -18,7 +18,7 @@ trace = context = clckwrkbdgr.jobsequence.context.init(
 
 if not commands.has_sudo_rights():
 	trace.info('Have not sudo rights, skipping.')
-	sys.exit()
+	context.done()
 
 def has_tmp_in_fstab():
 	for line in Path('/etc/fstab').read_text().splitlines():

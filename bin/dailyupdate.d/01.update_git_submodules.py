@@ -8,7 +8,7 @@ context = clckwrkbdgr.jobsequence.context.init(
 		)
 
 if userstate.get_flag('metered_network'):
-	sys.exit()
+	context.done()
 
 def safe_int(value):
 	try:
@@ -20,10 +20,11 @@ try:
 	git_version = tuple(map(safe_int, subprocess.check_output(['git', '--version']).decode().strip().split(None, 3)[2].split('.')))
 except OSError as e:
 	context.info('Failed to detect Git version: {0}'.format(e))
-	sys.exit()
+	context.done()
 
 args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
 if git_version >= (2, 26, 0):
 	args += ['--single-branch']
-subprocess.call(args)
+context | subprocess.call(args)
 submodule_info = subprocess.check_output(['git', 'submodule']).decode('utf-8', 'replace').splitlines()
+context.done()

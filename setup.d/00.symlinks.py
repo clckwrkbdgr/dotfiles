@@ -97,6 +97,4 @@ def find_unknown_symlinks(root, known_symlinks):
 
 entries = find_unknown_symlinks(XDG_CONFIG_HOME, known_symlinks)
 if entries:
-	trace.error('Found unknown symlinks:')
-	trace.error(entries)
-	sys.exit(1)
+	context.die('Found unknown symlinks:\n' + '\n'.join(entries))

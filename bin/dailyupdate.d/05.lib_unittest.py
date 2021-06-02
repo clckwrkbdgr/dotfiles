@@ -7,4 +7,5 @@ context = clckwrkbdgr.jobsequence.context.init(
 		working_dir=xdg.XDG_CONFIG_HOME/'lib',
 		)
 
-sys.exit(subprocess.call(['unittest'] + context.quiet_arg("-q"), shell=(platform.system()=='Windows')))
+context | subprocess.call(['unittest'] + context.quiet_arg("-q"), shell=(platform.system()=='Windows'))
+context.done()

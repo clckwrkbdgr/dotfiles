@@ -15,7 +15,7 @@ trace = context =  clckwrkbdgr.jobsequence.context.init(
 try:
 	subprocess.check_output(['python3', '-V'], stderr=subprocess.STDOUT)
 except OSError:
-	sys.exit()
+	context.done()
 
 def get_site_module_path():
 	return Path(subprocess.check_output(['python3', '-c', 'import site; print(site.__file__)']).decode().strip())
@@ -31,11 +31,11 @@ PATCHED_PYTHON_HISTORY_CODE = """\
 """
 
 if UNPATCHED_PYTHON_HISTORY_CODE not in get_site_module_path().read_text():
-	sys.exit()
+	context.done()
 
 if not commands.has_sudo_rights():
 	trace.info('Have no sudo rights, skipping.')
-	sys.exit()
+	context.done()
 
 trace.error('.python_history code is not patched and it will be created each time REPL is executed')
 trace.error('Update following file with following code:')

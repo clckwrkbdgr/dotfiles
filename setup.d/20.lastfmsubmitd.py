@@ -13,18 +13,17 @@ trace = context = clckwrkbdgr.jobsequence.context.init(
 		)
 
 if not (xdg.XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf').exists():
-	sys.exit()
+	context.done()
 
 def is_symlink_to(dest, src):
 	with clckwrkbdgr.fs.CurrentDir(Path(dest).parent):
 		return Path(dest).is_symlink() and Path(src).resolve() == Path(dest).resolve()
 
 if not is_symlink_to('/etc/lastfmsubmitd.conf', xdg.XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf'):
-	trace.error('{0} is not symlink to {1}'.format(
+	context.die('{0} is not symlink to {1}'.format(
 		'/etc/lastfmsubmitd.conf',
 		xdg.XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf'
-		))
-	sys.exit(1) # TODO way to fix automatically with sudo.
+		)) # TODO way to fix automatically with sudo.
 
 LASTFMSUBMITD_MONIT = """\
 check process lastfmsubmitd with pidfile /var/run/lastfm/lastfmsubmitd.pid

@@ -17,7 +17,7 @@ context = clckwrkbdgr.jobsequence.context.init(
 
 git_config_file = Path('.git')/'config'
 if not git_config_file.is_file():
-	sys.exit()
+	context.done()
 
 try:
 	gitconfig = configparser.ConfigParser(strict=False)
@@ -35,7 +35,7 @@ except TypeError: # Py2 does not support not strict INIs.
 	gitconfig = NotStrictConfigParser()
 gitconfig.read([str(git_config_file)])
 if gitconfig.has_section('include') and gitconfig.has_option('include', 'path') and gitconfig.get('include', 'path') == '../.gitconfig':
-	sys.exit()
+	context.done()
 
 with (Path('.git')/'config').open('a+') as f:
 	f.write('[include]\n')

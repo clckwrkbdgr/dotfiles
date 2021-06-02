@@ -14,18 +14,17 @@ trace = context = clckwrkbdgr.jobsequence.context.init(
 
 if not commands.has_sudo_rights():
 	trace.info('Have not sudo rights, skipping.')
-	sys.exit()
+	context.done()
 
 etc_config_file = Path('/etc/X11/app-defaults/XXkb')
 if not etc_config_file.exists():
-	trace.error('{0} is not found, cannot add XXkb settings.'.format(etc_config_file))
-	sys.exit(1) # TODO can we create this file if it is absent?
+	context.die('{0} is not found, cannot add XXkb settings.'.format(etc_config_file)) # TODO can we create this file if it is absent?
 
 Xresources = xdg.XDG_CONFIG_HOME/'Xresources'
 local_XXkb = set([line for line in Xresources.read_text().splitlines() if line.startswith('XXkb.')])
 missing = local_XXkb - set(etc_config_file.read_text().splitlines())
 if not missing:
-	sys.exit()
+	context.done()
 
 trace.error('These XXkb config lines are not present in {0}:'.format(etc_config_file))
 for line in missing:

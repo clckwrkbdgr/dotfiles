@@ -37,7 +37,7 @@ except TypeError: # Py2 does not support not strict INIs.
 	gitmodules = NotStrictConfigParser()
 gitmodules.read(['.gitmodules'])
 if not (set(gitmodules.sections()) - set(gitconfig.sections())):
-	sys.exit()
+	context.done()
 
 has_git = True
 try:
@@ -48,4 +48,5 @@ except OSError:
 	has_git = False
 
 if has_git:
-	sys.exit(subprocess.call(['git', 'submodule', 'init']))
+	context | subprocess.call(['git', 'submodule', 'init'])
+context.done()
