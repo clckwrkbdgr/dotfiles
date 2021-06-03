@@ -1,8 +1,9 @@
+from __future__ import print_function
 import os, sys
 import logging
 import atexit
 
-def _comply_about_accumulated_return_code():
+def _comply_about_accumulated_return_code(): # pragma: no cover
 	if Context._global_return_code != 0:
 		print('[jobsequence.context: Return code {0} was prepared but Context.done() was not called]'.format(Context._global_return_code), file=sys.stderr)
 atexit.register(_comply_about_accumulated_return_code)
