@@ -11,10 +11,10 @@ atexit.register(_comply_about_accumulated_return_code)
 class Context: # pragma: no cover -- TODO need mocks
 	_global_return_code = 0
 
-	def __init__(self, verbose_level=None, logger_name='jobsequence'):
+	def __init__(self, verbose_level=None, logger_name=None):
 		self._verbose_level = verbose_level
 
-		self._logger = logging.getLogger(logger_name)
+		self._logger = logging.getLogger(logger_name or 'jobsequence')
 		if not self._logger.handlers:
 			handler = logging.StreamHandler() # TODO custom formatter to display level, module, logger name etc.; and generic clckwrkbdgr module for such loggers.
 			self._logger.addHandler(handler)
