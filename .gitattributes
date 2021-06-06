@@ -30,3 +30,4 @@ mc/ini filter=mc_ini
 *.reg diff
 libreoffice/4/user/extensions/bundled/registry/*/*.xml filter=pretty_xml
 checkio/config.ini filter=checkio_config
+QtProject.conf filter=qtproject_conf

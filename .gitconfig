@@ -125,3 +125,8 @@
 [filter "checkio_config"]
 	smudge = cat
    clean = "sed '/^key *= */d;/^solutions *= */d;'"
+
+# TODO to filterconf
+[filter "qtproject_conf"]
+	smudge = cat
+	clean = "sed '/^history=.*/d;/^lastVisited=.*/d;/^qtVersion=.*/d;/^shortcuts=.*/d;/^sidebarWidth=.*/d;/^treeViewHeader=.*/d;/^viewMode=.*/d;'"
