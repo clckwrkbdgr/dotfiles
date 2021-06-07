@@ -7,6 +7,9 @@ except ImportError:
 	from pathlib import Path
 from clckwrkbdgr import xdg
 import clckwrkbdgr.fs
+import clckwrkbdgr.jobsequence.context
+context = clckwrkbdgr.jobsequence.context.init(
+		)
 
 def patch_is_applied(destfile, patch):
 	with clckwrkbdgr.fs.CurrentDir(Path(destfile).parent):
