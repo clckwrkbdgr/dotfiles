@@ -66,16 +66,7 @@ if __name__ == "__main__":
 			os.system("git submodule init")
 			os.system("git submodule update --recursive")
 
-	if branch_is_behind_remote('loader'):
-		# Fetch loader branch in background without switching to it (and messing with current branch).
-		os.system("git fetch origin loader:loader")
-		# Detect changes in sparse checkout listing.
-		listing = GitFile('loader', 'work.lst')
-		sparse = SparseCheckout()
-		if not sparse.is_same(listing.content):
-			print('Updating sparse-checkout:')
-			for line in sparse.diff(listing.content):
-				print(line)
-			sparse.update_with(listing.content)
-			with Stash():
-				os.system("git checkout master")
+	dotfiles_caps = Path('.git')/'info'/'CAPS'
+	if dotfiles_caps.exists() and 0 != subprocess.call(['python', 'caps.py', 'sparse', dotfiles_caps.read_text().strip()]):
+		with Stash():
+			os.system("git checkout master")
