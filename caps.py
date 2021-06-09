@@ -3,7 +3,7 @@
 Each file should have git attribute "caps=...", where value is some tag name.
 It will allow to setup sparse checkout for specific purposes using those tags.
 """
-import subprocess
+import sys, subprocess
 try:
 	from pathlib2 import Path
 except ImportError:

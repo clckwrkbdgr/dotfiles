@@ -66,7 +66,10 @@ if __name__ == "__main__":
 			os.system("git submodule init")
 			os.system("git submodule update --recursive")
 
-	dotfiles_caps = Path('.git')/'info'/'CAPS'
-	if dotfiles_caps.exists() and 0 != subprocess.call(['python', 'caps.py', 'sparse', dotfiles_caps.read_text().strip()]):
-		with Stash():
-			os.system("git checkout master")
+	dotfiles_caps = os.path.join('.git', 'info', 'CAPS')
+	if os.path.exists(dotfiles_caps):
+		with open(dotfiles_caps) as f:
+			caps = f.read().strip()
+		if 0 != subprocess.call(['python', 'caps.py', 'sparse', caps]):
+			with Stash():
+				os.system("git checkout master")
