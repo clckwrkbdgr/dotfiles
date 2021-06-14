@@ -74,7 +74,7 @@ def list_directory(root, ignored=None):
 				continue
 			yield full_name
 
-def fetch_repo(repo_root, url):
+def fetch_repo(repo_root, url, force_removed=False):
 	"""
 	Remote Web repo should have following structure:
 
@@ -86,6 +86,8 @@ def fetch_repo(repo_root, url):
 		http://<remote.host>/.../<reponame>/
 
 	Sparse-checkout file is optional.
+
+	If force_removed is True, removes files from local copy that were removed from git archive in this very update.
 	"""
 	gitdir_info = os.path.join(repo_root, '.git', 'info')
 	if not os.path.exists(gitdir_info):
@@ -127,7 +129,15 @@ def fetch_repo(repo_root, url):
 		new_content = subprocess.check_output(['tar', '-tf', os.path.join(gitdir_info, 'archive.tar')]).decode('utf-8', 'replace').splitlines()
 		for removed_file in set(old_content) - set(new_content):
 			if os.path.isfile(removed_file):
-				logging.warning('D  {0}'.format(removed_file))
+				if force_removed:
+					try:
+						os.unlink(str(removed_file))
+						logging.info('Removed file {0}'.format(removed_file))
+					except:
+						logging.warning('D  {0}'.format(removed_file))
+						logging.error('Failed to remove file {0}'.format(removed_file))
+				else:
+					logging.warning('D  {0}'.format(removed_file))
 
 		os.unlink(os.path.join(gitdir_info, 'archive.tar.bak'))
 
@@ -141,6 +151,7 @@ def cli():
 	clone_command.add_argument('url', help='Web location where git archive is accessible.')
 	clone_command.add_argument('dest', nargs='?', help='Path to directory where git archive will be unpacked. By default uses last component of the URL.')
 	pull_command = commands.add_parser('pull', description='Updates local copy using original remote URL.')
+	pull_command.add_argument('--force-removed', action='store_true', default=False, help='Removes files from local copy that were removed from archive in this very update. By default just warns about them.')
 	create_archive_command = commands.add_parser('create-archive', description='Creates archive for existing git repo and stores in .git/info/archive.tar.gz')
 	create_archive_command.add_argument('--sparse-checkout', help='Custom sparse-checkout file. Only files from this list will be present in generated archive. By default tries to read .git/info/sparse-checkout.')
 	status_command = commands.add_parser('status', description='Checks status of local copy. Currently only checks for "unversioned" files (i.e. missing from archive).')
@@ -153,7 +164,7 @@ def cli():
 	if args.command == 'clone':
 		return clone(args.url, dest=args.dest)
 	elif args.command == 'pull':
-		return pull()
+		return pull(force_removed=args.force_removed)
 	elif args.command == 'create-archive':
 		return create_archive(sparse_checkout=args.sparse_checkout)
 	elif args.command == 'status':
@@ -205,7 +216,7 @@ def clone(url, dest=None):
 	fetch_repo('.', url)
 	logging.info("Done.")
 
-def pull():
+def pull(force_removed=False):
 	gitdir = '.git'
 	if not os.path.exists(gitdir):
 		logging.error("Cannot find {0}. Is should be a root of a .git repo.".format(gitdir))
@@ -215,7 +226,7 @@ def pull():
 		url = f.read().strip()
 
 	logging.info("Pulling remote {0}...".format(url))
-	fetch_repo('.', url)
+	fetch_repo('.', url, force_removed=force_removed)
 	logging.info("Done.")
 
 def status():
