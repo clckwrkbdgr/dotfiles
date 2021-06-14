@@ -62,7 +62,7 @@ def sparse_checkout(tag):
 	if lines == sparse_checkout.read_text().splitlines():
 		sys.exit(0) # Already up-to-date.
 	sparse_checkout.write_text('\n'.join(lines) + '\n')
-	(Path('.git')/'info'/'INFO').write_text(tag)
+	(Path('.git')/'info'/'CAPS').write_text(tag)
 	sys.exit(1) # Worktree needs update.
 
 if __name__ == '__main__':

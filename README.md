@@ -23,16 +23,11 @@ Some personal settings (like git config or profile) are stored in `~/.local` dir
 
 ## Different dotfiles setups for different systems/devices
 
-There is a separate orphan branch called `loader` which serves as a root for such partial (sparse) setups.
-They depend on sparse-checkout feature of git and are controlled by file listings of sparse-checkout format (similar to gitignore etc).
-
-E.g. to get only work-related configs, have `work.lst` file in `loader` branch, have `work` target in Makefile and do following:
+Each file in dotfiles repo have attribute `caps` which points to capabilities that corresponding tag is providing. Tags are arbitrary and could represent any kind of capability/platform/OS/features. These attributes can be used to create sparse checkout for specific configuration:
 
 	mkdir .config
 	cd .config
-	git clone --depth 1 --single-branch --branch loader <path to this repo> .
-	make work # Or any other defined target.
+	git clone <path to this repo> .
+	python caps.py sparse <tag>
 
-Afterwards current branch should be switched to the main branch with only the specified files downloaded.
-
-**NOTE**: Makefile targets set git remote properties from command line with quoted argument. Under Windows' cmd interpreter quotes are not expanded and are written to .git/config file, which would later break any remote-related git operations. Sadly, this behaviour is unavoidable in default environment, but it can be fixed with setting other `$SHELL` for `make` or using `nmake` if available.
+Script `update_dotfiles.py` keeps sparse checkout up-to-update with attributes automatically.
