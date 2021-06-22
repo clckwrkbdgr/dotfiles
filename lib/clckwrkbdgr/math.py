@@ -47,9 +47,9 @@ class Vector(object):
 	def __setstate__(self, state):
 		self.values = state
 	def __eq__(self, other):
-		return self.values == Vector(other).values
+		return other is not None and self.values == Vector(other).values
 	def __lt__(self, other):
-		return self.values < Vector(other).values
+		return other is not None and self.values < Vector(other).values
 	def __abs__(self):
 		return type(self)(list(map(abs, self.values)))
 	def __add__(self, other):
