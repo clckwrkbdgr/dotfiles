@@ -98,6 +98,10 @@ cli() {
 
 	parse_special_tags "$text"
 
+	if [ ! -f "$icon" ]; then
+		icon="$XDG_DATA_HOME/icons/$icon"
+	fi
+
 	if [ -z "$quiet" ]; then
 		prev_volume="$(volume)"
 		if [ "$prev_volume" -gt "$MAX_VOLUME" ]; then
