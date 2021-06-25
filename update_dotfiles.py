@@ -1,4 +1,8 @@
 import os, sys, subprocess
+try:
+	subprocess.DEVNULL
+except:
+	subprocess.DEVNULL = open(os.devnull, 'w')
 import difflib
 
 class Stash(object):
@@ -57,14 +61,17 @@ def branch_is_behind_remote(branch):
 			raise
 
 if __name__ == "__main__":
+	quiet = '-q' in sys.argv[1:] or '--quiet' in sys.argv[1:]
+	quiet_arg = ['--quiet'] if quiet else []
+
 	# Fetch remote updates status only.
-	os.system("git remote update")
+	subprocess.call(["git", "remote", "update"], stdout=(subprocess.DEVNULL if quiet else None))
 
 	if branch_is_behind_remote('master'):
 		with Stash():
-			os.system("git pull origin master")
-			os.system("git submodule init")
-			os.system("git submodule update --recursive")
+			subprocess.call(["git", "pull"] + quiet_arg + ["origin", "master"])
+			subprocess.call(["git", "submodule"] + quiet_arg + ["init"])
+			subprocess.call(["git", "submodule"] + quiet_arg + ["update", "--recursive"])
 
 	dotfiles_caps = os.path.join('.git', 'info', 'CAPS')
 	if os.path.exists(dotfiles_caps):
@@ -72,4 +79,4 @@ if __name__ == "__main__":
 			caps = f.read().strip()
 		if 0 != subprocess.call(['python', 'caps.py', 'sparse', caps]):
 			with Stash():
-				os.system("git checkout master")
+				subprocess.call(["git", "checkout"] + quiet_arg + ["master"])
