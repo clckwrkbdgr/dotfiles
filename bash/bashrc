@@ -22,4 +22,5 @@ done
 which dircolors >/dev/null 2>&1 && eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
 
 # User private settings.
+[ -f "$XDG_DATA_HOME/bashrc" ] && source "$XDG_DATA_HOME/bashrc"
 [ -f ~/.local/bashrc ] && source ~/.local/bashrc

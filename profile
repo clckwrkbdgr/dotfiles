@@ -43,6 +43,9 @@ for xdgsourcefile in ~/.config/xdg/*.sh; do
 done
 
 # User/platform/host specific settings.
+[ -f "$XDG_DATA_HOME/profile" ] && . "$XDG_DATA_HOME/profile"
+[ -f "$XDG_DATA_HOME/profile.`uname`" ] && . "$XDG_DATA_HOME/profile.`uname`"
+[ -f "$XDG_DATA_HOME/profile.`hostname`" ] && . "$XDG_DATA_HOME/profile.`hostname`"
 [ -f ~/.local/profile ] && . ~/.local/profile
 [ -f ~/.local/profile.`uname` ] && . ~/.local/profile.`uname`
 [ -f ~/.local/profile.`hostname` ] && . ~/.local/profile.`hostname`
