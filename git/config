@@ -1,4 +1,7 @@
 [include]
+	path = ~/.local/share/gitconfig
+
+[include]
 	path = ~/.local/gitconfig
 
 [color]

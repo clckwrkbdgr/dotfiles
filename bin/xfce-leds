@@ -11,7 +11,8 @@ import clckwrkbdgr.collections
 
 CONFIG_FILES = [
 		xdg.save_config_path('xfce4')/"xfce-leds.ini",
-		Path('~/.local').expanduser()/"xfce-leds.ini", # TODO use XDG.
+		xdg.XDG_DATA_HOME/"xfce-leds.ini",
+		Path('~/.local').expanduser()/"xfce-leds.ini",
 		]
 
 CONFIG_DESCRIPTION = """

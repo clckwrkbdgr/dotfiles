@@ -6,18 +6,27 @@ try:
 	from pathlib2 import Path
 except ImportError: # pragma: no cover
 	from pathlib import Path
+from clckwrkbdgr import xdg
 
 known_hosts = [
 		"8.8.8.8", # Google DNS
 		"8.8.4.4", # Google DNS
 		]
-custom_hosts_file = Path('~/.local/known_hosts.lst').expanduser()
-if custom_hosts_file.is_file(): # pragma: no cover -- TODO generic routine to read such .lst files with hash-comments.
-	known_hosts.extend([line.split('#')[0].strip()
+
+def read_known_hosts(filename): # pragma: no cover -- TODO generic routine to read such .lst files with hash-comments.
+	return [line.split('#')[0].strip()
 		for line
-		in custom_hosts_file.read_text().splitlines()
+		in filename.read_text().splitlines()
 		if line.strip() and not line.lstrip().startswith('#')
-		])
+		]
+
+custom_hosts_files = [
+		xdg.XDG_DATA_HOME/'known_hosts.lst',
+		Path('~/.local/known_hosts.lst').expanduser(),
+		]
+for filename in custom_hosts_files: # pragma: no cover -- TODO generic routine to read such .lst files with hash-comments.
+	if filename.is_file():
+		known_hosts.extend(read_known_hosts(filename))
 
 _ping_patterns = list(map(re.compile, [
 	r'PING (\w+[.]?)+ \((\d+[.]?)+\) from (\d+[.]?)+ [a-z0-9]+: \d+\(\d+\) bytes of data.',
@@ -63,7 +72,7 @@ def check_hosts(hosts=None, interface=None, verbose=False): # pragma: no cover -
 	""" Pings given hosts: first check any random entry, then checks all hosts one by one.
 	Returns True as soon as any host responded. False if none responded.
 	If hosts are not specified, uses global list of known hosts
-	(default are Google DNS + custom list of hosts in ~/.local/known_hosts.lst).
+	(default are Google DNS + custom list of hosts in $XDG_DATA_HOME/known_hosts.lst).
 	Interface and verbose are passed to knock(). See there for details.
 	"""
 	hosts = hosts or known_hosts

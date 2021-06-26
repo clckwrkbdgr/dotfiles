@@ -10,10 +10,10 @@ EPILOG = """\b
 By default tries hosts:
   8.8.8.8 # Google DNS
   8.8.4.4 # Google DNS
-Loads additional hosts from file {custom_hosts_file} (if present).
+Loads additional hosts from files: {custom_hosts_files} (if present).
 Lines should be in format '<ip> # <optional comment>'
 Known hosts (with custom):
-  """.format(custom_hosts_file=clckwrkbdgr.net.custom_hosts_file)
+  """.format(custom_hosts_files=', '.join(map(str, clckwrkbdgr.net.custom_hosts_files)))
 EPILOG += '\n  '.join(clckwrkbdgr.net.known_hosts)
 
 def available_interfaces():
