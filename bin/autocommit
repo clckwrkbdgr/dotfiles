@@ -65,6 +65,8 @@ def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_
 		logging.debug('{0}: Checking state in {1}.'.format(path, dest_path))
 		if file_has_changed(dest_path, path):
 			logging.info('{0}: Updating.'.format(dest_path))
+			if not dest_path.parent.exists():
+				dest_path.parent.mkdir(parents=True)
 			shutil.copy(str(path), str(dest_path))
 	with clckwrkbdgr.fs.CurrentDir(dest_repo or '.'):
 		commit_one_file(path, commit_message, show_diff=show_diff)
