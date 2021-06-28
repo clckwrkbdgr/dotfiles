@@ -256,7 +256,7 @@ def status(thorough=False):
 			if has_changes():
 				print(colored(os.path.basename(repo), 'red'))
 				sys.stdout.flush()
-				os.system("git -c color.status=always st")
+				os.system("git -c color.status=always status")
 	return True
 
 @cli.command()
@@ -317,7 +317,7 @@ def commit_submodules():
 	paths = subprocess.check_output(['git', 'submodule', '-q', 'foreach', 'echo $sm_path']).decode('utf-8', 'replace').splitlines()
 	were_updates = False
 	for sm_path in paths:
-		if not subprocess.check_output(['git', 'st', '-q', sm_path]):
+		if not subprocess.check_output(['git', 'status', '-q', sm_path]):
 			continue
 		were_updates = True
 		subprocess.call(['git', 'add', sm_path])
