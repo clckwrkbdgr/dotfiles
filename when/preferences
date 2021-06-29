@@ -1,4 +1,4 @@
-calendar = ~/.local/main.cal
+calendar = ~/.local/share/when.cal
 editor = vim
 wrap_auto = 1
 wrap_max = 100
