@@ -2,6 +2,11 @@ import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import clckwrkbdgr.utils as utils
 
+class CustomType:
+	pass
+
+custom_var = 'foo'
+
 class TestUtils(unittest.TestCase):
 	def should_detect_collections(self):
 		self.assertFalse(utils.is_collection(None))
@@ -12,6 +17,19 @@ class TestUtils(unittest.TestCase):
 		self.assertTrue(utils.is_collection({1, 2, 3}))
 		self.assertTrue(utils.is_collection({1:1, 2:2, 3:3}))
 		self.assertTrue(utils.is_collection([]))
+	def should_get_type_by_name(self):
+		self.assertTrue(utils.get_type_by_name("str") is str)
+		self.assertTrue(utils.get_type_by_name("CustomType") is CustomType)
+		self.assertTrue(utils.get_type_by_name("unittest.TestCase") is unittest.TestCase)
+		with self.assertRaises(RuntimeError):
+			utils.get_type_by_name("unknown type name")
+		with self.assertRaises(RuntimeError):
+			utils.get_type_by_name("custom_var")
+	def should_get_type_by_name_from_outer_frames(self):
+		def subframe(name, frame_correction):
+			return utils.get_type_by_name(name, frame_correction=frame_correction)
+		self.assertTrue(subframe("CustomType", 1) is CustomType)
+		self.assertTrue(subframe("TestCase", 2) is unittest.TestCase)
 
 class TestExitCode(unittest.TestCase):
 	def should_convert_None_to_0(self):

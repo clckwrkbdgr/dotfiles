@@ -123,3 +123,32 @@ def is_collection(s):
 		return True
 	except TypeError:
 		return False
+
+def get_type_by_name(type_name, frame_correction=0):
+	""" Returns type object from given name.
+	Recognizes:
+	- builtin types (str, int etc).
+	- types from current (caller) module.
+	  Set frame correction in case when this function is called non-directly
+	  (+1 for each level of indirection).
+	- fully-quialified type names (with module). Module must be imported in caller's namespace.
+	Otherwise raises RuntimeError.
+	"""
+	try:
+		import builtins
+		return getattr(builtins, type_name)
+	except AttributeError:
+		import inspect
+		try:
+			caller = inspect.currentframe().f_back
+			for _ in range(frame_correction):
+				caller = caller.f_back
+			parts = type_name.split('.')
+			type_obj = caller.f_globals[parts.pop(0)]
+			while parts:
+				type_obj = getattr(type_obj, parts.pop(0))
+			if isinstance(type_obj, type):
+				return type_obj
+		except KeyError:
+			pass
+	raise RuntimeError("Unknown type or not a type: {0}".format(type_name))
