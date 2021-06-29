@@ -13,7 +13,7 @@
 	excludesFile = ~/.config/git/gitignore
 
 [alias]
-	st = status --short
+	st = status --short --branch
 	logv = log --name-status
 	log-history = ! git log --all --pretty=format: --name-only | sort -u
 	log-history-stat = ! git log --all --pretty=format: --name-only | sort | uniq -c
