@@ -135,9 +135,12 @@ def get_type_by_name(type_name, frame_correction=0):
 	Otherwise raises RuntimeError.
 	"""
 	try:
-		import builtins
-		return getattr(builtins, type_name)
-	except AttributeError:
+		if six.PY2: # pragma: no cover -- Py2 only.
+			return __builtins__[type_name]
+		else: # pragma: no cover -- Py3 only.
+			import builtins
+			return getattr(builtins, type_name)
+	except (KeyError, AttributeError):
 		import inspect
 		try:
 			caller = inspect.currentframe().f_back
@@ -147,7 +150,12 @@ def get_type_by_name(type_name, frame_correction=0):
 			type_obj = caller.f_globals[parts.pop(0)]
 			while parts:
 				type_obj = getattr(type_obj, parts.pop(0))
-			if isinstance(type_obj, type):
+			if six.PY2: # pragma: no cover -- Py2 only.
+				import types
+				type_of_type = (types.TypeType, types.ClassType)
+			else: # pragma: no cover -- Py3 only.
+				type_of_type = type
+			if isinstance(type_obj, type_of_type):
 				return type_obj
 		except KeyError:
 			pass
