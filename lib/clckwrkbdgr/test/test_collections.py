@@ -3,6 +3,7 @@ unittest.defaultTestLoader.testMethodPrefix = 'should'
 import pickle
 from clckwrkbdgr.collections import AutoRegistry
 from clckwrkbdgr.collections import dotdict
+from clckwrkbdgr.collections import Enum
 
 class TestDotDict(unittest.TestCase):
 	def should_access_dotdict_fields_via_dot(self):
@@ -60,3 +61,24 @@ class TestAutoRegistry(unittest.TestCase):
 		self.assertEqual(set(reg.values()), {foo_function, bar_function})
 		self.assertEqual(set(reg), {foo_function, bar_function})
 		self.assertEqual(set(reg.items()), {('foo', foo_function), ('bar', bar_function)})
+
+class TestEnumeration(unittest.TestCase):
+	def should_create_enum(self):
+		class MyEnum(Enum):
+			auto = Enum.auto(3)
+			FIRST = auto()
+			SECOND = auto()
+			THIRD = auto()
+		self.assertEqual(MyEnum.FIRST, 3)
+		self.assertEqual(MyEnum.SECOND, 4)
+		self.assertEqual(MyEnum.THIRD, 5)
+		self.assertEqual(MyEnum._top(), 5)
+		self.assertEqual(MyEnum._all(), {'FIRST':3, 'SECOND':4, 'THIRD':5})
+		class MyOtherEnum(Enum):
+			auto = Enum.auto()
+			FIRST = auto()
+			SECOND = auto()
+		self.assertEqual(MyOtherEnum.FIRST, 1)
+		self.assertEqual(MyOtherEnum.SECOND, 2)
+		self.assertEqual(MyOtherEnum._top(), 2)
+		self.assertEqual(MyOtherEnum._all(), {'FIRST':1, 'SECOND':2})
