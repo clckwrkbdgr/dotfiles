@@ -199,6 +199,7 @@ lib/clckwrkbdgr/math.py caps=work
 lib/clckwrkbdgr/net.py caps=work
 lib/clckwrkbdgr/pyshell.py caps=work
 lib/clckwrkbdgr/logging.py caps=work
+lib/clckwrkbdgr/test/test_logging.py caps=work
 lib/clckwrkbdgr/text.py caps=work
 lib/clckwrkbdgr/test/__init__.py caps=work
 lib/clckwrkbdgr/test/test_backup.py caps=work
