@@ -15,6 +15,7 @@ import clckwrkbdgr.todo.tasklist
 @click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=clckwrkbdgr.todo.CONFIG_FILE_DESC)
 @click.option('--debug', is_flag=True, help='Enables debug output.')
 def cli(debug=False):
+	config = clckwrkbdgr.todo.read_config() # Pre-loading configuration.
 	handler = logging.StreamHandler() # TODO custom formatter to display level, module, logger name etc.; and generic clckwrkbdgr module for such loggers.
 	logger.addHandler(handler)
 	if debug:
@@ -41,21 +42,27 @@ def inbox(add_notes=None):
 @cli.command('sync')
 @utils.exits_with_return_value
 def sync_tasks():
-	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
+	config = clckwrkbdgr.todo.read_config()
+	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
+	tasklist = tasklist_class()
 	ok = tasklist.sync()
 	return ok
 
 @cli.command('list')
 @utils.exits_with_return_value
 def list_tasks():
-	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
+	config = clckwrkbdgr.todo.read_config()
+	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
+	tasklist = tasklist_class()
 	for task in tasklist.list_all(with_seps=True):
 		print(task)
 
 @cli.command('sort')
 @utils.exits_with_return_value
 def sort_Tasks():
-	tasklist = clckwrkbdgr.todo.tasklist.TaskList()
+	config = clckwrkbdgr.todo.read_config()
+	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
+	tasklist = tasklist_class()
 	return tasklist.sort()
 
 @cli.command()
