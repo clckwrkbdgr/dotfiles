@@ -1,0 +1,60 @@
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<script type="application/javascript" src="../utils.js">
+	</script>
+</head>
+<body>
+	<noscript>
+		Failed: Javascript is needed to be turned ON to test Javascript functionality!
+	</noscript>
+
+	<div id="setUp">
+	</div>
+	<script type="application/javascript">
+		var is_loaded = window["clckwrkbdgr"];
+		if(!is_loaded) {
+			var message = "Failed: Module 'clckwrkbdgr' is not accessible. If this file is opened from local FS, try to host it on some webserver instead.";
+			console.error(message);
+			document.querySelector("#setUp").textContent = message;
+		}
+	</script>
+
+	<table id="test-storage-value">
+		<tbody>
+			<tr><td>Absent</td><td id="test-storage-value-absent"></td></tr>
+			<tr><td>Set</td><td id="test-storage-value-set"></td></tr>
+			<tr><td>Get</td><td id="test-storage-value-get"></td></tr>
+		</tbody>
+	</table>
+	<script type="application/javascript">
+		var div = document.querySelector("#test-storage-value");
+
+		var value = clckwrkbdgr.storage.get('definitely-absent', 'default value');
+		var p = div.querySelector('#test-storage-value-absent');
+		if(value == 'default value') {
+			p.textContent = "OK";
+		} else {
+			p.textContent = "Failed";
+		}
+
+		var random_value = Math.random().toString();
+
+		var ok = clckwrkbdgr.storage.set('value', random_value);
+		var p = div.querySelector('#test-storage-value-set');
+		if(ok) {
+			p.textContent = "OK";
+		} else {
+			p.textContent = "Failed";
+		}
+
+		value = clckwrkbdgr.storage.get('value', 'default value');
+		var p = div.querySelector('#test-storage-value-get');
+		if(value == random_value) {
+			p.textContent = "OK";
+		} else {
+			p.textContent = "Failed";
+		}
+	</script>
+</body>
+</html>
