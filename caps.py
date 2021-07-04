@@ -9,10 +9,13 @@ try:
 except ImportError:
 	from pathlib import Path
 
-def list_attributes():
-	ls_files = subprocess.check_output(['git', 'ls-files'])
+def list_attributes(filenames=None):
+	if filenames:
+		filenames = b'\n'.join(filename.encode('utf-8', 'replace') for filename in filenames)
+	else:
+		filenames = subprocess.check_output(['git', 'ls-files'])
 	git = subprocess.Popen(['git', 'check-attr', '--stdin', 'caps'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-	attrs, _ = git.communicate(ls_files)
+	attrs, _ = git.communicate(filenames)
 	git.wait()
 	for line in attrs.split(b'\n'):
 		if not line:
@@ -37,10 +40,15 @@ def cli():
 		sys.exit(1)
 
 @cli.command('check')
-def check_attributes():
+@click.argument('filenames', nargs=-1, default=None)
+def check_attributes(filenames):
+	""" Checks attributes for given files or for all known to Git in current repo. """
+	rc = 0
 	for filename, value in list_attributes():
 		if not value:
 			print('Missing caps attribute: {0}'.format(filename))
+			rc += 1
+	sys.exit(rc)
 
 @cli.command('list')
 @click.argument('tag')
