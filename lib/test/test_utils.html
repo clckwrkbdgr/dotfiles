@@ -1,60 +1,41 @@
 <html>
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<script type="application/javascript" src="../utils.js">
-	</script>
+	<script type="application/javascript" src="../unittest.js"></script>
+	<script type="application/javascript" src="../utils.js"></script>
 </head>
-<body>
+<body onload="clckwrkbdgr.unittest.run('should_')">
 	<noscript>
 		Failed: Javascript is needed to be turned ON to test Javascript functionality!
 	</noscript>
-
-	<div id="setUp">
+	<div id="unittest-main">
 	</div>
-	<script type="application/javascript">
-		var is_loaded = window["clckwrkbdgr"];
-		if(!is_loaded) {
-			var message = "Failed: Module 'clckwrkbdgr' is not accessible. If this file is opened from local FS, try to host it on some webserver instead.";
-			console.error(message);
-			document.querySelector("#setUp").textContent = message;
-		}
-	</script>
 
-	<table id="test-storage-value">
-		<tbody>
-			<tr><td>Absent</td><td id="test-storage-value-absent"></td></tr>
-			<tr><td>Set</td><td id="test-storage-value-set"></td></tr>
-			<tr><td>Get</td><td id="test-storage-value-get"></td></tr>
-		</tbody>
-	</table>
-	<script type="application/javascript">
-		var div = document.querySelector("#test-storage-value");
+<script type="application/javascript">
+var unittest = clckwrkbdgr.unittest;
 
-		var value = clckwrkbdgr.storage.get('definitely-absent', 'default value');
-		var p = div.querySelector('#test-storage-value-absent');
-		if(value == 'default value') {
-			p.textContent = "OK";
-		} else {
-			p.textContent = "Failed";
-		}
+function setUp()
+{
+	unittest.assertTrue(window.clckwrkbdgr);
+}
 
-		var random_value = Math.random().toString();
+function should_get_default_value_if_stored_is_absent()
+{
+	var value = clckwrkbdgr.storage.get('definitely-absent', 'default value');
+	unittest.assertEqual(value, 'default value');
+}
 
-		var ok = clckwrkbdgr.storage.set('value', random_value);
-		var p = div.querySelector('#test-storage-value-set');
-		if(ok) {
-			p.textContent = "OK";
-		} else {
-			p.textContent = "Failed";
-		}
+function should_get_and_set_storage_value()
+{
+	var random_value = Math.random().toString();
 
-		value = clckwrkbdgr.storage.get('value', 'default value');
-		var p = div.querySelector('#test-storage-value-get');
-		if(value == random_value) {
-			p.textContent = "OK";
-		} else {
-			p.textContent = "Failed";
-		}
-	</script>
+	unittest.assertTrue(clckwrkbdgr.storage.set('value', random_value));
+
+	value = clckwrkbdgr.storage.get('value', 'default value');
+	unittest.assertEqual(value, random_value);
+}
+
+</script>
+
 </body>
 </html>
