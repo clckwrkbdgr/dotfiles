@@ -69,6 +69,11 @@ class Point(Vector): # pragma: no cover
 	""" Convenience type definition for 2D vector
 	with access to first two elements under aliases .x and .y
 	"""
+	def __setstate__(self, state):
+		if isinstance(state, dict):
+			self.values = [state['x'], state['y']]
+		else:
+			super(Point, self).__setstate__(state)
 	@property
 	def x(self): return self.values[0]
 	@x.setter
@@ -89,6 +94,11 @@ class Size(Vector): # pragma: no cover
 	""" Convenience type definition for 2D vector
 	with access to first two elements under aliases .with and .height
 	"""
+	def __setstate__(self, state):
+		if isinstance(state, dict):
+			self.values = [state['x'], state['y']]
+		else:
+			super(Size, self).__setstate__(state)
 	@property
 	def width(self): return self.values[0]
 	@width.setter
