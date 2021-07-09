@@ -30,6 +30,15 @@ class TestUtils(unittest.TestCase):
 			return utils.get_type_by_name(name, frame_correction=frame_correction)
 		self.assertTrue(subframe("CustomType", 1) is CustomType)
 		self.assertTrue(subframe("TestCase", 2) is unittest.TestCase)
+	def should_define_class_level_field(self):
+		class BaseField:
+			name = utils.classfield('_name', 'default')
+		class CustomField(BaseField):
+			_name = "custom"
+		class DefaultField(BaseField):
+			pass
+		self.assertEqual(CustomField().name, 'custom')
+		self.assertEqual(DefaultField().name, 'default')
 
 class TestExitCode(unittest.TestCase):
 	def should_convert_None_to_0(self):

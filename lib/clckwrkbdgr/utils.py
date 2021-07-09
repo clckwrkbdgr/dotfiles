@@ -160,3 +160,31 @@ def get_type_by_name(type_name, frame_correction=0):
 		except KeyError:
 			pass
 	raise RuntimeError("Unknown type or not a type: {0}".format(type_name))
+
+class ClassField:
+	""" Internal implementation of classfield functionality. """
+	def __init__(self, name, default_value):
+		self.name = name
+		self.default_value = default_value
+	def __call__(self, obj):
+		if hasattr(obj, self.name):
+			return getattr(obj, self.name)
+		return self.default_value
+
+def classfield(name, default_value):
+	""" Defines property for accessing class-level field in ancestor classes
+	in a hierarchy of objects with similar behavior but different characteristics.
+
+	If ancestor class does not define property with such name, default value will be returned.
+
+	Example:
+	class Base:
+		name = classfield('_name', 'default')
+	class Custom(Base):
+		_name = 'custom'
+	class Default(Base):
+		pass
+	Custom().name == 'custom'
+	Default().name == 'default'
+	"""
+	return property(ClassField(name, default_value))
