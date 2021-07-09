@@ -112,6 +112,39 @@ class Size(Vector): # pragma: no cover
 	@property
 	def y(self): return self.height
 
+class Rect(object):
+	""" Represents rectangle. """
+	def __init__(self, topleft, size):
+		""" Creates rectangle from topleft (Point or tuple of 2 elements)
+		and size (Size or tuple of 2 elements).
+		"""
+		self.topleft = Point(topleft)
+		self.size = Size(size)
+	def __setstate__(self, data):
+		self.topleft = data['topleft']
+		self.size = data['size']
+	def __getstate__(self):
+		return {'topleft':self.topleft, 'size':self.size}
+	def __eq__(self, other):
+		return other is not None and self.topleft == other.topleft and self.size == other.size
+	@property
+	def width(self): return self.size.width
+	@property
+	def height(self): return self.size.height
+	@property
+	def top(self): return self.topleft.y
+	@property
+	def left(self): return self.topleft.x
+	@property
+	def bottom(self): return self.topleft.y + self.size.height - 1
+	@property
+	def right(self): return self.topleft.x + self.size.width - 1
+	def contains(self, pos, with_border=False):
+		pos = Point(pos)
+		if with_border:
+			return self.left <= pos.x <= self.right and self.top <= pos.y <= self.bottom
+		return self.left < pos.x < self.right and self.top < pos.y < self.bottom
+
 class CallableIntProperty(int): # pragma: no cover
 	@vintage.deprecated('Calling property as method is deprecated.')
 	def __call__(self): return self
