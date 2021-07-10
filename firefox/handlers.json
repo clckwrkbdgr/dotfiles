@@ -4,6 +4,13 @@
         "und": 4
     },
     "mimeTypes": {
+        "application/atom+xml": {
+            "action": 1,
+            "ask": true,
+            "extensions": [
+                "atom"
+            ]
+        },
         "application/download": {
             "action": 1,
             "ask": true,
