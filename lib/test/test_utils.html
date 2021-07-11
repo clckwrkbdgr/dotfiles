@@ -90,6 +90,11 @@ function should_always_print_traces_with_empty_trace_category()
 	unittest.assertEqual(mock_logger_data, ['prefix : always printed']);
 }
 
+function should_display_notifications()
+{
+	clckwrkbdgr.notify('Hello world!');
+}
+
 </script>
 
 </body>
