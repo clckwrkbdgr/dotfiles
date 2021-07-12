@@ -102,6 +102,7 @@ class TestRect(unittest.TestCase):
 		self.assertEqual(rect.left, 1)
 		self.assertEqual(rect.bottom, 6)
 		self.assertEqual(rect.right, 4)
+	@unittest.skipUnless(jsonpickle, "Jsonpickle is not detected.")
 	def should_serialize_rect(self):
 		rect = Rect((1, 2), (4, 5))
 		data = json.loads(jsonpickle.encode(rect, unpicklable=False))
