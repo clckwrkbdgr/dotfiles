@@ -32,7 +32,7 @@ user_pref("browser.display.background_color", "#000000");
 user_pref("browser.display.foreground_color", "#CCCCCC");
 user_pref("browser.download.animateNotifications", false);
 user_pref("browser.download.autohideButton", false);
-user_pref("browser.download.dir", "$HOME");
+user_pref("browser.download.dir", "$HOME/Desktop");
 user_pref("browser.download.folderList", 2);
 user_pref("browser.download.importedFromSqlite", true);
 user_pref("browser.download.lastDir", "$HOME/Desktop");
