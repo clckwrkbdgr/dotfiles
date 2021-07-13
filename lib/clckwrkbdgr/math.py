@@ -120,10 +120,10 @@ class Rect(object):
 		"""
 		self.topleft = Point(topleft)
 		self.size = Size(size)
-	def __setstate__(self, data):
+	def __setstate__(self, data): # pragma: no cover
 		self.topleft = data['topleft']
 		self.size = data['size']
-	def __getstate__(self):
+	def __getstate__(self): # pragma: no cover
 		return {'topleft':self.topleft, 'size':self.size}
 	def __eq__(self, other):
 		return other is not None and self.topleft == other.topleft and self.size == other.size

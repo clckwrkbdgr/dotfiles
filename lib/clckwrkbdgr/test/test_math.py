@@ -103,11 +103,14 @@ class TestRect(unittest.TestCase):
 		self.assertEqual(rect.bottom, 6)
 		self.assertEqual(rect.right, 4)
 	@unittest.skipUnless(jsonpickle, "Jsonpickle is not detected.")
-	def should_serialize_rect(self):
+	def should_serialize_rect(self): # pragma: no cover -- TODO needs mocks instead of just skipping.
 		rect = Rect((1, 2), (4, 5))
 		data = json.loads(jsonpickle.encode(rect, unpicklable=False))
 		self.assertEqual(data, {'topleft': [1, 2], 'size' : [4, 5]})
 		self.assertEqual(jsonpickle.decode(jsonpickle.encode(rect)), rect)
+	def should_check_if_rects_are_equal(self):
+		self.assertEqual(Rect((1, 2), (4, 5)), Rect((1, 2), (4, 5)))
+		self.assertNotEqual(Rect((1, 2), (4, 5)), Rect((1, 2), (14, 15)))
 	def should_detect_rect_containing_point(self):
 		rect = Rect((1, 2), (4, 5))
 		self.assertFalse(rect.contains(Point(0, 0)))
