@@ -200,6 +200,16 @@ class Matrix(object):
 	@property
 	def height(self):
 		return CallableIntProperty(self.dims.height)
+	def __repr__(self): # pragma: no cover
+		return 'Matrix(({0}, {1}))'.format(*self.dims)
+	def __eq__(self, other):
+		if not isinstance(other, Matrix):
+			raise TypeError("Cannot compare matrix with {0}".format(type(other)))
+		if self.dims != other.dims:
+			return False
+		return self.data == other.data
+	def __ne__(self, other):
+		return not (self == other)
 	def valid(self, pos):
 		""" Returns True if pos is within Matrix boundaries. """
 		pos = Point(pos)
@@ -222,13 +232,23 @@ class Matrix(object):
 		self.data[pos.x + pos.y * self.dims.width] = value
 	def keys(self):
 		""" Iterates over all available positions. """
-		return iter(map(Point, itertools.product(range(self.dims.width), range(self.dims.height))))
+		return iter(Point(x, y) for y, x in itertools.product(range(self.dims.height), range(self.dims.width)))
 	def values(self):
 		""" Iterates over all available values. """
 		return iter(self.data)
 	def __iter__(self):
 		""" Iterates over all available positions, see keys(). """
 		return self.keys()
+	def find(self, value):
+		""" Yields positions where value is found. """
+		for pos in self.keys():
+			if self.cell(pos) == value:
+				yield pos
+	def find_if(self, condition):
+		""" Yields positions where values match given condition. """
+		for pos in self.keys():
+			if condition(self.cell(pos)):
+				yield pos
 	def transform(self, transformer):
 		""" Returns new instance of matrix with same dimensions
 		and transformer(c) applied for each cell.
@@ -237,8 +257,26 @@ class Matrix(object):
 		new_matrix.data = [transformer(copy.deepcopy(c)) for c in self.data]
 		return new_matrix
 	@classmethod
+	def from_iterable(cls, iterable):
+		""" Creates matrix from iterable of iterables (set of rows).
+		All rows should be of equal width, otherwise ValueError is raised.
+		"""
+		data = []
+		width, height = None, 0
+		for row in iterable:
+			row = list(row)
+			if width is None:
+				width = len(row)
+			elif len(row) != width:
+				raise ValueError('Not all lines are of equal width ({0})'.format(width))
+			data.extend(row)
+			height += 1
+		m = cls(Size(width, height))
+		m.data = data
+		return m
+	@classmethod
 	def fromstring(cls, multiline_string, transformer=None):
-		""" Creates matrix from mutiline string.
+		""" Creates matrix from multiline string.
 		All lines should be of equal width, otherwise ValueError is raised.
 		If transformer is specified, it should be callable that takes single argument (single string char) and transforms into matrix element. By default stored as string chars.
 		"""
@@ -265,8 +303,10 @@ class Matrix(object):
 			result += '\n'
 		return result
 
-def get_neighbours(matrix, pos, check=None):
+def get_neighbours(matrix, pos, check=None, with_diagonal=False):
 	""" Yields points adjacent to given pos (valid points only).
+	By default checks only orthogonal cells.
+	If with_diagonal is True, checks also diagonal adjacent cells.
 	If check is not none, it is applied to value at each pos
 	and yields only if callable returns True.
 	"""
@@ -277,6 +317,13 @@ def get_neighbours(matrix, pos, check=None):
 			pos - Point(1, 0),
 			pos - Point(0, 1),
 			]
+	if with_diagonal:
+		neighbours += [
+				pos + Point( 1,  1),
+				pos + Point(-1,  1),
+				pos + Point( 1, -1),
+				pos + Point(-1, -1),
+				]
 	for p in neighbours:
 		if not matrix.valid(p):
 			continue

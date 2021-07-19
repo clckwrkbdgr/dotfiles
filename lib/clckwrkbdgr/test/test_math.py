@@ -132,6 +132,27 @@ class TestMatrix(unittest.TestCase):
 		self.assertEqual(m.size, (2, 3))
 		self.assertEqual(m.width, 2)
 		self.assertEqual(m.height, 3)
+	def should_compare_matrices(self):
+		a = Matrix((2, 3), default='*')
+		with self.assertRaises(TypeError):
+			a == 'something that is not matrix'
+		b = Matrix((5, 6), default='*')
+		self.assertNotEqual(a, b)
+
+		a = Matrix.fromstring(textwrap.dedent("""\
+				.X.
+				XXX
+				"""))
+		b = Matrix.fromstring(textwrap.dedent("""\
+				#.#
+				.#.
+				"""))
+		c = Matrix.fromstring(textwrap.dedent("""\
+				.X.
+				XXX
+				"""))
+		self.assertNotEqual(a, b)
+		self.assertEqual(a, c)
 	def should_resize_matrix(self):
 		m = Matrix((2, 3), default='*')
 		self.assertEqual(m.size, (2, 3))
@@ -182,11 +203,20 @@ class TestMatrix(unittest.TestCase):
 		m = Matrix((2, 2))
 		m.data = list('abcd')
 		indexes = ' '.join(''.join(map(str, index)) for index in m)
-		self.assertEqual(indexes, '00 01 10 11')
+		self.assertEqual(indexes, '00 10 01 11')
 		indexes = ' '.join(''.join(map(str, index)) for index in m.keys())
-		self.assertEqual(indexes, '00 01 10 11')
+		self.assertEqual(indexes, '00 10 01 11')
 		values = ' '.join(m.values())
 		self.assertEqual(values, 'a b c d')
+	def should_find_value_in_matrix(self):
+		a = Matrix.fromstring(textwrap.dedent("""\
+				ab
+				ca
+				"""))
+		self.assertEqual(list(a.find('a')), [Point(0, 0), Point(1, 1)])
+		self.assertEqual(list(a.find('X')), [])
+		self.assertEqual(list(a.find_if(lambda c:c>'a')), [Point(1, 0), Point(0, 1)])
+		self.assertEqual(list(a.find_if(lambda c:c<'a')), [])
 	def should_transform_matrix(self):
 		original = Matrix.fromstring('01\n23')
 		processed = original.transform(int)
@@ -195,6 +225,17 @@ class TestMatrix(unittest.TestCase):
 		self.assertEqual(processed.data, [
 			0, 1,
 			2, 3,
+			])
+	def should_construct_matrix_from_iterable(self):
+		with self.assertRaises(ValueError):
+			Matrix.from_iterable( (range(3), range(4)) )
+
+		m = Matrix.from_iterable( (range(4), range(4, 8)) )
+		self.assertEqual(m.width, 4)
+		self.assertEqual(m.height, 2)
+		self.assertEqual(m.data, [
+			0, 1, 2, 3,
+			4, 5, 6, 7,
 			])
 	def should_construct_matrix_from_multiline_string(self):
 		data = textwrap.dedent("""\
@@ -263,9 +304,13 @@ class TestAlgorithms(unittest.TestCase):
 		m = Matrix.fromstring('01\n23')
 		neighbours = list(clckwrkbdgr.math.get_neighbours(m, (0, 0)))
 		self.assertEqual(neighbours, [Point(1, 0), Point(0, 1)])
+		neighbours = list(clckwrkbdgr.math.get_neighbours(m, (0, 0), with_diagonal=True))
+		self.assertEqual(neighbours, [Point(1, 0), Point(0, 1), Point(1, 1)])
 
 		neighbours = list(clckwrkbdgr.math.get_neighbours(m, (0, 0), check=lambda c: int(c) > 1))
 		self.assertEqual(neighbours, [Point(0, 1)])
+		neighbours = list(clckwrkbdgr.math.get_neighbours(m, (0, 0), with_diagonal=True, check=lambda c: int(c) > 1))
+		self.assertEqual(neighbours, [Point(0, 1), Point(1, 1)])
 
 class TestMath(unittest.TestCase):
 	def should_extract_sign(self):
