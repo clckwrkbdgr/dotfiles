@@ -48,6 +48,8 @@ class Vector(object):
 		self.values = state
 	def __eq__(self, other):
 		return other is not None and self.values == Vector(other).values
+	def __ne__(self, other):
+		return not (self == other)
 	def __lt__(self, other):
 		return other is not None and self.values < Vector(other).values
 	def __abs__(self):

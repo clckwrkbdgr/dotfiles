@@ -55,6 +55,8 @@ class TestVector(unittest.TestCase):
 		self.assertEqual(o.second, 2)
 	def should_compare_vectors(self):
 		self.assertEqual(MyVector(1, 2), MyVector(1, 2))
+		self.assertTrue(MyVector(1, 2) == MyVector(1, 2))
+		self.assertFalse(MyVector(1, 2) != MyVector(1, 2))
 		self.assertTrue(MyVector(1, 2) <= MyVector(1, 2))
 		self.assertTrue(MyVector(1, 2) < MyVector(2, 2))
 		self.assertTrue(MyVector(1, 2) < MyVector(1, 3))
