@@ -35,7 +35,6 @@ user_pref("browser.download.autohideButton", false);
 user_pref("browser.download.dir", "$HOME/Desktop");
 user_pref("browser.download.folderList", 2);
 user_pref("browser.download.importedFromSqlite", true);
-user_pref("browser.download.lastDir", "$HOME/Desktop");
 user_pref("browser.download.manager.closeWhenDone", true);
 user_pref("browser.download.manager.retention", 0);
 user_pref("browser.download.manager.showWhenStarting", false);
