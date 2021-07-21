@@ -6,6 +6,7 @@ import math
 from collections import namedtuple
 from functools import total_ordering
 import vintage
+from . import algorithm, solve, geometry, graph
 
 @total_ordering
 class Vector(object):
@@ -303,6 +304,75 @@ class Matrix(object):
 			for c in self.data[start:start+self.dims[0]]:
 				result += transformer(c)
 			result += '\n'
+		return result
+
+class HexGrid(object):
+	r""" Represents grid of hexagonal cells.
+	 __    __    __
+	/  \__/  \__/  \
+	\__/  \__/  \__/
+	/  \__/  \__/  \
+	\__/  \__/  \__/
+	/  \__/  \__/  \
+	\__/  \__/  \__/
+	   \__/  \__/   
+	"""
+	def __init__(self, rows, columns, default=None):
+		self.data = Matrix((columns, rows), default=default)
+	@property
+	def rows(self):
+		return self.data.height
+	@property
+	def columns(self):
+		return self.data.width
+	def get_cell(self, point):
+		return self.data.cell(point)
+	def set_cell(self, point, value):
+		return self.data.set_cell(point, value)
+	def get_neighbours(self, point):
+		shifts = [Point(0, -1),
+			Point(-1, 0), Point(1, 0),
+			Point(-1, 1), Point(1, 1),
+				Point(0, 1),
+				]
+		point = Point(point)
+		for shift in shifts:
+			neigh = point + shift
+			if self.data.valid(neigh):
+				yield neigh
+	def to_string(self):
+		result = ''
+		for column in range(self.columns):
+			if column % 2 == 0:
+				result += ' __'
+			else:
+				result += '   '
+		result += ' \n'
+		for row in range(self.rows):
+			for column in range(self.columns):
+				if column % 2 == 0:
+					content = str(self.data.cell((column, row)) or '')
+					content = (content + '  ')[:2]
+					result += '/' + content + '\\'
+				else:
+					result += '__'
+			result += '\n'
+			for column in range(self.columns):
+				if column % 2 == 0:
+					result += '\\__/'
+				else:
+					content = str(self.data.cell((column, row)) or '')
+					content = (content + '  ')[:2]
+					result += content
+			result += '\n'
+		for column in range(self.columns):
+			if column == 0:
+				result += '   '
+			elif column % 2 == 0:
+				result += '/  '
+			else:
+				result += '\\__'
+		result += ' \n'
 		return result
 
 def get_neighbours(matrix, pos, check=None, with_diagonal=False):

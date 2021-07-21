@@ -1,5 +1,5 @@
 import sys
-import functools
+import itertools, functools
 import contextlib
 import six
 
@@ -188,3 +188,29 @@ def classfield(name, default_value):
 	Default().name == 'default'
 	"""
 	return property(ClassField(name, default_value))
+
+def chunks(seq, length, pad_value=None, pad=True):
+	""" Splits sequence and yields chunks of specified length.
+	Sequence can be any iterable. Type of chunks depends on type of sequences: list and strings are recognized, otherwise they will be tuples.
+	If pad is True (by default), pads generated chunks to specified lengths with specified value.
+	"""
+	result_type = tuple
+	if isinstance(seq, list):
+		result_type = list
+	elif isinstance(seq, str):
+		pad_value = pad_value or ''
+		result_type = ''.join
+	if pad:
+		result = itertools.zip_longest(*[iter(seq)]*length, fillvalue=pad_value)
+	else:
+		it = iter(seq)
+		result = iter(lambda: tuple(itertools.islice(it, length)), ())
+	return map(result_type, result)
+
+def is_integer(number):
+	if isinstance(number, six.integer_types):
+		return True
+	try:
+		return number.is_integer()
+	except:
+		return False

@@ -39,6 +39,21 @@ class TestUtils(unittest.TestCase):
 			pass
 		self.assertEqual(CustomField().name, 'custom')
 		self.assertEqual(DefaultField().name, 'default')
+	def should_split_sequence_to_chunks(self):
+		self.assertEqual(list(utils.chunks(['a', 'b', 'c', 'd'], 2)), [['a', 'b'], ['c', 'd']])
+		self.assertEqual(list(utils.chunks(('a', 'b', 'c', 'd'), 2)), [('a', 'b'), ('c', 'd')])
+		self.assertEqual(list(utils.chunks('abcd', 2)), ['ab', 'cd'])
+		self.assertEqual(list(utils.chunks('abcd', 3, '_')), ['abc', 'd__'])
+		self.assertEqual(list(utils.chunks('abcd', 3, pad=False)), ['abc', 'd'])
+		self.assertEqual(list(utils.chunks((_ for _ in 'abcd'), 2)), [('a', 'b'), ('c', 'd')])
+	def should_detect_integer_values(self):
+		self.assertTrue(utils.is_integer(0))
+		self.assertTrue(utils.is_integer(1))
+		self.assertTrue(utils.is_integer(float(0)))
+		self.assertTrue(utils.is_integer(0.0))
+		self.assertTrue(utils.is_integer(float(1)))
+		self.assertFalse(utils.is_integer('0'))
+		self.assertFalse(utils.is_integer(1.1))
 
 class TestExitCode(unittest.TestCase):
 	def should_convert_None_to_0(self):

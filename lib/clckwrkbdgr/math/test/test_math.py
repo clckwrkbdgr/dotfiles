@@ -45,7 +45,7 @@ class TestVector(unittest.TestCase):
 		self.assertEqual(set([p]), set([other]))
 	@unittest.skipUnless(jsonpickle, "Jsonpickle is not detected.")
 	def should_deserialize_old_vector(self): # pragma: no cover -- TODO needs mocks instead of just skipping.
-		q = jsonpickle.decode('{"py/newargs": {"py/tuple": [1, 2]}, "py/object": "clckwrkbdgr.test.test_math.MyVector", "py/seq": [1, 2]}')
+		q = jsonpickle.decode('{"py/newargs": {"py/tuple": [1, 2]}, "py/object": "clckwrkbdgr.math.test.test_math.MyVector", "py/seq": [1, 2]}')
 		self.assertEqual(q.first, 1)
 		self.assertEqual(q.second, 2)
 	def should_create_vector_from_other_vector(self):
@@ -300,6 +300,34 @@ class TestMatrix(unittest.TestCase):
 				""")
 		actual = m.tostring()
 		self.assertEqual(actual, expected)
+
+class TestHexGrid(unittest.TestCase):
+	def should_convert_hex_to_string_representation(self):
+		grid = clckwrkbdgr.math.HexGrid(3, 5)
+		grid.data.data = list(range(1, 1+15))
+		grid.set_cell((1, 1), 'LONG')
+		expected = textwrap.dedent(r"""
+		 __    __    __ 
+		/1 \__/3 \__/5 \
+		\__/2 \__/4 \__/
+		/6 \__/8 \__/10\
+		\__/LO\__/9 \__/
+		/11\__/13\__/15\
+		\__/12\__/14\__/
+		   \__/  \__/   
+		"""[1:])
+		self.assertEqual(grid.to_string(), expected)
+	def should_get_hex_neighbours(self):
+		grid = clckwrkbdgr.math.HexGrid(3, 5)
+		grid.data.data = list(range(1, 1+15))
+		neighbours = list(grid.get_neighbours(Point(1, 1)))
+		self.assertEqual(neighbours, [
+			Point(1, 0),
+			Point(0, 1), Point(2, 1),
+			Point(0, 2), Point(2, 2),
+			Point(1, 2),
+			])
+		self.assertEqual([grid.get_cell(p) for p in neighbours], [2, 6, 8, 11, 13, 12])
 
 class TestAlgorithms(unittest.TestCase):
 	def should_get_neighbours(self):
