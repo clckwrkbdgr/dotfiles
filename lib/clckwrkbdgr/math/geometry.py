@@ -1,4 +1,10 @@
+# -*- coding: utf-8 -*-
 import re, math
+try:
+	math.gcd
+except AttributeError: # pragma: no cover -- py2
+	import fractions
+	math.gcd = fractions.gcd
 import clckwrkbdgr.math
 import clckwrkbdgr.utils
 
@@ -82,13 +88,13 @@ class GeoAngle(object):
 		return signs[self.direction] * (float(self.degrees) + float(self.minutes) / 60.0 + float(self.seconds) / 3600.0)
 	@classmethod
 	def from_string(cls, value):
-		""" Constructs geographical angle from strings like: 0°0′0″N, 0o0'0"E
+		""" Constructs geographical angle from strings like: 0\u00b00\u20320\u2033N, 0o0'0"E
 		Both Unicode and ASCII symbols may be used.
 		"""
-		pattern = re.compile(r'^(\d+)(?:°|[Oo])(\d+)(?:′|\')(\d+)(?:″|")([NEWSnews])$')
+		pattern = re.compile(u'^(\\d+)(?:\u00b0|[Oo])(\\d+)(?:\u2032|\')(\\d+)(?:\u2033|")([NEWSnews])$')
 		m = pattern.match(value)
 		if not m:
-			raise ValueError("Value does not match pattern XX°XX′XX″[NEWS]: {0}".format(repr(value)))
+			raise ValueError("Value does not match pattern XXoXX'XX\"[NEWS]: {0}".format(repr(value)))
 		degrees, minutes, seconds, direction = m.groups()
 		return cls(int(degrees), int(minutes), int(seconds), direction)
 

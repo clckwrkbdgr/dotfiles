@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import clckwrkbdgr.math
@@ -57,7 +58,7 @@ class TestGeoCoords(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			geometry.GeoAngle.from_string("not an angle at all")
 
-		angle = geometry.GeoAngle.from_string(u"51°28′48″N")
+		angle = geometry.GeoAngle.from_string(u"51\u00b028\u203248\u2033N")
 		self.assertEqual(angle.degrees, 51)
 		self.assertEqual(angle.minutes, 28)
 		self.assertEqual(angle.seconds, 48)
@@ -69,32 +70,32 @@ class TestGeoCoords(unittest.TestCase):
 		self.assertEqual(angle.seconds, 48)
 		self.assertEqual(angle.direction, 'N')
 
-		angle = geometry.GeoAngle.from_string(u"0°0′0″E")
+		angle = geometry.GeoAngle.from_string(u"0\u00b00\u20320\u2033E")
 		self.assertEqual(angle.degrees, 0)
 		self.assertEqual(angle.minutes, 0)
 		self.assertEqual(angle.seconds, 0)
 		self.assertEqual(angle.direction, 'E')
 	def should_calculate_real_value_of_geo_angles(self):
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"51°28′48″N").get_value(), 51.48, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"0°0′0″E").get_value(), 0, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"46°12′0″N").get_value(), 46.2, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"6°9′0″E").get_value(), 6.15, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"90°0′0″N").get_value(), 90.0, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"90°0′0″S").get_value(), -90.0, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"0°0′0″E").get_value(), 0.0, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"0°0′0″W").get_value(), 0.0, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"33°51′31″S").get_value(), -33.858, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"151°12′51″E").get_value(), 151.21, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"40°46′22″N").get_value(), 40.77, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"73°59′3″W").get_value(), -73.98, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"48°27′0″N").get_value(), 48.45, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"34°59′0″E").get_value(), 34.98, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"15°47′56″S").get_value(), -15.8, 2)
-		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"47°52′0″W").get_value(), -47.866, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"51\u00b028\u203248\u2033N").get_value(), 51.48, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"0\u00b00\u20320\u2033E").get_value(), 0, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"46\u00b012\u20320\u2033N").get_value(), 46.2, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"6\u00b09\u20320\u2033E").get_value(), 6.15, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"90\u00b00\u20320\u2033N").get_value(), 90.0, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"90\u00b00\u20320\u2033S").get_value(), -90.0, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"0\u00b00\u20320\u2033E").get_value(), 0.0, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"0\u00b00\u20320\u2033W").get_value(), 0.0, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"33\u00b051\u203231\u2033S").get_value(), -33.858, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"151\u00b012\u203251\u2033E").get_value(), 151.21, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"40\u00b046\u203222\u2033N").get_value(), 40.77, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"73\u00b059\u20323\u2033W").get_value(), -73.98, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"48\u00b027\u20320\u2033N").get_value(), 48.45, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"34\u00b059\u20320\u2033E").get_value(), 34.98, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"15\u00b047\u203256\u2033S").get_value(), -15.8, 2)
+		self.assertAlmostEqual(geometry.GeoAngle.from_string(u"47\u00b052\u20320\u2033W").get_value(), -47.866, 2)
 	def should_construct_geo_coord(self):
-		latitude = geometry.GeoAngle.from_string(u"15°47′56″S")
-		too_big_latitude = geometry.GeoAngle.from_string(u"115°47′56″S")
-		longitude = geometry.GeoAngle.from_string(u"47°52′0″W")
+		latitude = geometry.GeoAngle.from_string(u"15\u00b047\u203256\u2033S")
+		too_big_latitude = geometry.GeoAngle.from_string(u"115\u00b047\u203256\u2033S")
+		longitude = geometry.GeoAngle.from_string(u"47\u00b052\u20320\u2033W")
 		with self.assertRaises(ValueError):
 			geometry.GeoCoord(longitude, longitude)
 		with self.assertRaises(ValueError):
@@ -106,15 +107,15 @@ class TestGeoCoords(unittest.TestCase):
 		self.assertEqual(coord.latitude, latitude)
 		self.assertEqual(coord.longitude, longitude)
 	def should_calculate_distances_between_geo_coords(self):
-		greenwich = geometry.GeoCoord.from_string(u"51°28′48″N", u"0°0′0″E")
-		geneva = geometry.GeoCoord.from_string(u"46°12′0″N", u"6°9′0″E")
+		greenwich = geometry.GeoCoord.from_string(u"51\u00b028\u203248\u2033N", u"0\u00b00\u20320\u2033E")
+		geneva = geometry.GeoCoord.from_string(u"46\u00b012\u20320\u2033N", u"6\u00b09\u20320\u2033E")
 		self.assertAlmostEqual(greenwich.distance_to(geneva), 739.2, 1)
-		self.assertAlmostEqual(geometry.GeoCoord.from_string(u"90°0′0″N 0°0′0″E").distance_to(
-			geometry.GeoCoord.from_string(u"90°0′0″S, 0°0′0″W")
+		self.assertAlmostEqual(geometry.GeoCoord.from_string(u"90\u00b00\u20320\u2033N 0\u00b00\u20320\u2033E").distance_to(
+			geometry.GeoCoord.from_string(u"90\u00b00\u20320\u2033S, 0\u00b00\u20320\u2033W")
 			), 20015.1, 1) # From South to North
-		self.assertAlmostEqual(geometry.GeoCoord.from_string(u"33°51′31″S, 151°12′51″E").distance_to(
-			geometry.GeoCoord.from_string(u"40°46′22″N 73°59′3″W")
+		self.assertAlmostEqual(geometry.GeoCoord.from_string(u"33\u00b051\u203231\u2033S, 151\u00b012\u203251\u2033E").distance_to(
+			geometry.GeoCoord.from_string(u"40\u00b046\u203222\u2033N 73\u00b059\u20323\u2033W")
 			), 15990.2, 1) # Opera Night
-		self.assertAlmostEqual(geometry.GeoCoord.from_string(u"48°27′0″N,34°59′0″E").distance_to(
-			geometry.GeoCoord.from_string(u"15°47′56″S 47°52′0″W")
+		self.assertAlmostEqual(geometry.GeoCoord.from_string(u"48\u00b027\u20320\u2033N,34\u00b059\u20320\u2033E").distance_to(
+			geometry.GeoCoord.from_string(u"15\u00b047\u203256\u2033S 47\u00b052\u20320\u2033W")
 			), 10801.62, 1)
