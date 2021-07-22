@@ -11,6 +11,7 @@ def linear_system(a, b, c, d, e, f):
 				return None
 		y, x = linear_system(b,a,c, e,d,f)
 		return x, y
+	a = float(a)
 	if abs(e - d * b / a) < 1e-6:
 		return None
 	y = (f - d * c / a) / (e - d * b / a)

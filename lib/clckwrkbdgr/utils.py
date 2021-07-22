@@ -201,7 +201,7 @@ def chunks(seq, length, pad_value=None, pad=True):
 		pad_value = pad_value or ''
 		result_type = ''.join
 	if pad:
-		result = itertools.zip_longest(*[iter(seq)]*length, fillvalue=pad_value)
+		result = six.moves.zip_longest(*[iter(seq)]*length, fillvalue=pad_value)
 	else:
 		it = iter(seq)
 		result = iter(lambda: tuple(itertools.islice(it, length)), ())

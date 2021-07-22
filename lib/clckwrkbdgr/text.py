@@ -36,7 +36,7 @@ def prettify_number(number, base=1000, decimals=2, powers=None):
 	powers = powers or ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
 	while abs(number) >= base and len(powers) > 1:
 		powers = powers[1:]
-		number /= base
+		number /= float(base)
 	integer = int(round(number, 1))
 	result = str(integer)
 	remainder = number - integer
