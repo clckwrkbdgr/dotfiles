@@ -146,3 +146,99 @@ class GeoCoord(object):
 				GeoAngle.from_string(latitude_str),
 				GeoAngle.from_string(longitude_str),
 				)
+
+class RectConnection(object):
+	""" Rectangular connection between two points on discrete plane.
+	Lines follow main axes with single bridge at some bending point to
+	connect beginning/ending lines.
+	Form depends on direction (horizontal, vertical).
+	     ####>   V
+	 Hor #       #  Ver
+	     #       #
+	>#####       ######
+	                  #
+	                  #
+	                  V
+	"""
+	def __init__(self, start, stop, direction, bending_point):
+		""" Start and stop point will be sorted internally for convenience purposes
+		(from left to right for H, from top to bottom for V).
+		Direction must be a single char: H or V.
+		Bending point is a distance from the start to the bridge.
+		It must be relative to the leftmost (topmost) point
+		depending on the direction. It must be in range of (0; stop-start)
+		"""
+		if direction not in ['H', 'V']:
+			raise ValueError("Invalid direction {0}, must be one of: 'H', 'V'".format(repr(direction)))
+		self.direction = direction
+		start, stop = map(clckwrkbdgr.math.Point, (start, stop))
+		self.start, self.stop = sorted(
+				[start, stop],
+				key=(lambda p: p.x) if self.direction == 'H' else (lambda p: p.y)
+				)
+		bending_point_range = (
+				abs(self.start.x - self.stop.x)
+				if self.direction == 'H'
+				else abs(self.start.y - self.stop.y)
+				)
+		if not (0 < bending_point < bending_point_range):
+			raise ValueError("Bending point should be in range (0; {0}): {1}".format(bending_point_range, bending_point))
+		self.bending_point = bending_point
+	def __setstate__(self, data): # pragma: no cover -- TODO
+		self.start = data['start']
+		self.stop = data['stop']
+		self.direction = data['direction']
+		self.bending_point = data['bending']
+	def __getstate__(self): # pragma: no cover -- TODO
+		return {
+				'start': self.start,
+				'stop': self.stop,
+				'direction': self.direction,
+				'bending': self.bending_point,
+				}
+	def contains(self, pos):
+		""" Returns True if point lies on connection lines (beginning segment, ending segment or the bridge).
+		For non-integer points behavior is undefined.
+		"""
+		pos = clckwrkbdgr.math.Point(pos)
+		if self.direction == 'H':
+			if pos.x < self.start.x + self.bending_point:
+				return pos.x >= self.start.x and pos.y == self.start.y
+			elif pos.x > self.start.x + self.bending_point:
+				return pos.x <= self.stop.x and pos.y == self.stop.y
+			else:
+				return min(self.start.y, self.stop.y) <= pos.y <= max(self.start.y, self.stop.y)
+		else:
+			if pos.y < self.start.y + self.bending_point:
+				return pos.y >= self.start.y and pos.x == self.start.x
+			elif pos.y > self.start.y + self.bending_point:
+				return pos.y <= self.stop.y and pos.x == self.stop.x
+			else:
+				return min(self.start.x, self.stop.x) <= pos.x <= max(self.start.x, self.stop.x)
+	def iter_points(self):
+		""" Iterates over integer points on connection lines (beginning segment -> the bridge -> ending segment).
+		"""
+		if self.direction == 'H':
+			lead = self.start.y
+			for x in range(self.start.x, self.stop.x + 1):
+				yield clckwrkbdgr.math.Point(x, lead)
+				if x == self.start.x + self.bending_point:
+					if self.start.y < self.stop.y:
+						for y in range(self.start.y + 1, self.stop.y + 1):
+							yield clckwrkbdgr.math.Point(x, y)
+					else:
+						for y in reversed(range(self.stop.y, self.start.y)):
+							yield clckwrkbdgr.math.Point(x, y)
+					lead = self.stop.y
+		else:
+			lead = self.start.x
+			for y in range(self.start.y, self.stop.y + 1):
+				yield clckwrkbdgr.math.Point(lead, y)
+				if y == self.start.y + self.bending_point:
+					if self.start.x < self.stop.x:
+						for x in range(self.start.x + 1, self.stop.x + 1):
+							yield clckwrkbdgr.math.Point(x, y)
+					else:
+						for x in reversed(range(self.stop.x, self.start.x)):
+							yield clckwrkbdgr.math.Point(x, y)
+					lead = self.stop.x

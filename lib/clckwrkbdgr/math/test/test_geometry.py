@@ -119,3 +119,71 @@ class TestGeoCoords(unittest.TestCase):
 		self.assertAlmostEqual(geometry.GeoCoord.from_string(u"48\u00b027\u20320\u2033N,34\u00b059\u20320\u2033E").distance_to(
 			geometry.GeoCoord.from_string(u"15\u00b047\u203256\u2033S 47\u00b052\u20320\u2033W")
 			), 10801.62, 1)
+
+class TestRectConnection(unittest.TestCase):
+	def should_create_and_validate_connection(self):
+		with self.assertRaises(ValueError):
+			geometry.RectConnection((0, 0), (5, 5), 'not a direction', 2)
+		with self.assertRaises(ValueError):
+			geometry.RectConnection((0, 0), (5, 5), 'H', 100500)
+		conn = geometry.RectConnection((5, 5), (0, 0), 'H', 2)
+		self.assertEqual(conn.start, Point(0, 0))
+		self.assertEqual(conn.stop, Point(5, 5))
+		self.assertEqual(conn.direction, 'H')
+		self.assertEqual(conn.bending_point, 2)
+	def should_iterate_over_points(self):
+		self.maxDiff = None
+		conn = geometry.RectConnection((5, 5), (0, 0), 'V', 2)
+		self.assertEqual(list(conn.iter_points()), [
+			Point(0, 0),
+			Point(0, 1),
+			Point(0, 2), Point(1, 2), Point(2, 2), Point(3, 2), Point(4, 2), Point(5, 2),
+			Point(5, 3),
+			Point(5, 4),
+			Point(5, 5),
+			])
+		conn = geometry.RectConnection((5, 0), (0, 5), 'V', 2)
+		self.assertEqual(list(conn.iter_points()), [
+			Point(5, 0),
+			Point(5, 1),
+			Point(5, 2), Point(4, 2), Point(3, 2), Point(2, 2), Point(1, 2), Point(0, 2),
+			Point(0, 3),
+			Point(0, 4),
+			Point(0, 5),
+			])
+		conn = geometry.RectConnection((5, 5), (0, 0), 'H', 3)
+		self.assertEqual(list(conn.iter_points()), [
+			Point(0, 0),
+			Point(1, 0),
+			Point(2, 0),
+			Point(3, 0), Point(3, 1), Point(3, 2), Point(3, 3), Point(3, 4), Point(3, 5),
+			Point(4, 5),
+			Point(5, 5),
+			])
+		conn = geometry.RectConnection((0, 5), (5, 0), 'H', 3)
+		self.assertEqual(list(conn.iter_points()), [
+			Point(0, 5),
+			Point(1, 5),
+			Point(2, 5),
+			Point(3, 5), Point(3, 4), Point(3, 3), Point(3, 2), Point(3, 1), Point(3, 0),
+			Point(4, 0),
+			Point(5, 0),
+			])
+	def should_detect_points_on_connection_lines(self):
+		conn = geometry.RectConnection((5, 5), (0, 0), 'V', 2)
+		self.assertTrue(conn.contains((0, 0)))
+		self.assertTrue(conn.contains((0, 2)))
+		self.assertTrue(conn.contains((2, 2)))
+		self.assertTrue(conn.contains((5, 2)))
+		self.assertTrue(conn.contains((5, 5)))
+		self.assertFalse(conn.contains((0, 5)))
+		self.assertFalse(conn.contains((2, 3)))
+		conn = geometry.RectConnection((5, 5), (0, 0), 'H', 3)
+		self.assertTrue(conn.contains((0, 0)))
+		self.assertFalse(conn.contains((0, 2)))
+		self.assertTrue(conn.contains((2, 0)))
+		self.assertFalse(conn.contains((2, 2)))
+		self.assertTrue(conn.contains((3, 3)))
+		self.assertTrue(conn.contains((5, 5)))
+		self.assertFalse(conn.contains((0, 5)))
+		self.assertFalse(conn.contains((2, 3)))
