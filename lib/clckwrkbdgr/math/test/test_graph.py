@@ -1,8 +1,29 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
+import copy
 import clckwrkbdgr.math.graph
+from clckwrkbdgr.math.graph import get_clusters, is_connected
 
 class TestGraph(unittest.TestCase):
+	def should_clone_graph(self):
+		original = clckwrkbdgr.math.graph.Graph(directional=True)
+		original.add_nodes(['A', 'B', 'C'])
+		original.connect('A', 'B')
+		original.connect('B', 'C')
+		original.connect('C', 'A')
+
+		clone = copy.copy(original)
+		self.assertTrue(clone.has_node('A'))
+		self.assertTrue(clone.has_node('B'))
+		self.assertTrue(clone.has_node('C'))
+		self.assertTrue(clone.has_connection('A', 'B'))
+		self.assertFalse(clone.has_connection('A', 'C'))
+
+		clone.remove_node('A')
+		self.assertFalse(clone.has_node('A'))
+		self.assertTrue(original.has_node('A'))
+		self.assertTrue(original.has_connection('A', 'B'))
+		self.assertTrue(original.has_connection('C', 'A'))
 	def should_add_node(self):
 		graph = clckwrkbdgr.math.graph.Graph()
 		graph.add_node('A')
@@ -12,6 +33,15 @@ class TestGraph(unittest.TestCase):
 		self.assertTrue(graph.has_node('B'))
 		with self.assertRaises(ValueError):
 			graph.add_node('B')
+	def should_add_multiple_nodes(self):
+		graph = clckwrkbdgr.math.graph.Graph()
+		graph.add_nodes(['A', 'B', 'C', 'A'])
+		self.assertTrue(graph.has_node('A'))
+		self.assertTrue(graph.has_node('B'))
+		self.assertTrue(graph.has_node('C'))
+		with self.assertRaises(ValueError):
+			graph.add_nodes(['D', 'B'])
+		self.assertFalse(graph.has_node('D'))
 	def should_remove_node(self):
 		graph = clckwrkbdgr.math.graph.Graph()
 		graph.add_node('A')
@@ -133,3 +163,77 @@ class TestGraph(unittest.TestCase):
 		self.assertFalse(graph.has_connection('B', 'C'))
 		self.assertFalse(graph.has_connection('C', 'B'))
 		self.assertTrue(graph.has_connection('C', 'A'))
+	def should_get_all_links(self):
+		graph = clckwrkbdgr.math.graph.Graph()
+		graph.add_node('A')
+		graph.add_node('B')
+		graph.add_node('C')
+		graph.add_node('D')
+		graph.connect('A', 'B')
+		graph.connect('A', 'C')
+		graph.connect('B', 'C')
+		self.assertEqual(set(tuple(sorted(link)) for link in graph.all_links()), {
+			('A', 'B'),
+			('A', 'C'),
+			('B', 'C'),
+			})
+	def should_get_all_links_in_directional_graph(self):
+		graph = clckwrkbdgr.math.graph.Graph(directional=True)
+		graph.add_node('A')
+		graph.add_node('B')
+		graph.add_node('C')
+		graph.add_node('D')
+		graph.connect('A', 'B')
+		graph.connect('C', 'A')
+		graph.connect('C', 'B')
+		graph.connect('B', 'C')
+		self.assertEqual(set(graph.all_links()), {
+			('A', 'B'),
+			('C', 'A'),
+			('C', 'B'),
+			('B', 'C'),
+			})
+
+class TestAlgorithms(unittest.TestCase):
+	def should_get_all_clusters(self):
+		graph = clckwrkbdgr.math.graph.Graph(directional=True)
+		graph.add_node('A')
+		graph.add_node('B')
+		self.assertCountEqual(get_clusters(graph), [{'A'}, {'B'}])
+
+		graph.add_node('C')
+		self.assertCountEqual(get_clusters(graph), [{'A'}, {'B'}, {'C'}])
+
+		graph.connect('A', 'B')
+		self.assertCountEqual(get_clusters(graph), [{'A', 'B'}, {'C'}])
+
+		graph.connect('C', 'A')
+		self.assertCountEqual(get_clusters(graph), [{'A', 'B', 'C'}])
+
+		graph.connect('B', 'C')
+		self.assertCountEqual(get_clusters(graph), [{'A', 'B', 'C'}])
+
+		graph.add_node('D')
+		self.assertCountEqual(get_clusters(graph), [{'A', 'B', 'C'}, {'D'}])
+
+		graph.add_node('E')
+		graph.connect('D', 'E')
+		self.assertCountEqual(get_clusters(graph), [{'A', 'B', 'C'}, {'D', 'E'}])
+	def should_detect_fully_connected_graph(self):
+		graph = clckwrkbdgr.math.graph.Graph(directional=True)
+		graph.add_node('A')
+		graph.add_node('B')
+		graph.add_node('C')
+		self.assertFalse(is_connected(graph))
+
+		graph.connect('A', 'B')
+		self.assertFalse(is_connected(graph))
+
+		graph.connect('C', 'A')
+		self.assertTrue(is_connected(graph))
+
+		graph.connect('B', 'C')
+		self.assertTrue(is_connected(graph))
+
+		graph.add_node('D')
+		self.assertFalse(is_connected(graph))

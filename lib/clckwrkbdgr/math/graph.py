@@ -1,10 +1,31 @@
+import copy
+
 class Graph(object):
 	def __init__(self, directional=False):
 		self._nodes = set()
 		self._connections = dict()
 		self._directional = directional
+	def __copy__(self):
+		new_object = Graph(directional=self._directional)
+		new_object._nodes = copy.copy(self._nodes)
+		new_object._connections = {key:copy.copy(value) for key, value in self._connections.items()}
+		return new_object
 	def all_nodes(self):
 		return self._nodes
+	def all_links(self):
+		yielded = []
+		for node_from in self._connections:
+			for node_to in self._connections[node_from]:
+				if not self._directional and (node_to, node_from) in yielded:
+					continue
+				yielded.append( (node_from, node_to) )
+				yield (node_from, node_to)
+	def add_nodes(self, nodes):
+		nodes = set(nodes)
+		exist = nodes & self._nodes
+		if exist:
+			raise ValueError("Nodes {0} already exist.".format(', '.join(map(str, exist))))
+		self._nodes |= nodes
 	def add_node(self, node):
 		if node in self._nodes:
 			raise ValueError("Node {0} already exists.".format(node))
@@ -71,3 +92,24 @@ class Graph(object):
 				self._connections[other].remove(node)
 			if not found:
 				raise ValueError("Nodes are not connected {0}<->{1}".format(node, other))
+
+def get_clusters(graph):
+	clusters = []
+	for a, b in graph.all_links():
+		new_clusters = [{a, b}]
+		for cluster in clusters:
+			for other in new_clusters:
+				if cluster & other:
+					other.update(cluster)
+					break
+			else:
+				new_clusters.append(cluster)
+		clusters = new_clusters
+	for node in graph.all_nodes():
+		if any(node in cluster for cluster in clusters):
+			continue
+		clusters.append({node})
+	return clusters
+
+def is_connected(graph):
+	return len(get_clusters(graph)) == 1
