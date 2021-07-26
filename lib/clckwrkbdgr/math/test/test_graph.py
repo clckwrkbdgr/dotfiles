@@ -1,8 +1,9 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
-import copy
+import textwrap, copy
+from clckwrkbdgr.math import Point
 import clckwrkbdgr.math.graph
-from clckwrkbdgr.math.graph import get_clusters, is_connected
+from clckwrkbdgr.math.graph import get_clusters, is_connected, grid_from_matrix
 
 class TestGraph(unittest.TestCase):
 	def should_clone_graph(self):
@@ -24,6 +25,23 @@ class TestGraph(unittest.TestCase):
 		self.assertTrue(original.has_node('A'))
 		self.assertTrue(original.has_connection('A', 'B'))
 		self.assertTrue(original.has_connection('C', 'A'))
+	def should_convert_graph_to_graphviz_representation(self):
+		graph = clckwrkbdgr.math.graph.Graph(directional=True)
+		graph.add_nodes(['A', 'B', 'C'])
+		graph.connect('A', 'B')
+		graph.connect('B', 'C')
+		graph.connect('C', 'A')
+		expected = textwrap.dedent("""\
+				graph {
+				  node A
+				  node B
+				  node C
+				  A -> B
+				  B -> C
+				  C -> A
+				}
+				""")
+		self.assertEqual(graph.to_dot(), expected)
 	def should_add_node(self):
 		graph = clckwrkbdgr.math.graph.Graph()
 		graph.add_node('A')
@@ -237,3 +255,22 @@ class TestAlgorithms(unittest.TestCase):
 
 		graph.add_node('D')
 		self.assertFalse(is_connected(graph))
+	def should_create_graph_from_matrix(self):
+		m = clckwrkbdgr.math.Matrix.fromstring("ABC\nDEF\n123")
+		grid = grid_from_matrix(m)
+		self.assertEqual(set(grid.all_nodes()), set(m.keys()))
+		self.assertTrue(grid.has_connection(Point(0, 0), Point(0, 1)))
+		self.assertTrue(grid.has_connection(Point(0, 0), Point(1, 0)))
+		self.assertFalse(grid.has_connection(Point(0, 0), Point(1, 1)))
+		self.assertFalse(grid.has_connection(Point(0, 0), Point(0, 2)))
+		self.assertFalse(grid.has_connection(Point(0, 0), Point(2, 0)))
+		self.assertFalse(grid.has_connection(Point(0, 0), Point(2, 2)))
+
+		grid = grid_from_matrix(m, with_diagonal=True)
+		self.assertEqual(set(grid.all_nodes()), set(m.keys()))
+		self.assertTrue(grid.has_connection(Point(0, 0), Point(0, 1)))
+		self.assertTrue(grid.has_connection(Point(0, 0), Point(1, 0)))
+		self.assertTrue(grid.has_connection(Point(0, 0), Point(1, 1)))
+		self.assertFalse(grid.has_connection(Point(0, 0), Point(0, 2)))
+		self.assertFalse(grid.has_connection(Point(0, 0), Point(2, 0)))
+		self.assertFalse(grid.has_connection(Point(0, 0), Point(2, 2)))

@@ -10,6 +10,14 @@ class Graph(object):
 		new_object._nodes = copy.copy(self._nodes)
 		new_object._connections = {key:copy.copy(value) for key, value in self._connections.items()}
 		return new_object
+	def to_dot(self):
+		lines = ["graph {"]
+		for node in sorted(self.all_nodes()):
+			lines.append("  node {0}".format(node))
+		for node_from, node_to in sorted(self.all_links()):
+			lines.append("  {0} -> {1}".format(node_from, node_to))
+		lines.append("}")
+		return '\n'.join(lines) + '\n'
 	def all_nodes(self):
 		return self._nodes
 	def all_links(self):
@@ -113,3 +121,27 @@ def get_clusters(graph):
 
 def is_connected(graph):
 	return len(get_clusters(graph)) == 1
+
+def grid_from_matrix(matrix, with_diagonal=False):
+	""" Creates non-directional graph from matrix where neighbouring cells are linked.
+
+	A - B - C - ...
+	|   |   |
+	D - E - F - ...
+	.   .   .
+
+	If with_diagonal is True, diagonal neighbours are linked too.
+	Nodes of created graph are indexes of cells (Points).
+	"""
+	from clckwrkbdgr.math import Point
+	result = Graph()
+	result.add_nodes(matrix.keys())
+	for column in range(matrix.width):
+		for row in range(matrix.height):
+			if column < matrix.width - 1:
+				result.connect(Point(column, row), Point(column + 1, row))
+			if row < matrix.height - 1:
+				result.connect(Point(column, row), Point(column, row + 1))
+			if with_diagonal and column < matrix.width - 1 and row < matrix.height - 1:
+				result.connect(Point(column, row), Point(column + 1, row + 1))
+	return result
