@@ -121,27 +121,33 @@ class Rect(object):
 		""" Creates rectangle from topleft (Point or tuple of 2 elements)
 		and size (Size or tuple of 2 elements).
 		"""
-		self.topleft = Point(topleft)
-		self.size = Size(size)
+		self._topleft = Point(topleft)
+		self._size = Size(size)
 	def __setstate__(self, data): # pragma: no cover
-		self.topleft = data['topleft']
-		self.size = data['size']
+		self._topleft = data['topleft']
+		self._size = data['size']
 	def __getstate__(self): # pragma: no cover
-		return {'topleft':self.topleft, 'size':self.size}
+		return {'topleft':self._topleft, 'size':self._size}
 	def __eq__(self, other):
-		return other is not None and self.topleft == other.topleft and self.size == other.size
+		return other is not None and self._topleft == other._topleft and self._size == other._size
 	@property
-	def width(self): return self.size.width
+	def width(self): return self._size.width
 	@property
-	def height(self): return self.size.height
+	def height(self): return self._size.height
 	@property
-	def top(self): return self.topleft.y
+	def size(self): return self._size
 	@property
-	def left(self): return self.topleft.x
+	def top(self): return self._topleft.y
 	@property
-	def bottom(self): return self.topleft.y + self.size.height - 1
+	def left(self): return self._topleft.x
 	@property
-	def right(self): return self.topleft.x + self.size.width - 1
+	def bottom(self): return self._topleft.y + self._size.height - 1
+	@property
+	def right(self): return self._topleft.x + self._size.width - 1
+	@property
+	def topleft(self): return Point(self.left, self.top)
+	@property
+	def bottomright(self): return Point(self.right, self.bottom)
 	def contains(self, pos, with_border=False):
 		pos = Point(pos)
 		if with_border:
