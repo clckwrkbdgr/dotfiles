@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import logging
 
 def getFileLogger(name, filename): # pragma: no cover
