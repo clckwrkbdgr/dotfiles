@@ -1,5 +1,13 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
+try:
+	unittest.TestCase.assertCountEqual
+except AttributeError: # pragma: no cover -- py2 only
+	from collections import Counter
+	unittest.TestCase.assertCountEqual = lambda self, actual, expected: self.assertEqual(
+			Counter([(frozenset(item) if isinstance(item, set) else item) for item in actual]),
+			Counter([(frozenset(item) if isinstance(item, set) else item) for item in expected]),
+			)
 import textwrap, copy
 from clckwrkbdgr.math import Point
 import clckwrkbdgr.math.graph

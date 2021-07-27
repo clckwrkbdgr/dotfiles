@@ -97,6 +97,7 @@ class TestRect(unittest.TestCase):
 		#7
 		rect = Rect((1, 2), (4, 5))
 		self.assertEqual(rect.topleft, Point(1, 2))
+		self.assertEqual(rect.bottomright, Point(4, 6))
 		self.assertEqual(rect.size, Point(4, 5))
 		self.assertEqual(rect.width, 4)
 		self.assertEqual(rect.height, 5)
