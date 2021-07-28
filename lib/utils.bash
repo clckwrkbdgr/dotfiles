@@ -14,6 +14,16 @@ startswith() {
 	esac
 }
 
+endswith() {
+	# Usage:
+	#   endswith "string" "suffix"
+	# Returns 0 if <string> ends with <suffix>, non-zero otherwise.
+	case "$1" in
+		*"$2") return 0;;
+		*) return 1;;
+	esac
+}
+
 trim() {
 	# Removes heading and trailing whitespaces from the given values.
 	# Prints result to stdout.

@@ -23,6 +23,14 @@ should_check_if_string_starts_with_prefix() {
 	assertExitFailure 'startswith "foo bar" "foo bA"'
 }
 
+should_check_if_string_ends_with_suffix() {
+	assertExitSuccess 'endswith "foo bar" "oo bar"'
+	assertExitSuccess 'endswith "foo bar" "foo bar"'
+	assertExitSuccess 'endswith "foo bar" ""'
+	assertExitSuccess 'endswith "" ""'
+	assertExitFailure 'endswith "foo bar" "_bar"'
+}
+
 should_trim_whitespaces() {
 	assertStringsEqual "$(trim "foo")" 'foo'
 	assertStringsEqual "$(trim "foo  ")" 'foo'
