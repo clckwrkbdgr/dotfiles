@@ -1,51 +1,45 @@
 {
     "$schema": "https://aka.ms/terminal-profiles-schema",
-    "alwaysShowTabs" : false,
-    "tabSwitcherMode" : false,
-    "useTabSwitcher" : false,
+    "alwaysShowTabs" : true,
+    "tabSwitcherMode" : "disabled",
+    "copyFormatting" : "none",
     "defaultProfile" : "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
     "initialCols" : 80,
     "initialRows" : 24,
-    "initialPosition" : "maximized",
+    "initialPosition" : ",",
     "launchMode" : "maximized",
     "snapToGridOnResize" : true,
-    "keybindings" : 
+    "actions":
     [
-        {"command":null,"keys":["alt+c"]},
+        {"command":"unbound","keys":["alt+c"]},
         {
-            "command" : "newTab",
-            "keys" : 
-            [
-                "ctrl+t"
-            ]
+            "command":
+            {
+                "action" : "newTab"
+            },
+            "keys" : "ctrl+t"
         },
         {
-            "command" : "nextTab",
-            "keys" : 
-            [
-                "ctrl+tab"
-            ]
-        },
-        {
-            "command" : "prevTab",
-            "keys" : 
-            [
-                "ctrl+shift+tab"
-            ]
-        },
-        {
-            "command" : "scrollDownPage",
-            "keys" : 
-            [
-                "ctrl+pgdn"
-            ]
+            "command":
+            {
+                "action" : "nextTab"
+            },
+            "keys" : "ctrl+tab"
         },
         {
             "command" : "scrollUpPage",
-            "keys" : 
-            [
-                "ctrl+pgup"
-            ]
+            "keys" : "ctrl+pgup"
+        },
+        {
+            "command":
+            {
+                "action" : "prevTab"
+            },
+            "keys" : "ctrl+shift+tab"
+        },
+        {
+            "command" : "scrollDownPage",
+            "keys" : "ctrl+pgdn"
         }
     ],
     "theme" : "system",
@@ -55,12 +49,15 @@
     "disabledProfileSources": [
         "Windows.Terminal.Azure"
     ],
-    "profiles" : 
+    "profiles" :
+    {
+        "defaults" : {},
+        "list":
     [
         {
             "acrylicOpacity" : 0.5,
             "background" : "#2E3436",
-            "closeOnExit" : true,
+            "closeOnExit" : "graceful",
             "colorScheme" : "Dim",
             "commandline" : "\"%USERPROFILE%\\.config\\bin\\user-env.cmd\" & \"C:\\Program Files\\Far Manager\\Far.exe\"",
             "cursorColor" : "#FFFFFF",
@@ -77,7 +74,7 @@
         },
         {
             "acrylicOpacity" : 0.75,
-            "closeOnExit" : true,
+            "closeOnExit" : "graceful",
             "colorScheme" : "Dim",
             "commandline" : "cmd.exe",
             "cursorColor" : "#FFFFFF",
@@ -94,7 +91,7 @@
         },
         {
             "acrylicOpacity" : 0.5,
-            "closeOnExit" : true,
+            "closeOnExit" : "graceful",
             "colorScheme" : "Dim",
             "commandline" : "wsl.exe -d Debian",
             "cursorColor" : "#FFFFFF",
@@ -102,15 +99,19 @@
             "fontFace" : "Consolas",
             "fontSize" : 11,
             "guid" : "{58ad8b0c-3ef8-5f4d-bc6f-13e4c00f2530}",
+            "hidden" : false,
             "historySize" : 9001,
             "icon" : "ms-appx:///ProfileIcons/{9acb9455-ca41-5af7-950f-6bca1bc9722f}.png",
             "name" : "WSL",
             "padding" : "0, 0, 0, 0",
             "snapOnInput" : true,
+            "source" : "Windows.Terminal.Wsl",
             "useAcrylic" : false
-        }
-    ],
-    "schemes" : 
+        },
+        {}
+    ]
+    },
+    "schemes" :
     [
         {
             "name" : "Dim",
@@ -131,6 +132,8 @@
             "purple" : "#75507B",
             "red" : "#CC0000",
             "white" : "#D3D7CF",
+            "selectionBackground" : "#FFFFFF",
+            "cursorColor" : "#FFFFFF",
             "yellow" : "#C4A000"
         }
     ]
