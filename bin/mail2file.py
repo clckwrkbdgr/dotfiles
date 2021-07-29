@@ -75,7 +75,11 @@ import click
 def ensure_single_instance(f):
 	@functools.wraps(f)
 	def _actual(*args, **kwargs):
-		pid_file = xdg.save_runtime_path()/'mail2file.pid'
+		try:
+			pid_file = xdg.save_runtime_path()/'mail2file.pid'
+		except OSError as e:
+			if e.errno == 13: # "Permission denied" on rare occasions.
+				return True
 		if pid_file.exists():
 			pid = int(pid_file.read_bytes().decode().strip())
 			try:
