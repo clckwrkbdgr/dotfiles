@@ -1,140 +1,136 @@
 {
     "$schema": "https://aka.ms/terminal-profiles-schema",
-    "alwaysShowTabs" : true,
-    "tabSwitcherMode" : "disabled",
-    "copyFormatting" : "none",
-    "defaultProfile" : "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
-    "initialCols" : 80,
-    "initialRows" : 24,
-    "initialPosition" : ",",
-    "launchMode" : "maximized",
-    "snapToGridOnResize" : true,
-    "actions":
-    [
-        {"command":"unbound","keys":["alt+c"]},
+    "actions": [
         {
-            "command":
-            {
-                "action" : "newTab"
+            "command": "unbound",
+            "keys": "alt+c"
+        },
+        {
+            "command": {
+                "action": "newTab"
             },
-            "keys" : "ctrl+t"
+            "keys": "ctrl+t"
         },
         {
-            "command":
-            {
-                "action" : "nextTab"
+            "command": {
+                "action": "nextTab"
             },
-            "keys" : "ctrl+tab"
+            "keys": "ctrl+tab"
         },
         {
-            "command" : "scrollUpPage",
-            "keys" : "ctrl+pgup"
+            "command": "scrollUpPage",
+            "keys": "ctrl+pgup"
         },
         {
-            "command":
-            {
-                "action" : "prevTab"
+            "command": {
+                "action": "prevTab"
             },
-            "keys" : "ctrl+shift+tab"
+            "keys": "ctrl+shift+tab"
         },
         {
-            "command" : "scrollDownPage",
-            "keys" : "ctrl+pgdn"
+            "command": "scrollDownPage",
+            "keys": "ctrl+pgdn"
         }
     ],
-    "theme" : "system",
-    "showTabsInTitlebar" : true,
-    "copyOnSelect" : true,
-    "showTerminalTitleInTitlebar" : true,
+    "alwaysShowTabs": true,
+    "copyFormatting": "none",
+    "copyOnSelect": true,
+    "defaultProfile": "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
     "disabledProfileSources": [
         "Windows.Terminal.Azure"
     ],
-    "profiles" :
-    {
-        "defaults" : {},
-        "list":
-    [
-        {
-            "acrylicOpacity" : 0.5,
-            "background" : "#2E3436",
-            "closeOnExit" : "graceful",
-            "colorScheme" : "Dim",
-            "commandline" : "\"%USERPROFILE%\\.config\\bin\\user-env.cmd\" & \"C:\\Program Files\\Far Manager\\Far.exe\"",
-            "cursorColor" : "#FFFFFF",
-            "cursorShape" : "filledBox",
-            "fontFace" : "Consolas",
-            "fontSize" : 11,
-            "guid" : "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
-            "historySize" : 9001,
-            "icon" : "file://C:/Program Files/Far Manager/far.png",
-            "name" : "Far",
-            "padding" : "0, 0, 0, 0",
-            "snapOnInput" : true,
-            "useAcrylic" : false
-        },
-        {
-            "acrylicOpacity" : 0.75,
-            "closeOnExit" : "graceful",
-            "colorScheme" : "Dim",
-            "commandline" : "cmd.exe",
-            "cursorColor" : "#FFFFFF",
-            "cursorShape" : "filledBox",
-            "fontFace" : "Consolas",
-            "fontSize" : 11,
-            "guid" : "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
-            "historySize" : 9001,
-            "icon" : "ms-appx:///ProfileIcons/{0caa0dad-35be-5f56-a8ff-afceeeaa6101}.png",
-            "name" : "cmd",
-            "padding" : "0, 0, 0, 0",
-            "snapOnInput" : true,
-            "useAcrylic" : true
-        },
-        {
-            "acrylicOpacity" : 0.5,
-            "closeOnExit" : "graceful",
-            "colorScheme" : "Dim",
-            "commandline" : "wsl.exe -d Debian",
-            "cursorColor" : "#FFFFFF",
-            "cursorShape" : "filledBox",
-            "fontFace" : "Consolas",
-            "fontSize" : 11,
-            "guid" : "{58ad8b0c-3ef8-5f4d-bc6f-13e4c00f2530}",
-            "hidden" : false,
-            "historySize" : 9001,
-            "icon" : "ms-appx:///ProfileIcons/{9acb9455-ca41-5af7-950f-6bca1bc9722f}.png",
-            "name" : "WSL",
-            "padding" : "0, 0, 0, 0",
-            "snapOnInput" : true,
-            "source" : "Windows.Terminal.Wsl",
-            "useAcrylic" : false
-        },
-        {}
-    ]
+    "initialCols": 80,
+    "initialPosition": ",",
+    "initialRows": 24,
+    "launchMode": "maximized",
+    "profiles": {
+        "defaults": {},
+        "list": [
+            {
+                "acrylicOpacity": 0.5,
+                "background": "#2E3436",
+                "closeOnExit": "graceful",
+                "colorScheme": "Dim",
+                "commandline": "\"%USERPROFILE%\\.config\\bin\\user-env.cmd\" & \"C:\\Program Files\\Far Manager\\Far.exe\"",
+                "cursorColor": "#FFFFFF",
+                "cursorShape": "filledBox",
+                "fontFace": "Consolas",
+                "fontSize": 11,
+                "guid": "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
+                "historySize": 9001,
+                "icon": "file://C:/Program Files/Far Manager/far.png",
+                "name": "Far",
+                "padding": "0, 0, 0, 0",
+                "snapOnInput": true,
+                "useAcrylic": false
+            },
+            {
+                "acrylicOpacity": 0.75,
+                "closeOnExit": "graceful",
+                "colorScheme": "Dim",
+                "commandline": "cmd.exe",
+                "cursorColor": "#FFFFFF",
+                "cursorShape": "filledBox",
+                "fontFace": "Consolas",
+                "fontSize": 11,
+                "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+                "historySize": 9001,
+                "icon": "ms-appx:///ProfileIcons/{0caa0dad-35be-5f56-a8ff-afceeeaa6101}.png",
+                "name": "cmd",
+                "padding": "0, 0, 0, 0",
+                "snapOnInput": true,
+                "useAcrylic": true
+            },
+            {
+                "acrylicOpacity": 0.5,
+                "closeOnExit": "graceful",
+                "colorScheme": "Dim",
+                "commandline": "wsl.exe -d Debian",
+                "cursorColor": "#FFFFFF",
+                "cursorShape": "filledBox",
+                "fontFace": "Consolas",
+                "fontSize": 11,
+                "guid": "{58ad8b0c-3ef8-5f4d-bc6f-13e4c00f2530}",
+                "hidden": false,
+                "historySize": 9001,
+                "icon": "ms-appx:///ProfileIcons/{9acb9455-ca41-5af7-950f-6bca1bc9722f}.png",
+                "name": "WSL",
+                "padding": "0, 0, 0, 0",
+                "snapOnInput": true,
+                "source": "Windows.Terminal.Wsl",
+                "useAcrylic": false
+            },
+            {}
+        ]
     },
-    "schemes" :
-    [
+    "schemes": [
         {
-            "name" : "Dim",
-            "foreground" : "#D3D7CF",
-            "background" : "#2E3436",
-            "black" : "#2E3436",
-            "blue" : "#3465A4",
-            "brightBlack" : "#555753",
-            "brightBlue" : "#729FCF",
-            "brightCyan" : "#34E2E2",
-            "brightGreen" : "#8AE234",
-            "brightPurple" : "#AD7FA8",
-            "brightRed" : "#EF2929",
-            "brightWhite" : "#EEEEEC",
-            "brightYellow" : "#FCE94F",
-            "cyan" : "#06989A",
-            "green" : "#4E9A06",
-            "purple" : "#75507B",
-            "red" : "#CC0000",
-            "white" : "#D3D7CF",
-            "selectionBackground" : "#FFFFFF",
-            "cursorColor" : "#FFFFFF",
-            "yellow" : "#C4A000"
+            "background": "#2E3436",
+            "black": "#2E3436",
+            "blue": "#3465A4",
+            "brightBlack": "#555753",
+            "brightBlue": "#729FCF",
+            "brightCyan": "#34E2E2",
+            "brightGreen": "#8AE234",
+            "brightPurple": "#AD7FA8",
+            "brightRed": "#EF2929",
+            "brightWhite": "#EEEEEC",
+            "brightYellow": "#FCE94F",
+            "cursorColor": "#FFFFFF",
+            "cyan": "#06989A",
+            "foreground": "#D3D7CF",
+            "green": "#4E9A06",
+            "name": "Dim",
+            "purple": "#75507B",
+            "red": "#CC0000",
+            "selectionBackground": "#FFFFFF",
+            "white": "#D3D7CF",
+            "yellow": "#C4A000"
         }
-    ]
+    ],
+    "showTabsInTitlebar": true,
+    "showTerminalTitleInTitlebar": true,
+    "snapToGridOnResize": true,
+    "tabSwitcherMode": "disabled",
+    "theme": "system"
 }

@@ -31,6 +31,7 @@ mc/ini filter=mc_ini
 libreoffice/4/user/extensions/bundled/registry/*/*.xml filter=pretty_xml
 checkio/config.ini filter=checkio_config
 QtProject.conf filter=qtproject_conf
+WindowsTerminal/settings.json filter=windows_terminal_settings
 
 xfce4/** caps=home
 xinitrc caps=home
