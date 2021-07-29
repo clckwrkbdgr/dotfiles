@@ -4,6 +4,7 @@ Events are organized using event channels (global, accessible by name).
 
 Each event can essentially be any orbitrary object. It's up to sender/receiver how to process them.
 """
+from __future__ import absolute_import
 from collections import defaultdict
 from clckwrkbdgr.utils import classfield
 
