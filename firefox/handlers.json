@@ -252,6 +252,18 @@
                 "swfl"
             ]
         },
+        "application/x-subrip": {
+            "action": 1,
+            "ask": true,
+            "extensions": [
+                "srt",
+                "asc",
+                "txt",
+                "text",
+                "pot",
+                "brf"
+            ]
+        },
         "application/x-tar": {
             "action": 1,
             "ask": true,
