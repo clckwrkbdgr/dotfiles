@@ -5,6 +5,10 @@ try:
 	from pathlib2 import Path
 except ImportError: # pragma: no cover
 	from pathlib import Path
+try:
+	import jsonpickle
+except: # pragma: no cover
+	jsonpickle = None
 
 @contextlib.contextmanager
 def CurrentDir(path):
@@ -97,3 +101,41 @@ class CrossHostFSMutex(object): # pragma: no cover -- TODO requires functional t
 		return self
 	def __exit__(self, *args, **kwargs):
 		self.unlock()
+
+class SerializedEntity: # pragma: no cover -- TODO requires functional tests.
+	def __init__(self, filename, current_version, entity_name='data', unlink=False, readable=False):
+		self.filename = Path(filename)
+		self.version = current_version
+		self.entity_name = entity_name
+		self.unlink = unlink
+		self.readable = readable
+		self.entity = None
+	def load(self):
+		if not self.filename.exists():
+			return None
+		data = self.filename.read_text()
+		savedata = jsonpickle.decode(data, keys=True)
+		if savedata['version'] > self.version:
+			raise RuntimeError("Stored data version {0} is newer than currently supported {1}".format(savedata['version'], self.version))
+		self.entity = savedata[self.entity_name]
+		if self.unlink:
+			os.unlink(str(self.filename))
+		return self.entity
+	def reset(self, new_value=None):
+		self.entity = new_value
+	def save(self, entity=None):
+		if entity is None:
+			entity = self.entity
+		if entity is None:
+			return
+		savedata = {'version':self.version, self.entity_name:entity}
+		if self.readable:
+			data = jsonpickle.encode(savedata, indent=2, keys=True)
+		else:
+			data = jsonpickle.encode(savedata, keys=True)
+		self.filename.write_text(data)
+	def __enter__(self):
+		self.load()
+		return self
+	def __exit__(self, *args, **kwargs):
+		self.save()
