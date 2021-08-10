@@ -10,6 +10,7 @@ import os, sys, subprocess, logging
 import clckwrkbdgr.jobsequence
 import clckwrkbdgr.jobsequence.sequence
 import clckwrkbdgr.jobsequence.context
+import clckwrkbdgr.jobsequence.script
 from clckwrkbdgr.jobsequence import JobSequence
 try: # pragma: no cover
 	import pathlib2 as pathlib

@@ -2,6 +2,7 @@ from __future__ import print_function
 import os, sys
 import logging
 import atexit
+import clckwrkbdgr.jobsequence.script
 
 def _comply_about_accumulated_return_code(): # pragma: no cover
 	if Context._global_return_code != 0:
@@ -11,8 +12,9 @@ atexit.register(_comply_about_accumulated_return_code)
 class Context: # pragma: no cover -- TODO need mocks
 	_global_return_code = 0
 
-	def __init__(self, verbose_level=None, logger_name=None):
+	def __init__(self, verbose_level=None, logger_name=None, script_rootdir=None):
 		self._verbose_level = verbose_level
+		self._script_rootdir = script_rootdir
 
 		self._logger = logging.getLogger(logger_name or 'jobsequence')
 		if not self._logger.handlers:
@@ -23,6 +25,20 @@ class Context: # pragma: no cover -- TODO need mocks
 		elif self._verbose_level > 1:
 			self._logger.setLevel(logging.DEBUG)
 		self._returncode = 0
+	def script(self, name=None, shebang=None, rootdir=None):
+		""" Initializes fixer script with given name (by default is taken from the current script)
+		and other parameters (see Script help).
+		Default rootdir is taken from context parameters (script_rootdir).
+		Writes notification about created script to stderr even if not verbose.
+		Returns script instance.
+		"""
+		if not name:
+			name = os.path.basename(sys.argv[0])
+		if not rootdir:
+			rootdir = self._script_rootdir
+		script = clckwrkbdgr.jobsequence.script.Script(name, shebang=shebang, rootdir=rootdir)
+		sys.stderr.write("=== Created script: {0}\n".format(script.filename))
+		return script
 	def done(self):
 		""" Immediately exit with accumulated return code.
 		By default it will be success.
@@ -107,7 +123,7 @@ class Context: # pragma: no cover -- TODO need mocks
 		""" Same as context.logger.critical() """
 		return self._logger.critical(*args, **kwargs)
 
-def init(working_dir=None, verbose_var=None, logger_name=None, only_platforms=None, skip_platforms=None): # pragma: no cover -- TODO need mocks
+def init(working_dir=None, verbose_var=None, logger_name=None, script_rootdir=None, only_platforms=None, skip_platforms=None): # pragma: no cover -- TODO need mocks
 	""" Inits jobsequence context (see Context).
 	If working_dir is specified, it is set as current directory.
 	If verbose_var is specified, it will be used to check verbosity level for this jobsequence (e.g. DAILYUPDATE_VERBOSE).
@@ -136,4 +152,5 @@ def init(working_dir=None, verbose_var=None, logger_name=None, only_platforms=No
 	return Context(
 			verbose_level=verbose_level,
 			logger_name=logger_name,
+			script_rootdir=script_rootdir,
 			)

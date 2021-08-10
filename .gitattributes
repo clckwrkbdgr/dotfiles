@@ -196,6 +196,7 @@ lib/clckwrkbdgr/fs.py caps=work
 lib/clckwrkbdgr/jobsequence/__init__.py caps=work
 lib/clckwrkbdgr/jobsequence/context.py caps=work
 lib/clckwrkbdgr/jobsequence/sequence.py caps=work
+lib/clckwrkbdgr/jobsequence/script.py caps=work
 lib/clckwrkbdgr/math/*.py caps=work
 lib/clckwrkbdgr/math/test/*.py caps=work
 lib/clckwrkbdgr/net.py caps=work
