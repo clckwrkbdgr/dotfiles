@@ -52,7 +52,6 @@ class ExceptionScreen(object):
 			top_part -= 1
 			while top_part + 1 + bottom_part < height:
 				top_part += 1
-			print(height, top_part, bottom_part)
 			lines = lines[:top_part] + ['[...]'] + lines[-bottom_part:]
 		return lines
 	def __exit__(self, exc_type, exc_value, exc_traceback): # pragma: no cover -- TUI
