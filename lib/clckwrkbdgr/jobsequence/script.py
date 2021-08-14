@@ -35,6 +35,7 @@ class Script(object): # pragma: no cover -- TODO need mocks.
 			f.write(line)
 			if not line.endswith('\n'):
 				f.write('\n')
+		return self
 	def __iadd__(self, line):
 		""" Shortcut for append():
 		script += "line"
