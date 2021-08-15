@@ -2,7 +2,7 @@
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 . "$XDG_CONFIG_HOME/lib/path.bash"
 
-_current_version=$(path::exec_base --version | head -1 | awk '{print $3}')
+_current_version=$(path::exec_base --version | head -1 | awk 'BEGIN { FS = "[, ]" } ; {print $3}')
 _hsts_version=1.17.0 # --hsts-file is introduced
 
 OPTS=
