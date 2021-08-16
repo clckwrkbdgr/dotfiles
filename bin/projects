@@ -62,8 +62,11 @@ class Git:
 		if git.returncode != 0:
 			raise Git.Error(git.args)
 		return git.stdout.decode().splitlines()
-	def status(self):
-		git = subprocess.run(["git", "status"], stdout=subprocess.PIPE)
+	def status(self, with_branch=False):
+		args = ["git", "status", '--short']
+		if with_branch:
+			args += ['--branch']
+		git = subprocess.run(args, stdout=subprocess.PIPE)
 		if git.returncode != 0:
 			raise Git.Error(git.args)
 		return git.stdout.decode().splitlines()
@@ -181,61 +184,24 @@ def version(section=None):
 	return True
 
 def git_has_changes():
-	OK_LINES = [
-			r'#\?\s*On branch ',
-			r'На ветке ',
-			r'Your branch is up-to-date with',
-			r'Ваша ветка обновлена в соответствии с ',
-			r'nothing to commit',
-			r'нечего коммитить, нет изменений в рабочем каталоге',
-			r'^$',
-			]
-	status = Git().status()
-	status = skip_lines_with_patterns(status, OK_LINES)
-	return status
+	status = Git().status(with_branch=True)
+	branch_info, status_info = status[0], status[1:]
+	if 'ahead' in status[0] or 'behind' in status[0]:
+		return True
+	return bool(status_info)
 
 def git_has_changes_besides_filtered_out():
-	status = git_has_changes()
-	CHANGES = [
-			r'(use "git add <file>..." to update what will be committed)',
-			r'(используйте «git add <файл>…», чтобы добавить файл в индекс)',
-			r'(use "git checkout -- <file>..." to discard changes in working directory)',
-			r'(используйте «git checkout -- <файл>…», чтобы отменить изменения',
-			r'в рабочем каталоге)',
-			r'no changes added to commit (use "git add"',
-			r'нет изменений добавленных для коммита',
-			r'(используйте «git add» и/или «git commit -a»)',
-			]
-	NOT_STAGED = [
-			r'^Changes not staged for commit:',
-			r'^Изменения, которые не в индексе для коммита:',
-			]
-	MODIFIED = [
-			r'^\s*modified:\s+(.*)$',
-			r'^\s*изменено:\s+(.*)( \(новые коммиты\))$',
-			r'^\s*изменено:\s+(.*)$',
-			]
-	status = skip_lines_that_contains(status, CHANGES)
-	changes = []
-	in_changes = False
+	status = Git().status()
 	for line in status:
-		if not line.strip():
-			continue
-		if not in_changes:
-			if match_any(line, NOT_STAGED):
-				in_changes = True
-			else:
-				changes.append(line)
-		else:
-			modifications = match_any(line, MODIFIED)
-			if not modifications:
-				in_changes = False
-				changes.append(line)
-			else:
-				filename = modifications[0].group(1)
-				if Git().differs(filename):
-					changes.append(filename)
-	return list(map(non_empty, changes))
+		if line[0] != ' ':
+			return True # Staged.
+		if line[1] in 'AD':
+			return True # Definitely changes.
+		if line[1] == 'M':
+			filename = modifications[0].group(1)
+			if Git().differs(filename):
+				return True # Content actually differs.
+	return False
 
 @cli.command()
 @click.argument('thorough', required=False, default=None, type=click.Choice(['thorough']))
