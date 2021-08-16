@@ -25,7 +25,7 @@ class Context: # pragma: no cover -- TODO need mocks
 		elif self._verbose_level > 1:
 			self._logger.setLevel(logging.DEBUG)
 		self._returncode = 0
-	def script(self, name=None, shebang=None, rootdir=None):
+	def script(self, name=None, shebang=None, rootdir=None, overwrite=True):
 		""" Initializes fixer script with given name (by default is taken from the current script)
 		and other parameters (see Script help).
 		Default rootdir is taken from context parameters (script_rootdir).
@@ -36,7 +36,7 @@ class Context: # pragma: no cover -- TODO need mocks
 			name = os.path.basename(sys.argv[0])
 		if not rootdir:
 			rootdir = self._script_rootdir
-		script = clckwrkbdgr.jobsequence.script.Script(name, shebang=shebang, rootdir=rootdir)
+		script = clckwrkbdgr.jobsequence.script.Script(name, shebang=shebang, rootdir=rootdir, overwrite=overwrite)
 		sys.stderr.write("=== Created script: {0}\n".format(script.filename))
 		return script
 	def done(self):
