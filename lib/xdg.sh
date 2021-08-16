@@ -4,6 +4,9 @@ export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
 export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
 export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
 export XDG_STATE_HOME=${XDG_STATE_HOME:-$HOME/.state}
+
+export XDG_DESKTOP_DIR=${XDG_DESKTOP_DIR:-$HOME/Desktop}
+
 # Obsolete/deprecated settings.
 export XDG_LOG_HOME=${XDG_STATE_HOME}
 
@@ -12,6 +15,7 @@ export XDG_LOG_HOME=${XDG_STATE_HOME}
 [ -d "$XDG_CACHE_HOME"  ] || mkdir -p "$XDG_CACHE_HOME"
 [ -d "$XDG_DATA_HOME"   ] || mkdir -p "$XDG_DATA_HOME"
 [ -d "$XDG_STATE_HOME"  ] || mkdir -p "$XDG_STATE_HOME"
+[ -d "$XDG_DESKTOP_DIR"  ] || mkdir -p "$XDG_DESKTOP_DIR"
 
 # Setting up additional XDG user directories.
 # Physical presence is not ensured!
