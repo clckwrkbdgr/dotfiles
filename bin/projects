@@ -198,7 +198,7 @@ def git_has_changes_besides_filtered_out():
 		if line[1] in 'AD':
 			return True # Definitely changes.
 		if line[1] == 'M':
-			filename = modifications[0].group(1)
+			filename = line[3:]
 			if Git().differs(filename):
 				return True # Content actually differs.
 	return False
