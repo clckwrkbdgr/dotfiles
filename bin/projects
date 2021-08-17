@@ -63,7 +63,7 @@ class Git:
 			raise Git.Error(git.args)
 		return git.stdout.decode().splitlines()
 	def status(self, with_branch=False):
-		args = ["git", "status", '--short']
+		args = ["git", "status", '--porcelain']
 		if with_branch:
 			args += ['--branch']
 		git = subprocess.run(args, stdout=subprocess.PIPE)
