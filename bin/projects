@@ -230,9 +230,8 @@ def push():
 			]
 	for repo in find_git_repos():
 		with CurrentDir(repo):
-			status = Git().status()
-			is_ahead = list(filter(lambda line: search_any(line, BRANCH_AHEAD), status))
-			if not is_ahead:
+			status = Git().status(with_branch=True)
+			if 'ahead' not in status[0]:
 				continue
 			print(colored(os.path.basename(repo), 'red'))
 			branches = Git().branches()
