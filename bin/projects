@@ -183,16 +183,14 @@ def version(section=None):
 		return False
 	return True
 
-def git_has_changes():
+def git_has_changes(thorough=False):
 	status = Git().status(with_branch=True)
 	branch_info, status_info = status[0], status[1:]
 	if 'ahead' in status[0] or 'behind' in status[0]:
 		return True
-	return bool(status_info)
-
-def git_has_changes_besides_filtered_out():
-	status = Git().status()
-	for line in status:
+	if not thorough:
+		return bool(status_info)
+	for line in status_info:
 		if line[0] != ' ':
 			return True # Staged.
 		if line[1] in 'AD':
@@ -214,12 +212,9 @@ def status(thorough=False):
 	With 'thorough' checks actual diffs to see if gitfilters actually produce no diff.
 	"""
 	thorough = thorough == 'thorough'
-	has_changes = git_has_changes
-	if thorough:
-		has_changes = git_has_changes_besides_filtered_out
 	for repo in find_git_repos():
 		with CurrentDir(repo):
-			if has_changes():
+			if git_has_changes(thorough=thorough):
 				print(colored(os.path.basename(repo), 'red'))
 				sys.stdout.flush()
 				os.system("git -c color.status=always status")
