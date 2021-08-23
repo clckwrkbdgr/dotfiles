@@ -5,7 +5,7 @@
 
 jobsequence_context() {
 	# Initiates context for jobsequence script.
-	miniclick --script_rootdir -- "$@"
+	miniclick fake --script_rootdir -- "$@"
 	#   script_rootdir - default directory where fixer scripts will be created.
 	export JOBSEQUENCE_SCRIPT_ROODIR="${script_rootdir:-$HOME}"
 }
@@ -13,9 +13,9 @@ jobsequence_context() {
 jobsequence_script() {
 	# Prepares fixer script with given name and optional shebang line.
 	# Prints created filename to stdout.
-	miniclick script_name shebang -- -- "$@"
+	miniclick script_name shebang -- "$@"
 
-	filename="${JOBSEQUENCE_SCRIPT_ROODIR:-.}/$filename"
+	filename="${JOBSEQUENCE_SCRIPT_ROODIR:-.}/$script_name"
 	mkdir -p "$(dirname "$filename")"
 	touch "$filename"
 	chmod +x "$filename"
