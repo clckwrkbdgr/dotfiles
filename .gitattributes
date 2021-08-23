@@ -246,6 +246,7 @@ lib/click.3.bash caps=work
 lib/click.bash caps=work
 lib/colors.bash caps=work
 lib/desktop.bash caps=work
+lib/jobsequence.bash caps=work
 lib/miniclick.bash caps=work
 lib/path.bash caps=work
 lib/prompt.bash caps=work
