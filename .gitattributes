@@ -295,6 +295,7 @@ setup.py caps=work
 subversion/config caps=work
 tmux.conf caps=work
 update_dotfiles.py caps=work
+check_license.py caps=work
 user-dirs.dirs caps=work
 userstate.cfg caps=work
 vim/after/ftplugin/c.vim caps=work
