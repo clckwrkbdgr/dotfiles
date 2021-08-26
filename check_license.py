@@ -53,14 +53,15 @@ PATTERNS = [re.compile(pattern, flags=re.I) for pattern in [
 		]]
 
 if __name__ == '__main__':
-	args = sys.argv[1:] or [None]
+	args = sys.argv[1:]
 	searcher, catter = list_files, fs_content
 	if '--git' in args:
 		if not os.path.exists('.git'):
 			raise RuntimeError('Cannot use option --git in non-Git repo root.')
 		searcher, catter = git_ls_files, git_show
+		args.remove('--git')
 
-	for path in args:
+	for path in args or [None]:
 		for filename in searcher(path):
 			if filename == __file__:
 				continue
