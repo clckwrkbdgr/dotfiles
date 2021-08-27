@@ -45,12 +45,19 @@ def grep(byte_lines, patterns):
 				line = line.rstrip()[:120]
 				yield line_number, ','.join(map(str, matches)) + ':' + line
 
-PATTERNS = [re.compile(pattern, flags=re.I) for pattern in [
-		r'\bMIT',
-		r'\bMPL',
+PATTERNS = [re.compile(pattern) for pattern in [
+		r'\bMIT(?:v|\b)',
+		r'\bMPL[^A]',
 		r'\bGPL',
+		]]
+PATTERNS += [re.compile(pattern, flags=re.I) for pattern in [
 		r'licen[sc]e',
 		]]
+
+IGNORED_PATHS = list(map(os.path.abspath, [
+	__file__,
+	'.gitattributes', # Contains references to this file.
+	]))
 
 if __name__ == '__main__':
 	args = sys.argv[1:]
@@ -63,7 +70,7 @@ if __name__ == '__main__':
 
 	for path in args or [None]:
 		for filename in searcher(path):
-			if filename == __file__:
+			if os.path.abspath(filename) in IGNORED_PATHS:
 				continue
 			for line_number, text in grep(catter(filename), PATTERNS):
 				print('{0}:{1}:{2}'.format(filename, line_number, text))
