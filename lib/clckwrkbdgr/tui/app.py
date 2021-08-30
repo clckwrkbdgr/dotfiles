@@ -58,6 +58,31 @@ class MVC(object): # pragma: no cover -- TODO curses
 		"""
 		raise NotImplementedError
 
+class OverlayMVC(MVC):
+	def __init__(self, actual_mode, data=None):
+		""" Creates overlay mode which is built on top of actual_mode.
+		"""
+		super(OverlayMVC, self).__init__(data=data)
+		if isinstance(actual_mode, ClassType):
+			actual_mode = actual_mode(self.data)
+		self.actual_mode = actual_mode
+	def view(self, window):
+		""" Displays overlay _view() on top of the actual mode view. """
+		self.actual_mode.view(window)
+		super(OverlayMVC, self).view(window)
+	def control(self, key):
+		""" Processes own _control() for given key.
+		If own _control() returns None, stays in current modal mode.
+		Otherwise gives control to actual_mode and returns result of its _control().
+		"""
+		result = self._control(Key(key))
+		if result is None:
+			return self
+		result = self.actual_mode.control(key)
+		if result is self.actual_mode:
+			return self
+		return result
+
 class AppExit(Exception): # pragma: no cover
 	def __init__(self, return_code=None):
 		self.return_code = return_code
