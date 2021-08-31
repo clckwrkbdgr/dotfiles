@@ -58,7 +58,7 @@ class MVC(object): # pragma: no cover -- TODO curses
 		"""
 		raise NotImplementedError
 
-class OverlayMVC(MVC):
+class OverlayMVC(MVC): # pragma: no cover -- TODO curses
 	def __init__(self, actual_mode, data=None):
 		""" Creates overlay mode which is built on top of actual_mode.
 		"""
