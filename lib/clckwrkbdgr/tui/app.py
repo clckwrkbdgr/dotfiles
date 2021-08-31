@@ -58,18 +58,18 @@ class MVC(object): # pragma: no cover -- TODO curses
 		"""
 		raise NotImplementedError
 
-class OverlayMVC(MVC): # pragma: no cover -- TODO curses
+class BaseOverlayMVC(MVC): # pragma: no cover -- TODO curses
 	def __init__(self, actual_mode, data=None):
 		""" Creates overlay mode which is built on top of actual_mode.
 		"""
-		super(OverlayMVC, self).__init__(data=data)
+		super(BaseOverlayMVC, self).__init__(data=data)
 		if isinstance(actual_mode, ClassType):
 			actual_mode = actual_mode(self.data)
 		self.actual_mode = actual_mode
 	def view(self, window):
 		""" Displays overlay _view() on top of the actual mode view. """
 		self.actual_mode.view(window)
-		super(OverlayMVC, self).view(window)
+		super(BaseOverlayMVC, self).view(window)
 	def control(self, key):
 		""" Processes own _control() for given key.
 		If own _control() returns None, stays in current modal mode.
@@ -79,9 +79,22 @@ class OverlayMVC(MVC): # pragma: no cover -- TODO curses
 		if result is None:
 			return self
 		result = self.actual_mode.control(key)
+		result = self.__post_process_actual_result(result)
+		return result
+	def __post_process_actual_result(self, result):
+		return result
+
+class OverlayMVC(BaseOverlayMVC): # pragma: no cover -- TODO curses
+	""" Permanently overlays this mode on actual_mode. """
+	def __post_process_actual_result(self, result):
 		if result is self.actual_mode:
 			return self
 		return result
+
+class ModalMVC(BaseOverlayMVC): # pragma: no cover -- TODO curses
+	""" Modal mode: process overlay until its _control() returns not None,
+	then completely switches to the underlying actual mode. """
+	pass
 
 class AppExit(Exception): # pragma: no cover
 	def __init__(self, return_code=None):
