@@ -209,6 +209,7 @@ lib/clckwrkbdgr/test/test_events.py caps=work
 lib/clckwrkbdgr/tui/__init__.py caps=work
 lib/clckwrkbdgr/tui/_base.py caps=work
 lib/clckwrkbdgr/tui/app.py caps=work
+lib/clckwrkbdgr/tui/widgets.py caps=work
 lib/clckwrkbdgr/test/test_tui.py caps=work
 lib/clckwrkbdgr/test/__init__.py caps=work
 lib/clckwrkbdgr/test/test_backup.py caps=work

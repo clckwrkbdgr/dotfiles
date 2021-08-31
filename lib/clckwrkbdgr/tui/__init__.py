@@ -1,2 +1,2 @@
 from ._base import *
-from . import app
+from . import app, widgets
