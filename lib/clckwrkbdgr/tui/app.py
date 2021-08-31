@@ -79,14 +79,14 @@ class BaseOverlayMVC(MVC): # pragma: no cover -- TODO curses
 		if result is None:
 			return self
 		result = self.actual_mode.control(key)
-		result = self.__post_process_actual_result(result)
+		result = self._post_process_actual_result(result)
 		return result
-	def __post_process_actual_result(self, result):
+	def _post_process_actual_result(self, result):
 		return result
 
 class OverlayMVC(BaseOverlayMVC): # pragma: no cover -- TODO curses
 	""" Permanently overlays this mode on actual_mode. """
-	def __post_process_actual_result(self, result):
+	def _post_process_actual_result(self, result):
 		if result is self.actual_mode:
 			return self
 		return result
