@@ -1,6 +1,6 @@
 from . import app
 
-class TextScreen(app.MVC):
+class TextScreen(app.MVC): # pragma: no cover -- TODO curses
 	""" Displays visual notification on new screen
 	and waits for any pressed key. If key is y/Y, returns RETURN_VALUE.
 	If RETURN_VALUE is subclass of app.AppExit, raises exception instance instead.
@@ -22,7 +22,7 @@ class TextScreen(app.MVC):
 			raise self.RETURN_VALUE()
 		return self.RETURN_VALUE
 
-class Confirmation(app.ModalMVC):
+class Confirmation(app.ModalMVC): # pragma: no cover -- TODO curses
 	""" Displays visual confirmation in the topmost line
 	and waits for a pressed key.
 	If key is y/Y, calls on_yes().
