@@ -122,4 +122,5 @@ sed '/browser.urlbar.tipShownCount.searchTip_redirect/d' | \
 sed '/devtools.netmonitor.persistlog/d' | \
 sed '/devtools.toolbox.tabsOrder/d' | \
 sed '/browser.download.lastDir/d' | \
+sed '/media.benchmark.vp9./d' | \
 sed 's|'"$HOME"'|$HOME|g'
