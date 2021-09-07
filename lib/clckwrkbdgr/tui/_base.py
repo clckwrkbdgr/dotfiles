@@ -32,6 +32,11 @@ class Key(object):
 	def __eq__(self, other):
 		other = Key(other)
 		return self.value == other.value
+	def name(self):
+		""" Returns human-readable name. """
+		if self.value == ord(' '):
+			return 'space'
+		return chr(self.value)
 
 class ExceptionScreen(object):
 	""" Context manager that captures exceptions and displays traceback in window overlay,

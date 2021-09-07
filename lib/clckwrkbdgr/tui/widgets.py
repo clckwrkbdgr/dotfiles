@@ -1,6 +1,7 @@
 from collections import namedtuple
-from . import app
-import curses
+import curses, curses.ascii
+import clckwrkbdgr.text
+from . import app, Key
 
 class TextScreen(app.MVC): # pragma: no cover -- TODO curses
 	""" Displays visual notification on new screen
@@ -96,3 +97,58 @@ class Menu(app.MVC): # pragma: no cover -- TODO curses
 			if ch == ord(item.key):
 				return self.on_item(item)
 		return None
+
+class MessageLineOverlay(app.OverlayMVC):
+	""" Overlay that provides message line (the topmost line).
+	Messages are condensed if possible.
+	Override MORE_KEY (tui.Key) to specify key that advances pending messages. Default is Space.
+	Override get_new_messages() to produce actual messages.
+	"""
+	MORE_KEY = Key(' ')
+
+	def __init__(self, *args, **kwargs):
+		super(MessageLineOverlay, self).__init__(*args, **kwargs)
+		self._messages = []
+		self._to_remove = None
+		self._top_message = None
+	def add_message(self, text):
+		""" Adds new message. """
+		self._messages.append(str(line))
+	def _view(self, window):
+		self._messages.extend(map(str, self.get_new_messages()))
+
+		_, width = window.getmaxyx()
+		self._to_remove, self._top_message = clckwrkbdgr.text.wrap_lines(
+				self._messages,
+				width=width, ellipsis=self.MORE_KEY.name(),
+				force_ellipsis=self.force_ellipsis(),
+				rjust_ellipsis=True,
+				)
+
+		if not self._messages:
+			return
+		window.addstr(0, 0, " "*width)
+		window.addstr(0, 0, self._top_message)
+	def _control(self, ch):
+		if not self._messages:
+			return not None
+		if not self._to_remove:
+			self._messages.clear()
+			return not None
+		if ch != self.MORE_KEY:
+			return None
+		if self._to_remove > 0:
+			self._messages = self._messages[self._to_remove:]
+		else:
+			self._messages[0] = self._messages[0][-self._to_remove:]
+		return None
+
+	def get_new_messages(self):
+		""" Override this method to get new messages, e.g. from self.data.
+		May be a generator.
+		"""
+		return []
+	def force_ellipsis(self):
+		""" Override this method to return True when ellipsis ("more") should be forced regardless of pending messages.
+		"""
+		return False
