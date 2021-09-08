@@ -2,6 +2,7 @@ import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
 from clckwrkbdgr import tui
+from clckwrkbdgr.tui import widgets
 
 class TestKey(unittest.TestCase):
 	def should_create_key(self):
@@ -61,3 +62,11 @@ class TestUtils(unittest.TestCase):
 				'(CUT      to make odd numb',
 			]
 		self.assertEqual(tui.ExceptionScreen._fit_into_bounds(lorem_ipsum, len(expected[0]), len(expected)), expected)
+	def should_prepare_prompt_from_choices(self):
+		self.assertEqual("", widgets.Prompt._prompt_from_choices([]))
+		self.assertEqual("a", widgets.Prompt._prompt_from_choices(['a']))
+		self.assertEqual("a-b", widgets.Prompt._prompt_from_choices(['a', 'b']))
+		self.assertEqual("y,n", widgets.Prompt._prompt_from_choices(['y', 'n']))
+		self.assertEqual("a-c", widgets.Prompt._prompt_from_choices(['a', 'b', 'c']))
+		self.assertEqual("a-c,x-z", widgets.Prompt._prompt_from_choices(['a', 'b', 'c', 'x', 'y', 'z']))
+		self.assertEqual("*,a-b", widgets.Prompt._prompt_from_choices(['a', 'b', '*']))

@@ -72,15 +72,19 @@ class BaseOverlayMVC(MVC): # pragma: no cover -- TODO curses
 		super(BaseOverlayMVC, self).view(window)
 	def control(self, key):
 		""" Processes own _control() for given key.
-		If own _control() returns None, stays in current modal mode.
-		Otherwise gives control to actual_mode and returns result of its _control().
+		If own _control() returns None, propagates control to actual mode
+		and returns result of its _control().
+		Return "self" to stay in current mode,
+		self.actual_mode to return to actual mode,
+		or any other new mode.
 		"""
-		result = self._control(Key(key))
-		if result is None:
-			return self
-		result = self.actual_mode.control(key)
-		result = self._post_process_actual_result(result)
-		return result
+		new_instance = self._control(Key(key))
+		if new_instance is None:
+			new_instance = self.actual_mode.control(key)
+		new_instance = self._post_process_actual_result(new_instance)
+		if isinstance(new_instance, ClassType):
+			new_instance = new_instance(self.data)
+		return new_instance
 	def _post_process_actual_result(self, result):
 		return result
 

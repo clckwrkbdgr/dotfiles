@@ -25,14 +25,85 @@ class TextScreen(app.MVC): # pragma: no cover -- TODO curses
 			raise self.RETURN_VALUE()
 		return self.RETURN_VALUE
 
-class Confirmation(app.ModalMVC): # pragma: no cover -- TODO curses
+class Prompt(app.ModalMVC): # pragma: no cover -- TODO curses
+	""" Displays visual prompt in the topmost line,
+	waits for a key and calls on_key(key).
+	Method on_choice should return new mode or None (following ModalMVC behavior).
+	Method choices() should return all allowed keys as a list.
+	Override MESSAGE value or prompt() for the prompt message.
+	Default prompt is MESSAGE.
+	Override KEYS_TO_CLOSE to immediately close menu and return to the main mode. Default is ESC only.
+	Note: allowed keys are included automatically into prompt.
+	"""
+	_full_redraw = False
+
+	MESSAGE = None
+	KEYS_TO_CLOSE = [curses.ascii.ESC]
+
+	def choices(self):
+		return []
+	def on_choice(self, key):
+		return not None
+	def prompt(self):
+		return self.MESSAGE
+
+	def __init__(self, *args, **kwargs):
+		super(Prompt, self).__init__(*args, **kwargs)
+		self._responded = False
+	@staticmethod
+	def _prompt_from_choices(choices):
+		choices = list(map(Key, choices))
+		if len(choices) == 1:
+			return choices[0].name()
+		if len(choices) == 2 and abs(choices[0].value - choices[1].value) > 1:
+			return ",".join(c.name() for c in choices)
+		choices = sorted(choices, key=lambda k:k.value)
+		prev = None
+		ranged = []
+		for choice in choices:
+			if prev and abs(prev.value - choice.value) == 1:
+				ranged.append('-')
+			else:
+				if prev and ranged and ranged[-1] == '-':
+					ranged.append(prev.name())
+				ranged.append(choice.name())
+			prev = choice
+		if prev and ranged and ranged[-1] == '-':
+			ranged.append(prev.name())
+		squeezed = []
+		for choice in ranged:
+			if choice == '-' and squeezed and choice == squeezed[-1]:
+				continue
+			else:
+				if len(squeezed) >= 2 and squeezed[-2] == '-':
+					squeezed.append(',')
+				elif squeezed and squeezed[-1] != '-' and choice != '-':
+					squeezed.append(',')
+				squeezed.append(choice)
+		return ''.join(squeezed)
+	def _view(self, window):
+		_, width = window.getmaxyx()
+		window.addstr(0, 0, " "*width)
+		if not self._responded:
+			prompt = " (" + self._prompt_from_choices(self.choices()) + ")"
+			message = self.prompt()[:width-len(prompt)] + prompt
+			window.addstr(0, 0, message)
+	def _control(self, ch):
+		if any(ch == _ for _ in self.KEYS_TO_CLOSE):
+			return self.actual_mode
+		if self._responded:
+			return self._responded
+		if ch in map(Key, self.choices()):
+			return self.on_choice(ch)
+		return self.actual_mode
+
+class Confirmation(Prompt): # pragma: no cover -- TODO curses
 	""" Displays visual confirmation in the topmost line
 	and waits for a pressed key.
 	If key is y/Y, calls on_yes().
 	Override MESSAGE value for confirmation message.
 	Note: prompt "y/n" is included automatically.
 	"""
-	MESSAGE = None
 
 	def on_yes(self):
 		""" Override this function to performa actions
@@ -40,23 +111,12 @@ class Confirmation(app.ModalMVC): # pragma: no cover -- TODO curses
 		"""
 		pass
 
-	def __init__(self, *args, **kwargs):
-		super(Confirmation, self).__init__(*args, **kwargs)
-		self._responded = False
-	def _view(self, window):
-		_, width = window.getmaxyx()
-		window.addstr(0, 0, " "*width)
-		if not self._responded:
-			prompt = " (y/n)"
-			message = self.MESSAGE[:width-len(prompt)] + prompt
-			window.addstr(0, 0, message)
-	def _control(self, ch):
-		if ch in [ord('y'), ord('Y')]:
+	def choices(self):
+		return ["y", "n"]
+	def on_choice(self, key):
+		if key in [ord('y'), ord('Y')]:
 			self.on_yes()
-		if self._responded:
-			return not None
-		self._responded = True
-		return None
+		return self.actual_mode
 
 class Menu(app.MVC): # pragma: no cover -- TODO curses
 	""" Custom menu with items controlled by specific hot keys.
@@ -142,17 +202,17 @@ class MessageLineOverlay(app.OverlayMVC): # pragma: no cover -- TODO curses
 		window.addstr(0, 0, self._top_message)
 	def _control(self, ch):
 		if not self._messages:
-			return not None
+			return None
 		if not self._to_remove:
 			self._messages.clear()
-			return not None
-		if ch != self.MORE_KEY:
 			return None
+		if ch != self.MORE_KEY:
+			return self
 		if self._to_remove > 0:
 			self._messages = self._messages[self._to_remove:]
 		else:
 			self._messages[0] = self._messages[0][-self._to_remove:]
-		return None
+		return self
 
 	def get_new_messages(self):
 		""" Override this method to get new messages, e.g. from self.data.
