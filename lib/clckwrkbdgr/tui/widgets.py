@@ -1,4 +1,8 @@
 from collections import namedtuple
+try:
+	ClassType = (type, types.ClassType)
+except: # pragma: no cover
+	ClassType = type
 import curses, curses.ascii
 import clckwrkbdgr.text
 from . import app, Key
@@ -12,6 +16,8 @@ class TextScreen(app.MVC): # pragma: no cover -- TODO curses
 	"""
 	LINES = []
 	RETURN_VALUE = None
+	def on_close(self):
+		return RETURN_VALUE
 
 	_full_redraw = True
 	def _view(self, window):
@@ -21,9 +27,10 @@ class TextScreen(app.MVC): # pragma: no cover -- TODO curses
 		for index, line in enumerate(lines):
 			window.addstr(index, 0, line)
 	def _control(self, ch):
-		if issubclass(self.RETURN_VALUE, app.AppExit):
-			raise self.RETURN_VALUE()
-		return self.RETURN_VALUE
+		return_value = self.on_close()
+		if isinstance(return_value, ClassType) and issubclass(return_value, app.AppExit):
+			raise return_value()
+		return return_value
 
 class Prompt(app.ModalMVC): # pragma: no cover -- TODO curses
 	""" Displays visual prompt in the topmost line,
