@@ -61,7 +61,9 @@ class Confirmation(app.ModalMVC): # pragma: no cover -- TODO curses
 class Menu(app.MVC): # pragma: no cover -- TODO curses
 	""" Custom menu with items controlled by specific hot keys.
 	Following options to override:
+	- prompt(): text for the top line. By default is empty.
 	- items(): list of Menu.Item(key, text)
+	- COLUMNS: number of columns to display. Default is 1.
 	- KEYS_TO_CLOSE: keys that will immediately close menu and return to the mode specifed in on_close(). Default is ESC only.
 	- on_close(): called when menu is simply closed. Should return new MVC.
 	- on_item(item): called when item is selected.
@@ -73,32 +75,41 @@ class Menu(app.MVC): # pragma: no cover -- TODO curses
 	Item = namedtuple('MenuItem', 'key text data')
 
 	KEYS_TO_CLOSE = [curses.ascii.ESC]
+	COLUMNS = 1
 	def items(self):
 		raise NotImplementedError
 	def on_item(self, item):
 		return None
 	def on_close(self):
 		return None
+	def prompt(self):
+		return ""
 
 	def _view(self, window):
 		height, width = window.getmaxyx()
+		window.addstr(0, 0, str(self.prompt())[:width])
+
 		height -= 1 # For the top line.
+		column_width = width // self.COLUMNS
+		allowed_items = height * self.COLUMNS
 		items = list(enumerate(self.items()))
-		if len(items) >= height:
-			items = items[:height-1] + [ (height-1, '[{0} more items do not fit...]'.format(len(items) - height + 1)) ]
-		for row, item in items:
-			line = "{0} - {1}".format(item.key, item.text)
-			line = line[:width-1]
-			window.addstr(1 + row, 0, line)
+		if len(items) >= allowed_items:
+			items = items[:allowed_items-1] + [ (allowed_items-1, '[{0} more items do not fit...]'.format(len(items) - allowed_items + 1)) ]
+		for index, item in items:
+			line = "{0} - {1}".format(Key(item.key), item.text)
+			line = line[:column_width-1]
+			column_start = (index // height) * column_width
+			row = index % height
+			window.addstr(1 + row, column_start, line)
 	def _control(self, ch):
 		if any(ch == _ for _ in self.KEYS_TO_CLOSE):
 			return self.on_close()
 		for item in self.items():
-			if ch == ord(item.key):
+			if ch == item.key:
 				return self.on_item(item)
 		return None
 
-class MessageLineOverlay(app.OverlayMVC):
+class MessageLineOverlay(app.OverlayMVC): # pragma: no cover -- TODO curses
 	""" Overlay that provides message line (the topmost line).
 	Messages are condensed if possible.
 	Override MORE_KEY (tui.Key) to specify key that advances pending messages. Default is Space.

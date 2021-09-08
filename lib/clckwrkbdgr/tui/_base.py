@@ -32,7 +32,7 @@ class Key(object):
 	def __eq__(self, other):
 		other = Key(other)
 		return self.value == other.value
-	def name(self):
+	def name(self): # pragma: no cover -- TODO
 		""" Returns human-readable name. """
 		if self.value == ord(' '):
 			return 'space'
