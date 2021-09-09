@@ -206,6 +206,7 @@ lib/clckwrkbdgr/test/test_logging.py caps=work
 lib/clckwrkbdgr/text.py caps=work
 lib/clckwrkbdgr/events.py caps=work
 lib/clckwrkbdgr/rogue/__init__.py caps=work
+lib/clckwrkbdgr/rogue/__main__.py caps=work
 lib/clckwrkbdgr/rogue/game.py caps=work
 lib/clckwrkbdgr/rogue/pcg.py caps=work
 lib/clckwrkbdgr/rogue/test/__init__.py caps=work
