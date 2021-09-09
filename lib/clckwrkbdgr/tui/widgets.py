@@ -230,3 +230,38 @@ class MessageLineOverlay(app.OverlayMVC): # pragma: no cover -- TODO curses
 		""" Override this method to return True when ellipsis ("more") should be forced regardless of pending messages.
 		"""
 		return False
+
+class StatusLine(app.OverlayMVC): # pragma: no cover -- TODO curses
+	""" Status line with sections.
+	Takes the bottommost line.
+	Override list of SECTIONS (see LabeledSection).
+	Optional fixed CORNER element may be displayed in bottom-right corner.
+	Sections are separated with SEPARATOR (default is two spaces).
+
+	LabeledSection ("<label>:<value>"):
+	- width - is the width of value. Section will be aligned to that width (value is right-justified).
+	- getter - function that received mode's data and should return:
+	  - (not None) Displayed value;
+	  - None if section should be skipped.
+	"""
+	LabeledSection = namedtuple('StatusLineLabeledSection', 'label width getter')
+	SECTIONS = []
+	SEPARATOR = "  "
+	CORNER = ""
+	def _control(self, _): return None
+	def _view(self, window):
+		status = ""
+		for name, width, getter in self.SECTIONS:
+			value = getter(self.data)
+			if status:
+				status += self.SEPARATOR
+			if value is None:
+				status += " "*(len(name) + 2 + width)
+			else:
+				status += "{0}:{1}".format(name, str(value)[:width].rjust(width))
+
+		window_height, row_width = window.getmaxyx()
+		row_pos = window_height - 1
+		corner_width = len(self.CORNER)
+		result_width = row_width - corner_width - 1
+		window.addstr(row_pos, 0, status[:result_width].ljust(result_width) + self.CORNER)
