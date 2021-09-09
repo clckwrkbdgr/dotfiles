@@ -225,30 +225,8 @@ class Monster:
 		return damage
 	def __setstate__(self, data):
 		self.inventory = []
-		if isinstance(data, Point):
-			self.pos = data
-			return
-		if isinstance(data, list):
-			self.pos = Point()
-			self.pos.__setstate__(data)
-			return
-		if isinstance(data.pos, dict):
-			self.pos = Point()
-			self.pos.__setstate__(data.pos)
-		else:
-			self.pos = data.pos
-		self.inventory = []
-		for item_data in data.inventory:
-			if isinstance(item_data, dict):
-				item_data = dotdict(item_data)
-				if item_data.get('_class'):
-					item = get_type_by_name(item_data._class)()
-				else:
-					item = Item()
-				item.__setstate__(item_data)
-			else:
-				item = item_data
-			self.inventory.append(item)
+		self.pos = data.pos
+		self.inventory = data.inventory
 		self.wielding = None
 		if 'wielding' in data:
 			wielding = data.wielding
@@ -280,13 +258,7 @@ class Room(Rect):
 	def __hash__(self):
 		return hash( (self.topleft, self.size) )
 	def __setstate__(self, data):
-		if isinstance(data.topleft, dict):
-			self.topleft = Point()
-			self.topleft.__setstate__(data.topleft)
-			self.size = Size()
-			self.size.__setstate__(data.size)
-		else:
-			super(Room, self).__setstate__(data)
+		super(Room, self).__setstate__(data)
 		self.visited = data.visited
 	def __getstate__(self):
 		data = dotdict(super(Room, self).__getstate__())
@@ -300,35 +272,8 @@ class Tunnel(clckwrkbdgr.math.geometry.RectConnection):
 	def __hash__(self):
 		return hash( (self.start, self.stop, self.bending_point) )
 	def __setstate__(self, data):
-		if 'bending' in data:
-			super(Tunnel, self).__setstate__(data)
-			self.visited = set(data.visited)
-			return
-		if isinstance(data.start, dict):
-			self.start = Point()
-			self.start.__setstate__(data.start)
-		else:
-			self.start = data.start
-		if isinstance(data.stop, dict):
-			self.stop = Point()
-			self.stop.__setstate__(data.stop)
-		else:
-			self.stop = data.stop
-		self.direction = data.direction
-		self.bending_point = data.bending_point
-		if isinstance(self, clckwrkbdgr.math.geometry.RectConnection):
-			if self.direction == 'H':
-				self.bending_point -= self.start.x
-			else:
-				self.bending_point -= self.start.y
-		self.visited = set()
-		for pos_data in data.visited:
-			if isinstance(pos_data, dict):
-				p = Point()
-				p.__setstate__(pos_data)
-			else:
-				p = pos_data
-			self.visited.add(p)
+		super(Tunnel, self).__setstate__(data)
+		self.visited = set(data.visited)
 	def __getstate__(self):
 		data = dotdict(super(Tunnel, self).__getstate__())
 		data.visited = list(self.visited)
@@ -463,91 +408,13 @@ class GridRoomMap:
 			tunnel.visit(pos)
 
 	def __setstate__(self, data):
-		self.rooms = Matrix( (3, 3) )
-		self.tunnels = []
-		if data.rooms and isinstance(data.rooms, Matrix):
-			self.rooms = data.rooms
-			self.tunnels = data.tunnels
-		elif data.rooms and isinstance(data.rooms[0], dict):
-			self.rooms = Matrix((3, 3), Room(None, None))
-			self.tunnels = [Tunnel((0, 0), (2, 2), 'H', 1) for _ in data.tunnels]
-			for room, room_data in zip(self.rooms.data, data.rooms):
-				room.__setstate__(dotdict(room_data))
-			for tunnel, tunnel_data in zip(self.tunnels, data.tunnels):
-				tunnel.__setstate__(dotdict(tunnel_data))
-		else:
-			if hasattr(data.rooms, 'data'):
-				self.rooms.data = data.rooms.data
-			else:
-				self.rooms.data = data.rooms
-			self.tunnels = data.tunnels
+		self.rooms = data.rooms
+		self.tunnels = data.tunnels
+		self.level_id = data.level_id
 
-		if 'level_id' in data:
-			self.level_id = data.level_id
-		else:
-			if hasattr(GridRoomMap, '_compat_level_id'):
-				GridRoomMap._compat_level_id += 1
-			else:
-				GridRoomMap._compat_level_id = 0
-			self.level_id = GridRoomMap._compat_level_id
-
-		self.objects = []
-		if 'objects' in data:
-			self.objects.extend(data.objects)
-		if data.get('enter') or data.get('exit'):
-			self.enter, self.exit = None, None
-			if 'enter' in data:
-				if isinstance(data.enter, dict):
-					enter = Point()
-					enter.__setstate__(data.enter)
-				else:
-					enter = data.enter
-				stairs = LevelPassage(self.level_id - 1, 'exit')
-				stairs._sprite = '<'
-				stairs._name = 'stairs'
-				stairs._id = 'enter'
-				stairs._can_go_up = True
-				self.objects.append( (enter, stairs) )
-			if 'exit' in data:
-				if isinstance(data.exit, dict):
-					exit = Point()
-					exit.__setstate__(data.exit)
-				else:
-					exit = data.exit
-				stairs = LevelPassage(self.level_id + 1, 'enter')
-				stairs._sprite = '>'
-				stairs._name = 'stairs'
-				stairs._id = 'exit'
-				stairs._can_go_down = True
-				self.objects.append( (exit, stairs) )
-		self.items = []
-		if data.get('map_items'):
-			for pos, item_data in data.map_items:
-				if isinstance(item_data, dict):
-					item_data = dotdict(item_data)
-					if item_data.get('_class'):
-						item = get_type_by_name(item_data._class)()
-					else:
-						item = McGuffin()
-					item.__setstate__(item_data)
-					p = Point()
-					p.__setstate__(pos)
-					self.items.append( (p, item) )
-				else:
-					self.items.append( (pos, item_data) )
-		elif data.get('items'):
-			self.items = data.items
-		self.monsters = []
-		if data.get('monsters'):
-			for monster_data in data.monsters:
-				if isinstance(monster_data, dict):
-					monster_data = dotdict(monster_data)
-					_class = get_type_by_name(monster_data._class)
-					monster = _class()
-					monster.__setstate__(dotdict(monster_data))
-				else:
-					monster = monster_data
-				self.monsters.append(monster)
+		self.objects = data.objects
+		self.items = data.map_items
+		self.monsters = data.monsters
 	def __getstate__(self):
 		data = dotdict()
 		data.level_id = self.level_id
@@ -670,28 +537,9 @@ class Dungeon:
 		return events
 	def __setstate__(self, data):
 		self.__init__(None, lambda:None)
-		if not data.get('levels'):
-			if isinstance(data, dict):
-				self.levels = {0:GridRoomMap()}
-				self.levels[0].__setstate__(data.current_level)
-			else:
-				self.levels = {0:data.current_level}
-			self.current_level_id = len(self.levels) - 1
-		else:
-			if data.levels and not isinstance(data.levels, dict) and isinstance(data.levels[0], dict):
-				levels = [GridRoomMap() for level in data.levels]
-				for level, level_data in zip(levels, data.levels):
-					level.__setstate__(dotdict(level_data))
-				self.levels = dict(enumerate(levels))
-			elif isinstance(data.levels, list):
-				self.levels = dict(enumerate(data.levels))
-			else:
-				self.levels = data.levels
-			self.current_level_id = data.current_level
-		if isinstance(data.rogue, dict):
-			self.rogue.__setstate__(data.rogue)
-		else:
-			self.rogue = data.rogue
+		self.levels = data.levels
+		self.current_level_id = data.current_level
+		self.rogue = data.rogue
 	def __getstate__(self):
 		data = dotdict()
 		data.levels = self.levels
