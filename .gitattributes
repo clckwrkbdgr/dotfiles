@@ -247,6 +247,7 @@ lib/clckwrkbdgr/winnt/shell.py caps=work
 lib/clckwrkbdgr/winnt/test/__init__.py caps=work
 lib/clckwrkbdgr/winnt/test/test_registry.py caps=work
 lib/clckwrkbdgr/winnt/test/test_winnt.py caps=work
+lib/clckwrkbdgr/winnt/test/test_shell.py caps=work
 lib/clckwrkbdgr/workstation.py caps=work
 lib/clckwrkbdgr/xdg.py caps=work
 lib/click.3.bash caps=work
