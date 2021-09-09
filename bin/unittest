@@ -189,7 +189,7 @@ def ensure_test_data_dir():
 	setup_cfg.read(['setup.cfg'])
 	if setup_cfg.has_section('unittest'):
 		if setup_cfg.has_option('unittest', 'data_dir'):
-			data_dir = setup_cfg.get('unittest', 'data_dir')
+			data_dir = os.path.expandvars(setup_cfg.get('unittest', 'data_dir'))
 			Path(data_dir).expanduser().mkdir(parents=True, exist_ok=True)
 
 @click.command()
