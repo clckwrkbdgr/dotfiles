@@ -35,10 +35,8 @@ class Generator: # pragma: no cover -- TODO relies on built-in module `random`. 
 		""" Makes random weighted choice based on list of tuples: (<weight>, <item>), ...
 		Returns list of items.
 		"""
-		return random.choices(
-				*(zip(*(map(reversed, weights_and_items)))),
-				k=amount,
-				)
+		args = zip(*(map(reversed, weights_and_items)))
+		return random.choices(*args, k=amount)
 
 	def distribute(self, distribution, min_amount, max_amount=None):
 		""" Places objects generated from weighted distribution.
