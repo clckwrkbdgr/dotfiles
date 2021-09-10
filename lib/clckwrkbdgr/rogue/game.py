@@ -58,7 +58,7 @@ class Item:
 	attack = classfield('_attack', 0)
 
 class Consumable:
-	def consume_by(self, who):
+	def consume_by(self, who): # pragma: no cover
 		return NotImplemented
 
 class Wearable:
@@ -68,7 +68,7 @@ class Furniture:
 	""" Any object placed on map that is not a part of the terrain.
 	Like stairs, doors, levers etc or even inert objects like statues.
 	"""
-	class Locked(Exception):
+	class Locked(Exception): # pragma: no cover
 		""" Should be thrown when object is locked and requires specific item. """
 		def __init__(self, key_item_type):
 			self.key_item_type = key_item_type
@@ -86,10 +86,10 @@ class LevelPassage(Furniture):
 	id = classfield('_id', 'enter')
 	can_go_down = classfield('_can_go_down', False)
 	can_go_up = classfield('_can_go_up', False)
-	def __init__(self, level_id, connected_passage):
+	def __init__(self, level_id, connected_passage): # pragma: no cover
 		self.level_id = level_id
 		self.connected_passage = connected_passage
-	def use(self, who):
+	def use(self, who): # pragma: no cover
 		""" Additional actions performed before actual travelling.
 		By default there are none.
 		"""
@@ -128,10 +128,8 @@ class Monster:
 		for item in self.inventory:
 			if not isinstance(item, item_class):
 				continue
-			for name, expected_value in properties:
-				if not hasattr(item, name):
-					break
-				if getattr(item, name) != expected_value:
+			for name, expected_value in properties.items():
+				if not hasattr(item, name) or getattr(item, name) != expected_value:
 					break
 			else:
 				return True
@@ -223,7 +221,7 @@ class Monster:
 		damage = max(0, self.get_attack_damage() - other.get_protection())
 		other.hp -= damage
 		return damage
-	def __setstate__(self, data):
+	def __setstate__(self, data): # pragma: no cover -- TODO
 		self.inventory = []
 		self.pos = data.pos
 		self.inventory = data.inventory
@@ -241,7 +239,7 @@ class Monster:
 			self.hp = data.hp
 		else:
 			self.hp = self.max_hp
-	def __getstate__(self):
+	def __getstate__(self): # pragma: no cover -- TODO
 		data = dotdict()
 		data._class = self.__class__.__name__
 		data.pos = self.pos
@@ -257,10 +255,10 @@ class Room(Rect):
 		self.visited = False
 	def __hash__(self):
 		return hash( (self.topleft, self.size) )
-	def __setstate__(self, data):
+	def __setstate__(self, data): # pragma: no cover -- TODO
 		super(Room, self).__setstate__(data)
 		self.visited = data.visited
-	def __getstate__(self):
+	def __getstate__(self): # pragma: no cover -- TODO
 		data = dotdict(super(Room, self).__getstate__())
 		data.visited = self.visited
 		return data
@@ -271,10 +269,10 @@ class Tunnel(clckwrkbdgr.math.geometry.RectConnection):
 		self.visited = set()
 	def __hash__(self):
 		return hash( (self.start, self.stop, self.bending_point) )
-	def __setstate__(self, data):
+	def __setstate__(self, data): # pragma: no cover -- TODO
 		super(Tunnel, self).__setstate__(data)
 		self.visited = set(data.visited)
-	def __getstate__(self):
+	def __getstate__(self): # pragma: no cover -- TODO
 		data = dotdict(super(Tunnel, self).__getstate__())
 		data.visited = list(self.visited)
 		return data
@@ -300,7 +298,7 @@ class GridRoomMap:
 	def __init__(self, level_id=None,
 			rooms=None, tunnels=None,
 			items=None, monsters=None, objects=None,
-			):
+			): # pragma: no cover
 		self.level_id = level_id
 		self.rooms = rooms or Matrix( (3, 3) )
 		self.tunnels = tunnels or []
@@ -407,7 +405,7 @@ class GridRoomMap:
 		if tunnel:
 			tunnel.visit(pos)
 
-	def __setstate__(self, data):
+	def __setstate__(self, data): # pragma: no cover -- TODO
 		self.rooms = data.rooms
 		self.tunnels = data.tunnels
 		self.level_id = data.level_id
@@ -415,7 +413,7 @@ class GridRoomMap:
 		self.objects = data.objects
 		self.items = data.map_items
 		self.monsters = data.monsters
-	def __getstate__(self):
+	def __getstate__(self): # pragma: no cover -- TODO
 		data = dotdict()
 		data.level_id = self.level_id
 		data.rooms = self.rooms
@@ -431,7 +429,7 @@ class GodMode:
 	""" God mode options.
 	Vision: allows to see everything regardless of obstacles.
 	"""
-	def __init__(self):
+	def __init__(self): # pragma: no cover
 		self.vision = False
 
 class Dungeon:
@@ -535,12 +533,12 @@ class Dungeon:
 			for item in self.current_level.rip(other):
 				events.append(Event.MonsterDroppedItem(other, item))
 		return events
-	def __setstate__(self, data):
+	def __setstate__(self, data): # pragma: no cover -- TODO
 		self.__init__(None, lambda:None)
 		self.levels = data.levels
 		self.current_level_id = data.current_level
 		self.rogue = data.rogue
-	def __getstate__(self):
+	def __getstate__(self): # pragma: no cover -- TODO
 		data = dotdict()
 		data.levels = self.levels
 		data.current_level = self.current_level_id
