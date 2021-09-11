@@ -378,7 +378,7 @@ class GridRoomMap:
 			yield item
 		try:
 			self.monsters.remove(who)
-		except ValueError: # TODO rogue is not stored in the list.
+		except ValueError: # pragma: no cover -- TODO rogue is not stored in the list.
 			pass
 	def grab_item(self, who, item):
 		if len(who.inventory) >= 26:

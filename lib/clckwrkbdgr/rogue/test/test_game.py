@@ -37,12 +37,15 @@ class SmartStimPack(Item, Consumable):
 	def consume_by(self, monster):
 		if monster.hp >= monster.max_hp:
 			return False
-		monster.heal(25)
-		return True
+		else: # pragma: no cover
+			raise RuntimeError("Should never reach here.")
 
 class UNATCOAgent(Monster):
 	_attack = 2
 	_max_hp = 100
+
+class VacuumCleaner(Monster):
+	_max_hp = 5
 
 class NSFTerrorist(Monster):
 	_attack = 1
@@ -124,6 +127,13 @@ class TestMonster(unittest.TestCase):
 			game.Event.TakingOff(jc, armor),
 			game.Event.Wearing(jc, hazmat),
 			])
+		jc.wield(pistol)
+		self.assertEqual(jc.wield(None), [
+			game.Event.Unwielding(jc, pistol),
+			])
+		self.assertEqual(jc.wear(None), [
+			game.Event.TakingOff(jc, hazmat),
+			])
 	def should_drop_items(self):
 		key = NanoKey()
 		key.value = '0451'
@@ -195,7 +205,10 @@ class TestMonster(unittest.TestCase):
 		self.assertEqual(jc.get_attack_damage(), 2)
 		jc.wield(pistol)
 		self.assertEqual(jc.get_attack_damage(), 7)
-	def should_calc_attack_damage(self):
+
+		vacuum = VacuumCleaner()
+		self.assertEqual(vacuum.get_attack_damage(), 0)
+	def should_calc_protection(self):
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
@@ -365,6 +378,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertTrue(gridmap.can_move_to(Point(5, 2), with_tunnels=True))
 		self.assertFalse(gridmap.can_move_to(Point(5, 2), with_tunnels=True, from_pos=Point(4, 1)))
 		self.assertTrue(gridmap.can_move_to(Point(5, 1), with_tunnels=True))
+		self.assertFalse(gridmap.can_move_to(Point(7, 3), with_tunnels=True, from_pos=Point(8, 2)))
 	def should_detect_objects_on_map(self):
 		mj12 = MJ12Trooper()
 		pistol = StealthPistol()
