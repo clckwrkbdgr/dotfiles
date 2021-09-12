@@ -57,6 +57,13 @@ PATTERNS += [re.compile(pattern, flags=re.I) for pattern in [
 IGNORED_PATHS = list(map(os.path.abspath, [
 	__file__,
 	'.gitattributes', # Contains references to this file.
+	'firefox/searchplugins/google.xml', # External plugin, TODO: move from dotfiles to personal storage.
+	'gimp/pluginrc', # External plugin, TODO: should be loaded on-demand and not stored in config.
+	'libreoffice/4/user/basic/Standard/Module1.xba', # External plugin, TODO: should be loaded on-demand and not stored in config.
+	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13x.tmp/OptionsDialog.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
+	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13x.tmp/Filter.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
+	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13x.tmp/Paths.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
+	'gtk-3.0/gtk.css', # FIXME: violation of GPL, should create own theme.
 	]))
 
 if __name__ == '__main__':
