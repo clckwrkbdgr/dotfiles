@@ -381,7 +381,7 @@ class GridRoomMap:
 		except ValueError: # pragma: no cover -- TODO rogue is not stored in the list.
 			pass
 	def grab_item(self, who, item):
-		if len(who.inventory) >= 26:
+		if len(who.inventory) >= who.max_inventory:
 			return [Event.InventoryFull(item)]
 		index, = [index for index, (pos, i) in enumerate(self.items) if i == item]
 		who.inventory.append(item)

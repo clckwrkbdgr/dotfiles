@@ -43,6 +43,7 @@ class SmartStimPack(Item, Consumable):
 class UNATCOAgent(Monster):
 	_attack = 2
 	_max_hp = 100
+	_max_inventory = 2
 
 class VacuumCleaner(Monster):
 	_max_hp = 5
@@ -418,3 +419,59 @@ class TestGridRoomMap(unittest.TestCase):
 		loot = list(gridmap.rip(mj12))
 		self.assertEqual(loot, [armor, pistol])
 		self.assertEqual(list(gridmap.monsters_at(Point(9, 2))), [])
+	def should_grab_item(self):
+		pistol = StealthPistol()
+		armor = ThermopticCamo()
+
+		jc = UNATCOAgent()
+
+		gridmap = self._map()
+		key = NanoKey()
+		gridmap.items.append( (Point(1, 1), key) )
+		gridmap.items.append( (Point(1, 1), pistol) )
+		gridmap.items.append( (Point(1, 1), armor) )
+		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor, pistol, key])
+
+		events = gridmap.grab_item(jc, key)
+		self.assertEqual(events, [game.Event.GrabbedItem(jc, key)])
+		self.assertTrue(jc.has_item(NanoKey))
+		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor, pistol])
+
+		events = gridmap.grab_item(jc, pistol)
+		self.assertEqual(events, [game.Event.GrabbedItem(jc, pistol)])
+		self.assertTrue(jc.has_item(StealthPistol))
+		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor])
+
+		events = gridmap.grab_item(jc, armor)
+		self.assertEqual(events, [game.Event.InventoryFull(armor)])
+		self.assertFalse(jc.has_item(ThermopticCamo))
+		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor])
+	def should_drop_item(self):
+		pistol = StealthPistol()
+		jc = UNATCOAgent()
+		jc.inventory.append(pistol)
+		jc.pos = Point(1, 1)
+
+		gridmap = self._map()
+		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [])
+		events = gridmap.drop_item(jc, pistol)
+		self.assertEqual(events, [game.Event.MonsterDroppedItem(jc, pistol)])
+		self.assertFalse(jc.has_item(StealthPistol))
+		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [pistol])
+	def should_visit_places(self):
+		gridmap = self._map()
+
+		gridmap.visit(Point(1, 1))
+		self.assertTrue(gridmap.rooms.cell((0, 0)).visited)
+		self.assertEqual(gridmap.tunnels[0].visited, {Point(3, 1)})
+
+		gridmap.visit(Point(9, 2))
+		self.assertTrue(gridmap.rooms.cell((1, 0)).visited)
+		self.assertEqual(gridmap.tunnels[0].visited, {Point(3, 1), Point(7, 3)})
+
+		gridmap.visit(Point(5, 1))
+		self.assertEqual(gridmap.tunnels[0].visited, {Point(3, 1),
+			Point(4, 1), Point(5, 1),
+			Point(5, 2),
+			Point(7, 3),
+			})
