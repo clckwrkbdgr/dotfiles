@@ -61,8 +61,8 @@ IGNORED_PATHS = list(map(os.path.abspath, [
 	'gimp/pluginrc', # External plugin, TODO: should be loaded on-demand and not stored in config.
 	'libreoffice/4/user/basic/Standard/Module1.xba', # External plugin, TODO: should be loaded on-demand and not stored in config.
 	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13x.tmp/OptionsDialog.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
-	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13x.tmp/Filter.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
-	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13x.tmp/Paths.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
+	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13y.tmp/Filter.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
+	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu140.tmp/Paths.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
 	'gtk-3.0/gtk.css', # FIXME: violation of GPL, should create own theme.
 	]))
 
