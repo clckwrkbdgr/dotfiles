@@ -8,10 +8,12 @@ from clckwrkbdgr.rogue.game import Monster
 from clckwrkbdgr.rogue.game import Tunnel, Room, GridRoomMap, Dungeon
 
 class Elevator(LevelPassage):
+	_sprite = '>'
 	_can_go_down = True
 	_id = 'basement'
 
 class Ladder(LevelPassage):
+	_sprite = '<'
 	_can_go_up = True
 	_id = 'roof'
 
@@ -252,23 +254,29 @@ class TestTerrain(unittest.TestCase):
 			Point(3, 2), Point(4, 2), Point(4, 3),
 			})
 
-class TestGridRoomMap(unittest.TestCase):
+class MockGenerator:
 	LAYOUT = textwrap.dedent("""\
 			####          
-			#  +.. ###### 
+			#> +.. ###### 
 			#### . #    # 
 			     ..+    # 
 			       ####+# 
 			 ####   ....  
-			 #  # ##+#####
+			 # <# ##+#####
 			 #  +.+      #
 			 #  # ########
 			 ####         
 			""")
+	def build_level(self, level_id):
+		if level_id == 'top':
+			result = GridRoomMap()
+			result.rooms, result.tunnels[:], result.objects[:] = MockGenerator._parse_layout()
+			return result
+		return None
 	@staticmethod
 	@functools.lru_cache()
 	def _parse_layout():
-		layout = Matrix.fromstring(TestGridRoomMap.LAYOUT)
+		layout = Matrix.fromstring(MockGenerator.LAYOUT)
 
 		rects = []
 		for x in range(layout.width):
@@ -321,14 +329,23 @@ class TestGridRoomMap(unittest.TestCase):
 									abs(current.y - path[0].y),
 									)
 				tunnels.append(Tunnel(path[0], path[-1], direction, bending or 1))
-		return rooms, tunnels
+
+		objects = []
+		for y in range(layout.height):
+			for x in range(layout.width):
+				if layout.cell( (x, y) ) == '>':
+					objects.append( (Point(x, y), Elevator(None, None)) )
+				elif layout.cell( (x, y) ) == '<':
+					objects.append( (Point(x, y), Ladder(None, None)) )
+
+		return rooms, tunnels, objects
+
+class TestGridRoomMap(unittest.TestCase):
 	def _map(self):
-		result = GridRoomMap()
-		result.rooms, result.tunnels = self._parse_layout()
-		return result
+		return MockGenerator().build_level('top')
 	def should_parse_layout_correctly(self):
 		gridmap = self._map()
-		result = Matrix.fromstring(self.LAYOUT)
+		result = Matrix.fromstring(MockGenerator.LAYOUT)
 		result.clear(' ')
 		for room in gridmap.rooms.values():
 			for x in range(room.left, room.right + 1):
@@ -343,7 +360,9 @@ class TestGridRoomMap(unittest.TestCase):
 				result.set_cell(cell, '.')
 			result.set_cell(cells[0], '+')
 			result.set_cell(cells[-1], '+')
-		self.assertEqual(result.tostring(), self.LAYOUT)
+		for pos, obj in gridmap.objects:
+			result.set_cell(pos, obj.sprite)
+		self.assertEqual(result.tostring(), MockGenerator.LAYOUT)
 	def should_find_room_by_pos(self):
 		gridmap = self._map()
 		self.assertEqual(gridmap.room_of(Point(2, 2)), gridmap.rooms.cell((0, 0)))
@@ -384,19 +403,19 @@ class TestGridRoomMap(unittest.TestCase):
 		mj12 = MJ12Trooper()
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
-		elevator = Elevator(None, None)
 
 		gridmap = self._map()
 		gridmap.items.append( (Point(1, 1), pistol) )
 		gridmap.items.append( (Point(1, 1), armor) )
 		mj12.pos = Point(9, 2)
 		gridmap.monsters.append(mj12)
-		gridmap.objects.append( (Point(10, 2), elevator) )
+
+		elevator = gridmap.objects[0][1]
 
 		self.assertEqual(list(gridmap.items_at(Point(2, 1))), [])
 		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor, pistol])
-		self.assertEqual(list(gridmap.objects_at(Point(1, 1))), [])
-		self.assertEqual(list(gridmap.objects_at(Point(10, 2))), [elevator])
+		self.assertEqual(list(gridmap.objects_at(Point(1, 2))), [])
+		self.assertEqual(list(gridmap.objects_at(Point(1, 1))), [elevator])
 		self.assertEqual(list(gridmap.monsters_at(Point(9, 2))), [mj12])
 	def should_rip_monster(self):
 		pistol = StealthPistol()
@@ -475,3 +494,8 @@ class TestGridRoomMap(unittest.TestCase):
 			Point(5, 2),
 			Point(7, 3),
 			})
+
+class TestDungeon(unittest.TestCase):
+	def should_move_to_level(self):
+		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon.go_to_level('top', connected_passage='basement')

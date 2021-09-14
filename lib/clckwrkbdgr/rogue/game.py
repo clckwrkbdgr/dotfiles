@@ -429,7 +429,7 @@ class GodMode:
 	""" God mode options.
 	Vision: allows to see everything regardless of obstacles.
 	"""
-	def __init__(self): # pragma: no cover
+	def __init__(self):
 		self.vision = False
 
 class Dungeon:
