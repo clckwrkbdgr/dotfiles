@@ -495,7 +495,7 @@ class Dungeon:
 		if level_id not in self.levels:
 			self.levels[level_id] = self.generator.build_level(level_id)
 		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, LevelPassage) and obj.id == connected_passage), None)
-		assert stairs is not None
+		assert stairs is not None, "No stairs with id {0}".format(repr(connected_passage))
 		self.current_level_id = level_id
 		self.rogue.pos = stairs
 		self.current_level.visit(self.rogue.pos)

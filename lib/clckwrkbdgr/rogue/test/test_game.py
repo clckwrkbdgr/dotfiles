@@ -255,7 +255,7 @@ class TestTerrain(unittest.TestCase):
 			})
 
 class MockGenerator:
-	LAYOUT = textwrap.dedent("""\
+	MAIN_LEVEL = textwrap.dedent("""\
 			####          
 			#> +.. ###### 
 			#### . #    # 
@@ -267,16 +267,29 @@ class MockGenerator:
 			 #  # ########
 			 ####         
 			""")
+	ROOF = textwrap.dedent("""\
+			##############
+			#=           #
+			#            #
+			#            #
+			#            #
+			#            #
+			#            #
+			#            #
+			#            #
+			##############
+			""")
 	def build_level(self, level_id):
+		result = GridRoomMap()
 		if level_id == 'top':
-			result = GridRoomMap()
-			result.rooms, result.tunnels[:], result.objects[:] = MockGenerator._parse_layout()
-			return result
-		return None
+			result.rooms, result.tunnels[:], result.objects[:] = MockGenerator._parse_layout(self.MAIN_LEVEL)
+		elif level_id == 'roof':
+			result.rooms, result.tunnels[:], result.objects[:] = MockGenerator._parse_layout(self.ROOF)
+		return result
 	@staticmethod
 	@functools.lru_cache()
-	def _parse_layout():
-		layout = Matrix.fromstring(MockGenerator.LAYOUT)
+	def _parse_layout(layout):
+		layout = Matrix.fromstring(layout)
 
 		rects = []
 		for x in range(layout.width):
@@ -294,11 +307,15 @@ class MockGenerator:
 				rects.append( ((x, y), (right-x, bottom-y)) )
 
 		rects = sorted(rects, key=lambda rect: (rect[0][1], rect[0][0]))
-		rooms = Matrix((2, 2))
-		rooms.set_cell((0, 0), Room(*(rects[0])))
-		rooms.set_cell((1, 0), Room(*(rects[1])))
-		rooms.set_cell((0, 1), Room(*(rects[2])))
-		rooms.set_cell((1, 1), Room(*(rects[3])))
+		if len(rects) == 4:
+			rooms = Matrix((2, 2))
+			rooms.set_cell((0, 0), Room(*(rects[0])))
+			rooms.set_cell((1, 0), Room(*(rects[1])))
+			rooms.set_cell((0, 1), Room(*(rects[2])))
+			rooms.set_cell((1, 1), Room(*(rects[3])))
+		else:
+			rooms = Matrix((1, 1))
+			rooms.set_cell((0, 0), Room(*(rects[0])))
 
 		tunnels = []
 		for y in range(layout.height):
@@ -336,7 +353,9 @@ class MockGenerator:
 				if layout.cell( (x, y) ) == '>':
 					objects.append( (Point(x, y), Elevator(None, None)) )
 				elif layout.cell( (x, y) ) == '<':
-					objects.append( (Point(x, y), Ladder(None, None)) )
+					objects.append( (Point(x, y), Ladder('roof', 'roof')) )
+				elif layout.cell( (x, y) ) == '=':
+					objects.append( (Point(x, y), Ladder('top', 'roof')) )
 
 		return rooms, tunnels, objects
 
@@ -345,7 +364,7 @@ class TestGridRoomMap(unittest.TestCase):
 		return MockGenerator().build_level('top')
 	def should_parse_layout_correctly(self):
 		gridmap = self._map()
-		result = Matrix.fromstring(MockGenerator.LAYOUT)
+		result = Matrix.fromstring(MockGenerator.MAIN_LEVEL)
 		result.clear(' ')
 		for room in gridmap.rooms.values():
 			for x in range(room.left, room.right + 1):
@@ -362,7 +381,7 @@ class TestGridRoomMap(unittest.TestCase):
 			result.set_cell(cells[-1], '+')
 		for pos, obj in gridmap.objects:
 			result.set_cell(pos, obj.sprite)
-		self.assertEqual(result.tostring(), MockGenerator.LAYOUT)
+		self.assertEqual(result.tostring(), MockGenerator.MAIN_LEVEL)
 	def should_find_room_by_pos(self):
 		gridmap = self._map()
 		self.assertEqual(gridmap.room_of(Point(2, 2)), gridmap.rooms.cell((0, 0)))
@@ -499,3 +518,71 @@ class TestDungeon(unittest.TestCase):
 	def should_move_to_level(self):
 		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
 		dungeon.go_to_level('top', connected_passage='basement')
+		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
+		self.assertEqual(dungeon.rogue.pos, Point(1, 1))
+	def should_use_stairs(self):
+		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.use_stairs(dungeon.current_level.objects[1][1])
+		self.assertEqual(dungeon.current_level, dungeon.levels['roof'])
+		self.assertEqual(dungeon.rogue.pos, Point(1, 1))
+	def should_locate_in_maze(self):
+		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon.go_to_level('top', connected_passage='basement')
+		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
+
+		dungeon.rogue.pos = Point(1, 1)
+		self.assertEqual(dungeon.current_room, dungeon.current_level.rooms.cell((0, 0)))
+		self.assertIsNone(dungeon.current_tunnel)
+
+		dungeon.rogue.pos = Point(3, 1)
+		self.assertEqual(dungeon.current_room, dungeon.current_level.rooms.cell((0, 0)))
+		self.assertEqual(dungeon.current_tunnel, dungeon.current_level.tunnels[0])
+
+		dungeon.rogue.pos = Point(5, 1)
+		self.assertIsNone(dungeon.current_room)
+		self.assertEqual(dungeon.current_tunnel, dungeon.current_level.tunnels[0])
+	def should_detect_visible_objects(self):
+		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon.go_to_level('top', connected_passage='basement')
+		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
+
+		dungeon.rogue.pos = Point(1, 1)
+		dungeon.current_level.visit(dungeon.rogue.pos)
+		self.assertTrue(dungeon.is_visible(dungeon.current_level.rooms.cell((0, 0))))
+		self.assertFalse(dungeon.is_visible(dungeon.current_level.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_visible(dungeon.current_level.tunnels[0], additional=Point(3, 1)))
+		self.assertFalse(dungeon.is_visible(dungeon.current_level.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_visible(Point(2, 1)))
+		self.assertTrue(dungeon.is_visible(Point(3, 1)))
+		self.assertFalse(dungeon.is_visible(Point(5, 1)))
+		self.assertFalse(dungeon.is_visible(Point(8, 2)))
+
+		dungeon.god.vision = True
+		self.assertTrue(dungeon.is_visible(dungeon.current_level.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_visible(dungeon.current_level.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_visible(Point(5, 1)))
+		self.assertTrue(dungeon.is_visible(Point(8, 2)))
+	def should_remember_objects(self):
+		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon.go_to_level('top', connected_passage='basement')
+		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
+
+		dungeon.rogue.pos = Point(1, 1)
+		dungeon.current_level.visit(dungeon.rogue.pos)
+		dungeon.rogue.pos = Point(2, 6)
+
+		self.assertTrue(dungeon.is_remembered(dungeon.current_level.rooms.cell((0, 0))))
+		self.assertFalse(dungeon.is_remembered(dungeon.current_level.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_remembered(dungeon.current_level.tunnels[0], additional=Point(3, 1)))
+		self.assertFalse(dungeon.is_remembered(dungeon.current_level.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_remembered(Point(2, 1)))
+		self.assertTrue(dungeon.is_remembered(Point(3, 1)))
+		self.assertFalse(dungeon.is_remembered(Point(5, 1)))
+		self.assertFalse(dungeon.is_remembered(Point(8, 2)))
+
+		dungeon.god.vision = True
+		self.assertTrue(dungeon.is_remembered(dungeon.current_level.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_remembered(dungeon.current_level.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_remembered(Point(5, 1)))
+		self.assertTrue(dungeon.is_remembered(Point(8, 2)))
