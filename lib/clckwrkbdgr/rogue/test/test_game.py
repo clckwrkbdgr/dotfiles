@@ -586,3 +586,49 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_remembered(dungeon.current_level.tunnels[1], additional=Point(11, 4)))
 		self.assertTrue(dungeon.is_remembered(Point(5, 1)))
 		self.assertTrue(dungeon.is_remembered(Point(8, 2)))
+	def should_move_monster(self):
+		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.rogue.pos = Point(9, 3)
+		pistol = StealthPistol()
+		dungeon.rogue.inventory.append(pistol)
+
+		mj12 = MJ12Trooper()
+		mj12.pos = Point(8, 3)
+		dungeon.current_level.monsters.append(mj12)
+
+		vacuum = VacuumCleaner()
+		vacuum.pos = Point(8, 2)
+		dungeon.current_level.monsters.append(vacuum)
+
+		events = dungeon.move_monster(mj12, Point(7, 3))
+		self.assertEqual(mj12.pos, Point(7, 3))
+		self.assertEqual(events, [])
+
+		events = dungeon.move_monster(mj12, Point(6, 3), with_tunnels=False)
+		self.assertEqual(mj12.pos, Point(7, 3))
+		self.assertEqual(events, [game.Event.BumpIntoTerrain(mj12, Point(6, 3))])
+
+		events = dungeon.move_monster(mj12, Point(8, 3))
+		self.assertEqual(mj12.pos, Point(8, 3))
+		self.assertEqual(events, [])
+
+		events = dungeon.move_monster(mj12, Point(8, 2))
+		self.assertEqual(mj12.pos, Point(8, 3))
+		self.assertEqual(events, [game.Event.BumpIntoMonster(mj12, vacuum)])
+
+		events = dungeon.move_monster(mj12, Point(9, 3))
+		self.assertEqual(mj12.pos, Point(8, 3))
+		self.assertEqual(events, [game.Event.AttackMonster(mj12, dungeon.rogue, 3)])
+		self.assertEqual(dungeon.rogue.hp, 97)
+
+		dungeon.rogue.hp = 3
+		events = dungeon.move_monster(mj12, Point(9, 3))
+		self.assertEqual(mj12.pos, Point(8, 3))
+		self.assertEqual(events, [
+			game.Event.AttackMonster(mj12, dungeon.rogue, 3),
+			game.Event.MonsterDied(dungeon.rogue),
+			game.Event.MonsterDroppedItem(dungeon.rogue, pistol),
+			])
+		self.assertFalse(dungeon.rogue.is_alive())
+		self.assertEqual(dungeon.current_level.items, [(Point(9, 3), pistol)])
