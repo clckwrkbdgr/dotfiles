@@ -17,7 +17,7 @@ class TextScreen(app.MVC): # pragma: no cover -- TODO curses
 	LINES = []
 	RETURN_VALUE = None
 	def on_close(self):
-		return RETURN_VALUE
+		return self.RETURN_VALUE
 
 	_full_redraw = True
 	def _view(self, window):

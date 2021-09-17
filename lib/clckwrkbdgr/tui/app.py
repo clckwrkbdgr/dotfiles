@@ -64,7 +64,12 @@ class BaseOverlayMVC(MVC): # pragma: no cover -- TODO curses
 		"""
 		super(BaseOverlayMVC, self).__init__(data=data)
 		if isinstance(actual_mode, ClassType):
+			if not issubclass(actual_mode, MVC):
+				raise TypeError("Expected {0} for actual mode, got {1}".format(MVC, actual_mode))
 			actual_mode = actual_mode(self.data)
+		else:
+			if not isinstance(actual_mode, MVC):
+				raise TypeError("Expected {0} for actual mode, got {1}".format(MVC, type(actual_mode)))
 		self.actual_mode = actual_mode
 	def view(self, window):
 		""" Displays overlay _view() on top of the actual mode view. """

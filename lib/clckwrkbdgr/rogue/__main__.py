@@ -655,7 +655,7 @@ class Grave(tui.widgets.TextScreen):
 			]
 	RETURN_VALUE = ExitWithoutSave
 
-class Greetings(tui.widgets.Confirmation):
+class Greetings(tui.widgets.TextScreen):
 	LINES = [
 			"Mcguffin is successfully retrieved!"
 			]
