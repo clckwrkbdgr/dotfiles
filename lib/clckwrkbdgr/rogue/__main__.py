@@ -180,10 +180,10 @@ Event.register('WelcomeBack', 'who')
 class RogueDungeonGenerator(pcg.Generator):
 	MAX_LEVELS = 26
 	def build_level(self, level_id):
-		if level_id < 0 or level_id > self.MAX_LEVELS:
+		if level_id < 0 or level_id >= self.MAX_LEVELS:
 			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
 		depth = level_id
-		is_bottom = depth == self.MAX_LEVELS
+		is_bottom = depth >= self.MAX_LEVELS
 		result = self.original_rogue_dungeon(
 				map_size=(78, 21),
 				grid_size=(3, 3),
