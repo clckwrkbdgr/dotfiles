@@ -50,3 +50,9 @@ gnome::set_wallpaper() {
 	gconftool-2 -t string -s /desktop/gnome/background/picture_filename "$wallpfile"
 	gsettings set org.gnome.desktop.background picture-uri "file://$wallpfile"
 }
+
+if [ "$1" == 'start-main-quake-terminal' ]; then
+	background_tile=~/.local/share/backgrounds/quake-tile.png
+	cd ~
+	urxvt  +tr -pixmap "$background_tile;0x0-100-100:op=tile"
+fi

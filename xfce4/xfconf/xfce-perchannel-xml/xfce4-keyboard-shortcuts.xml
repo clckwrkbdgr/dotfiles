@@ -29,13 +29,13 @@
       <property name="&lt;Super&gt;Down" type="string" value="volume -n down"/>
       <property name="&lt;Super&gt;Up" type="string" value="volume -n up"/>
       <property name="&lt;Super&gt;e" type="string" value="fix_lc urxvt"/>
-      <property name="&lt;Super&gt;grave" type="string" value="fix_lc quakestyle urxvt"/>
       <property name="&lt;Super&gt;f" type="string" value="xdg firefox"/>
       <property name="&lt;Super&gt;p" type="string" value="xfce4-screenshooter"/>
       <property name="&lt;Super&gt;h" type="string" value="backlight_off"/>
       <property name="&lt;Super&gt;KP_0" type="string" value="xdotool click 1"/>
       <property name="&lt;Super&gt;KP_Decimal" type="string" value="xdotool click 3"/>
       <property name="&lt;Super&gt;m" type="string" value="xdg in_call.sh toggle"/>
+      <property name="&lt;Super&gt;grave" type="string" value="fix_lc quakestyle quake_xterm bash $XDG_CONFIG_HOME/lib/desktop.bash start-main-quake-terminal"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">

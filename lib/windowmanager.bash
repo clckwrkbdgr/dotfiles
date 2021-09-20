@@ -69,3 +69,64 @@ bring_to_top_by_pnames() { # <process name>
 	done
 	return 1
 }
+
+change_window_class() { # <window id> <new_class_name>
+	window_id="$1"
+	new_class_name="$2"
+	xprop -id "$window_id" -format WM_CLASS 8s -set WM_CLASS "$new_class_name"
+}
+
+make_background_window() { # <window class>
+	# Removes window from taskbark and maximizes it.
+	window_class="$1"
+	while ! wmctrl -R "$window_class" -x -b add,skip_taskbar ; do :; done
+	wmctrl -R "$window_class" -x -b remove,sticky
+	wmctrl -R "$window_class" -x -b add,maximized_vert,maximized_horz
+}
+
+get_window_class() { # <window_id>
+	window_id="$1"
+	xprop -id "$window_id" WM_CLASS | cut -d '"' -f 2
+}
+
+roll_window_out() { # <window_id> <speed>
+	# Shows window with rolling animation.
+	# Gives focus to the window immediately.
+	# Maximizes window at the end of the sequence.
+	window_id="$1"
+	speed="${2:-10}"
+
+	screen_height=$(xdpyinfo | grep dimensions | awk '{print $2}' | awk -Fx '{print $2}')
+	animation_count=$((screen_height / speed))
+	for i in `seq $animation_count -1 1`; do
+		pos=$(($i * $speed))
+		xdotool windowmove "$window_id" "-$speed" -${pos}
+	done
+	window_class="$(get_window_class "$window_id")"
+	wmctrl -R "$window_class" -x -b add,maximized_vert,maximized_horz
+}
+
+roll_window_in() { # <window_id> <speed>
+	# Hides window with rolling animation.
+	# Minimizes window at the end of the sequence.
+	window_id="$1"
+	speed="${2:-10}"
+
+	if xprop -id "$window_id" -notype "QUAKESTYLE_MINIMIZED" | grep TRUE; then
+		return
+	fi
+	xprop -id "$window_id" -f QUAKESTYLE_MINIMIZED 8s -set "QUAKESTYLE_MINIMIZED" TRUE
+
+	wmctrl -R "$window_class" -x -b remove,maximized_vert,maximized_horz
+	xdotool windowsize "$window_id" 100% 100%
+
+	screen_height=$(xdpyinfo | grep dimensions | awk '{print $2}' | awk -Fx '{print $2}')
+	animation_count=$((screen_height / speed))
+	for i in `seq 1 $animation_count`; do
+		pos=$(($i * $speed))
+		xdotool windowmove "$window_id" -3 -${pos}
+	done
+	xdotool windowminimize "$window_id"
+
+	xprop -id "$active_window_id" -f QUAKESTYLE_MINIMIZED 8s -set "QUAKESTYLE_MINIMIZED" FALSE
+}

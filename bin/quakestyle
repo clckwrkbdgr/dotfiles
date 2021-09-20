@@ -1,87 +1,23 @@
 #!/bin/bash
-# Emulates quake terminal drop-down functionality for specified application.
-# Based on quake_term.sh by Jimmy Wu (github:jw013)
-# In addition to basic version also implements drop-down animation,
-# hides app from taskbar and sets background.
-#
-# IMPORTANT: wmctrl and xprop are required to run this script
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Adds Quake-drop-down capabilities to given application.
+. "$XDG_CONFIG_HOME/lib/windowmanager.bash"
 
-quake_term_wmclass=quake_xterm
-app=$1
-
-# make sure wmctrl exists
-if ! command -v wmctrl >/dev/null 2>&1; then
-	echo Error: required dependency wmctrl not found. >&2
+if [ -z "$2" ]; then
+	echo "Usage: quakestyle <class_name> <program> [<args...>]" >&2
 	exit 1
 fi
+window_class="$1"
+shift
 
-SCREEN_HEIGHT=$(xdpyinfo | grep dimensions | awk '{print $2}' | awk -Fx '{print $2}')
-# Amount of drop-down steps.
-ANIMATION_COUNT=${SCREEN_HEIGHT%?}
-
-active_window_id="$(xprop -root | sed -n -e '/^_NET_ACTIVE/s/^[[:print:]]\{40\}//p')"
-
-# if active window WM_CLASS matches $quake_term_wmclass
-if xprop -id "$active_window_id" 2>/dev/null |
-	grep -q '^WM_CLASS(STRING)[[:print:]]*'"$quake_term_wmclass"
-then # hide active quake term
-	if xprop -id "$active_window_id" -notype "QUAKESTYLE_MINIMIZED" | grep TRUE; then
-		exit 0 # Already minimized
-	fi
-	xprop -id "$active_window_id" -f QUAKESTYLE_MINIMIZED 8s -set "QUAKESTYLE_MINIMIZED" TRUE
-
-	# Un-maximized before changing size.
-	wmctrl -R "$quake_term_wmclass" -x -b remove,maximized_vert,maximized_horz
-	# Resize to fit the desktop.
-	activewindow=$(xdotool getactivewindow)
-	xdotool windowsize "$activewindow" 100% 100%
-	# Step by step move window out of view
-	for i in `seq 1 $ANIMATION_COUNT`; do
-		xdotool windowmove "$activewindow" -3 -${i}0
-	done
-
-	xdotool windowminimize "$activewindow"
-
-	xprop -id "$active_window_id" -f QUAKESTYLE_MINIMIZED 8s -set "QUAKESTYLE_MINIMIZED" FALSE
+active_window_id="$(xdotool getactivewindow)"
+if [ "$(get_window_class "$active_window_id")" == "$window_class" ]; then
+	roll_window_in $(xdotool getactivewindow) 10
+elif wmctrl -R "$window_class" -x ; then
+	roll_window_out $(xdotool getactivewindow) 10
 else
-	# attempt to both focus and raise quake terminal
-	if wmctrl -R "$quake_term_wmclass" -x ; then
-		activewindow=$(xdotool getactivewindow)
-		# Step by step drop window down.
-		for i in `seq $ANIMATION_COUNT -1 1`; do
-			xdotool windowmove "$activewindow" -3 -${i}0
-		done
-		# And maximize it at the end.
-		wmctrl -R "$quake_term_wmclass" -x -b add,maximized_vert,maximized_horz
-		:
-	else
-		if [ -z "$app" ]; then
-			echo "Usage: quakestyle <app>" >&2
-			exit 1
-		fi
-
-		# If unsuccessful, no quake terminal is running, so start one
-		# use a default terminal
-		background_tile=~/.local/share/backgrounds/quake-tile.png
-		cd; $app -name "$quake_term_wmclass"  +tr -pixmap "$background_tile;0x0-100-100:op=tile" &
-		# Wait until window will become available and remove it from taskbar.
-		while ! wmctrl -R "$quake_term_wmclass" -x -b add,skip_taskbar ; do :; done
-		# Remove sticky property just in case.
-		wmctrl -R "$quake_term_wmclass" -x -b remove,sticky
-		# Maximize window.
-		wmctrl -R "$quake_term_wmclass" -x -b add,maximized_vert,maximized_horz
-	fi
+	"$@" &
+	pid=$!
+	while [ -z "$(windows_by_pid $pid)" ]; do :; done
+	change_window_class $(windows_by_pid $pid) "$window_class"
+	make_background_window "$window_class"
 fi
