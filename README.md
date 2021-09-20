@@ -31,3 +31,7 @@ Each file in dotfiles repo have attribute `caps` which points to capabilities th
 	python caps.py sparse <tag>
 
 Script `update_dotfiles.py` keeps sparse checkout up-to-update with attributes automatically.
+
+----
+
+All scripts/configurations are licensed under [MIT license](./LICENSE) unless stated otherwise.

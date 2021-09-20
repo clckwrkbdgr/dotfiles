@@ -105,6 +105,7 @@ xdg/bin/sylpheed caps=home
 .gitmodules caps=work
 caps.py caps=work
 Makefile caps=work
+LICENSE caps=work
 README.md caps=work
 WindowsTerminal/settings.json caps=work
 Xresources caps=work
