@@ -139,3 +139,36 @@ class SerializedEntity: # pragma: no cover -- TODO requires functional tests.
 		return self
 	def __exit__(self, *args, **kwargs):
 		self.save()
+
+class FileWatcher(object):
+	""" Performs action when file is modified. """
+	def __init__(self, filename, action, quiet=False):
+		""" Action is a function with no args.
+		Filename is not required to exist.
+		If quiet is True, caught exception will not be displayed.
+		"""
+		self.filename = str(filename)
+		self.action = action
+		self.quiet = quiet
+		self._last_mtime = 0
+		if os.path.exists(self.filename):
+			self._last_mtime = os.stat(self.filename).st_mtime
+	def check(self):
+		""" If filename is updated since the last check,
+		performs action and returns True.
+		Otherwise returns False.
+		All exceptions in action are caught and traceback is displayed (unless quiet mode is set),
+		return value is still True in case of any exception.
+		"""
+		if not os.path.exists(self.filename):
+			return False
+		mtime = os.stat(self.filename).st_mtime
+		if mtime <= self._last_mtime:
+			return False
+		try:
+			self.action()
+		except: # pragma: no cover
+			import traceback
+			traceback.print_exc()
+		self._last_mtime = mtime
+		return True
