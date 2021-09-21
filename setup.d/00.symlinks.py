@@ -63,11 +63,6 @@ known_symlinks.ensure(Path.home()/'.profile', XDG_CONFIG_HOME/'profile')
 known_symlinks.ensure(Path.home()/'.bashrc', XDG_CONFIG_HOME/'bash'/'bashrc')
 
 if (XDG_CONFIG_HOME/'purple').exists():
-	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'certificates', XDG_CACHE_HOME/'purple'/'certificates')
-	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'telegram-purple', XDG_CACHE_HOME/'purple'/'telegram-purple')
-	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'icons', XDG_CACHE_HOME/'purple'/'icons')
-	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'xmpp-caps.xml', XDG_CACHE_HOME/'purple'/'xmpp-caps.xml')
-	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'accels', XDG_CACHE_HOME/'purple'/'accels')
 	known_symlinks.ensure(XDG_CONFIG_HOME/'purple'/'logs', XDG_DATA_HOME/'purple'/'logs')
 
 if (XDG_CONFIG_HOME/'freeciv').exists():
