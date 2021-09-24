@@ -9,9 +9,11 @@ import termcolor
 from pathlib import Path
 from clckwrkbdgr import utils, xdg
 from clckwrkbdgr.collections import dotdict
+import clckwrkbdgr.click
 import clckwrkbdgr.todo
 import clckwrkbdgr.todo.tasklist
 
+@clckwrkbdgr.click.windows_noexpand_args
 @click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=clckwrkbdgr.todo.CONFIG_FILE_DESC)
 @click.option('--debug', is_flag=True, help='Enables debug output.')
 def cli(debug=False):
@@ -76,13 +78,13 @@ def search(exclude=None):
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
 	for root, dirs, files in os.walk('.'):
 		dirs[:] = [dirname for dirname in dirs if dirname not in ['.git']]
-		dirs[:] = [dirname for dirname in dirs if (Path(root)/dirname).absolute() not in exclude]
+		dirs[:] = [dirname for dirname in dirs if not any((Path(root)/dirname).absolute().match(str(pattern)) for pattern in exclude)]
 		if sys.stderr.isatty():
 			sys.stderr.write(root)
 			sys.stderr.write('\r')
 		for filename in files:
 			filename = (Path(root)/filename)
-			if filename.absolute() in exclude:
+			if any(filename.absolute().match(str(pattern)) for pattern in exclude):
 				continue
 			if filename.suffix in ['.sqlite', '.pyc']:
 				continue
