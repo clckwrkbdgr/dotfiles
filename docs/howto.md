@@ -208,6 +208,15 @@ GNU `stat` and BSD `stat` are not POSIX utils and moreover have different argume
 - GNU `stat` without arguments fails.
 - BSD `stat` without arguments prints stat of the stdin.
 
+XFCE
+================================================================================
+
+## Main desktop panel is stuck and is not automatically hidden anymore
+
+Panel can be restarted manually (without loss of data):
+
+	xfce4-panel -r
+
 GCC
 ================================================================================
 
