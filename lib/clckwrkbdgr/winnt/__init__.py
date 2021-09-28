@@ -1,8 +1,20 @@
-from ctypes import Structure, c_uint, sizeof, byref
+from ctypes import Structure, c_uint, c_ulong, sizeof, byref
 try:
 	from ctypes import windll
 except: # pragma: no cover
 	pass
+
+def enable_vt_colors(): # pragma: no cover
+	""" Windows ConHost windows start without support for ANSI sequences.
+	This function should be called to enabled them.
+	"""
+	STD_OUTPUT_HANDLE = -11
+	handle = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+	mode = c_ulong()
+	if not windll.kernel32.GetConsoleMode(handle, byref(mode)):
+		return False
+	ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+	return windll.kernel32.SetConsoleMode(handle, c_ulong(mode.value | ENABLE_VIRTUAL_TERMINAL_PROCESSING))
 
 class LASTINPUTINFO(Structure):
 	_fields_ = [
