@@ -99,15 +99,21 @@ Configuration file should be in JSON format:
 @click.option('-v', '--verbose', is_flag=True, help='Be more verbose. By default prints almost nothing.')
 @click.option('--debug', is_flag=True, help='Display debug info.')
 @click.argument('config_file', type=Path)
-def cli(config_file, verbose=False, debug=False):
+@click.argument('patterns', type=Path, nargs=-1)
+def cli(config_file, patterns, verbose=False, debug=False):
 	""" Performs autocommit actions and storing history in a separate repo.
 
 	Reads configuration from CONFIG_FILE, see usage for details.
+
+	If PATTERNS are specified, commits only those files that match them
+	(file name contains pattern as substring).
 	"""
 	if debug:
 		logging.getLogger().setLevel(logging.DEBUG)
 	elif verbose:
 		logging.getLogger().setLevel(logging.INFO)
+	if patterns:
+		logging.debug('Patterns: {0}'.format(patterns))
 	os.chdir(str(config_file.parent))
 	logging.debug('Switching to main repo: {0}'.format(os.getcwd()))
 	config = json.loads(config_file.read_text())
@@ -116,6 +122,9 @@ def cli(config_file, verbose=False, debug=False):
 		files = config[repo]
 		repo_path = Path(os.path.expandvars(os.path.expanduser(repo)))
 		for filename in files:
+			if patterns and not any(pattern in filename for pattern in patterns):
+				logging.debug('{0}: File does not match any pattern.'.format(filename))
+				continue
 			logging.debug('{0}: Processing file...'.format(filename))
 			props = files[filename]
 			process_one_file(filename,
