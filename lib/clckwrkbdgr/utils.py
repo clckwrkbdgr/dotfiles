@@ -1,4 +1,5 @@
-import sys
+import sys, os
+import types
 import itertools, functools
 import contextlib
 import six
@@ -214,3 +215,37 @@ def is_integer(number):
 		return number.is_integer()
 	except:
 		return False
+
+def import_module(module_spec, reload=False): # pragma: no cover -- TODO very specific functionality.
+	""" Tries to load module by given spec:
+	- module instance;
+	- module name (available for direct import, e.g. in sys.path);
+	- arbitrary file path (module name will be deducted from basename).
+	If module is already loaded, does not reimport, unless reload=True.
+	Returns loaded instance or None.
+	Does not catch any import errors.
+	"""
+	if isinstance(module_spec, types.ModuleType):
+		return module_spec
+
+	module_filename = None
+	module_name = module_spec
+	if os.path.exists(module_spec):
+		module_filename = module_spec
+		module_name = os.path.basename(os.path.splitext(module_spec)[0])
+	if reload and module_name in sys.modules:
+		del sys.modules[module_name]
+
+	if module_filename:
+		try:
+			import importlib.util
+			spec = importlib.util.spec_from_file_location(module_name, module_filename)
+			module_instance = importlib.util.module_from_spec(spec)
+			spec.loader.exec_module(module_instance)
+		except AttributeError:
+			from importlib.machinery import SourceFileLoader
+			module_instance = SourceFileLoader(module_name, module_filename).load_module()
+	else:
+		import importlib
+		module_instance = importlib.import_module(module_name)
+	return module_instance
