@@ -126,6 +126,7 @@ firefox/TRRBlacklist.txt
 firefox/key4.db
 firefox/gmp-gmpopenh264/*/gmpopenh264.info
 firefox/gmp-gmpopenh264/*/libgmpopenh264.so
+firefox/features/*/*.xpi
 # Purple cache
 purple/accels
 purple/certificates

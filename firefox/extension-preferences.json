@@ -65,6 +65,12 @@
             "internal:privateBrowsingAllowed"
         ]
     },
+    "proxy-failover@mozilla.com": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
     "screenshots@mozilla.org": {
         "origins": [],
         "permissions": [
