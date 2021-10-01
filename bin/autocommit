@@ -122,7 +122,7 @@ def cli(config_file, patterns, verbose=False, debug=False):
 		files = config[repo]
 		repo_path = Path(os.path.expandvars(os.path.expanduser(repo)))
 		for filename in files:
-			if patterns and not any(pattern in str(filename) for pattern in patterns):
+			if patterns and not any(str(pattern) in str(filename) for pattern in patterns):
 				logging.debug('{0}: File does not match any pattern.'.format(filename))
 				continue
 			logging.debug('{0}: Processing file...'.format(filename))
