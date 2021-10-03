@@ -14,6 +14,15 @@ path::strip_current() {
 	path::strip "`dirname "$0"`"
 }
 
+# Searches for abs path to the real executable exluding the directory
+# which contains current wrapper executable.
+path::get_base_executable() {
+	(
+	path::strip_current
+	which "`basename "$0"`"
+	)
+}
+
 # Main function.
 # This version replaces current process (using shell builtin `exec`)
 # Should be called from a script put somewhere to $PATH.
@@ -23,11 +32,18 @@ path::strip_current() {
 # . "$XDG_CONFIG_HOME/lib/path.bash"
 # path::exec_base <custom_args> "$@"
 path::exec_base() { # <args...>
+	executable_basename="$(path::get_base_executable)"
+	[ -n "$DEBUG_XDG" ] && echo "$executable_basename" >&2
+	exec "$executable_basename" "$@"
+}
+
+# Variation of exec_base, except $PATH is stripped and exported.
+path::exec_base_strip_path() { # <args...>
 	path::strip_current
-	[ -n "$DEBUG_XDG" ] && echo "$PATH"
+	[ -n "$DEBUG_XDG" ] && echo "$PATH" >&2
 	export PATH
 	executable_basename="`basename "$0"`"
-	[ -n "$DEBUG_XDG" ] && which "$executable_basename"
+	[ -n "$DEBUG_XDG" ] && which "$executable_basename" >&2
 	exec "$executable_basename" "$@"
 }
 
@@ -40,10 +56,17 @@ path::exec_base() { # <args...>
 # . "$XDG_CONFIG_HOME/lib/path.bash"
 # path::run_base <custom_args> "$@"
 path::run_base() { # <args...>
+	executable_basename="$(path::get_base_executable)"
+	[ -n "$DEBUG_XDG" ] && echo "$executable_basename" >&2
+	"$executable_basename" "$@"
+}
+
+# Variation of run_base, except $PATH is stripped and exported.
+path::run_base_strip_path() { # <args...>
 	path::strip_current
-	[ -n "$DEBUG_XDG" ] && echo "$PATH"
+	[ -n "$DEBUG_XDG" ] && echo "$PATH" >&2
 	export PATH
 	executable_basename="`basename "$0"`"
-	[ -n "$DEBUG_XDG" ] && which "$executable_basename"
+	[ -n "$DEBUG_XDG" ] && which "$executable_basename" >&2
 	"$executable_basename" "$@"
 }
