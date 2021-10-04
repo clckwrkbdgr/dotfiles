@@ -1,5 +1,6 @@
 import os
 import socket, time
+import subprocess
 import contextlib
 try:
 	from pathlib2 import Path
@@ -172,3 +173,11 @@ class FileWatcher(object):
 			traceback.print_exc()
 		self._last_mtime = mtime
 		return True
+
+def disk_usage(path): # pragma: no cover -- TODO requires functional tests.
+	""" Returns size in bytes for specified path. """
+	output = subprocess.check_output(['du', '-k', '-s', str(path)])
+	lines = output.decode().splitlines()
+	if len(lines) != 1:
+		raise RuntimeError('Expected a single line from `du`, received: {0}'.format(output))
+	return int(line.split(None, 1)[0])
