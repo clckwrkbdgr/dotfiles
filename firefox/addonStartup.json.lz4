@@ -515,12 +515,12 @@
                 "lastModifiedTime": 0,
                 "loader": null,
                 "path": "proxy-failover@mozilla.com.xpi",
-                "rootURI": "jar:file://$HOME/.config/firefox/features/%7Bec0f6776-f87a-44e7-8ee4-042a92143bf9%7D/proxy-failover@mozilla.com.xpi!/",
+                "rootURI": "jar:file://$HOME/.config/firefox/features/%7B1bebab91-023e-4932-81e4-9149ff392b0e%7D/proxy-failover@mozilla.com.xpi!/",
                 "runInSafeMode": true,
                 "version": "0.0"
             }
         },
-        "path": "$HOME/.config/firefox/features/{ec0f6776-f87a-44e7-8ee4-042a92143bf9}"
+        "path": "$HOME/.config/firefox/features/{1bebab91-023e-4932-81e4-9149ff392b0e}"
     },
     "app-system-defaults": {
         "addons": {
