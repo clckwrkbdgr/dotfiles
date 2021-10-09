@@ -241,6 +241,7 @@ lib/clckwrkbdgr/todo/__init__.py caps=work
 lib/clckwrkbdgr/todo/provider/__init__.py caps=work
 lib/clckwrkbdgr/todo/provider/todo_dir.py caps=work
 lib/clckwrkbdgr/todo/tasklist.py caps=work
+lib/clckwrkbdgr/todo/search.py caps=work
 lib/clckwrkbdgr/userstate.py caps=work
 lib/clckwrkbdgr/utils.py caps=work
 lib/clckwrkbdgr/winnt/__init__.py caps=work

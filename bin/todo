@@ -11,7 +11,34 @@ from clckwrkbdgr import utils, xdg
 from clckwrkbdgr.collections import dotdict
 import clckwrkbdgr.click
 import clckwrkbdgr.todo
+import clckwrkbdgr.todo.search
 import clckwrkbdgr.todo.tasklist
+
+def format_file_line(filename, line_number, value):
+	""" Formats colored search result line:
+	  <filename>:<line number>:<line>
+	If line_number is 0 or None, treats value as error message and formats without line number:
+	  <filename>:<message>
+	"""
+	result = termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan')
+	if line_number:
+		result += termcolor.colored(str(line_number), 'green') + termcolor.colored(':', 'cyan')
+	if line_number:
+		result += str(value)
+	else:
+		result += termcolor.colored(str(value), 'red')
+	return result
+
+def colored_matches(matches):
+	""" Marks matched patterns found in string line with bold green color. """
+	result = ''
+	is_marker = False
+	for m in matches:
+		if is_marker:
+			m = termcolor.colored(m, 'green', attrs=['bold'])
+		result += m
+		is_marker = not is_marker
+	return result
 
 @clckwrkbdgr.click.windows_noexpand_args
 @click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=clckwrkbdgr.todo.CONFIG_FILE_DESC)
@@ -88,28 +115,12 @@ def search(exclude=None):
 				continue
 			if filename.suffix in ['.sqlite', '.pyc']:
 				continue
-			try:
-				if not filename.exists():
-					continue
-				for index, line in enumerate(filename.read_bytes().splitlines(), 1):
-					try:
-						line = line.decode('utf-8', 'replace')
-						matches = MARKERS.split(line)
-						if len(matches) > 1:
-							sys.stdout.write(termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(index), 'green') + termcolor.colored(':', 'cyan'))
-							is_marker = False
-							for m in matches:
-								if is_marker:
-									m = termcolor.colored(m, 'green', attrs=['bold'])
-								sys.stdout.write(m)
-								is_marker = not is_marker
-							sys.stdout.write('\n')
-					except Exception as e:
-						print(termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(e), 'red'))
-						continue
-			except Exception as e:
-				print(termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan') + termcolor.colored(str(e), 'red'))
-				continue
+
+			for line_number, search_result in clckwrkbdgr.todo.search.search_in_file(filename, MARKERS):
+				if line_number:
+					print(format_file_line(filename, line_number, colored_matches(search_result)))
+				else:
+					print(format_file_line(filename, 0, search_result))
 
 if __name__ == '__main__':
 	cli()

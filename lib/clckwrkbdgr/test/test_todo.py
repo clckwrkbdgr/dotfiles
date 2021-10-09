@@ -1,6 +1,10 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
+import pyfakefs
+from pyfakefs import fake_filesystem_unittest
+import re
 from clckwrkbdgr import todo
+from clckwrkbdgr.todo import search
 from clckwrkbdgr.todo import provider
 from clckwrkbdgr.todo import tasklist
 
@@ -96,3 +100,46 @@ class TestTaskList(unittest.TestCase):
 				(True, 'Rescue captured agent'),
 				]
 		self.assertEqual(list(tasklist.filter_task_list(original, updated)), expected)
+
+class TestSearch(unittest.TestCase):
+	def should_search_in_string(self):
+		self.assertEqual(
+				search.search_in_line('foo bar baz', re.compile('(bar)')),
+				['foo ', 'bar', ' baz'],
+				)
+		self.assertEqual(
+				search.search_in_line('foo bar baz', re.compile('(baz)')),
+				['foo bar ', 'baz', ''],
+				)
+		self.assertEqual(
+				search.search_in_line('foo bar baz', re.compile(r'(\W)')),
+				['foo', ' ', 'bar', ' ', 'baz'],
+				)
+		self.assertIsNone(
+				search.search_in_line('foo bar baz', re.compile(r'(will to live)')),
+				)
+	def should_search_in_bytes(self):
+		self.assertEqual(
+				list(search.search_in_bytes(b'foo\nbar\nbaz\n', re.compile('(a[rz])'))),
+				[
+					(2, ['b', 'ar', '']),
+					(3, ['b', 'az', '']),
+					],
+				)
+
+class TestSearchInFiles(fake_filesystem_unittest.TestCase):
+	def setUp(self):
+		self.setUpPyfakefs(modules_to_reload=[search])
+	def should_search_in_bytes(self):
+		self.fs.create_file('/test_file', contents=b'foo\nbar\nbaz\n')
+		self.assertEqual(
+				list(search.search_in_file('/test_file', re.compile('(a[rz])'))),
+				[
+					(2, ['b', 'ar', '']),
+					(3, ['b', 'az', '']),
+					],
+				)
+		self.assertEqual(
+				list(search.search_in_file('/absent_file', re.compile('(a[rz])'))),
+				[],
+				)
