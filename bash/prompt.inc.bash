@@ -5,7 +5,9 @@ _PS_in_vim() {
 	[ -n "$VIMRUNTIME" ] && echo "(vim)"
 }
 
-if [ -z "$_DISPLAY_SHLVL" ]; then # TODO instead of this there should be a shlvl::reset and some var to subtract, like for screen or tmux invocations.
+if [ -n "$FIX_SHLVL" ]; then # Resets current shlvl to be treated as zero. Each subshell will start to add 1 level as expected.
+	_DISPLAY_SHLVL=$((SHLVL-FIX_SHLVL))
+elif [ -z "$_DISPLAY_SHLVL" ]; then # TODO instead of this there should be a shlvl::reset and some var to subtract, like for screen or tmux invocations.
 	_DISPLAY_SHLVL=$((SHLVL-2)) # For GUI interactive shells: 1 for GUI + 1 for terminal
 fi
 

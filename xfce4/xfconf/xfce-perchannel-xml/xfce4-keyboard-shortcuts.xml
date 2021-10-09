@@ -35,7 +35,7 @@
       <property name="&lt;Super&gt;KP_0" type="string" value="xdotool click 1"/>
       <property name="&lt;Super&gt;KP_Decimal" type="string" value="xdotool click 3"/>
       <property name="&lt;Super&gt;m" type="string" value="xdg in_call.sh toggle"/>
-      <property name="&lt;Super&gt;grave" type="string" value="fix_lc quakestyle quake_xterm bash $XDG_CONFIG_HOME/lib/desktop.bash start-main-quake-terminal"/>
+      <property name="&lt;Super&gt;grave" type="string" value="fix_lc quakestyle quake_xterm bash &apos;$XDG_CONFIG_HOME/lib/desktop.bash&apos; start-main-quake-terminal"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">

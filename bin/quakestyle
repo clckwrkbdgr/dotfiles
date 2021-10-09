@@ -15,7 +15,7 @@ if [ "$(get_window_class "$active_window_id")" == "$window_class" ]; then
 elif wmctrl -R "$window_class" -x ; then
 	roll_window_out $(xdotool getactivewindow) 10
 else
-	"$@" &
+	eval "$@ &"
 	pid=$!
 	while [ -z "$(windows_by_pid $pid)" ]; do :; done
 	change_window_class $(windows_by_pid $pid) "$window_class"
