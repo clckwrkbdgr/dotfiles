@@ -1,4 +1,7 @@
-from pathlib import Path
+try:
+	from pathlib2 import Path
+except: # pragma: no cover
+	from pathlib import Path
 
 def search_in_line(line, pattern):
 	""" Splits string line by patterns.
