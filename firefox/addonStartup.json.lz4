@@ -507,21 +507,6 @@
         },
         "path": "$HOME/.config/firefox/extensions"
     },
-    "app-system-addons": {
-        "addons": {
-            "proxy-failover@mozilla.com": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "proxy-failover@mozilla.com.xpi",
-                "rootURI": "jar:file://$HOME/.config/firefox/features/%7B1bebab91-023e-4932-81e4-9149ff392b0e%7D/proxy-failover@mozilla.com.xpi!/",
-                "runInSafeMode": true,
-                "version": "0.0"
-            }
-        },
-        "path": "$HOME/.config/firefox/features/{1bebab91-023e-4932-81e4-9149ff392b0e}"
-    },
     "app-system-defaults": {
         "addons": {
             "doh-rollout@mozilla.org": {

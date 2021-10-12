@@ -337,7 +337,7 @@ user_pref("extensions.sqlitemanager.searchToggler", false);
 user_pref("extensions.stylish.editor", 1);
 user_pref("extensions.stylish.editorWindowPersist", "{\"width\":800,\"height\":600,\"screenX\":224,\"screenY\":68,\"windowState\":3}");
 user_pref("extensions.stylish.firstRun", 3);
-user_pref("extensions.systemAddonSet", "{\"schema\":1,\"directory\":\"{1bebab91-023e-4932-81e4-9149ff392b0e}\",\"addons\":{\"proxy-failover@mozilla.com\":{\"version\":\"1.0.1\"}}}");
+user_pref("extensions.systemAddonSet", "{\"schema\":1,\"addons\":{}}");
 user_pref("extensions.ui.dictionary.hidden", true);
 user_pref("extensions.ui.experiment.hidden", true);
 user_pref("extensions.ui.extension.hidden", false);
