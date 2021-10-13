@@ -24,6 +24,8 @@ def process_recursively(subtree, key_name, new_value, skip_if=None):
 bin_stdin = io.open(sys.stdin.fileno(), 'rb')
 data = firefox.decompress_mozLz4(bin_stdin.read())
 tree = json.loads(data.decode('utf-8'))
+if 'app-system-addons' in tree:
+	del tree['app-system-addons']
 
 # Staged addons.
 tree = {

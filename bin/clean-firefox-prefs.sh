@@ -123,4 +123,5 @@ sed '/devtools.netmonitor.persistlog/d' | \
 sed '/devtools.toolbox.tabsOrder/d' | \
 sed '/browser.download.lastDir/d' | \
 sed '/media.benchmark.vp9./d' | \
+sed 's/"extensions.systemAddonSet", "{.*");/"extensions.systemAddonSet", "{\\"schema\\":1,\\"addons\\":{}}");/' | \
 sed 's|'"$HOME"'|$HOME|g'
