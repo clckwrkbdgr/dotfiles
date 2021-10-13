@@ -1,16 +1,20 @@
 #!/bin/bash
-# Creates link to finished torrent and places it to the home directory.
-# Also pops up a notification with name of the torrent.
-TRANSMISSION_DATA_DIR="$XDG_DATA_HOME/transmission"
-mkdir -p "$TRANSMISSION_DATA_DIR"
-POST_TR_LOG="$TRANSMISSION_DATA_DIR/post_torrent.sh.log"
+# Performs post actions for downloaded torrent.
+# <https://github.com/transmission/transmission/wiki/Scripts#On_Torrent_Completion>
+# If "$XDG_DATA_HOME/transmission/post_torrent.sh" is present, tries to execute it (all Transmission-defined environment variables should be available).
+# Otherwise by default pops up a notification with name of the torrent.
+. "$XDG_CONFIG_HOME/lib/utils.bash"
 
-[ -z "$TR_TORRENT_DIR" ] && echo "Empty TR_TORRENT_DIR variable" &>>"$POST_TR_LOG" && exit 1
-[ -z "$TR_TORRENT_NAME" ] && echo "Empty TR_TORRENT_NAME variable" &>>"$POST_TR_LOG" && exit 1
+[ -z "$TR_TORRENT_DIR" ] && panic "Empty TR_TORRENT_DIR variable"
+[ -z "$TR_TORRENT_NAME" ] && panic "Empty TR_TORRENT_NAME variable"
 
-(
-	ln -s "$TR_TORRENT_DIR/$TR_TORRENT_NAME" ~/"$TR_TORRENT_NAME" || (echo "failed to ln -s $TR_TORRENT_DIR/$TR_TORRENT_NAME ~/$TR_TORRENT_NAME"; env);
-) &>>"$POST_TR_LOG"
+TRANSMISSION_STATE_DIR="$XDG_STATE_HOME/transmission"
+mkdir -p "$TRANSMISSION_STATE_DIR"
+exec >>"$TRANSMISSION_STATE_DIR/post_torrent.sh.log"
+exec 2>&1
 
-READABLE_NAME=$(echo "$TR_TORRENT_NAME" | tr '[._]' ' ' | sed 's/&/&amp;/g')
-~/.config/bin/xdg ~/.config/bin/notification -t Transmission "Torrent $READABLE_NAME is finished."
+if [ -x "$XDG_DATA_HOME/transmission/post_torrent.sh" ]; then
+	"$XDG_DATA_HOME/transmission/post_torrent.sh"
+else
+	notification -t Transmission "Torrent $TR_TORRENT_NAME is finished."
+fi
