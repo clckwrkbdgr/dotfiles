@@ -41,12 +41,18 @@ def process_location(root, settings):
 import click
 
 @click.command(epilog=CONFIG_FILE_DESC + '\n\b\n' + inspect.getdoc(clckwrkbdgr.backup.Config))
+@click.option('-v', '--verbose', is_flag=True, help='Print additional information.')
+@click.option('-d', '--debug', is_flag=True, help='Print full debug information.')
 @click.argument('config_file', type=Path)
 @utils.exits_with_return_value
-def cli(config_file):
+def cli(config_file, verbose=False, debug=False):
 	""" Performs backup according to specified configuration.
 	"""
-	presets = json.loads(config_file.read_text())
+	if debug:
+		logging.getLogger().setLevel(logging.DEBUG)
+	elif verbose:
+		logging.getLogger().setLevel(logging.INFO)
+	presets = json.loads(config_file.read_text(encoding='utf-8'))
 	errors = 0
 	for root, settings in presets.items():
 		root = Path(root)
