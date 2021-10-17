@@ -103,10 +103,11 @@ def sort_Tasks():
 
 @cli.command()
 @click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
+@click.option('-o', '--output-file', help='Output file to store found results. If no entries were found, file will not be touched. By default prints to stdout, and color is applied if output is terminal.')
 @utils.exits_with_return_value
-def search(exclude=None):
+def search(exclude=None, output_file=None):
 	exclude = [Path(path).absolute() for path in (exclude or [])]
-	if not sys.stderr.isatty():
+	if not sys.stderr.isatty() or output_file:
 		os.environ['ANSI_COLORS_DISABLED'] = '1'
 
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
@@ -114,14 +115,23 @@ def search(exclude=None):
 			exclude_dir_names=['.git'],
 			exclude_extensions=['.sqlite', '.pyc'],
 			exclude_wildcards=exclude,
-			handle_dirs=track_directory,
+			handle_dirs=track_directory if not output_file else (lambda _:_),
 			)
 	for filename in files:
 		for line_number, search_result in clckwrkbdgr.todo.search.search_in_file(filename, MARKERS):
 			if line_number:
-				print(format_file_line(filename, line_number, colored_matches(search_result)))
+				line = format_file_line(filename, line_number, colored_matches(search_result))
 			else:
-				print(format_file_line(filename, 0, search_result))
+				line = format_file_line(filename, 0, search_result)
+			if output_file:
+				with open(output_file, 'ab+') as f:
+					try:
+						f.write(line.encode('utf-8', 'replace'))
+					except:
+						f.write(line.encode('ascii', 'replace'))
+					f.write(b'\n')
+			else:
+				print(line)
 
 if __name__ == '__main__':
 	cli()
