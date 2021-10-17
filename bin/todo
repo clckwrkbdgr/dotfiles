@@ -13,6 +13,7 @@ import clckwrkbdgr.click
 import clckwrkbdgr.todo
 import clckwrkbdgr.todo.search
 import clckwrkbdgr.todo.tasklist
+import clckwrkbdgr.fs
 
 def format_file_line(filename, line_number, value):
 	""" Formats colored search result line:
@@ -39,6 +40,12 @@ def colored_matches(matches):
 		result += m
 		is_marker = not is_marker
 	return result
+
+def track_directory(dirpath):
+	if not sys.stderr.isatty():
+		return
+	sys.stderr.write(str(dirpath))
+	sys.stderr.write('\r')
 
 @clckwrkbdgr.click.windows_noexpand_args
 @click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=clckwrkbdgr.todo.CONFIG_FILE_DESC)
@@ -103,24 +110,18 @@ def search(exclude=None):
 		os.environ['ANSI_COLORS_DISABLED'] = '1'
 
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
-	for root, dirs, files in os.walk('.'):
-		dirs[:] = [dirname for dirname in dirs if dirname not in ['.git']]
-		dirs[:] = [dirname for dirname in dirs if not any((Path(root)/dirname).absolute().match(str(pattern)) for pattern in exclude)]
-		if sys.stderr.isatty():
-			sys.stderr.write(root)
-			sys.stderr.write('\r')
-		for filename in files:
-			filename = (Path(root)/filename)
-			if any(filename.absolute().match(str(pattern)) for pattern in exclude):
-				continue
-			if filename.suffix in ['.sqlite', '.pyc']:
-				continue
-
-			for line_number, search_result in clckwrkbdgr.todo.search.search_in_file(filename, MARKERS):
-				if line_number:
-					print(format_file_line(filename, line_number, colored_matches(search_result)))
-				else:
-					print(format_file_line(filename, 0, search_result))
+	files = clckwrkbdgr.fs.find('.',
+			exclude_dir_names=['.git'],
+			exclude_extensions=['.sqlite', '.pyc'],
+			exclude_wildcards=exclude,
+			handle_dirs=track_directory,
+			)
+	for filename in files:
+		for line_number, search_result in clckwrkbdgr.todo.search.search_in_file(filename, MARKERS):
+			if line_number:
+				print(format_file_line(filename, line_number, colored_matches(search_result)))
+			else:
+				print(format_file_line(filename, 0, search_result))
 
 if __name__ == '__main__':
 	cli()
