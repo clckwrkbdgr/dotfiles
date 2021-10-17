@@ -181,3 +181,52 @@ def disk_usage(path): # pragma: no cover -- TODO requires functional tests.
 	if len(lines) != 1:
 		raise RuntimeError('Expected a single line from `du`, received: {0}'.format(output))
 	return int(line.split(None, 1)[0])
+
+def find(root,
+		exclude_names=None, exclude_dir_names=None, exclude_file_names=None,
+		exclude_wildcards=None, exclude_dir_wildcards=None, exclude_file_wildcards=None,
+		exclude_extensions=None,
+		handle_dirs=False,
+		):
+	""" Iterates over file system (starting from given root).
+	Yields Path objects (relative to the given root).
+	If handle_dirs=True, also yields dir Paths. By default only files.
+	If handle_dirs is callable(Path), it is called for each dir instead.
+
+	Arguments exclude_* controls search:
+	- exclude_dir_<kind> - excludes matching directories from stepping into;
+	- exclude_file_<kind> - excludes matching files;
+	- exclude_<kind> - excludes both dirs and files.
+	Kinds of exclude matches:
+	- exclude_wildcards - matches full (absolute) file path using fnmatch,
+	  generic wildcards work too: '*.txt' etc;
+	- exclude_extensions - matches extensions (files only), leading dot is optional;
+	- exclude_names - matches exact base name.
+	"""
+	exclude_dir_names = list(map(str, (exclude_dir_names or []) + (exclude_names or [])))
+	exclude_file_names = list(map(str, (exclude_file_names or []) + (exclude_names or [])))
+	exclude_dir_wildcards = list(map(str, (exclude_dir_wildcards or []) + (exclude_wildcards or [])))
+	exclude_file_wildcards = list(map(str, (exclude_file_wildcards or []) + (exclude_wildcards or [])))
+	exclude_extensions = list(map(lambda _: (_ if _.startswith('.') else '.'+_), map(str, (exclude_extensions or []))))
+	for root, dirs, files in os.walk(str(root)):
+		root = Path(root)
+		if callable(handle_dirs):
+			handle_dirs(root)
+		elif handle_dirs:
+			yield root
+
+		if exclude_dir_names:
+			dirs[:] = [dirname for dirname in dirs if dirname not in exclude_dir_names]
+		if exclude_dir_wildcards:
+			dirs[:] = [dirname for dirname in dirs if not any((root/dirname).absolute().match(str(pattern)) for pattern in exclude_dir_wildcards)]
+
+		for filename in files:
+			filename = root/filename
+			abs_filename = Path(os.path.abspath(str(filename))) # Path.absolute() does not work with pyfakefs.
+			if exclude_file_wildcards and any(abs_filename.match(str(pattern)) for pattern in exclude_file_wildcards):
+				continue
+			if exclude_file_names and filename.name in exclude_file_names:
+				continue
+			if exclude_extensions and filename.suffix in exclude_extensions:
+				continue
+			yield filename
