@@ -176,11 +176,12 @@ class FileWatcher(object):
 
 def disk_usage(path): # pragma: no cover -- TODO requires functional tests.
 	""" Returns size in bytes for specified path. """
-	output = subprocess.check_output(['du', '-k', '-s', str(path)])
+	output = subprocess.check_output(['du', '-s', str(path)])
 	lines = output.decode().splitlines()
 	if len(lines) != 1:
 		raise RuntimeError('Expected a single line from `du`, received: {0}'.format(output))
-	return int(line.split(None, 1)[0])
+	default_block_size = 512
+	return int(lines[0].split(None, 1)[0]) * default_block_size
 
 def find(root,
 		exclude_names=None, exclude_dir_names=None, exclude_file_names=None,
