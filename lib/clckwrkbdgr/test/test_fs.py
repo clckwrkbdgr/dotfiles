@@ -58,153 +58,153 @@ class TestFSUtils(unittest.TestCase):
 
 class TestSearchForFiles(fake_filesystem_unittest.TestCase):
 	FILES = {
-			'/filename',
-			'/module.pyc',
-			'/subdir/subfile',
-			'/subdir/other_file',
-			'/other_dir/other_file',
+			'/search_test/filename',
+			'/search_test/module.pyc',
+			'/search_test/subdir/subfile',
+			'/search_test/subdir/other_file',
+			'/search_test/other_dir/other_file',
 			}
 	def setUp(self):
 		self.setUpPyfakefs(modules_to_reload=[clckwrkbdgr.fs])
 		for filename in self.FILES:
 			self.fs.create_file(filename)
 	def should_list_all_files_unconditionally(self):
-		self.assertEqual(set(clckwrkbdgr.fs.find('/')), set(map(Path, self.FILES)))
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/')), set(map(Path, self.FILES)))
 	def should_list_files_under_current_dir(self):
-		os.chdir('/subdir')
+		os.chdir('/search_test/subdir')
 		self.assertEqual(set(clckwrkbdgr.fs.find('.')), {
 			Path('subfile'),
 			Path('other_file'),
 			})
 	def should_exclude_dirs(self):
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			exclude_dir_names=['subdir'],
 			)), {
-			Path('/filename'),
-			Path('/module.pyc'),
-			Path('/other_dir/other_file'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
+			Path('/search_test/other_dir/other_file'),
 			})
 	def should_exclude_dirs_by_wildcard(self):
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			exclude_dir_wildcards=['*_dir'],
 			)), {
-			Path('/filename'),
-			Path('/module.pyc'),
-			Path('/subdir/subfile'),
-			Path('/subdir/other_file'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
+			Path('/search_test/subdir/subfile'),
+			Path('/search_test/subdir/other_file'),
 			})
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			exclude_dir_wildcards=['*dir'],
 			)), {
-			Path('/filename'),
-			Path('/module.pyc'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
 			})
 	def should_exclude_files(self):
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			exclude_file_names=['other_file'],
 			)), {
-			Path('/filename'),
-			Path('/module.pyc'),
-			Path('/subdir/subfile'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
+			Path('/search_test/subdir/subfile'),
 			})
 	def should_exclude_files_by_wildcard(self):
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			exclude_file_wildcards=['*file'],
 			)), {
-			Path('/filename'),
-			Path('/module.pyc'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
 			})
-		os.chdir('/')
+	def should_exclude_files_by_wildcard_in_relative_root(self):
+		os.chdir('/search_test/')
 		self.assertEqual(set(clckwrkbdgr.fs.find('.',
-			exclude_file_wildcards=['/subdir/sub*'],
+			exclude_file_wildcards=['/search_test/subdir/sub*'],
 			)), {
 			Path('filename'),
 			Path('module.pyc'),
 			Path('subdir/other_file'),
 			Path('other_dir/other_file'),
 			})
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
-			exclude_file_wildcards=['/subdir/sub*'],
+	def should_exclude_files_by_wildcard_in_abs_root(self):
+		os.chdir('/search_test/')
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
+			exclude_file_wildcards=['/search_test/subdir/sub*'],
 			)), {
-			Path('/filename'),
-			Path('/module.pyc'),
-			Path('/subdir/other_file'),
-			Path('/other_dir/other_file'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
+			Path('/search_test/subdir/other_file'),
+			Path('/search_test/other_dir/other_file'),
 			})
 	def should_exclude_both_dirs_and_files(self):
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			exclude_names=['subdir'],
 			exclude_wildcards=['other*'],
 			)), {
-			Path('/filename'),
-			Path('/module.pyc'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
 			})
 	def should_exclude_by_extensions(self):
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			exclude_extensions=['.pyc'],
 			)), {
-			Path('/filename'),
-			Path('/subdir/subfile'),
-			Path('/subdir/other_file'),
-			Path('/other_dir/other_file'),
+			Path('/search_test/filename'),
+			Path('/search_test/subdir/subfile'),
+			Path('/search_test/subdir/other_file'),
+			Path('/search_test/other_dir/other_file'),
 			})
 	def should_yield_dirs_as_well(self):
-		pyfakefs_dirs = {Path('/tmp')}
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			handle_dirs=True,
-			)) - pyfakefs_dirs, {
-			Path('/'),
-			Path('/filename'),
-			Path('/module.pyc'),
-			Path('/subdir'),
-			Path('/subdir/subfile'),
-			Path('/subdir/other_file'),
-			Path('/other_dir'),
-			Path('/other_dir/other_file'),
+			)), {
+			Path('/search_test/'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
+			Path('/search_test/subdir'),
+			Path('/search_test/subdir/subfile'),
+			Path('/search_test/subdir/other_file'),
+			Path('/search_test/other_dir'),
+			Path('/search_test/other_dir/other_file'),
 			})
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			handle_dirs=True,
 			exclude_dir_names=['subdir'],
-			)) - pyfakefs_dirs, {
-			Path('/'),
-			Path('/filename'),
-			Path('/module.pyc'),
-			Path('/other_dir'),
-			Path('/other_dir/other_file'),
+			)), {
+			Path('/search_test/'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
+			Path('/search_test/other_dir'),
+			Path('/search_test/other_dir/other_file'),
 			})
 	def should_handle_dirs(self):
-		pyfakefs_dirs = {Path('/tmp')}
-
 		class Handler:
 			def __init__(self): self.calls = set()
 			def __call__(self, value): self.calls.add(value)
 
 		handler = Handler()
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			handle_dirs=handler,
-			)) - pyfakefs_dirs, {
-			Path('/filename'),
-			Path('/module.pyc'),
-			Path('/subdir/subfile'),
-			Path('/subdir/other_file'),
-			Path('/other_dir/other_file'),
+			)), {
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
+			Path('/search_test/subdir/subfile'),
+			Path('/search_test/subdir/other_file'),
+			Path('/search_test/other_dir/other_file'),
 			})
-		self.assertEqual(handler.calls - pyfakefs_dirs, {
-			Path('/'),
-			Path('/subdir'),
-			Path('/other_dir'),
+		self.assertEqual(handler.calls, {
+			Path('/search_test/'),
+			Path('/search_test/subdir'),
+			Path('/search_test/other_dir'),
 			})
 
 		handler = Handler()
-		self.assertEqual(set(clckwrkbdgr.fs.find('/',
+		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
 			handle_dirs=handler,
 			exclude_dir_names=['subdir'],
 			)), {
-			Path('/filename'),
-			Path('/module.pyc'),
-			Path('/other_dir/other_file'),
+			Path('/search_test/filename'),
+			Path('/search_test/module.pyc'),
+			Path('/search_test/other_dir/other_file'),
 			})
-		self.assertEqual(handler.calls - pyfakefs_dirs, {
-			Path('/'),
-			Path('/other_dir'),
+		self.assertEqual(handler.calls, {
+			Path('/search_test/'),
+			Path('/search_test/other_dir'),
 			})
