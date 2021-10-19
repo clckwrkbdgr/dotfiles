@@ -109,6 +109,8 @@ def search(exclude=None, output_file=None):
 	exclude = [Path(path).absolute() for path in (exclude or [])]
 	if not sys.stderr.isatty() or output_file:
 		os.environ['ANSI_COLORS_DISABLED'] = '1'
+	if os.path.exists(output_file):
+		os.unlink(output_file)
 
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
 	files = clckwrkbdgr.fs.find('.',
