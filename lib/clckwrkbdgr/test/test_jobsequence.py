@@ -10,8 +10,10 @@ import os, sys, subprocess, logging
 import clckwrkbdgr.jobsequence
 import clckwrkbdgr.jobsequence.sequence
 import clckwrkbdgr.jobsequence.context
+from clckwrkbdgr.jobsequence.context import WorkerStats
 import clckwrkbdgr.jobsequence.script
 from clckwrkbdgr.jobsequence import JobSequence
+from pyfakefs import fake_filesystem_unittest
 try: # pragma: no cover
 	import pathlib2 as pathlib
 	from pathlib2 import Path
@@ -304,3 +306,103 @@ class TestJobSequence(unittest.TestCase):
 		seq.patterns_argument.assert_called_with()
 		seq.run.assert_called_once_with(['patterns'], None, verbose=0, dry_run=False)
 		sys_exit.assert_called_once_with(1)
+
+class TestWorkerStats(fake_filesystem_unittest.TestCase):
+	def setUp(self):
+		self.setUpPyfakefs(modules_to_reload=[clckwrkbdgr.jobsequence.context])
+	def should_load_worker_stats_from_file(self):
+		stats = WorkerStats.load('/test.worker')
+		self.assertIsNone(stats.hostname)
+		self.assertIsNone(stats.caps)
+
+		self.fs.create_file('/test.worker', contents='')
+		stats = WorkerStats.load('/test.worker')
+		self.assertIsNone(stats.hostname)
+		self.assertIsNone(stats.caps)
+
+		self.fs.remove_object('/test.worker')
+		self.fs.create_file('/test.worker', contents='hostname\n')
+		stats = WorkerStats.load('/test.worker')
+		self.assertEqual(stats.hostname, 'hostname')
+		self.assertIsNone(stats.caps)
+
+		self.fs.remove_object('/test.worker')
+		self.fs.create_file('/test.worker', contents='hostname\ncaps\n')
+		stats = WorkerStats.load('/test.worker')
+		self.assertEqual(stats.hostname, 'hostname')
+		self.assertEqual(stats.caps, 'caps')
+
+		self.fs.remove_object('/test.worker')
+		self.fs.create_file('/test.worker', contents='hostname\n666\n')
+		stats = WorkerStats.load('/test.worker', caps_type=int)
+		self.assertEqual(stats.hostname, 'hostname')
+		self.assertEqual(stats.caps, 666)
+	def should_save_worker_stats_to_file(self):
+		stats = WorkerStats('hostname', None)
+		stats.save('/test.worker')
+		self.assertEqual(Path('/test.worker').read_text(), 'hostname\n')
+
+		stats = WorkerStats('hostname', 'caps')
+		stats.save('/test.worker')
+		self.assertEqual(Path('/test.worker').read_text(), 'hostname\ncaps\n')
+	def should_check_acceptance_of_worker_host_stats(self):
+		__ = self.assertFalse
+		OK = self.assertTrue
+
+		# CURRENT:     host    caps                  STORED:     host  caps   REQ.caps
+		OK(WorkerStats('this', None)   .is_preferred(WorkerStats(None, None), None))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats(None, None), 'False'))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats(None, None), 'True '))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', None), None))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', None), 'False'))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', None), 'True '))
+
+		OK(WorkerStats('this', None)   .is_preferred(WorkerStats(None, None), None))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats(None, None), 'False'))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats(None, None), 'True '))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', 'False'), None))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', 'False'), 'False'))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', 'False'), 'True '))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', 'True'), None))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', 'True'), 'False'))
+		__(WorkerStats('this', None)   .is_preferred(WorkerStats('other', 'True'), 'True '))
+
+		OK(WorkerStats('this', 'False').is_preferred(WorkerStats(None, None), None))
+		OK(WorkerStats('this', 'False').is_preferred(WorkerStats(None, None), 'False'))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats(None, None), 'True '))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats(None, None), None))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats(None, None), 'False'))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats(None, None), 'True '))
+
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('other', None), None))
+		OK(WorkerStats('this', 'False').is_preferred(WorkerStats('other', None), 'False'))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('other', None), 'True '))
+		__(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', None), None))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', None), 'False'))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', None), 'True '))
+
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('other', 'False'), None))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('other', 'False'), 'False'))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('other', 'False'), 'True '))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('other', 'True '), None))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('other', 'True '), 'False'))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('other', 'True '), 'True '))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', 'False'), None))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', 'False'), 'False'))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', 'False'), 'True '))
+		__(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', 'True '), None))
+		__(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', 'True '), 'False'))
+		__(WorkerStats('this', 'True ').is_preferred(WorkerStats('other', 'True '), 'True '))
+
+		OK(WorkerStats('this', 'False').is_preferred(WorkerStats('this', 'False'), None))
+		OK(WorkerStats('this', 'False').is_preferred(WorkerStats('this', 'False'), 'False'))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('this', 'False'), 'True '))
+		OK(WorkerStats('this', 'False').is_preferred(WorkerStats('this', 'True '), None))
+		OK(WorkerStats('this', 'False').is_preferred(WorkerStats('this', 'True '), 'False'))
+		__(WorkerStats('this', 'False').is_preferred(WorkerStats('this', 'True '), 'True '))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('this', 'False'), None))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('this', 'False'), 'False'))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('this', 'False'), 'True '))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('this', 'True '), None))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('this', 'True '), 'False'))
+		OK(WorkerStats('this', 'True ').is_preferred(WorkerStats('this', 'True '), 'True '))

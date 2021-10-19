@@ -9,6 +9,93 @@ def _comply_about_accumulated_return_code(): # pragma: no cover
 		print('[jobsequence.context: Return code {0} was prepared but Context.done() was not called]'.format(Context._global_return_code), file=sys.stderr)
 atexit.register(_comply_about_accumulated_return_code)
 
+class WorkerStats:
+	""" Defines worker host and it's capabilities regarding custom tasks,
+	or search parameters to match such hosts.
+	"""
+	def __init__(self, hostname, caps, logger=None):
+		""" Both hostname and caps may be None. """
+		self.hostname = hostname
+		self.caps = caps
+		self._logger = logger or logging
+	def __str__(self): # pragma: no cover
+		return '{0}:{1}'.format(self.hostname, self.caps)
+	def __repr__(self): # pragma: no cover
+		return '{0}({1}, {2})'.format(self.__class__.__name__, repr(self.hostname), repr(self.caps))
+	def save(self, filename):
+		self._logger.debug('Updating worker file: {0}'.format(self))
+		with open(str(filename), 'w') as f:
+			if self.caps is None:
+				f.write('{0}\n'.format(self.hostname))
+			else:
+				f.write('{0}\n{1}\n'.format(self.hostname, self.caps))
+	@classmethod
+	def load(cls, filename, caps_type=None, logger=None):
+		""" Returns WorkerStats object from given file (if it exists).
+		Caps type can be a function that returns caps object, by default caps are str.
+		Caps object should be comparable and str-able.
+
+		Worker stats file should have following format:
+		1 line:"<hostname>";
+		2 line:"<serialized caps>";
+		Both lines are optional, defaults are None.
+		"""
+		logger = logger or logging
+		if not os.path.exists(str(filename)):
+			logger.debug("{0} does not exist".format(filename))
+			return cls(None, None, logger=logger)
+		with open(filename) as f:
+			stored_host = f.readline().rstrip('\n')
+			logger.debug('Stored host: {0}'.format(repr(stored_host)))
+			if not stored_host:
+				return cls(None, None, logger=logger)
+			stored_caps = f.readline().rstrip('\n')
+			logger.debug('Stored caps: {0}'.format(repr(stored_caps)))
+			if not stored_caps:
+				return cls(stored_host, None, logger=logger)
+			if caps_type:
+				stored_caps = caps_type(stored_caps)
+			logger.debug('Converted caps: {0}'.format(repr(stored_caps)))
+			return cls(stored_host, stored_caps, logger=logger)
+	def is_preferred(self, stored, required_caps=None):
+		""" Returns True if current stats are acceptable and current host should be picked as worker host.
+		Considers already stored worker stats (if any).
+		Considers optional required caps (to filter out "not capable" hosts).
+		Returns False otherwise.
+		"""
+		if stored.hostname is None or self.hostname == stored.hostname:
+			self._logger.debug('Stored hostname is empty or the same: {0}'.format(stored.hostname))
+			if required_caps is None:
+				self._logger.debug('Caps are not required.')
+				return True
+			if self.caps is None:
+				self._logger.debug('Caps are required, but self caps are None.')
+				return False
+			self._logger.debug('Current caps satisfy requirements: {0}'.format(self.caps >= required_caps))
+			return self.caps >= required_caps
+		if stored.caps is None:
+			self._logger.debug('There were no stored caps.')
+			if required_caps is None:
+				self._logger.debug('And no caps requirements.')
+				return False
+			if self.caps is None:
+				self._logger.debug('Caps are required, but self caps are None.')
+				return False
+			self._logger.debug('Current caps satisfy requirements: {0}'.format(self.caps >= required_caps))
+			return self.caps >= required_caps
+		if self.caps is None:
+			self._logger.debug('Current caps are not better than stored: {0} <= {1}'.format(self.caps, stored.caps))
+			return False
+		if required_caps is None:
+			self._logger.debug('There were no caps requirements, skipping check.')
+		elif self.caps < required_caps:
+			self._logger.debug('Current caps does not satisfy requirements: {0} < {1}'.format(self.caps, required_caps))
+			return False
+		if self.caps <= stored.caps:
+			self._logger.debug('Current caps are not better than stored: {0} <= {1}'.format(self.caps, stored.caps))
+			return False
+		return True
+
 class Context: # pragma: no cover -- TODO need mocks
 	_global_return_code = 0
 
@@ -122,6 +209,27 @@ class Context: # pragma: no cover -- TODO need mocks
 	def critical(self, *args, **kwargs):
 		""" Same as context.logger.critical() """
 		return self._logger.critical(*args, **kwargs)
+	def validate_worker_host(self, worker_name, caps_type=None, required_caps=None, current_caps=None):
+		""" Checks if current host (with current caps) is acceptable for the job.
+		Caps type can be a function that returns caps object.
+		Caps object should be comparable and str-able.
+		Minimum required caps can be specified.
+		"""
+		import socket
+		current = WorkerStats(socket.gethostname(), current_caps, logger=self._logger)
+		self._logger.debug('Current stats: {0}'.format(current))
+
+		from clckwrkbdgr import xdg
+		worker_host_file = xdg.save_state_path('dailyupdate')/'{0}.worker'.format(worker_name)
+		stored = WorkerStats.load(worker_host_file, caps_type=caps_type, logger=self._logger)
+		self._logger.debug('Stored stats: {0}'.format(stored))
+
+		if not current.is_preferred(stored, required_caps):
+			self._logger.debug('Current stats are not acceptable.')
+			return False
+		self._logger.debug('Current stats are acceptable.')
+		current.save(worker_host_file)
+		return True
 
 def init(working_dir=None, verbose_var=None, logger_name=None, script_rootdir=None, only_platforms=None, skip_platforms=None): # pragma: no cover -- TODO need mocks
 	""" Inits jobsequence context (see Context).
