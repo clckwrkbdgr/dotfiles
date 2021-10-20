@@ -1,15 +1,20 @@
+[ -f ~/.config/bash/debug.inc.bash ] && . ~/.config/bash/debug.inc.bash
+
 if [ -n "$WSL_DISTRO_NAME" ]; then
    # WSL does not read profile for command mode (i.e. when started non-interactively.
    if [ -z "$PYTHONWARNINGS" ]; then # TODO best temp. pick, should make a designated variable that definitely means that .profile was/not loaded.
       . ~/.profile
    fi
 fi
+_clckwrkbdgr_debug_profile "After WSL section."
 
 export HISTCONTROL=ignoredups
 
 . "$XDG_CONFIG_HOME/bash/aliases.inc.bash"
+_clckwrkbdgr_debug_profile "Loaded aliases."
 
 . "$XDG_CONFIG_HOME/bash/prompt.inc.bash"
+_clckwrkbdgr_debug_profile "Loaded prompt."
 
 # TODO temp measures until there is a way to update environment in running DE.
 . ~/.config/lib/xdg.bash
@@ -17,10 +22,14 @@ for xdgsourcefile in ~/.config/xdg/*.sh; do
 	grep -q '^deprecated' "$xdgsourcefile" && continue # TODO deprecated source files should be removed
 	. "$xdgsourcefile"
 done
+_clckwrkbdgr_debug_profile "Loaded XDG configuration."
 
 # TODO have custom compat version of 'dircolors' to produce LS_COLORS in this case.
 which dircolors >/dev/null 2>&1 && eval `dircolors "$XDG_CONFIG_HOME/dir_colors"`
+_clckwrkbdgr_debug_profile "Loaded dircolors."
 
 # User private settings.
 [ -f "$XDG_DATA_HOME/bashrc" ] && source "$XDG_DATA_HOME/bashrc"
+_clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME bashrc"
 [ -f ~/.local/bashrc ] && source ~/.local/bashrc
+_clckwrkbdgr_debug_profile "Checked ~/.local bashrc"

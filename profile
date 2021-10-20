@@ -1,4 +1,6 @@
 #!/bin/sh
+[ -f ~/.config/bash/debug.inc.bash ] && . ~/.config/bash/debug.inc.bash
+
 [ -z "$SHELL" ] && export SHELL=/bin/bash
 [ -z "$USER" ] && export USER=$LOGNAME
 [ -z "$MAILTO" ] && export MAILTO=$LOGNAME
@@ -22,6 +24,7 @@ else
 	export PYTHONPATH="$HOME/.local/lib:$HOME/.config/lib"
 fi
 export PYTHONWARNINGS=ignore:DEPRECATION::pip._internal.cli.base_command,always::DeprecationWarning
+_clckwrkbdgr_debug_profile "After initial exports."
 
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/bin" ] ; then
@@ -41,14 +44,24 @@ for xdgsourcefile in ~/.config/xdg/*.sh; do
 	grep -q '^deprecated' "$xdgsourcefile" && continue # TODO deprecated source files should be removed
 	. "$xdgsourcefile"
 done
+_clckwrkbdgr_debug_profile "Loaded XDG configuration."
 
 # User/platform/host specific settings.
+_osname=`uname`
+_hostname=`hostname`
+_clckwrkbdgr_debug_profile "Read os/host names."
 [ -f "$XDG_DATA_HOME/profile" ] && . "$XDG_DATA_HOME/profile"
-[ -f "$XDG_DATA_HOME/profile.`uname`" ] && . "$XDG_DATA_HOME/profile.`uname`"
-[ -f "$XDG_DATA_HOME/profile.`hostname`" ] && . "$XDG_DATA_HOME/profile.`hostname`"
+_clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME profile"
+[ -f "$XDG_DATA_HOME/profile.${_osname}" ] && . "$XDG_DATA_HOME/profile.${_osname}"
+_clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME os-specific profile"
+[ -f "$XDG_DATA_HOME/profile.${_hostname}" ] && . "$XDG_DATA_HOME/profile.${_hostname}"
+_clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME host-specific profile"
 [ -f ~/.local/profile ] && . ~/.local/profile
-[ -f ~/.local/profile.`uname` ] && . ~/.local/profile.`uname`
-[ -f ~/.local/profile.`hostname` ] && . ~/.local/profile.`hostname`
+_clckwrkbdgr_debug_profile "Checked ~/.local profile"
+[ -f ~/.local/profile.${_osname} ] && . ~/.local/profile.${_osname}
+_clckwrkbdgr_debug_profile "Checked ~/.local os-specific profile"
+[ -f ~/.local/profile.${_hostname} ] && . ~/.local/profile.${_hostname}
+_clckwrkbdgr_debug_profile "Checked ~/.local host-specific profile"
 
 # For interactive login shell it's better to source shell rc.
 if [ -n "$BASH_VERSION" ]; then
@@ -63,6 +76,7 @@ if [ -n "$BASH_VERSION" -a -z "$BASH_POSIX_MODE" ]; then
 		fi
 	fi
 fi
+_clckwrkbdgr_debug_profile "Loaded .bashrc"
 
 # Optionally run custom shell command instead of $SHELL.
 # Variable expands without quotes as list of tokens, so spaces in arguments should be properly escaped.

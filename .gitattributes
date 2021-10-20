@@ -110,6 +110,7 @@ README.md caps=work
 WindowsTerminal/settings.json caps=work
 Xresources caps=work
 bash/aliases.inc.bash caps=work
+bash/debug.inc.bash caps=work
 bash/bashrc caps=work
 bash/colors.inc.bash caps=work
 bash/dotfiles_info.3.inc.bash caps=work
