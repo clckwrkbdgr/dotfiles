@@ -109,7 +109,7 @@ class Context: # pragma: no cover -- TODO need mocks
 			self._logger.addHandler(handler)
 		if self._verbose_level == 1:
 			self._logger.setLevel(logging.INFO)
-		elif self._verbose_level > 1:
+		elif self._verbose_level is not None and self._verbose_level > 1:
 			self._logger.setLevel(logging.DEBUG)
 		self._returncode = 0
 	def script(self, name=None, shebang=None, rootdir=None, overwrite=True):
