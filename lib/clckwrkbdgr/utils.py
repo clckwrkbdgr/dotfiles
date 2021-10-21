@@ -216,24 +216,40 @@ def is_integer(number):
 	except:
 		return False
 
-def import_module(module_spec, reload=False): # pragma: no cover -- TODO very specific functionality.
+def import_module(module_spec, reload_module=False): # pragma: no cover -- TODO very specific functionality.
 	""" Tries to load module by given spec:
 	- module instance;
 	- module name (available for direct import, e.g. in sys.path);
 	- arbitrary file path (module name will be deducted from basename).
-	If module is already loaded, does not reimport, unless reload=True.
+	If module is already loaded, does not reimport, unless reload_module=True.
 	Returns loaded instance or None.
 	Does not catch any import errors.
 	"""
 	if isinstance(module_spec, types.ModuleType):
-		return module_spec
+		if sys.version_info < (3, 0):
+			try:
+				return reload(module_spec)
+			except:
+				module_spec = module_spec.__file__
+		elif sys.version_info < (3, 4):
+			import imp
+			try:
+				return imp.reload(module_spec)
+			except:
+				module_spec = module_spec.__file__
+		else:
+			import importlib
+			try:
+				return importlib.reload(module_spec)
+			except ModuleNotFoundError:
+				module_spec = module_spec.__file__
 
 	module_filename = None
 	module_name = module_spec
 	if os.path.exists(module_spec):
 		module_filename = module_spec
 		module_name = os.path.basename(os.path.splitext(module_spec)[0])
-	if reload and module_name in sys.modules:
+	if reload_module and module_name in sys.modules:
 		del sys.modules[module_name]
 
 	if module_filename:
@@ -248,4 +264,30 @@ def import_module(module_spec, reload=False): # pragma: no cover -- TODO very sp
 	else:
 		import importlib
 		module_instance = importlib.import_module(module_name)
+	if module_name not in sys.modules:
+		sys.modules[module_name] = module_instance
 	return module_instance
+
+def load_entry_point(module_spec, function=None, reload_module=False): # pragma: no cover -- TODO very specific functionality.
+	""" Loads entry point from given module and optional function.
+	If module is a string, it may have format "file/name.py:function" or "module.name:function".
+	In this case parsed function overrides argument.
+	Otherwise, when function is not specified either way, first availabe function is picked.
+	Returns pair (<module obj>, <function obj>)
+	See also import_module()
+	"""
+	import pkg_resources, inspect
+	if isinstance(module_spec, six.string_types):
+		entry_point = pkg_resources.EntryPoint.parse("name="+module_spec)
+		module_spec = entry_point.module_name
+		if entry_point.attrs:
+			function = entry_point.attrs[0]
+	module_spec = import_module(module_spec, reload_module=reload_module)
+	if not isinstance(function, six.string_types):
+		function = function.__name__
+	if function:
+		function = getattr(module_spec, function)
+	else:
+		all_functions = list(inspect.getmembers(module_spec, inspect.isfunction))
+		function = all_functions[0][1]
+	return module_spec, function
