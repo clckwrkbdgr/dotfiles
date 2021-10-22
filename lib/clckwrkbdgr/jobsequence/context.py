@@ -44,7 +44,7 @@ class WorkerStats:
 		if not os.path.exists(str(filename)):
 			logger.debug("{0} does not exist".format(filename))
 			return cls(None, None, logger=logger)
-		with open(filename) as f:
+		with open(str(filename)) as f:
 			stored_host = f.readline().rstrip('\n')
 			logger.debug('Stored host: {0}'.format(repr(stored_host)))
 			if not stored_host:
