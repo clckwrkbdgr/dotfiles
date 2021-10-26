@@ -5,6 +5,19 @@ except AttributeError: # pragma: no cover -- py2
 	import argparse
 	SimpleNamespace = argparse.Namespace
 import random
+try:
+	random.choices
+except AttributeError: # pragma: no cover -- py3.5
+	def random_choices(population, weights, k=1):
+		import itertools, bisect
+		n = len(population)
+		cum_weights = list(itertools.accumulate(weights))
+		assert len(cum_weights) == n
+		total = cum_weights[-1] + 0.0   # convert to float
+		return [population[bisect.bisect(cum_weights, random.random() * total, 0, n - 1)]
+				for i in itertools.repeat(None, k)]
+	random.choices = random_choices
+
 from clckwrkbdgr import utils
 from clckwrkbdgr.math import Point, Size, Matrix
 import clckwrkbdgr.math.graph
