@@ -5,6 +5,10 @@ import logging
 import inspect
 from operator import itemgetter
 from collections import namedtuple
+import six
+if six.PY2:
+	import itertools
+	filter = itertools.ifilter
 import vintage
 from clckwrkbdgr import xdg
 from clckwrkbdgr.utils import get_type_by_name
@@ -233,7 +237,7 @@ def to_main_screen(mode):
 class MessageView(tui.widgets.MessageLineOverlay):
 	def get_new_messages(self):
 		process_game_events(self.data, self.data.history)
-		self.data.history.clear()
+		del self.data.history[:]
 
 		events = Events()
 		while events.listen():

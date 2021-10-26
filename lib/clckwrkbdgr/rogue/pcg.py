@@ -9,11 +9,15 @@ try:
 	random.choices
 except AttributeError: # pragma: no cover -- py3.5
 	def random_choices(population, weights, k=1):
-		import itertools, bisect
 		n = len(population)
-		cum_weights = list(itertools.accumulate(weights))
+		cum_weights = []
+		it = iter(weights)
+		cum_weights.append(next(it))
+		for value in it: # py2 itertools has no accumulate()
+			cum_weights.append(cum_weights[-1] + value)
 		assert len(cum_weights) == n
 		total = cum_weights[-1] + 0.0   # convert to float
+		import itertools, bisect
 		return [population[bisect.bisect(cum_weights, random.random() * total, 0, n - 1)]
 				for i in itertools.repeat(None, k)]
 	random.choices = random_choices

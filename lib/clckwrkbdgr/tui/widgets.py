@@ -211,7 +211,7 @@ class MessageLineOverlay(app.OverlayMVC): # pragma: no cover -- TODO curses
 		if not self._messages:
 			return None
 		if not self._to_remove:
-			self._messages.clear()
+			del self._messages[:]
 			return None
 		if ch != self.MORE_KEY:
 			return self
