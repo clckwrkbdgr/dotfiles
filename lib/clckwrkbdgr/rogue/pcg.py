@@ -1,4 +1,9 @@
 import types, copy
+try:
+	SimpleNamespace = types.SimpleNamespace
+except AttributeError: # pragma: no cover -- py2
+	import argparse
+	SimpleNamespace = argparse.Namespace
 import random
 from clckwrkbdgr import utils
 from clckwrkbdgr.math import Point, Size, Matrix
@@ -158,7 +163,7 @@ class Generator: # pragma: no cover -- TODO relies on built-in module `random`. 
 		- items - list of pairs (Point, Item);
 		- monsters - list of Monsters.
 		"""
-		result = types.SimpleNamespace()
+		result = SimpleNamespace()
 		result.rooms = self.grid_of_rooms(room_class,
 				map_size, grid_size, min_room_size=(4, 4), margin=(1, 1),
 				)
