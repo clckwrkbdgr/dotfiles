@@ -116,6 +116,8 @@ class Generator: # pragma: no cover -- TODO relies on built-in module `random`. 
 		"""
 		bending_point = 1
 		if direction == 'H':
+			if start_room.left > stop_room.left:
+				start_room, stop_room = stop_room, start_room
 			start = Point(
 				start_room.right,
 				self.randrange(start_room.top+1, start_room.bottom),
@@ -127,6 +129,8 @@ class Generator: # pragma: no cover -- TODO relies on built-in module `random`. 
 			if abs(stop_room.left - start_room.right) > 1:
 				bending_point = self.randrange(1, abs(stop_room.left - start_room.right))
 		else:
+			if start_room.top > stop_room.top:
+				start_room, stop_room = stop_room, start_room
 			start = Point(
 				self.randrange(start_room.left+1, start_room.right),
 				start_room.bottom,
