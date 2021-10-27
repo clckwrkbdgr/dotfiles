@@ -134,7 +134,7 @@ class SerializedEntity: # pragma: no cover -- TODO requires functional tests.
 			data = jsonpickle.encode(savedata, indent=2, keys=True)
 		else:
 			data = jsonpickle.encode(savedata, keys=True)
-		self.filename.write_text(data)
+		self.filename.write_bytes(data.encode('utf-8', 'replace'))
 	def __enter__(self):
 		self.load()
 		return self
