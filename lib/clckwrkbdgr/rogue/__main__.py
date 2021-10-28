@@ -26,6 +26,21 @@ from clckwrkbdgr.rogue import game
 from clckwrkbdgr.rogue.game import Version, Item, Consumable, Wearable, Monster, Room, Tunnel, GridRoomMap, GridRoomMap as Map, Furniture, LevelPassage, GodMode, Dungeon, Event
 from clckwrkbdgr.rogue import pcg
 
+class MakeEntity:
+	""" Creates builders for bare-properties-based classes to create subclass in one line. """
+	def __init__(self, base_classes, *properties):
+		""" Properties are either list of strings, or a single strings with space-separated identifiers. """
+		self.base_classes = base_classes if clckwrkbdgr.utils.is_collection(base_classes) else (base_classes,)
+		self.properties = properties
+		if len(self.properties) == 1 and ' ' in self.properties[0]:
+			self.properties = self.properties[0].split()
+	def __call__(self, class_name, *values):
+		""" Creates class object and puts it into global namespace.
+		Values should match properties given at init.
+		"""
+		assert len(self.properties) == len(values), len(values)
+		globals()[class_name] = type(class_name, self.base_classes, dict(zip(self.properties, values)))
+
 class StairsUp(LevelPassage):
 	_sprite = '<'
 	_name = 'stairs up'
@@ -60,40 +75,16 @@ class HealingPotion(Item, Consumable):
 		Events().trigger(DrinksHealingPotion(Who=who.name.title()))
 		return True
 
-class Dagger(Item):
-	_sprite = "("
-	_name = "dagger"
-	_attack = 1
+make_weapon = MakeEntity(Item, '_sprite _name _attack')
+make_weapon('Dagger', '(', 'dagger', 1)
+make_weapon('Sword', '(', 'sword', 2)
+make_weapon('Axe', '(', 'axe', 4)
 
-class Sword(Item):
-	_sprite = "("
-	_name = "sword"
-	_attack = 2
-
-class Axe(Item):
-	_sprite = "("
-	_name = "axe"
-	_attack = 4
-
-class Rags(Item, Wearable):
-	_sprite = "["
-	_name = "rags"
-	_protection = 1
-
-class Leather(Item, Wearable):
-	_sprite = "["
-	_name = "leather"
-	_protection = 2
-
-class ChainMail(Item, Wearable):
-	_sprite = "["
-	_name = "chain mail"
-	_protection = 3
-
-class PlateArmor(Item, Wearable):
-	_sprite = "["
-	_name = "plate armor"
-	_protection = 4
+make_armor = MakeEntity((Item, Wearable), '_sprite _name _protection')
+make_armor('Rags', "[", "rags", 1)
+make_armor('Leather', "[", "leather", 2)
+make_armor('ChainMail', "[", "chain mail", 3)
+make_armor('PlateArmor', "[", "plate armor", 4)
 
 class Rogue(Monster):
 	_hostile_to = [Monster]
@@ -106,24 +97,13 @@ class Rogue(Monster):
 class RealMonster(Monster):
 	_hostile_to = [Rogue]
 
-class Rat(RealMonster):
-	_sprite = "r"
-	_name = "rat"
-	_max_hp = 5
-	_attack = 1
-	_drops = [
+_rat_drops = [
 			(70, None),
 			(20, HealingPotion),
 			(5, Dagger),
 			(5, Rags),
 			]
-
-class Goblin(RealMonster):
-	_sprite = "g"
-	_name = "goblin"
-	_max_hp = 10
-	_attack = 2
-	_drops = 2*[
+_goblin_drops = [
 			(40, None),
 			(30, HealingPotion),
 			(10, Dagger),
@@ -131,18 +111,16 @@ class Goblin(RealMonster):
 			(10, Leather),
 			(5, ChainMail),
 			]
-
-class Troll(RealMonster):
-	_sprite = "T"
-	_name = "troll"
-	_max_hp = 25
-	_attack = 5
-	_drops = [
+_troll_drops = [
 			(80, None),
 			(5, HealingPotion),
 			(5, Axe),
 			(10, Leather),
 			]
+make_monster = MakeEntity((RealMonster), '_sprite _name _max_hp _attack _drops')
+make_monster('Rat', "r", "rat", 5, 1, _rat_drops)
+make_monster('Goblin', "g", "goblin", 10, 2, _goblin_drops*2)
+make_monster('Troll', "T", "troll", 25, 5, _troll_drops)
 
 class GodModeSwitched(MessageEvent): _message = "God {name} -> {state}"
 
