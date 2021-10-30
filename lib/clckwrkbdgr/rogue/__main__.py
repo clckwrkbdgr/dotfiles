@@ -39,7 +39,23 @@ class MakeEntity:
 		Values should match properties given at init.
 		"""
 		assert len(self.properties) == len(values), len(values)
-		globals()[class_name] = type(class_name, self.base_classes, dict(zip(self.properties, values)))
+		entity_class = type(class_name, self.base_classes, dict(zip(self.properties, values)))
+		globals()[class_name] = entity_class
+		return entity_class
+class EntityClassDistribution:
+	def __init__(self, prob):
+		self.prob = prob
+		self.classes = []
+	def __lshift__(self, entity_class):
+		self.classes.append(entity_class)
+	def __iter__(self):
+		return iter(self.classes)
+	def get_distribution(self, param):
+		if callable(self.prob):
+			value = self.prob(param)
+		else:
+			value = self.prob
+		return [(value, entity_class) for entity_class in self.classes]
 
 class StairsUp(LevelPassage):
 	_sprite = '<'
@@ -97,13 +113,31 @@ class Rogue(Monster):
 class RealMonster(Monster):
 	_hostile_to = [Rogue]
 
-_rat_drops = [
+animal_drops = [
 			(70, None),
 			(20, HealingPotion),
 			(5, Dagger),
 			(5, Rags),
 			]
-_goblin_drops = [
+monster_drops = [
+			(78, None),
+			(3, HealingPotion),
+			(3, Dagger),
+			(3, Sword),
+			(3, Axe),
+			(3, Rags),
+			(3, Leather),
+			(3, ChainMail),
+			(1, PlateArmor),
+		]
+thug_drops = [
+			(10, None),
+			(20, HealingPotion),
+			(30, Dagger),
+			(10, Sword),
+			(30, Leather),
+			]
+warrior_drops = [
 			(40, None),
 			(30, HealingPotion),
 			(10, Dagger),
@@ -111,16 +145,68 @@ _goblin_drops = [
 			(10, Leather),
 			(5, ChainMail),
 			]
-_troll_drops = [
+super_warrior_drops = [
 			(80, None),
 			(5, HealingPotion),
 			(5, Axe),
 			(10, Leather),
 			]
+easy_monsters = EntityClassDistribution(1)
+norm_monsters = EntityClassDistribution(lambda depth: max(0, (depth-2)))
+hard_monsters = EntityClassDistribution(lambda depth: max(0, (depth-7)//2))
 make_monster = MakeEntity((RealMonster), '_sprite _name _max_hp _attack _drops')
-make_monster('Rat', "r", "rat", 5, 1, _rat_drops)
-make_monster('Goblin', "g", "goblin", 10, 2, _goblin_drops*2)
-make_monster('Troll', "T", "troll", 25, 5, _troll_drops)
+easy_monsters << make_monster('Ant', 'a', 'ant', 5, 1, animal_drops)
+easy_monsters << make_monster('Bat', 'b', 'bat', 5, 1, animal_drops)
+easy_monsters << make_monster('Cockroach', 'c', 'cockroach', 5, 1, animal_drops)
+easy_monsters << make_monster('Dog', 'd', 'dog', 7, 1, animal_drops)
+norm_monsters << make_monster('Elf', 'e', 'elf', 10, 2, warrior_drops)
+easy_monsters << make_monster('Frog', 'f', 'frog', 5, 1, animal_drops)
+norm_monsters << make_monster('Goblin', "g", "goblin", 10, 2, warrior_drops*2)
+norm_monsters << make_monster('Harpy', 'h', 'harpy', 10, 2, monster_drops)
+norm_monsters << make_monster('Imp', 'i', 'imp', 10, 3, monster_drops)
+easy_monsters << make_monster('Jelly', 'j', 'jelly', 5, 2, animal_drops)
+norm_monsters << make_monster('Kobold', 'k', 'kobold', 10, 2, warrior_drops)
+easy_monsters << make_monster('Lizard', 'l', 'lizard', 5, 1, animal_drops)
+easy_monsters << make_monster('Mummy', 'm', 'mummy', 10, 2, monster_drops)
+norm_monsters << make_monster('Narc', 'n', 'narc', 10, 2, thug_drops)
+norm_monsters << make_monster('Orc', 'o', 'orc', 15, 3, warrior_drops*2)
+easy_monsters << make_monster('Pigrat', 'p', 'pigrat', 10, 2, animal_drops)
+easy_monsters << make_monster('Quokka', 'q', 'quokka', 5, 1, animal_drops)
+easy_monsters << make_monster('Rat', "r", "rat", 5, 1, animal_drops)
+norm_monsters << make_monster('Skeleton', 's', 'skeleton', 20, 2, monster_drops)
+norm_monsters << make_monster('Thug', 't', 'thug', 15, 3, thug_drops*2)
+norm_monsters << make_monster('Unicorn', 'u', 'unicorn', 15, 3, monster_drops)
+norm_monsters << make_monster('Vampire', 'v', 'vampire', 20, 2, monster_drops)
+easy_monsters << make_monster('Worm', 'w', 'worm', 5, 2, animal_drops)
+hard_monsters << make_monster('Exterminator', 'x', 'exterminator', 20, 3, super_warrior_drops)
+norm_monsters << make_monster('Yak', 'y', 'yak', 10, 2, animal_drops)
+easy_monsters << make_monster('Zombie', 'z', 'zombie', 5, 2, thug_drops)
+hard_monsters << make_monster('Angel', 'A', 'angel', 30, 5, super_warrior_drops)
+norm_monsters << make_monster('Beholder', 'B', 'beholder', 20, 2, warrior_drops)
+hard_monsters << make_monster('Cyborg', 'C', 'cyborg', 20, 5, super_warrior_drops*3)
+hard_monsters << make_monster('Dragon', 'D', 'dragon', 40, 5, monster_drops*3)
+norm_monsters << make_monster('Elemental', 'E', 'elemental', 10, 2, [])
+hard_monsters << make_monster('Floater', 'F', 'floater', 40, 1, animal_drops)
+hard_monsters << make_monster('Gargoyle', 'G', 'gargoyle', 30, 3, monster_drops)
+hard_monsters << make_monster('Hydra', 'H', 'hydra', 30, 2, monster_drops)
+norm_monsters << make_monster('Ichthyander', 'I', 'ichthyander', 20, 2, thug_drops)
+hard_monsters << make_monster('Juggernaut', 'J', 'juggernaut', 40, 4, monster_drops)
+hard_monsters << make_monster('Kraken', 'K', 'kraken', 30, 3, monster_drops)
+norm_monsters << make_monster('Lich', 'L', 'lich', 20, 2, monster_drops)
+norm_monsters << make_monster('Minotaur', 'M', 'minotaur', 20, 2, warrior_drops*2)
+norm_monsters << make_monster('Necromancer', 'N', 'necromancer', 20, 2, warrior_drops)
+hard_monsters << make_monster('Ogre', 'O', 'ogre', 30, 5, super_warrior_drops)
+hard_monsters << make_monster('Phoenix', 'P', 'phoenix', 20, 3, monster_drops)
+norm_monsters << make_monster('QueenBee', 'Q', 'queen bee', 20, 2, animal_drops)
+hard_monsters << make_monster('Revenant', 'R', 'revenant', 20, 3, super_warrior_drops)
+norm_monsters << make_monster('Snake', 'S', 'snake', 10, 2, animal_drops)
+hard_monsters << make_monster('Troll', "T", "troll", 25, 5, super_warrior_drops)
+norm_monsters << make_monster('Unseen', 'U', 'unseen', 10, 2, thug_drops)
+norm_monsters << make_monster('Viper', 'V', 'viper', 10, 2, animal_drops)
+hard_monsters << make_monster('Wizard', 'W', 'wizard', 40, 5, thug_drops*2)
+hard_monsters << make_monster('Xenomorph', 'X', 'xenomorph', 30, 3, animal_drops)
+norm_monsters << make_monster('Yeti', 'Y', 'yeti', 10, 2, animal_drops)
+norm_monsters << make_monster('Zealot', 'Z', 'zealot', 10, 2, thug_drops)
 
 class GodModeSwitched(MessageEvent): _message = "God {name} -> {state}"
 
@@ -181,11 +267,11 @@ class RogueDungeonGenerator(pcg.Generator):
 					(max(0, (depth-10) // 3), PlateArmor),
 					],
 				item_amount=(2, 4),
-				monster_distribution = [
-					(10, Rat),
-					(depth, Goblin),
-					(max(0, (depth-5) // 2), Troll),
-					],
+				monster_distribution = list(itertools.chain(
+					easy_monsters.get_distribution(depth),
+					norm_monsters.get_distribution(depth),
+					hard_monsters.get_distribution(depth),
+					)),
 				monster_amount=5,
 				prev_level_id=level_id - 1 if level_id > 0 else None,
 				next_level_id=level_id + 1 if not is_bottom else None,
