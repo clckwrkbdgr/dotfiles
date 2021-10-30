@@ -27,7 +27,7 @@ class Version(clckwrkbdgr.collections.Enum):
 	WEARING = auto()
 	JSONPICKLE = auto()
 
-class Event:
+class Event(object):
 	@classmethod
 	def register(cls, name, fields):
 		""" Registers new Event/namedtuple subclass with given name and fields (like for namedtuple).
@@ -51,20 +51,20 @@ Event.register('NotConsumable', 'item')
 Event.register('InventoryFull', 'item')
 Event.register('GrabbedItem', 'who item')
 
-class Item:
+class Item(object):
 	""" Basic pickable and carryable item. """
 	sprite = classfield('_sprite', '*')
 	name = classfield('_name', 'mcguffin')
 	attack = classfield('_attack', 0)
 
-class Consumable:
+class Consumable(object):
 	def consume_by(self, who): # pragma: no cover
 		return NotImplemented
 
-class Wearable:
+class Wearable(object):
 	protection = classfield('_protection', 0)
 
-class Furniture:
+class Furniture(object):
 	""" Any object placed on map that is not a part of the terrain.
 	Like stairs, doors, levers etc or even inert objects like statues.
 	"""
@@ -95,7 +95,7 @@ class LevelPassage(Furniture):
 		"""
 		pass
 
-class Monster:
+class Monster(object):
 	def __init__(self):
 		self.pos = None
 		self.wielding = None
@@ -291,7 +291,7 @@ class Tunnel(clckwrkbdgr.math.geometry.RectConnection):
 			if self.contains(p):
 				self.visited.add(p)
 
-class GridRoomMap:
+class GridRoomMap(object):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
 	Items, monsters, fitment objects are supplied.
 	"""
@@ -425,14 +425,14 @@ class GridRoomMap:
 		data.monsters = self.monsters
 		return data
 
-class GodMode:
+class GodMode(object):
 	""" God mode options.
 	Vision: allows to see everything regardless of obstacles.
 	"""
 	def __init__(self):
 		self.vision = False
 
-class Dungeon:
+class Dungeon(object):
 	""" Set of connected PCG levels with player. """
 	def __init__(self, generator, player_type):
 		self.levels = {}
