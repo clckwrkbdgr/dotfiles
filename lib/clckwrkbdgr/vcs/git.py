@@ -1,18 +1,18 @@
 import os, sys, subprocess
 try:
 	subprocess.DEVNULL
-except:
+except: # pragma: no cover -- py2
 	subprocess.DEVNULL = open(os.devnull, 'w')
 import difflib
 try:
 	from pathlib2 import Path
-except ImportError:
+except ImportError: # pragma: no cover -- py2
 	from pathlib import Path
 
 def is_repo_root(path='.'):
 	return (Path(path)/'.git').is_dir()
 
-class Stash(object):
+class Stash(object): # pragma: no cover -- TODO commands
 	""" Context manager to make temporary stash and revert it back completely despite merge errors. """
 	def __enter__(self):
 		subprocess.call(["git", "stash"])
@@ -23,13 +23,13 @@ class Stash(object):
 			subprocess.call(["git", "checkout", "--theirs", "."])
 			subprocess.call(["git", "stash", "drop"])
 
-class GitFile(object):
+class GitFile(object): # pragma: no cover -- TODO commands
 	""" Access to file stored in git objects. """
 	def __init__(self, branch, path):
 		self.branch, self.path = branch, path
 		self.content = subprocess.check_output(['git', 'show', '{0}:{1}'.format(self.branch, self.path)])
 
-class SparseCheckout(object):
+class SparseCheckout(object): # pragma: no cover -- TODO commands
 	def __init__(self):
 		self.basefile = os.path.join('.git', 'info', 'sparse-checkout')
 		self.content = None
@@ -63,7 +63,7 @@ class SparseCheckout(object):
 		with open(self.basefile, 'wb') as f:
 			f.write(content)
 
-def branch_is_behind_remote(branch):
+def branch_is_behind_remote(branch): # pragma: no cover -- TODO commands
 	""" Returns True if given branch is behind remote origin. """
 	try:
 		output = subprocess.check_output(['git', 'for-each-ref', '--format="%(push:track)"', 'refs/heads/{0}'.format(branch)], stderr=subprocess.STDOUT)
@@ -82,14 +82,14 @@ def branch_is_behind_remote(branch):
 		else:
 			raise
 
-def sync(quiet=False):
+def sync(quiet=False): # pragma: no cover -- TODO commands
 	""" Synchronizes info about remote repository.
 	No actual update/pull/push is performed.
 	"""
 	# Fetch remote updates status only.
 	return 0 == subprocess.call(["git", "remote", "update"], stdout=(subprocess.DEVNULL if quiet else None))
 
-def update(branch='master', quiet=False):
+def update(branch='master', quiet=False): # pragma: no cover -- TODO commands
 	""" Performs full update (fetch+merge) of given Git branch.
 	Tries to resolve conflicts if possible.
 	Updates submodules as well.
@@ -100,7 +100,7 @@ def update(branch='master', quiet=False):
 		subprocess.call(["git", "submodule"] + quiet_arg + ["init"])
 		subprocess.call(["git", "submodule"] + quiet_arg + ["update", "--recursive"])
 
-def list_attributes(attribute, filenames=None):
+def list_attributes(attribute, filenames=None): # pragma: no cover -- TODO commands
 	""" Lists attributes for given files (or all versioned files by default).
 	Yields pairs (<filename>, <attribute or None>).
 	"""
