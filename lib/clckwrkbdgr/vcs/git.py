@@ -8,6 +8,19 @@ try:
 	from pathlib2 import Path
 except ImportError: # pragma: no cover -- py2
 	from pathlib import Path
+import logging
+
+def safe_int(value):
+	try:
+		return int(value)
+	except ValueError:
+		return value
+
+def version():
+	try:
+		git_version = tuple(map(safe_int, subprocess.check_output(['git', '--version']).decode().strip().split(None, 3)[2].split('.')))
+	except OSError as e:
+		return None
 
 def is_repo_root(path='.'):
 	return (Path(path)/'.git').is_dir()
@@ -101,6 +114,12 @@ def update(branch='master', quiet=False): # pragma: no cover -- TODO commands
 		subprocess.call(["git", "submodule"] + quiet_arg + ["init"])
 		subprocess.call(["git", "submodule"] + quiet_arg + ["update", "--recursive"])
 
+def update_submodules():
+	args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
+	if version() >= (2, 26, 0):
+		args += ['--single-branch']
+	return 0 == subprocess.call(args)
+
 def list_attributes(attribute, filenames=None): # pragma: no cover -- TODO commands
 	""" Lists attributes for given files (or all versioned files by default).
 	Yields pairs (<filename>, <attribute or None>).
@@ -126,3 +145,26 @@ def list_attributes(attribute, filenames=None): # pragma: no cover -- TODO comma
 			filename = repr(filename)
 		yield filename, value
 
+def has_staged_files():
+	return 0 != subprocess.call(['git', 'diff', '--cached', '--quiet', '--exit-code'])
+
+def file_needs_commit(path):
+	if 0 != subprocess.call(['git', 'diff', '--quiet', '--exit-code', str(path)]):
+		return True # Unstaged, but modified.
+	if 0 != subprocess.call(['git', 'ls-files', '--error-unmatch', str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+		return True # Yet untracked.
+	return False
+
+def commit_one_file(path, commit_message, show_diff=False):
+	if not Path(path).exists():
+		raise RuntimeError('Cannot find file to commit in current WD: {0} ({1})'.format(path, os.getcwd()))
+	if has_staged_files():
+		raise RuntimeError('Some files are staged, cannot commit new file: {0}'.format(path))
+	if not file_needs_commit(path):
+		logging.debug('{0}: No changes, skipping'.format(path))
+		return False # No changes.
+	if show_diff:
+		subprocess.call(['git', '--no-pager', 'diff', str(path)])
+	subprocess.call(['git', 'add', str(path)])
+	rc = subprocess.call(['git', 'commit', '--quiet', '-m', str(commit_message)])
+	return rc == 0
