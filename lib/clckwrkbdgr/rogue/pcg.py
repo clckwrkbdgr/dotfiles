@@ -231,7 +231,7 @@ class Generator: # pragma: no cover -- TODO relies on built-in module `random`. 
 		for pos, monster in self.distribute_in_rooms(monster_distribution, available_rooms, min_monster_amount, max_monster_amount):
 			monster.pos = pos
 			drop_distributions = monster.drops
-			if not utils.is_collection(drop_distributions[0][0]):
+			if drop_distributions and drop_distributions[0] and not utils.is_collection(drop_distributions[0][0]):
 				drop_distributions = [drop_distributions]
 			for distribution in drop_distributions:
 				monster.inventory.extend(self.distribute(distribution, 1))
