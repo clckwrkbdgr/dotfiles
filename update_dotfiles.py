@@ -3,7 +3,14 @@ try:
 	import clckwrkbdgr.vcs.git as git
 except:
 	sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
-	import clckwrkbdgr.vcs.git as git
+	try:
+		import clckwrkbdgr.vcs.git as git
+	except:
+		for filename in ['lib/clckwrkbdgr/vcs/__init__.py', 'lib/clckwrkbdgr/vcs/git.py']:
+			if not os.path.exists(filename):
+				with open(filename, 'wb') as f:
+					f.write(subprocess.check_output(['git', 'show', 'master:{0}'.format(filename)]))
+		import clckwrkbdgr.vcs.git as git
 
 if __name__ == "__main__":
 	quiet = '-q' in sys.argv[1:] or '--quiet' in sys.argv[1:]

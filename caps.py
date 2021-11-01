@@ -48,7 +48,7 @@ def sparse_checkout(tag):
 	sparse_checkout = git.SparseCheckout()
 	if lines == sparse_checkout.lines():
 		sys.exit(0) # Already up-to-date.
-	sparse_checkout.update_with('\n'.join(lines) + '\n')
+	sparse_checkout.update_with(('\n'.join(lines) + '\n').encode('utf-8', 'replace'))
 	(Path('.git')/'info'/'CAPS').write_text(tag)
 	sys.exit(1) # Worktree needs update.
 

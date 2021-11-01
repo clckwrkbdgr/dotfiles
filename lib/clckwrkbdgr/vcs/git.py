@@ -38,6 +38,7 @@ class SparseCheckout(object): # pragma: no cover -- TODO commands
 			return
 		with open(self.basefile, 'rb') as f:
 			self.content = f.read()
+		return self.content
 	def lines(self):
 		return self._load_content().splitlines()
 	def sync(self, quiet=False):
