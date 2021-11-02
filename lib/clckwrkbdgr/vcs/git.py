@@ -16,9 +16,9 @@ def safe_int(value):
 	except ValueError:
 		return value
 
-def version():
+def version(): # pragma: no cover -- TODO commands
 	try:
-		git_version = tuple(map(safe_int, subprocess.check_output(['git', '--version']).decode().strip().split(None, 3)[2].split('.')))
+		return tuple(map(safe_int, subprocess.check_output(['git', '--version']).decode().strip().split(None, 3)[2].split('.')))
 	except OSError as e:
 		return None
 
@@ -114,7 +114,7 @@ def update(branch='master', quiet=False): # pragma: no cover -- TODO commands
 		subprocess.call(["git", "submodule"] + quiet_arg + ["init"])
 		subprocess.call(["git", "submodule"] + quiet_arg + ["update", "--recursive"])
 
-def update_submodules():
+def update_submodules(): # pragma: no cover -- TODO commands
 	args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
 	if version() >= (2, 26, 0):
 		args += ['--single-branch']
@@ -145,17 +145,17 @@ def list_attributes(attribute, filenames=None): # pragma: no cover -- TODO comma
 			filename = repr(filename)
 		yield filename, value
 
-def has_staged_files():
+def has_staged_files(): # pragma: no cover -- TODO commands
 	return 0 != subprocess.call(['git', 'diff', '--cached', '--quiet', '--exit-code'])
 
-def file_needs_commit(path):
+def file_needs_commit(path): # pragma: no cover -- TODO commands
 	if 0 != subprocess.call(['git', 'diff', '--quiet', '--exit-code', str(path)]):
 		return True # Unstaged, but modified.
 	if 0 != subprocess.call(['git', 'ls-files', '--error-unmatch', str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
 		return True # Yet untracked.
 	return False
 
-def commit_one_file(path, commit_message, show_diff=False):
+def commit_one_file(path, commit_message, show_diff=False): # pragma: no cover -- TODO commands
 	if not Path(path).exists():
 		raise RuntimeError('Cannot find file to commit in current WD: {0} ({1})'.format(path, os.getcwd()))
 	if has_staged_files():
