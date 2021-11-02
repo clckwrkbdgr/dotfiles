@@ -23,15 +23,21 @@ def version(): # pragma: no cover -- TODO commands
 		return None
 
 def is_repo_root(path='.'):
-	return (Path(path)/'.git').is_dir()
+	return (Path(path)/'.git'/'HEAD').is_file()
 
 class Stash(object): # pragma: no cover -- TODO commands
 	""" Context manager to make temporary stash and revert it back completely despite merge errors. """
+	def __init__(self, quiet=False):
+		self._quiet = quiet
 	def __enter__(self):
-		subprocess.call(["git", "stash"])
+		args = ["git", "stash"]
+		if self._quiet:
+			args.append('--quiet')
+		subprocess.call(args)
 		return self
 	def __exit__(self, e, t, tb):
-		if 0 != subprocess.call(["git", "stash", "pop"]):
+		quiet_arg = ['--quiet'] if self._quiet else []
+		if 0 != subprocess.call(["git", "stash", "pop"] + quiet_arg):
 			# Resolving merge conflicts 'manually' to prevent leaving conflict markers in the code.
 			subprocess.call(["git", "checkout", "--theirs", "."])
 			subprocess.call(["git", "stash", "drop"])
@@ -103,16 +109,21 @@ def sync(quiet=False): # pragma: no cover -- TODO commands
 	# Fetch remote updates status only.
 	return 0 == subprocess.call(["git", "remote", "update"], stdout=(subprocess.DEVNULL if quiet else None))
 
-def update(branch='master', quiet=False): # pragma: no cover -- TODO commands
+def update(branch='master', remote='origin', display_status=False, quiet=False): # pragma: no cover -- TODO commands
 	""" Performs full update (fetch+merge) of given Git branch.
 	Tries to resolve conflicts if possible.
 	Updates submodules as well.
 	"""
+	if not subprocess.check_output(['git', 'remote']).strip():
+		return
 	quiet_arg = ['--quiet'] if quiet else []
 	with Stash():
-		subprocess.call(["git", "pull"] + quiet_arg + ["origin", "master"])
+		subprocess.call(["git", "pull"] + quiet_arg + [remote, branch])
 		subprocess.call(["git", "submodule"] + quiet_arg + ["init"])
 		subprocess.call(["git", "submodule"] + quiet_arg + ["update", "--recursive"])
+		if display_status:
+			subprocess.call(["git", "status", '--short'])
+			subprocess.call(["git", '--no-pager', "diff"])
 
 def update_submodules(): # pragma: no cover -- TODO commands
 	args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
