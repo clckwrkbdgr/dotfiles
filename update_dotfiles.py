@@ -7,6 +7,8 @@ except:
 		import clckwrkbdgr.vcs.git as git
 	except:
 		for filename in ['lib/clckwrkbdgr/vcs/__init__.py', 'lib/clckwrkbdgr/vcs/git.py']:
+			if not os.path.exists(os.path.dirname(filename)):
+				os.makedirs(os.path.dirname(filename))
 			if not os.path.exists(filename):
 				with open(filename, 'wb') as f:
 					f.write(subprocess.check_output(['git', 'show', 'master:{0}'.format(filename)]))
