@@ -125,6 +125,18 @@ def update(branch='master', remote='origin', display_status=False, quiet=False):
 			subprocess.call(["git", "status", '--short'])
 			subprocess.call(["git", '--no-pager', "diff"])
 
+def update_or_clone(url, name=None, branch='master', remote='origin', display_status=False, quiet=False): # pragma: no cover -- TODO commands
+	if not name:
+		name = PurePosixPath(url).name
+		if name.endswith('.git'):
+			name = name[:-4]
+	if not Path(name).is_dir():
+		subprocess.call(['git', 'clone', url, name])
+	else:
+		with fs.CurrentDir(name):
+			git.sync(quiet=quiet)
+			git.update(quiet=quiet)
+
 def update_submodules(): # pragma: no cover -- TODO commands
 	args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
 	if version() >= (2, 26, 0):
