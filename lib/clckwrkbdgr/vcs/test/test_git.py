@@ -22,5 +22,7 @@ class TestGitWrapper(fake_filesystem_unittest.TestCase):
 		self.fs.create_dir('/repo')
 		self.fs.create_dir('/repo/.git')
 		self.assertFalse(git.is_repo_root('/'))
-		self.assertTrue(git.is_repo_root('/repo/'))
+		self.assertFalse(git.is_repo_root('/repo/'))
 		self.assertFalse(git.is_repo_root('/repo/.git'))
+		self.fs.create_file('/repo/.git/HEAD')
+		self.assertTrue(git.is_repo_root('/repo/'))
