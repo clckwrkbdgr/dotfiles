@@ -252,6 +252,7 @@ lib/clckwrkbdgr/vcs/test/test_git.py caps=work
 lib/clckwrkbdgr/winnt/__init__.py caps=work
 lib/clckwrkbdgr/winnt/registry.py caps=work
 lib/clckwrkbdgr/winnt/shell.py caps=work
+lib/clckwrkbdgr/winnt/schtasks.py caps=work
 lib/clckwrkbdgr/winnt/test/__init__.py caps=work
 lib/clckwrkbdgr/winnt/test/test_registry.py caps=work
 lib/clckwrkbdgr/winnt/test/test_winnt.py caps=work
