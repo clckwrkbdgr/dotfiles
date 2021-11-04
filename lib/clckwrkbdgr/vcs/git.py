@@ -5,9 +5,9 @@ except: # pragma: no cover -- py2
 	subprocess.DEVNULL = open(os.devnull, 'w')
 import difflib
 try:
-	from pathlib2 import Path
+	from pathlib2 import Path, PurePosixPath
 except ImportError: # pragma: no cover -- py2
-	from pathlib import Path
+	from pathlib import Path, PurePosixPath
 import logging
 
 def safe_int(value):
