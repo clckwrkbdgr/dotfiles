@@ -9,6 +9,7 @@ try:
 except ImportError: # pragma: no cover -- py2
 	from pathlib import Path, PurePosixPath
 import logging
+import clckwrkbdgr.fs
 
 def safe_int(value):
 	try:
@@ -133,7 +134,7 @@ def update_or_clone(url, name=None, branch='master', remote='origin', display_st
 	if not Path(name).is_dir():
 		subprocess.call(['git', 'clone', url, name])
 	else:
-		with fs.CurrentDir(name):
+		with clckwrkbdgr.fs.CurrentDir(name):
 			git.sync(quiet=quiet)
 			git.update(quiet=quiet)
 
