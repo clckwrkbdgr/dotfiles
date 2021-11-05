@@ -58,7 +58,7 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 			output = subprocess.check_output(command)
 		except Exception as e:
 			Log.error("Failed to collect schtasks dump {0}: {1}\n".format(command, e))
-			return None
+			return
 		dom = ET.ElementTree(ET.fromstring(output))
 		for task in dom.findall('./tasks:Task', namespaces=self.nsmap):
 			registration_info = task.find('./tasks:RegistrationInfo', namespaces=self.nsmap)
