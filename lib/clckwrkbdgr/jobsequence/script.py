@@ -3,6 +3,7 @@ try:
 	from pathlib2 import Path
 except ImportError: # pragma: no cover
 	from pathlib import Path
+import six
 
 class Script(object): # pragma: no cover -- TODO need mocks.
 	def __init__(self, name, shebang=None, rootdir=None, overwrite=True):
@@ -30,13 +31,18 @@ class Script(object): # pragma: no cover -- TODO need mocks.
 		mode = filename.stat().st_mode
 		filename.chmod(mode | stat.S_IXUSR)
 	def append(self, line):
-		""" Appends line to a file.
+		""" Appends line (string or bytes) to a file.
 		Automatically puts linebreak if it is not present.
 		"""
-		with self.filename.open('a+') as f:
+		mode = 'a+'
+		line_ending = '\n'
+		if isinstance(line, six.binary_type):
+			mode = 'ab+'
+			line_ending = b'\n'
+		with self.filename.open(mode) as f:
 			f.write(line)
-			if not line.endswith('\n'):
-				f.write('\n')
+			if not line.endswith(line_ending):
+				f.write(line_ending)
 		return self
 	def __iadd__(self, line):
 		""" Shortcut for append():
