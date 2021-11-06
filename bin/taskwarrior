@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+import logging
+logger = logging.getLogger('taskwarrior')
+from clckwrkbdgr import utils
+import clckwrkbdgr.taskwarrior
+from clckwrkbdgr.taskwarrior import TaskWarrior
+
+import click, click_default_group
+import clckwrkbdgr.click
+
+@clckwrkbdgr.click.windows_noexpand_args
+@click.group(cls=click_default_group.DefaultGroup, default='current', default_if_no_args=True)
+@click.option('--debug', is_flag=True, help='Enables debug output.')
+def cli(debug=False):
+	""" Provides simple interface to manage user's task flow. """
+	handler = logging.StreamHandler() # TODO custom formatter to display level, module, logger name etc.; and generic clckwrkbdgr module for such loggers.
+	logger.addHandler(handler)
+	if debug:
+		logger.setLevel(logging.DEBUG)
+
+@cli.command('current')
+@utils.exits_with_return_value
+def current_task():
+	""" Displays current task. """
+	if TaskWarrior().get_current_task() is None:
+		return False
+	print(TaskWarrior().get_current_task())
+	return True
+
+@cli.command('start')
+@click.argument('task', required=False)
+@utils.exits_with_return_value
+def start_task(task=None):
+	""" Starts given task.
+	If task is not given, resumes previous task.
+	"""
+	return TaskWarrior().start(task)
+
+@cli.command('stop')
+@utils.exits_with_return_value
+def stop_task():
+	""" Stops current task. """
+	return TaskWarrior().stop()
+
+@cli.command('list')
+@utils.exits_with_return_value
+def list_history():
+	""" Prints task execution history. """
+	for entry in TaskWarrior().get_history():
+		print(entry)
+	return True
+
+@cli.command('fix')
+@utils.exits_with_return_value
+def fix_history():
+	""" Provides interface to fix task history manually. """
+	return TaskWarrior().fix_history()
+
+if __name__ == '__main__':
+	cli()
