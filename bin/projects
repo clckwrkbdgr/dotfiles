@@ -5,6 +5,7 @@ import logging
 from collections import namedtuple
 from termcolor import colored
 from clckwrkbdgr import utils
+import clckwrkbdgr.vcs.git as vcs
 from clckwrkbdgr.fs import CurrentDir
 
 LOCAL_REMOTE_NAME = 'local'
@@ -235,10 +236,10 @@ def addlocal(repo_storage_path):
 	""" Creates Git bare repository in local filesystem and adds it as a remote to current repo.
 	REPO_STORAGE_PATH is <repo local storage path>[/<repo name>[.git]]
 	"""
-	remotes = Git().remotes()
-	if any(LOCAL_REMOTE_NAME in remote for remote in remotes):
+	remotes = vcs.list_remotes()
+	if LOCAL_REMOTE_NAME in remotes:
 		print("Git remote named '{0}' is already added to this repo:".format(LOCAL_REMOTE_NAME))
-		print_lines(remotes)
+		print('\n'.join(remotes))
 		return False
 	if not os.path.exists(repo_storage_path):
 		name = os.path.basename(repo_storage_path)
@@ -246,29 +247,23 @@ def addlocal(repo_storage_path):
 			name = name[:-4]
 		repo_storage_path = os.path.dirname(repo_storage_path)
 	else:
-		rootdir = Git().rootdir()
-		name = os.path.basename(rootdir)
+		name = vcs.get_repo_name()
 	new_remote_path = os.path.join(repo_storage_path, name + '.git')
 	yes = input("Add new bare repo at {0}? ".format(new_remote_path))
 	if yes.lower() != "y":
 		return False
-	Git().add_bare_remote(LOCAL_REMOTE_NAME, new_remote_path)
+	vcs.add_local_remote(LOCAL_REMOTE_NAME, new_remote_path, bare=True)
 	return True
 
 @cli.command()
 @utils.exits_with_return_value
 def commit_submodules():
 	""" Commits updated submodules if there are any. """
-	subprocess.call(['git', 'stash', '--keep-index'])
-	paths = subprocess.check_output(['git', 'submodule', '-q', 'foreach', 'echo $sm_path']).decode('utf-8', 'replace').splitlines()
-	were_updates = False
-	for sm_path in paths:
-		if not subprocess.check_output(['git', 'status', '-q', sm_path]):
-			continue
-		were_updates = True
-		subprocess.call(['git', 'add', sm_path])
-	subprocess.call(['git', 'commit', '-m', 'Updated submodules.'])
-	subprocess.call(['git', 'stash', 'pop'])
+	with vcs.Stash(keep_index=True):
+		need_commit = [sm_path for sm_path in vcs.list_submodules() if vcs.file_needs_commit(sm_path)]
+		if not need_commit:
+			return True
+		return vcs.commit(*need_commit, message='Updated submodules.')
 
 if __name__ == "__main__":
 	try:

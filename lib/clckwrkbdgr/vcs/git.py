@@ -26,14 +26,26 @@ def version(): # pragma: no cover -- TODO commands
 def is_repo_root(path='.'):
 	return (Path(path)/'.git'/'HEAD').is_file()
 
+def get_repo_root(): # pragma: no cover -- TODO commands
+	git = subprocess.run(["git", "rev-parse", "--show-toplevel"], stdout=subprocess.PIPE)
+	if git.returncode != 0:
+		return None
+	return Path(git.stdout.decode().splitlines()[0]).resolve()
+
+def get_repo_name(): # pragma: no cover -- TODO commands
+	return get_repo_root().name
+
 class Stash(object): # pragma: no cover -- TODO commands
 	""" Context manager to make temporary stash and revert it back completely despite merge errors. """
-	def __init__(self, quiet=False):
+	def __init__(self, quiet=False, keep_index=False):
 		self._quiet = quiet
+		self._keep_index = keep_index
 	def __enter__(self):
 		args = ["git", "stash"]
 		if self._quiet:
 			args.append('--quiet')
+		if self._keep_index:
+			args.append('--keep-index')
 		subprocess.call(args)
 		return self
 	def __exit__(self, e, t, tb):
@@ -144,6 +156,29 @@ def update_submodules(): # pragma: no cover -- TODO commands
 		args += ['--single-branch']
 	return 0 == subprocess.call(args)
 
+def list_submodules(): # pragma: no cover -- TODO commands
+	""" Returns paths relative to current repo root. """
+	return subprocess.check_output(['git', 'submodule', '-q', 'foreach', 'echo $sm_path']).decode('utf-8', 'replace').splitlines()
+
+def list_remotes(): # pragma: no cover -- TODO commands
+	return subprocess.run(["git", "remote", "-v"], stdout=subprocess.PIPE).stdout.decode().splitlines()
+
+def add_local_remote(name, path, bare=True): # pragma: no cover -- TODO commands
+	existed = os.path.exists(str(path))
+	if existed:
+		logging.warning('Remote path already exists, considering bare repo already inited.')
+		return True
+	if not existed:
+		command = ["git", "init"]
+		if bare:
+			command += ["--bare"]
+		command += [path]
+		subprocess.run(command)
+	subprocess.run(["git", "remote", "add", name, path])
+	if not existed:
+		subprocess.run(["git", "push", "-u", name, "master", "--tags"])
+	return True
+
 def list_attributes(attribute, filenames=None): # pragma: no cover -- TODO commands
 	""" Lists attributes for given files (or all versioned files by default).
 	Yields pairs (<filename>, <attribute or None>).
@@ -178,6 +213,16 @@ def file_needs_commit(path): # pragma: no cover -- TODO commands
 	if 0 != subprocess.call(['git', 'ls-files', '--error-unmatch', str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
 		return True # Yet untracked.
 	return False
+
+def commit(*paths, message=None): # pragma: no cover -- TODO commands
+	for path in paths:
+		subprocess.call(['git', 'add', path])
+	command = ['git', 'commit']
+	if not paths:
+		command += ['-a']
+	if message:
+		command += ['-m', str(message)]
+	return 0 == subprocess.call(command)
 
 def commit_one_file(path, commit_message, show_diff=False): # pragma: no cover -- TODO commands
 	if not Path(path).exists():
