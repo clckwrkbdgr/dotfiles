@@ -3,7 +3,9 @@ import os, sys, subprocess
 import re
 import logging
 from collections import namedtuple
+from termcolor import colored
 from clckwrkbdgr import utils
+from clckwrkbdgr.fs import CurrentDir
 
 LOCAL_REMOTE_NAME = 'local'
 
@@ -22,13 +24,6 @@ def skip_lines_with_patterns(lines, patterns):
 
 def skip_lines_that_contains(lines, parts):
 	return [line for line in lines if not any(part in line for part in parts)]
-
-def colored(text, color):
-	colors = {
-			'red' : '\033[1;31m',
-			}
-	reset = '\033[0m'
-	return colors[color] + text + reset
 
 SemVer = namedtuple('SemVer', 'major minor revision')
 
@@ -92,15 +87,6 @@ def find_git_repos(root='.'):
 			continue
 		dirnames = dirnames[:]
 		yield os.path.abspath(root)
-
-class CurrentDir:
-	def __init__(self, path):
-		self.path = path
-	def __enter__(self):
-		self.prev = os.getcwd()
-		os.chdir(self.path)
-	def __exit__(self, e, tb, i):
-		os.chdir(self.prev)
 
 import click
 
