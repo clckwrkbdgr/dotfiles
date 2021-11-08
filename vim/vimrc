@@ -133,6 +133,8 @@ let g:detectindent_preferred_when_mixed = 1
 let g:detectindent_preferred_indent = &tabstop
 let g:detectindent_preferred_expandtab = 0
 
+let g:vim_markdown_frontmatter = 1
+
 au FileType make set noexpandtab
 au FileType c set expandtab
 au FileType cpp set expandtab

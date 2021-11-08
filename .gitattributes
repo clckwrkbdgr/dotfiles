@@ -339,6 +339,7 @@ vim/bundle/vim-qfedit caps=work
 vim/bundle/vim-surround caps=work
 vim/bundle/vim-textile caps=work
 vim/bundle/vimoutliner caps=work
+vim/bundle/vim-markdown caps=work
 vim/keymap/russian-badger.vim caps=work
 vim/less.vim caps=work
 vim/remove_empty_on_exit.vim caps=work
