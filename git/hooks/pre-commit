@@ -5,9 +5,11 @@ mapfile -t changed_files < <( git diff-index --name-only --cached HEAD )
 python caps.py check "${changed_files[@]}"
 rc=$((rc+$?))
 
-pushd lib >/dev/null
+if pushd lib >/dev/null; then
 	unittest -q
 	rc=$((rc+$?))
-popd >/dev/null
+	popd >/dev/null
+fi
 
+[ $rc -gt 0 ] && echo "[Pre-commit failed with RC=$rc]"
 exit $rc
