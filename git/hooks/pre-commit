@@ -1,0 +1,13 @@
+#!/bin/bash
+rc=0
+
+mapfile -t changed_files < <( git diff-index --name-only --cached HEAD )
+python caps.py check "${changed_files[@]}"
+rc=$((rc+$?))
+
+pushd lib >/dev/null
+	unittest -q
+	rc=$((rc+$?))
+popd >/dev/null
+
+exit $rc

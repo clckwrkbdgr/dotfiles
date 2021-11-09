@@ -171,6 +171,7 @@ docs/profile.md caps=work
 dotfiles_info.cfg caps=work
 git/config caps=work
 git/gitignore caps=work
+git/hooks/pre-commit caps=work
 include/build.mak caps=work
 include/build/main_.mak caps=work
 include/build/main_JavaWindows_NT.mak caps=work
