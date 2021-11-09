@@ -263,7 +263,7 @@ def commit_submodules():
 		need_commit = [sm_path for sm_path in vcs.list_submodules() if vcs.file_needs_commit(sm_path)]
 		if not need_commit:
 			return True
-		return vcs.commit(*need_commit, message='Updated submodules.')
+		return vcs.commit(need_commit, message='Updated submodules.')
 
 if __name__ == "__main__":
 	try:

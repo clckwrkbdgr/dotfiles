@@ -214,7 +214,7 @@ def file_needs_commit(path): # pragma: no cover -- TODO commands
 		return True # Yet untracked.
 	return False
 
-def commit(*paths, message=None): # pragma: no cover -- TODO commands
+def commit(paths, message=None): # pragma: no cover -- TODO commands
 	for path in paths:
 		subprocess.call(['git', 'add', path])
 	command = ['git', 'commit']
