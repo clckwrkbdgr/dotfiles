@@ -181,7 +181,7 @@ def list_remotes(): # pragma: no cover -- TODO commands
 	return subprocess.run(["git", "remote"], stdout=subprocess.PIPE).stdout.decode().splitlines()
 
 def list_branches(): # pragma: no cover -- TODO commands
-	return subprocess.run(['git', 'branch', '--format="%(upstream:remotename)"'], stdout=subprocess.PIPE).stdout.decode().splitlines()
+	return subprocess.run(['git', 'branch', '--format=%(upstream:remotename)'], stdout=subprocess.PIPE).stdout.decode().splitlines()
 
 def add_local_remote(name, path, bare=True): # pragma: no cover -- TODO commands
 	existed = os.path.exists(str(path))
