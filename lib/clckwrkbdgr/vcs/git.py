@@ -35,6 +35,13 @@ def get_repo_root(): # pragma: no cover -- TODO commands
 def get_repo_name(): # pragma: no cover -- TODO commands
 	return get_repo_root().name
 
+def find_repos(root='.'): # pragma: no cover -- TODO commands
+	for root, dirnames, filenames in os.walk(str(root), followlinks=True):
+		if '.git' not in dirnames:
+			continue
+		dirnames = dirnames[:]
+		yield Path(root).resolve()
+
 class Stash(object): # pragma: no cover -- TODO commands
 	""" Context manager to make temporary stash and revert it back completely despite merge errors. """
 	def __init__(self, quiet=False, keep_index=False):
@@ -115,12 +122,22 @@ def branch_is_behind_remote(branch): # pragma: no cover -- TODO commands
 		else:
 			raise
 
+def branch_is_ahead_remote(): # pragma: no cover -- TODO commands
+	args = ["git", "status", '--porcelain', '--branch']
+	git = subprocess.run(args, stdout=subprocess.PIPE)
+	if git.returncode != 0:
+		return False
+	return b'ahead' in git.stdout
+
 def sync(quiet=False): # pragma: no cover -- TODO commands
 	""" Synchronizes info about remote repository.
 	No actual update/pull/push is performed.
 	"""
 	# Fetch remote updates status only.
 	return 0 == subprocess.call(["git", "remote", "update"], stdout=(subprocess.DEVNULL if quiet else None))
+
+def push(remote='origin', branch='master'): # pragma: no cover -- TODO commands
+	subprocess.run(["git", "push", remote, branch, "--tags"])
 
 def update(branch='master', remote='origin', display_status=False, quiet=False): # pragma: no cover -- TODO commands
 	""" Performs full update (fetch+merge) of given Git branch.
@@ -161,7 +178,10 @@ def list_submodules(): # pragma: no cover -- TODO commands
 	return subprocess.check_output(['git', 'submodule', '-q', 'foreach', 'echo $sm_path']).decode('utf-8', 'replace').splitlines()
 
 def list_remotes(): # pragma: no cover -- TODO commands
-	return subprocess.run(["git", "remote", "-v"], stdout=subprocess.PIPE).stdout.decode().splitlines()
+	return subprocess.run(["git", "remote"], stdout=subprocess.PIPE).stdout.decode().splitlines()
+
+def list_branches(): # pragma: no cover -- TODO commands
+	return subprocess.run(['git', 'branch', '--format="%(upstream:remotename)"'], stdout=subprocess.PIPE).stdout.decode().splitlines()
 
 def add_local_remote(name, path, bare=True): # pragma: no cover -- TODO commands
 	existed = os.path.exists(str(path))

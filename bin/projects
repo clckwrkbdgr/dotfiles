@@ -82,13 +82,6 @@ class Git:
 			raise Git.Error(git.args)
 		return [line[2:] for line in git.stdout.decode().splitlines()]
 
-def find_git_repos(root='.'):
-	for root, dirnames, filenames in os.walk(root, followlinks=True):
-		if '.git' not in dirnames:
-			continue
-		dirnames = dirnames[:]
-		yield os.path.abspath(root)
-
 import click
 
 @click.group()
@@ -199,10 +192,10 @@ def status(thorough=False):
 	With 'thorough' checks actual diffs to see if gitfilters actually produce no diff.
 	"""
 	thorough = thorough == 'thorough'
-	for repo in find_git_repos():
+	for repo in vcs.find_repos():
 		with CurrentDir(repo):
 			if git_has_changes(thorough=thorough):
-				print(colored(os.path.basename(repo), 'red'))
+				print(colored(repo.name, 'red'))
 				sys.stdout.flush()
 				os.system("git -c color.status=always status")
 	return True
@@ -211,22 +204,16 @@ def status(thorough=False):
 @utils.exits_with_return_value
 def push():
 	""" Pushes pending commits to remote repositories for all sub-directories recursively. """
-	BRANCH_AHEAD = [
-			r'Your branch is ahead of',
-			r'Ваша ветка опережает .* на ',
-			]
-	for repo in find_git_repos():
+	for repo in vcs.find_repos():
 		with CurrentDir(repo):
-			status = Git().status(with_branch=True)
-			if 'ahead' not in status[0]:
+			if not vcs.branch_is_ahead_remote():
 				continue
-			print(colored(os.path.basename(repo), 'red'))
-			branches = Git().branches()
-			remotes = Git().remotes()
+			print(colored(repo.name, 'red'))
+			branches = vcs.list_branches()
+			remotes = vcs.list_remotes()
 			for branch in branches:
-				Git().push('origin', branch)
-				if any(LOCAL_REMOTE_NAME in remote for remote in remotes):
-					Git().push(LOCAL_REMOTE_NAME, branch)
+				for remote in remotes:
+					vcs.push(remote, branch)
 	return True
 
 @cli.command()
