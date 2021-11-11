@@ -312,6 +312,7 @@ ranger/rifle.conf caps=work
 ranger/scope.sh caps=work
 screenrc caps=work
 setup.d/00.symlinks.py caps=work
+setup.d/00.hooks.py caps=work
 setup.d/01.gitconfig.py caps=work
 setup.d/02.git.submodules.py caps=work
 setup.d/05.tmp-on-tmpfs.py caps=work
