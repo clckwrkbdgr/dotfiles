@@ -163,41 +163,22 @@ def version(section=None):
 		return False
 	return True
 
-def git_has_changes(thorough=False):
-	status = Git().status(with_branch=True)
-	branch_info, status_info = status[0], status[1:]
-	if 'ahead' in status[0] or 'behind' in status[0]:
-		return True
-	if not thorough:
-		return bool(status_info)
-	for line in status_info:
-		if line[0] != ' ':
-			return True # Staged.
-		if line[1] in 'AD':
-			return True # Definitely changes.
-		if line[1] == 'M':
-			filename = line[3:]
-			if Git().differs(filename):
-				return True # Content actually differs.
-	return False
-
 @cli.command()
 @click.argument('thorough', required=False, default=None, type=click.Choice(['thorough']))
+@click.option('--thorough', 'thorough_flag', is_flag=True, help='Checks actual diffs to see if gitfilters actually produce no diff.')
 @utils.exits_with_return_value
-def status(thorough=False):
+def status(thorough=False, thorough_flag=False):
 	""" Checks project's status.
 	Prints statuses for all projects in directory recursively.
 	Skips up-to-date projects, prints only modifications or pending commits.
-
-	With 'thorough' checks actual diffs to see if gitfilters actually produce no diff.
 	"""
-	thorough = thorough == 'thorough'
+	thorough = (thorough == 'thorough') or thorough_flag
 	for repo in vcs.find_repos():
 		with CurrentDir(repo):
-			if git_has_changes(thorough=thorough):
+			if vcs.has_changes(check_diff=thorough):
 				print(colored(repo.name, 'red'))
 				sys.stdout.flush()
-				os.system("git -c color.status=always status")
+				vcs.show_diff(with_color=True)
 	return True
 
 @cli.command()

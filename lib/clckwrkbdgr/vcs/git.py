@@ -228,6 +228,35 @@ def list_attributes(attribute, filenames=None): # pragma: no cover -- TODO comma
 			filename = repr(filename)
 		yield filename, value
 
+def show_diff(with_color=False): # pragma: no cover -- TODO commands
+	args = ["git"]
+	if with_color:
+		args += ["-c", "color.status=always"]
+	args += ["status"]
+	return 0 == subprocess.call(args)
+
+def has_changes(check_diff=False): # pragma: no cover -- TODO commands
+	args = ["git", "status", '--porcelain', '--branch']
+	git = subprocess.run(args, stdout=subprocess.PIPE)
+	if git.returncode != 0:
+		return True
+	status = git.stdout.decode().splitlines()
+	branch_info, status_info = status[0], status[1:]
+	if 'ahead' in status[0] or 'behind' in status[0]:
+		return True
+	if not check_diff:
+		return bool(status_info)
+	for line in status_info:
+		if line[0] != ' ':
+			return True # Staged.
+		if line[1] in 'AD':
+			return True # Definitely changes.
+		if line[1] == 'M':
+			filename = line[3:]
+			if file_needs_commit(filename):
+				return True # Content actually differs.
+	return False
+
 def has_staged_files(): # pragma: no cover -- TODO commands
 	return 0 != subprocess.call(['git', 'diff', '--cached', '--quiet', '--exit-code'])
 
