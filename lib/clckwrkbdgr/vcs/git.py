@@ -74,34 +74,37 @@ class SparseCheckout(object): # pragma: no cover -- TODO commands
 		self.content = None
 	def _load_content(self):
 		if self.content:
-			return
+			return self.content
 		with open(self.basefile, 'rb') as f:
 			self.content = f.read()
 		return self.content
-	def lines(self):
-		return self._load_content().splitlines()
+	def lines(self, as_str=False):
+		content = self._load_content()
+		if as_str:
+			content = content.decode('utf-8', 'replace')
+		return content.splitlines()
 	def sync(self, quiet=False):
 		""" Synchronizes current state with sparse checkout list.
 		May fix sparse checkout issues, but can lose local changes.
 		"""
 		quiet_arg = ['--quiet'] if quiet else []
-		with Stash():
+		with Stash(quiet=quiet):
 			return 0 == subprocess.call(["git", "checkout"] + quiet_arg + ["master"])
-	def is_same(self, content):
+	def is_same(self, raw_content):
 		""" Returns True is current sparse info is the same as given content (raw text). """
 		self._load_content()
-		return self.content == content
-	def diff(self, content):
+		return self.content == raw_content
+	def diff(self, raw_content):
 		""" Returns diff between current sparse info and given content (raw text). """
 		self._load_content()
 		return list(difflib.unified_diff(
 			self.content.decode('utf-8', 'replace').splitlines(),
-			content.decode('utf-8', 'replace').splitlines(),
+			raw_content.decode('utf-8', 'replace').splitlines(),
 			))
-	def update_with(self, content):
+	def update_with(self, raw_content):
 		""" Updates current sparse info with given content (raw text). """
 		with open(self.basefile, 'wb') as f:
-			f.write(content)
+			f.write(raw_content)
 
 def branch_is_behind_remote(branch): # pragma: no cover -- TODO commands
 	""" Returns True if given branch is behind remote origin. """
@@ -147,7 +150,7 @@ def update(branch='master', remote='origin', display_status=False, quiet=False):
 	if not subprocess.check_output(['git', 'remote']).strip():
 		return
 	quiet_arg = ['--quiet'] if quiet else []
-	with Stash():
+	with Stash(quiet=quiet):
 		subprocess.call(["git", "pull"] + quiet_arg + [remote, branch])
 		subprocess.call(["git", "submodule"] + quiet_arg + ["init"])
 		subprocess.call(["git", "submodule"] + quiet_arg + ["update", "--recursive"])

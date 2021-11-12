@@ -46,7 +46,7 @@ def sparse_checkout(tag):
 	"""
 	lines = [filename for filename, value in git.list_attributes('caps') if value == tag]
 	sparse_checkout = git.SparseCheckout()
-	if lines == sparse_checkout.lines():
+	if lines == sparse_checkout.lines(as_str=True):
 		sys.exit(0) # Already up-to-date.
 	sparse_checkout.update_with(('\n'.join(lines) + '\n').encode('utf-8', 'replace'))
 	(Path('.git')/'info'/'CAPS').write_text(tag)

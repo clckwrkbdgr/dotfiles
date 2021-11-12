@@ -27,4 +27,4 @@ if __name__ == "__main__":
 		with open(dotfiles_caps) as f:
 			caps = f.read().strip()
 		if 0 != subprocess.call(['python', 'caps.py', 'sparse', caps]):
-			git.SparseCheckout().sync()
+			git.SparseCheckout().sync(quiet=quiet)
