@@ -167,8 +167,8 @@ def update_or_clone(url, name=None, branch='master', remote='origin', display_st
 		subprocess.call(['git', 'clone', url, name])
 	else:
 		with clckwrkbdgr.fs.CurrentDir(name):
-			git.sync(quiet=quiet)
-			git.update(quiet=quiet)
+			sync(quiet=quiet)
+			update(quiet=quiet)
 
 def update_submodules(): # pragma: no cover -- TODO commands
 	args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
