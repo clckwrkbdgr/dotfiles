@@ -169,6 +169,7 @@ def update_or_clone(url, name=None, branch='master', remote='origin', display_st
 		with clckwrkbdgr.fs.CurrentDir(name):
 			sync(quiet=quiet)
 			update(quiet=quiet)
+	return name
 
 def update_submodules(): # pragma: no cover -- TODO commands
 	args = ['git', 'submodule', 'update', '--init', '--remote', '--recursive', '--merge']
