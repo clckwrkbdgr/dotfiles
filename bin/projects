@@ -10,77 +10,7 @@ from clckwrkbdgr.fs import CurrentDir
 
 LOCAL_REMOTE_NAME = 'local'
 
-extract_match = lambda match: match.group(1) if match else None
-non_empty = lambda x:x
-print_lines = lambda lines: map(print, lines)
-
-def match_any(line, patterns):
-	return list(filter(non_empty, (re.match(expr, line) for expr in patterns)))
-
-def search_any(line, patterns):
-	return list(filter(non_empty, (re.search(expr, line) for expr in patterns)))
-
-def skip_lines_with_patterns(lines, patterns):
-	return [line for line in lines if not any(re.search(expr, line) for expr in patterns)]
-
-def skip_lines_that_contains(lines, parts):
-	return [line for line in lines if not any(part in line for part in parts)]
-
 SemVer = namedtuple('SemVer', 'major minor revision')
-
-class Git:
-	class Error(RuntimeError): pass
-	def add_tag(self, new_tag, commit_message):
-		subprocess.run(["git", "tag", "-a", new_tag, "-m", commit_message])
-	def push(self, remote='origin', branch='master'):
-		subprocess.run(["git", "push", remote, branch, "--tags"])
-	def add_bare_remote(self, name, path):
-		existed = os.path.exists(path)
-		if existed:
-			print('Remote path already exists, considering bare repo already inited.')
-		if not existed:
-			subprocess.run(["git", "init", "--bare", path])
-		subprocess.run(["git", "remote", "add", name, path])
-		if not existed:
-			subprocess.run(["git", "push", "-u", name, "master", "--tags"])
-	def rootdir(self):
-		git = subprocess.run(["git", "rev-parse", "--show-toplevel"], stdout=subprocess.PIPE)
-		if git.returncode != 0:
-			raise Git.Error(git.args)
-		return git.stdout.decode().splitlines()[0]
-	def tags(self):
-		git = subprocess.run(["git", "tag"], stdout=subprocess.PIPE)
-		if git.returncode != 0:
-			raise Git.Error(git.args)
-		return git.stdout.decode().splitlines()
-	def remotes(self):
-		git = subprocess.run(["git", "remote", "-v"], stdout=subprocess.PIPE)
-		if git.returncode != 0:
-			raise Git.Error(git.args)
-		return git.stdout.decode().splitlines()
-	def status(self, with_branch=False):
-		args = ["git", "status", '--porcelain']
-		if with_branch:
-			args += ['--branch']
-		git = subprocess.run(args, stdout=subprocess.PIPE)
-		if git.returncode != 0:
-			raise Git.Error(git.args)
-		return git.stdout.decode().splitlines()
-	def differs(self, filename):
-		git = subprocess.run(["git", "diff", "--numstat", filename], stdout=subprocess.PIPE)
-		if git.returncode != 0:
-			raise Git.Error(git.args)
-		diff = git.stdout.decode()
-		if not diff:
-			return False
-		diff = diff .splitlines()[0]
-		diff = diff.split(maxsplit=2)
-		return diff[0] != '0' or diff[1] != '0'
-	def branches(self):
-		git = subprocess.run(["git", "branch"], stdout=subprocess.PIPE)
-		if git.returncode != 0:
-			raise Git.Error(git.args)
-		return [line[2:] for line in git.stdout.decode().splitlines()]
 
 import click
 
@@ -90,20 +20,11 @@ def cli():
 	pass
 
 def versions_from_tags(tags):
+	extract_match = lambda match: match.group(1) if match else None
 	versions = [extract_match(re.search(r'(\d+[.]\d+[.]\d+)', line)) for line in tags]
-	versions = filter(non_empty, versions)
+	versions = filter(None, versions)
 	versions = map(lambda version: SemVer(*(map(int, version.split('.')))), versions)
 	return sorted(versions)
-
-def find_repo_name(remotes):
-	repo_names = set([extract_match(re.search(r'/([^/]*)[.]git')) for remote in remotes if '(push)' in remote])
-	if not repo_names:
-		print("Cannot extract unambiguous repo name from `git remote -v`: no valid remotes")
-		return None
-	if len(repo_names) > 1:
-		print("Cannot extract unambiguous repo name from `git remote -v`: {0}".format(', '.join(repo_names)))
-		return None
-	return next(iter(repo_names))
 
 @cli.command()
 @click.argument('section', required=False, default=None, type=click.Choice(['major', 'minor', 'rev', 'revision']))
@@ -115,7 +36,8 @@ def tag(section=None):
 	"""
 	tags = vcs.list_tags()
 	if section is None:
-		print_lines(tags)
+		for line in tags:
+			print(line)
 		return True
 
 	versions = versions_from_tags(tags)
@@ -133,7 +55,8 @@ def tag(section=None):
 		return False
 
 	new_version = '.'.join(new_version)
-	print_lines(tags)
+	for line in tags:
+		print(line)
 	yes = input("Add <{0}>, (y)es? ".format(new_version))
 	if yes.lower() != "y":
 		return False
@@ -236,8 +159,4 @@ def commit_submodules():
 		return vcs.commit(need_commit, message='Updated submodules.')
 
 if __name__ == "__main__":
-	try:
-		cli()
-	except Git.Error as e:
-		logging.error(e)
-		sys.exit(1)
+	cli()
