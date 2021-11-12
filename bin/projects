@@ -90,9 +90,9 @@ def cli():
 	pass
 
 def versions_from_tags(tags):
-	versions = [extract_match(re.search(r'(\d+[.]\d\+[.]\d+)', line)) for line in tags]
-	versions = filter(non_empty, tags)
-	versions = map(lambda version: SemVer(map(int, version.split('.'))), versions)
+	versions = [extract_match(re.search(r'(\d+[.]\d+[.]\d+)', line)) for line in tags]
+	versions = filter(non_empty, versions)
+	versions = map(lambda version: SemVer(*(map(int, version.split('.')))), versions)
 	return sorted(versions)
 
 def find_repo_name(remotes):
@@ -113,13 +113,13 @@ def tag(section=None):
 	Creates new tag with advancement in specified section of the version.
 	If section is not specified, lists all tags for current project.
 	"""
-	tags = Git().tags()
+	tags = vcs.list_tags()
 	if section is None:
 		print_lines(tags)
 		return True
 
 	versions = versions_from_tags(tags)
-	repo_name = find_repo_name(Git().remotes())
+	repo_name = vcs.get_repo_name(remote=True)
 
 	last_version = versions[-1] if versions else SemVer(0, 0, 0)
 	if section == 'major':
@@ -137,7 +137,7 @@ def tag(section=None):
 	yes = input("Add <{0}>, (y)es? ".format(new_version))
 	if yes.lower() != "y":
 		return False
-	Git().add_tag(new_version, "{0} v{1}".format(repo_name, new_version))
+	vcs.create_tag(new_version, "{0} v{1}".format(repo_name, new_version))
 	print("Added new tag <{0}>".format(new_version))
 	return True
 
@@ -148,7 +148,7 @@ def version(section=None):
 	""" Displays current project's version.
 	Extracts current project version from the last tag.
 	"""
-	versions = versions_from_tags(Git().tags())
+	versions = versions_from_tags(vcs.list_tags())
 	if not versions:
 		return False
 	version = versions[-1]
@@ -158,6 +158,8 @@ def version(section=None):
 		print(version.minor)
 	elif section in 'rev revision'.split():
 		print(version.revision)
+	elif section is None:
+		print('.'.join(map(str, version)))
 	else:
 		print("Unknown section: <{0}>. Should be: major, minor or revision (rev).".format(section))
 		return False

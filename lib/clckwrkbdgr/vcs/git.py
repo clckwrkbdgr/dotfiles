@@ -32,8 +32,17 @@ def get_repo_root(): # pragma: no cover -- TODO commands
 		return None
 	return Path(git.stdout.decode().splitlines()[0]).resolve()
 
-def get_repo_name(): # pragma: no cover -- TODO commands
-	return get_repo_root().name
+def get_repo_name(remote=False): # pragma: no cover -- TODO commands
+	if not remote:
+		return get_repo_root().name
+	remotes = list_remotes()
+	extract_match = lambda match: match.group(1) if match else None
+	repo_names = set([extract_match(re.search(r'/([^/]*)[.]git')) for remote in remotes if '(push)' in remote])
+	if not repo_names:
+		raise RuntimeError("Cannot extract unambiguous repo name from `git remote -v`: no valid remotes")
+	if len(repo_names) > 1:
+		raise RuntimeError("Cannot extract unambiguous repo name from `git remote -v`: {0}".format(', '.join(repo_names)))
+	return next(iter(repo_names))
 
 def find_repos(root='.'): # pragma: no cover -- TODO commands
 	for root, dirnames, filenames in os.walk(str(root), followlinks=True):
@@ -176,6 +185,12 @@ def update_submodules(): # pragma: no cover -- TODO commands
 	if version() >= (2, 26, 0):
 		args += ['--single-branch']
 	return 0 == subprocess.call(args)
+
+def create_tag(tag, commit_message): # pragma: no cover -- TODO commands
+	subprocess.run(["git", "tag", "-a", tag, "-m", commit_message])
+
+def list_tags(): # pragma: no cover -- TODO commands
+	return subprocess.run(["git", "tag"], stdout=subprocess.PIPE).stdout.decode().splitlines()
 
 def list_submodules(): # pragma: no cover -- TODO commands
 	""" Returns paths relative to current repo root. """
