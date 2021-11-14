@@ -1,3 +1,4 @@
+import os, signal
 from ctypes import Structure, c_uint, c_ulong, sizeof, byref
 try:
 	from ctypes import windll
@@ -41,3 +42,9 @@ def IsRemoteSession(): # pragma: no cover -- TODO WinApi call
 def SwapMouseButton(do_swap): # pragma: no cover -- TODO WinApi call
 	user32 = windll.user32
 	return user32.SwapMouseButton(1 if do_swap else 0)
+
+def kill_gracefully(pid): # pragma: no cover -- TODO
+	try:
+		os.kill(signal.CTRL_C_EVENT, pid)
+	except OSError:
+		pass
