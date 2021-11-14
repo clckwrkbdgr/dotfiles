@@ -1,5 +1,10 @@
 from __future__ import unicode_literals
 import io
+import itertools
+try:
+	import winreg
+except: # pragma: no cover
+	winreg = None
 from collections import namedtuple
 import six
 import clckwrkbdgr.utils as utils
@@ -277,3 +282,19 @@ def iterate_with_context(registry_file_entries):
 		elif isinstance(entry, Value):
 			context = current_key + (str(entry.name),)
 		yield context, entry
+
+def iterkeys(hkey, path): # pragma: no cover -- TODO
+	with winreg.OpenKey(hkey, path, 0, winreg.KEY_READ) as key:
+		for index in itertools.count(0):
+			try:
+				yield winreg.EnumKey(key, index)
+			except WindowsError:
+				break
+
+def itervalues(hkey, path): # pragma: no cover -- TODO
+	with winreg.OpenKey(hkey, path, 0, winreg.KEY_READ) as key:
+		for index in itertools.count(0):
+			try:
+				yield winreg.EnumValue(key, index)
+			except WindowsError:
+				break
