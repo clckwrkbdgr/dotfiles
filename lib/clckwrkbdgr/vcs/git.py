@@ -56,15 +56,21 @@ class Stash(object): # pragma: no cover -- TODO commands
 	def __init__(self, quiet=False, keep_index=False):
 		self._quiet = quiet
 		self._keep_index = keep_index
+		self._stashed = False
 	def __enter__(self):
+		if not has_changes():
+			return self
 		args = ["git", "stash"]
 		if self._quiet:
 			args.append('--quiet')
 		if self._keep_index:
 			args.append('--keep-index')
 		subprocess.call(args)
+		self._stashed = True
 		return self
 	def __exit__(self, e, t, tb):
+		if not self._stashed:
+			return
 		quiet_arg = ['--quiet'] if self._quiet else []
 		if 0 != subprocess.call(["git", "stash", "pop"] + quiet_arg):
 			# Resolving merge conflicts 'manually' to prevent leaving conflict markers in the code.
