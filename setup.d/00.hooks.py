@@ -5,6 +5,9 @@ import clckwrkbdgr.jobsequence.context
 context = clckwrkbdgr.jobsequence.context.init(
 		working_dir=xdg.XDG_CONFIG_HOME,
 		)
+import clckwrkbdgr.vcs.git
+if not clckwrkbdgr.vcs.git.is_repo_root():
+	context.done()
 
 HOOK_PROXY = """#!/bin/bash
 git/hooks/{0}

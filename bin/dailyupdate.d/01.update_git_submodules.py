@@ -11,5 +11,7 @@ if userstate.get_flag('metered_network'):
 	context.done()
 
 import clckwrkbdgr.vcs.git as git
+if not clckwrkbdgr.vcs.git.is_repo_root():
+	context.done()
 context | git.update_submodules()
 context.done()
