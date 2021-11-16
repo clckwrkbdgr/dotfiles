@@ -43,8 +43,64 @@ def SwapMouseButton(do_swap): # pragma: no cover -- TODO WinApi call
 	user32 = windll.user32
 	return user32.SwapMouseButton(1 if do_swap else 0)
 
-def kill_gracefully(pid): # pragma: no cover -- TODO
+def _kill_windows_gracefully(pid): # pragma: no cover -- TODO
+	import ctypes
+	from ctypes import wintypes
+	user32 = ctypes.windll.user32
+	kernel32 = ctypes.windll.kernel32
+	WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL,
+			wintypes.HWND,
+			wintypes.LPARAM)
+	user32.EnumWindows.argtypes = [
+		 WNDENUMPROC,
+		 wintypes.LPARAM]
+	WM_DESTROY = 0x0002
+	WM_CLOSE = 0x0010
+	WM_QUIT = 0x0012
+	GW_OWNER = 4
+
+	class Enumerator(object):
+		def __init__(self):
+			self.windows = []
+			self.visible_windows = []
+		def worker(self, hwnd, lParam):
+			window_pid = ctypes.c_ulong()
+			user32.GetWindowThreadProcessId(hwnd, ctypes.byref(window_pid))
+			window_pid = window_pid.value
+			if window_pid == lParam:
+				if user32.GetWindow(hwnd, GW_OWNER) == 0:
+					if user32.IsWindowVisible(hwnd):
+						self.visible_windows.append(hwnd)
+					else:
+						self.windows.append(hwnd)
+					title = ctypes.create_string_buffer(255)
+					rc = user32.GetWindowTextA(hwnd, title, 255)
+			return True
+
+	enum = Enumerator()
+	cb_worker = WNDENUMPROC(enum.worker)
+	if not user32.EnumWindows(cb_worker, pid):
+		raise ctypes.WinError()
+	if enum.visible_windows:
+		enum.windows = enum.visible_windows
+
+	if not enum.windows:
+		return False
+	for hwnd in enum.windows:
+		user32.SendMessageA(hwnd, WM_DESTROY, 0, 0)
+	return True
+
+def kill_gracefully(pid, is_terminal=False): # pragma: no cover -- TODO
+	if not is_terminal:
+		if _kill_windows_gracefully(pid):
+			return True
 	try:
-		os.kill(signal.CTRL_C_EVENT, pid)
-	except OSError:
-		pass
+		os.kill(pid, signal.CTRL_C_EVENT)
+	except SystemError as e:
+		if not isinstance(e.__cause__, OSError):
+			raise
+		if e.__cause__.errno == 22 and e.__cause__.winerror == 87: # "Parameter is incorrect" (???)
+			pass
+		else:
+			raise
+	return True
