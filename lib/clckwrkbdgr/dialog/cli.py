@@ -1,30 +1,25 @@
 import os, sys
 import six
+from . import _base
 
 def choice(items, prompt=None): # pragma: no cover -- TODO
-	item_keys = {}
+	items = _base.make_choices(items)
+	item_keys = _base.get_choices_map(items)
+
 	menu = []
-	for index, item in enumerate(items):
-		if isinstance(item, six.string_types):
-			item_keys[index] = item
-			menu.append((index,))
+	for item in items:
+		if item.key:
+			menu.append((item.index, item.key))
 		else:
-			key, item = item
-			item_keys[key] = item
-			item_keys[index] = item
-			menu.append((index, key))
+			menu.append((item.index,))
+
 	while True:
 		for keys in menu:
 			print('{0}: {1}'.format(','.join(map(str, keys)), item_keys[keys[0]]))
-		value = six.moves.input((prompt or '?') + ' ')
-		if not value:
+		key = six.moves.input((prompt or '?') + ' ')
+		if not key:
 			break
-		if value in item_keys:
-			return value
-		try:
-			if int(value) in item_keys:
-				return value
-		except:
-			pass
-
+		result = _base.find_choice_in_map(item_keys, key)
+		if result:
+			return result
 	return None

@@ -1,18 +1,26 @@
 import os, sys, subprocess
 import six
+from . import _base
 
 def choice(items, prompt=None): # pragma: no cover -- TODO
-	item_keys = {}
+	items = _base.make_choices(items)
+	item_keys = _base.get_choices_map(items)
+
 	menu = []
-	for index, item in enumerate(items):
-		if isinstance(item, six.string_types):
-			item = (index, item)
-		menu.extend(item)
+	for item in items:
+		if item.key:
+			menu.extend((item.key, item.text))
+		else:
+			menu.extend((item.index, item.text))
+
 	width, height = int(subprocess.check_output(['tput', 'cols']).decode()), int(subprocess.check_output(['tput', 'lines']).decode())
 	height -= 2
 	whiptail = subprocess.Popen(['whiptail', '--notags', '--menu', str(prompt or ''), str(height), str(width), str(len(items)), '--'] + list(map(str, menu)), stderr=subprocess.PIPE)
 	_, stderr = whiptail.communicate()
 	whiptail.wait()
+
 	if not stderr:
 		return None
-	return stderr.decode('utf-8', 'replace')
+	key = stderr.decode('utf-8', 'replace')
+	result = _base.find_choice_in_map(item_keys, key)
+	return result

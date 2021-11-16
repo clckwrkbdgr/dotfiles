@@ -190,6 +190,7 @@ lib/clckwrkbdgr/collections.py caps=work
 lib/clckwrkbdgr/commands.py caps=work
 lib/clckwrkbdgr/dummy.py caps=work
 lib/clckwrkbdgr/dialog/__init__.py caps=work
+lib/clckwrkbdgr/dialog/_base.py caps=work
 lib/clckwrkbdgr/dialog/cli.py caps=work
 lib/clckwrkbdgr/dialog/gui.py caps=work
 lib/clckwrkbdgr/dialog/tui.py caps=work
