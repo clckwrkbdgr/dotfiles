@@ -298,3 +298,10 @@ def itervalues(hkey, path): # pragma: no cover -- TODO
 				yield winreg.EnumValue(key, index)
 			except WindowsError:
 				break
+
+def getvalue(hkey, key_path, name): # pragma: no cover -- TODO
+	with winreg.OpenKey(hkey, key_path, 0, winreg.KEY_READ) as key:
+		try:
+			return winreg.QueryValueEx(key, name)[0]
+		except WindowsError:
+			return None
