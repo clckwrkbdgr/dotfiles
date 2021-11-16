@@ -8,9 +8,8 @@ def check_syntax(root): # pragma: no cover -- TODO
 		if filename.suffix != '.py':
 			continue
 		try:
-			ast.parse(filename.read_text())
+			ast.parse(filename.read_bytes(), filename=str(filename))
 		except:
 			result = False
 			traceback.print_exc()
 	return result
-
