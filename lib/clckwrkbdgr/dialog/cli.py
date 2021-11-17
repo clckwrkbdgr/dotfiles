@@ -15,7 +15,7 @@ def choice(items, prompt=None): # pragma: no cover -- TODO
 
 	while True:
 		for keys in menu:
-			print('{0}: {1}'.format(','.join(map(str, keys)), item_keys[keys[0]]))
+			print('{0}: {1}'.format(','.join(map(str, keys)), item_keys[keys[0]].text))
 		key = six.moves.input((prompt or '?') + ' ')
 		if not key:
 			break
