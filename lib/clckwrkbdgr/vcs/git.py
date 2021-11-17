@@ -1,8 +1,20 @@
 import os, sys, subprocess
+from collections import namedtuple
 try:
 	subprocess.DEVNULL
 except: # pragma: no cover -- py2
 	subprocess.DEVNULL = open(os.devnull, 'w')
+try:
+	subprocess.run
+except: # pragma: no cover -- py2
+	_SubprocessResult = namedtuple('_SubprocessResult', 'returncode stdout stderr')
+	def _subprocess_run(args, **kwargs):
+		proc = subprocess.Popen(args, **kwargs)
+		stdout, stderr = proc.communicate()
+		rc = proc.wait()
+		return _SubprocessResult(rc, stdout, stderr)
+	subprocess.run = _subprocess_run
+
 import difflib
 try:
 	from pathlib2 import Path, PurePosixPath
