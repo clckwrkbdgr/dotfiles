@@ -78,6 +78,8 @@ class Config(object):
 	- exclude: List of excluded directories and/or files.
 	  May be wildcards.
 	  By default all files are included.
+	- max_archive_size: Max allowed size of backup archive (in bytes). Warnings will be issued upon overflowing this limit.
+	  By default is None, which means no limit.
 	- encoding_translation: Mapping to translate characters in filenames to prevent enconding issues during diff with stored backup.
 	  Should be list of two strings of the same size. Each character from the first string will translate to corresponding character from the second one.
 	  If optional third string is specified, those characters will be removed from the string.
@@ -89,6 +91,7 @@ class Config(object):
 			password=None,
 			exclude=None,
 			encoding_translation=None,
+			max_archive_size=None,
 			): # pragma: no cover -- TODO accesses FS, needs proper mocks for FS and Path object.
 		""" Creates context for backup operation.
 		See main docstring for details on each parameter.
@@ -102,6 +105,7 @@ class Config(object):
 		self.encoding_translation = list(encoding_translation or [])
 		if len(self.encoding_translation) not in (2, 3):
 			raise ValueError('Expected 2 or 3 lines in encoding_translations, got {0} instead.'.format(len(self.encoding_translation)))
+		self.max_archive_size = max_archive_size
 		if isinstance(password, dict):
 			if 'file' in password:
 				try:
