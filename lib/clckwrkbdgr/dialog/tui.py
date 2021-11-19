@@ -2,6 +2,11 @@ import os, sys, subprocess
 import six
 from . import _base
 
+def message(text): # pragma: no cover -- TODO
+	width, height = int(subprocess.check_output(['tput', 'cols']).decode()), int(subprocess.check_output(['tput', 'lines']).decode())
+	height -= 2
+	return 0 == subprocess.call(['whiptail', '--msgbox', text, str(height), str(width)])
+
 def choice(items, prompt=None): # pragma: no cover -- TODO
 	items = _base.make_choices(items)
 	item_keys = _base.get_choices_map(items)

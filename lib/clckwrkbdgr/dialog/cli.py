@@ -2,6 +2,11 @@ import os, sys
 import six
 from . import _base
 
+def message(text): # pragma: no cover -- TODO
+	print(text)
+	sys.stdout.flush()
+	six.moves.input('[Press <Enter>...]')
+
 def choice(items, prompt=None): # pragma: no cover -- TODO
 	items = _base.make_choices(items)
 	item_keys = _base.get_choices_map(items)
