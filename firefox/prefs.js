@@ -567,6 +567,7 @@ user_pref("signon.importedFromSqlite", true);
 user_pref("signon.rememberSignons", false);
 user_pref("spellchecker.dictionary", "ru_RU");
 user_pref("toolkit.cosmeticAnimations.enabled", false);
+user_pref("toolkit.crashreporter.enabled", false);
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 user_pref("toolkit.telemetry.archive.enabled", false);
 user_pref("toolkit.telemetry.prompted", 2);
