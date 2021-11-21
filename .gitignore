@@ -73,6 +73,10 @@ firefox/weave/failed/tabs.json
 firefox/weave/logs/error-sync-*.txt
 firefox/weave/toFetch/tabs.json
 firefox/xulstore.json
+firefox/containers.json
+firefox/key?.db
+firefox/pkcs11.txt
+firefox/times.json
 # Firefox local/share
 firefox/addons.json
 firefox/content-prefs.sqlite
