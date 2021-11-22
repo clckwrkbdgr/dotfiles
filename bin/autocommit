@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os, sys, subprocess
-import shutil
+import shutil, glob
 import json
 import logging
 try:
@@ -108,7 +108,8 @@ def cli(config_file, patterns, verbose=False, debug=False):
 				continue
 			logging.debug('{0}: Processing file...'.format(filename))
 			props = files[filename]
-			process_one_file(filename,
+			for real_filename in glob.iglob(filename):
+				process_one_file(real_filename,
 					commit_message=props.get('message', 'autocommit'),
 					dest_repo=repo_path if repo != '.' else None,
 					show_diff=props.get('show_diff', False),
