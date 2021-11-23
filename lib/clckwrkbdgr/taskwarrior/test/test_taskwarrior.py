@@ -78,6 +78,23 @@ class TestTaskWarrior(fake_filesystem_unittest.TestCase):
 		task.start('bar')
 		task.stop()
 		self.assertEqual([_.title for _ in task.get_history()], ['foo', 'bar', None])
+	def should_filter_task_history_by_datetime(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('bar', now=datetime.datetime(2020, 12, 31, 8, 20, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 45, 0))
+		task.start('baz', now=datetime.datetime(2020, 12, 31, 9, 40, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 10, 20, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 12, 1, 0))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.filter_history(
+			start_datetime=datetime.datetime(2020, 12, 31, 8, 10, 0),
+			stop_datetime=datetime.datetime(2020, 12, 31, 11, 10, 0),
+			)], [
+			('bar', datetime.time(8, 20)),
+			(None, datetime.time(8, 45)),
+			('baz', datetime.time(9, 40)),
+			(None, datetime.time(10, 20)),
+			])
 	def should_use_custom_aliases_for_stop_and_resume(self):
 		task = TaskWarrior(Config(
 			resume_alias='UNLOCK',

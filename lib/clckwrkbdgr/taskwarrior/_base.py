@@ -103,6 +103,20 @@ class TaskWarrior:
 		for current in history:
 			continue
 		return current
+	def filter_history(self,
+			start_datetime=None, stop_datetime=None,
+			entry_class=None):
+		""" Returns filtered task history in form of Entry objects.
+		Can filter by:
+		- date/time: start_datetime..stop_datetime
+		"""
+		start_datetime = start_datetime or datetime.datetime.min
+		stop_datetime = stop_datetime or datetime.datetime.max
+		history = self.get_history(entry_class=entry_class)
+		for entry in history:
+			if not (start_datetime <= entry.datetime <= stop_datetime):
+				continue
+			yield entry
 	def get_history(self, entry_class=None):
 		""" Returns full task history in form of Entry objects. """
 		if not self.config.taskfile.exists():
