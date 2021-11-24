@@ -105,6 +105,7 @@ class TaskWarrior:
 		return current
 	def filter_history(self,
 			start_datetime=None, stop_datetime=None,
+			only_breaks=False,
 			entry_class=None):
 		""" Returns filtered task history in form of Entry objects.
 		Can filter by:
@@ -112,11 +113,31 @@ class TaskWarrior:
 		"""
 		start_datetime = start_datetime or datetime.datetime.min
 		stop_datetime = stop_datetime or datetime.datetime.max
-		history = self.get_history(entry_class=entry_class)
-		for entry in history:
+		def with_prev(it):
+			prev = None
+			for _ in it:
+				yield _, prev
+				prev = _
+		history = with_prev(self.get_history(entry_class=entry_class))
+		QUEUE_SIZE = 3
+		yield_queue = []
+		for entry, prev in history:
+			if entry.is_stop and prev and prev.is_stop:
+				continue
+			if entry.is_resume and prev and prev.is_resume: # pragma: no cover -- should not ever happen, but still as a precaution.
+				continue
 			if not (start_datetime <= entry.datetime <= stop_datetime):
 				continue
-			yield entry
+			if only_breaks:
+				if not entry.is_resume and yield_queue and yield_queue[-1].is_stop:
+					yield_queue.pop(-1)
+				if not (entry.is_resume or entry.is_stop):
+					continue
+			yield_queue.append(entry)
+			while len(yield_queue) > QUEUE_SIZE:
+				yield yield_queue.pop(0)
+		while yield_queue:
+			yield yield_queue.pop(0)
 	def get_history(self, entry_class=None):
 		""" Returns full task history in form of Entry objects. """
 		if not self.config.taskfile.exists():

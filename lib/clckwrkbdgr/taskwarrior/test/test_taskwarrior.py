@@ -95,6 +95,42 @@ class TestTaskWarrior(fake_filesystem_unittest.TestCase):
 			('baz', datetime.time(9, 40)),
 			(None, datetime.time(10, 20)),
 			])
+	def should_filter_out_duplicated_stop_resume_events(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 5))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 5))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 4, 0))
+		task.start('bar', now=datetime.datetime(2020, 12, 31, 8, 5, 0))
+		task.start('bar', now=datetime.datetime(2020, 12, 31, 8, 5, 3))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.filter_history(
+			)], [
+			('foo', datetime.time(8, 0)),
+			('foo', datetime.time(8, 1)),
+			(None, datetime.time(8, 2)),
+			('foo', datetime.time(8, 3)),
+			('foo', datetime.time(8, 3, 5)),
+			(None, datetime.time(8, 4)),
+			('bar', datetime.time(8, 5)),
+			('bar', datetime.time(8, 5, 3)),
+			])
+	def should_filter_history_for_breaks(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 4, 0))
+		task.start('bar', now=datetime.datetime(2020, 12, 31, 8, 5, 0))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.filter_history(
+			only_breaks=True,
+			)], [
+			(None, datetime.time(8, 2)),
+			('foo', datetime.time(8, 3)),
+			])
 	def should_not_consider_consequent_tasks_as_resume(self):
 		task = TaskWarrior()
 		task.start('foo')
