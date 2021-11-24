@@ -83,6 +83,7 @@ firefox/content-prefs.sqlite
 firefox/cookies.sqlite
 firefox/extensions.json
 firefox/extensions/*.xpi
+firefox/extensions/staged/
 firefox/formhistory.sqlite
 firefox/notificationstore.json
 firefox/permissions.sqlite
