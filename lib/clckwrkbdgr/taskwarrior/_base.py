@@ -106,10 +106,14 @@ class TaskWarrior:
 	def filter_history(self,
 			start_datetime=None, stop_datetime=None,
 			only_breaks=False,
+			squeeze_breaks=False,
 			entry_class=None):
 		""" Returns filtered task history in form of Entry objects.
 		Can filter by:
 		- date/time: start_datetime..stop_datetime
+		- only_breaks: return only stop/resume events and only in pairs,
+		  e.g. stop with consequent start of new task is not considered a break.
+		- squeeze_breaks: compact consequent pairs of break events into a single break.
 		"""
 		start_datetime = start_datetime or datetime.datetime.min
 		stop_datetime = stop_datetime or datetime.datetime.max
@@ -128,6 +132,10 @@ class TaskWarrior:
 				continue
 			if not (start_datetime <= entry.datetime <= stop_datetime):
 				continue
+			if squeeze_breaks:
+				if entry.is_resume and len(yield_queue) >= 3 and yield_queue[-1].is_stop and yield_queue[-2].is_resume and yield_queue[-2].title == entry.title and yield_queue[-3].is_stop:
+					yield_queue.pop(-1)
+					yield_queue.pop(-1)
 			if only_breaks:
 				if not entry.is_resume and yield_queue and yield_queue[-1].is_stop:
 					yield_queue.pop(-1)
@@ -136,6 +144,8 @@ class TaskWarrior:
 			yield_queue.append(entry)
 			while len(yield_queue) > QUEUE_SIZE:
 				yield yield_queue.pop(0)
+		if only_breaks and yield_queue and yield_queue[-1].is_stop:
+			yield_queue.pop(-1)
 		while yield_queue:
 			yield yield_queue.pop(0)
 	def get_history(self, entry_class=None):

@@ -131,6 +131,86 @@ class TestTaskWarrior(fake_filesystem_unittest.TestCase):
 			(None, datetime.time(8, 2)),
 			('foo', datetime.time(8, 3)),
 			])
+
+		task = TaskWarrior()
+		task.config.taskfile.write_bytes(b'')
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 4, 0))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.filter_history(
+			only_breaks=True,
+			)], [
+			(None, datetime.time(8, 2)),
+			('foo', datetime.time(8, 3)),
+			])
+	def should_squeeze_consequent_break_events(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 4, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 5, 0))
+		task.start('bar', now=datetime.datetime(2020, 12, 31, 8, 6, 0))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.filter_history(
+			squeeze_breaks=True,
+			)], [
+			('foo', datetime.time(8, 0)),
+			('foo', datetime.time(8, 1)),
+			(None, datetime.time(8, 2)),
+			('foo', datetime.time(8, 5)),
+			('bar', datetime.time(8, 6)),
+			])
+
+		task = TaskWarrior()
+		task.config.taskfile.write_bytes(b'')
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 4, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 5, 0))
+		task.start('bar', now=datetime.datetime(2020, 12, 31, 8, 6, 0))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.filter_history(
+			squeeze_breaks=True,
+			only_breaks=True,
+			)], [
+			(None, datetime.time(8, 2)),
+			('foo', datetime.time(8, 5)),
+			])
+
+		task = TaskWarrior()
+		task.config.taskfile.write_bytes(b'')
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 4, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 5, 0))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.filter_history(
+			squeeze_breaks=True,
+			only_breaks=True,
+			)], [
+			(None, datetime.time(8, 2)),
+			('foo', datetime.time(8, 5)),
+			])
+
+		task = TaskWarrior()
+		task.config.taskfile.write_bytes(b'')
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 4, 0))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.filter_history(
+			squeeze_breaks=True,
+			only_breaks=True,
+			)], [
+			(None, datetime.time(8, 2)),
+			('foo', datetime.time(8, 3)),
+			])
 	def should_not_consider_consequent_tasks_as_resume(self):
 		task = TaskWarrior()
 		task.start('foo')
