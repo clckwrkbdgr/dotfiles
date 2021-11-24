@@ -123,6 +123,7 @@ class TaskWarrior:
 			return
 		entry_class = entry_class or self.Entry
 		last_started_task_title = '<unknown>'
+		prev = None
 		with self.config.taskfile.open('r') as f:
 			for line in f.readlines():
 				if self.config.separator in line:
@@ -151,7 +152,7 @@ class TaskWarrior:
 				elif self.config.resume_alias and entry_title == self.config.resume_alias:
 					entry.title = last_started_task_title
 					entry.is_resume = True
-				elif entry_title == last_started_task_title:
+				elif entry_title == last_started_task_title and prev and prev.is_stop:
 					entry.is_resume = True
 
 				if not entry_title:
@@ -164,6 +165,7 @@ class TaskWarrior:
 					last_started_task_title = entry_title
 
 				yield entry
+				prev = entry
 	def fix_history(self):
 		""" Allows to edit task history manually using text editor. """
 		return 0 == subprocess.call([os.environ.get('EDITOR', 'vi'), str(self.config.taskfile)])

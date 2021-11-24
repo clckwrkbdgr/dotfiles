@@ -95,6 +95,21 @@ class TestTaskWarrior(fake_filesystem_unittest.TestCase):
 			('baz', datetime.time(9, 40)),
 			(None, datetime.time(10, 20)),
 			])
+	def should_not_consider_consequent_tasks_as_resume(self):
+		task = TaskWarrior()
+		task.start('foo')
+		task.start('foo')
+		task.stop()
+		task.start()
+		task.stop()
+		task.start('foo')
+		history = list(task.get_history())
+		self.assertFalse(history[0].is_resume)
+		self.assertFalse(history[1].is_resume)
+		self.assertTrue(history[2].is_stop)
+		self.assertTrue(history[3].is_resume)
+		self.assertTrue(history[4].is_stop)
+		self.assertTrue(history[5].is_resume)
 	def should_use_custom_aliases_for_stop_and_resume(self):
 		task = TaskWarrior(Config(
 			resume_alias='UNLOCK',
