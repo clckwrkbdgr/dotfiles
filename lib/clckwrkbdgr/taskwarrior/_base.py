@@ -202,29 +202,30 @@ class TaskWarrior:
 
 			yield entry
 			prev = entry
-	def rewrite_history(self, start_datetime, stop_datetime, new_titles):
+	def rewrite_history(self, start_datetime, stop_datetime, new_titles, fill_value=None):
 		""" Rewrites part of task history in given time frame (including boundaries).
 		Replaces all tasks within time frame with corresponding title from given list.
 		If title is None, a stop is created instead.
 		Number of titles should match number of actual tasks in the time frame, otherwise RuntimeError is raised.
+		Unless fill_value is specified, which is used in case when there were not enough titles to cover the time frame.
 		Creates backup version in XDG_STATE_HOME/taskwarrior/taskfile.bak
 		"""
 		new_taskfile = tempfile.NamedTemporaryFile(mode='w', delete=False)
-		total_records_count = 0
-		replaced_records_count = 0
 		new_titles_count = 0
 		with new_taskfile as fobj:
 			for entry_datetime, entry_title in self._parse_history(self.config.taskfile, self.config.separator):
 				if start_datetime <= entry_datetime <= stop_datetime:
 					if not new_titles:
-						raise RuntimeError('Not enough titles specified for the time frame {0}..{1}: got only {2}'.format(
-							start_datetime, stop_datetime,
-							new_titles_count,
-							))
-					entry_title = new_titles.pop(0)
-					replaced_records_count += 1
+						if fill_value:
+							entry_title = fill_value
+						else:
+							raise RuntimeError('Not enough titles specified for the time frame {0}..{1}: got only {2}'.format(
+								start_datetime, stop_datetime,
+								new_titles_count,
+								))
+					else:
+						entry_title = new_titles.pop(0)
 					new_titles_count += 1
-				total_records_count += 1
 				if entry_title:
 					line = '{0}{2}{1}\n'.format(entry_datetime.isoformat(), entry_title, self.config.separator)
 				else:
