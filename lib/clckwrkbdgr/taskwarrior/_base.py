@@ -1,6 +1,7 @@
 import os, subprocess
 import datetime
 import functools
+import tempfile, shutil
 from collections import namedtuple
 try:
 	from pathlib2 import Path
@@ -148,17 +149,13 @@ class TaskWarrior:
 			yield_queue.pop(-1)
 		while yield_queue:
 			yield yield_queue.pop(0)
-	def get_history(self, entry_class=None):
-		""" Returns full task history in form of Entry objects. """
-		if not self.config.taskfile.exists():
-			return
-		entry_class = entry_class or self.Entry
-		last_started_task_title = '<unknown>'
-		prev = None
-		with self.config.taskfile.open('r') as f:
+	@staticmethod
+	def _parse_history(filename, separator):
+		""" Yields raw pairs (datetime, title). """
+		with filename.open('r') as f:
 			for line in f.readlines():
-				if self.config.separator in line:
-					entry_datetime, entry_title = line.rstrip('\n').split(self.config.separator, 1)
+				if separator in line:
+					entry_datetime, entry_title = line.rstrip('\n').split(separator, 1)
 				elif '\t' in line:
 					entry_datetime, entry_title = line.rstrip('\n').split('\t', 1)
 				elif ' ' in line:
@@ -169,34 +166,78 @@ class TaskWarrior:
 					entry_datetime = datetime.datetime.strptime(entry_datetime, "%Y-%m-%dT%H:%M:%S.%f")
 				except ValueError:
 					entry_datetime = datetime.datetime.strptime(entry_datetime, "%Y-%m-%dT%H:%M:%S")
+				yield entry_datetime, entry_title
+	def get_history(self, entry_class=None):
+		""" Returns full task history in form of Entry objects. """
+		if not self.config.taskfile.exists():
+			return
+		entry_class = entry_class or self.Entry
+		last_started_task_title = '<unknown>'
+		prev = None
+		for entry_datetime, entry_title in self._parse_history(self.config.taskfile, self.config.separator):
+			entry = entry_class(
+					entry_datetime,
+					entry_title,
+					)
 
-				entry = entry_class(
-						entry_datetime,
-						entry_title,
-						)
+			if entry_title is None:
+				entry.is_stop = True
+			elif self.config.stop_alias and entry_title == self.config.stop_alias:
+				entry.title = None
+				entry.is_stop = True
+			elif self.config.resume_alias and entry_title == self.config.resume_alias:
+				entry.title = last_started_task_title
+				entry.is_resume = True
+			elif entry_title == last_started_task_title and prev and prev.is_stop:
+				entry.is_resume = True
 
-				if entry_title is None:
-					entry.is_stop = True
-				elif self.config.stop_alias and entry_title == self.config.stop_alias:
-					entry.title = None
-					entry.is_stop = True
-				elif self.config.resume_alias and entry_title == self.config.resume_alias:
-					entry.title = last_started_task_title
-					entry.is_resume = True
-				elif entry_title == last_started_task_title and prev and prev.is_stop:
-					entry.is_resume = True
+			if not entry_title:
+				pass
+			elif self.config.resume_alias and entry_title == self.config.resume_alias:
+				pass
+			elif self.config.stop_alias and entry_title == self.config.stop_alias:
+				pass
+			else:
+				last_started_task_title = entry_title
 
-				if not entry_title:
-					pass
-				elif self.config.resume_alias and entry_title == self.config.resume_alias:
-					pass
-				elif self.config.stop_alias and entry_title == self.config.stop_alias:
-					pass
+			yield entry
+			prev = entry
+	def rewrite_history(self, start_datetime, stop_datetime, new_titles):
+		""" Rewrites part of task history in given time frame (including boundaries).
+		Replaces all tasks within time frame with corresponding title from given list.
+		If title is None, a stop is created instead.
+		Number of titles should match number of actual tasks in the time frame, otherwise RuntimeError is raised.
+		Creates backup version in XDG_STATE_HOME/taskwarrior/taskfile.bak
+		"""
+		new_taskfile = tempfile.NamedTemporaryFile(mode='w', delete=False)
+		total_records_count = 0
+		replaced_records_count = 0
+		new_titles_count = 0
+		with new_taskfile as fobj:
+			for entry_datetime, entry_title in self._parse_history(self.config.taskfile, self.config.separator):
+				if start_datetime <= entry_datetime <= stop_datetime:
+					if not new_titles:
+						raise RuntimeError('Not enough titles specified for the time frame {0}..{1}: got only {2}'.format(
+							start_datetime, stop_datetime,
+							new_titles_count,
+							))
+					entry_title = new_titles.pop(0)
+					replaced_records_count += 1
+					new_titles_count += 1
+				total_records_count += 1
+				if entry_title:
+					line = '{0}{2}{1}\n'.format(entry_datetime.isoformat(), entry_title, self.config.separator)
 				else:
-					last_started_task_title = entry_title
-
-				yield entry
-				prev = entry
+					line = '{0}\n'.format(entry_datetime.isoformat())
+				try:
+					fobj.write(line)
+				except UnicodeError: # pragma: no cover
+					fobj.write(line.encode('ascii', 'replace').decode())
+		if new_titles:
+			raise RuntimeError('{0} unused titles left after replacing entries in the time frame {1}..{2}'.format(len(new_titles),
+				start_datetime, stop_datetime))
+		shutil.copy(str(self.config.taskfile), str(xdg.save_state_path('taskwarrior')/'taskfile.bak'))
+		shutil.move(str(new_taskfile.name), str(self.config.taskfile))
 	def fix_history(self):
 		""" Allows to edit task history manually using text editor. """
 		return 0 == subprocess.call([os.environ.get('EDITOR', 'vi'), str(self.config.taskfile)])

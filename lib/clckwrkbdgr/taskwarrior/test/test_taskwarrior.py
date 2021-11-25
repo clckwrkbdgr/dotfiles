@@ -316,6 +316,47 @@ class TestTaskWarrior(fake_filesystem_unittest.TestCase):
 			'{0}'.format(datetime.datetime(2021, 12, 31, 8, 30, 0).isoformat()),
 			]) + '\n'))
 		self.assertEqual([_.title for _ in task.get_history()], ['foo', 'bar', None])
+	def should_rewrite_task_history_automatically(self):
+		task = TaskWarrior(Config(separator='__'))
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 0, 0))
+		task.start('bar', now=datetime.datetime(2021, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2021, 12, 31, 8, 2, 0))
+		task.start(now=datetime.datetime(2021, 12, 31, 8, 3, 0))
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 4, 0))
+
+		with self.assertRaises(RuntimeError):
+			task.rewrite_history(
+					datetime.datetime(2021, 12, 31, 8, 2, 0),
+					datetime.datetime(2021, 12, 31, 8, 3, 0),
+					['baz', 'baz', 'excessive'],
+					)
+		with self.assertRaises(RuntimeError):
+			task.rewrite_history(
+					datetime.datetime(2021, 12, 31, 8, 2, 0),
+					datetime.datetime(2021, 12, 31, 8, 3, 0),
+					['not enough values'],
+					)
+
+		task.rewrite_history(
+				datetime.datetime(2021, 12, 31, 8, 2, 0),
+				datetime.datetime(2021, 12, 31, 8, 3, 0),
+				['baz', 'baz'],
+				)
+		self.assertEqual([_.title for _ in task.get_history()], [
+			'foo', 'bar',
+			'baz', 'baz',
+			'foo',
+			])
+		task.rewrite_history(
+				datetime.datetime(2021, 12, 31, 8, 2, 0),
+				datetime.datetime(2021, 12, 31, 8, 3, 0),
+				['foo', None],
+				)
+		self.assertEqual([_.title for _ in task.get_history()], [
+			'foo', 'bar',
+			'foo', None,
+			'foo',
+			])
 	@mock.patch('subprocess.call', side_effect=[0])
 	def should_fix_task_history(self, subprocess_call):
 		task = TaskWarrior()
