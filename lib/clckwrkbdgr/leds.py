@@ -1,4 +1,5 @@
 import subprocess
+import threading
 try:
 	from PIL import Image
 except: # pragma: no cover
