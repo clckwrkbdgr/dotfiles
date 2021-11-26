@@ -13,7 +13,7 @@ import six
 from clckwrkbdgr import xdg
 import clckwrkbdgr.taskwarrior
 import clckwrkbdgr.taskwarrior._base
-from clckwrkbdgr.taskwarrior import Config, Entry, TaskWarrior
+from clckwrkbdgr.taskwarrior import Config, Entry, Stat, TaskWarrior
 
 class TestTaskEntry(unittest.TestCase):
 	def should_compare_entries(self):
@@ -36,12 +36,28 @@ class TestTaskEntry(unittest.TestCase):
 		entry.is_stop = True
 		self.assertEqual(repr(entry), 'Entry(1, {0}, is_stop=True)'.format(repr('bar')))
 
+class TestTaskStat(unittest.TestCase):
+	def should_compare_entries(self):
+		self.assertEqual(Stat(1, 2, 'foo'), Stat(1, 2, 'foo'))
+		self.assertEqual(Stat(1, 2, 'foo'), Stat(2, 3, 'foo'))
+		self.assertNotEqual(Stat(1, 2, 'bar'), Stat(1, 3, 'bar'))
+		self.assertTrue(Stat(1, 2, 'bar') == Stat(2, 3, 'bar'))
+		self.assertFalse(Stat(1, 2, 'bar') != Stat(2, 3, 'bar'))
+		self.assertFalse(Stat(1, 2, 'bar') == Stat(2, 4, 'bar'))
+		self.assertTrue(Stat(1, 2, 'bar') != Stat(1, 3, 'bar'))
+	def should_repr_entries(self):
+		self.assertEqual(str(Stat(1, 2, 'bar')), '1 bar')
+		self.assertEqual(repr(Stat(1, 2, 'bar')), 'Stat(1, 2, {0})'.format(repr('bar')))
+
 class TestTaskWarrior(fake_filesystem_unittest.TestCase):
 	def setUp(self):
 		self.setUpPyfakefs(modules_to_reload=[clckwrkbdgr.taskwarrior, clckwrkbdgr.taskwarrior._base])
 		taskwarrior_dir = xdg.save_data_path('taskwarrior')
 		if not taskwarrior_dir.exists():
 			self.fs.create_dir(str(taskwarrior_dir))
+		taskwarrior_state_dir = xdg.save_state_path('taskwarrior')
+		if not taskwarrior_state_dir.exists():
+			self.fs.create_dir(six.text_type(taskwarrior_state_dir))
 	def should_return_current_task(self):
 		task = TaskWarrior()
 		self.assertIsNone(task.get_current_task())
@@ -316,6 +332,151 @@ class TestTaskWarrior(fake_filesystem_unittest.TestCase):
 			'{0}'.format(datetime.datetime(2021, 12, 31, 8, 30, 0).isoformat()),
 			]) + '\n'))
 		self.assertEqual([_.title for _ in task.get_history()], ['foo', 'bar', None])
+	def should_collect_entries_to_passed_stats(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 0, 0))
+		task.start('bar', now=datetime.datetime(2021, 12, 31, 8, 2, 0))
+		task.stop(now=datetime.datetime(2021, 12, 31, 8, 5, 0))
+		task.start(now=datetime.datetime(2021, 12, 31, 8, 7, 0))
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 8, 0))
+
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			)], [
+				(2, 'foo'),
+				(3, 'bar'),
+				(1, 'bar'),
+				(22, 'foo'),
+				])
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			start_datetime=datetime.datetime(2021, 12, 31, 7, 30, 0),
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			)], [
+				(2, 'foo'),
+				(3, 'bar'),
+				(1, 'bar'),
+				(22, 'foo'),
+				])
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			start_datetime=datetime.datetime(2021, 12, 31, 8, 1, 0),
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			)], [
+				(1, 'foo'),
+				(3, 'bar'),
+				(1, 'bar'),
+				(22, 'foo'),
+				])
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			start_datetime=datetime.datetime(2021, 12, 31, 8, 1, 0),
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 6, 0),
+			)], [
+				(1, 'foo'),
+				(3, 'bar'),
+				])
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			start_datetime=datetime.datetime(2021, 12, 31, 8, 1, 0),
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 4, 0),
+			)], [
+				(1, 'foo'),
+				(2, 'bar'),
+				])
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			start_datetime=datetime.datetime(2021, 12, 31, 8, 2, 0),
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 4, 0),
+			)], [
+				(2, 'bar'),
+				])
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			start_datetime=datetime.datetime(2021, 12, 31, 8, 3, 0),
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 4, 0),
+			)], [
+				(1, 'bar'),
+				])
+
+		task.stop(now=datetime.datetime(2021, 12, 31, 8, 10, 0))
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			)], [
+				(2, 'foo'),
+				(3, 'bar'),
+				(1, 'bar'),
+				(2, 'foo'),
+				])
+	def should_squeeze_consequent_stats(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 0, 0))
+		task.start('bar', now=datetime.datetime(2021, 12, 31, 8, 2, 0))
+		task.stop(now=datetime.datetime(2021, 12, 31, 8, 5, 0))
+		task.start(now=datetime.datetime(2021, 12, 31, 8, 7, 0))
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 8, 0))
+
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			squeeze=True,
+			)], [
+				(2, 'foo'),
+				(3, 'bar'),
+				(1, 'bar'),
+				(22, 'foo'),
+				])
+
+		task.rewrite_history(
+				datetime.datetime(2021, 12, 31, 8, 5, 0),
+				datetime.datetime(2021, 12, 31, 8, 7, 0),
+				['bar', 'bar']
+				)
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			squeeze=True,
+			)], [
+				(2, 'foo'),
+				(6, 'bar'),
+				(22, 'foo'),
+				])
+
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 10, 0))
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.get_stats(
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			squeeze=True,
+			)], [
+				(2, 'foo'),
+				(6, 'bar'),
+				(22, 'foo'),
+				])
+	def should_accumulate_stats(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 0, 0))
+		task.start('bar', now=datetime.datetime(2021, 12, 31, 8, 2, 0))
+		task.stop(now=datetime.datetime(2021, 12, 31, 8, 5, 0))
+		task.start(now=datetime.datetime(2021, 12, 31, 8, 7, 0))
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 8, 0))
+
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.accumulate_stats(
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			)], [
+				(4, 'bar'),
+				(24, 'foo'),
+				])
+
+		task.rewrite_history(
+				datetime.datetime(2021, 12, 31, 8, 5, 0),
+				datetime.datetime(2021, 12, 31, 8, 7, 0),
+				['bar', 'bar']
+				)
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.accumulate_stats(
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			)], [
+				(6, 'bar'),
+				(24, 'foo'),
+				])
+
+		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 10, 0))
+		self.assertEqual([(_.passed.total_seconds()/60, _.title) for _ in task.accumulate_stats(
+			stop_datetime=datetime.datetime(2021, 12, 31, 8, 30, 0),
+			)], [
+				(6, 'bar'),
+				(24, 'foo'),
+				])
 	def should_rewrite_task_history_automatically(self):
 		task = TaskWarrior(Config(separator='__'))
 		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 0, 0))
@@ -365,7 +526,6 @@ class TestTaskWarrior(fake_filesystem_unittest.TestCase):
 		task.start(now=datetime.datetime(2021, 12, 31, 8, 3, 0))
 		task.start('foo', now=datetime.datetime(2021, 12, 31, 8, 4, 0))
 
-		self.fs.create_dir(six.text_type(xdg.save_state_path('taskwarrior')))
 		task.rewrite_history(
 				datetime.datetime(2021, 12, 31, 8, 2, 0),
 				datetime.datetime(2021, 12, 31, 8, 3, 0),

@@ -1,12 +1,13 @@
 import os, subprocess
 import datetime
-import functools
+import functools, itertools
 import tempfile, shutil
 from collections import namedtuple
 try:
 	from pathlib2 import Path
 except: # pragma: no cover
 	from pathlib import Path
+import six
 from clckwrkbdgr import xdg
 
 class Config:
@@ -54,11 +55,32 @@ class Entry(object):
 	def __ne__(self, other):
 		return (self.datetime, self.title) != (other.datetime, other.title)
 
+class Stat(object):
+	def __init__(self, start, stop, title):
+		assert start < stop, "{0}..{1} {2}".format(start, stop, title)
+		self.start = start
+		self.stop = stop
+		assert title, "{0}..{1} {2}".format(start, stop, title)
+		self.title = title
+	def __str__(self):
+		return '{0} {1}'.format(self.passed, self.title)
+	def __repr__(self):
+		args = [repr(self.start), repr(self.stop), repr(self.title)]
+		return '{0}({1})'.format('Stat', ', '.join(args))
+	@property
+	def passed(self):
+		return self.stop - self.start
+	def __eq__(self, other):
+		return (self.passed, self.title) == (other.passed, other.title)
+	def __ne__(self, other):
+		return (self.passed, self.title) != (other.passed, other.title)
+
 class TaskWarrior:
 	""" Base interface for Task tracker.
 	Current implementation uses plain text file storage.
 	"""
 	Entry = Entry
+	Stat = Stat
 
 	def __init__(self, config=None):
 		self.config = config or Config()
@@ -104,6 +126,77 @@ class TaskWarrior:
 		for current in history:
 			continue
 		return current
+	def get_stats(self, start_datetime=None, stop_datetime=None,
+			squeeze=False,
+			stat_class=None):
+		""" Yields tracked Stat objects for each task in history.
+		If start_datetime and/or stop_datetime are specified,
+		stats are bound to given time frame.
+		Resulting passed time for tasks that are on bounds (if any)
+		is limited to the time that fit into given time frame.
+		If squeeze is True, joins all consequent stats for the same task.
+		"""
+		start_datetime = start_datetime or datetime.datetime.min
+		stop_datetime = stop_datetime or datetime.datetime.now()
+		yield_queue = []
+		for stat in self._iter_raw_stats(now=stop_datetime, stat_class=stat_class):
+			if stat.start < start_datetime and stat.stop < start_datetime:
+				continue
+			if stop_datetime < stat.start and stop_datetime < stat.stop:
+				continue
+			if stat.start <= start_datetime <= stat.stop:
+				stat.start = start_datetime
+			if stat.start <= stop_datetime <= stat.stop:
+				stat.stop = stop_datetime
+			if stat.start == stat.stop:
+				continue
+			if squeeze:
+				if yield_queue and yield_queue[-1].title == stat.title and yield_queue[-1].stop == stat.start:
+					yield_queue[-1].stop = stat.stop
+				else:
+					for _ in yield_queue:
+						yield _
+					yield_queue = [stat]
+			else:
+				yield stat
+		for stat in yield_queue:
+			yield stat
+	def accumulate_stats(self, start_datetime=None, stop_datetime=None,
+			stat_class=None):
+		""" Yields accumulated Stat values for each unique task in history (or given timeframe) ordered by title.
+		Start and stop times of generated Stat object may become meaningless. Only .passed will be valid.
+		"""
+		stats = list(self.get_stats(
+			start_datetime=start_datetime,
+			stop_datetime=stop_datetime,
+			squeeze=True,
+			stat_class=stat_class,
+			))
+		current = None
+		for stat in sorted(stats, key=lambda _: _.title):
+			if not current:
+				current = stat
+				continue
+			if stat.title == current.title:
+				current.stop += (stat.stop - stat.start)
+			else:
+				yield current
+				current = stat
+		if current:
+			yield current
+	def _iter_raw_stats(self, now=None, stat_class=None):
+		now=now or datetime.datetime.now()
+		stat_class = stat_class or self.Stat
+		def pairwise(seq):
+			first, second = itertools.tee(seq)
+			next(second, None)
+			return six.moves.zip(first, second)
+		for prev, entry in pairwise(self.get_history()):
+			if not prev.title:
+				continue
+			yield stat_class(prev.datetime, entry.datetime, prev.title)
+		if entry.title and entry.datetime < now:
+			yield stat_class(entry.datetime, now, entry.title)
 	def filter_history(self,
 			start_datetime=None, stop_datetime=None,
 			only_breaks=False,
