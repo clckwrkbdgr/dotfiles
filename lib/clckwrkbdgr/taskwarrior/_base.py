@@ -212,33 +212,37 @@ class TaskWarrior:
 		"""
 		new_taskfile = tempfile.NamedTemporaryFile(mode='w', delete=False)
 		new_titles_count = 0
-		with new_taskfile as fobj:
-			for entry_datetime, entry_title in self._parse_history(self.config.taskfile, self.config.separator):
-				if start_datetime <= entry_datetime <= stop_datetime:
-					if not new_titles:
-						if fill_value:
-							entry_title = fill_value
+		try:
+			with new_taskfile as fobj:
+				for entry_datetime, entry_title in self._parse_history(self.config.taskfile, self.config.separator):
+					if start_datetime <= entry_datetime <= stop_datetime:
+						if not new_titles:
+							if fill_value:
+								entry_title = fill_value
+							else:
+								raise RuntimeError('Not enough titles specified for the time frame {0}..{1}: got only {2}'.format(
+									start_datetime, stop_datetime,
+									new_titles_count,
+									))
 						else:
-							raise RuntimeError('Not enough titles specified for the time frame {0}..{1}: got only {2}'.format(
-								start_datetime, stop_datetime,
-								new_titles_count,
-								))
+							entry_title = new_titles.pop(0)
+						new_titles_count += 1
+					if entry_title:
+						line = '{0}{2}{1}\n'.format(entry_datetime.isoformat(), entry_title, self.config.separator)
 					else:
-						entry_title = new_titles.pop(0)
-					new_titles_count += 1
-				if entry_title:
-					line = '{0}{2}{1}\n'.format(entry_datetime.isoformat(), entry_title, self.config.separator)
-				else:
-					line = '{0}\n'.format(entry_datetime.isoformat())
-				try:
-					fobj.write(line)
-				except UnicodeError: # pragma: no cover
-					fobj.write(line.encode('ascii', 'replace').decode())
-		if new_titles:
-			raise RuntimeError('{0} unused titles left after replacing entries in the time frame {1}..{2}'.format(len(new_titles),
-				start_datetime, stop_datetime))
-		shutil.copy(str(self.config.taskfile), str(xdg.save_state_path('taskwarrior')/'taskfile.bak'))
-		shutil.move(str(new_taskfile.name), str(self.config.taskfile))
+						line = '{0}\n'.format(entry_datetime.isoformat())
+					try:
+						fobj.write(line)
+					except UnicodeError: # pragma: no cover
+						fobj.write(line.encode('ascii', 'replace').decode())
+			if new_titles:
+				raise RuntimeError('{0} unused titles left after replacing entries in the time frame {1}..{2}'.format(len(new_titles),
+					start_datetime, stop_datetime))
+			shutil.copy(str(self.config.taskfile), str(xdg.save_state_path('taskwarrior')/'taskfile.bak'))
+			shutil.move(str(new_taskfile.name), str(self.config.taskfile))
+		finally:
+			if os.path.exists(str(new_taskfile.name)):
+				os.unlink(str(new_taskfile.name))
 	def fix_history(self):
 		""" Allows to edit task history manually using text editor. """
 		return 0 == subprocess.call([os.environ.get('EDITOR', 'vi'), str(self.config.taskfile)])
