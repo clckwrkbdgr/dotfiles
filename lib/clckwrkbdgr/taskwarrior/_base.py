@@ -191,11 +191,12 @@ class TaskWarrior:
 			first, second = itertools.tee(seq)
 			next(second, None)
 			return six.moves.zip(first, second)
+		entry = None
 		for prev, entry in pairwise(self.get_history()):
 			if not prev.title:
 				continue
 			yield stat_class(prev.datetime, entry.datetime, prev.title)
-		if entry.title and entry.datetime < now:
+		if entry and entry.title and entry.datetime < now:
 			yield stat_class(entry.datetime, now, entry.title)
 	def filter_history(self,
 			start_datetime=None, stop_datetime=None,
