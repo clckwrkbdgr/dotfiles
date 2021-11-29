@@ -1,5 +1,6 @@
 import os, subprocess
 import datetime
+import json
 import functools, itertools
 import tempfile, shutil
 from collections import namedtuple
@@ -28,6 +29,27 @@ class Config:
 		self.separator = separator or ' '
 		self.stop_alias = stop_alias
 		self.resume_alias = resume_alias
+	@classmethod
+	@functools.lru_cache()
+	def read_config(cls, filename=None): # pragma: no cover -- TODO
+		""" Reads configuration from JSON file.
+		Default location is XDG_DATA_PATH/taskwarrior/config.json
+		If file does not exist, returns default configuration values.
+		For possible configuration fields see documentation of Config class.
+		"""
+		filename = Path(filename or xdg.save_data_path('taskwarrior')/'config.json')
+		data = {}
+		if filename.exists():
+			data = json.loads(filename.read_text())
+		taskfile = data.get('taskfile')
+		if taskfile:
+			taskfile = os.path.expanduser(taskfile)
+		return cls(
+				taskfile=taskfile,
+				separator=data.get('separator'),
+				stop_alias=data.get('stop_alias'),
+				resume_alias=data.get('resume_alias'),
+				)
 
 @functools.total_ordering
 class Entry(object):

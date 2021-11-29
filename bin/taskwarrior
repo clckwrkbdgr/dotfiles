@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 import logging
+import functools
 logger = logging.getLogger('taskwarrior')
 from clckwrkbdgr import utils
 import clckwrkbdgr.taskwarrior
-from clckwrkbdgr.taskwarrior import TaskWarrior
+from clckwrkbdgr.taskwarrior import TaskWarrior, Config
 
 import click, click_default_group
 import clckwrkbdgr.click
+
+@functools.lru_cache()
+def get_taskwarrior():
+	return TaskWarrior(Config.read_config())
 
 @clckwrkbdgr.click.windows_noexpand_args
 @click.group(cls=click_default_group.DefaultGroup, default='current', default_if_no_args=True)
@@ -22,9 +27,9 @@ def cli(debug=False):
 @utils.exits_with_return_value
 def current_task():
 	""" Displays current task. """
-	if TaskWarrior().get_current_task() is None:
+	if get_taskwarrior().get_current_task() is None:
 		return False
-	print(TaskWarrior().get_current_task())
+	print(get_taskwarrior().get_current_task())
 	return True
 
 @cli.command('start')
@@ -34,19 +39,19 @@ def start_task(task=None):
 	""" Starts given task.
 	If task is not given, resumes previous task.
 	"""
-	return TaskWarrior().start(task)
+	return get_taskwarrior().start(task)
 
 @cli.command('stop')
 @utils.exits_with_return_value
 def stop_task():
 	""" Stops current task. """
-	return TaskWarrior().stop()
+	return get_taskwarrior().stop()
 
 @cli.command('list')
 @utils.exits_with_return_value
 def list_history():
 	""" Prints task execution history. """
-	for entry in TaskWarrior().get_history():
+	for entry in get_taskwarrior().get_history():
 		print(entry)
 	return True
 
@@ -54,7 +59,7 @@ def list_history():
 @utils.exits_with_return_value
 def fix_history():
 	""" Provides interface to fix task history manually. """
-	return TaskWarrior().fix_history()
+	return get_taskwarrior().fix_history()
 
 if __name__ == '__main__':
 	cli()
