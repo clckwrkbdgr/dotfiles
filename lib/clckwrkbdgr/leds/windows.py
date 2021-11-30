@@ -75,7 +75,7 @@ class FolderWidget: # pragma: no cover -- TODO
 				shutil.rmtree(str(entry), onerror=_remove_windows_protected_entry)
 				continue
 			entry_tags = self._get_tags(entry)
-			if tags and set(tags) | entry_tags:
+			if tags and set(tags) & entry_tags:
 				logging.debug("Removing old entry {0} with tags {1}...".format(entry, entry_tags))
 				shutil.rmtree(str(entry), onerror=_remove_windows_protected_entry)
 	def add(self, icon, title, tags=None):
@@ -92,7 +92,7 @@ class FolderWidget: # pragma: no cover -- TODO
 		for entry in self.dirpath.iterdir():
 			if keep_tags:
 				entry_tags = self._get_tags(entry)
-				if set(keep_tags) | entry_tags:
+				if set(keep_tags) & entry_tags:
 					logging.debug("Keeping entry as requested: {0}".format(keep_tags))
 					kept.append(entry)
 					continue
