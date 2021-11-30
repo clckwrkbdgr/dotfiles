@@ -70,7 +70,7 @@ class FolderWidget: # pragma: no cover -- TODO
 		return result
 	def remove(self, title=None, tags=None):
 		for entry in self.dirpath.iterdir():
-			if entry.name == _fix_dos_filename(title):
+			if title and entry.name == _fix_dos_filename(title):
 				logging.debug("Removing old entry {0} by title...".format(entry, title))
 				shutil.rmtree(str(entry), onerror=_remove_windows_protected_entry)
 				continue
