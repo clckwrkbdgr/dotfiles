@@ -212,6 +212,7 @@ lib/clckwrkbdgr/jobsequence/sequence.py caps=work
 lib/clckwrkbdgr/jobsequence/script.py caps=work
 lib/clckwrkbdgr/leds/__init__.py caps=work
 lib/clckwrkbdgr/leds/xfce.py caps=work
+lib/clckwrkbdgr/leds/windows.py caps=work
 lib/clckwrkbdgr/test/test_leds.py caps=work
 lib/clckwrkbdgr/math/*.py caps=work
 lib/clckwrkbdgr/math/test/*.py caps=work
