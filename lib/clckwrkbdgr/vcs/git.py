@@ -83,6 +83,13 @@ class Stash(object): # pragma: no cover -- TODO commands
 	def __exit__(self, e, t, tb):
 		if not self._stashed:
 			return
+		try:
+			has_stashes = subprocess.check_output(["git", "stash", "list"]).strip()
+			if not has_stashes:
+				return
+		except subprocess.CalledProcessError as e:
+			sys.stderr.write(str(e) + '\n')
+			sys.stderr.write(e.stdout.decode('utf-8', 'replace'))
 		quiet_arg = ['--quiet'] if self._quiet else []
 		if 0 != subprocess.call(["git", "stash", "pop"] + quiet_arg):
 			# Resolving merge conflicts 'manually' to prevent leaving conflict markers in the code.
