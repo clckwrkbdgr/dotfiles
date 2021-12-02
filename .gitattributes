@@ -157,6 +157,7 @@ bin/urldecode caps=work
 bin/user-env.cmd caps=work
 bin/userstate caps=work
 bin/vcvarsall.py caps=work
+bin/windows/at.py caps=work
 bin/windows/create_lnk.vbs caps=work
 bin/windows/free.py caps=work
 bin/windows/xprintidle.py caps=work
