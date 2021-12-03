@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import clckwrkbdgr.email as E
-import email, email.message, email.mime, email.mime.text, email.mime.multipart
+import email, email.message, email.mime, email.mime.base, email.mime.text, email.mime.multipart, email.mime.application
 import six
 try:
 	email.message.EmailMessage
@@ -31,6 +31,15 @@ class TestEmail(unittest.TestCase):
 		msg['From'] = 'JC Denton'
 		msg['To'] = 'Paul Denton'
 		return msg
+	def _attach(self, content_type, data, content_id=None, filename=None):
+		main_type, subtype = content_type.split('/')
+		attachment = email.mime.base.MIMEBase(main_type, subtype)
+		attachment.set_payload(data)
+		if content_id:
+			attachment['Content-ID'] = content_id
+		if filename:
+			attachment.add_header('Content-Disposition', 'attachment', filename=filename)
+		return attachment
 	def should_construct_email_from_bytes(self):
 		msg = self._create()
 		if six.PY2: # pragma: no cover
@@ -56,7 +65,7 @@ class TestEmail(unittest.TestCase):
 		msg = E.Message(self._create(
 			subject=subject,
 			))
-		self.assertEqual(msg.get_header('Subject'), subject)
+		self.assertEqual(msg.get_subject(), subject)
 		self.assertEqual(msg.get_full_text(), 'hello world\n')
 	def should_parse_multipart_message(self):
 		msg = E.Message(self._create(
@@ -64,3 +73,26 @@ class TestEmail(unittest.TestCase):
 			).as_string())
 		self.assertEqual(msg.get_header('Subject'), 'Hello world!')
 		self.assertEqual(msg.get_full_text(), 'hello world\n<p>hello world</p>\n')
+	def should_parse_message_with_binary_attachment(self):
+		msg = self._create(
+			multipart=True,
+			)
+		msg.attach(self._attach('image/jpeg', 'data', content_id='666', filename='attach.jpg'))
+		msg = E.Message(msg.as_string())
+		self.assertEqual(msg.get_header('Subject'), 'Hello world!')
+		payloads = msg.get_payloads()
+		self.assertEqual(len(payloads), 3)
+		self.assertEqual(payloads[0], 'hello world\n')
+		self.assertEqual(str(payloads[1]), '<p>hello world</p>\n')
+		self.assertTrue(isinstance(payloads[2], E.BinaryPayload))
+		self.assertEqual(msg.get_full_text(), 'hello world\n<p>hello world</p>\nContent-Type: image/jpeg\nFilename: attach.jpg\n' + repr(b'data'))
+	def should_store_ids_for_images(self):
+		msg = self._create(
+			multipart=True,
+			)
+		msg.attach(self._attach('image/jpeg', 'data', content_id='666', filename='attach.jpg'))
+		msg = E.Message(msg.as_string(), unique_filenames=True)
+		self.assertEqual(msg.get_header('Subject'), 'Hello world!')
+		payloads = msg.get_payloads()
+		self.assertEqual(payloads[2].filename, 'attach.666.jpg')
+		self.assertEqual(msg.cids, {'666':'attach.666.jpg'})
