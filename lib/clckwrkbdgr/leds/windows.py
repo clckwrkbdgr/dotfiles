@@ -1,6 +1,7 @@
 import platform, shutil
 import subprocess, stat
 import logging
+log = logging.getLogger('leds')
 from collections import namedtuple
 try:
 	from pathlib2 import Path
@@ -47,7 +48,7 @@ def _remove_windows_protected_entry(function, path, exc_info): # pragma: no cove
 	try:
 		function(path)
 	except Exception as e:
-		logging.warning("Cannot remove {0}:{1}".format(path, e))
+		log.warning("Cannot remove {0}:{1}".format(path, e))
 
 class FolderWidget: # pragma: no cover -- TODO
 	def __init__(self, dirpath):
@@ -71,18 +72,18 @@ class FolderWidget: # pragma: no cover -- TODO
 	def remove(self, title=None, tags=None):
 		for entry in self.dirpath.iterdir():
 			if title and entry.name == _fix_dos_filename(title):
-				logging.debug("Removing old entry {0} by title...".format(entry, title))
+				log.debug("Removing old entry {0} by title...".format(entry, title))
 				shutil.rmtree(str(entry), onerror=_remove_windows_protected_entry)
 				continue
 			entry_tags = self._get_tags(entry)
 			if tags and set(tags) & entry_tags:
-				logging.debug("Removing old entry {0} with tags {1}...".format(entry, entry_tags))
+				log.debug("Removing old entry {0} with tags {1}...".format(entry, entry_tags))
 				shutil.rmtree(str(entry), onerror=_remove_windows_protected_entry)
 	def add(self, icon, title, tags=None):
 		if tags:
 			self.remove(tags=tags)
 		filename = _fix_dos_filename(title)
-		logging.debug("Creating {0}...".format(filename))
+		log.debug("Creating {0}...".format(filename))
 		(self.dirpath/filename).mkdir(exist_ok=True)
 		_write_desktop_ini(self.dirpath/filename, icon)
 		for tag in tags:
@@ -93,11 +94,11 @@ class FolderWidget: # pragma: no cover -- TODO
 			if keep_tags:
 				entry_tags = self._get_tags(entry)
 				if set(keep_tags) & entry_tags:
-					logging.debug("Keeping entry as requested: {0}".format(keep_tags))
+					log.debug("Keeping entry as requested: {0}".format(keep_tags))
 					kept.append(entry)
 					continue
 			if keep_titles and str(entry.name) in keep_titles:
-				logging.debug("Skipping {0}: present in new content.".format(entry))
+				log.debug("Skipping {0}: present in new content.".format(entry))
 				kept.append(entry)
 				continue
 			shutil.rmtree(str(entry), onerror=_remove_windows_protected_entry)
