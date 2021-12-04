@@ -91,6 +91,10 @@ class Message(object):
 		if isinstance(data, six.string_types):
 			return data
 		else: # pragma: no cover -- TODO need real case.
+			if isinstance(encoding, email.message.Charset):
+				encoding = encoding.input_charset
+				if '"' in encoding:
+					encoding = encoding.split('"', 1)[0]
 			return data.decode(encoding if encoding else 'ascii', 'replace')
 	def _decode_single_payload(self, data):
 		if data.get_content_type().startswith('text/'):
