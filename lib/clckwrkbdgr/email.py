@@ -1,6 +1,10 @@
 from __future__ import absolute_import
 import os, re
-import email, email.message
+import email, email.message, email.header
+try:
+	email.message.Charset
+except AttributeError: # pragma: no cover
+	email.message.Charset = email.charset.Charset
 import logging
 Log = logging.getLogger('email')
 import six
@@ -88,14 +92,18 @@ class Message(object):
 		Log.debug("Using Content-ID.")
 		return content_type
 	def _decode_string(self, data, encoding=None):
-		if isinstance(data, six.string_types):
+		if isinstance(data, six.string_types) and not hasattr(data, 'decode'): # pragma: no cover -- py2
 			return data
-		else: # pragma: no cover -- TODO need real case.
-			if isinstance(encoding, email.message.Charset):
-				encoding = encoding.input_charset
-				if '"' in encoding:
-					encoding = encoding.split('"', 1)[0]
-			return data.decode(encoding if encoding else 'ascii', 'replace')
+		if isinstance(encoding, email.message.Charset):
+			encoding = encoding.input_charset
+			if '"' in encoding: # pragma: no cover -- TODO need real case.
+				encoding = encoding.split('"', 1)[0]
+		if encoding == 'unknown-8bit' or encoding is None:
+			try:
+				return data.decode('utf-8')
+			except: # pragma: no cover
+				pass
+		return data.decode(encoding if encoding else 'ascii', 'replace')
 	def _decode_single_payload(self, data):
 		if data.get_content_type().startswith('text/'):
 			self._guess_payload_charset(data)

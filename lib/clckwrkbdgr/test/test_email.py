@@ -61,9 +61,12 @@ class TestEmail(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			msg = E.Message(dict())
 	def should_decode_headers(self):
-		subject = 'Привет Мир!'
+		subject = u'Привет Мир!'
+		header = subject
+		if six.PY2: # pragma: no cover
+			header = email.header.Header(subject, 'utf-8')
 		msg = E.Message(self._create(
-			subject=subject,
+			subject=header,
 			))
 		self.assertEqual(msg.get_subject(), subject)
 		self.assertEqual(msg.get_full_text(), 'hello world\n')
@@ -96,3 +99,10 @@ class TestEmail(unittest.TestCase):
 		payloads = msg.get_payloads()
 		self.assertEqual(payloads[2].filename, 'attach.666.jpg')
 		self.assertEqual(msg.cids, {'666':'attach.666.jpg'})
+
+class TestParserIssues(unittest.TestCase):
+	def should_try_to_autoguess_unknown_8bit_encoding(self):
+		data = b'To: user@example.com\r\nSubject: \xd0\xbf\xd1\x80\xd0\xbe\xd0\xb5\xd0\xba\xd1\x82\r\nContent-type:text/html;charset=UTF-8\r\nFrom: <other@example.com> \r\n' + b'\r\n\xd0\xbf\xd1\x80\xd0\xbe\xd0\xb5\xd0\xba\xd1\x82\r\n'
+		msg = E.Message(data)
+		self.assertEqual(msg.get_header('Subject'), u'проект')
+		self.assertEqual(msg.get_full_text(), 'проект\r\n')
