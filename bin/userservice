@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+import platform
+import types
+import clckwrkbdgr.userservice
+import click
+
+@click.group()
+@click.argument('service_id')
+@click.pass_context
+def cli(ctx, service_id):
+	""" Wrapper to control user-defined user-space services (daemons).
+
+	Services are identified by their service id.
+	"""
+	ctx.obj = clckwrkbdgr.userservice.by_platform(platform.system())(service_id)
+
+@cli.command()
+@click.pass_obj
+def status(service):
+	""" Displays current status of the service.
+	"""
+	print('{0}: {1}'.format(service.id, service.display_name or ''))
+	print('Installed: {1}'.format(service.id,
+		'yes' if service.is_installed() else 'NO',
+		))
+	print('Running: {1}'.format(service.id,
+		'yes' if service.is_started() else 'STOPPED',
+		))
+
+@cli.command()
+@click.pass_obj
+def install(service):
+	""" Installs service.
+	Does nothing is service is already installed.
+	Does not start service: it should be done manually.
+	"""
+	if service.is_installed():
+		return
+	service.install()
+
+@cli.command()
+@click.pass_obj
+def uninstall(service):
+	""" Uninstalls installed service.
+	Raises error is service is not installed.
+	"""
+	if not service.is_installed():
+		raise RuntimeError("Service {0} is not installed, cannot uninstall.".format(service.id))
+	if service.is_started():
+		service.stop()
+	service.uninstall()
+
+@cli.command()
+@click.pass_obj
+def start(service):
+	""" Attempts to start service.
+	Does nothing if service is already started.
+	"""
+	if not service.is_started():
+		service.start()
+
+@cli.command()
+@click.pass_obj
+def restart(service):
+	""" Attempts to restart service.
+	Equivalent to consequent stop and start.
+	"""
+	if service.is_started():
+		service.stop()
+	service.start()
+
+@cli.command()
+@click.pass_obj
+def stop(service):
+	""" Attempts to stop service.
+	Does nothing if service is not started.
+	"""
+	if service.is_started():
+		service.stop()
+
+if __name__ == '__main__':
+	cli()
