@@ -4,7 +4,29 @@ import types
 import clckwrkbdgr.userservice
 import click
 
-@click.group()
+class GroupWithNotRequiredBaseArgs(click.Group):
+	""" Workaround for command groups that have some base arg, e.g.: 'prog <arg> <command>.
+	In case when base arg is not required, value is still treated as argument instead of command: prog <command>
+	This class detects commands in place of base arguments and restores commands. Arguments will be turned to None.
+
+	Accepts arguments:
+	- non_specific_commands: list of command names that may be invoked without base arguments.
+	- base_args: list of all base arguments that can be ignored.
+	"""
+	def __init__(self, *args, **kwargs):
+		self.non_specific_commands = kwargs.pop('non_specific_commands', [])
+		self.base_args = kwargs.pop('base_args', [])
+		super().__init__(*args, **kwargs)
+	def parse_args(self, ctx, args, *other_args, **kwargs):
+		result = super().parse_args(ctx, args, *other_args, **kwargs)
+		if not ctx.protected_args:
+			for base_arg in self.base_args:
+				if base_arg in ctx.params and ctx.params[base_arg] in self.non_specific_commands:
+					ctx.protected_args.insert(0, ctx.params[base_arg])
+					ctx.params[base_arg] = None
+		return result
+
+@click.group(cls=GroupWithNotRequiredBaseArgs, base_args=['service_id'], non_specific_commands=['list'])
 @click.argument('service_id')
 @click.pass_context
 def cli(ctx, service_id):
@@ -12,7 +34,20 @@ def cli(ctx, service_id):
 
 	Services are identified by their service id.
 	"""
-	ctx.obj = clckwrkbdgr.userservice.by_platform(platform.system())(service_id)
+	ctx.obj = clckwrkbdgr.userservice.by_platform(platform.system())
+	if service_id is None:
+		return # Non-service-specific command.
+	ctx.obj = ctx.obj(service_id)
+
+@cli.command('list')
+@click.pass_obj
+def list_all(service_class):
+	""" Displays status for all services. """
+	for entry in service_class.list_all():
+		print('[{1}] {0}'.format(
+			entry.service_id,
+			'+' if entry.started else '-',
+			))
 
 @cli.command()
 @click.pass_obj

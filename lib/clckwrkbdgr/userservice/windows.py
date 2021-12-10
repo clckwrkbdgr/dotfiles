@@ -102,6 +102,13 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		parts.insert(-3, '(A;;CCLCSWRPWPDTLOCRRC;;;{0})'.format(sid))
 		adjusted_sdshow = ''.join(parts)
 		subprocess.check_call(['sc', '\\\\localhost', 'sdset', service_id, adjusted_sdshow])
+
+	@classmethod
+	def list_all(cls):
+		output = subprocess.check_output(['wmic', 'service', 'where', 'StartName like "ISD\\\\icha"', 'get', '/format:csv'], shell=True)
+		import csv
+		for row in csv.DictReader(filter(None, output.decode('utf-8', 'replace').splitlines())):
+			yield cls.Status(row['Name'], row['State'] == 'Running')
 	def is_installed(self):
 		rc = subprocess.call(["sc", "query", self.id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 		return 0 == rc

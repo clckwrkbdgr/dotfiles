@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+from collections import namedtuple
 try:
 	from pathlib2 import Path
 except: # pragma: no cover
@@ -8,6 +9,8 @@ except: # pragma: no cover
 from clckwrkbdgr import xdg
 
 class UserService(object): # pragma: no cover -- TODO
+	Status = namedtuple('ServiceStatus', 'service_id started')
+
 	def __init__(self, service_id):
 		""" Creates interface for service with given ID.
 		Reads configuration for service definition file.
@@ -68,6 +71,10 @@ class UserService(object): # pragma: no cover -- TODO
 				return filename
 		return None
 
+	@classmethod
+	def list_all(cls): # pragma: no cover
+		""" Should return list of UserService.Status objects. """
+		raise NotImplementedError
 	def is_installed(self): # pragma: no cover
 		""" Should return True if service is installed in the system and ready to start. """
 		raise NotImplementedError
