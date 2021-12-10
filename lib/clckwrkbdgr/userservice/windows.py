@@ -1,4 +1,5 @@
 import os, sys, subprocess
+import re
 import datetime
 import six
 from clckwrkbdgr import xdg
@@ -68,6 +69,39 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		)
 		wrapper_file.write_text(wrapper)
 		return wrapper_file
+	@classmethod
+	def _get_profile_sid(cls, userprofile_path):
+		import clckwrkbdgr.winnt.registry
+		import winreg
+		profile_list = r'SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
+		for sid in clckwrkbdgr.winnt.registry.iterkeys(winreg.HKEY_LOCAL_MACHINE, profile_list):
+			for name, value, value_type in clckwrkbdgr.winnt.registry.itervalues(winreg.HKEY_LOCAL_MACHINE, profile_list + '\\' + sid):
+				if name == 'ProfileImagePath' and value == userprofile_path:
+					return sid
+	@classmethod
+	def _grant_control_rights(cls, service_id, userprofile_path):
+		""" It may fail for some reason to give proper rights despite saying SUCCESS.
+		In this case go to gpedit.msc -> Computer Configuration/Windows Settings/Security Settings/System Services.
+		If this category is not available:
+		- Run 'mmc', "File->Add/Remove Snap In...", add "Security Templates" and save console to somewhere (default location is ok).
+		- Locate and open newly created console, switch to "Security Templates" and create new template, it should contain System Services.
+		Select your service, from context menu to to Properties/Edit Security.
+		Add your account and set Start/Stop permisions.
+		NOTE: It may still not work for unknown reasons, like some domain policies may override local settings.
+		"""
+		sid = cls._get_profile_sid(userprofile_path)
+		if not sid:
+			raise RuntimeError("Cannot find Windows Profile SID for current user ({0})".format(userprofile_path))
+		sdshow = subprocess.check_output(['sc', 'sdshow', service_id]).decode().strip()
+		SDSHOW = re.compile(r'^(D:)(\([^()]+\))(.*)(S:)(\(AU;[^()]+\))(.*)$')
+		parts = SDSHOW.match(sdshow)
+		if not parts:
+			raise RuntimeError("Failed to find S:(AU;...) part in 'sc sdhow ...', looks like command is not executed in elevated privileges.")
+		parts = list(parts.groups())
+		assert ''.join(parts) == sdshow
+		parts.insert(-3, '(A;;CCLCSWRPWPDTLOCRRC;;;{0})'.format(sid))
+		adjusted_sdshow = ''.join(parts)
+		subprocess.check_call(['sc', '\\\\localhost', 'sdset', service_id, adjusted_sdshow])
 	def is_installed(self):
 		rc = subprocess.call(["sc", "query", self.id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 		return 0 == rc
@@ -83,6 +117,7 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 			'--password', password,
 			'install',
 			])
+		self._grant_control_rights(self.id, os.environ['USERPROFILE'])
 	def uninstall(self):
 		wrapper = self._ensure_service_wrapper()
 		subprocess.check_call(['python', str(wrapper), 'remove'])
@@ -96,8 +131,6 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 			pass
 		return False
 	def start(self):
-		wrapper = self._ensure_service_wrapper()
-		subprocess.check_call(['python', str(wrapper), 'start'])
+		subprocess.check_call(['sc', 'start', self.id])
 	def stop(self):
-		wrapper = self._ensure_service_wrapper()
-		subprocess.check_call(['python', str(wrapper), 'stop'])
+		subprocess.check_call(['sc', 'stop', self.id])
