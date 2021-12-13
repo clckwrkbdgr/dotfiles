@@ -77,6 +77,7 @@ firefox/containers.json
 firefox/key?.db
 firefox/pkcs11.txt
 firefox/times.json
+firefox/protections.sqlite
 # Firefox local/share
 firefox/addons.json
 firefox/content-prefs.sqlite
@@ -88,7 +89,6 @@ firefox/formhistory.sqlite
 firefox/notificationstore.json
 firefox/permissions.sqlite
 firefox/places.sqlite
-firefox/protections.sqlite
 firefox/search.json.mozlz4
 firefox/signons.sqlite
 firefox/storage-sync.sqlite
