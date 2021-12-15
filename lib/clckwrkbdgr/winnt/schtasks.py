@@ -1,7 +1,37 @@
-import sys, subprocess
+import os, sys, subprocess
 import logging
 from collections import namedtuple
 import xml.etree.ElementTree as ET
+from clckwrkbdgr import xdg
+
+def run_immediately(commandline, task_scheduler_path, logdir=None): # pragma: no cover -- calls external commands and available on Win only.
+	""" Runs command (string) immediately using Windows Task Scheduler.
+	Should produce not output.
+	The job ID is generated in random manner.
+	Job is stored in category specified by task_scheduler_path.
+	Command is executed via clckwrkbdgr.commands facilities, i.e. output is captured and put in log file in specified log dir.
+	See clckwrkbdgr.commands for details.
+	"""
+	command = ["pythonw", "-m", "clckwrkbdgr.commands"]
+	command += ['--start-dir', subprocess.list2cmdline([os.getcwd()])]
+	if logdir:
+		command += ['--output-dir', subprocess.list2cmdline([str(logdir)])]
+	command += [commandline]
+	logging.debug('Running command: {0}'.format(command))
+	command = ' '.join(command)
+
+	import time
+	guid = str(time.time()).replace('.', '_') # TODO proper guid
+	job_id = "{0}\\{1}".format(task_scheduler_path.rstrip('\\'), guid)
+	logging.debug('Task Scheduler Job ID: {0}'.format(job_id))
+
+	# There is no option to register task to run by demand only, but it will not run tasks from very, very, very past.
+	output = subprocess.check_output(['schtasks', '/create', '/tn', job_id, '/sc', 'once', '/tr', command, '/sd', '1901/01/01', '/st', '00:00'], stderr=subprocess.STDOUT)
+	logging.debug(output)
+	output = subprocess.check_output(['schtasks', '/run', '/tn', job_id], stderr=subprocess.STDOUT)
+	logging.debug(output)
+	output = subprocess.check_output(['schtasks', '/delete', '/f', '/tn', job_id], stderr=subprocess.STDOUT)
+	logging.debug(output)
 
 class TaskScheduler: # pragma: no cover -- TODO calls external command and available on win only.
 	RegistrationInfo = namedtuple('RegistrationInfo', 'author description uri')
