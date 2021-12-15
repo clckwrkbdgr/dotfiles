@@ -10,7 +10,7 @@ try:
 except ImportError: # pragma: no cover
 	from pathlib import Path
 
-def run_command_and_collect_output(args, output_dir=None): # pragma: no cover -- TODO accesses and uses FS, subprocesses
+def run_command_and_collect_output(args, start_dir=None, output_dir=None): # pragma: no cover -- TODO accesses and uses FS, subprocesses
 	""" Imitates Unix crontab job.
 
 	Runs batch command with arguments and collects output.
@@ -29,7 +29,13 @@ def run_command_and_collect_output(args, output_dir=None): # pragma: no cover --
 	formatted_now = now.strftime('%Y-%m-%d-%H-%M-%S')
 	output_dir = Path(output_dir or os.environ.get('USERPROFILE', os.environ['HOME']))
 
+	old_cwd = os.getcwd()
 	try:
+		if start_dir:
+			try:
+				os.chdir(str(start_dir))
+			except:
+				pass
 		pid = hash(str(args))
 		try:
 			p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, shell=True)
@@ -55,6 +61,11 @@ def run_command_and_collect_output(args, output_dir=None): # pragma: no cover --
 		with (output_dir/'{0}-crontab-error.log'.format(formatted_now)).open('wb') as f:
 			f.write(traceback.format_exc().encode('utf-8', 'replace'))
 		return -1
+	finally:
+		try:
+			os.chdir(old_cwd)
+		except:
+			pass
 
 def has_sudo_rights(): # pragma: no cover -- TODO executes command and parses output.
 	try:
@@ -68,13 +79,14 @@ import click
 
 @click.command(context_settings=dict(ignore_unknown_options=True))
 @click.argument('args', nargs=-1, required=True)
+@click.option('--start-dir', help='Start directory. Default is current.')
 @click.option('--output-dir', help='Directory to store job log file if there was any. By default is $HOME (%USERPROFILE%).')
-def cli(args, output_dir): # pragma: no cover
+def cli(args, start_dir=None, output_dir=None): # pragma: no cover
 	""" Runs program and collects its output/stderr.
 	
 	Creates trace file if there was any output or if program exited with non-zero.
 	"""
-	run_command_and_collect_output(args, output_dir)
+	run_command_and_collect_output(args, start_dir=start_dir, output_dir=output_dir)
 
 if __name__ == '__main__': # pragma: no cover
 	cli()
