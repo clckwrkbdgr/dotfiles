@@ -138,6 +138,8 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 			pass
 		return False
 	def start(self):
+		wrapper = self._ensure_service_wrapper()
 		subprocess.check_call(['sc', 'start', self.id])
 	def stop(self):
+		wrapper = self._ensure_service_wrapper()
 		subprocess.check_call(['sc', 'stop', self.id])
