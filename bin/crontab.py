@@ -21,7 +21,7 @@ try:
 except:
 	pass
 import crontab
-from clckwrkbdgr.commands import run_command_and_collect_output
+from clckwrkbdgr.winnt.schtasks import run_immediately
 
 DATABASE_FILE = Path(os.environ['LOCALAPPDATA'])/'crontab.db' # FIXME Use XDG_STATE_HOME for Windows.
 
@@ -54,14 +54,17 @@ def command_open(): # pragma: no cover
 	return True
 
 @cli.command('daemon')
+@click.option('--debug', is_flag=True, help="Show debug traces.")
 @click.option('-L', '--logdir', default=Path.home(), type=Path, help="Directory to store report logs for executed jobs.")
-def command_daemon(logdir): # pragma: no cover -- TODO use crontab.run_scheduler()
+def command_daemon(logdir, debug=False): # pragma: no cover -- TODO use crontab.run_scheduler()
 	""" Not actually a daemon per se, not even nearly.
 	Just loads schedules and checks them against timestamp file.
 	Then runs jobs that are qualified via function job_filter(commandline)
 	and are to be triggered between last run and current date
 	Updates timestamp file.
 	"""
+	if debug:
+		logging.basicConfig(level=logging.DEBUG)
 	last_run = datetime.datetime.now()
 	last_run = last_run.replace(second=0)
 	logging.debug("Starting: {0}".format(last_run))
@@ -98,9 +101,16 @@ def command_daemon(logdir): # pragma: no cover -- TODO use crontab.run_scheduler
 
 		last_run = now
 		for command in commands_to_run:
-			logging.debug("Running threaded command: {0}".format(command))
-			thread = threading.Thread(target=run_command_and_collect_output, args=(command, logdir))
-			thread.start()
+			try:
+				command = subprocess.list2cmdline(command)
+				logging.debug("Running: {0}".format(repr(command)))
+				run_immediately(command, 'crontab', logdir)
+			except:
+				import traceback
+				try:
+					traceback.print_exc()
+				except:
+					pass
 
 if __name__ == '__main__':
 	cli()
