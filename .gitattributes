@@ -120,6 +120,7 @@ bash/prompt.inc.bash caps=work
 bin/ascii caps=work
 bin/autocommit caps=work
 bin/backup caps=work
+bin/build caps=work
 bin/bpp caps=work
 bin/check_network caps=work
 bin/clipcp caps=work

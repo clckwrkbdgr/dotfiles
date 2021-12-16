@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+import os, sys, subprocess
+from clckwrkbdgr import utils
+
+def build_python_setuptools(install=False, install_global=False):
+	if 0 != subprocess.call(['python', 'setup.py', 'build']):
+		return False
+	if 0 != subprocess.call(['python', 'setup.py', 'bdist_wheel']):
+		return False
+	if not install:
+		return True
+	if not os.path.isdir('dist'):
+		return False
+	wheels = [os.path.join('dist', entry) for entry in os.listdir('dist') if entry.endswith('.whl')]
+	if len(wheels) != 1:
+		print('Expected only one wheel:', file=sys.stderr)
+		print('\n'.join(wheels))
+	args = ['pip', 'install', wheels[0], '--upgrade']
+	if install_global:
+		args = ['sudo'] + args
+	else:
+		args += ['--user']
+	if 0 != subprocess.call(args):
+		return False
+	return True
+
+import click
+
+@click.command()
+@click.option('-i', '--install', is_flag=True, help="Install software into the system after it's built.")
+@click.option('-g', '--global', 'install_global', is_flag=True, help="Install for all users. By default only for current one.")
+@utils.exits_with_return_value
+def cli(install=False, install_global=False):
+	if os.path.exists('setup.py'):
+		return build_python_setuptools(install=install, install_global=install_global)
+	print('Cannot detect any build instructions in current dir.', file=sys.stderr)
+	return False
+
+if __name__ == '__main__':
+	cli()
