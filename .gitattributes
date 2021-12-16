@@ -280,6 +280,7 @@ lib/clckwrkbdgr/userstate.py caps=work
 lib/clckwrkbdgr/userservice/__init__.py caps=work
 lib/clckwrkbdgr/userservice/_base.py caps=work
 lib/clckwrkbdgr/userservice/windows.py caps=work
+lib/clckwrkbdgr/userservice/linux.py caps=work
 lib/clckwrkbdgr/userservice/test/__init__.py caps=work
 lib/clckwrkbdgr/userservice/test/test_userservice.py caps=work
 lib/clckwrkbdgr/utils.py caps=work
