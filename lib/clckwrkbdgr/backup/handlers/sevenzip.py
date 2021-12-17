@@ -119,7 +119,7 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 
 		try:
 			if self.context.max_archive_size is not None and backup_archive.stat().st_size > self.context.max_archive_size:
-				list_command = [self.context.zip_path, '-v', str(backup_archive)]
+				list_command = [self.context.zip_path, 'l', str(backup_archive)]
 				output = subprocess.check_output(list(map(str, list_command)), shell=True)
 				output = output.decode('utf-8', 'replace').splitlines()
 				output = sort_backup_size(output)
