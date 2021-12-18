@@ -1,9 +1,14 @@
 import subprocess
-import itertools
+import itertools, functools
 import re
 from clckwrkbdgr.userservice import _base
 
 class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses, FS
+	@classmethod
+	@functools.lru_cache()
+	def _systemctl_show(cls, service_id):
+		output = subprocess.check_output(['systemctl', '--user', 'show', str(service_id)]).decode('utf-8', 'replace')
+		return dict(line.split('=', 1) for line in output.splitlines())
 	@classmethod
 	def list_all(cls):
 		# systemctl have no formatting except 'fancy' because Poettering "try to keep things minimal there"
@@ -24,3 +29,9 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 			if values['UNIT'].endswith('.service'):
 				values['UNIT'] = values['UNIT'][:-len('.service')]
 			yield cls.Status(values['UNIT'], values['SUB'] == 'running')
+	def is_installed(self):
+		status = self._systemctl_show(self.id)
+		return status['LoadState'] == 'loaded'
+	def is_started(self):
+		status = self._systemctl_show(self.id)
+		return status['SubState'] == 'running'
