@@ -1,5 +1,6 @@
 import subprocess
 import itertools, functools
+import datetime
 import re
 from six.moves import shlex_quote
 from clckwrkbdgr import xdg
@@ -7,7 +8,7 @@ from clckwrkbdgr.userservice import _base
 
 SYSTEMD_UNIT_FILE = """\
 [Unit]
-Description={description}
+Description={display_name}
 
 [Service]
 ExecStart=sh {user_env} {commandline}
@@ -74,6 +75,10 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		self._get_wrapper_filename().unlink()
 		subprocess.check_call(['systemctl', '--user', 'daemon-reload'])
 	def start(self):
+		action_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		subprocess.check_call(['systemctl', '--user', 'start', self.id])
+		subprocess.check_call(['journalctl', '--since', action_time, '--user-unit', self.id])
 	def stop(self):
+		action_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		subprocess.check_call(['systemctl', '--user', 'stop', self.id])
+		subprocess.check_call(['journalctl', '--since', action_time, '--user-unit', self.id])
