@@ -2,41 +2,46 @@
 import os, sys, subprocess
 from clckwrkbdgr import utils
 
-def build_python_setuptools(install=False, install_global=False):
+EXIT_SUCCESS, EXIT_FAILURE = 0, 1
+
+def build_python_setuptools(install=False, install_global=False, quiet=False):
 	python_version = 'python'
-	if 0 != subprocess.call([python_version, 'setup.py', 'build']):
-		return False
-	if 0 != subprocess.call([python_version, 'setup.py', 'bdist_wheel']):
-		return False
+	quiet_arg = ['--quiet'] if quiet else []
+	rc = subprocess.call([python_version, 'setup.py'] + quiet_arg + ['build'])
+	if rc != EXIT_SUCCESS:
+		return rc
+	rc = subprocess.call([python_version, 'setup.py'] + quiet_arg + ['bdist_wheel'])
+	if rc != EXIT_SUCCESS:
+		return rc
 	if not install:
-		return True
+		return EXIT_SUCCESS
 	if not os.path.isdir('dist'):
-		return False
+		return EXIT_FAILURE
 	wheels = [os.path.join('dist', entry) for entry in os.listdir('dist') if entry.endswith('.whl')]
 	if len(wheels) != 1:
 		print('Expected only one wheel:', file=sys.stderr)
 		print('\n'.join(wheels))
 	pip_version = tuple(map(int, subprocess.check_output([python_version, '-c', 'import pip; print(pip.__version__)']).decode('utf-8', 'replace').strip().split('.')))
-	args = [python_version, '-m', 'pip', 'install', wheels[0], '--upgrade']
+	args = [python_version, '-m', 'pip', 'install', wheels[0], '--upgrade', '--no-deps'] + quiet_arg
 	if install_global:
 		args = ['sudo'] + args
 	else:
 		args += ['--user']
 	if pip_version >= (21, 0, 0): # pip 21+ refuse to reinstall wheel file if package is already installed with this exact version.
-		args += ['--force-reinstall', '--no-deps']
-	if 0 != subprocess.call(args):
-		return False
-	return True
+		args += ['--force-reinstall']
+	rc = subprocess.call(args)
+	return rc
 
 import click
 
 @click.command()
+@click.option('-q', '--quiet', is_flag=True, help="Suppress normal output.")
 @click.option('-i', '--install', is_flag=True, help="Install software into the system after it's built.")
 @click.option('-g', '--global', 'install_global', is_flag=True, help="Install for all users. By default only for current one.")
 @utils.exits_with_return_value
-def cli(install=False, install_global=False):
+def cli(install=False, install_global=False, quiet=False):
 	if os.path.exists('setup.py'):
-		return build_python_setuptools(install=install, install_global=install_global)
+		return build_python_setuptools(install=install, install_global=install_global, quiet=quiet)
 	print('Cannot detect any build instructions in current dir.', file=sys.stderr)
 	return False
 
