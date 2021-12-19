@@ -84,8 +84,8 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		Path(self.logfile).parent.mkdir(parents=True, exist_ok=True)
 		action_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		subprocess.check_call(['systemctl', '--user', 'start', self.id])
-		subprocess.check_call(['journalctl', '--since', action_time, '--user-unit', self.id])
+		subprocess.call(['journalctl', '--since', action_time, '--user-unit', self.id])
 	def stop(self):
 		action_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		subprocess.check_call(['systemctl', '--user', 'stop', self.id])
-		subprocess.check_call(['journalctl', '--since', action_time, '--user-unit', self.id])
+		subprocess.call(['journalctl', '--since', action_time, '--user-unit', self.id])
