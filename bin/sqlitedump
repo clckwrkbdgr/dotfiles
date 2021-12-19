@@ -9,7 +9,7 @@ cli() {
 		TMPFILE=$(mktemp)
 		finally "rm -f '$TMPFILE'"
 		cat > "$TMPFILE"
-		echo '.dump' | sqlite3 "$TMPFILE" | sed 's/replace(\(.*\),'"'"'\\r'"'"',char(13))/\1/;s/replace(\(.*\),'"'"'\\n'"'"',char(10))/\1/;s/\(\\r\)\?\\n/\n/g;s/\x01/'"'"'||char(1)||'"'"'/g' | dos2unix
+		echo '.dump' | sqlite3 "$TMPFILE" | sed 's/replace(\(.*\),'"'"'\\r'"'"',char(13))/\1/;s/replace(\(.*\),'"'"'\\n'"'"',char(10))/\1/;s/\(\\r\)\?\\n/\n/g;s/\x01/'"'"'||char(1)||'"'"'/g;s/\x07/'"'"'||char(7)||'"'"'/g' | dos2unix
 	elif [ -n "${CLICK_ARGS[load]}" ]; then
 		TMPFILE=$(mktemp)
 		finally "rm -f '$TMPFILE'"
