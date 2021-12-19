@@ -1,0 +1,4 @@
+{
+	"commandline" : ["python", "$XDG_CONFIG_HOME/web/server.py"],
+	"logfile" : "$XDG_STATE_HOME/clckwrkbdgr/web/server.log"
+}
