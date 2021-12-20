@@ -10,7 +10,7 @@ def build_python_setuptools(install=False, install_global=False, quiet=False):
 	rc = subprocess.call([python_version, 'setup.py'] + quiet_arg + ['build'])
 	if rc != EXIT_SUCCESS:
 		return rc
-	rc = subprocess.call([python_version, 'setup.py'] + quiet_arg + ['bdist_wheel'])
+	rc = subprocess.call([python_version, '-m', 'pip', 'wheel'] + quiet_arg + ['.', '--no-deps', '--wheel-dir=dist'])
 	if rc != EXIT_SUCCESS:
 		return rc
 	if not install:
