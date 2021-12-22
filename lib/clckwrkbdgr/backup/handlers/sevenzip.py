@@ -180,7 +180,7 @@ def sort_backup_size(lines): # pragma: no cover -- TODO
 			continue
 		parts = line.split(None, 7)
 		try:
-			size = int(parts[0])
+			size = int(parts[3])
 		except Exception as e:
 			logging.warning("sort_backup_size: cannot parse line: {0}:".format(e) + repr(line))
 			continue
