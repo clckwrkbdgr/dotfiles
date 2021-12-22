@@ -21,7 +21,7 @@ def build_python_setuptools(install=False, install_global=False, quiet=False):
 	if len(wheels) != 1:
 		print('Expected only one wheel:', file=sys.stderr)
 		print('\n'.join(wheels))
-	pip_version = tuple(map(int, subprocess.check_output([python_version, '-c', 'import pip; print(pip.__version__)']).decode('utf-8', 'replace').strip().split('.')))
+	pip_version = tuple(map(int, subprocess.check_output([python_version, '-c', '__file__ = ""; import pip; print(pip.__version__)']).decode('utf-8', 'replace').strip().split('.')))
 	args = [python_version, '-m', 'pip', 'install', wheels[0], '--upgrade', '--no-deps'] + quiet_arg
 	if install_global:
 		args = ['sudo'] + args
