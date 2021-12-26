@@ -1,0 +1,6 @@
+#!/bin/bash
+if setxkbmap -query | grep layout | grep -q ',ua'; then
+	setxkbmap us,ru
+else
+	setxkbmap us,ua
+fi

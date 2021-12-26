@@ -3,7 +3,11 @@
 <channel name="keyboard-layout" version="1.0">
   <property name="Default" type="empty">
     <property name="XkbDisable" type="bool" value="false"/>
-    <property name="XkbLayout" type="string" value="us,ru"/>
-    <property name="XkbVariant" type="string" value=","/>
+    <property name="XkbLayout" type="string" value="us,ua,ru"/>
+    <property name="XkbVariant" type="string" value=",winkeys,"/>
+    <property name="XkbOptions" type="empty">
+      <property name="Group" type="string" value="grp:caps_toggle"/>
+      <property name="Compose" type="string" value="compose:rctrl"/>
+    </property>
   </property>
 </channel>
