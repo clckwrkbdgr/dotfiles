@@ -354,6 +354,7 @@ setup.d/20.XXkb.py caps=work
 setup.d/20.lastfmsubmitd.py caps=work
 setup.d/20.python-history.py caps=work
 setup.d/20.when.patch.py caps=work
+setup.d/20.sync_ru_ua_layout_state.sh caps=home
 setup.py caps=work
 subversion/config caps=work
 tmux.conf caps=work

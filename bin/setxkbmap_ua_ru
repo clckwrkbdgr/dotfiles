@@ -1,6 +1,28 @@
 #!/bin/bash
-if setxkbmap -query | grep layout | grep -q ',ua'; then
-	setxkbmap us,ru
+current_lang=ua
+test_rc=0
+if setxkbmap -query | grep layout: | grep -q ',ru'; then
+	current_lang=ru
+	test_rc=1
+fi
+if [ "$1" == '--test' ]; then
+	exit $test_rc
+fi
+if [ "$1" == '--print' ]; then
+	echo $current_lang
+	exit
+fi
+if [ "$1" != '--sync' ]; then
+	if [ "$current_lang" == ua ]; then
+		setxkbmap us,ru
+		current_lang=ru
+	else
+		setxkbmap us,ua
+		current_lang=ua
+	fi
+fi
+if [ "$current_lang" == ua ]; then
+	rm -f $XDG_RUNTIME_DIR/current_lang_is_ru.state
 else
-	setxkbmap us,ua
+	touch $XDG_RUNTIME_DIR/current_lang_is_ru.state
 fi
