@@ -390,12 +390,24 @@
                 "png"
             ]
         },
+        "image/svg+xml": {
+            "action": 1,
+            "extensions": [
+                "svg"
+            ]
+        },
         "image/vnd.djvu": {
             "action": 1,
             "ask": true,
             "extensions": [
                 "djvu",
                 "djv"
+            ]
+        },
+        "image/webp": {
+            "action": 1,
+            "extensions": [
+                "webp"
             ]
         },
         "message/rfc822": {
@@ -468,7 +480,11 @@
         },
         "text/xml": {
             "action": 1,
-            "ask": true
+            "extensions": [
+                "xml",
+                "xsl",
+                "xbl"
+            ]
         },
         "unknown/unknown": {
             "action": 1,
@@ -544,7 +560,7 @@
                 },
                 {
                     "name": "Mail.Ru",
-                    "uriTemplate": "http://win.mail.ru/cgi-bin/sentmsg?mailto=%s"
+                    "uriTemplate": "https://e.mail.ru/cgi-bin/sentmsg?mailto=%s"
                 },
                 {
                     "name": "Yahoo! Mail",

@@ -3,13 +3,13 @@
     "default_search": {},
     "homepageNotification": {},
     "newTabNotification": {
-        "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
+        "newtaboverride@agenedia.com": {
             "initialValue": false,
             "precedenceList": [
                 {
                     "enabled": true,
-                    "id": "{66E978CD-981F-47DF-AC42-E3CF417C1467}",
-                    "installDate": 1522499089000,
+                    "id": "newtaboverride@agenedia.com",
+                    "installDate": 1640848372656,
                     "value": true
                 }
             ]
@@ -53,15 +53,16 @@
             ]
         }
     },
+    "tabHideNotification": {},
     "url_overrides": {
         "newTabURL": {
             "initialValue": "about:newtab",
             "precedenceList": [
                 {
                     "enabled": true,
-                    "id": "{66E978CD-981F-47DF-AC42-E3CF417C1467}",
-                    "installDate": 1522499089000,
-                    "value": "moz-extension://a4b0dd36-0d25-4144-af3c-21e53900e118/redirect.html"
+                    "id": "newtaboverride@agenedia.com",
+                    "installDate": 1640848372656,
+                    "value": "moz-extension://efb3eaa1-7dd4-485f-aaad-d95a080ed979/html/newtab.html"
                 }
             ]
         }

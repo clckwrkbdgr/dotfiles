@@ -78,6 +78,7 @@ firefox/key?.db
 firefox/pkcs11.txt
 firefox/times.json
 firefox/protections.sqlite
+firefox/activity-stream.discovery_stream.json
 # Firefox local/share
 firefox/addons.json
 firefox/content-prefs.sqlite
@@ -92,6 +93,7 @@ firefox/places.sqlite
 firefox/search.json.mozlz4
 firefox/signons.sqlite
 firefox/storage-sync.sqlite
+firefox/storage-sync-v2.sqlite
 firefox/storage.sqlite
 firefox/storage/
 firefox/webappsstore.sqlite

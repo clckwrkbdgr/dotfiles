@@ -32,7 +32,8 @@
     "firefox-compact-dark@mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "firefox@tampermonkey.net": {
@@ -65,10 +66,23 @@
             "internal:privateBrowsingAllowed"
         ]
     },
-    "proxy-failover@mozilla.com": {
+    "newtaboverride@agenedia.com": {
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
+        ]
+    },
+    "pictureinpicture@mozilla.org": {
+        "origins": [],
+        "permissions": [
+            "internal:svgContextPropertiesAllowed"
+        ]
+    },
+    "proxy-failover@mozilla.com": {
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "screenshots@mozilla.org": {
@@ -102,12 +116,6 @@
         ]
     },
     "{60f82f00-9ad5-4de5-b31c-b16a47c51558}": {
-        "origins": [],
-        "permissions": [
-            "internal:privateBrowsingAllowed"
-        ]
-    },
-    "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"

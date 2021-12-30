@@ -8,6 +8,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/amazondotcom/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "bing@search.mozilla.org": {
@@ -17,6 +18,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/bing/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "ddg@search.mozilla.org": {
@@ -26,14 +28,23 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/ddg/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "default-theme@mozilla.org": {
                 "dependencies": [],
                 "enabled": false,
-                "lastModifiedTime": 0,
                 "loader": null,
-                "rootURI": "resource://gre/modules/themes/default/",
+                "rootURI": "resource://default-theme/",
+                "runInSafeMode": true,
+                "type": "theme",
+                "version": "0.0"
+            },
+            "firefox-alpenglow@mozilla.org": {
+                "dependencies": [],
+                "enabled": false,
+                "loader": null,
+                "rootURI": "resource://builtin-themes/alpenglow/",
                 "runInSafeMode": true,
                 "type": "theme",
                 "version": "0.0"
@@ -41,79 +52,188 @@
             "firefox-compact-dark@mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
-                "lastModifiedTime": 0,
                 "loader": null,
-                "rootURI": "resource:///modules/themes/dark/",
+                "rootURI": "resource://builtin-themes/dark/",
                 "runInSafeMode": true,
                 "startupData": {
                     "experiment": {
-                        "colors": null,
+                        "colors": {
+                            "appmenu_info_icon_color": "--panel-banner-item-info-icon-bgcolor",
+                            "appmenu_update_icon_color": "--panel-banner-item-update-supported-bgcolor",
+                            "appmenu_warning_icon_color": "--panel-banner-item-warning-icon-bgcolor",
+                            "autocomplete_popup_separator": "--autocomplete-popup-separator-color",
+                            "button": "--button-bgcolor",
+                            "button_active": "--button-active-bgcolor",
+                            "button_hover": "--button-hover-bgcolor",
+                            "button_primary": "--button-primary-bgcolor",
+                            "button_primary_active": "--button-primary-active-bgcolor",
+                            "button_primary_color": "--button-primary-color",
+                            "button_primary_hover": "--button-primary-hover-bgcolor",
+                            "error_text_color": "--error-text-color",
+                            "input_background": "--input-bgcolor",
+                            "input_border": "--input-border-color",
+                            "input_border_error": "--input-error-border-color",
+                            "input_color": "--input-color",
+                            "tab_icon_overlay_fill": "--tab-icon-overlay-fill",
+                            "tab_icon_overlay_stroke": "--tab-icon-overlay-stroke",
+                            "zoom_controls": "--zoom-controls-bgcolor"
+                        },
                         "images": null,
-                        "properties": null,
+                        "properties": {
+                            "panel_active": "--arrowpanel-dimmed-further",
+                            "panel_active_darker": "--arrowpanel-dimmed-even-further",
+                            "panel_hover": "--arrowpanel-dimmed",
+                            "toolbar_field_icon_opacity": "--urlbar-icon-fill-opacity"
+                        },
                         "stylesheet": "moz-extension://b158160e-c523-4e18-a1bb-489c9be49232/experiment.css"
                     },
                     "lwtDarkStyles": null,
                     "lwtData": {
                         "darkTheme": null,
                         "experiment": {
-                            "colors": null,
+                            "colors": {
+                                "appmenu_info_icon_color": "--panel-banner-item-info-icon-bgcolor",
+                                "appmenu_update_icon_color": "--panel-banner-item-update-supported-bgcolor",
+                                "appmenu_warning_icon_color": "--panel-banner-item-warning-icon-bgcolor",
+                                "autocomplete_popup_separator": "--autocomplete-popup-separator-color",
+                                "button": "--button-bgcolor",
+                                "button_active": "--button-active-bgcolor",
+                                "button_hover": "--button-hover-bgcolor",
+                                "button_primary": "--button-primary-bgcolor",
+                                "button_primary_active": "--button-primary-active-bgcolor",
+                                "button_primary_color": "--button-primary-color",
+                                "button_primary_hover": "--button-primary-hover-bgcolor",
+                                "error_text_color": "--error-text-color",
+                                "input_background": "--input-bgcolor",
+                                "input_border": "--input-border-color",
+                                "input_border_error": "--input-error-border-color",
+                                "input_color": "--input-color",
+                                "tab_icon_overlay_fill": "--tab-icon-overlay-fill",
+                                "tab_icon_overlay_stroke": "--tab-icon-overlay-stroke",
+                                "zoom_controls": "--zoom-controls-bgcolor"
+                            },
                             "images": null,
-                            "properties": null,
+                            "properties": {
+                                "panel_active": "--arrowpanel-dimmed-further",
+                                "panel_active_darker": "--arrowpanel-dimmed-even-further",
+                                "panel_hover": "--arrowpanel-dimmed",
+                                "toolbar_field_icon_opacity": "--urlbar-icon-fill-opacity"
+                            },
                             "stylesheet": "moz-extension://b158160e-c523-4e18-a1bb-489c9be49232/experiment.css"
                         },
                         "theme": {
-                            "accentcolor": "hsl(240, 5%, 5%)",
+                            "accentcolor": "#1c1b22",
                             "experimental": {
-                                "colors": {},
+                                "colors": {
+                                    "appmenu_info_icon_color": "#80EBFF",
+                                    "appmenu_update_icon_color": "#54FFBD",
+                                    "appmenu_warning_icon_color": "#FFBD4F",
+                                    "autocomplete_popup_separator": "rgb(82,82,94)",
+                                    "button": "rgb(43,42,51)",
+                                    "button_active": "rgb(91,91,102)",
+                                    "button_hover": "rgb(82,82,94)",
+                                    "button_primary": "rgb(0, 221, 255)",
+                                    "button_primary_active": "rgb(170, 242, 255)",
+                                    "button_primary_color": "rgb(43, 42, 51)",
+                                    "button_primary_hover": "rgb(128, 235, 255)",
+                                    "error_text_color": "rgb(255, 154, 162)",
+                                    "input_background": "#42414D",
+                                    "input_border": "#8f8f9d",
+                                    "input_border_error": "rgb(255, 132, 138)",
+                                    "input_color": "rgb(251,251,254)",
+                                    "tab_icon_overlay_fill": "rgb(251,251,254)",
+                                    "tab_icon_overlay_stroke": "rgb(66,65,77)",
+                                    "zoom_controls": "rgb(74,74,85)"
+                                },
                                 "images": {},
-                                "properties": {}
+                                "properties": {
+                                    "panel_active": "color-mix(in srgb, currentColor 14%, transparent)",
+                                    "panel_active_darker": "color-mix(in srgb, currentColor 25%, transparent)",
+                                    "panel_hover": "color-mix(in srgb, currentColor 9%, transparent)",
+                                    "toolbar_field_icon_opacity": "1"
+                                }
                             },
-                            "icon_color": "rgb(249, 249, 250, 0.7)",
+                            "icon_color": "rgb(251,251,254)",
                             "id": "firefox-compact-dark@mozilla.org",
-                            "ntp_background": "#2A2A2E",
-                            "ntp_text": "rgb(249, 249, 250)",
-                            "popup": "#4a4a4f",
-                            "popup_border": "#27272b",
-                            "popup_text": "rgb(249, 249, 250)",
+                            "ntp_background": "rgb(43, 42, 51)",
+                            "ntp_text": "rgb(251, 251, 254)",
+                            "popup": "rgb(66,65,77)",
+                            "popup_border": "rgb(82,82,94)",
+                            "popup_highlight": "rgb(43,42,51)",
+                            "popup_text": "rgb(251,251,254)",
                             "sidebar": "#38383D",
                             "sidebar_border": "rgba(255, 255, 255, 0.1)",
                             "sidebar_text": "rgb(249, 249, 250)",
-                            "tab_line": "#0a84ff",
-                            "textcolor": "rgb(249, 249, 250)",
-                            "toolbarColor": "hsl(240, 1%, 20%)",
+                            "tab_line": "transparent",
+                            "tab_selected": "rgb(66,65,77)",
+                            "tab_text": "rgb(251,251,254)",
+                            "textcolor": "#fbfbfe",
+                            "toolbarColor": "rgb(43,42,51)",
                             "toolbar_bottom_separator": "hsl(240, 5%, 5%)",
-                            "toolbar_field": "rgb(71, 71, 73)",
-                            "toolbar_field_border": "rgba(249, 249, 250, 0.2)",
-                            "toolbar_field_separator": "#5F6670",
-                            "toolbar_field_text": "rgb(249, 249, 250)",
+                            "toolbar_field": "rgb(28,27,34)",
+                            "toolbar_field_border": "transparent",
+                            "toolbar_field_focus": "rgb(66,65,77)",
+                            "toolbar_field_text": "rgb(251,251,254)",
+                            "toolbar_text": "rgb(251, 251, 254)",
+                            "toolbar_top_separator": "transparent",
                             "version": "0.0"
                         }
                     },
                     "lwtStyles": {
-                        "accentcolor": "hsl(240, 5%, 5%)",
+                        "accentcolor": "#1c1b22",
                         "experimental": {
-                            "colors": {},
+                            "colors": {
+                                "appmenu_info_icon_color": "#80EBFF",
+                                "appmenu_update_icon_color": "#54FFBD",
+                                "appmenu_warning_icon_color": "#FFBD4F",
+                                "autocomplete_popup_separator": "rgb(82,82,94)",
+                                "button": "rgb(43,42,51)",
+                                "button_active": "rgb(91,91,102)",
+                                "button_hover": "rgb(82,82,94)",
+                                "button_primary": "rgb(0, 221, 255)",
+                                "button_primary_active": "rgb(170, 242, 255)",
+                                "button_primary_color": "rgb(43, 42, 51)",
+                                "button_primary_hover": "rgb(128, 235, 255)",
+                                "error_text_color": "rgb(255, 154, 162)",
+                                "input_background": "#42414D",
+                                "input_border": "#8f8f9d",
+                                "input_border_error": "rgb(255, 132, 138)",
+                                "input_color": "rgb(251,251,254)",
+                                "tab_icon_overlay_fill": "rgb(251,251,254)",
+                                "tab_icon_overlay_stroke": "rgb(66,65,77)",
+                                "zoom_controls": "rgb(74,74,85)"
+                            },
                             "images": {},
-                            "properties": {}
+                            "properties": {
+                                "panel_active": "color-mix(in srgb, currentColor 14%, transparent)",
+                                "panel_active_darker": "color-mix(in srgb, currentColor 25%, transparent)",
+                                "panel_hover": "color-mix(in srgb, currentColor 9%, transparent)",
+                                "toolbar_field_icon_opacity": "1"
+                            }
                         },
-                        "icon_color": "rgb(249, 249, 250, 0.7)",
+                        "icon_color": "rgb(251,251,254)",
                         "id": "firefox-compact-dark@mozilla.org",
-                        "ntp_background": "#2A2A2E",
-                        "ntp_text": "rgb(249, 249, 250)",
-                        "popup": "#4a4a4f",
-                        "popup_border": "#27272b",
-                        "popup_text": "rgb(249, 249, 250)",
+                        "ntp_background": "rgb(43, 42, 51)",
+                        "ntp_text": "rgb(251, 251, 254)",
+                        "popup": "rgb(66,65,77)",
+                        "popup_border": "rgb(82,82,94)",
+                        "popup_highlight": "rgb(43,42,51)",
+                        "popup_text": "rgb(251,251,254)",
                         "sidebar": "#38383D",
                         "sidebar_border": "rgba(255, 255, 255, 0.1)",
                         "sidebar_text": "rgb(249, 249, 250)",
-                        "tab_line": "#0a84ff",
-                        "textcolor": "rgb(249, 249, 250)",
-                        "toolbarColor": "hsl(240, 1%, 20%)",
+                        "tab_line": "transparent",
+                        "tab_selected": "rgb(66,65,77)",
+                        "tab_text": "rgb(251,251,254)",
+                        "textcolor": "#fbfbfe",
+                        "toolbarColor": "rgb(43,42,51)",
                         "toolbar_bottom_separator": "hsl(240, 5%, 5%)",
-                        "toolbar_field": "rgb(71, 71, 73)",
-                        "toolbar_field_border": "rgba(249, 249, 250, 0.2)",
-                        "toolbar_field_separator": "#5F6670",
-                        "toolbar_field_text": "rgb(249, 249, 250)",
+                        "toolbar_field": "rgb(28,27,34)",
+                        "toolbar_field_border": "transparent",
+                        "toolbar_field_focus": "rgb(66,65,77)",
+                        "toolbar_field_text": "rgb(251,251,254)",
+                        "toolbar_text": "rgb(251, 251, 254)",
+                        "toolbar_top_separator": "transparent",
                         "version": "0.0"
                     }
                 },
@@ -123,9 +243,8 @@
             "firefox-compact-light@mozilla.org": {
                 "dependencies": [],
                 "enabled": false,
-                "lastModifiedTime": 0,
                 "loader": null,
-                "rootURI": "resource:///modules/themes/light/",
+                "rootURI": "resource://builtin-themes/light/",
                 "runInSafeMode": true,
                 "type": "theme",
                 "version": "0.0"
@@ -137,15 +256,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/google/",
                 "runInSafeMode": true,
-                "version": "0.0"
-            },
-            "twitter@search.mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "rootURI": "resource://search-extensions/twitter/",
-                "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "wikipedia@search.mozilla.org": {
@@ -155,6 +266,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/wikipedia/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             }
         }
@@ -259,7 +371,7 @@
                             "locale",
                             "pdf.js",
                             "ru",
-                            "browser/chrome/ru/locale/pdfviewer/"
+                            "chrome/ru/locale/pdfviewer/"
                         ],
                         [
                             "locale",
@@ -278,12 +390,6 @@
                             "places",
                             "ru",
                             "chrome/ru/locale/ru/places/"
-                        ],
-                        [
-                            "locale",
-                            "pluginproblem",
-                            "ru",
-                            "chrome/ru/locale/ru/pluginproblem/"
                         ],
                         [
                             "locale",
@@ -363,6 +469,16 @@
                 },
                 "version": "0.0"
             },
+            "newtaboverride@agenedia.com": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": "newtaboverride@agenedia.com.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/newtaboverride@agenedia.com.xpi!/",
+                "runInSafeMode": false,
+                "version": "0.0"
+            },
             "ruffle-player-extension@ruffle.rs": {
                 "dependencies": [],
                 "enabled": true,
@@ -398,16 +514,6 @@
                 "loader": null,
                 "path": "{60f82f00-9ad5-4de5-b31c-b16a47c51558}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B60f82f00-9ad5-4de5-b31c-b16a47c51558%7D.xpi!/",
-                "runInSafeMode": false,
-                "version": "0.0"
-            },
-            "{66E978CD-981F-47DF-AC42-E3CF417C1467}": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "{66E978CD-981F-47DF-AC42-E3CF417C1467}.xpi",
-                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B66E978CD-981F-47DF-AC42-E3CF417C1467%7D.xpi!/",
                 "runInSafeMode": false,
                 "version": "0.0"
             },
@@ -502,6 +608,7 @@
                 "path": "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7Bd7ce25e4-e6a8-433e-bb29-ec763dcd26bf%7D.xpi!/",
                 "runInSafeMode": false,
+                "startupData": {},
                 "version": "0.0"
             }
         },
@@ -517,6 +624,7 @@
                 "path": "doh-rollout@mozilla.org.xpi",
                 "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/doh-rollout@mozilla.org.xpi!/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "formautofill@mozilla.org": {
@@ -526,6 +634,27 @@
                 "loader": null,
                 "path": "formautofill@mozilla.org.xpi",
                 "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/formautofill@mozilla.org.xpi!/",
+                "runInSafeMode": true,
+                "startupData": {},
+                "version": "0.0"
+            },
+            "pictureinpicture@mozilla.org": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": "pictureinpicture@mozilla.org.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/pictureinpicture@mozilla.org.xpi!/",
+                "runInSafeMode": true,
+                "version": "0.0"
+            },
+            "proxy-failover@mozilla.com": {
+                "dependencies": [],
+                "enabled": false,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": "proxy-failover@mozilla.com.xpi",
+                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/proxy-failover@mozilla.com.xpi!/",
                 "runInSafeMode": true,
                 "version": "0.0"
             },
@@ -563,6 +692,135 @@
                 "startupData": {
                     "persistentListeners": {
                         "webRequest": {
+                            "onBeforeRequest": [
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "image"
+                                        ],
+                                        "urls": [
+                                            "https://smartblock.firefox.etp/facebook.svg",
+                                            "https://smartblock.firefox.etp/play.svg"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "script"
+                                        ],
+                                        "urls": [
+                                            "*://webcompat-addon-testbed.herokuapp.com/shims_test.js",
+                                            "*://example.com/browser/browser/extensions/webcompat/tests/browser/shims_test.js",
+                                            "*://example.com/browser/browser/extensions/webcompat/tests/browser/shims_test_2.js",
+                                            "*://example.com/browser/browser/extensions/webcompat/tests/browser/shims_test_3.js",
+                                            "*://static.adsafeprotected.com/vans-adapter-google-ima.js",
+                                            "*://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js",
+                                            "*://auth.9c9media.ca/auth/main.js",
+                                            "*://libs.coremetrics.com/eluminate.js",
+                                            "*://connect.facebook.net/*/sdk.js*",
+                                            "*://connect.facebook.net/*/all.js*",
+                                            "*://www.google-analytics.com/analytics.js*",
+                                            "*://www.google-analytics.com/gtm/js*",
+                                            "*://www.googletagmanager.com/gtm.js*",
+                                            "*://www.google-analytics.com/plugins/ua/ec.js",
+                                            "*://ssl.google-analytics.com/ga.js",
+                                            "*://s0.2mdn.net/instream/html5/ima3.js",
+                                            "*://imasdk.googleapis.com/js/sdkloader/ima3.js",
+                                            "*://www.googletagservices.com/tag/js/gpt.js",
+                                            "*://securepubads.g.doubleclick.net/tag/js/gpt.js",
+                                            "*://securepubads.g.doubleclick.net/gpt/pubads_impl_*.js",
+                                            "*://cdn.adsafeprotected.com/iasPET.1.js",
+                                            "*://id.rambler.ru/rambler-id-helper/auth_events.js",
+                                            "*://media.richrelevance.com/rrserver/js/1.2/p13n.js"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "image"
+                                        ],
+                                        "urls": [
+                                            "*://securepubads.g.doubleclick.net/gampad/*ad-blk*",
+                                            "*://pubads.g.doubleclick.net/gampad/*ad-blk*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*xml_vmap1*",
+                                            "*://pubads.g.doubleclick.net/gampad/*xml_vmap1*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*xml_vmap2*",
+                                            "*://pubads.g.doubleclick.net/gampad/*xml_vmap2*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*ad*",
+                                            "*://pubads.g.doubleclick.net/gampad/*ad*",
+                                            "*://www.facebook.com/platform/impression.php*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "imageset"
+                                        ],
+                                        "urls": [
+                                            "*://securepubads.g.doubleclick.net/gampad/*ad-blk*",
+                                            "*://pubads.g.doubleclick.net/gampad/*ad-blk*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*xml_vmap1*",
+                                            "*://pubads.g.doubleclick.net/gampad/*xml_vmap1*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*xml_vmap2*",
+                                            "*://pubads.g.doubleclick.net/gampad/*xml_vmap2*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*ad*",
+                                            "*://pubads.g.doubleclick.net/gampad/*ad*",
+                                            "*://www.facebook.com/platform/impression.php*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": [
+                                            "xmlhttprequest"
+                                        ],
+                                        "urls": [
+                                            "*://securepubads.g.doubleclick.net/gampad/*ad-blk*",
+                                            "*://pubads.g.doubleclick.net/gampad/*ad-blk*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*xml_vmap1*",
+                                            "*://pubads.g.doubleclick.net/gampad/*xml_vmap1*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*xml_vmap2*",
+                                            "*://pubads.g.doubleclick.net/gampad/*xml_vmap2*",
+                                            "*://securepubads.g.doubleclick.net/gampad/*ad*",
+                                            "*://pubads.g.doubleclick.net/gampad/*ad*",
+                                            "*://www.facebook.com/platform/impression.php*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking"
+                                    ]
+                                ]
+                            ],
                             "onBeforeSendHeaders": [
                                 [
                                     {
@@ -631,37 +889,7 @@
                                         "tabId": null,
                                         "types": null,
                                         "urls": [
-                                            "https://www.criticalcareontario.ca/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "requestHeaders"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
                                             "https://www.mobilesuica.com/*"
-                                        ],
-                                        "windowId": null
-                                    },
-                                    [
-                                        "blocking",
-                                        "requestHeaders"
-                                    ]
-                                ],
-                                [
-                                    {
-                                        "incognito": null,
-                                        "tabId": null,
-                                        "types": null,
-                                        "urls": [
-                                            "https://*.pixton.com/*"
                                         ],
                                         "windowId": null
                                     },
@@ -688,6 +916,51 @@
                                         "blocking",
                                         "requestHeaders"
                                     ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://*.spectrum.net/voice/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://covid.cdc.gov/covid-data-tracker/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
+                                ],
+                                [
+                                    {
+                                        "incognito": null,
+                                        "tabId": null,
+                                        "types": null,
+                                        "urls": [
+                                            "*://*.saxoinvestor.fr/*"
+                                        ],
+                                        "windowId": null
+                                    },
+                                    [
+                                        "blocking",
+                                        "requestHeaders"
+                                    ]
                                 ]
                             ],
                             "onHeadersReceived": [
@@ -697,8 +970,7 @@
                                         "tabId": null,
                                         "types": null,
                                         "urls": [
-                                            "https://ads-us.rd.linksynergy.com/as.php*",
-                                            "https://www.office.com/logout?sid*"
+                                            "https://ads-us.rd.linksynergy.com/as.php*"
                                         ],
                                         "windowId": null
                                     },
