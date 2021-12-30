@@ -1,33 +1,84 @@
 import os, sys, subprocess
+import tempfile
 import logging
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 from clckwrkbdgr import xdg
+from clckwrkbdgr import utils
 
-def run_immediately(commandline, task_scheduler_path, logdir=None): # pragma: no cover -- calls external commands and available on Win only.
+TASK_XML_DEFINITION = """\
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+	<Triggers>
+		<TimeTrigger>
+			<!-- There is no option to register task to run by demand only, but it will not run tasks from very, very, very past. -->
+			<StartBoundary>1901-01-01T00:00:00</StartBoundary>
+			<Enabled>true</Enabled>
+		</TimeTrigger>
+	</Triggers>
+	<Settings>
+		<Priority>{priority}</Priority>
+	</Settings>
+	<Actions Context="Author">
+		<Exec>
+			<Command>{command}</Command>
+			<Arguments>{command_args}</Arguments>
+		</Exec>
+	</Actions>
+</Task>
+"""
+
+def run_immediately(commandline, task_scheduler_path, logdir=None, priority=7): # pragma: no cover -- calls external commands and available on Win only.
 	""" Runs command (string) immediately using Windows Task Scheduler.
 	Should produce not output.
 	The job ID is generated in random manner.
 	Job is stored in category specified by task_scheduler_path.
+
+	Priority level 0 is the highest priority, and priority level 10 is the lowest priority.
+	The default value is 7. Priority levels 7 and 8 are used for background tasks,
+	and priority levels 4, 5, and 6 are used for interactive tasks.
+	<https://docs.microsoft.com/en-us/windows/win32/taskschd/tasksettings-priority>
+
 	Command is executed via clckwrkbdgr.commands facilities, i.e. output is captured and put in log file in specified log dir.
 	See clckwrkbdgr.commands for details.
 	"""
+	try:
+		assert 4 <= int(priority) <= 10
+	except:
+		raise RuntimeError("Expected integer priority in range [4; 10], got: {0}".format(priority))
+	if utils.is_collection(commandline):
+		commandline = subprocess.list2cmdline(commandline)
 	command = ["pythonw", "-m", "clckwrkbdgr.commands"]
 	command += ['--start-dir', subprocess.list2cmdline([os.getcwd()])]
 	if logdir:
 		command += ['--output-dir', subprocess.list2cmdline([str(logdir)])]
 	command += [commandline]
 	logging.debug('Running command: {0}'.format(command))
-	command = ' '.join(command)
+	command, command_args = command[0], ' '.join(command[1:])
 
 	import time
 	guid = str(time.time()).replace('.', '_') # TODO proper guid
 	job_id = "{0}\\{1}".format(task_scheduler_path.rstrip('\\'), guid)
 	logging.debug('Task Scheduler Job ID: {0}'.format(job_id))
 
-	# There is no option to register task to run by demand only, but it will not run tasks from very, very, very past.
-	output = subprocess.check_output(['schtasks', '/create', '/tn', job_id, '/sc', 'once', '/tr', command, '/sd', '1901/01/01', '/st', '00:00'], stderr=subprocess.STDOUT)
-	logging.debug(output)
+	xml_content = TASK_XML_DEFINITION.format(
+			command=command,
+			command_args=command_args,
+			priority=int(priority),
+			).encode('cp1251', 'replace')
+	try:
+		task_xml = tempfile.NamedTemporaryFile(delete=False)
+		task_xml.write(xml_content)
+		task_xml.close()
+		filename = task_xml.name
+		try:
+			output = subprocess.check_output(['schtasks', '/create', '/tn', job_id, '/xml', str(filename)], stderr=subprocess.STDOUT)
+		except subprocess.CalledProcessError as e:
+			logging.debug(e.output)
+			raise
+		logging.debug(output)
+	finally:
+		os.unlink(task_xml.name)
 	output = subprocess.check_output(['schtasks', '/run', '/tn', job_id], stderr=subprocess.STDOUT)
 	logging.debug(output)
 	output = subprocess.check_output(['schtasks', '/delete', '/f', '/tn', job_id], stderr=subprocess.STDOUT)
