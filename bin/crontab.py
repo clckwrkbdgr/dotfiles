@@ -62,6 +62,10 @@ def command_daemon(logdir, debug=False): # pragma: no cover -- TODO use crontab.
 	Then runs jobs that are qualified via function job_filter(commandline)
 	and are to be triggered between last run and current date
 	Updates timestamp file.
+
+	All environment variables defined in crontab file will be loaded in global environment and passed to every executed job.
+	The only exception is PRIORITY which works only for the job it is defined before. It is a priority of Windows Task Scheduler task and value should be integer within range [4;7].
+	See <https://docs.microsoft.com/en-us/windows/win32/taskschd/tasksettings-priority> for details.
 	"""
 	if debug:
 		logging.basicConfig(level=logging.DEBUG)
@@ -82,6 +86,8 @@ def command_daemon(logdir, debug=False): # pragma: no cover -- TODO use crontab.
 		for job in jobs:
 			env.update(job.env)
 		for k, v in env.items():
+			if k == 'PRIORITY': # Job-specific variable
+				continue
 			os.environ[k] = v
 
 		logging.debug("Last run: {0}".format(last_run))
@@ -97,14 +103,19 @@ def command_daemon(logdir, debug=False): # pragma: no cover -- TODO use crontab.
 				command = shlex.split(job.command)
 				logging.debug('    ' + str(command))
 				command = list(map(os.path.expanduser, map(str, command)))
-				commands_to_run.append(command)
+				commands_to_run.append( (command, job.env) )
 
 		last_run = now
-		for command in commands_to_run:
+		for command, command_env in commands_to_run:
 			try:
 				command = subprocess.list2cmdline(command)
 				logging.debug("Running: {0}".format(repr(command)))
-				run_immediately(command, 'crontab', logdir)
+				priority = command_env.get('PRIORITY')
+				if priority:
+					logging.debug("With priority: {0}".format(repr(priority)))
+					run_immediately(command, 'crontab', logdir, priority=int(priority))
+				else:
+					run_immediately(command, 'crontab', logdir)
 			except:
 				import traceback
 				try:
