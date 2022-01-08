@@ -11,6 +11,13 @@
                 "atom"
             ]
         },
+        "application/binary": {
+            "action": 1,
+            "ask": true,
+            "extensions": [
+                "md"
+            ]
+        },
         "application/download": {
             "action": 1,
             "ask": true,

@@ -80,7 +80,6 @@ user_pref("browser.places.importBookmarksHTML", false);
 user_pref("browser.places.smartBookmarksVersion", 8);
 user_pref("browser.proton.toolbar.version", 3);
 user_pref("browser.reader.detectedFirstArticle", true);
-user_pref("browser.region.update.updated", 1640811178);
 user_pref("browser.search.countryCode", "UA");
 user_pref("browser.search.defaultenginename", "DuckDuckGo HTML");
 user_pref("browser.search.region", "UA");
