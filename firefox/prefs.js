@@ -384,9 +384,6 @@ user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{7a7a4a92-a2a0-
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{980500da-0b6d-4de9-ad90-93d17605276c}", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{d7742d87-e61d-4b78-b8a1-b469842139fa}", true);
-user_pref("fission.experiment.max-origins.last-disqualified", 0);
-user_pref("fission.experiment.max-origins.last-qualified", 1640811173);
-user_pref("fission.experiment.max-origins.qualified", true);
 user_pref("font.default.x-cyrillic", "sans-serif");
 user_pref("font.default.x-user-def", "sans-serif");
 user_pref("font.language.group", "ja");

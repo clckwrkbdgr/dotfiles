@@ -125,4 +125,5 @@ sed '/browser.download.lastDir/d' | \
 sed '/media.benchmark.vp9./d' | \
 sed 's/"extensions.systemAddonSet", "{.*");/"extensions.systemAddonSet", "{\\"schema\\":1,\\"addons\\":{}}");/' | \
 sed '/browser.region.update.updated/d' | \
+sed '/fission.experiment.max-origins[.]/d' | \
 sed 's|'"$HOME"'|$HOME|g'
