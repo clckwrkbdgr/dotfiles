@@ -580,7 +580,6 @@ user_pref("security.ssl.enable_ocsp_stapling", false);
 user_pref("security.ssl.errorReporting.automatic", true);
 user_pref("security.warn_viewing_mixed", false);
 user_pref("security.warn_viewing_mixed.show_once", false);
-user_pref("services.settings.main.pioneer-study-addons-v1.last_check", 1640811772);
 user_pref("services.sync.clients.lastSync", "0");
 user_pref("services.sync.clients.lastSyncLocal", "0");
 user_pref("services.sync.declinedEngines", "");
