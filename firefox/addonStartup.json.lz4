@@ -646,6 +646,7 @@
                 "path": "pictureinpicture@mozilla.org.xpi",
                 "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/pictureinpicture@mozilla.org.xpi!/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "proxy-failover@mozilla.com": {

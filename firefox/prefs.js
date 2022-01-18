@@ -73,7 +73,7 @@ user_pref("browser.newtabpage.pinned", "[{\"url\":\"https://google.com\",\"label
 user_pref("browser.newtabpage.storageVersion", 1);
 user_pref("browser.open.lastDir", "$HOME");
 user_pref("browser.overlink-delay", 0);
-user_pref("browser.pageActions.persistedActions", "{\"version\":1,\"ids\":[\"bookmark\",\"bookmarkSeparator\",\"copyURL\",\"emailLink\",\"sendToDevice\",\"pinTab\",\"addSearchEngine\",\"screenshots_mozilla_org\"],\"idsInUrlbar\":[\"bookmark\"],\"idsInUrlbarPreProton\":[]}");
+user_pref("browser.pageActions.persistedActions", "{\"version\":1,\"ids\":[\"bookmark\"],\"idsInUrlbar\":[\"bookmark\"],\"idsInUrlbarPreProton\":[]}");
 user_pref("browser.pagethumbnails.storage_version", 3);
 user_pref("browser.panorama.animate_zoom", false);
 user_pref("browser.places.importBookmarksHTML", false);
