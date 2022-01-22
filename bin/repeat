@@ -18,6 +18,7 @@ cli() {
 		rc=$?
 		[ $rc != 0 -a -z "$ignore_rc" ] && exit $rc
 	done
+	return $rc
 }
 
 click::run "$@"
