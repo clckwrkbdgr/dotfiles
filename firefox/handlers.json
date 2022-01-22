@@ -37,7 +37,8 @@
             "action": 1,
             "ask": true,
             "extensions": [
-                "pdf"
+                "pdf",
+                "mp4"
             ]
         },
         "application/gtar": {
