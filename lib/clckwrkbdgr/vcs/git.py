@@ -231,7 +231,6 @@ def add_local_remote(name, path, bare=True): # pragma: no cover -- TODO commands
 	existed = os.path.exists(str(path))
 	if existed:
 		logging.warning('Remote path already exists, considering bare repo already inited.')
-		return True
 	if not existed:
 		command = ["git", "init"]
 		if bare:
