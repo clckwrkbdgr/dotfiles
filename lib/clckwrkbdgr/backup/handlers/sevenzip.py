@@ -28,10 +28,10 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				return False
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
-			logging.error(e)
+			logging.exception('Failed to run backup command {0}:'.format(backup_command))
 			return False
 		except Exception as e:
-			logging.error(e)
+			logging.exception('Failed to run backup command {0}:'.format(backup_command))
 			return False
 		logging.debug('Everything is Ok')
 		return True
@@ -54,10 +54,10 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				return False
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
-			logging.error(e)
+			logging.exception('Failed to run check command {0}:'.format(integrity_command))
 			return False
 		except Exception as e:
-			logging.error(e)
+			logging.exception('Failed to run check command {0}:'.format(integrity_command))
 			return False
 		logging.debug('Everything is Ok')
 
@@ -111,10 +111,10 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				return False
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
-			logging.error(e)
+			logging.exception('Failed to run list command {0}:'.format(list_command))
 			return False
 		except Exception as e:
-			logging.error(e)
+			logging.exception('Failed to verify backup listing:')
 			return False
 
 		try:
@@ -127,10 +127,10 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				sys.stderr.write('\n'.join(output))
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
-			logging.error(e)
+			logging.exception('Failed to run list command {0}:'.format(list_command))
 			return False
 		except Exception as e:
-			logging.error(e)
+			logging.exception('Failed to check backup size:')
 			return False
 
 		logging.debug('Everything is Ok')
