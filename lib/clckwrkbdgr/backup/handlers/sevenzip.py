@@ -199,7 +199,6 @@ def sort_backup_size(lines): # pragma: no cover -- TODO
 			stack = [entry for entry in stack if entry not in done]
 			for entry in done:
 				fixed_listing.append(entry.as_string())
-		fixed_listing.append(line)
 	for entry in reversed(stack):
 		fixed_listing.append(entry.as_string())
 
