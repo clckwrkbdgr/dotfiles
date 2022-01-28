@@ -1,5 +1,5 @@
 import os, sys, subprocess, shutil
-import platform, fnmatch
+import platform, fnmatch, re
 import clckwrkbdgr.backup
 import logging
 
@@ -142,17 +142,27 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 			shutil.copy(str(backup_archive), str(location))
 		return True
 
+def split_sections(line): # pragma: no cover -- TODO
+	sections = re.split(r'(\S+)', line)
+	if len(sections) % 2 != 0 and sections[-1] == '':
+		sections.pop(-1)
+	sections = list(map(''.join, zip(sections[::2], sections[1::2])))
+	return sections
+
 class BackupSizeNode(object): # pragma: no cover -- TODO
 	def __init__(self, line, name):
 		self.line = line
 		self.name = name
 		self.size = 0
-	def add_size(self, size):
+		self.compressed_size = 0
+	def add_size(self, size, compressed_size=0):
 		self.size += size
+		self.compressed_size += compressed_size
 	def as_string(self):
-		_, remainder = self.line.split(None, 1)
-		pad = len(self.line) - len(remainder) - 2
-		return str(self.size).rjust(pad) + ' '*2 + remainder
+		sections = split_sections(self.line)
+		sections[3] = str(self.size).rjust(len(sections[3]))
+		sections[4] = str(self.compressed_size).rjust(len(sections[4]))
+		return ''.join(sections)
 
 def sort_backup_size(lines): # pragma: no cover -- TODO
 	""" Accepts iterable of lines (header -> file listing -> footer),
@@ -184,13 +194,18 @@ def sort_backup_size(lines): # pragma: no cover -- TODO
 		except Exception as e:
 			logging.warning("sort_backup_size: cannot parse line: {0}:".format(e) + repr(line))
 			continue
+		try:
+			compressed_size = int(parts[4])
+		except Exception as e:
+			logging.warning("sort_backup_size: cannot parse line: {0}:".format(e) + repr(line))
+			continue
 		name = parts[-1]
 		if size == 0 and name.endswith('/'):
 			stack.append(BackupSizeNode(line, name))
 			continue
 		for entry in reversed(stack):
 			if name.startswith(entry.name):
-				entry.add_size(size)
+				entry.add_size(size, compressed_size)
 		done = []
 		for entry in reversed(stack):
 			if not name.startswith(entry.name.rstrip('/')):
@@ -198,14 +213,14 @@ def sort_backup_size(lines): # pragma: no cover -- TODO
 		if done:
 			stack = [entry for entry in stack if entry not in done]
 			for entry in done:
-				fixed_listing.append(entry.as_string())
+				fixed_listing.append(entry)
 		entry = BackupSizeNode(line, name)
 		entry.size = size
+		entry.compressed_size = compressed_size
 		stack.append(entry)
 	for entry in reversed(stack):
-		fixed_listing.append(entry.as_string())
+		fixed_listing.append(entry)
 
-	fixed_listing = [(int(line.split(None, 1)[0]), line) for line in fixed_listing]
-	sorted_listing = [line for _, line in sorted(fixed_listing, key=lambda x: (x[0], -len(x[-1])), reverse=True)]
+	sorted_listing = [entry.as_string() for entry in sorted(fixed_listing, key=lambda x: (x.size, -len(x.line)), reverse=True)]
 
 	return header + sorted_listing + footer
