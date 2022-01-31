@@ -124,7 +124,7 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				output = output.decode('utf-8', 'replace').splitlines()
 				output = sort_backup_size(output)
 				logging.warning('WARNING: Backup archive size is greater than allowed: {0} > {1}'.format(backup_archive.stat().st_size, self.context.max_archive_size))
-				sys.stderr.write('\n'.join(output))
+				sys.stderr.write('\n'.join(output) + '\n')
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
 			logging.exception('Failed to run list command {0}:'.format(list_command))
