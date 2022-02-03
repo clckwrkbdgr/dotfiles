@@ -183,12 +183,14 @@ def sort_backup_size(lines): # pragma: no cover -- TODO
 		else:
 			footer.append(line)
 
+	listing = sorted(listing, key=lambda line: line.split(None, 5)[-1].split(os.sep))
+
 	fixed_listing = []
 	stack = []
 	for line in listing:
 		if line == 'warning:  Converted unicode filename too long--truncating.':
 			continue
-		parts = line.split(None, 7)
+		parts = line.split(None, 5)
 		try:
 			size = int(parts[3])
 		except Exception as e:
@@ -200,9 +202,6 @@ def sort_backup_size(lines): # pragma: no cover -- TODO
 			logging.warning("sort_backup_size: cannot parse line: {0}:".format(e) + repr(line))
 			continue
 		name = parts[-1]
-		if size == 0 and name.endswith('/'):
-			stack.append(BackupSizeNode(line, name))
-			continue
 		for entry in reversed(stack):
 			if name.startswith(entry.name):
 				entry.add_size(size, compressed_size)
