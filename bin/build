@@ -10,7 +10,7 @@ def build_python_setuptools(install=False, install_global=False, quiet=False):
 	rc = subprocess.call([python_version, 'setup.py'] + quiet_arg + ['build'])
 	if rc != EXIT_SUCCESS:
 		return rc
-	rc = subprocess.call([python_version, '-m', 'pip', 'wheel'] + quiet_arg + ['.', '--no-deps', '--wheel-dir=dist'])
+	rc = subprocess.call([python_version, '-m', 'pip', 'wheel', '--disable-pip-version-check'] + quiet_arg + ['.', '--no-deps', '--wheel-dir=dist'])
 	if rc != EXIT_SUCCESS:
 		return rc
 	if not install:
@@ -22,7 +22,7 @@ def build_python_setuptools(install=False, install_global=False, quiet=False):
 		print('Expected only one wheel:', file=sys.stderr)
 		print('\n'.join(wheels))
 	pip_version = tuple(map(int, subprocess.check_output([python_version, '-c', '__file__ = ""; import pip; print(pip.__version__)']).decode('utf-8', 'replace').strip().split('.')))
-	args = [python_version, '-m', 'pip', 'install', wheels[0], '--upgrade', '--no-deps'] + quiet_arg
+	args = [python_version, '-m', 'pip', 'install', '--disable-pip-version-check', wheels[0], '--upgrade', '--no-deps'] + quiet_arg
 	if install_global:
 		args = ['sudo'] + args
 	else:
