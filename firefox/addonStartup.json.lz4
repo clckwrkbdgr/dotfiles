@@ -651,7 +651,7 @@
             },
             "proxy-failover@mozilla.com": {
                 "dependencies": [],
-                "enabled": true,
+                "enabled": false,
                 "lastModifiedTime": 0,
                 "loader": null,
                 "path": "proxy-failover@mozilla.com.xpi",
