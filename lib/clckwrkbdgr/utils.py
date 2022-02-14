@@ -261,6 +261,9 @@ def import_module(module_spec, reload_module=False): # pragma: no cover -- TODO 
 		except AttributeError:
 			from importlib.machinery import SourceFileLoader
 			module_instance = SourceFileLoader(module_name, module_filename).load_module()
+		except ImportError:
+			import imp
+			module_instance = imp.load_source(module_name, module_filename)
 	else:
 		import importlib
 		module_instance = importlib.import_module(module_name)
