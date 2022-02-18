@@ -31,3 +31,4 @@ LWin & Left::Send, {LCtrl up}{LWin down}{LCtrl down}{Left}{LWin up}{LCtrl up}
 ; We're also ignoring any errors because AHK cannot detect
 ; if included script exists or not.
 #include *i %A_AppData%\..\..\.local\local.ahk
+#include *i %A_AppData%\..\..\.local\share\local.ahk
