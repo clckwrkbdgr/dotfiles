@@ -74,7 +74,7 @@ def run_immediately(commandline, task_scheduler_path, logdir=None, priority=7): 
 		try:
 			output = subprocess.check_output(['schtasks', '/create', '/tn', job_id, '/xml', str(filename)], stderr=subprocess.STDOUT)
 		except subprocess.CalledProcessError as e:
-			logging.debug(e.output)
+			sys.stderr.write(e.output.decode('ascii', 'replace'))
 			raise
 		logging.debug(output)
 	finally:
