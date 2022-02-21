@@ -22,6 +22,9 @@
    IF EXIST %USERPROFILE%\.local\alias.doskey (
       doskey /macrofile=%USERPROFILE%\.local\alias.doskey
    )
+   IF EXIST %USERPROFILE%\.local\share\alias.doskey (
+      doskey /macrofile=%USERPROFILE%\.local\share\alias.doskey
+   )
 
    REM Now we can run application in created environment.
    REM This is done primarily for Far Manager because it cannot hold environment from AutoRun cmd file,
