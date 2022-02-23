@@ -12,6 +12,9 @@
 	quotepath = off
 	excludesFile = ~/.config/git/gitignore
 
+[diff]
+	submodule = diff
+
 [alias]
 	st = status --short --branch
 	logv = log --name-status
