@@ -584,6 +584,10 @@
             "action": 2,
             "ask": true
         },
+        "tg": {
+            "action": 4,
+            "ask": true
+        },
         "webcal": {
             "action": 4,
             "ask": true
