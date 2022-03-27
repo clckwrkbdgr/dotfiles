@@ -448,7 +448,6 @@
                         "webRequest": {
                             "onBeforeRedirect": [],
                             "onBeforeSendHeaders": [],
-                            "onErrorOccurred": [],
                             "onHeadersReceived": [],
                             "onResponseStarted": []
                         }
