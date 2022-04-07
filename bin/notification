@@ -59,6 +59,8 @@ click::epilog      "If message starts with word enclosed in brackets, the conten
 click::epilog      "Currently recognized tags:"
 click::epilog      "- [P]: override quiet mode even if it was requisted on command line."
 click::epilog      "Tags are removed from text."
+click::epilog      " "
+click::epilog      "If global userstate 'silent_notifications' is set, quiet mode is forced."
 click::flag '-l' "" 'list_log' --help="Prints previous $MESSAGES_TO_STORE messages."
 click::flag '-q' "" 'quiet' --help="quiet mode (no sounds/voice)."
 click::option '-T' "--type" 'notification_type' --default=default --help="Type of notification message. Available values:
@@ -83,6 +85,9 @@ cli() {
 	title="${CLICK_ARGS[title]}"
 	icon="${CLICK_ARGS[icon]}"
 	text="${CLICK_ARGS[text]}"
+	if userstate get silent_notifications; then
+		quiet=true
+	fi
 
 	display_notification=display_default_notification
 	if [ "${CLICK_ARGS[notification_type]}" == 'default' ]; then
