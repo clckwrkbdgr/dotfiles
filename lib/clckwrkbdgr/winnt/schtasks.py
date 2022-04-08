@@ -99,7 +99,7 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 		BootTrigger = namedtuple('BootTrigger', 'enabled delay repetition')
 		TimeTrigger = namedtuple('TimeTrigger', 'enabled start_boundary random_delay repetition')
 		SessionStateChangeTrigger = namedtuple('SessionStateChangeTrigger', 'enabled state_change user_id')
-		CalendarTrigger = namedtuple('CalendarTrigger', 'enabled start_boundary end_boundary random_delay schedule_by_day execution_time_limit')
+		CalendarTrigger = namedtuple('CalendarTrigger', 'enabled start_boundary end_boundary random_delay schedule_by_day execution_time_limit repetition')
 	class Action:
 		Exec = namedtuple('ActionExec', 'command arguments working_directory')
 		ComHandler = namedtuple('ComHandler', 'class_id data')
