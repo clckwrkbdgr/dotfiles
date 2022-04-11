@@ -116,6 +116,10 @@
 	smudge = cat
 	clean = "sed 's/^\\((plug-in-def \"[^\"]\\+\"\\) [0-9]\\+/\\1 0/g'"
 
+[filter "git_config"]
+	smudge = "python ~/.config/git/git_config_submodule_diff_option.py smudge"
+	clean = "python ~/.config/git/git_config_submodule_diff_option.py clean"
+
 [filter "mc_ini"]
 	smudge = cat
 	clean = "sed 's|ftpfs_password=.*|ftpfs_password=anonymous@|'"
