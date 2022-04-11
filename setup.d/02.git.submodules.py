@@ -41,7 +41,7 @@ if not (set(gitmodules.sections()) - set(gitconfig.sections())):
 
 has_git = True
 try:
-	subprocess.check_call(['git', '--version'])
+	subprocess.check_output(['git', '--version'], stderr=subprocess.STDOUT)
 except subprocess.CalledProcessError:
 	has_git = False
 except OSError:
