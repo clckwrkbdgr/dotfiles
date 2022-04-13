@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sys, re, subprocess
 if sys.argv[1:] == ['clean']:
-	clean = "sed '/^\[diff\]/,/^\[/s/^\([ 	]*submodule = \)diff/\1{DIFF}/'"
 	in_diff_category = False
 	for line in sys.stdin.read().splitlines():
 		if line == '[diff]':
@@ -24,7 +23,7 @@ result_value = 'log'
 try:
 	output = subprocess.check_output(["git", "--version"], stderr=subprocess.STDOUT)
 	output = output.decode('utf-8', 'replace').splitlines()[0]
-	version = re.search(r'git version ([0-9.]+)$$', output).group(1)
+	version = re.search(r'git version (\d\S+)\s*$$', output).group(1)
 	version = tuple(map(try_int, version.split('.')))
 	if version > (2, 0):
 		result_value = 'diff'
