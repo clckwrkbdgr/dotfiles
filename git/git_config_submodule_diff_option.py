@@ -9,7 +9,7 @@ if sys.argv[1:] == ['clean']:
 			if line.startswith('['):
 				in_diff_category = False
 			else:
-				line = re.sub(r'^(\s+submodule\s*=\s*)diff\s*$', r'\1{DIFF}', line)
+				line = re.sub(r'^(\s+submodule\s*=\s*)(diff|log)\s*$', r'\1{DIFF}', line)
 		print(line)
 	sys.exit()
 
