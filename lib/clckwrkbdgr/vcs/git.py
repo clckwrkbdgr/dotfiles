@@ -109,6 +109,8 @@ class SparseCheckout(object): # pragma: no cover -- TODO commands
 	def _load_content(self):
 		if self.content:
 			return self.content
+		if not os.path.exists(self.basefile):
+			return self.content
 		with open(self.basefile, 'rb') as f:
 			self.content = f.read()
 		return self.content
@@ -139,6 +141,7 @@ class SparseCheckout(object): # pragma: no cover -- TODO commands
 		""" Updates current sparse info with given content (raw text). """
 		with open(self.basefile, 'wb') as f:
 			f.write(raw_content)
+		subprocess.check_call(["git", "config", "core.sparseCheckout", "true"])
 
 def branch_is_behind_remote(branch): # pragma: no cover -- TODO commands
 	""" Returns True if given branch is behind remote origin. """
