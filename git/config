@@ -7,13 +7,13 @@
 [color]
 	ui = true
 
+[diff]
+	submodule = {DIFF}
+
 [core]
 	pager = less
 	quotepath = off
 	excludesFile = ~/.config/git/gitignore
-
-[diff]
-	submodule = diff
 
 [alias]
 	st = status --short --branch
