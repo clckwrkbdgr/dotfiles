@@ -10,7 +10,7 @@ if sys.argv[1:] == ['clean']:
 				in_diff_category = False
 			else:
 				line = re.sub(r'^(\s+submodule\s*=\s*)(diff|log)\s*$', r'\1{DIFF}', line)
-		print(line)
+		sys.stdout.buffer.write(line.encode('utf-8', 'replace') + b'\n')
 	sys.exit()
 
 def try_int(value):
