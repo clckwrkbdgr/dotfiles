@@ -64,8 +64,15 @@ def inbox(add_notes=None):
 	config = clckwrkbdgr.todo.read_config()
 	config.inbox_file.parent.mkdir(parents=True, exist_ok=True)
 	if add_notes:
-		with config.inbox_file.open('a+') as f:
-			f.write(' '.join(add_notes) + '\n')
+		new_data = ' '.join(add_notes) + '\n'
+		if config.prepend_inbox:
+			with config.inbox_file.open('r+') as f:
+				old_data = f.read()
+				f.seek(0)
+				f.write(new_data + old_data)
+		else:
+			with config.inbox_file.open('a+') as f:
+				f.write(new_data)
 		return True
 	filename = str(config.inbox_file)
 	if platform.system() == 'Windows':

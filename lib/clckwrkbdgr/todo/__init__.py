@@ -26,6 +26,7 @@ CONFIG_FILE_DESC = """Configuration is stored in $XDG_DATA_HOME/todo/config.json
 Fields:
 - editor: Command to run editor (list of arguments). Filename will be added to the end of the arg list. Default is [$EDITOR].
 - inbox_file: path to INBOX file (may contain tilde and environment variables). Default is "~/.local/share/todo/.INBOX.md"
+- prepend_inbox: prepend new items to INBOX file instead of appending it to the end. Default is False (appending to the end).
 - todo_dir: entries in this directory will be used for default built-in task provider (clckwrkbdgr.todo.provider.todo_dir).
 - task_providers: list of entries; each entry should be either Python module or path to Python file. These files should export functions decorated with @clckwrkbdgr.todo.task_provider(...).
 - tasklist: name of fully quialifed Python class; module should be available in sys.path. It will be used instead of default clckwrkbdgr.todo.tasklist.TaskList
@@ -68,6 +69,7 @@ def read_config(): # pragma: no cover
 
 	return dotdict(
 			inbox_file=Path(os.path.expandvars(data.get('inbox_file', "~/.local/share/todo/.INBOX.md"))).expanduser(),
+			prepend_inbox=bool(data.get('prepend_inbox', False)),
 			editor=list(data.get('editor', [os.environ.get('EDITOR', 'vim')])),
 			todo_dir=Path(os.path.expandvars(data.get('todo_dir', "~/.local/share/todo/"))).expanduser(),
 			task_providers=list(data.get('task_providers', [])),
