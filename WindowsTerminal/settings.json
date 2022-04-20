@@ -1,6 +1,11 @@
 {
+    "$help": "https://aka.ms/terminal-documentation",
     "$schema": "https://aka.ms/terminal-profiles-schema",
     "actions": [
+        {
+            "command": "scrollDownPage",
+            "keys": "ctrl+pgdn"
+        },
         {
             "command": "unbound",
             "keys": "alt+c"
@@ -26,10 +31,6 @@
                 "action": "prevTab"
             },
             "keys": "ctrl+shift+tab"
-        },
-        {
-            "command": "scrollDownPage",
-            "keys": "ctrl+pgdn"
         }
     ],
     "alwaysShowTabs": true,
@@ -47,60 +48,64 @@
         "defaults": {},
         "list": [
             {
-                "acrylicOpacity": 0.5,
                 "background": "#2E3436",
                 "closeOnExit": "graceful",
                 "colorScheme": "Dim",
                 "commandline": "\"%USERPROFILE%\\.config\\bin\\user-env.cmd\" & \"C:\\Program Files\\Far Manager\\Far.exe\"",
                 "cursorColor": "#FFFFFF",
                 "cursorShape": "filledBox",
-                "fontFace": "Consolas",
-                "fontSize": 11,
+                "font": {
+                    "face": "Consolas",
+                    "size": 11
+                },
                 "guid": "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
                 "historySize": 9001,
                 "icon": "file://C:/Program Files/Far Manager/far.png",
                 "name": "Far",
+                "opacity": 50,
                 "padding": "0, 0, 0, 0",
                 "snapOnInput": true,
                 "useAcrylic": false
             },
             {
-                "acrylicOpacity": 0.75,
                 "closeOnExit": "graceful",
                 "colorScheme": "Dim",
-                "commandline": "cmd.exe",
                 "cursorColor": "#FFFFFF",
                 "cursorShape": "filledBox",
-                "fontFace": "Consolas",
-                "fontSize": 11,
+                "font": {
+                    "face": "Consolas",
+                    "size": 11
+                },
                 "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
                 "historySize": 9001,
                 "icon": "ms-appx:///ProfileIcons/{0caa0dad-35be-5f56-a8ff-afceeeaa6101}.png",
                 "name": "cmd",
+                "opacity": 75,
                 "padding": "0, 0, 0, 0",
                 "snapOnInput": true,
                 "useAcrylic": true
             },
             {
-                "acrylicOpacity": 0.5,
                 "closeOnExit": "graceful",
                 "colorScheme": "Dim",
                 "commandline": "wsl.exe -d Debian",
                 "cursorColor": "#FFFFFF",
                 "cursorShape": "filledBox",
-                "fontFace": "Consolas",
-                "fontSize": 11,
+                "font": {
+                    "face": "Consolas",
+                    "size": 11
+                },
                 "guid": "{58ad8b0c-3ef8-5f4d-bc6f-13e4c00f2530}",
                 "hidden": false,
                 "historySize": 9001,
                 "icon": "ms-appx:///ProfileIcons/{9acb9455-ca41-5af7-950f-6bca1bc9722f}.png",
                 "name": "WSL",
+                "opacity": 50,
                 "padding": "0, 0, 0, 0",
                 "snapOnInput": true,
                 "source": "Windows.Terminal.Wsl",
                 "useAcrylic": false
-            },
-            {}
+            }
         ]
     },
     "schemes": [
