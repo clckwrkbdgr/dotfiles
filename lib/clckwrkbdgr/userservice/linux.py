@@ -47,9 +47,15 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		)
 		wrapper_file.write_text(wrapper)
 		return wrapper_file
+	@classmethod
+	def _list_user_registered(cls):
+		for entry in (xdg.save_data_path('systemd')/'user').iterdir():
+			if entry.suffix == '.service':
+				yield entry.stem
 
 	@classmethod
 	def list_all(cls):
+		missing_user_registered = set(cls._list_user_registered())
 		# systemctl have no formatting except 'fancy' because Poettering "try to keep things minimal there"
 		# https://github.com/systemd/systemd/issues/83
 		output = subprocess.check_output(['systemctl', '--user', 'list-units', '--type=service', '--all'])
@@ -67,7 +73,10 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 			values = dict(zip(header_values, row))
 			if values['UNIT'].endswith('.service'):
 				values['UNIT'] = values['UNIT'][:-len('.service')]
+			missing_user_registered -= {values['UNIT']}
 			yield cls.Status(values['UNIT'], values['SUB'] == 'running')
+		for service in missing_user_registered:
+			yield cls.Status(service, False)
 	def is_installed(self):
 		status = self._systemctl_show(self.id)
 		return status['LoadState'] == 'loaded'
