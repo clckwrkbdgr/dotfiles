@@ -16,7 +16,7 @@ if not clckwrkbdgr.vcs.git.is_repo_root():
 
 import clckwrkbdgr.pkg
 required_caps = 'git'
-current_caps = 'git' if clckwrkbdgr.pkg.is_app_installed("git") else 'no-git'
+current_caps = 'git' if clckwrkbdgr.pkg.is_app_installed("git") else 'arch'
 if not context.validate_worker_host('dotfiles.submodules', caps_type=str, required_caps=required_caps, current_caps=current_caps):
 	context.done()
 
