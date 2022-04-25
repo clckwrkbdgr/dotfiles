@@ -1,0 +1,5 @@
+set default-bg "#111111"
+
+set recolor-darkcolor "#CCCCCC"
+set recolor-lightcolor "#111111"
+set recolor-reverse-video true

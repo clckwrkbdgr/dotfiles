@@ -99,6 +99,7 @@ xdg/bin/mocp caps=home
 xdg/bin/pidgin caps=home
 xdg/bin/prboom caps=home
 xdg/bin/sylpheed caps=home
+zathura/zathurarc caps=home
 
 .gitattributes caps=work
 .gitconfig caps=work
