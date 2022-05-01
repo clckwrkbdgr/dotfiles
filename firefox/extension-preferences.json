@@ -26,7 +26,8 @@
     "doh-rollout@mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "firefox-compact-dark@mozilla.org": {
@@ -45,7 +46,8 @@
     "formautofill@mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "fxmonitor@mozilla.org": {
@@ -89,7 +91,8 @@
     "screenshots@mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "twitter@search.mozilla.org": {
@@ -107,7 +110,8 @@
     "webcompat@mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "wikipedia@search.mozilla.org": {
