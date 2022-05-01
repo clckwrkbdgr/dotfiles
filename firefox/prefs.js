@@ -12,6 +12,7 @@
 user_pref("accessibility.blockautorefresh", true);
 user_pref("accessibility.typeaheadfind.autostart", false);
 user_pref("accessibility.typeaheadfind.flashBar", 0);
+user_pref("alerts.showFavicons", true);
 user_pref("app.normandy.first_run", false);
 user_pref("app.shield.optoutstudies.enabled", false);
 user_pref("app.update.backgroundErrors", 2);
