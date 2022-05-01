@@ -40,7 +40,8 @@ set_volume() {
 	if [ "$volume" -lt 100 ]; then
 		amixer set "$channel" ${volume}% >/dev/null
 	else
-		pactl set-sink-volume 0 ${volume}%
+		channel=$(LANG=C pactl list | grep '^Sink #' | sed 's/.* #//')
+		pactl set-sink-volume ${channel:-0} ${volume}%
 	fi
 	return 0
 }
