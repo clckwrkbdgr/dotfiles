@@ -1,26 +1,24 @@
 #!/usr/bin/env python
 import sys, subprocess, platform, socket
+import itertools, collections
 try:
 	from pathlib2 import Path
 except ImportError:
 	from pathlib import Path
 import clckwrkbdgr.xdg as xdg
 
-LOCAL = Path().home()/'.local'
-LOCAL_SHARE = Path().home()/'.local'/'share'
-crontabs = [
-	xdg.XDG_CONFIG_HOME/'crontab',
-	xdg.XDG_CONFIG_HOME/'crontab.{0}'.format(platform.system()),
-	xdg.XDG_DATA_HOME/'crontab',
-	xdg.XDG_DATA_HOME/'crontab.{0}'.format(platform.system()),
-	xdg.XDG_DATA_HOME/'crontab.{0}'.format(socket.gethostname()),
-	LOCAL_SHARE/'crontab',
-	LOCAL_SHARE/'crontab.{0}'.format(platform.system()),
-	LOCAL_SHARE/'crontab.{0}'.format(socket.gethostname()),
-	LOCAL/'crontab',
-	LOCAL/'crontab.{0}'.format(platform.system()),
-	LOCAL/'crontab.{0}'.format(socket.gethostname()),
-	]
+dirs = [
+		xdg.XDG_CONFIG_HOME,
+		xdg.XDG_DATA_HOME,
+		Path().home()/'.local'/'share',
+		Path().home()/'.local',
+		]
+files = [
+		'crontab',
+		'crontab.{0}'.format(platform.system()),
+		'crontab.{0}'.format(socket.gethostname()),
+		]
+crontabs = list(collections.OrderedDict.fromkeys([dirname/filename for dirname, filename in itertools.product(dirs, files)]))
 crontabs = b''.join(crontab.read_bytes() for crontab in crontabs if crontab.is_file())
 p = subprocess.Popen(['crontab'], stdin=subprocess.PIPE, shell=True)
 stdout, stderr = p.communicate(crontabs)
