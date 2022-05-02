@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, subprocess
+import sys, subprocess, shlex
 import platform
 try:
 	from pathlib2 import Path
@@ -9,6 +9,7 @@ from clckwrkbdgr import xdg
 import clckwrkbdgr.fs
 import clckwrkbdgr.jobsequence.context
 context = clckwrkbdgr.jobsequence.context.init(
+		script_rootdir=xdg.XDG_DESKTOP_DIR,
 		)
 
 def patch_is_applied(destfile, patch):
@@ -16,7 +17,14 @@ def patch_is_applied(destfile, patch):
 		return 0 == subprocess.call(['patch', '-R', '-s', '-f', '--dry-run', str(destfile), '-i', str(patch)], stdout=subprocess.DEVNULL)
 
 def apply_patch(destfile, patch):
-	return subprocess.call(['patch', str(destfile), '-i', str(patch)])
+	command = ['patch', '--backup', str(destfile), '-i', str(patch)]
+	try:
+		return subprocess.call(command)
+	except Exception as e:
+		content.error(str(e))
+		script = context.script('patch-when-xdg.sh')
+		command = ['sudo'] + command
+		script += ' '.join(shlex.quote(x) for x in command)
 
 if platform.system() == 'Windows':
 	dest = Path.home()/'.local'/'bin'/'when.pl'
@@ -28,5 +36,5 @@ if not dest.exists():
 
 patch = xdg.XDG_CONFIG_HOME/'patch'/'when-1.1.36-xdg.patch'
 if not patch_is_applied(dest, patch):
-	context | apply_patch(dest, patch) # TODO needs sudo
+	context | apply_patch(dest, patch)
 	context.done()
