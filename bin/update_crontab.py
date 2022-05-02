@@ -7,12 +7,16 @@ except ImportError:
 import clckwrkbdgr.xdg as xdg
 
 LOCAL = Path().home()/'.local'
+LOCAL_SHARE = Path().home()/'.local'/'share'
 crontabs = [
 	xdg.XDG_CONFIG_HOME/'crontab',
 	xdg.XDG_CONFIG_HOME/'crontab.{0}'.format(platform.system()),
 	xdg.XDG_DATA_HOME/'crontab',
 	xdg.XDG_DATA_HOME/'crontab.{0}'.format(platform.system()),
 	xdg.XDG_DATA_HOME/'crontab.{0}'.format(socket.gethostname()),
+	LOCAL_SHARE/'crontab',
+	LOCAL_SHARE/'crontab.{0}'.format(platform.system()),
+	LOCAL_SHARE/'crontab.{0}'.format(socket.gethostname()),
 	LOCAL/'crontab',
 	LOCAL/'crontab.{0}'.format(platform.system()),
 	LOCAL/'crontab.{0}'.format(socket.gethostname()),
