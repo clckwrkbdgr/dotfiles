@@ -4,19 +4,29 @@
 SetCapsLockState, AlwaysOff
 +CapsLock::CapsLock
 
+; The goal is to have one main (English) language and one secondary (Cyrillic),
+; and have an option to switch between secondary languages or keyboard layouts (Russian/Ukrainian).
+; As <Win>+<Space> language list displays all languages and layouts alltogether (i.e. all three items),
+; we use <LAlt>+<LShift> to switch only between [two]languages,
+; and will pick specific layout for he secondary language via <Win>+<Space> manually when needed.
+;
+; So <LAlt>+<LShift> is required to be enabled and switching method.
+
 sel := 0
 
 if (sel=0) {
 $capslock::
-    send {lwin down}{Space}
+    Send {LAlt down}{LShift}
     sel := 1
 return 
 }
 
+if (sel=1) {
 $capslock up::
-    send {lwin up}
+    send {LAlt up}
     sel := 0
 return 
+}
 
 ; Changes hotkeys for switching between virtual desktops
 ; from default Ctrl+Win+<arrow> to Win+<arrow> like on Linux.
