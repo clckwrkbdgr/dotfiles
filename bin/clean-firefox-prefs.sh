@@ -128,4 +128,5 @@ sed '/browser.region.update.updated/d' | \
 sed '/fission.experiment.max-origins[.]/d' | \
 sed '/services.settings.main[.].*[.]last_check/d' | \
 sed '/media.videocontrols.picture-in-picture.video-toggle.has-used/d' | \
+sed '/"doh-rollout[.]/d' | \
 sed 's|'"$HOME"'|$HOME|g'
