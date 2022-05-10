@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, sys, subprocess
 import re
 import datetime
@@ -139,7 +140,20 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		return False
 	def start(self):
 		wrapper = self._ensure_service_wrapper()
-		subprocess.check_call(['sc', 'start', self.id])
+		try:
+			subprocess.check_call(['sc', 'start', self.id])
+		except subprocess.CalledProcessError as e:
+			if e.returncode == 1053: # Error starting service: The service did not respond to the start or control request in a timely fashion.
+				import win32api
+				package_dir = os.path.dirname(win32api.__file__)
+				pywintypes_dll = 'pywintypes{0}{1}.dll'.format(*(sys.version_info[:2]))
+				expected_dll = os.path.join(package_dir, pywintypes_dll)
+				if not os.path.isfile(expected_dll):
+					print('Possible reason: Missing library in pywin32 module directory:\n  {0}'.format(expected_dll), file=sys.stderr)
+					possible_location = os.path.join(os.path.dirname(package_dir), 'pywin32_system32', pywintypes_dll)
+					if os.path.isfile(possible_location):
+						print('Found this lib in different location:\n  {0}\nTry to copy it to {1} and re-check'.format(possible_location, expected_dll), file=sys.stderr)
+			raise
 	def stop(self):
 		wrapper = self._ensure_service_wrapper()
 		subprocess.check_call(['sc', 'stop', self.id])
