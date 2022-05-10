@@ -14,6 +14,7 @@ setup = JB.JobSequence(
 			os.path.join(os.environ['XDG_CONFIG_HOME'], 'setup.d'),
 			os.path.join(os.environ['XDG_DATA_HOME'], 'setup.d'),
 			os.path.join(os.environ['HOME'], '.local', 'setup.d'),
+			os.path.join(os.environ['HOME'], '.local', 'share', 'setup.d'),
 			],
 		click=click,
 		)
