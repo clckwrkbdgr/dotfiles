@@ -603,5 +603,8 @@ user_pref("ui.prefersReducedMotion", 1);
 user_pref("urlclassifier.keyupdatetime.https://sb-ssl.google.com/safebrowsing/newkey", 1304422653);
 user_pref("view_source.wrap_long_lines", true);
 user_pref("webgl.force-enabled", true);
+user_pref("widget.non-native-theme.gtk.scrollbar.round-thumb", false);
+user_pref("widget.non-native-theme.scrollbar.active-always-themed", false);
+user_pref("widget.non-native-theme.scrollbar.size", 16);
 user_pref("xpinstall.whitelist.add.103", "");
 user_pref("xpinstall.whitelist.add.180", "");
