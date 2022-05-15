@@ -1,7 +1,31 @@
 <html>
 <head>
-   <title>Test Userscripts</title>
+	<title>Test Userscripts</title>
+	<script type="application/javascript">
+		function create_new_input()
+		{
+			if(document.querySelector('#runtime-generated-input')) {
+				return;
+			}
+			var div = document.querySelector('#runtime-area');
+			var input = document.createElement('input');
+			input.setAttribute('type', 'text');
+			input.setAttribute('class', 'improved');
+			input.setAttribute('id', 'runtime-generated-input');
+			input.setAttribute('name', 'runtime-generated-input');
+			div.appendChild(input);
+		}
+
+	</script>
 </head>
 <body>
+	<div>
+		<p>Precreated:</p>
+		<input type="text" id="precreated-input" name="precreated-input" />
+	</div>
+	<div id="runtime-area">
+		<p>Runtime:</p>
+		<p><a href="#" onclick="create_new_input();return false;">[create new input]</a></p>
+	</div>
 </body>
 </html>
