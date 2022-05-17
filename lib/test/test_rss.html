@@ -88,6 +88,36 @@ function should_watch_and_collect()
 	unittest.assertEqual(mock_events, ['ok']);
 }
 
+function should_stop_collection_process_on_exception()
+{
+	var mock_events = [];
+	var mock_handler = function() { mock_events.push('ok'); return false; };
+
+	var watched_queue = [false, 'Exception'];
+	var mock_watcher = function() {
+		var result = watched_queue.shift();
+		if(result == 'Exception') {
+			throw result;
+		}
+		return result;
+	};
+
+	var postponed_call_queue = [];
+	var mock_setTimeout = function(handler, timeout) {
+		postponed_call_queue.push(handler);
+		unittest.assertEqual(timeout, 666);
+	};
+
+	var result = clckwrkbdgr.rss.collect(mock_watcher, 666, mock_handler, {setTimeout:mock_setTimeout});
+	unittest.assertFalse(result);
+	unittest.assertEqual(mock_events, []);
+
+	result = postponed_call_queue.shift()();
+	unittest.assertFalse(result);
+	unittest.assertEqual(mock_events, []);
+	unittest.assertEqual(postponed_call_queue, []);
+}
+
 </script>
 
 </body>
