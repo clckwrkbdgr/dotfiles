@@ -37,6 +37,7 @@ def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_
 			dest_path = Path(dest_path)
 			if dest_path.is_absolute():
 				raise RuntimeError("{0}: dest_path is absolute; it should be relative to the history repo root ({1}): {2}".format(path, dest_repo, dest_path))
+			dest_path = Path(dest_repo)/dest_path
 		else:
 			dest_path = Path(dest_repo)/path
 		logging.debug('{0}: Checking state in {1}.'.format(path, dest_path))
@@ -45,6 +46,7 @@ def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_
 			if not dest_path.parent.exists():
 				dest_path.parent.mkdir(parents=True)
 			shutil.copy(str(path), str(dest_path))
+			path = dest_path
 	with clckwrkbdgr.fs.CurrentDir(dest_repo or '.'):
 		try:
 			if git.commit_one_file(path, commit_message, show_diff=show_diff):
