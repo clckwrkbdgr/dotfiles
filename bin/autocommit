@@ -46,7 +46,7 @@ def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_
 			if not dest_path.parent.exists():
 				dest_path.parent.mkdir(parents=True)
 			shutil.copy(str(path), str(dest_path))
-			path = dest_path
+		path = dest_path
 	with clckwrkbdgr.fs.CurrentDir(dest_repo or '.'):
 		try:
 			if git.commit_one_file(path, commit_message, show_diff=show_diff):
