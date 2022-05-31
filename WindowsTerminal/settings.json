@@ -48,7 +48,6 @@
         "defaults": {},
         "list": [
             {
-                "background": "#2E3436",
                 "closeOnExit": "graceful",
                 "colorScheme": "Dim",
                 "commandline": "\"%USERPROFILE%\\.config\\bin\\user-env.cmd\" & \"C:\\Program Files\\Far Manager\\Far.exe\"",
@@ -62,7 +61,7 @@
                 "historySize": 9001,
                 "icon": "file://C:/Program Files/Far Manager/far.png",
                 "name": "Far",
-                "opacity": 50,
+                "opacity": 100,
                 "padding": "0, 0, 0, 0",
                 "snapOnInput": true,
                 "useAcrylic": false
@@ -110,8 +109,8 @@
     },
     "schemes": [
         {
-            "background": "#2E3436",
-            "black": "#2E3436",
+            "background": "#1E1F1F",
+            "black": "#1E1F1F",
             "blue": "#3465A4",
             "brightBlack": "#555753",
             "brightBlue": "#729FCF",
