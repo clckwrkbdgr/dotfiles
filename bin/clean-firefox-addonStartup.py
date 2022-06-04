@@ -47,6 +47,10 @@ process_recursively(tree, 'lastModifiedTime', 0)
 process_recursively(tree, 'version', "0.0")
 process_recursively(tree, 'path', None, skip_if=lambda v: v is not None)
 
+# Built-in addons.
+if "proxy-failover@mozilla.com" in tree["app-system-defaults"]["addons"]:
+	del tree["app-system-defaults"]["addons"]["proxy-failover@mozilla.com"]
+
 # Cleaning artefacts left after addon update or preparation to update.
 for addon in tree["app-profile"]["addons"].values():
 	if 'startupData' not in addon:
