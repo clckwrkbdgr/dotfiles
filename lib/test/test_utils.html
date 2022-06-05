@@ -43,11 +43,11 @@ function should_print_traces()
 
 	var trace = clckwrkbdgr.tracer('foobar', mock_prefix, mock_logger);
 
-	clckwrkbdgr.debug = '';
+	clckwrkbdgr.set_trace('');
 	trace('hello world');
 	unittest.assertEqual(mock_logger_data, []);
 
-	clckwrkbdgr.debug = 'foobar';
+	clckwrkbdgr.set_trace('foobar');
 	trace('hello world');
 	unittest.assertEqual(mock_logger_data, ['prefix foobar: hello world']);
 }
@@ -60,12 +60,12 @@ function should_print_traces_with_matching_trace_category_prefix()
 
 	var another_trace = clckwrkbdgr.tracer('foobaz', mock_prefix, mock_logger);
 
-	clckwrkbdgr.debug = 'foobar';
+	clckwrkbdgr.set_trace('foobar');
 	mock_logger_data = [];
 	another_trace('hello again');
 	unittest.assertEqual(mock_logger_data, []);
 
-	clckwrkbdgr.debug = 'fooba';
+	clckwrkbdgr.set_trace('fooba');
 	mock_logger_data = [];
 	another_trace('hello again');
 	unittest.assertEqual(mock_logger_data, ['prefix foobaz: hello again']);
@@ -79,12 +79,12 @@ function should_always_print_traces_with_empty_trace_category()
 
 	var generic_trace = clckwrkbdgr.tracer('', mock_prefix, mock_logger);
 
-	clckwrkbdgr.debug = 'foobar';
+	clckwrkbdgr.set_trace('foobar');
 	mock_logger_data = [];
 	generic_trace('always printed');
 	unittest.assertEqual(mock_logger_data, ['prefix : always printed']);
 
-	clckwrkbdgr.debug = '';
+	clckwrkbdgr.set_trace('');
 	mock_logger_data = [];
 	generic_trace('always printed');
 	unittest.assertEqual(mock_logger_data, ['prefix : always printed']);
