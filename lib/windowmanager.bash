@@ -1,5 +1,18 @@
 #!/bin/bash
 
+get_parent_process() { # <pid>
+	# Finds and prints parent process ID.
+	ps --no-header -o ppid $1 | tr -d ' '
+}
+
+find_subprocess() { # <pattern> [<process ID>]
+	# Finds and prints subprocesses that contain pattern in command line.
+	# If process ID is omitted, by default current process is used.
+	pattern=$1
+	pid=${2:-$$}
+	ps -o pid,args --ppid "$pid" | grep "$pattern" | awk '{print $1}'
+}
+
 processes_by_names() { # <list of pnames>
 	# Prints PIDs of all processes that match given list of patterns.
 	for pname in "$@"; do
@@ -48,6 +61,52 @@ windows_by_pid_on_current_desktop() { # <pid...>
 			echo "$window_id"
 		fi
 	done
+}
+
+await_process_window() { # <process search command line> <wait seconds for process> <wait seconds for window>
+	# Waits for the process to start and then for any window to appear, prints ID of that window.
+	# First argument is a command line that should print the desired PID, e.g. 'pgrep my_process'
+	# If any action fails after corresponding waiting interval is over, returns failure.
+	search_command=${1:-echo $$}
+	wait_process=${2:-3}
+	wait_window=${3:-3}
+
+	pid=$(eval "$search_command")
+	counter=${wait_process}0
+	while [ -z "$pid" -a $counter -gt 0 ]; do
+		pid=$(eval "$search_command")
+		sleep 0.1
+		counter=$((counter-1))
+	done
+	[ -z "$pid" ] && return 1
+	counter=${wait_window}0
+	window_id=$(xdotool search --pid $pid)
+	while [ -z "$window_id" -a $counter -gt 0 ]; do
+		window_id=$(xdotool search --pid $pid)
+		sleep 0.1
+		counter=$((counter-1))
+	done
+	[ -z "$window_id" ] && return 1
+	echo "$window_id"
+}
+
+find_parent_x_window() { # <pid>
+	# Finds the first process in the tree that has X window attached.
+	# It may include the current process as well.
+	# Prints ID (decimal) of the first window for the found process.
+	current_pid=$1
+	window_id=
+	while [ -n "$current_pid" ] && [ -z "$window_id" ]; do
+		current_pid=$(get_parent_process $current_pid)
+		window_id=$(xdotool search --pid "$current_pid" | head -1)
+	done
+	echo "$window_id"
+}
+
+find_process_desktop_id() { # <pid>
+	# Finds and prints which virtual desktop (decimal) runs the given process.
+	window_id=$(find_parent_x_window $1)
+	xprop -id "$window_id" -format _NET_WM_DESKTOP 32c '|$0+' _NET_WM_DESKTOP | sed 's/^[^|]*|//'
 }
 
 bring_to_top() { # <window_id>
