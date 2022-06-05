@@ -35,6 +35,52 @@ function should_get_and_set_storage_value()
 	unittest.assertEqual(value, random_value);
 }
 
+function should_get_and_set_debug_trace_level()
+{
+	var mock_logger_data = [];
+	var mock_logger = function(message) { mock_logger_data.push(message); }
+	var mock_prefix = function() { return 'prefix'; }
+	var mock_trace = clckwrkbdgr.tracer('foobar', mock_prefix, mock_logger);
+
+	clckwrkbdgr.debug = '';
+
+	clckwrkbdgr.set_trace('foobar');
+	unittest.assertEqual(clckwrkbdgr.get_trace(), 'foobar');
+	mock_trace("now you see me");
+
+	clckwrkbdgr.set_trace('foobaz');
+	unittest.assertEqual(clckwrkbdgr.get_trace(), 'foobaz');
+	mock_trace("now you don't");
+
+	unittest.assertEqual(mock_logger_data, ['prefix foobar: now you see me']);
+
+	clckwrkbdgr.set_trace('');
+}
+
+function should_load_persistent_debug_trace_level()
+{
+	var mock_logger_data = [];
+	var mock_logger = function(message) { mock_logger_data.push(message); }
+	var mock_prefix = function() { return 'prefix'; }
+	var mock_trace = clckwrkbdgr.tracer('foobar', mock_prefix, mock_logger);
+
+	clckwrkbdgr.debug = '';
+
+	clckwrkbdgr.set_trace('foobar');
+	unittest.assertEqual(clckwrkbdgr.storage.get('clckwrkbdgr.debug'), '{"category":"foobar"}');
+	mock_trace("now you see me");
+
+	clckwrkbdgr.storage.set('clckwrkbdgr.debug', '{"category":"foobaz"}');
+	clckwrkbdgr._load_trace_setup();
+
+	unittest.assertEqual(clckwrkbdgr.get_trace(), 'foobaz');
+	mock_trace("now you don't");
+
+	unittest.assertEqual(mock_logger_data, ['prefix foobar: now you see me']);
+
+	clckwrkbdgr.set_trace('');
+}
+
 function should_print_traces()
 {
 	var mock_logger_data = [];
