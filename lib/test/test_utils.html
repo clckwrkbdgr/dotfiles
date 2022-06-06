@@ -141,6 +141,34 @@ function should_display_notifications()
 	clckwrkbdgr.notify('Hello world!');
 }
 
+function should_detect_when_string_contains_substring()
+{
+	unittest.assertTrue(clckwrkbdgr.internal.str_contains.call('foo bar', 'oo'))
+	unittest.assertTrue('foo bar'.contains('oo'))
+
+	unittest.assertFalse(clckwrkbdgr.internal.str_contains.call('foo bar', 'baz'))
+	unittest.assertFalse('foo bar'.contains('baz'))
+}
+
+function should_trim_string()
+{
+	unittest.assertEqual(clckwrkbdgr.internal.str_trim.call('  foo  bar   '), 'foo  bar')
+	unittest.assertEqual('  foo  bar   '.trim(), 'foo  bar')
+
+	unittest.assertEqual(clckwrkbdgr.internal.str_trim.call('foo bar'), 'foo bar')
+	unittest.assertEqual('foo bar'.trim(), 'foo bar')
+}
+
+function should_encode_html_entities()
+{
+	unittest.assertEqual(clckwrkbdgr.htmlEncode('<p>foo bar</p>'), '&lt;p&gt;foo bar&lt;/p&gt;')
+}
+
+function should_decode_html_entities()
+{
+	unittest.assertEqual(clckwrkbdgr.htmlDecode('&lt;p&gt;foo bar&lt;/p&gt;'), '<p>foo bar</p>')
+}
+
 </script>
 
 </body>
