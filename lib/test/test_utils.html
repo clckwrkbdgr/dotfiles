@@ -169,6 +169,26 @@ function should_decode_html_entities()
 	unittest.assertEqual(clckwrkbdgr.htmlDecode('&lt;p&gt;foo bar&lt;/p&gt;'), '<p>foo bar</p>')
 }
 
+async function should_repeat_callback()
+{
+   var fires = 0;
+   var timer_id = null;
+   var promise = new Promise(function(resolve) {
+         timer_id = clckwrkbdgr.repeat(100, function() {
+            ++fires;
+            if(fires >= 3) {
+               resolve(fires);
+            }
+         });
+      });
+   try {
+      result = await promise;
+      unittest.assertEqual(fires, 3);
+   } finally {
+      clearInterval(timer_id);
+   }
+}
+
 </script>
 
 </body>
