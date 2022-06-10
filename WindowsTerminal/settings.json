@@ -48,6 +48,7 @@
         "defaults": {},
         "list": [
             {
+                "bellStyle": "taskbar",
                 "closeOnExit": "graceful",
                 "colorScheme": "Dim",
                 "commandline": "\"%USERPROFILE%\\.config\\bin\\user-env.cmd\" & \"C:\\Program Files\\Far Manager\\Far.exe\"",
@@ -67,6 +68,7 @@
                 "useAcrylic": false
             },
             {
+                "bellStyle": "taskbar",
                 "closeOnExit": "graceful",
                 "colorScheme": "Dim",
                 "cursorColor": "#FFFFFF",
@@ -85,6 +87,7 @@
                 "useAcrylic": true
             },
             {
+                "bellStyle": "taskbar",
                 "closeOnExit": "graceful",
                 "colorScheme": "Dim",
                 "commandline": "wsl.exe -d Debian",
