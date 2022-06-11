@@ -19,6 +19,63 @@ function setUp()
 	unittest.assertTrue(window.clckwrkbdgr);
 }
 
+function should_export_function()
+{
+	function clckwrkbdgr_utils_test_function(value) {
+		return 'foo' + value;
+	}
+	clckwrkbdgr.export_function(clckwrkbdgr_utils_test_function);
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_function('bar'), 'foobar');
+	delete window.clckwrkbdgr_utils_test_function;
+}
+
+function should_export_object()
+{
+	var clckwrkbdgr_utils_test_object = {
+		value: 'foobar'
+	};
+
+	unittest.assertRaises(function() {
+		clckwrkbdgr.export_object(clckwrkbdgr_utils_test_object);
+	}, function(e) {
+		unittest.assertEqual(e, 'Cannot export object without name!');
+	});
+
+	clckwrkbdgr.export_object(clckwrkbdgr_utils_test_object, 'clckwrkbdgr_utils_test_object');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.value, 'foobar');
+	delete window.clckwrkbdgr_utils_test_object;
+}
+
+function should_extend_already_exported_object()
+{
+	window.clckwrkbdgr_utils_test_object = {
+		foo: 'bar',
+		func: function(value) { return value + 'bar'; }
+	};
+	var clckwrkbdgr_utils_test_object = {
+		value: 'foobar'
+	};
+
+	clckwrkbdgr.export_object(clckwrkbdgr_utils_test_object, 'clckwrkbdgr_utils_test_object');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.value, 'foobar');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.foo, 'bar');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.func('foo'), 'foobar');
+
+	clckwrkbdgr.export_object(clckwrkbdgr_utils_test_object, 'clckwrkbdgr_utils_test_object');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.value, 'foobar');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.foo, 'bar');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.func('foo'), 'foobar');
+
+	clckwrkbdgr_utils_test_object.new_value = 'new';
+	clckwrkbdgr.export_object(clckwrkbdgr_utils_test_object, 'clckwrkbdgr_utils_test_object');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.value, 'foobar');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.foo, 'bar');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.func('foo'), 'foobar');
+	unittest.assertEqual(window.clckwrkbdgr_utils_test_object.new_value, 'new');
+
+	delete window.clckwrkbdgr_utils_test_object;
+}
+
 function should_get_default_value_if_stored_is_absent()
 {
 	var value = clckwrkbdgr.storage.get('definitely-absent', 'default value');
