@@ -4,7 +4,7 @@
 # It is NOT supposed to be edited manually. Edit your personal
 # gtkrc file instead (/home/umi/.config/gimp/gtkrc).
 
-include "/usr/share/gimp/2.0/themes/Default/gtkrc"
+include "/usr/share/gimp/2.0/themes/Dark/gtkrc"
 include "/home/umi/.config/gimp/gtkrc"
 
 # end of themerc

@@ -147,6 +147,13 @@ enchant/*.exc
 # Gimp state.
 gimp/colorrc
 gimp/sessionrc
+gimp/menurc
+gimp/action-history
+gimp/contextrc
+# Gimp cache.
+gimp/devicerc
+gimp/internal-data/
+gimp/tool-options/
 # Checkio
 checkio/install_steps_ff.json
 checkio/checkio_ff_plugin.py

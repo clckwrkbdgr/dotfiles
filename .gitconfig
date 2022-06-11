@@ -106,7 +106,7 @@
 
 [filter "gimp_tags"]
 	smudge = cat
-	clean = "sort-xml /tags/resource @identifier | sed 's/checksum=.[0-9a-f]\\+./checksum=\"(null)\"/'"
+	clean = "tr -d '\\n' | sort-xml /tags/resource @identifier | sed 's/></>\\n  </g;s/>  </>\\n  </g;s|> *</tags>|>\\n</tags>|' | sed 's/checksum=.[0-9a-f]\\+./checksum=\"(null)\"/'"
 
 [filter "gimp_menurc"]
 	smudge = cat
