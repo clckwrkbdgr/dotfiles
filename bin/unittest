@@ -184,6 +184,18 @@ def bash_unittest(test, quiet=False):
 	rc = subprocess.call(args)
 	return rc
 
+@test_suite('html')
+def html_javascript_unittest(test, quiet=False):
+	found_tests = []
+	for root, dirnames, filenames in os.walk('.'):
+		for filename in filenames:
+			if filename.startswith('test_') and filename.endswith('.html'):
+				found_tests.append(os.path.join(root, filename))
+	command = ['firefox', '--hide']
+	command += ['http://localhost:8006/lib/{0}?close-on-success=true'.format(test_file) for test_file in found_tests]
+	rc = subprocess.call(command)
+	return rc
+
 def ensure_test_data_dir():
 	setup_cfg = configparser.ConfigParser()
 	setup_cfg.read(['setup.cfg'])
