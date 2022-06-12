@@ -190,7 +190,12 @@ def html_javascript_unittest(test, quiet=False):
 	for root, dirnames, filenames in os.walk('.'):
 		for filename in filenames:
 			if filename.startswith('test_') and filename.endswith('.html'):
-				found_tests.append(os.path.join(root, filename))
+				if test:
+					print(test, filename)
+					if filename == test or os.path.splitext(filename)[0] == test:
+						found_tests.append(os.path.join(root, filename))
+				else:
+					found_tests.append(os.path.join(root, filename))
 	command = ['firefox', '--hide']
 	command += ['http://localhost:8006/lib/{0}?close-on-success=true'.format(test_file) for test_file in found_tests]
 	rc = subprocess.call(command)
