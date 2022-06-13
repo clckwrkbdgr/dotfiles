@@ -1,1 +1,42 @@
-/home/umi/.config/lib/test/test_userscript.html
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<script type="application/javascript" src="../unittest.js"></script>
+</head>
+<!-- Need to wait until userscript is loaded, as it is loaded only after full original page body is processed. -->
+<body onload="setTimeout(function() { clckwrkbdgr.unittest.run('should_'); }, 100)">
+	<noscript>
+		Failed: Javascript is needed to be turned ON to test Javascript functionality!
+	</noscript>
+	<div id="unittest-main">
+	</div>
+
+<script type="application/javascript">
+var unittest = clckwrkbdgr.unittest;
+
+function setUp()
+{
+	unittest.assertTrue(window.clckwrkbdgr_userscript.is_set);
+}
+
+function should_load_utils_in_userscript()
+{
+	unittest.assertEqual(clckwrkbdgr.htmlEncode('<foo>'), '&lt;foo&gt;');
+}
+
+function should_load_rss_in_userscript()
+{
+	var mock_events = [];
+	var mock_handler = function(...args) { mock_events.push(['ok'] + args); return true; };
+
+	var value = clckwrkbdgr.rss.on_anchor('badger', mock_handler, {
+		href: 'http://localhost:20113/test#badger',
+	});
+	unittest.assertTrue(value);
+	unittest.assertEqual(mock_events, ['ok']);
+}
+
+</script>
+
+</body>
+</html>
