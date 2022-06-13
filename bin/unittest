@@ -196,9 +196,12 @@ def html_javascript_unittest(test, quiet=False):
 						found_tests.append(os.path.join(root, filename))
 				else:
 					found_tests.append(os.path.join(root, filename))
+	if not found_tests:
+		return 0
 	command = ['firefox', '--hide']
 	command += ['http://localhost:8006/lib/{0}?close-on-success=true'.format(test_file) for test_file in found_tests]
-	rc = subprocess.call(command)
+	import platform
+	rc = subprocess.call(command, shell=(platform.system()=='Windows'))
 	return rc
 
 def ensure_test_data_dir():
