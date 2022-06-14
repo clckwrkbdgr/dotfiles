@@ -86,9 +86,9 @@ function should_get_and_set_storage_value()
 {
 	var random_value = Math.random().toString();
 
-	unittest.assertTrue(clckwrkbdgr.storage.set('value', random_value));
+	unittest.assertTrue(clckwrkbdgr.storage.set('clckwrkbdgr.unittest.should_get_and_set_storage_value.random_value', random_value));
 
-	value = clckwrkbdgr.storage.get('value', 'default value');
+	value = clckwrkbdgr.storage.get('clckwrkbdgr.unittest.should_get_and_set_storage_value.random_value', 'default value');
 	unittest.assertEqual(value, random_value);
 }
 
