@@ -24,6 +24,17 @@ class TestDotDict(unittest.TestCase):
 		d = dotdict({'field':'foo', 'nested' : {'subfield': 'bar'}})
 		self.assertEqual(d.field, 'foo')
 		self.assertEqual(d.nested.subfield, 'bar')
+	def should_convert_deep_nested_dicts_to_dotdicts(self):
+		d = dotdict.deep({
+			'field':'foo',
+			'nested' : {'subfield': 'bar'},
+			'sublist' : [
+				{'subfield': 'baz'},
+				],
+			})
+		self.assertEqual(d.field, 'foo')
+		self.assertEqual(d.nested.subfield, 'bar')
+		self.assertEqual(d.sublist[0].subfield, 'baz')
 	def should_pickle_and_unpickle_dotdict(self):
 		d = dotdict({'field':'foo', 'nested' : {'subfield': 'bar'}})
 		data = pickle.dumps(d)

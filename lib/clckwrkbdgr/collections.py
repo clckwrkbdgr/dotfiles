@@ -1,4 +1,5 @@
 import itertools
+import clckwrkbdgr.utils
 
 class AutoRegistry(object):
 	""" Collection of key-value relationships with option to
@@ -61,6 +62,14 @@ class dotdict(dict):
 	def __setstate__(self, data):
 		self.clear()
 		self.update(data)
+	@classmethod
+	def deep(cls, plain_obj):
+		if isinstance(plain_obj, dict):
+			return cls({k:cls.deep(v) for k, v in plain_obj.items()})
+		elif clckwrkbdgr.utils.is_collection(plain_obj):
+			return type(plain_obj)( map(cls.deep, plain_obj) )
+		else:
+			return plain_obj
 
 class Enum(object):
 	""" Enumeration of integer type with auto-increment.
