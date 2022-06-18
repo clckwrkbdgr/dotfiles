@@ -62,6 +62,8 @@ firefox/security_state/data.safe.bin
 firefox/serviceworker.txt
 firefox/startupCache/
 firefox/urlclassifier*.sqlite
+firefox/gmp-gmpopenh264/*/*.so
+firefox/gmp-gmpopenh264/*/*.info
 # Firefox state
 firefox/compatibility.ini
 firefox/crashes/store.json.mozlz4
