@@ -52,4 +52,9 @@ if not os.path.isdir('/run/lastfm'):
 	trace.error('Directory {0} is missing.'.format('/run/lastfm'))
 	trace.error('Create it and restart lastfmsubmitd service:')
 	print('sudo /usr/sbin/service lastfmsubmitd restart')
-	sys.exit(1) # TODO way to fix automatically with sudo.
+
+	script = context.script('fix-lastfm-runtime-dir', '#!/bin/bash')
+	script += 'sudo mkdir /run/lastfm'
+	script += 'sudo /usr/sbin/service lastfmsubmitd restart'
+
+	context.die('or run script {0}'.format(script.filename))
