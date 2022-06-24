@@ -12,21 +12,11 @@ SetCapsLockState, AlwaysOff
 ;
 ; So <LAlt>+<LShift> is required to be enabled and switching method.
 
-sel := 0
-
-if (sel=0) {
-$capslock::
-    Send {LAlt down}{LShift}
-    sel := 1
-return 
-}
-
-if (sel=1) {
 $capslock up::
+    Send {LAlt down}{LShift}
     send {LAlt up}
     sel := 0
 return 
-}
 
 ; Changes hotkeys for switching between virtual desktops
 ; from default Ctrl+Win+<arrow> to Win+<arrow> like on Linux.
