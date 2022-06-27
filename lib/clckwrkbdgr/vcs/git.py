@@ -174,7 +174,14 @@ def sync(quiet=False): # pragma: no cover -- TODO commands
 	No actual update/pull/push is performed.
 	"""
 	# Fetch remote updates status only.
-	return 0 == subprocess.call(["git", "remote", "update"], stdout=(subprocess.DEVNULL if quiet else None))
+	try:
+		stdout = subprocess.check_output(["git", "remote", "update"], stderr=subprocess.STDOUT)
+		if not quiet:
+			sys.stdout.write(stdout.decode('utf-8', 'replace'))
+		return True
+	except subprocess.CalledProcessError as e:
+		sys.stderr.write(e.stdout.decode('utf-8', 'replace'))
+		return False
 
 def push(remote='origin', branch='master'): # pragma: no cover -- TODO commands
 	subprocess.run(["git", "push", remote, branch, "--tags"])
