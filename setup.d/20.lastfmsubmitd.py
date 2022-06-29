@@ -10,6 +10,7 @@ import clckwrkbdgr.jobsequence.context
 trace = context = clckwrkbdgr.jobsequence.context.init(
 		verbose_var='DOTFILES_SETUP_VERBOSE',
 		skip_platforms='Windows',
+		script_rootdir=Path.home(),
 		)
 
 if not (xdg.XDG_DATA_HOME/'lastfm'/'lastfmsubmitd.conf').exists():
