@@ -1,10 +1,5 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
-try:
-	import unittest.mock as mock
-except ImportError: # pragma: no cover
-	import mock
-mock.patch.TEST_PREFIX = 'should'
+from clckwrkbdgr import unittest
+from clckwrkbdgr.unittest import mock
 
 try:
 	import lz4.block

@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from .. import unittest
 from clckwrkbdgr.backup import Password, PasswordArg
 import clckwrkbdgr.backup.handlers.sevenzip
 

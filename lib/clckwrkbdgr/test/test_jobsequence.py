@@ -1,10 +1,5 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
-try:
-	import unittest.mock as mock
-except ImportError: # pragma: no cover
-	import mock
-mock.patch.TEST_PREFIX = 'should'
+from clckwrkbdgr import unittest
+from clckwrkbdgr.unittest import mock
 
 import os, sys, subprocess, logging
 import clckwrkbdgr.jobsequence
@@ -13,7 +8,6 @@ import clckwrkbdgr.jobsequence.context
 from clckwrkbdgr.jobsequence.context import WorkerStats
 import clckwrkbdgr.jobsequence.script
 from clckwrkbdgr.jobsequence import JobSequence
-from pyfakefs import fake_filesystem_unittest
 try: # pragma: no cover
 	import pathlib2 as pathlib
 	from pathlib2 import Path
@@ -307,7 +301,7 @@ class TestJobSequence(unittest.TestCase):
 		seq.run.assert_called_once_with(['patterns'], None, verbose=0, dry_run=False)
 		sys_exit.assert_called_once_with(1)
 
-class TestWorkerStats(fake_filesystem_unittest.TestCase):
+class TestWorkerStats(unittest.fs.TestCase):
 	def setUp(self):
 		self.setUpPyfakefs(modules_to_reload=[clckwrkbdgr.jobsequence.context])
 	def should_load_worker_stats_from_file(self):

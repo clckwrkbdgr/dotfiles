@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import clckwrkbdgr.math
 from clckwrkbdgr.math import geometry
 from clckwrkbdgr.math import Point

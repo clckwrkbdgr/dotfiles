@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import textwrap
 from clckwrkbdgr import tui
 from clckwrkbdgr.tui import widgets

@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 from clckwrkbdgr.filterconf.txt import PlainText, convert_pattern
 
 class TestPlainText(unittest.TestCase):

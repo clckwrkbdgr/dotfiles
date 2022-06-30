@@ -1,11 +1,5 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
-try:
-	import unittest.mock as mock
-except ImportError: # pragma: no cover
-	import mock
-mock.patch.TEST_PREFIX = 'should'
-from pyfakefs import fake_filesystem_unittest
+from clckwrkbdgr import unittest
+from clckwrkbdgr.unittest import mock
 
 import os
 import datetime
@@ -49,7 +43,7 @@ class TestTaskStat(unittest.TestCase):
 		self.assertEqual(str(Stat(1, 2, 'bar')), '1 bar')
 		self.assertEqual(repr(Stat(1, 2, 'bar')), 'Stat(1, 2, {0})'.format(repr('bar')))
 
-class TestTaskWarrior(fake_filesystem_unittest.TestCase):
+class TestTaskWarrior(unittest.fs.TestCase):
 	def setUp(self):
 		self.setUpPyfakefs(modules_to_reload=[clckwrkbdgr.taskwarrior, clckwrkbdgr.taskwarrior._base])
 		taskwarrior_dir = xdg.save_data_path('taskwarrior')

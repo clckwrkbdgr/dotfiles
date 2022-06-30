@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import textwrap
 import clckwrkbdgr.math
 from clckwrkbdgr.math import algorithm, Matrix, Point

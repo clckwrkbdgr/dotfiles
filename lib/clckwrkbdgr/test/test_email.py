@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import clckwrkbdgr.email as E
 import email, email.message, email.mime, email.mime.base, email.mime.text, email.mime.multipart, email.mime.application
 import six

@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import clckwrkbdgr.dummy as termcolor
 
 class TestDummies(unittest.TestCase):

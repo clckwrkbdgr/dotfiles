@@ -188,6 +188,7 @@ lib/Makefile caps=work
 lib/arrays.bash caps=work
 lib/clckwrkbdgr/__init__.py caps=work
 lib/clckwrkbdgr/_six.py caps=work
+lib/clckwrkbdgr/unittest.py caps=work
 lib/clckwrkbdgr/backup/__init__.py caps=work
 lib/clckwrkbdgr/backup/_base.py caps=work
 lib/clckwrkbdgr/backup/handlers/__init__.py caps=work

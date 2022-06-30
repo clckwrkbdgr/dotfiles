@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 from clckwrkbdgr import sql
 
 class TestSqlTableRow(unittest.TestCase):

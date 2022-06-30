@@ -1,11 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
-try:
-	import unittest.mock as mock
-except ImportError: # pragma: no cover
-	import mock
-mock.patch.TEST_PREFIX = 'should'
-from pyfakefs import fake_filesystem_unittest
+from clckwrkbdgr import unittest
 
 import clckwrkbdgr.vcs.git as git
 
@@ -15,7 +8,7 @@ class TestUtils(unittest.TestCase):
 		self.assertEqual(git.safe_int('-1'), -1)
 		self.assertEqual(git.safe_int('foo'), 'foo')
 
-class TestGitWrapper(fake_filesystem_unittest.TestCase):
+class TestGitWrapper(unittest.fs.TestCase):
 	def setUp(self):
 		self.setUpPyfakefs(modules_to_reload=[git])
 	def should_detect_repo_root(self):

@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import pickle
 from clckwrkbdgr.text import wrap_lines
 import clckwrkbdgr.text as text

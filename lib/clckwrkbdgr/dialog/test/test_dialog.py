@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import clckwrkbdgr.dialog as dialog
 import clckwrkbdgr.dialog.cli
 import clckwrkbdgr.dialog.tui

@@ -1,7 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
-import pyfakefs
-from pyfakefs import fake_filesystem_unittest
+from clckwrkbdgr import unittest
 import re
 from clckwrkbdgr import todo
 from clckwrkbdgr.todo import search
@@ -127,7 +124,7 @@ class TestSearch(unittest.TestCase):
 					],
 				)
 
-class TestSearchInFiles(fake_filesystem_unittest.TestCase):
+class TestSearchInFiles(unittest.fs.TestCase):
 	def setUp(self):
 		self.setUpPyfakefs(modules_to_reload=[search])
 	def should_search_in_bytes(self):

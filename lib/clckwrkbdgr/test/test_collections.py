@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import pickle
 from clckwrkbdgr.collections import AutoRegistry
 from clckwrkbdgr.collections import dotdict

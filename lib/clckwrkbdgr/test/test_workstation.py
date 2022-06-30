@@ -1,9 +1,5 @@
-import unittest
-try:
-	import unittest.mock as mock
-except ImportError: # pragma: no cover
-	import mock
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
+from clckwrkbdgr.unittest import mock
 import os, sys
 import clckwrkbdgr.workstation as workstation
 try: # pragma: no cover

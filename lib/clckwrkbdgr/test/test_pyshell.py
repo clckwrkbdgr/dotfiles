@@ -1,7 +1,6 @@
 import os, sys, platform
 import time
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import contextlib
 try: # pragma: no cover
 	from pathlib2 import Path

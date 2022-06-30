@@ -1,10 +1,5 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
-try:
-	import unittest.mock as mock
-except ImportError: # pragma: no cover
-	import mock
-mock.patch.TEST_PREFIX = 'should'
+from clckwrkbdgr import unittest
+from clckwrkbdgr.unittest import mock
 import os
 import clckwrkbdgr.fs
 from clckwrkbdgr.collections import dotdict
@@ -14,7 +9,6 @@ try: # pragma: no cover
 except ImportError: # pragma: no cover
 	import pathlib
 	from pathlib import Path
-from pyfakefs import fake_filesystem_unittest
 
 @mock.patch('os.getcwd', return_value='old')
 @mock.patch('os.chdir')
@@ -56,7 +50,7 @@ class TestFSUtils(unittest.TestCase):
 		watcher = clckwrkbdgr.fs.FileWatcher('filename', action)
 		self.assertFalse(watcher.check()) # Exists but not modified.
 
-class TestSearchForFiles(fake_filesystem_unittest.TestCase):
+class TestSearchForFiles(unittest.fs.TestCase):
 	FILES = {
 			'/search_test/filename',
 			'/search_test/module.pyc',

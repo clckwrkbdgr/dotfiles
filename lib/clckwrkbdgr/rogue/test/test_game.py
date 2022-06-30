@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import textwrap, functools
 from clckwrkbdgr.math import Point, Matrix, get_neighbours
 from clckwrkbdgr.rogue import game

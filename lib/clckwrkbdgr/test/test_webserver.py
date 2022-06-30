@@ -1,12 +1,6 @@
 from __future__ import print_function, unicode_literals
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
-try:
-	import unittest.mock as mock
-except ImportError: # pragma: no cover
-	import mock
-mock.patch.TEST_PREFIX = 'should'
-import pyfakefs.fake_filesystem_unittest as fs_unittest
+from clckwrkbdgr import unittest
+from clckwrkbdgr.unittest import mock
 import os
 import mimetypes
 from .. import webserver
@@ -21,7 +15,7 @@ class MockPopen(object):
 	def wait(self):
 		return self.rc
 
-class TestWebResponses(fs_unittest.TestCase):
+class TestWebResponses(unittest.fs.TestCase):
 	def setUp(self):
 		self.setUpPyfakefs(modules_to_reload=[webserver])
 		self.fs.create_dir('/data')

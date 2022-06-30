@@ -1,9 +1,5 @@
-import unittest
-try:
-	from unittest import mock
-except ImportError: # pragma: no cover
-	import mock
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
+from clckwrkbdgr.unittest import mock
 import tempfile
 try: # pragma: no cover
 	from pathlib2 import Path

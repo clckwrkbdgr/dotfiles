@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import textwrap, io
 import itertools
 import clckwrkbdgr.winnt.registry as registry

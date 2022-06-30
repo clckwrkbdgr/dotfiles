@@ -1,5 +1,4 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
+from clckwrkbdgr import unittest
 import inspect
 import clckwrkbdgr.cache
 from clckwrkbdgr.cache import CacheKey, cached
