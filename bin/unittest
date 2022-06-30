@@ -74,13 +74,13 @@ PYTHON_UNITTEST_QUIET_PATTERNS = {
 		'2' : list(map(re.compile, [
 			'^[.s]+$',
 			'^-{70}$',
-			r'^Ran \d+ tests in [0-9.]+s$',
+			r'^Ran \d+ tests? in [0-9.]+s$',
 			'^$',
 			r'^OK( \(skipped=\d+\))?$',
 			])),
 		'3' : list(map(re.compile, [
 			'^-{70}$',
-			r'^Ran \d+ tests in [0-9.]+s$',
+			r'^Ran \d+ tests? in [0-9.]+s$',
 			'^$',
 			r'^OK( \(skipped=\d+\))?$',
 			])),
