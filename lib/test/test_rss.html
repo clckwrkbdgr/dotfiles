@@ -41,6 +41,36 @@ function should_take_action_on_anchor()
 	unittest.assertEqual(mock_events, ['badger(666)']);
 }
 
+function should_recognize_badger_anchor_in_query()
+{
+	var mock_events = [];
+	var mock_handler = function(...args) { mock_events.push(['ok'] + args); return true; };
+
+	var value = clckwrkbdgr.rss.on_anchor('badger', mock_handler, {
+		from_query: false,
+		href: 'http://localhost:20113/test?badger',
+	});
+	unittest.assertFalse(value);
+	unittest.assertEqual(mock_events, []);
+
+	mock_events = [];
+	var value = clckwrkbdgr.rss.on_anchor('badger', mock_handler, {
+		from_query: true,
+		href: 'http://localhost:20113/test?badger',
+	});
+	unittest.assertTrue(value);
+	unittest.assertEqual(mock_events, ['ok']);
+
+	var mock_handler = function(name, num) { mock_events.push(name + '(' + num + ')'); return true; };
+	mock_events = [];
+	var value = clckwrkbdgr.rss.on_anchor(/(\w+)-(\d+)/, mock_handler, {
+		from_query: true,
+		href: 'http://localhost:20113/test?badger-666#badger-777',
+	});
+	unittest.assertTrue(value);
+	unittest.assertEqual(mock_events, ['badger(666)']);
+}
+
 function should_skip_unexpected_anchor()
 {
 	var mock_events = [];
