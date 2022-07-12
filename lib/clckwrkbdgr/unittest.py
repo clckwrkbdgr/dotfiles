@@ -19,6 +19,14 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 
 try:
-	from pyfakefs import fake_filesystem_unittest as fs
+	from pyfakefs import fake_filesystem_unittest
+	class ExtendedFSTestCase(fake_filesystem_unittest.TestCase):
+		MODULES = None # Modules to reload.
+		def setUp(self):
+			self.setUpPyfakefs(modules_to_reload=(self.MODULES or []))
+	class fs:
+		TestCase = ExtendedFSTestCase
 except ImportError: # pragma: no cover
 	pass
+
+from textwrap import dedent
