@@ -126,9 +126,11 @@ def builtin_plugin_inotify_exists(path, update_state, terminator):
 	Parent path must exist! """
 	import inotify_simple as inotify
 	path = os.path.expandvars(os.path.expanduser(path))
+	parent, name = os.path.dirname(path), os.path.basename(path)
+	while not os.path.exists(parent):
+		time.sleep(1)
 	if os.path.exists(path):
 		update_state(True)
-	parent, name = os.path.dirname(path), os.path.basename(path)
 
 	watcher = inotify.INotify()
 	wd = watcher.add_watch(parent, inotify.flags.CREATE | inotify.flags.DELETE | inotify.flags.MOVED_FROM | inotify.flags.MOVED_TO)
