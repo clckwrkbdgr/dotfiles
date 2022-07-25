@@ -479,7 +479,7 @@ If test case is not specified, all test cases in the file are executed."
 		fi
 
 		test_spec="$(click::arg test_spec)"
-		find . -type f | (
+		find . -name .git -type d -prune -o -type f -name '*.bash' -print | (
 			total_rc=0
 			while read filename; do
 				module_name="$(echo "$filename" | sed 's/^[.]\///;s/\//./g;s/[.]bash$//')"
