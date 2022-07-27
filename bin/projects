@@ -54,7 +54,7 @@ def tag(section=None):
 		print("Unknown section: <{0}>. Should be: major, minor or revision (rev).".format(section))
 		return False
 
-	new_version = '.'.join(new_version)
+	new_version = '.'.join(map(str, new_version))
 	for line in tags:
 		print(line)
 	yes = input("Add <{0}>, (y)es? ".format(new_version))

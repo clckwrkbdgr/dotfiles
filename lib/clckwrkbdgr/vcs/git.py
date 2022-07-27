@@ -1,4 +1,5 @@
 import os, sys, subprocess
+import re
 from collections import namedtuple
 try:
 	subprocess.DEVNULL
@@ -47,9 +48,9 @@ def get_repo_root(): # pragma: no cover -- TODO commands
 def get_repo_name(remote=False): # pragma: no cover -- TODO commands
 	if not remote:
 		return get_repo_root().name
-	remotes = list_remotes()
+	remotes = list_remotes(full=True)
 	extract_match = lambda match: match.group(1) if match else None
-	repo_names = set([extract_match(re.search(r'/([^/]*)[.]git')) for remote in remotes if '(push)' in remote])
+	repo_names = set([extract_match(re.search(r'/([^/]*)[.]git', repo_name)) for remote_name, repo_name, action in remotes if action == '(push)'])
 	if not repo_names:
 		raise RuntimeError("Cannot extract unambiguous repo name from `git remote -v`: no valid remotes")
 	if len(repo_names) > 1:
@@ -231,8 +232,14 @@ def list_submodules(): # pragma: no cover -- TODO commands
 	""" Returns paths relative to current repo root. """
 	return subprocess.check_output(['git', 'submodule', '-q', 'foreach', 'echo $sm_path']).decode('utf-8', 'replace').splitlines()
 
-def list_remotes(): # pragma: no cover -- TODO commands
-	return subprocess.run(["git", "remote"], stdout=subprocess.PIPE).stdout.decode().splitlines()
+def list_remotes(full=False): # pragma: no cover -- TODO commands
+	args = ["git", "remote"]
+	if full:
+		args += ['-v']
+	result = subprocess.run(args, stdout=subprocess.PIPE).stdout.decode().splitlines()
+	if full:
+		result = [line.split() for line in result]
+	return result
 
 def list_branches(): # pragma: no cover -- TODO commands
 	return subprocess.run(['git', 'for-each-ref', 'refs/heads/', '--format=%(refname:short)'], stdout=subprocess.PIPE).stdout.decode().splitlines()
