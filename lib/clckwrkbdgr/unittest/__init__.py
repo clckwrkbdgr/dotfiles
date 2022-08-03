@@ -1,6 +1,15 @@
 from __future__ import absolute_import
 
 from unittest import *
+def load_tests(*args): # pragma: no cover -- fixes loading invalid tests, see doctest:
+	""" For some reason when its `clckwrkbdgr/unittest/__init__.py`
+	instead of `clckwrkbdgr/unittest.py`, unittest discovery finds and loads
+	FunctionalTestCase (the original one which is in built-in unittest directory),
+	and (of course) fails to execute it, as it is not a properly defined test case.
+	So we're here returning empty test list for this module,
+	telling unittest discovery to GTFO of here and go being smart elsewhere.
+	"""
+	return None
 defaultTestLoader.testMethodPrefix = 'should'
 
 try:
