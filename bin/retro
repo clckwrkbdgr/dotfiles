@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+import sys
+import clckwrkbdgr.retro
+import click
+
+@click.command(epilog=clckwrkbdgr.retro.CONFIG_FILE_DESC)
+@click.argument('datestart', required=False)
+@click.argument('datestop', required=False)
+def cli(datestart=None, datestop=None):
+	""" Displays retrospective history for given period of time.
+
+	Datetime arguments should be specified in format: %Y%m%d%H%M%S
+	If only one argument is specified, it should be just date: %Y%m%d
+	If no arguments are given, whole current day is used.
+	"""
+	datestart, datestop = clckwrkbdgr.retro.get_search_range(datestart, datestop)
+	config = clckwrkbdgr.retro.read_config()
+
+	for provider in config.providers:
+		try:
+			for entry in provider.func(datestart, datestop, **(provider.args)):
+				try:
+					print(entry)
+				except UnicodeError:
+					print(str(entry).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
+		except:
+			import traceback
+			traceback.print_exc()
+
+if __name__ == '__main__':
+	cli()
