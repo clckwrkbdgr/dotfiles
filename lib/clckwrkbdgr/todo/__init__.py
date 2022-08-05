@@ -15,7 +15,7 @@ class Task:
 		self.title = title
 	def __str__(self):
 		return self.title
-	def __rerp__(self): # pragma: no cover
+	def __repr__(self): # pragma: no cover
 		return 'Task({0})'.format(repr(self.title))
 
 task_provider = AutoRegistry()
