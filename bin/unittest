@@ -20,189 +20,10 @@ try:
 except ImportError: # pragma: no cover
 	import dummy as termcolor
 import six
-import clckwrkbdgr.xdg as xdg
-
-class Registry(object):
-	""" Registry of functions with optional set of attributes.
-	Usage:
-	registry = Registry('name', 'some_other_attr')
-	@registry('foo', 'bar')
-	def function(arbitrary_args...):
-		...
-	for func in registry:
-		func(...)
-		func.name
-		func.some_other_attr
-		....
-	"""
-	def __init__(self, *required_keywords):
-		""" If required_keywords are specified,
-		each decorator will expect a set of unnamed arguments of the same size.
-		Keywords and arguments are matched correspondingly as attributes.
-		See __call__ for details about attributes.
-		"""
-		self._list = []
-		self._required_keywords = required_keywords or []
-	def __iter__(self):
-		""" Yields registered functions.
-		Attributes are available as ordinary attributes of function objects:
-		for func in registry:
-			func.name
-			func.some_other_attr
-			...
-		"""
-		return iter(self._list)
-	def __call__(self, *required_attrs, **attrs):
-		""" Registers function with attributes.
-		If some attributes are passed as unnamed arguments, they are matched with
-		corresponding keyword from Registry definition.
-		Attribute name should be proper Python keyword,
-		as they will be available as ordinary attribute of function object.
-		"""
-		assert len(required_attrs) == len(self._required_keywords), 'Number of supplied unnamed arguments {0} does not correspond defined number of required keywords {1}'.format(repr(required_attrs), repr(self._required_keywords))
-		attrs.update(dict(zip(self._required_keywords, required_attrs)))
-		def _real_wrapper(func):
-			for attr_name, attr_value in attrs.items():
-				setattr(func, attr_name, attr_value)
-			self._list.append(func)
-			return func
-		return _real_wrapper
-
-test_suite = Registry('name')
-
-PYTHON_UNITTEST_QUIET_PATTERNS = {
-		'2' : list(map(re.compile, [
-			'^[.s]+$',
-			'^-{70}$',
-			r'^Ran \d+ tests? in [0-9.]+s$',
-			'^$',
-			r'^OK( \(skipped=\d+\))?$',
-			])),
-		'3' : list(map(re.compile, [
-			'^-{70}$',
-			r'^Ran \d+ tests? in [0-9.]+s$',
-			'^$',
-			r'^OK( \(skipped=\d+\))?$',
-			])),
-		}
-PYTHON_COVERAGE_QUIET_PATTERNS = list(map(re.compile, [
-	'^Name +Stmts +Miss +Cover +Missing$',
-	'^-{37}$',
-	'^-{37}$',
-	'^TOTAL +[0-9]+ +0 +100%$',
-	'^$',
-	'^.*due to complete coverage[.]$'
-	]))
-
-def quiet_call(args, quiet_stdout_patterns=None, quiet_stderr_patterns=None):
-	process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	stdout, stderr = process.communicate(None)
-	rc = process.wait()
-	buffers_to_check = [
-			(stdout, quiet_stdout_patterns, sys.stdout),
-			(stderr, quiet_stderr_patterns, sys.stderr),
-			]
-	for buffer, patterns, stream in buffers_to_check:
-		if hasattr(stream, 'buffer'):
-			stream = stream.buffer
-		do_print = True
-		if buffer and patterns:
-			lines = buffer.decode('utf-8', 'replace').splitlines()
-			if len(lines) == len(patterns):
-				if all(pattern.match(line) for line, pattern in zip(lines, patterns)):
-					do_print = False
-		if buffer and do_print:
-			stream.write(buffer)
-	sys.stdout.flush()
-	sys.stderr.flush()
-	return rc
-
-def run_python_unittests(version, test, quiet=False):
-	allowed_versions = ['2', '3']
-	assert version in allowed_versions, 'Unknown python version {0}, choose from following: {1}'.format(version, allowed_versions)
-
-	if platform.system() == 'Windows':
-		python_runner = ['py', '-{0}'.format(version)]
-		rc = subprocess.call(python_runner + ['-V'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-		if rc == 103:
-			if not quiet:
-				print('Python {0} not found!'.format(version))
-			return 0
-	else:
-		python_runner = ['python{0}'.format(version)]
-		try:
-			subprocess.call(python_runner + ['-V'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-		except OSError:
-			if not quiet:
-				print('Python {0} not found!'.format(version))
-			return 0
-
-	args = python_runner + ['-m', 'coverage', 'run']
-	if not test:
-		args += ['--source=.']
-	args += ['-m', 'unittest']
-	if test:
-		if quiet:
-			args += ['--quiet']
-		args += [test]
-	else:
-		args += ['discover']
-		if version == '3' and quiet: # FIXME py2 discover does not recognize --quiet.
-			args += ['--quiet']
-	rc = quiet_call(args,
-			quiet_stderr_patterns=PYTHON_UNITTEST_QUIET_PATTERNS[version] if quiet else None)
-	if rc != 0:
-		return rc
-	return quiet_call(python_runner + ['-m', 'coverage', 'report', '-m'],
-			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None)
-
-@test_suite('py2')
-def python_2_unittest(test, quiet=False):
-	return run_python_unittests('2', test, quiet=quiet)
-
-@test_suite('py3')
-def python_3_unittest(test, quiet=False):
-	return run_python_unittests('3', test, quiet=quiet)
-
-@test_suite('bash')
-def bash_unittest(test, quiet=False):
-	unittest_bash = xdg.XDG_CONFIG_HOME/'lib'/'unittest.bash'
-	bash = ['bash']
-	if platform.system() == 'Windows':
-		# WSL Bash does not read .profile or .bashrc when started from command line.
-		bash = ['wsl', '--exec', 'bash', '-i'] # Need to start it interactively.
-		# WSL Bash accepts only POSIX paths with drives as /mnt/<drive>/
-		parts = list(unittest_bash.parts)
-		parts[0] = '/mnt/{0}'.format(unittest_bash.drive.replace(':', '').lower())
-		unittest_bash = Path(*parts).as_posix()
-	else:
-		unittest_bash = str(unittest_bash)
-	args = bash + [str(unittest_bash)]
-	if quiet:
-		args += ['--quiet']
-	args += [test or 'discover']
-	rc = subprocess.call(args)
-	return rc
-
-@test_suite('html')
-def html_javascript_unittest(test, quiet=False):
-	found_tests = []
-	for root, dirnames, filenames in os.walk('.'):
-		for filename in filenames:
-			if filename.startswith('test_') and filename.endswith('.html'):
-				if test:
-					print(test, filename)
-					if filename == test or os.path.splitext(filename)[0] == test:
-						found_tests.append(os.path.join(root, filename))
-				else:
-					found_tests.append(os.path.join(root, filename))
-	if not found_tests:
-		return 0
-	command = ['firefox', '--hide']
-	command += ['http://localhost:20113/lib/{0}?close-on-success=true'.format(test_file) for test_file in found_tests]
-	import platform
-	rc = subprocess.call(command, shell=(platform.system()=='Windows'))
-	return rc
+from clckwrkbdgr.unittest.runner import test_suite
+import clckwrkbdgr.unittest.python
+import clckwrkbdgr.unittest.shell
+import clckwrkbdgr.unittest.javascript
 
 def ensure_test_data_dir():
 	setup_cfg = configparser.ConfigParser()
@@ -217,7 +38,7 @@ def ensure_test_data_dir():
 @click.option('-q', '--quiet', is_flag=True, default=False,
 		help='Quiet run (less output, report errors only)')
 @click.option('-p', '--platform', default=['all'], multiple=True,
-		type=click.Choice(['all'] + [_.name for _ in test_suite], case_sensitive=False),
+		type=click.Choice(['all'] + list(test_suite.keys()), case_sensitive=False),
 		help='List of testing platforms to execute tests for.')
 def main(tests, quiet=False, platform=None):
 	""" Runs specified test suites/modules/cases in current directory
@@ -231,12 +52,13 @@ def main(tests, quiet=False, platform=None):
 	tests = tests or [None]
 
 	rc = 0
-	for runner in test_suite:
-		if not ('all' in platform or runner.name in platform):
+	for runner_name in test_suite.keys():
+		if not ('all' in platform or runner_name in platform):
 			continue
+		runner = test_suite[runner_name]
 		for test in tests:
 			if not quiet:
-				print(termcolor.colored('Running {0} tests for: {1}'.format(runner.name, test or '<autodiscovery>'), 'blue'))
+				print(termcolor.colored('Running {0} tests for: {1}'.format(runner_name, test or '<autodiscovery>'), 'blue'))
 			result = runner(test, quiet=quiet)
 			rc += result
 			if not quiet:

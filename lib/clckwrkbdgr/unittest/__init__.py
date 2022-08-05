@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from unittest import *
-def load_tests(*args): # pragma: no cover -- fixes loading invalid tests, see doctest:
+def load_tests(loader, tests, pattern): # pragma: no cover -- fixes loading invalid tests, see doctest:
 	""" For some reason when its `clckwrkbdgr/unittest/__init__.py`
 	instead of `clckwrkbdgr/unittest.py`, unittest discovery finds and loads
 	FunctionalTestCase (the original one which is in built-in unittest directory),
@@ -9,7 +9,13 @@ def load_tests(*args): # pragma: no cover -- fixes loading invalid tests, see do
 	So we're here returning empty test list for this module,
 	telling unittest discovery to GTFO of here and go being smart elsewhere.
 	"""
-	return None
+	import os
+	from .test import test_runner
+	suite = TestSuite()
+	this_dir = os.path.join(os.path.dirname(__file__), 'test')
+	unittest_tests = loader.discover(start_dir=this_dir, pattern=pattern)
+	suite.addTests(unittest_tests)
+	return suite
 defaultTestLoader.testMethodPrefix = 'should'
 
 try:
