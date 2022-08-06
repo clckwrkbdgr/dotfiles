@@ -124,7 +124,7 @@ class Context: # pragma: no cover -- TODO need mocks
 		if not rootdir:
 			rootdir = self._script_rootdir
 		script = clckwrkbdgr.jobsequence.script.Script(name, shebang=shebang, rootdir=rootdir, overwrite=overwrite)
-		sys.stderr.write("=== Created script: {0}\n".format(script.filename))
+		sys.stderr.write("| Created script: {0}\n".format(script.filename))
 		return script
 	def done(self):
 		""" Immediately exit with accumulated return code.
