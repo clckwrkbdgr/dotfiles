@@ -1,4 +1,5 @@
 import os, subprocess, platform
+import json
 import time
 try:
 	from pathlib2 import Path
@@ -11,6 +12,8 @@ def html_javascript_unittest(test, quiet=False): # pragma: no cover -- TODO
 	import bottle
 
 	rootpath = Path()
+	unittest_results = {}
+
 	@bottle.route('/lib/<javascript_module>.js')
 	def host_dotfiles_js_library(javascript_module):
 		bottle.response.content_type = 'application/javascript'
@@ -18,6 +21,28 @@ def html_javascript_unittest(test, quiet=False): # pragma: no cover -- TODO
 	@bottle.route('/lib/test/test_<javascript_module>.html')
 	def host_dotfiles_js_library(javascript_module):
 		return (rootpath/'test'/'test_{0}.html'.format(javascript_module)).read_text()
+	@bottle.post('/lib/test/test_<javascript_module>.html')
+	def host_dotfiles_js_library(javascript_module):
+		data = bottle.request.body.read().decode('utf-8', 'replace')
+		data = json.loads(data)
+		unittest_results[javascript_module] = data
+		if not quiet:
+			print('=== {0}:'.format(javascript_module))
+		successful, failed = 0, 0
+		for test_name in data['results']:
+			if data['results'][test_name]:
+				if not quiet:
+					print('OK: {0}'.format(test_name))
+				successful += 1
+			else:
+				print('FAILED: {0}'.format(test_name))
+				print(data['errors'][test_name])
+				failed += 1
+		if not quiet:
+			if successful:
+				print('Successful tests: {0}'.format(successful))
+			if failed:
+				print('Failed tests: {0}'.format(failed))
 
 	from blackcompany.util.adhocserver import AdhocBackgroundServer
 	# Unit testing pages require cookies, so if cookies are disabled by default,
@@ -27,7 +52,12 @@ def html_javascript_unittest(test, quiet=False): # pragma: no cover -- TODO
 	with AdhocBackgroundServer(port=custom_port) as server:
 		found_tests = discover_tests('.', test=test)
 		rc = run_tests(found_tests, port=server.port)
-		time.sleep(5) # FIXME: waits until test pages are loaded in browser, but actually should received proper test results from the page and only then shut server down.
+		# Wait until all unit test pages execute and return results.
+		for _ in range(10000):
+			time.sleep(0.1)
+			if len(unittest_results) == len(found_tests):
+				break
+	rc += sum(len(module['errors']) for module in unittest_results.values())
 	return rc
 
 def discover_tests(rootpath, test=None): # pragma: no cover -- TODO
