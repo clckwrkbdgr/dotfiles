@@ -19,7 +19,7 @@ jobsequence_script() {
 	mkdir -p "$(dirname "$filename")"
 	touch "$filename"
 	chmod +x "$filename"
-	echo "=== Created file $filename" >&2
+	echo "| Created file $filename" >&2
 	if [ -n "$shebang" ]; then
 		echo "$shebang" >> "$filename"
 	fi
