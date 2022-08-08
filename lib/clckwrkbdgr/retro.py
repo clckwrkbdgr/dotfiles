@@ -9,12 +9,14 @@ except AttributeError: # pragma: no cover
 		return ''.join(padding+line for line in text.splitlines(True))
 	textwrap.indent = indent
 import json
+import functools
 from .collections import AutoRegistry, dotdict
 from . import xdg
 from . import utils
 
 providers = AutoRegistry()
 
+@functools.total_ordering
 class Entry:
 	def __init__(self, date, title, details=None):
 		self.date = date
@@ -27,6 +29,12 @@ class Entry:
 		return result
 	def __repr__(self):
 		return 'Entry(date={0}, title={1}, details=<{2} chars>)'.format(repr(self.date), repr(self.title), len(self.details or ''))
+	def __lt__(self, other):
+		if not isinstance(other, Entry):
+			raise TypeError("Cannot compare Entry to {0}".format(type(other)))
+		return (self.date, self.title, self.details) < (other.date, other.title, other.details)
+	def __eq__(self, other):
+		return (self.date, self.title, self.details) == (other.date, other.title, other.details)
 
 def get_search_range(datestart=None, datestop=None, now=None):
 	""" Parses given time period.

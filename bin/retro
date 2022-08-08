@@ -16,16 +16,18 @@ def cli(datestart=None, datestop=None):
 	datestart, datestop = clckwrkbdgr.retro.get_search_range(datestart, datestop)
 	config = clckwrkbdgr.retro.read_config()
 
+	entries = []
 	for provider in config.providers:
 		try:
-			for entry in provider.func(datestart, datestop, **(provider.args)):
-				try:
-					print(entry)
-				except UnicodeError:
-					print(str(entry).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
+			entries.extend(provider.func(datestart, datestop, **(provider.args)))
 		except:
 			import traceback
 			traceback.print_exc()
+	for entry in sorted(entries):
+		try:
+			print(entry)
+		except UnicodeError:
+			print(str(entry).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 
 if __name__ == '__main__':
 	cli()
