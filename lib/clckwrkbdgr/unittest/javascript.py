@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, subprocess, platform
 import json
 import time
@@ -9,20 +10,35 @@ from . import runner
 
 @runner.test_suite('html')
 def html_javascript_unittest(test, quiet=False): # pragma: no cover -- TODO
-	import bottle
+	try:
+		from blackcompany.util.adhocserver import AdhocBackgroundServer
+	except ImportError:
+		if not quiet:
+			print('Cannot import blackcompany.util.adhocserver, skipping tests.', file=sys.stderr)
+		return True
+	try:
+		import bottle
+	except ImportError:
+		if not quiet:
+			print('Cannot import bottle, skipping tests.', file=sys.stderr)
+		return True
+
+	found_tests = discover_tests('.', test=test)
+	if not found_tests:
+		return True
 
 	rootpath = Path()
 	unittest_results = {}
 
 	@bottle.route('/lib/<javascript_module>.js')
-	def host_dotfiles_js_library(javascript_module):
+	def serve_js_library(javascript_module):
 		bottle.response.content_type = 'application/javascript'
 		return (rootpath/'{0}.js'.format(javascript_module)).read_text()
 	@bottle.route('/lib/test/test_<javascript_module>.html')
-	def host_dotfiles_js_library(javascript_module):
+	def serve_js_test_pages(javascript_module):
 		return (rootpath/'test'/'test_{0}.html'.format(javascript_module)).read_text()
 	@bottle.post('/lib/test/test_<javascript_module>.html')
-	def host_dotfiles_js_library(javascript_module):
+	def accept_testing_results(javascript_module):
 		data = bottle.request.body.read().decode('utf-8', 'replace')
 		data = json.loads(data)
 		unittest_results[javascript_module] = data
@@ -44,13 +60,11 @@ def html_javascript_unittest(test, quiet=False): # pragma: no cover -- TODO
 			if failed:
 				print('Failed tests: {0}'.format(failed))
 
-	from blackcompany.util.adhocserver import AdhocBackgroundServer
 	# Unit testing pages require cookies, so if cookies are disabled by default,
 	# then each random port will require a separate permission - which is bothersome.
 	# So here's the option to pick 'random' port manually.
 	custom_port = os.environ.get('CLCKWRKBDGR_UNITTEST_HTML_PORT')
 	with AdhocBackgroundServer(port=custom_port) as server:
-		found_tests = discover_tests('.', test=test)
 		rc = run_tests(found_tests, port=server.port)
 		# Wait until all unit test pages execute and return results.
 		for _ in range(10000):
