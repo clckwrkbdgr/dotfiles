@@ -15,17 +15,17 @@ def html_javascript_unittest(test, quiet=False): # pragma: no cover -- TODO
 	except ImportError:
 		if not quiet:
 			print('Cannot import blackcompany.util.adhocserver, skipping tests.', file=sys.stderr)
-		return True
+		return 0
 	try:
 		import bottle
 	except ImportError:
 		if not quiet:
 			print('Cannot import bottle, skipping tests.', file=sys.stderr)
-		return True
+		return 0
 
 	found_tests = discover_tests('.', test=test)
 	if not found_tests:
-		return True
+		return 0
 
 	rootpath = Path()
 	unittest_results = {}
