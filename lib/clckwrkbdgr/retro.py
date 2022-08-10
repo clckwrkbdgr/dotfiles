@@ -22,11 +22,19 @@ class Entry:
 		self.date = date
 		self.title = title
 		self.details = details
-	def __str__(self):
-		result = '{0}: {1}'.format(self.date, self.title)
+	def tostring(self, format_date=None, format_title=None, format_details=None):
+		format_date = format_date or (lambda _:_)
+		format_title = format_title or (lambda _:_)
+		format_details = format_details or (lambda _:_)
+		result = '{0}: {1}'.format(
+				format_date(self.date),
+				format_title(self.title),
+				)
 		if self.details:
-			result += '\n' + textwrap.indent(self.details, '  ')
+			result += '\n' + format_details(textwrap.indent(self.details, '  '))
 		return result
+	def __str__(self):
+		return self.tostring()
 	def __repr__(self):
 		return 'Entry(date={0}, title={1}, details=<{2} chars>)'.format(repr(self.date), repr(self.title), len(self.details or ''))
 	def __lt__(self, other):
@@ -68,6 +76,10 @@ Fields:
 	- module: name of the module with provider plugin;
 	- provider_name: name of the provider function;
 	- args: dict of arguments that should be passed to provider function.
+- color: 'auto'/'always'/'never'
+  Controls colors in output.
+  Default is 'auto'.
+  Can be overriden with CLI option --color.
 
 Each provider function should accept at least two mandatory positional or keyword arguments: datestart, datestop.
 Arguments specified in config file will be passed as additional keyword arguments to the function.
@@ -89,5 +101,6 @@ def read_config(): # pragma: no cover
 			))
 
 	return dotdict(
-			providers=providers
+			providers=providers,
+			color=data.get('color', 'auto'),
 			)

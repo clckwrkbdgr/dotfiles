@@ -1,12 +1,29 @@
 #!/usr/bin/env python
-import sys
+import os, sys, platform
 import clckwrkbdgr.retro
 import click
+try:
+	from termcolor import colored
+except:
+	colored = lambda s,_:s
+
+def init_colors(enable=None): # pragma: no cover
+	if enable is None:
+		if sys.stdout is not None:
+			init_colors(sys.stdout.isatty())
+	elif enable:
+		if "ANSI_COLORS_DISABLED" in os.environ:
+			del os.environ["ANSI_COLORS_DISABLED"]
+		if platform.system().lower() == 'windows':
+			os.system("color")
+	else:
+		os.environ["ANSI_COLORS_DISABLED"] = '1'
 
 @click.command(epilog=clckwrkbdgr.retro.CONFIG_FILE_DESC)
+@click.option('--color', type=click.Choice(['auto', 'always', 'never']), help='Controls colors in output. Default is "auto", Overrides corresponding config value.')
 @click.argument('datestart', required=False)
 @click.argument('datestop', required=False)
-def cli(datestart=None, datestop=None):
+def cli(datestart=None, datestop=None, color=None):
 	""" Displays retrospective history for given period of time.
 
 	Datetime arguments should be specified in format: %Y%m%d%H%M%S
@@ -15,6 +32,13 @@ def cli(datestart=None, datestop=None):
 	"""
 	datestart, datestop = clckwrkbdgr.retro.get_search_range(datestart, datestop)
 	config = clckwrkbdgr.retro.read_config()
+
+	color = color or config.color or 'auto'
+	init_colors({
+		'auto' : None,
+		'always' : True,
+		'never' : False,
+		}[color])
 
 	entries = []
 	for provider in config.providers:
@@ -25,7 +49,11 @@ def cli(datestart=None, datestop=None):
 			traceback.print_exc()
 	for entry in sorted(entries):
 		try:
-			print(entry)
+			print(entry.tostring(
+				format_date=lambda s: colored(s, 'green'),
+				format_title=lambda s: colored(s, 'blue'),
+				format_details=lambda s: colored(s, 'yellow'),
+				))
 		except UnicodeError:
 			print(str(entry).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 

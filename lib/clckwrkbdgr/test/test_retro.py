@@ -11,6 +11,11 @@ class TestEntries(unittest.TestCase):
 		entry = retro.Entry(datetime.datetime(2020, 12, 31, 8, 30), 'hello world', 'Lorem ipsum\ndolores sit amet')
 		self.assertEqual(str(entry), '2020-12-31 08:30:00: hello world\n  Lorem ipsum\n  dolores sit amet')
 		self.assertEqual(repr(entry), "Entry(date=datetime.datetime(2020, 12, 31, 8, 30), title='hello world', details=<28 chars>)")
+		self.assertEqual(entry.tostring(
+			format_date=lambda s: '<span>{0}</span>'.format(s),
+			format_title=lambda s: '<h1>{0}</h1>'.format(s),
+			format_details=lambda s: '<pre>{0}</pre>'.format(s),
+			), '<span>2020-12-31 08:30:00</span>: <h1>hello world</h1>\n<pre>  Lorem ipsum\n  dolores sit amet</pre>')
 	def should_order_entries(self):
 		entries = [
 				retro.Entry(datetime.datetime(2020, 12, 31, 10, 30), 'hello world', 'Lorem ipsum\ndolores sit amet'),
