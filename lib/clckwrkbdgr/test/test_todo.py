@@ -9,6 +9,17 @@ class TestTask(unittest.TestCase):
 	def should_create_task(self):
 		task = todo.Task('title')
 		self.assertEqual(str(task), 'title')
+	def should_compare_and_order_tasks(self):
+		tasks = [
+				todo.Task('foo'),
+				todo.Task('bar'),
+				todo.Task('baz'),
+				]
+		self.assertEqual(sorted(tasks), [
+			todo.Task('bar'),
+			todo.Task('baz'),
+			todo.Task('foo'),
+			])
 
 class TestTaskList(unittest.TestCase):
 	def should_add_new_tasks(self):
