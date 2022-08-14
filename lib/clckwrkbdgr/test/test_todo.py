@@ -20,6 +20,17 @@ class TestTask(unittest.TestCase):
 			todo.Task('baz'),
 			todo.Task('foo'),
 			])
+	def should_store_tasks_in_set(self):
+		tasks = {
+				todo.Task('foo'),
+				todo.Task('bar'),
+				todo.Task('baz'),
+				}
+		self.assertEqual(tasks, {
+			todo.Task('bar'),
+			todo.Task('baz'),
+			todo.Task('foo'),
+			})
 
 class TestTaskList(unittest.TestCase):
 	def should_add_new_tasks(self):

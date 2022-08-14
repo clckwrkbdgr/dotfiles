@@ -18,6 +18,8 @@ class Task:
 		return self.title
 	def __repr__(self): # pragma: no cover
 		return 'Task({0})'.format(repr(self.title))
+	def __hash__(self):
+		return hash(self.title)
 	def __eq__(self, other):
 		return self.title == other.title
 	def __lt__(self, other):
