@@ -27,6 +27,18 @@ function should_take_action_on_anchor()
 	var mock_handler = function(...args) { mock_events.push(['ok'] + args); return true; };
 
 	var value = clckwrkbdgr.rss.on_anchor('badger', mock_handler, {
+		href: 'http://localhost:20113/test',
+	});
+	unittest.assertFalse(value);
+	unittest.assertEqual(mock_events, []);
+
+	var value = clckwrkbdgr.rss.on_anchor(/badger-(\d+)/, mock_handler, {
+		href: 'http://localhost:20113/test',
+	});
+	unittest.assertFalse(value);
+	unittest.assertEqual(mock_events, []);
+
+	var value = clckwrkbdgr.rss.on_anchor('badger', mock_handler, {
 		href: 'http://localhost:20113/test#badger',
 	});
 	unittest.assertTrue(value);
