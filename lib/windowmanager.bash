@@ -35,7 +35,7 @@ windows_and_desktops_by_pid() { # <pid...>
 			if [ -z "$window_name" ]; then
 				continue
 			fi
-			desktop_number=$(xprop -id "$window_id" | grep _NET_WM_DESKTOP | sed 's/.*= *//')
+			desktop_number=$(xprop -id "$window_id" | grep '^_NET_WM_DESKTOP' | sed 's/.*= *//')
 			if [ -n "$desktop_number" ]; then
 				echo $window_id
 				echo "$desktop_number"

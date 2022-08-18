@@ -2,19 +2,39 @@
 . "$XDG_CONFIG_HOME/lib/instant_messaging.bash"
 . "$XDG_CONFIG_HOME/lib/click.bash"
 
-if [ "$1" == "inc" ]; then # TODO click subcommands with default command.
-	pidgin::messages::inc
-elif [ "$1" == "dec" ]; then
-	pidgin::messages::dec
-elif [ "$1" == "reset" ]; then
-	pigdin::messages:set 0
-elif [ "$1" == "show" ]; then
-	pidgin::messages::get
-elif [ -z "$1" ]; then
-	messages=$(pidgin::messages::get)
-	[ "${messages:-0}" -gt 0 ] && exit 0
-	exit 1
-else
-	echo "Unknown args: $@" >&2
-	exit 1
-fi
+click::command cli 'Manages unread notifications from IM.'
+click::option '-t' "--type" 'messenger_type' --default=pidgin --help="IM to use. Currently known messengers:
+- pidgin - Default.
+- telegram
+"
+click::argument 'im_command' --default='' --help="Command:
+- [default]: Returns 0 if has unread messages, non-zero otherwise;
+- show: Display amount of unread messages;
+- inc: Virtually increase amount of unread messages (works for specific IMs only);
+- dec: Virtually decrease amount of unread messages (works for specific IMs only);
+- reset: Virtually resets amount of unread messages (works for specific IMs only);
+"
+cli() {
+	messenger_type="${CLICK_ARGS[messenger_type]}"
+
+	im_command="${CLICK_ARGS[im_command]}"
+	if [ "$im_command" == "inc" ]; then
+		$messenger_type::messages::inc
+	elif [ "$im_command" == "dec" ]; then
+		$messenger_type::messages::dec
+	elif [ "$im_command" == "reset" ]; then
+		$messenger_type::messages:set 0
+	elif [ "$im_command" == "show" ]; then
+		$messenger_type::messages::get
+	elif [ -z "$im_command" ]; then
+		messages=$(pidgin::messages::get)
+		[ "${messages:-0}" -gt 0 ] && exit 0
+		exit 1
+	else
+		echo "Unknown command: $im_command" >&2
+		echo "See --help for usage" >&2
+		exit 1
+	fi
+}
+
+click::run "$@"
