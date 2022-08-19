@@ -53,6 +53,7 @@ class Cache(object):
 		"""
 		self.func = func
 		functools.update_wrapper(self, func)
+		self.__wrapped__ = func
 		self.storage = cache_storage
 		self.invalidator = invalidator
 		self.restore_on_exception = restore_on_exception
