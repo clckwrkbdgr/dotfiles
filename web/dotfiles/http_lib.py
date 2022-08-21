@@ -14,6 +14,10 @@ def host_dotfiles_js_library(javascript_module):
 def host_dotfiles_js_library(javascript_module):
 	return (DOTFILES_ROOTDIR/'lib'/'test'/'test_{0}.html'.format(javascript_module)).read_text()
 
+@bottle.post('/lib/test/test_<javascript_module>.html')
+def post_test_results(javascript_module):
+	pass
+
 @bottle.route('/lib/test/userscript')
 @bottle.route('/lib/test/userscript_with_grant')
 def test_userscripts():
