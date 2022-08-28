@@ -6,7 +6,7 @@ except ImportError: # pragma: no cover
 from ... import xdg
 
 @todo.task_provider('todo_dir')
-def list_todo_directory(): # pragma: no cover -- TODO
+def list_todo_directory():
 	for entry in todo.read_config().todo_dir.iterdir():
 		if entry == todo.read_config().inbox_file:
 			continue

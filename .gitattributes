@@ -290,6 +290,7 @@ lib/clckwrkbdgr/todo/tasklist.py caps=work
 lib/clckwrkbdgr/todo/search.py caps=work
 lib/clckwrkbdgr/todo/test/__init__.py caps=work
 lib/clckwrkbdgr/todo/test/test_todo.py caps=work
+lib/clckwrkbdgr/todo/test/test_providers.py caps=work
 lib/clckwrkbdgr/taskwarrior/__init__.py caps=work
 lib/clckwrkbdgr/taskwarrior/_base.py caps=work
 lib/clckwrkbdgr/taskwarrior/test/__init__.py caps=work
