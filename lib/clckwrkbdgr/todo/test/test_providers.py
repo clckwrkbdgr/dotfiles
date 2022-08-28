@@ -13,6 +13,7 @@ class TestTodoDir(unittest.fs.TestCase):
 		if _base.task_provider._entries.get('todo_dir'): # pragma: no cover
 			del _base.task_provider._entries['todo_dir']
 
+	@unittest.mock.patch('clckwrkbdgr.todo._base.read_config', new=_base.read_config.__wrapped__)
 	def should_list_todo_dir(self):
 		self.fs.create_file(str(xdg.save_data_path('todo')/'config.json'), contents="""
 		{{

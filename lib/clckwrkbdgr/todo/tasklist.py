@@ -44,7 +44,7 @@ def filter_task_list(original, current):
 			yield True, line
 			prev = line
 
-class TaskList: # pragma: no cover -- TODO
+class TaskList:
 	def __init__(self, _providers=None):
 		force_load_task_providers(providers=_providers)
 		self._filename = xdg.save_state_path('todo')/'tasklist.lst'

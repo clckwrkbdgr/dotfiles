@@ -1,3 +1,4 @@
+import os
 from ... import unittest
 from ... import xdg
 try:
@@ -169,6 +170,92 @@ class TestTaskList(unittest.TestCase):
 				(True, 'Rescue captured agent'),
 				]
 		self.assertEqual(list(tasklist.filter_task_list(original, updated)), expected)
+
+class TestTaskListInFileSystem(unittest.fs.TestCase):
+	MODULES = [tasklist]
+	@unittest.mock.patch('clckwrkbdgr.todo.tasklist.force_load_task_providers')
+	def should_list_tasklist_content(self, _):
+		tasks = tasklist.TaskList()
+		self.assertEqual(list(tasks.list_all()), [])
+
+		self.fs.create_file(str(xdg.save_state_path('todo')/'tasklist.lst'), contents="foo\n\nbar")
+		self.assertEqual(list(tasks.list_all()), [
+			'foo',
+			'bar',
+			])
+		self.assertEqual(list(tasks.list_all(with_seps=True)), [
+			'foo',
+			'',
+			'bar',
+			])
+	@unittest.mock.patch('os.environ.get', new=lambda name,*_: {
+		'EDITOR':'myeditor',
+		}[name])
+	@unittest.mock.patch('os.path.expandvars', new=lambda p: p.replace('$MYVAR', 'myvalue'))
+	@unittest.mock.patch('platform.system', side_effect=['Windows'])
+	@unittest.mock.patch('subprocess.call', side_effect=[0])
+	@unittest.mock.patch('clckwrkbdgr.todo.tasklist.force_load_task_providers')
+	def should_sort_tasklist_in_external_editor(self, _, subprocess_call, platform_system):
+		self.fs.create_file(str(xdg.save_data_path('todo')/'config.json'), contents="""
+		{
+			"inbox_file" : "~/$MYVAR/inbox.txt",
+			"editor" : ["vim", "+cw"],
+			"todo_dir" : "~/$MYVAR"
+		}
+		""")
+
+		tasks = tasklist.TaskList()
+		self.assertTrue(tasks.sort())
+		subprocess_call.assert_called_with(
+				['vim', '+cw', os.path.expanduser('~/.state/todo/tasklist.lst')], shell=True,
+				)
+	@unittest.mock.patch('clckwrkbdgr.todo._base.task_provider')
+	@unittest.mock.patch('clckwrkbdgr.todo.tasklist.force_load_task_providers')
+	def should_sync_tasklist(self, _, task_provider):
+		self.fs.create_dir(str(xdg.save_state_path('todo')))
+
+		tasks = tasklist.TaskList()
+
+		mock_providers = [
+				(lambda: [todo.Task('foo'), todo.Task('bar')]),
+				(lambda: [todo.Task('hello'), todo.Task('world')]),
+				]
+		task_provider.__iter__ = lambda _: iter(mock_providers)
+
+		tasks.sync()
+		self.assertEqual((xdg.save_state_path('todo')/'tasklist.lst').read_text(), '\n'.join([
+			"foo",
+			"bar",
+			"hello",
+			"world",
+			]) + '\n')
+
+		tasks.sync()
+		self.assertEqual((xdg.save_state_path('todo')/'tasklist.lst').read_text(), '\n'.join([
+			"foo",
+			"bar",
+			"hello",
+			"world",
+			]) + '\n')
+
+		(xdg.save_state_path('todo')/'tasklist.lst').write_text(u"foo\n\nbar")
+		tasks.sync()
+		self.assertEqual((xdg.save_state_path('todo')/'tasklist.lst').read_text(), '\n'.join([
+			"hello",
+			"world",
+			"foo",
+			"",
+			"bar",
+			]) + '\n')
+
+		(xdg.save_state_path('todo')/'tasklist.lst').write_text(u"foo\n\nbaz")
+		tasks.sync()
+		self.assertEqual((xdg.save_state_path('todo')/'tasklist.lst').read_text(), '\n'.join([
+			"bar",
+			"hello",
+			"world",
+			"foo",
+			]) + '\n')
 
 class TestSearch(unittest.TestCase):
 	def should_search_in_string(self):
