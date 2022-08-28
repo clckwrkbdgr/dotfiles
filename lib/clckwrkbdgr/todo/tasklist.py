@@ -3,15 +3,15 @@ import importlib
 import logging
 logger = logging.getLogger('todo')
 from collections import namedtuple
-import clckwrkbdgr.todo
-import clckwrkbdgr.todo.provider
+from . import _base as todo
+from . import provider as default_provider_module
 from clckwrkbdgr import xdg
 
 def force_load_task_providers(providers=None): # pragma: no cover -- TODO really shouldn't do this in module's body.
 	""" Loads all known task providers (registered via @task_provider).
 	If providers are given (list of module names), they are loaded instead.
 	"""
-	for entry in (providers or clckwrkbdgr.todo.read_config().task_providers):
+	for entry in (providers or todo.read_config().task_providers):
 		try:
 			importlib.import_module(entry)
 		except Exception as e:
@@ -44,17 +44,17 @@ def filter_task_list(original, current):
 			yield True, line
 			prev = line
 
-class TaskList: # pragma: no cover -- TODO depends on global list of task providers, also on FS.
+class TaskList: # pragma: no cover -- TODO
 	def __init__(self, _providers=None):
 		force_load_task_providers(providers=_providers)
 		self._filename = xdg.save_state_path('todo')/'tasklist.lst'
 	def sort(self):
-		config = clckwrkbdgr.todo.read_config()
+		config = todo.read_config()
 		return 0 == subprocess.call(config.editor + [str(self._filename)], shell=(platform.system() == 'Windows'))
 	def sync(self):
 		logger.debug('Sync...')
 		tasks = []
-		for provider in clckwrkbdgr.todo.task_provider:
+		for provider in todo.task_provider:
 			for task in provider():
 				logger.debug('Provider {0}: {1}'.format(provider.__name__ if hasattr(provider, '__name__') else provider, task))
 				tasks.append(task.title.encode('utf-8', 'replace'))

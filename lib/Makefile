@@ -1,5 +1,6 @@
 MAKEFILE := $(CURDIR)/$(firstword $(MAKEFILE_LIST))
-test: test-python test-bash
+test:
+	@unittest $(TESTCASE)
 	
 test-python: test-python3 test-python2
 

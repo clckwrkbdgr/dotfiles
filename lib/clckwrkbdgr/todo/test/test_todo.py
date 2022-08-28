@@ -1,14 +1,20 @@
-from clckwrkbdgr import unittest
+from ... import unittest
+from ... import xdg
+try:
+	from pathlib2 import Path
+except ImportError: # pragma: no cover
+	from pathlib import Path
 import re
-from clckwrkbdgr import todo
-from clckwrkbdgr.todo import search
-from clckwrkbdgr.todo import provider
-from clckwrkbdgr.todo import tasklist
+from .. import _base as todo
+from .. import search
+from .. import provider
+from .. import tasklist
 
 class TestTask(unittest.TestCase):
 	def should_create_task(self):
 		task = todo.Task('title')
 		self.assertEqual(str(task), 'title')
+		self.assertEqual(repr(task), 'Task({0})'.format(repr('title')))
 	def should_compare_and_order_tasks(self):
 		tasks = [
 				todo.Task('foo'),
@@ -31,6 +37,50 @@ class TestTask(unittest.TestCase):
 			todo.Task('baz'),
 			todo.Task('foo'),
 			})
+
+class TestConfig(unittest.fs.TestCase):
+	MODULES = [todo, xdg]
+	@unittest.mock.patch('os.environ.get', new=lambda name,*_: {
+		'EDITOR':'myeditor',
+		}[name])
+	@unittest.mock.patch('os.path.expandvars', new=lambda p: p.replace('$MYVAR', 'myvalue'))
+	@unittest.mock.patch('importlib.import_module')
+	def should_read_config(self, import_module):
+		config = todo.read_config.__wrapped__()
+		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor'})
+		self.assertEqual(config.inbox_file, Path("~/.local/share/todo/.INBOX.md").expanduser())
+		self.assertEqual(config.prepend_inbox, False)
+		self.assertEqual(config.editor, ["myeditor"])
+		self.assertEqual(config.todo_dir, Path("~/.local/share/todo/").expanduser())
+		self.assertEqual(config.task_providers, [])
+		self.assertEqual(config.tasklist, None)
+
+		self.fs.create_file(str(xdg.save_data_path('todo')/'config.json'), contents="""
+		{
+			"inbox_file" : "~/$MYVAR/inbox.txt",
+			"prepend_inbox" : true,
+			"editor" : ["vim", "+cw"],
+			"todo_dir" : "~/$MYVAR",
+			"tasklist" : "my_module.MyTaskList",
+			"task_providers" : [
+				"foo",
+				"bar"
+			]
+		}
+		""")
+
+		MyTaskList = unittest.mock.MagicMock()
+		mock_module = unittest.mock.MagicMock(MyTaskList=MyTaskList)
+		import_module.side_effect = [ImportError, mock_module]
+
+		config = todo.read_config.__wrapped__()
+		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor'})
+		self.assertEqual(config.inbox_file, Path("~/myvalue/inbox.txt").expanduser())
+		self.assertEqual(config.prepend_inbox, True)
+		self.assertEqual(config.editor, ["vim", "+cw"])
+		self.assertEqual(config.todo_dir, Path("~/myvalue").expanduser())
+		self.assertEqual(config.task_providers, ["foo", "bar"])
+		self.assertEqual(config.tasklist, MyTaskList)
 
 class TestTaskList(unittest.TestCase):
 	def should_add_new_tasks(self):
