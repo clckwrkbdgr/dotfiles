@@ -1,4 +1,5 @@
 import os
+import datetime
 from ... import unittest
 from ... import xdg
 try:
@@ -11,11 +12,147 @@ from .. import search
 from .. import provider
 from .. import tasklist
 
+class TestPriority(unittest.TestCase):
+	def should_init_priority(self):
+		priority = todo.Priority()
+		self.assertFalse(priority.important)
+		self.assertFalse(priority.urgent)
+		self.assertIsNone(priority.deadline)
+		self.assertFalse(priority.hard)
+		self.assertEqual(priority.order, 0)
+
+		priority = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 31, 23, 59),
+				hard=True,
+				order=100,
+				)
+		self.assertTrue(priority.important)
+		self.assertTrue(priority.urgent)
+		self.assertEqual(priority.deadline, datetime.datetime(2020, 12, 31, 23, 59))
+		self.assertTrue(priority.hard)
+		self.assertEqual(priority.order, 100)
+		self.assertEqual(str(priority), '!U(2020-12-31 23:59:00)*100')
+		self.assertEqual(repr(priority), 'Priority(important=True, urgent=True, deadline=datetime.datetime(2020, 12, 31, 23, 59), hard=True, order=100)')
+
+		priority = todo.Priority(
+				important=True,
+				deadline=datetime.datetime(2020, 12, 31, 23, 59),
+				hard=True,
+				)
+		self.assertEqual(str(priority), '!(2020-12-31 23:59:00)*')
+		self.assertEqual(repr(priority), 'Priority(important=True, deadline=datetime.datetime(2020, 12, 31, 23, 59), hard=True)')
+
+		with self.assertRaises(ValueError):
+			todo.Priority(deadline='not a proper date')
+
+		with self.assertRaises(ValueError):
+			todo.Priority(order=-1)
+	def should_store_priorities_in_set(self):
+		tasks = {
+				todo.Priority(important=True),
+				todo.Priority(urgent=True),
+				}
+		self.assertEqual(tasks, {
+			todo.Priority(urgent=True),
+			todo.Priority(important=True),
+			})
+	def should_compare_and_order_priorities(self):
+		priority = todo.Priority()
+		self.assertEqual(priority.key(), (False, False, datetime.timedelta(), False, 0))
+
+		priority = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 31, 23, 59),
+				hard=True,
+				order=100,
+				)
+		self.assertEqual(priority.key(), (True, True, datetime.timedelta(days=2914269, seconds=59, microseconds=999999), True, -100))
+
+		priority = todo.Priority(
+				important=True,
+				deadline=datetime.datetime(2020, 12, 31, 23, 59),
+				hard=True,
+				)
+		self.assertEqual(priority.key(), (True, False, datetime.timedelta(days=2914269, seconds=59, microseconds=999999), True, 0))
+
+		more = todo.Priority(
+				important=True,
+				)
+		less = todo.Priority(
+				important=False,
+				)
+		self.assertTrue(more > less)
+
+		more = todo.Priority(
+				important=True,
+				urgent=True,
+				)
+		less = todo.Priority(
+				important=True,
+				urgent=False,
+				)
+		self.assertTrue(more > less)
+
+		more = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 31),
+				)
+		less = todo.Priority(
+				important=True,
+				urgent=True,
+				)
+		self.assertTrue(more > less)
+
+		more = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 30),
+				)
+		less = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 31),
+				)
+		self.assertTrue(more > less)
+
+		more = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 30),
+				hard=True,
+				)
+		less = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 31),
+				)
+		self.assertTrue(more > less)
+
+		more = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 30),
+				hard=True,
+				order=0,
+				)
+		less = todo.Priority(
+				important=True,
+				urgent=True,
+				deadline=datetime.datetime(2020, 12, 31),
+				hard=True,
+				order=1,
+				)
+		self.assertTrue(more > less)
+
 class TestTask(unittest.TestCase):
 	def should_create_task(self):
 		task = todo.Task('title')
 		self.assertEqual(str(task), 'title')
-		self.assertEqual(repr(task), 'Task({0})'.format(repr('title')))
+		self.assertEqual(repr(task), 'Task({0}, Priority())'.format(repr('title')))
 	def should_compare_and_order_tasks(self):
 		tasks = [
 				todo.Task('foo'),

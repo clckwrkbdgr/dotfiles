@@ -1,4 +1,5 @@
 import os
+import datetime
 import json
 import functools
 import importlib
@@ -11,19 +12,85 @@ from clckwrkbdgr import xdg
 from clckwrkbdgr import utils
 
 @functools.total_ordering
+class Priority:
+	""" Priority value for ordering tasks within task list.
+	Fields in order of value, descending:
+	- important: [bool] - crucial task, absolute must; can't live without it.
+	- urgent: [bool] - must be done in time manner, cannot be postponed for future.
+	- deadline: [date or None] - the closer the date, the more urgent task is; "yesterday" tasks are the most urgent.
+	- hard: [bool] - in terms of putting effort; the frog that should be eaten first.
+	- order: [int >= 0] - internal sorting order for otherwise similar tasks; the less the value, the more priority it has.
+	"""
+	def __init__(self, important=False, urgent=False, deadline=None, hard=False, order=0):
+		self._important = bool(important)
+		self._urgent = bool(urgent)
+		if deadline is not None and not isinstance(deadline, datetime.datetime):
+			raise ValueError("Deadline should be either datetime object or None: {0}".format(repr(deadline)))
+		self._deadline = deadline
+		self._hard = bool(hard)
+		if order < 0:
+			raise ValueError('Order should be not less than 0: {0}'.format(repr(order)))
+		self._order = order
+	@property
+	def important(self): return self._important
+	@property
+	def urgent(self): return self._urgent
+	@property
+	def deadline(self): return self._deadline
+	@property
+	def hard(self): return self._hard
+	@property
+	def order(self): return self._order
+
+	def key(self):
+		""" Sorting key for priority objects.
+		If A.key() > B.key(), A has more priority and should come first.
+		"""
+		return (
+				self._important,
+				self._urgent,
+				(datetime.datetime.max - self._deadline) if self._deadline else datetime.timedelta(),
+				self._hard,
+				-self._order,
+				)
+	def __str__(self):
+		return ''.join([
+			'!' if self._important else '',
+			'U' if self._urgent else '',
+			'({0})'.format(self._deadline) if self._deadline else '',
+			'*' if self._hard else '',
+			str(self._order) if self._order else '',
+			])
+	def __repr__(self):
+		return 'Priority({0})'.format(', '.join(filter(None, [
+			'important=True' if self._important else '',
+			'urgent=True' if self._urgent else '',
+			'deadline={0}'.format(repr(self._deadline)) if self._deadline else '',
+			'hard=True' if self._hard else '',
+			'order={0}'.format(self._order) if self._order else '',
+			])))
+	def __hash__(self):
+		return hash(self.key())
+	def __eq__(self, other):
+		return self.key() == other.key()
+	def __lt__(self, other):
+		return self.key() < other.key()
+
+@functools.total_ordering
 class Task:
-	def __init__(self, title):
+	def __init__(self, title, priority=None):
 		self.title = title
+		self.priority = priority or Priority()
 	def __str__(self):
 		return self.title
 	def __repr__(self):
-		return 'Task({0})'.format(repr(self.title))
+		return 'Task({0}, {1})'.format(repr(self.title), repr(self.priority))
 	def __hash__(self):
 		return hash(self.title)
 	def __eq__(self, other):
-		return self.title == other.title
+		return (self.title, self.priority) == (other.title, other.priority)
 	def __lt__(self, other):
-		return self.title < other.title
+		return (self.priority, self.title) < (other.priority, other.title)
 
 task_provider = AutoRegistry()
 
