@@ -207,7 +207,7 @@ class TestTaskListInFileSystem(unittest.fs.TestCase):
 		tasks = tasklist.TaskList()
 		self.assertTrue(tasks.sort())
 		subprocess_call.assert_called_with(
-				['vim', '+cw', os.path.expanduser('~/.state/todo/tasklist.lst')], shell=True,
+				['vim', '+cw', str(xdg.save_state_path('todo')/'tasklist.lst')], shell=True,
 				)
 	@unittest.mock.patch('clckwrkbdgr.todo._base.task_provider')
 	@unittest.mock.patch('clckwrkbdgr.todo.tasklist.force_load_task_providers')

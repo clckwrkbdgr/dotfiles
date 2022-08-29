@@ -1,3 +1,4 @@
+import json
 from ... import xdg
 from ... import unittest
 from ..provider import todo_dir
@@ -15,12 +16,10 @@ class TestTodoDir(unittest.fs.TestCase):
 
 	@unittest.mock.patch('clckwrkbdgr.todo._base.read_config', new=_base.read_config.__wrapped__)
 	def should_list_todo_dir(self):
-		self.fs.create_file(str(xdg.save_data_path('todo')/'config.json'), contents="""
-		{{
-			"inbox_file" : "{0}/inbox.txt",
-			"todo_dir" : "{0}"
-		}}
-		""".format(xdg.save_data_path('todo')))
+		self.fs.create_file(str(xdg.save_data_path('todo')/'config.json'), contents=json.dumps({
+			"inbox_file" : str(xdg.save_data_path('todo')/"inbox.txt"),
+			"todo_dir" : str(xdg.save_data_path('todo')),
+		}))
 		self.fs.create_dir(str(xdg.save_data_path('todo')/'foo'))
 		self.fs.create_file(str(xdg.save_data_path('todo')/'bar.md'))
 		self.fs.create_file(str(xdg.save_data_path('todo')/'inbox.txt'))
