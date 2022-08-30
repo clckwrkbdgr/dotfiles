@@ -92,16 +92,18 @@ def sync_tasks():
 	return ok
 
 @cli.command('list')
+@click.option('-v', '--verbose', is_flag=True, help='Display priority legend for each task.')
 @utils.exits_with_return_value
-def list_tasks():
+def list_tasks(verbose=False):
 	config = clckwrkbdgr.todo.read_config()
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
 	for task in tasklist.list_all(with_seps=True):
+		priority = '[{0}] '.format(task.priority) if verbose else ''
 		try:
-			print(task)
+			print(priority + str(task))
 		except UnicodeError:
-			print(task.encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
+			print(priority + str(task).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 
 @cli.command('sort')
 @utils.exits_with_return_value
