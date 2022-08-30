@@ -19,7 +19,7 @@ class TestPriority(unittest.TestCase):
 		self.assertFalse(priority.urgent)
 		self.assertIsNone(priority.deadline)
 		self.assertFalse(priority.hard)
-		self.assertEqual(priority.order, 0)
+		self.assertEqual(priority.order, float('inf'))
 
 		priority = todo.Priority(
 				important=True,
@@ -33,7 +33,7 @@ class TestPriority(unittest.TestCase):
 		self.assertEqual(priority.deadline, datetime.datetime(2020, 12, 31, 23, 59))
 		self.assertTrue(priority.hard)
 		self.assertEqual(priority.order, 100)
-		self.assertEqual(str(priority), '!U(2020-12-31 23:59:00)*100')
+		self.assertEqual(str(priority), '!U(2020-12-31 23:59:00)*:100')
 		self.assertEqual(repr(priority), 'Priority(important=True, urgent=True, deadline=datetime.datetime(2020, 12, 31, 23, 59), hard=True, order=100)')
 
 		priority = todo.Priority(
@@ -60,7 +60,7 @@ class TestPriority(unittest.TestCase):
 			})
 	def should_compare_and_order_priorities(self):
 		priority = todo.Priority()
-		self.assertEqual(priority.key(), (False, False, datetime.timedelta(), False, 0))
+		self.assertEqual(priority.key(), (False, False, datetime.timedelta(), False, -float('inf')))
 
 		priority = todo.Priority(
 				important=True,
@@ -76,7 +76,7 @@ class TestPriority(unittest.TestCase):
 				deadline=datetime.datetime(2020, 12, 31, 23, 59),
 				hard=True,
 				)
-		self.assertEqual(priority.key(), (True, False, datetime.timedelta(days=2914269, seconds=59, microseconds=999999), True, 0))
+		self.assertEqual(priority.key(), (True, False, datetime.timedelta(days=2914269, seconds=59, microseconds=999999), True, -float('inf')))
 
 		more = todo.Priority(
 				important=True,

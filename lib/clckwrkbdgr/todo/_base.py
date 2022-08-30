@@ -1,4 +1,4 @@
-import os
+import os, sys
 import datetime
 import json
 import functools
@@ -21,7 +21,7 @@ class Priority:
 	- hard: [bool] - in terms of putting effort; the frog that should be eaten first.
 	- order: [int >= 0] - internal sorting order for otherwise similar tasks; the less the value, the more priority it has.
 	"""
-	def __init__(self, important=False, urgent=False, deadline=None, hard=False, order=0):
+	def __init__(self, important=False, urgent=False, deadline=None, hard=False, order=float('inf')):
 		self._important = bool(important)
 		self._urgent = bool(urgent)
 		if deadline is not None and not isinstance(deadline, datetime.datetime):
@@ -59,7 +59,7 @@ class Priority:
 			'U' if self._urgent else '',
 			'({0})'.format(self._deadline) if self._deadline else '',
 			'*' if self._hard else '',
-			str(self._order) if self._order else '',
+			':{0}'.format(self._order) if self._order != float('inf') else '',
 			])
 	def __repr__(self):
 		return 'Priority({0})'.format(', '.join(filter(None, [
@@ -67,7 +67,7 @@ class Priority:
 			'urgent=True' if self._urgent else '',
 			'deadline={0}'.format(repr(self._deadline)) if self._deadline else '',
 			'hard=True' if self._hard else '',
-			'order={0}'.format(self._order) if self._order else '',
+			'order={0}'.format(self._order) if self._order != float('inf') else '',
 			])))
 	def __hash__(self):
 		return hash(self.key())
