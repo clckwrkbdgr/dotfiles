@@ -108,7 +108,7 @@ user_pref("browser.urlbar.suggest.history", false);
 user_pref("browser.urlbar.suggest.openpage", false);
 user_pref("browser.urlbar.suggest.searches", true);
 user_pref("browser.urlbar.suggest.topsites", false);
-user_pref("browser.urlbar.tipShownCount.searchTip_onboard", 1);
+user_pref("browser.urlbar.tipShownCount.searchTip_onboard", 4);
 user_pref("browser.urlbar.trimURLs", false);
 user_pref("browser.visited_color", "#996633");
 user_pref("browser.zoom.full", false);
