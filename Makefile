@@ -1,6 +1,9 @@
 all:
 	python setup.py
 
+test:
+	@cd lib; $(MAKE) TESTCASE=$(TESTCASE)
+
 verbose:
 	python setup.py verbose
 
