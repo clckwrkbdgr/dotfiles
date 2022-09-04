@@ -4,3 +4,8 @@
 #tabbrowser-tabs .tabbrowser-tab .tab-close-button {
 	display: none !important;
 }
+
+/* Hide back/forward buttons from the main toolbar. */
+#back-button, #forward-button {
+	display: none !important;
+}
