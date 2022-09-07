@@ -1,8 +1,10 @@
 import sys, subprocess, platform
 import importlib
+import itertools
 import logging
 logger = logging.getLogger('todo')
 from collections import namedtuple
+import vintage
 from . import _base as todo
 from . import provider as default_provider_module
 from clckwrkbdgr import xdg
@@ -82,10 +84,23 @@ class TaskList:
 		else:
 			logger.debug('Tasklist is NOT changed.')
 		logger.debug('Sync done.')
-	def list_all(self, with_seps=False):
+	def list_all(self, with_seps=False, with_groups=False):
+		if with_seps: # pragma: no cover -- deprecated
+			vintage.warn_deprecation('Argument with_seps is deprecated, use with_groups instead.', frame_correction=1)
+			with_groups = True
 		if not self._filename.exists():
 			return
+
+		grouped_tasks = [[]]
 		for line in self._filename.read_text(errors='replace').splitlines():
-			if not with_seps and not line.strip():
-				continue
-			yield line
+			if not line.strip():
+				grouped_tasks.append([])
+			else:
+				grouped_tasks[-1].append(todo.Task(line))
+
+		if not with_groups or len(grouped_tasks) == 1:
+			grouped_tasks = list(itertools.chain.from_iterable(grouped_tasks))
+		grouped_tasks = [item[0] if isinstance(item, list) and len(item) == 1 else item for item in grouped_tasks]
+
+		for item in grouped_tasks:
+			yield item

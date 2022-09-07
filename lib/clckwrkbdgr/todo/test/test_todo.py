@@ -315,15 +315,15 @@ class TestTaskListInFileSystem(unittest.fs.TestCase):
 		tasks = tasklist.TaskList()
 		self.assertEqual(list(tasks.list_all()), [])
 
-		self.fs.create_file(str(xdg.save_state_path('todo')/'tasklist.lst'), contents="foo\n\nbar")
+		self.fs.create_file(str(xdg.save_state_path('todo')/'tasklist.lst'), contents="foo\n\nbar\nbaz")
 		self.assertEqual(list(tasks.list_all()), [
-			'foo',
-			'bar',
+			todo.Task('foo'),
+			todo.Task('bar'),
+			todo.Task('baz'),
 			])
-		self.assertEqual(list(tasks.list_all(with_seps=True)), [
-			'foo',
-			'',
-			'bar',
+		self.assertEqual(list(tasks.list_all(with_groups=True)), [
+			todo.Task('foo'),
+			[todo.Task('bar'), todo.Task('baz')],
 			])
 	@unittest.mock.patch('os.environ.get', new=lambda name,*_: {
 		'EDITOR':'myeditor',

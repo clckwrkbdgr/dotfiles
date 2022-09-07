@@ -98,12 +98,22 @@ def list_tasks(verbose=False):
 	config = clckwrkbdgr.todo.read_config()
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
-	for task in tasklist.list_all(with_seps=True):
-		priority = '[{0}] '.format(task.priority) if verbose else ''
-		try:
-			print(priority + str(task))
-		except UnicodeError:
-			print(priority + str(task).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
+	prefixes = ('+', '|', '|')
+	for item in tasklist.list_all(with_groups=True):
+		if utils.is_collection(item):
+			for index, subtask in enumerate(item):
+				prefix = prefixes[0] if index == 0 else (prefixes[2] if index == len(item) - 1 else prefixes[1])
+				print_single_task(subtask, verbose=verbose, prefix=prefix)
+		else:
+			print_single_task(item, verbose=verbose)
+
+def print_single_task(task, verbose=False, prefix=None):
+	priority = '[{0}] '.format(task.priority) if verbose else ''
+	prefix = '{0} '.format(prefix) if prefix else ''
+	try:
+		print(prefix + priority + str(task))
+	except UnicodeError:
+		print(prefix + priority + str(task).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 
 @cli.command('sort')
 @utils.exits_with_return_value
