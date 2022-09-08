@@ -12,7 +12,7 @@ from clckwrkbdgr import xdg
 from clckwrkbdgr import utils
 
 @functools.total_ordering
-class Priority:
+class Priority(object):
 	""" Priority value for ordering tasks within task list.
 	Fields in order of value, descending:
 	- important: [bool] - crucial task, absolute must; can't live without it.
@@ -77,7 +77,7 @@ class Priority:
 		return self.key() < other.key()
 
 @functools.total_ordering
-class Task:
+class Task(object):
 	def __init__(self, title, priority=None):
 		self.title = title
 		self.priority = priority or Priority()
