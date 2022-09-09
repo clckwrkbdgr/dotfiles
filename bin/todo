@@ -113,10 +113,11 @@ def list_tasks(config, verbose=False):
 def print_single_task(task, verbose=False, prefix=None):
 	priority = '[{0}] '.format(task.priority) if verbose else ''
 	prefix = '{0} '.format(prefix) if prefix else ''
+	tags = (' ' + ''.join('[{}]'.format(tag) for tag in task.tags)) if task.tags else ''
 	try:
-		print(prefix + priority + str(task))
+		print(prefix + priority + str(task) + tags)
 	except UnicodeError:
-		print(prefix + priority + str(task).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
+		print((prefix + priority + str(task) + tags).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 
 @cli.command('sort')
 @click.pass_obj
