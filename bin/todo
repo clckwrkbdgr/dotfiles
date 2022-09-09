@@ -50,8 +50,11 @@ def track_directory(dirpath):
 @clckwrkbdgr.click.windows_noexpand_args
 @click.group(cls=click_default_group.DefaultGroup, default='inbox', default_if_no_args=True, epilog=clckwrkbdgr.todo.CONFIG_FILE_DESC)
 @click.option('--debug', is_flag=True, help='Enables debug output.')
-def cli(debug=False):
-	config = clckwrkbdgr.todo.read_config() # Pre-loading configuration.
+@click.option('--config-file', help='Custom config file.')
+@click.pass_context
+def cli(ctx, debug=False, config_file=None):
+	config = clckwrkbdgr.todo.read_config(config_file=config_file) # Pre-loading configuration.
+	ctx.obj = config
 	handler = logging.StreamHandler() # TODO custom formatter to display level, module, logger name etc.; and generic clckwrkbdgr module for such loggers.
 	logger.addHandler(handler)
 	if debug:
@@ -59,9 +62,9 @@ def cli(debug=False):
 
 @cli.command()
 @click.argument('add_notes', nargs=-1)
+@click.pass_obj
 @utils.exits_with_return_value
-def inbox(add_notes=None):
-	config = clckwrkbdgr.todo.read_config()
+def inbox(config, add_notes=None):
 	config.inbox_file.parent.mkdir(parents=True, exist_ok=True)
 	if add_notes:
 		new_data = ' '.join(add_notes) + '\n'
@@ -83,9 +86,9 @@ def inbox(add_notes=None):
 	return 0 == subprocess.call(config.editor + [filename], shell=(platform.system() == 'Windows'))
 
 @cli.command('sync')
+@click.pass_obj
 @utils.exits_with_return_value
-def sync_tasks():
-	config = clckwrkbdgr.todo.read_config()
+def sync_tasks(config):
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
 	ok = tasklist.sync()
@@ -93,9 +96,9 @@ def sync_tasks():
 
 @cli.command('list')
 @click.option('-v', '--verbose', is_flag=True, help='Display priority legend for each task.')
+@click.pass_obj
 @utils.exits_with_return_value
-def list_tasks(verbose=False):
-	config = clckwrkbdgr.todo.read_config()
+def list_tasks(config, verbose=False):
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
 	prefixes = ('+', '|', '|')
@@ -116,9 +119,9 @@ def print_single_task(task, verbose=False, prefix=None):
 		print(prefix + priority + str(task).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 
 @cli.command('sort')
+@click.pass_obj
 @utils.exits_with_return_value
-def sort_Tasks():
-	config = clckwrkbdgr.todo.read_config()
+def sort_tasks(config):
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
 	return tasklist.sort()

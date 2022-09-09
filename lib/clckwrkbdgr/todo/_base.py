@@ -107,8 +107,8 @@ Fields:
 """
 
 @functools.lru_cache()
-def read_config():
-	config_file = xdg.save_data_path('todo')/'config.json'
+def read_config(config_file=None):
+	config_file = Path(config_file or xdg.save_data_path('todo')/'config.json')
 	data = {}
 	if config_file.exists():
 		data = json.loads(config_file.read_text())
