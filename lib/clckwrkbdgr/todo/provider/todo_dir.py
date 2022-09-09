@@ -12,4 +12,4 @@ def list_todo_directory():
 			continue
 		if entry == xdg.save_data_path('todo')/'config.json':
 			continue
-		yield todo.Task(entry.name)
+		yield todo.Task(entry.name, tags=[entry.stem.split('.')[-1]])

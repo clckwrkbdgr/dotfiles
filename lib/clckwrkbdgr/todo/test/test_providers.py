@@ -25,6 +25,6 @@ class TestTodoDir(unittest.fs.TestCase):
 		self.fs.create_file(str(xdg.save_data_path('todo')/'inbox.txt'))
 
 		self.assertEqual(set(todo_dir.list_todo_directory()), {
-			_base.Task('foo'),
-			_base.Task('bar.md'),
+			_base.Task('foo', tags=['foo']),
+			_base.Task('bar.md', tags=['bar']),
 			})
