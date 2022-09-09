@@ -78,17 +78,20 @@ class Priority(object):
 
 @functools.total_ordering
 class Task(object):
-	def __init__(self, title, priority=None):
+	def __init__(self, title, priority=None, tags=None):
 		self.title = title
 		self.priority = priority or Priority()
+		self.tags = list(map(str, (tags or [])))
 	def __str__(self):
 		return self.title
 	def __repr__(self):
+		if self.tags:
+			return 'Task({0}, {1}, tags={2})'.format(repr(self.title), repr(self.priority), repr(self.tags))
 		return 'Task({0}, {1})'.format(repr(self.title), repr(self.priority))
 	def __hash__(self):
-		return hash(self.title)
+		return hash((self.title, self.priority, tuple(self.tags)))
 	def __eq__(self, other):
-		return (self.title, self.priority) == (other.title, other.priority)
+		return (self.title, self.priority, self.tags) == (other.title, other.priority, self.tags)
 	def __lt__(self, other):
 		return (self.priority, self.title) < (other.priority, other.title)
 
