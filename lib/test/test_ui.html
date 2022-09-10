@@ -19,6 +19,134 @@ function setUp()
 {
 	unittest.assertTrue(window.clckwrkbdgr);
 	unittest.assertTrue(window.clckwrkbdgr.ui);
+
+	var test_area = document.querySelector('div#test-area');
+	if(!test_area) {
+		test_area = document.createElement('div');
+		test_area.setAttribute('id', 'test-area');
+		document.body.appendChild(test_area);
+	}
+}
+
+function should_create_empty_container()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		id: 'clckwrkbdgr-test-empty-container'
+	});
+	var container = document.querySelector('#clckwrkbdgr-test-empty-container');
+	unittest.assertTrue(container);
+
+	test_area.removeChild(container);
+}
+
+function should_prepend_container_to_the_root_element()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		prepend: true,
+		id: 'clckwrkbdgr-test-container-prepend'
+	});
+	var container = document.querySelector('#clckwrkbdgr-test-container-prepend');
+	unittest.assertTrue(container);
+
+	test_area.removeChild(container);
+}
+
+function should_create_container_in_root_element_by_query()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container('div#test-area', {
+		id: 'clckwrkbdgr-test-container-by-query'
+	});
+	var container = document.querySelector('#clckwrkbdgr-test-container-by-query');
+	unittest.assertTrue(container);
+
+	test_area.removeChild(container);
+}
+
+function should_create_container_with_class()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		class_name: 'clckwrkbdgr-test-container',
+		id: 'clckwrkbdgr-test-container-with-class'
+	});
+	var container = document.querySelector('#clckwrkbdgr-test-container-with-class');
+	unittest.assertTrue(container);
+	unittest.assertEqual(container.classList[0], 'clckwrkbdgr-test-container');
+
+	test_area.removeChild(container);
+}
+
+function should_create_container_with_style()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		style: 'background-color: red',
+		id: 'clckwrkbdgr-test-container-with-style'
+	});
+	var container = document.querySelector('#clckwrkbdgr-test-container-with-style');
+	unittest.assertTrue(container);
+	unittest.assertEqual(container.style['background-color'], 'red');
+
+	test_area.removeChild(container);
+}
+
+function should_create_container_with_controls()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		id: 'clckwrkbdgr-test-container-with-controls'
+	}, [
+		{type: 'info_item', args: ['Hello world', {id: 'clckwrkbdgr-test-container-with-controls-subcontrol'}]}
+	]);
+	var container = document.querySelector('div#clckwrkbdgr-test-container-with-controls');
+	unittest.assertTrue(container);
+	var subcontrol = document.querySelector('#clckwrkbdgr-test-container-with-controls-subcontrol');
+	unittest.assertTrue(subcontrol);
+	var subcontrol_parent = subcontrol.parentElement;
+	unittest.assertEqual(subcontrol_parent, container);
+
+	test_area.removeChild(container);
+}
+
+function should_create_container_of_unordered_list_with_controls()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		type: 'ul',
+		id: 'clckwrkbdgr-test-container-ul-with-controls'
+	}, [
+		{type: 'info_item', args: ['Hello world', {id: 'clckwrkbdgr-test-container-ul-with-controls-subcontrol'}]}
+	]);
+	var container = document.querySelector('ul#clckwrkbdgr-test-container-ul-with-controls');
+	unittest.assertTrue(container);
+	var subcontrol = document.querySelector('#clckwrkbdgr-test-container-ul-with-controls-subcontrol');
+	unittest.assertTrue(subcontrol);
+	var subcontrol_parent = subcontrol.parentElement;
+	unittest.assertEqual(subcontrol_parent.nodeName, 'LI');
+
+	test_area.removeChild(container);
+}
+
+function should_create_container_as_list_item_with_controls()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		type: 'li',
+		id: 'clckwrkbdgr-test-container-li-with-controls'
+	}, [
+		{type: 'info_item', args: ['Hello world', {id: 'clckwrkbdgr-test-container-li-with-controls-subcontrol'}]}
+	]);
+	var container = document.querySelector('li#clckwrkbdgr-test-container-li-with-controls');
+	unittest.assertTrue(container);
+	var subcontrol = document.querySelector('#clckwrkbdgr-test-container-li-with-controls-subcontrol');
+	unittest.assertTrue(subcontrol);
+	var subcontrol_parent = subcontrol.parentElement;
+	unittest.assertEqual(subcontrol_parent, container);
+
+	test_area.removeChild(container);
 }
 
 </script>
