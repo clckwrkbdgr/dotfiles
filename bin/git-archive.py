@@ -7,10 +7,7 @@ Works for Py2/Py3, Windows/Unix. No external dependencies. Only batteries are re
 import os, sys, subprocess
 import posixpath, fnmatch
 import logging
-if sys.version_info[0] == 2:
-	from urllib2 import urlopen
-else:
-	from urllib.request import urlopen
+from clckwrkbdgr import requests
 
 def update_sparse_checkout_attributes(attributes, export_ignore_files):
 	EXPORT_IGNORE_BEGIN, EXPORT_IGNORE_END = '##{ SPARSE_CHECKOUT', '##} SPARSE_CHECKOUT'
@@ -99,13 +96,13 @@ def fetch_repo(repo_root, url, force_removed=False):
 				os.path.join(gitdir_info, 'archive.tar'),
 				os.path.join(gitdir_info, 'archive.tar.bak'),
 				)
-	data = urlopen(url + '/archive.tar.gz', timeout=5).read()
+	data = requests.get(url + '/archive.tar.gz', timeout=5).as_binary()
 	with open(os.path.join(gitdir_info, 'archive.tar.gz'), 'wb') as f:
 		f.write(data)
 
 	logging.info("Fetching sparse checkout list...")
 	try:
-		data = urlopen(url + '/sparse-checkout', timeout=5).read()
+		data = requests.get(url + '/sparse-checkout', timeout=5).as_binary()
 		with open(os.path.join(gitdir_info, 'sparse-checkout'), 'wb') as f:
 			f.write(data)
 	except Exception as e:

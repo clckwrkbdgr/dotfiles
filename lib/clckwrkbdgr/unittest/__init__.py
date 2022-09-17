@@ -37,7 +37,7 @@ try:
 	from pyfakefs import fake_filesystem_unittest
 	class ExtendedFSTestCase(fake_filesystem_unittest.TestCase):
 		MODULES = None # Modules to reload.
-		def setUp(self):
+		def setUp(self): # pragma: no cover - may be not called if running tests where no FS test cases requested.
 			self.setUpPyfakefs(modules_to_reload=(self.MODULES or []))
 	class fs:
 		TestCase = ExtendedFSTestCase
