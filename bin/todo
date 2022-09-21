@@ -101,7 +101,11 @@ def sync_tasks(config):
 def list_tasks(config, verbose=False):
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
-	prefixes = ('+', '|', '|')
+	prefixes = (
+			termcolor.colored('+', 'magenta', attrs=['bold']),
+			termcolor.colored('|', 'magenta'),
+			termcolor.colored('\\', 'magenta'),
+			)
 	for item in tasklist.list_all(with_groups=True):
 		if utils.is_collection(item):
 			for index, subtask in enumerate(item):
@@ -111,9 +115,18 @@ def list_tasks(config, verbose=False):
 			print_single_task(item, verbose=verbose)
 
 def print_single_task(task, verbose=False, prefix=None):
-	priority = '[{0}] '.format(task.priority) if verbose else ''
+	priority_color = 'green'
+	if task.priority.urgent and task.priority.important:
+		priority_color = 'red'
+	elif task.priority.urgent or task.priority.important:
+		priority_color = 'yellow'
+	priority = '{1}{0}{2} '.format(
+			termcolor.colored(str(task.priority), priority_color),
+			termcolor.colored('[', priority_color),
+			termcolor.colored(']', priority_color),
+			) if verbose else ''
 	prefix = '{0} '.format(prefix) if prefix else ''
-	tags = (' ' + ''.join('[{}]'.format(tag) for tag in task.tags)) if task.tags and verbose else ''
+	tags = (' ' + termcolor.colored(''.join('[{}]'.format(tag) for tag in task.tags), 'cyan')) if task.tags and verbose else ''
 	try:
 		print(prefix + priority + str(task) + tags)
 	except UnicodeError:
