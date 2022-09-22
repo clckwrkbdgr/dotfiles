@@ -252,7 +252,6 @@
             "google@search.mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
-                "lastModifiedTime": 0,
                 "loader": null,
                 "rootURI": "resource://search-extensions/google/",
                 "runInSafeMode": true,
