@@ -35,6 +35,8 @@ function! ScreenFilename()
   endif
 endfunction
 
+let g:_screen_size_was_restored = 0
+
 function! ScreenRestore()
   " Restore window size (columns and lines) and position
   " from values stored in vimsize file.
@@ -47,6 +49,7 @@ function! ScreenRestore()
       if len(sizepos) == 5 && sizepos[0] == vim_instance
         silent! execute "set columns=".sizepos[1]." lines=".sizepos[2]
         silent! execute "winpos ".sizepos[3]." ".sizepos[4]
+        let g:_screen_size_was_restored = 1
         return
       endif
       if len(sizepos) == 6 && sizepos[0] == vim_instance
@@ -56,6 +59,7 @@ function! ScreenRestore()
            silent! execute "simalt ~".sizepos[5]
            let g:maximized = sizepos[5]
         endif
+        let g:_screen_size_was_restored = 1
         return
       endif
     endfor
@@ -64,6 +68,12 @@ endfunction
 
 function! ScreenSave()
   " Save window size and position.
+  if g:_screen_size_was_restored != 1
+     " It was not properly restored at start
+     " so current size may be invalid.
+     " Do not wanna save it.
+     return
+  endif
   if has("gui_running") && g:screen_size_restore_pos
     let vim_instance = (g:screen_size_by_vim_instance==1?(v:servername):'GVIM')
     let data = vim_instance . ' ' . &columns . ' ' . &lines . ' ' .
