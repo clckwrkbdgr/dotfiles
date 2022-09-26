@@ -90,7 +90,7 @@ class Stash(object): # pragma: no cover -- TODO commands
 				return
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(str(e) + '\n')
-			sys.stderr.write(e.stdout.decode('utf-8', 'replace'))
+			sys.stderr.write(e.output.decode('utf-8', 'replace'))
 		quiet_arg = ['--quiet'] if self._quiet else []
 		if 0 != subprocess.call(["git", "stash", "pop"] + quiet_arg):
 			# Resolving merge conflicts 'manually' to prevent leaving conflict markers in the code.
@@ -181,7 +181,7 @@ def sync(quiet=False): # pragma: no cover -- TODO commands
 			sys.stdout.write(stdout.decode('utf-8', 'replace'))
 		return True
 	except subprocess.CalledProcessError as e:
-		sys.stderr.write(e.stdout.decode('utf-8', 'replace'))
+		sys.stderr.write(e.output.decode('utf-8', 'replace'))
 		return False
 
 def push(remote='origin', branch='master'): # pragma: no cover -- TODO commands
