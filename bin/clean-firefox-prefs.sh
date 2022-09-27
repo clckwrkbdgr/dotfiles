@@ -130,4 +130,7 @@ sed '/services.settings.main[.].*[.]last_check/d' | \
 sed '/media.videocontrols.picture-in-picture.video-toggle.has-used/d' | \
 sed '/"doh-rollout[.]/d' | \
 sed '/devtools.debugger.expressions/d' | \
+sed '/services[.]settings[.].*[.]last_check/d' | \
+sed '/devtools.inspector.selectedSidebar/d' | \
+sed '/browser.startup.couldRestoreSession.count/d' | \
 sed 's|'"$HOME"'|$HOME|g'

@@ -59,6 +59,7 @@ firefox/features/*/*.xpi
 firefox/pluginreg.dat
 firefox/safebrowsing
 firefox/security_state/data.safe.bin
+firefox/settings/data.safe.bin
 firefox/serviceworker.txt
 firefox/startupCache/
 firefox/urlclassifier*.sqlite

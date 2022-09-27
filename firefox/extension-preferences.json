@@ -5,22 +5,32 @@
             "internal:privateBrowsingAllowed"
         ]
     },
+    "addons-search-detection@mozilla.com": {
+        "origins": [],
+        "permissions": [
+            "internal:svgContextPropertiesAllowed",
+            "internal:privateBrowsingAllowed"
+        ]
+    },
     "amazondotcom@search.mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "bing@search.mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "ddg@search.mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "doh-rollout@mozilla.org": {
@@ -117,7 +127,8 @@
     "wikipedia@search.mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "{60f82f00-9ad5-4de5-b31c-b16a47c51558}": {
