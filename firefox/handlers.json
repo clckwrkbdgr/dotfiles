@@ -143,7 +143,6 @@
         },
         "application/x-bittorrent": {
             "action": 1,
-            "ask": false,
             "extensions": [
                 "torrent"
             ]
