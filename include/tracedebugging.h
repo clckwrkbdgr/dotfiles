@@ -151,15 +151,24 @@
 #     endif
       void free (void *__ptr);
 #else
-   BADGER_EXTERN void * malloc (size_t __size) __THROW;
-   BADGER_EXTERN void free (void *__ptr) __THROW;
+#  ifdef _AIX
+     BADGER_EXTERN void * malloc (size_t __size);
+     BADGER_EXTERN void free (void *__ptr);
+#  else
+     BADGER_EXTERN void * malloc (size_t __size) __THROW;
+     BADGER_EXTERN void free (void *__ptr) __THROW;
+#  endif//AIX
 #endif
 
 /* #include <stdlib.h> */
 #if defined(_WIN32)
    BADGER_EXTERN char * getenv(const char*);
 #elif defined(__GNUC__)
-   BADGER_EXTERN char * getenv(const char*) BADGER_NOTHROW;
+#  ifdef _AIX
+     BADGER_EXTERN char * getenv(const char*);
+#  else
+     BADGER_EXTERN char * getenv(const char*) BADGER_NOTHROW;
+#  endif//AIX
 #else
    BADGER_EXTERN char * getenv(const char*);
 #endif
