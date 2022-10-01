@@ -141,7 +141,7 @@ class Builder(AbstractBuilder):
 		params = '-D'
 		if not executable:
 			params += 'm0644'
-		subprocess.call(['install', '-D', str(stc), str(dest)])
+		subprocess.call(['install', '-D', str(src), str(dest)])
 	def symlink(self, src, dest):
 		if not dest.exists():
 			os.symlink(str(src), str(dest))
