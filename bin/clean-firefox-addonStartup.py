@@ -37,9 +37,14 @@ tree = {
 		for key,subtree in tree.items()
 		}
 
+# Cleaning startupData - it often changes or even breaks,
+# and probably it's just a cache and will be restored automatically.
+for addon_group in tree:
+	for addon in tree[addon_group]["addons"].values():
+		if 'startupData' in addon:
+			addon['startupData'] = {}
+
 # Cleaning cache/state values.
-for addon in tree["app-global"]["addons"].values():
-	addon["startupData"]["chromeEntries"].sort()
 process_recursively(tree, 'telemetryKey', None)
 process_recursively(tree, 'signedDate', None)
 process_recursively(tree, 'signedState', None)
@@ -50,13 +55,6 @@ process_recursively(tree, 'path', None, skip_if=lambda v: v is not None)
 # Built-in addons.
 if "proxy-failover@mozilla.com" in tree["app-system-defaults"]["addons"]:
 	del tree["app-system-defaults"]["addons"]["proxy-failover@mozilla.com"]
-
-# Cleaning artefacts left after addon update or preparation to update.
-for addon in tree["app-profile"]["addons"].values():
-	if 'startupData' not in addon:
-		continue
-	for listeners in addon['startupData'].get('persistentListeners', {}).get('webRequest', {}).values():
-		listeners.clear()
 
 # Finalization and dumping.
 result = json.dumps(tree, indent=4, sort_keys=True)
