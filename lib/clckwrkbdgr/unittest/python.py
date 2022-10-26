@@ -1,5 +1,10 @@
 import sys, platform, subprocess
+import itertools
 import re
+try:
+	import configparser
+except ImportError: # pragma: no cover
+	import ConfigParser as configparser
 from . import runner
 
 PYTHON_UNITTEST_QUIET_PATTERNS = {
@@ -26,17 +31,26 @@ PYTHON_COVERAGE_QUIET_PATTERNS = list(map(re.compile, [
 	'^.*due to complete coverage[.]$'
 	]))
 
-def quiet_call(args, quiet_stdout_patterns=None, quiet_stderr_patterns=None): # pragma: no cover -- TODO
+def quiet_call(args,
+		quiet_stdout_patterns=None, quiet_stderr_patterns=None,
+		exclude_stdout_patterns=None, exclude_stderr_patterns=None,
+		): # pragma: no cover -- TODO
 	process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdout, stderr = process.communicate(None)
 	rc = process.wait()
 	buffers_to_check = [
-			(stdout, quiet_stdout_patterns, sys.stdout),
-			(stderr, quiet_stderr_patterns, sys.stderr),
+			(stdout, quiet_stdout_patterns, exclude_stdout_patterns, sys.stdout),
+			(stderr, quiet_stderr_patterns, exclude_stderr_patterns, sys.stderr),
 			]
-	for buffer, patterns, stream in buffers_to_check:
+	for buffer, patterns, exclude_patterns, stream in buffers_to_check:
 		if hasattr(stream, 'buffer'):
 			stream = stream.buffer
+		if buffer and exclude_patterns:
+			lines = buffer.decode('utf-8', 'replace').splitlines()
+			lines = [line for line in lines
+					if not any(pattern.match(line) for pattern in exclude_patterns)
+					]
+			buffer = ('\n'.join(lines) + '\n').encode('utf-8', 'replace')
 		do_print = True
 		if buffer and patterns:
 			lines = buffer.decode('utf-8', 'replace').splitlines()
@@ -52,6 +66,14 @@ def quiet_call(args, quiet_stdout_patterns=None, quiet_stderr_patterns=None): # 
 def run_python_unittests(version, test, quiet=False): # pragma: no cover -- TODO
 	allowed_versions = ['2', '3']
 	assert version in allowed_versions, 'Unknown python version {0}, choose from following: {1}'.format(version, allowed_versions)
+
+	setup_cfg = configparser.ConfigParser()
+	setup_cfg.read(['setup.cfg'])
+	custom_omit = []
+	custom_coverage_run_category = 'coverage:run:py{0}'.format(version)
+	if setup_cfg.has_section(custom_coverage_run_category):
+		if setup_cfg.has_option(custom_coverage_run_category, 'omit'):
+			custom_omit.extend(setup_cfg.get(custom_coverage_run_category, 'omit').splitlines())
 
 	if platform.system() == 'Windows':
 		python_runner = ['py', '-{0}'.format(version)]
@@ -81,11 +103,21 @@ def run_python_unittests(version, test, quiet=False): # pragma: no cover -- TODO
 		args += ['discover']
 		if version == '3' and quiet: # FIXME py2 discover does not recognize --quiet.
 			args += ['--quiet']
+	quiet_stderr_patterns = []
+	if quiet:
+		quiet_stderr_patterns.extend(PYTHON_UNITTEST_QUIET_PATTERNS[version])
+
 	rc = quiet_call(args,
-			quiet_stderr_patterns=PYTHON_UNITTEST_QUIET_PATTERNS[version] if quiet else None)
+			quiet_stderr_patterns=quiet_stderr_patterns,
+			)
 	if rc != 0:
 		return rc
-	return quiet_call(python_runner + ['-m', 'coverage', 'report', '-m'],
+	args = python_runner + ['-m', 'coverage', 'report', '-m']
+	if custom_omit:
+		args.extend(itertools.chain.from_iterable(
+			('--omit', entry) for entry in custom_omit
+			))
+	return quiet_call(args,
 			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None)
 
 @runner.test_suite('py2')
