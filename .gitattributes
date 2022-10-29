@@ -148,6 +148,7 @@ bin/pipefiles caps=work
 bin/projects caps=work
 bin/repeat caps=work
 bin/retro caps=work
+bin/sandbox caps=work
 bin/search.sh caps=work
 bin/shebang.py caps=work
 bin/sort-xml caps=work
