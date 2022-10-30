@@ -133,4 +133,6 @@ sed '/devtools.debugger.expressions/d' | \
 sed '/services[.]settings[.].*[.]last_check/d' | \
 sed '/devtools.inspector.selectedSidebar/d' | \
 sed '/browser.startup.couldRestoreSession.count/d' | \
+sed '/devtools.performance.recording/d' | \
+sed '/devtools[.]debugger[.][^.]*-visible/d' | \
 sed 's|'"$HOME"'|$HOME|g'
