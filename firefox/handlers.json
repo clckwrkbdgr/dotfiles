@@ -327,7 +327,6 @@
         },
         "application/zip": {
             "action": 1,
-            "ask": false,
             "extensions": [
                 "zip"
             ]
