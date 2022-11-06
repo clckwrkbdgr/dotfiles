@@ -62,7 +62,7 @@
 # action=1 => AlwaysAsk
 [filter "firefox_handlers_json"]
 	smudge = cat
-	clean = "python -c 'import sys,json; data = json.loads(sys.stdin.read()); data[\"mimeTypes\"] = dict( (key,dict( (_,v if _ != \"action\" else 1) for _,v in value.items())) for key,value in data[\"mimeTypes\"].items()); print(json.dumps(data, indent=4, sort_keys=True))'"
+	clean = "python -c 'import sys,json; data = json.loads(sys.stdin.read()); data[\"mimeTypes\"] = dict( (key,dict( (k,v if k != \"action\" else 1) for k,v in value.items() if k != \"ask\")) for key,value in data[\"mimeTypes\"].items()); print(json.dumps(data, indent=4, sort_keys=True))'"
 
 [filter "firefox_pref_js"]
 	smudge = clean-firefox-prefs.sh --restore
