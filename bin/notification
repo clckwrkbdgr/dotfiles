@@ -63,6 +63,7 @@ click::epilog      " "
 click::epilog      "If global userstate 'silent_notifications' is set, quiet mode is forced."
 click::flag '-l' "" 'list_log' --help="Prints previous $MESSAGES_TO_STORE messages."
 click::flag '-q' "" 'quiet' --help="quiet mode (no sounds/voice)."
+click::flag '-S' "--no-signal" 'no_signal' --help="Do not play sound signal. Voice message is still on (unless flag -q is supplied)."
 click::option '-T' "--type" 'notification_type' --default=default --help="Type of notification message. Available values:
 - default - Standard pop-up notification bubble.
 - fixed   - Fixed position on screen (top-left corner). Replaces previous notification if it is still displayed.
@@ -82,6 +83,7 @@ cli() {
 		exit 0
 	fi
 	quiet="${CLICK_ARGS[quiet]}"
+	no_signal="${CLICK_ARGS[no_signal]}"
 	title="${CLICK_ARGS[title]}"
 	icon="${CLICK_ARGS[icon]}"
 	text="${CLICK_ARGS[text]}"
@@ -116,7 +118,7 @@ cli() {
 		fi
 	fi
 
-	[ -z "$quiet" ] && play_signal &
+	[ -z "$quiet" -a -z "$no_signal" ] && play_signal &
 
 	if [ -n "$text" ]; then
 		$display_notification "$title" "$text" --icon="$icon" &

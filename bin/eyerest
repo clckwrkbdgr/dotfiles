@@ -59,7 +59,7 @@ def eyerest():
 		rest_time = current_time - begin_rest_time
 		if rest_time >= REST_TIME:
 			os.remove(CURRENT_REST_TIMESTAMP)
-			os.system("notification -t Pomodoro -i gdu-smart-healthy 'Now you can work again.'")
+			os.system("notification --no-signal -t Pomodoro -i gdu-smart-healthy 'Now you can work again.'")
 			lighten_screen()
 		else:
 			return None
@@ -86,7 +86,7 @@ def eyerest():
 	last_break_time = os.path.getmtime(LAST_BREAK_TIMESTAMP)
 	passed_time = current_time - last_break_time
 	if passed_time >= WORK_TIME:
-		os.system("notification -t Pomodoro -i gdu-smart-failing 'Take a break!'")
+		os.system("notification --no-signal -t Pomodoro -i gdu-smart-failing 'Take a break!'")
 		darken_screen()
 		os.remove(LAST_BREAK_TIMESTAMP)
 		open(CURRENT_REST_TIMESTAMP, 'w').close()
