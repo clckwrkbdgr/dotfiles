@@ -143,3 +143,8 @@
 [filter "mapeditor_tiled_conf"]
 	smudge = cat
 	clean = "sed '/^\\[recentFiles\\]/,/^$/d;/^\\[mainwindow\\]/,/^$/d;/^\\[Install\\]/,/^$/d;/^\\[LastPaths\\]/,/^$/d;/^\\[ObjectsDock\\]/,/^$/d;/^\\[Tileset\\]/,/^$/d;/^\\[TilesetDock\\]/,/^$/d;/^\\[General\\]/,/^$/{/^commandList=/d;/^lastUsedOpenFilter/d};/^\\[Map\\]/,/^$/{/^FixedSize=/d;/^Height=/d;/^Width=/d;/^TileHeight=/d;/^TileWidth=/d;/^Orientation=/d;};/^\\[MapEditor\\]/,/^$/{/^MapStates=/d;/^State=/d;/^Size=/d};/^\\[TilesetEditor\\]/,/^$/{/^State=/d;/^Size=/d};/^\\[TileAnimationEditor\\]/,/^$/{/^Geometry=/d};/^\\[ResizeDialog\\]/,/^$/{/^Geometry=/d};/^\\[AddPropertyDialog\\]/,/^$/{/^PropertyType=/d}'"
+
+# TODO to filterconf
+[filter "qvge_conf"]
+	smudge = cat
+	clean = "sed '/^\\[CustomFiles\\]/,/^$/d;/^\\[General\\]/,/^$/{/^geometry=/d;/^instances=/d;/^lastPath=/d;/^maximized=/d;/^recentFiles=/d;/^windowState=/d;/^cacheRam=/d;};/^\\[UI\\]/,/^$/{/^[^=]*splitterPosition=/d}'"

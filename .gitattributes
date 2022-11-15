@@ -34,6 +34,7 @@ checkio/config.ini filter=checkio_config
 QtProject.conf filter=qtproject_conf
 WindowsTerminal/settings.json filter=windows_terminal_settings
 mapeditor.org/tiled.conf filter=mapeditor_tiled_conf
+"qvge/Qt Visual Graph Editor.conf" filter=qvge_conf
 
 xfce4/** caps=home
 xinitrc caps=home
@@ -93,6 +94,7 @@ bin/xfce-leds caps=home
 bin/xfce-leds-genmon.sh caps=home
 lib/instant_messaging.bash caps=home
 mapeditor.org/tiled.conf caps=home
+"qvge/Qt Visual Graph Editor.conf" caps=home
 umi0451/inventory.conf caps=home
 umi0451/minefield.conf caps=home
 umi0451/pomodoro.conf caps=home
