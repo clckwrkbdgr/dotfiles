@@ -567,7 +567,6 @@ user_pref("privacy.donottrackheader.enabled", true);
 user_pref("privacy.history.custom", true);
 user_pref("privacy.purge_trackers.date_in_cookie_database", "0");
 user_pref("privacy.sanitize.migrateFx3Prefs", true);
-user_pref("privacy.sanitize.pending", "[{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}}]");
 user_pref("privacy.userContext.enabled", true);
 user_pref("privacy.userContext.extension", "{60f82f00-9ad5-4de5-b31c-b16a47c51558}");
 user_pref("privacy.userContext.longPressBehavior", 2);

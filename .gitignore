@@ -71,6 +71,7 @@ firefox/crashes/store.json.mozlz4
 firefox/datareporting/
 firefox/sessionCheckpoints.json
 firefox/sessionstore-backups/
+firefox/sessionstore.jsonlz4
 firefox/shield-preference-experiments.json
 firefox/weave/failed/tabs.json
 firefox/weave/logs/error-sync-*.txt

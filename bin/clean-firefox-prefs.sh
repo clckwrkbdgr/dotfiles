@@ -135,4 +135,5 @@ sed '/devtools.inspector.selectedSidebar/d' | \
 sed '/browser.startup.couldRestoreSession.count/d' | \
 sed '/devtools.performance.recording/d' | \
 sed '/devtools[.]debugger[.][^.]*-visible/d' | \
+sed '/privacy.sanitize.pending/d' | \
 sed 's|'"$HOME"'|$HOME|g'
