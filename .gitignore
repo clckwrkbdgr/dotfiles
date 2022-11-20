@@ -165,3 +165,7 @@ checkio/ff/ff_plugin.bat
 checkio/ff/com.checkio.client.json
 # NPM
 configstore/update-notifier-npm.json
+# IBus runtime.
+/ibus/bus/*-unix-*
+# Evolution
+/evolution/sources/system-proxy.source
