@@ -309,6 +309,8 @@ def has_changes(check_diff=False): # pragma: no cover -- TODO commands
 			return True # Definitely changes.
 		if line[1] == 'M':
 			filename = line[3:]
+			if filename.startswith('"') and filename.endswith('"'):
+				filename = filename[1:-1] # TODO properly parse/unescape quoted file name.
 			if file_needs_commit(filename):
 				return True # Content actually differs.
 	return False
