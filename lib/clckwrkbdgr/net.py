@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os, sys, subprocess
+import platform
 import re
 import random
 try:
@@ -53,7 +54,10 @@ def knock(host, interface=None, verbose=False): # pragma: no cover -- TODO calls
 	If interface is not None, uses that network interface to send packages.
 	If verbose is True, prints some info about each ping to stderr.
 	"""
-	args = ["ping", "-q", "-c", "1", "-s", "1", "-W", "2"]
+	timeout_option = '-W'
+	if platform.system() == 'AIX':
+		timeout_option = '-w'
+	args = ["ping", "-q", "-c", "1", "-s", "1", timeout_option, "2"]
 	if interface:
 		args += ['-I', interface]
 	args += [host]
