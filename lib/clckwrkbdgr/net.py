@@ -65,7 +65,7 @@ def knock(host, interface=None, verbose=False): # pragma: no cover -- TODO calls
 		output = subprocess.check_output(args, stderr=subprocess.STDOUT)
 		rc = 0
 	except subprocess.CalledProcessError as e:
-		output = e.stdout
+		output = e.output
 		rc = e.returncode
 	if verbose:
 		for line in _clear_ping_output(output.decode('utf-8', 'replace').splitlines()):
