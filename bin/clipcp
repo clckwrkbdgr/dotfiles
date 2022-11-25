@@ -94,7 +94,10 @@ def copy_file(filename, use_base64=False):
 	"""
 	data = b''
 	if filename:
-		data += Path(filename).name.encode('cp1251')
+		if use_base64:
+			data += base64.b64encode(Path(filename).name.encode('utf-8'))
+		else:
+			data += Path(filename).name.encode('cp1251')
 	data += b'\n'
 	with clckwrkbdgr.utils.fileinput(filename, 'rb') as f:
 		content = f.read()
