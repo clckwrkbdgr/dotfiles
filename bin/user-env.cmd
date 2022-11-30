@@ -41,4 +41,4 @@
    #   . ~/.config/bin/user-env.cmd; <command> <args...>
    export NO_SCREEN=true # To prevent terminal multiplexor. TODO - need a cross-shell way to detect non-interactive shell.
    . ~/.config/profile
-   "$@"
+   exec "$@"

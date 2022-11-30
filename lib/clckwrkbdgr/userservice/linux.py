@@ -18,6 +18,8 @@ Description={display_name}
 ExecStart=sh {user_env} {commandline}
 StandardOutput=append:{logfile}
 StandardError=inherit
+KillMode=mixed
+TimeoutStopSec=90
 
 [Install]
 WantedBy=default.target
