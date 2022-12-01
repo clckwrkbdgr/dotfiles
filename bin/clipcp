@@ -126,7 +126,10 @@ def dump_file(force_expect_base64=False):
 		crc, content = content.split(BYTELINESEP, 1)
 	if force_expect_base64 and not use_base64:
 		print('Expected base64 explicitly, but did not found base64 marker in data!', file=sys.stderr)
-	filename = filename.decode('utf-8').encode('latin1').decode('cp1251')
+	if use_base64:
+		filename = base64.b64decode(filename).decode('utf-8')
+	else:
+		filename = filename.decode('utf-8').encode('latin1').decode('cp1251')
 
 	if use_base64:
 		content = base64.b64decode(content)
