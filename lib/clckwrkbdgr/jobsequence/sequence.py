@@ -4,6 +4,7 @@ try:
 	from pathlib2 import Path, PurePath
 except ImportError: # pragma: no cover
 	from pathlib import Path, PurePath
+from .. import xdg
 
 CLI_USAGE = """
 Job actions are defined as executable files (scripts, binaries) under job directory (see --dir option).
@@ -26,6 +27,24 @@ Default verbosity mode is 'fully quiet', each job is supposed to produce no outp
 If verbosity level is >0, the main runner script will also print some info about executed actions.
 """
 
+def process_alive(pid): # pragma: no cover -- TODO to some OS-utils module.
+	import platform
+	if platform.system() == 'Windows':
+		try:
+			output = subprocess.check_output(["tasklist", "/FI", "PID eq {0}".format(pid)], stderr=subprocess.STDOUT)
+			if str(pid).encode() in output:
+				return True
+		except subprocess.CalledProcessError:
+			pass
+	else:
+		import os
+		try:
+			os.kill(pid, 0)
+			return True
+		except OSError:
+			pass
+		return False
+
 def run_job_executable(executable, header=None): # pragma: no cover -- TODO processes and stdouts.
 	"""
 	Runs executable (using shell=True), checks for stdout/stderr.
@@ -36,17 +55,19 @@ def run_job_executable(executable, header=None): # pragma: no cover -- TODO proc
 	header = header or (str(executable)+'\n')
 	process = subprocess.Popen([str(executable)], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) # TODO maybe stdin=DEVNULL? As these jobs should always be automatically.
 	stdout, stderr = process.communicate()
-	was_output = bool(stdout or stderr)
-	if was_output:
+	if stdout or stderr:
 		sys.stdout.write(header)
 		sys.stdout.flush()
+	was_output = b''
 	if stdout:
+		was_output += stdout
 		if hasattr(sys.stdout, 'buffer'):
 			sys.stdout.buffer.write(stdout)
 		else:
 			sys.stdout.write(stdout)
 		sys.stdout.flush()
 	if stderr:
+		was_output += stderr
 		if hasattr(sys.stderr, 'buffer'):
 			sys.stderr.buffer.write(stderr)
 		else:
@@ -56,9 +77,10 @@ def run_job_executable(executable, header=None): # pragma: no cover -- TODO proc
 	return rc, was_output
 
 class JobSequence:
-	def __init__(self, verbose_var_name, default_job_dir, click=None):
+	def __init__(self, verbose_var_name, default_job_dir, click=None, default_state_dir=None):
 		self.verbose_var_name = verbose_var_name
 		self.default_job_dirs = self._fix_job_dir_arg(default_job_dir)
+		self.default_state_dir = default_state_dir or xdg.save_state_path('jobsequence')
 		if click is None: # pragma: no cover
 			import click
 		self.click = click
@@ -86,9 +108,28 @@ class JobSequence:
 		return self.click.option('--dry', 'dry_run', is_flag=True, help="Dry run. Only report about actions, do not actually execute them. Implies at least one level in verbosity.")
 	def job_dir_option(self):
 		return self.click.option('-d', '--dir', 'job_dirs', multiple=True, default=self.default_job_dirs, show_default=True, help="Custom directory with job files. Can be specified several times, job files from all directories are sorted and executed in total order.")
+	def state_dir_option(self):
+		return self.click.option('--state-dir', 'state_dir', default=self.default_state_dir, show_default=True, type=Path, help="Path to directory to store intermediate state of running jobsequence processes. Useful for investigation when the process takes a long time and terminated abnormally. Such remaining files will be reported when their process is not detected as alive.")
 	def patterns_argument(self):
 		return self.click.argument('patterns', nargs=-1)
-	def run(self, patterns, job_dirs, dry_run=False, verbose=0):
+	def save_state(self, state_file, data): # pragma: no cover -- TODO FS
+		if not state_file:
+			return
+		import datetime
+		with state_file.open('ab+') as f:
+			f.write('!!! {0}\n'.format(datetime.datetime.now()).encode())
+			f.write(data)
+			f.write('\n\n'.encode())
+	def run(self, patterns, job_dirs, dry_run=False, verbose=0, state_dir=None):
+		state_file = None
+		if state_dir and state_dir.exists(): # pragma: no cover -- TODO FS
+			for entry in state_dir.iterdir():
+				pid = int(entry.name)
+				if not process_alive(pid):
+					sys.stderr.write('!!! Jobsequence state file exists, but process is not alive: {0}\n'.format(entry))
+					sys.stderr.flush()
+			state_file = state_dir/str(os.getpid())
+
 		job_dirs = self._fix_job_dir_arg(job_dirs)
 		job_dirs = list(map(Path, job_dirs or self.default_job_dirs))
 		if dry_run:
@@ -118,6 +159,7 @@ class JobSequence:
 				)
 		was_output = False
 		main_title = Path(sys.modules['__main__'].__file__).name
+		self.save_state(state_file, b'START\n')
 		for entry in sorted(itertools.chain.from_iterable(entries), key=lambda entry: entry.name):
 			if self._is_unwanted(entry):
 				logger.info("Skipping unwanted entry: {0}".format(entry))
@@ -128,10 +170,12 @@ class JobSequence:
 			if exclude_patterns and any(pattern in entry.name for pattern in exclude_patterns):
 				logger.info("Job was unmatched by exclude patterns: {0}".format(entry))
 				continue
+			self.save_state(state_file, str(entry).encode('ascii', 'replace') + b'\n')
 			logger.info("Executing job: {0}".format(entry))
 			if not dry_run:
 				header = '=== {0} : {1}\n'.format(main_title, str(entry))
 				rc, job_has_output = run_job_executable(entry, header)
+				self.save_state(state_file, job_has_output)
 				was_output = was_output or job_has_output
 			else:
 				logger.info("[DRY] Executing: `{0}`".format(entry))
@@ -141,6 +185,8 @@ class JobSequence:
 		if was_output: # pragma: no cover -- TODO
 			sys.stdout.write('=== {0} : [Finished]\n'.format(main_title))
 			sys.stdout.flush()
+		if state_file: # pragma: no cover -- TODO FS
+			os.unlink(str(state_file))
 		return total_rc
 	@property
 	def cli(self):
@@ -148,10 +194,11 @@ class JobSequence:
 		@self.verbose_option()
 		@self.dry_run_option()
 		@self.job_dir_option()
+		@self.state_dir_option()
 		@self.patterns_argument()
-		def cli(patterns, job_dirs=None, dry_run=False, verbose=0):
+		def cli(patterns, job_dirs=None, dry_run=False, verbose=0, state_dir=None):
 			""" Runs sequence of job actions.
 			"""
-			rc = self.run(patterns, job_dirs, dry_run=dry_run, verbose=verbose)
+			rc = self.run(patterns, job_dirs, dry_run=dry_run, verbose=verbose, state_dir=state_dir)
 			sys.exit(rc)
 		return cli

@@ -34,22 +34,27 @@ class TestJobSequence(unittest.TestCase):
 				)
 	def should_generate_verbose_option(self):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		result = seq.verbose_option()
 		click.option.assert_called_once_with('-v', '--verbose', count=True, help='Verbosity level.Passed to jobs via $MY_VERBOSE_VAR.Has cumulative value, each flag adds one level to verbosity and one character to environment variable: MY_VERBOSE_VAR=vvv.')
 	def should_generate_job_dir_option(self):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		result = seq.job_dir_option()
 		click.option.assert_called_once_with('-d', '--dir', 'job_dirs', multiple=True, default=['my_default_dir'], show_default=True, help="Custom directory with job files. Can be specified several times, job files from all directories are sorted and executed in total order.")
 	def should_generate_dry_run_option(self):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		result = seq.dry_run_option()
 		click.option.assert_called_once_with('--dry', 'dry_run', is_flag=True, help="Dry run. Only report about actions, do not actually execute them. Implies at least one level in verbosity.")
+	def should_generate_state_dir_option(self):
+		click = mock.MagicMock()
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
+		result = seq.state_dir_option()
+		click.option.assert_called_once_with('--state-dir', 'state_dir', type=Path, default='my_state_dir', show_default=True, help="Path to directory to store intermediate state of running jobsequence processes. Useful for investigation when the process takes a long time and terminated abnormally. Such remaining files will be reported when their process is not detected as alive.")
 	def should_generate_patterns_argument(self):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		result = seq.patterns_argument()
 		click.argument.assert_called_once_with('patterns', nargs=-1)
 	@mock.patch.dict(os.environ, os.environ.copy())
@@ -59,7 +64,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_run_job_sequence(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		seq.run(None, None, verbose=0)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], '')
 		path_iterdir.assert_has_calls([])
@@ -80,7 +85,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True, True])
 	def should_run_several_job_dirs(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', ['my_default_dir', 'my_other_dir'], click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', ['my_default_dir', 'my_other_dir'], click=click, default_state_dir='my_state_dir')
 		seq.run(None, None, verbose=0)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], '')
 		path_iterdir.assert_has_calls([])
@@ -102,7 +107,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True, False])
 	def should_skip_missing_job_dirs(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', ['my_default_dir', 'my_other_dir'], click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', ['my_default_dir', 'my_other_dir'], click=click, default_state_dir='my_state_dir')
 		seq.run(None, None, verbose=0)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], '')
 		path_iterdir.assert_has_calls([])
@@ -122,7 +127,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_run_verbose(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		seq.run(None, None, verbose=2)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
@@ -142,7 +147,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_perform_dry_run(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		seq.run(None, None, verbose=2, dry_run=True)
 		self.assertIsNone(os.environ.get('MY_VERBOSE_VAR'))
 		path_iterdir.assert_has_calls([])
@@ -159,7 +164,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_run_on_specified_log_dir(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		seq.run(None, 'my_other_dir', verbose=2)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
@@ -179,7 +184,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_collect_return_codes(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		rc = seq.run(None, 'my_other_dir', verbose=2)
 		self.assertEqual(rc, 3)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
@@ -201,7 +206,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_ignore_unwanted_files(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		seq.run([], 'my_other_dir', verbose=2)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
@@ -221,7 +226,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_match_patterns(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		seq.run(['ba'], 'my_other_dir', verbose=2)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
@@ -242,7 +247,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_unmatch_patterns(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		seq.run(['!ba'], 'my_other_dir', verbose=2)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
@@ -262,7 +267,7 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_combine_patterns(self, path_is_dir, path_iterdir, subprocess_call, logging_info):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 		seq.run(['ba', '!baz'], 'my_other_dir', verbose=2)
 		self.assertEqual(os.environ['MY_VERBOSE_VAR'], 'vv')
 		path_iterdir.assert_has_calls([])
@@ -283,13 +288,14 @@ class TestJobSequence(unittest.TestCase):
 	@mock.patch.object(pathlib.Path, 'is_dir', side_effect=[True])
 	def should_run_cli(self, path_is_dir, path_iterdir, subprocess_call, logging_info, sys_exit):
 		click = mock.MagicMock()
-		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click)
+		seq = JobSequence('MY_VERBOSE_VAR', 'my_default_dir', click=click, default_state_dir='my_state_dir')
 
 		seq.run = mock.MagicMock(return_value=1)
 		click.command = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 		seq.verbose_option = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 		seq.dry_run_option = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 		seq.job_dir_option = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
+		seq.state_dir_option = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 		seq.patterns_argument = mock.MagicMock(side_effect=lambda *args, **kwargs: (lambda x:x))
 
 		seq.cli(['patterns'], None)
@@ -298,7 +304,7 @@ class TestJobSequence(unittest.TestCase):
 		seq.dry_run_option.assert_called_with()
 		seq.job_dir_option.assert_called_with()
 		seq.patterns_argument.assert_called_with()
-		seq.run.assert_called_once_with(['patterns'], None, verbose=0, dry_run=False)
+		seq.run.assert_called_once_with(['patterns'], None, verbose=0, dry_run=False, state_dir=None)
 		sys_exit.assert_called_once_with(1)
 
 class TestWorkerStats(unittest.fs.TestCase):
