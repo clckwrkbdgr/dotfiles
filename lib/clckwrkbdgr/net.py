@@ -29,48 +29,94 @@ for filename in custom_hosts_files: # pragma: no cover -- TODO generic routine t
 	if filename.is_file():
 		known_hosts.extend(read_known_hosts(filename))
 
-_ping_patterns = list(map(re.compile, [
-	r'PING (\w+[.]?)+ \((\d+[.]?)+\) from (\d+[.]?)+ [a-z0-9]+: \d+\(\d+\) bytes of data.',
-	r'PING (\w+[.]?)+ \((\d+[.]?)+\) \d+\(\d+\) bytes of data.',
-	r'--- (\w+[.]?)+ ping statistics ---',
-	r'ping: Warning: source address might be selected on device other than .*',
-	]))
+class Ping:
+	DROP_PATTERNS = []
 
-def _clear_ping_output(lines):
-	for line in lines:
-		if not line.strip():
-			continue
-		skip = False
-		for pattern in _ping_patterns:
-			if pattern.match(line):
-				skip = True
-				break
-		if skip:
-			continue
-		yield line
+	def __init__(self, host, interface=None):
+		self.host = host
+		self.interface = interface
+		self.rc = None
+	def get_command(self): # pragma: no cover
+		raise NotImplementedError
+
+	def filter_output_lines(self, lines):
+		for line in lines:
+			if not line.strip():
+				continue
+			skip = False
+			for pattern in self.DROP_PATTERNS:
+				if pattern.match(line):
+					skip = True
+					break
+			if skip:
+				continue
+			yield line
+	def run(self): # pragma: no cover -- TODO
+		try:
+			args = self.get_command()
+			self.output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+			self.rc = 0
+		except subprocess.CalledProcessError as e:
+			self.output = e.output
+			self.rc = e.returncode
+	def ok(self): # pragma: no cover -- TODO
+		return self.rc == 0
+	def iter_output(self):
+		for line in self.filter_output_lines(self.output.decode('utf-8', 'replace').splitlines()):
+			yield line
+
+class WinPing(Ping): # pragma: no cover -- TODO
+	DROP_PATTERNS = list(map(re.compile, [
+		r'Pinging ([^. ]+[.]?)+ \[(\d+[.]?)+\] with \d+ bytes of data:',
+		r'Ping statistics for (\d+[.]?)+:',
+		r'    Packets: Sent = \d+, Received = \d+, Lost = \d+ \(\d+% loss\)',
+		r'Approximate round trip times in milli-seconds:',
+		r'    Minimum = \d+ms, Maximum = \d+ms, Average = \d+ms',
+		]))
+	def get_command(self):
+		args = ["ping", "-n", "1", "-w", "2"]
+		if self.interface:
+			args += ['-S', self.interface]
+		args += [self.host]
+		return args
+
+class UnixPing(Ping): # pragma: no cover -- TODO
+	DROP_PATTERNS = list(map(re.compile, [
+		r'PING ([^. ]+[.]?)+ \((\d+[.]?)+\) from (\d+[.]?)+ [a-z0-9]+: \d+\(\d+\) bytes of data.',
+		r'PING ([^. ]+[.]?)+ \((\d+[.]?)+\) \d+\(\d+\) bytes of data.',
+		r'--- ([^. ]+[.]?)+ ping statistics ---',
+		r'ping: Warning: source address might be selected on device other than .*',
+		]))
+	TIMEOUT_OPTION = '-w'
+
+	def get_command(self):
+		args = ["ping", "-q", "-c", "1", "-s", "1", self.TIMEOUT_OPTION, "2"]
+		if self.interface:
+			args += ['-I', self.interface]
+		args += [self.host]
+		return args
+
+class AIXPing(UnixPing): # pragma: no cover -- TODO
+	pass
+
+class LinuxPing(UnixPing): # pragma: no cover -- TODO
+	TIMEOUT_OPTION = '-W'
 
 def knock(host, interface=None, verbose=False): # pragma: no cover -- TODO calls command.
 	""" Returns True if given host responded for ping.
 	If interface is not None, uses that network interface to send packages.
 	If verbose is True, prints some info about each ping to stderr.
 	"""
-	timeout_option = '-W'
-	if platform.system() == 'AIX':
-		timeout_option = '-w'
-	args = ["ping", "-q", "-c", "1", "-s", "1", timeout_option, "2"]
-	if interface:
-		args += ['-I', interface]
-	args += [host]
-	try:
-		output = subprocess.check_output(args, stderr=subprocess.STDOUT)
-		rc = 0
-	except subprocess.CalledProcessError as e:
-		output = e.output
-		rc = e.returncode
+	ping = {
+			'Windows': WinPing,
+			'AIX': AIXPing,
+			'Linux': LinuxPing,
+			}.get(platform.system(), UnixPing)(host, interface=interface)
+	ping.run()
 	if verbose:
-		for line in _clear_ping_output(output.decode('utf-8', 'replace').splitlines()):
+		for line in ping.iter_output():
 			print(line, file=sys.stderr)
-	return rc == 0
+	return ping.ok()
 
 def check_hosts(hosts=None, interface=None, verbose=False): # pragma: no cover -- TODO needs mocks.
 	""" Pings given hosts: first check any random entry, then checks all hosts one by one.
