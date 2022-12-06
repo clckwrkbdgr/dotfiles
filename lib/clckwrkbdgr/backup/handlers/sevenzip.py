@@ -41,7 +41,7 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 		integrity_command = [self.context.zip_path, 't', str(backup_archive)]
 		if self.context.password:
 			integrity_command.append(clckwrkbdgr.backup.PasswordArg(self.context.password))
-		list_command = [self.context.zip_path, 'l', str(backup_archive)]
+		list_command = [self.context.zip_path, 'l', '-sccUTF-8', str(backup_archive)]
 		if self.context.password:
 			list_command.append(clckwrkbdgr.backup.PasswordArg(self.context.password))
 
@@ -72,7 +72,8 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 			found_splitters = 0
 			strip_size = None
 			stored_files = []
-			encoding = 'cp866' if platform.system() == 'Windows' else 'utf-8'
+			encoding = 'utf-8'
+			encoding_trans = str.maketrans(*self.context.encoding_translation)
 			for line in output.decode(encoding, 'replace').splitlines():
 				if found_splitters == 2:
 					break
@@ -84,12 +85,12 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 						found_splitters += 1
 						continue
 					filename = line[strip_size:]
+					filename = filename.translate(encoding_trans)
 					stored_files.append(os.path.join(
 						os.path.dirname(os.path.abspath(str(self.context.root))), # Name from backup listing should already include root dirname.
 						filename,
 						))
 			existing_files = []
-			encoding_trans = str.maketrans(*self.context.encoding_translation)
 			for root, dirnames, filenames in os.walk(os.path.abspath(str(self.context.root))):
 				existing_files.append(root)
 				dirnames[:] = [dirname
