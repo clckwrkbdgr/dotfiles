@@ -80,7 +80,10 @@ class JobSequence:
 	def __init__(self, verbose_var_name, default_job_dir, click=None, default_state_dir=None):
 		self.verbose_var_name = verbose_var_name
 		self.default_job_dirs = self._fix_job_dir_arg(default_job_dir)
-		self.default_state_dir = default_state_dir or xdg.save_state_path('jobsequence')
+		if not default_state_dir: # pragma: no cover
+			import socket
+			default_state_dir = xdg.save_state_path('jobsequence')/socket.gethostname()
+		self.default_state_dir = default_state_dir
 		if click is None: # pragma: no cover
 			import click
 		self.click = click
