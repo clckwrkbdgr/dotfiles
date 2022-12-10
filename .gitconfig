@@ -94,7 +94,7 @@
 
 [filter "gtkfilechooser"]
 	smudge = cat
-	clean = "sed 's|Geometry\\([XY]\\)=[0-9]\\+|Geometry\\1=0|'"
+	clean = "sed 's|Geometry\\([XY]\\)=[0-9]\\+|Geometry\\1=0|;s|GeometryWidth=[0-9]\\+|GeometryWidth=200|;s|GeometryHeight=[0-9]\\+|GeometryHeight=200|'"
 
 [filter "remove_known_applications"]
 	smudge = cat
