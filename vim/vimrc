@@ -48,6 +48,7 @@ nmap QQ :w<CR>
 inoremap <C-Space> <C-^>
 nmap <C-p> :tabnew<Bar>setlocal buftype=nofile<Bar>read !xclip -o<CR>
 map <C-t> :NERDTreeFocus<CR>
+map <C-n> :cn<CR>
 
 if v:version > 700
 	source $XDG_CONFIG_HOME/vim/sessions.vim
