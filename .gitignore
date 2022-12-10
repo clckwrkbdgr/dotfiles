@@ -169,3 +169,8 @@ configstore/update-notifier-npm.json
 /ibus/bus/*-unix-*
 # Evolution
 /evolution/sources/system-proxy.source
+# Syncthing
+/syncthing/*.pem
+/syncthing/config.xml.v0
+# Syncthing (to local/share)
+/syncthing/config.xml
