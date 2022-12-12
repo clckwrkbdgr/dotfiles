@@ -387,6 +387,17 @@
                 "shtml"
             ]
         },
+        "text/javascript": {
+            "action": 1,
+            "extensions": [
+                "srt",
+                "asc",
+                "txt",
+                "text",
+                "pot",
+                "brf"
+            ]
+        },
         "text/plain": {
             "action": 1,
             "extensions": [
