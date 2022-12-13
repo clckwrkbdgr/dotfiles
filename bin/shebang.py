@@ -52,7 +52,10 @@ if not headline.startswith(b'#!'):
 	sys.exit(1)
 interpreter = headline[2:].strip()
 logging.debug('interpreter: {0}'.format(repr(interpreter)))
-if not os.path.exists(interpreter):
+logging.debug('interpreter line is a full path to interpreter executable: {0}'.format(os.path.exists(interpreter)))
+if os.path.exists(interpreter):
+	interpreter = [interpreter]
+else:
 	if platform.system() == 'Windows':
 		logging.debug('Detected Windows. Trying to convert shebang interpreter...')
 		if interpreter.startswith(b'/usr/bin/env '):
@@ -83,7 +86,7 @@ if not os.path.exists(interpreter):
 				command = translated_command
 				interpreter = builtin_interpreters_with_translated_paths[interpreter]
 				logging.debug('known interpreter: running as {0}'.format(repr(interpreter)))
-interpreter = shlex.split(interpreter.decode(errors='replace'))
+	interpreter = shlex.split(interpreter.decode(errors='replace'))
 command_line = interpreter + [command] + args
 logging.debug('full command line: {0}'.format(command_line))
 try:
