@@ -86,6 +86,9 @@ else:
 				command = translated_command
 				interpreter = builtin_interpreters_with_translated_paths[interpreter]
 				logging.debug('known interpreter: running as {0}'.format(repr(interpreter)))
+			if interpreter.startswith(b'/usr/bin/'):
+				interpreter = interpreter[len(b'/usr/bin/'):]
+				logging.debug('Auto-guessing interpreter from /usr/bin/*: running as {0}'.format(repr(interpreter)))
 	interpreter = shlex.split(interpreter.decode(errors='replace'))
 command_line = interpreter + [command] + args
 logging.debug('full command line: {0}'.format(command_line))
