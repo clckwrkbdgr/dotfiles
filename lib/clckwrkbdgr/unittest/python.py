@@ -24,11 +24,12 @@ PYTHON_UNITTEST_QUIET_PATTERNS = {
 		}
 PYTHON_COVERAGE_QUIET_PATTERNS = list(map(re.compile, [
 	'^Name +Stmts +Miss +Cover +Missing$',
-	'^-{37}$',
-	'^-{37}$',
 	'^TOTAL +[0-9]+ +0 +100%$',
 	'^$',
 	'^.*due to complete coverage[.]$'
+	]))
+PYTHON_COVERAGE_QUIET_EXCLUDE_PATTERNS = list(map(re.compile, [
+	'^-{37}$',
 	]))
 
 def quiet_call(args,
@@ -118,7 +119,9 @@ def run_python_unittests(version, test, quiet=False): # pragma: no cover -- TODO
 			('--omit', entry) for entry in custom_omit
 			))
 	return quiet_call(args,
-			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None)
+			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None,
+			exclude_stdout_patterns=PYTHON_COVERAGE_QUIET_EXCLUDE_PATTERNS if quiet else None,
+			)
 
 @runner.test_suite('py2')
 def python_2_unittest(test, quiet=False): # pragma: no cover -- TODO
