@@ -34,6 +34,19 @@ else:
 if not dest.exists():
 	context.done()
 
+import re
+VERSION = re.compile(r'^When version ([0-9.]+), \(c\).*$')
+version_line = subprocess.check_output(['perl', str(dest), '--version']).decode().splitlines()[0]
+version = VERSION.match(version_line)
+if not version:
+	context.warning('Failed to detect version:\n\t' + version_line)
+else:
+	version = tuple(map(int, version.group(1).split('.')))
+	XDG_SUPPORT_VERSION = (1, 1, 45)
+	if version >= XDG_SUPPORT_VERSION:
+		context.info('Version {0} already supports XDG out of the box.'.format(version))
+		context.done()
+
 patch = xdg.XDG_CONFIG_HOME/'patch'/'when-1.1.36-xdg.patch'
 if not patch_is_applied(dest, patch):
 	context | apply_patch(dest, patch)
