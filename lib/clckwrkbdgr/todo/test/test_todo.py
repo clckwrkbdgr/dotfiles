@@ -156,7 +156,7 @@ class TestTask(unittest.TestCase):
 
 		task = todo.Task('title', priority=todo.Priority(urgent=True), tags=['tag', 666])
 		self.assertEqual(str(task), 'title')
-		self.assertEqual(repr(task), 'Task({0}, Priority(urgent=True), tags={1})'.format(repr('title'), repr(['tag', '666'])))
+		self.assertEqual(repr(task), 'Task({0}, Priority(urgent=True), tags={1})'.format(repr('title'), repr({'tag', '666'})))
 	def should_compare_and_order_tasks(self):
 		tasks = [
 				todo.Task('foo'),
