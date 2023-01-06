@@ -7,6 +7,6 @@ class TestJSSyntax(unittest.TestCase):
 		self.assertTrue(javascript.check_syntax('good.js'))
 		self.assertFalse(javascript.check_syntax('bad.js'))
 		subprocess_call.assert_has_calls([
-			unittest.mock.call(['node', '--check', 'good.js']),
-			unittest.mock.call(['node', '--check', 'bad.js']),
+			unittest.mock.call(['node', '--check', 'good.js'], stdout=None, stderr=None),
+			unittest.mock.call(['node', '--check', 'bad.js'], stdout=None, stderr=None),
 			])
