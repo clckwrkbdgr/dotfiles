@@ -1,7 +1,7 @@
 import os
 
 def check_syntax(filename, quiet=False): # pragma: no cover -- TODO
-	ext = os.path.splitext(filename)
+	ext = os.path.splitext(filename)[-1]
 	if ext == '.py':
 		from . import python
 		return python.check_syntax(filename, quiet=quiet)
