@@ -3,21 +3,52 @@ import os, sys, subprocess
 from clckwrkbdgr import utils
 from clckwrkbdgr.collections import dotdict
 
+class VerboseTracer:
+	def __init__(self, verbose):
+		self.verbose = verbose
+	def __call__(self, message):
+		if self.verbose:
+			print('| ' + str(message), file=sys.stderr)
+	def __del__(self):
+		if self.verbose:
+			sys.stderr.flush()
+
 def setup_environment(config):
+	trace = VerboseTracer(config.verbose)
+
+	sandbox_root = os.path.abspath(config.sandbox_root)
+	trace('Sandbox root: {0}'.format(sandbox_root))
+
+	bin_dir = config.sandbox_bin_dir
+	if not os.path.isabs(bin_dir):
+		bin_dir = os.path.join(sandbox_root, bin_dir)
+	trace('Sandbox bin dir: {0}'.format(bin_dir))
+
+	os.environ['PATH'] = os.pathsep.join(filter(None, [
+		bin_dir,
+		os.environ.get('PATH', ''),
+		]))
+	trace('Updated PATH={0}'.format(os.environ['PATH']))
+
 	os.environ['PYTHONPATH'] = os.pathsep.join(filter(None, [
 		os.environ.get('PYTHONPATH', ''),
-		os.path.abspath(config.sandbox_root),
+		sandbox_root,
 		]))
+	trace('Updated PYTHONPATH={0}'.format(os.environ['PYTHONPATH']))
 
 import click, click_default_group
 
 @click.group(cls=click_default_group.DefaultGroup, default='shell', default_if_no_args=True)
+@click.option('-v', '--verbose', is_flag=True, default=False, help='Be verbose on setup actions.')
 @click.option('--chdir/--no-chdir', is_flag=True, default=True, help='Changes current directory to the sandbox root (default is True).')
 @click.option('-d', '--dir', 'sandbox_root', default='.', help='Sandbox root. Defaults to current directory.')
+@click.option('--bin-dir', 'sandbox_bin_dir', default='bin', help='Sandbox bin dir. Defaults to $SANDBOX_ROOT/bin. If relative, related to the sandbox root directory.')
 @click.pass_context
-def cli(ctx, sandbox_root='.', chdir=True):
+def cli(ctx, sandbox_root='.', sandbox_bin_dir='bin', chdir=True, verbose=False):
 	ctx.obj = dotdict(
 			sandbox_root=sandbox_root,
+			sandbox_bin_dir=sandbox_bin_dir,
+			verbose=verbose,
 			)
 	if chdir:
 		os.chdir(sandbox_root)
