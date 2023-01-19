@@ -5,4 +5,7 @@
   <property name="initial-opacity" type="double" value="0.890000"/>
   <property name="expire-timeout" type="int" value="3"/>
   <property name="applications" type="empty"/>
+  <property name="primary-monitor" type="uint" value="0"/>
+  <property name="log-level" type="uint" value="0"/>
+  <property name="log-level-apps" type="uint" value="0"/>
 </channel>
