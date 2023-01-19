@@ -118,6 +118,8 @@ cli() {
 		fi
 	fi
 
+	[ -t 1 ] && tput bel
+
 	[ -z "$quiet" -a -z "$no_signal" ] && play_signal &
 
 	if [ -n "$text" ]; then
