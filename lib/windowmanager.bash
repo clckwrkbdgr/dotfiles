@@ -109,6 +109,16 @@ find_process_desktop_id() { # <pid>
 	xprop -id "$window_id" -format _NET_WM_DESKTOP 32c '|$0+' _NET_WM_DESKTOP | sed 's/^[^|]*|//'
 }
 
+list_urgent_windows() { # [<name pattern>]
+	# Prints windows IDs that have urgent window hint set.
+	# Optionally can filter windows by pattern.
+	wmctrl -l | grep "$1" | awk '{print $1}' | while read window_id; do
+		if xprop -id "$window_id" | grep -q "The urgency hint bit is set"; then
+			echo "$window_id"
+		fi
+	done
+}
+
 bring_to_top() { # <window_id>
 	# Brings to top window by given ID.
 	window_id="$1"
