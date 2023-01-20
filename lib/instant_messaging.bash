@@ -44,7 +44,10 @@ telegram::messages::get() {
 	processes_by_names Telegram | while read pid; do
 		windows_by_pid "$pid" | while read window_id; do
 			echo 0 # At least one number is requried, otherwise BC will fail on summation.
-			xprop -id "$window_id" -format _NET_WM_NAME 8u '|$0+' _NET_WM_NAME | sed 's/^[^|]*|//;s/^"//;s/"$//;s/^Telegram *//;s/^(//;s/)$//'
+			value=$(xprop -id "$window_id" -format _NET_WM_NAME 8u '|$0+' _NET_WM_NAME | sed 's/^[^|]*|//;s/^"//;s/"$//;s/^Media viewer$//;s/^Telegram *//;s/^(//;s/)$//')
+			if [ -n "$value" ]; then
+				echo "$value"
+			fi
 		done
 	done | paste -sd+ | bc
 }
