@@ -64,6 +64,7 @@ set nobackup
 if has('win32')
    set nowritebackup
 endif
+set belloff=all
 silent! set keymap=russian-badger " Toggle with C-^
 set iminsert=0
 set imsearch=0
