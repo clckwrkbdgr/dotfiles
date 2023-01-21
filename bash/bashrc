@@ -9,6 +9,7 @@ fi
 _clckwrkbdgr_debug_profile "After WSL section."
 
 export HISTCONTROL=ignoredups
+bind 'set bell-style none' # Visual bell OFF for readline (e.g. tab completion errors).
 
 . "$XDG_CONFIG_HOME/bash/aliases.inc.bash"
 _clckwrkbdgr_debug_profile "Loaded aliases."
