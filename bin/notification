@@ -53,7 +53,7 @@ parse_special_tags() { miniclick text -- "$@"
 	done
 }
 
-click::command cli 'Displays notification pop-up, plays signal sound and reads message aloud.'
+click::command cli 'Displays notification pop-up, plays signal sound (with terminal bell) and reads message aloud.'
 click::epilog      "Also stores last $MESSAGES_TO_STORE messages in log."
 click::epilog      "If message starts with word enclosed in brackets, the content is treated as special tag."
 click::epilog      "Currently recognized tags:"
@@ -62,7 +62,7 @@ click::epilog      "Tags are removed from text."
 click::epilog      " "
 click::epilog      "If global userstate 'silent_notifications' is set, quiet mode is forced."
 click::flag '-l' "" 'list_log' --help="Prints previous $MESSAGES_TO_STORE messages."
-click::flag '-q' "" 'quiet' --help="quiet mode (no sounds/voice)."
+click::flag '-q' "" 'quiet' --help="quiet mode (no sounds/voice/bell)."
 click::flag '-S' "--no-signal" 'no_signal' --help="Do not play sound signal. Voice message is still on (unless flag -q is supplied)."
 click::option '-T' "--type" 'notification_type' --default=default --help="Type of notification message. Available values:
 - default - Standard pop-up notification bubble.
@@ -118,9 +118,11 @@ cli() {
 		fi
 	fi
 
-	[ -t 1 ] && tput bel
 
-	[ -z "$quiet" -a -z "$no_signal" ] && play_signal &
+	if [ -z "$quiet" -a -z "$no_signal" ]; then
+		[ -t 1 ] && tput bel
+		play_signal &
+	fi
 
 	if [ -n "$text" ]; then
 		$display_notification "$title" "$text" --icon="$icon" &
