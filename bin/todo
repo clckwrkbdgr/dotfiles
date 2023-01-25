@@ -141,10 +141,11 @@ def sort_tasks(config):
 	return tasklist.sort()
 
 @cli.command()
+@click.option('--rc', is_flag=True, help='Return number of found entries as exit code. By default will always return 0 when no other errors found.')
 @click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
 @click.option('-o', '--output-file', help='Output file to store found results. If no entries were found, file will not be touched. By default prints to stdout, and color is applied if output is terminal.')
 @utils.exits_with_return_value
-def search(exclude=None, output_file=None):
+def search(exclude=None, output_file=None, rc=False):
 	exclude = [Path(path).absolute() for path in (exclude or [])]
 	if not sys.stderr.isatty() or output_file:
 		os.environ['ANSI_COLORS_DISABLED'] = '1'
@@ -157,8 +158,10 @@ def search(exclude=None, output_file=None):
 			handle_dirs=track_directory if not output_file else (lambda _:_),
 			)
 	first_result = True
+	found_entries = 0
 	for filename in files:
 		for line_number, search_result in clckwrkbdgr.todo.search.search_in_file(filename, MARKERS):
+			found_entries += 1
 			if line_number:
 				line = format_file_line(filename, line_number, colored_matches(search_result))
 			else:
@@ -174,6 +177,8 @@ def search(exclude=None, output_file=None):
 			else:
 				print(line)
 			first_result = False
+	if rc:
+		return found_entries
 
 if __name__ == '__main__':
 	cli()
