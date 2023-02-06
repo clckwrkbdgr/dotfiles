@@ -74,6 +74,9 @@ def run(config, command):
 	""" Setup environment and run command.
 	"""
 	setup_environment(config)
+	if platform.system() == 'Windows':
+		from clckwrkbdgr import pyshell
+		command = (pyshell.which(command[0]),) + command[1:]
 	return 0 == subprocess.call(command, shell=(platform.system()=='Windows'))
 
 if __name__ == '__main__':
