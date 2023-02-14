@@ -26,7 +26,10 @@ def save_to_fs_storage():
 	data = {}
 	if filename.exists():
 		data = json.loads(filename.read_text())
-	data[name] = value
+	if name is None:
+		data.update(value)
+	else:
+		data[name] = value
 	filename.write_text(json.dumps(data))
 
 @bottle.route('/lib/test/test_<javascript_module>.html')
