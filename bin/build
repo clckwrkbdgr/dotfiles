@@ -18,12 +18,20 @@ def build_python_setuptools(install=False, install_global=False, quiet=False):
 		return EXIT_SUCCESS
 	if not os.path.isdir('dist'):
 		return EXIT_FAILURE
-	wheels = [os.path.join('dist', entry) for entry in os.listdir('dist') if entry.endswith('.whl')]
+
+	wheels = list(reversed(sorted([
+		os.path.join('dist', entry)
+		for entry in os.listdir('dist')
+		if entry.endswith('.whl')
+		], key=os.path.getmtime)))
 	if len(wheels) != 1:
 		print('Expected only one wheel:', file=sys.stderr)
-		print('\n'.join(wheels))
+		print('  ' + '\n  '.join(wheels))
+		print('Picking the most recent one:\n  {0}'.format(wheels[0]), file=sys.stderr)
+	wheel = wheels[0]
+
 	pip_version = tuple(map(int, subprocess.check_output([python_version, '-c', '__file__ = ""; import pip; print(pip.__version__)']).decode('utf-8', 'replace').strip().split('.')))
-	args = [python_version, '-m', 'pip', 'install', '--disable-pip-version-check', wheels[0], '--upgrade', '--no-deps'] + quiet_arg
+	args = [python_version, '-m', 'pip', 'install', '--disable-pip-version-check', wheel, '--upgrade', '--no-deps'] + quiet_arg
 	if install_global:
 		args = ['sudo'] + args
 	else:
