@@ -123,6 +123,7 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		subprocess.check_call(['python', str(wrapper),
 			'--username', qualified_username,
 			'--password', password,
+			'--startup=delayed',
 			'install',
 			])
 		self._grant_control_rights(self.id, os.environ['USERPROFILE'])
