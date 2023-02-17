@@ -16,7 +16,7 @@ def save_to_fs_storage():
 	data = bottle.request.body.read().decode('utf-8', 'replace')
 	data = json.loads(data)
 	domain = data['domain']
-	name = data['name']
+	name = data.get('name')
 	value = data['value']
 
 	local_path = xdg.save_state_path('firefox')/'localstorage'
