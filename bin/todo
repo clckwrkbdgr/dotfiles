@@ -126,7 +126,7 @@ def print_single_task(task, verbose=False, prefix=None):
 			termcolor.colored(']', priority_color),
 			) if verbose else ''
 	prefix = '{0} '.format(prefix) if prefix else ''
-	tags = (' ' + termcolor.colored(''.join('[{}]'.format(tag) for tag in task.tags), 'cyan')) if task.tags and verbose else ''
+	tags = (' ' + termcolor.colored(''.join('[{}]'.format(tag) for tag in sorted(task.tags)), 'cyan')) if task.tags and verbose else ''
 	try:
 		print(prefix + priority + str(task) + tags)
 	except UnicodeError:
