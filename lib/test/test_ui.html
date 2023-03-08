@@ -150,6 +150,13 @@ try {
 				style: 'border: 1px dotted #3f3; background: #313',
 			},
 		]},
+		{type: 'link', args: [
+			'http://localhost:20113',
+			'Link',
+			{
+				style: 'color: blue',
+			}
+		]},
 	]);
 } catch(e) {
 	console.error(e);
@@ -535,6 +542,38 @@ function should_toggle_visibility()
 	unittest.assertEqual(subcontrol.style.display, 'none');
 	clckwrkbdgr.ui.toggle_visibility('#clckwrkbdgr-test-info-item');
 	unittest.assertEqual(subcontrol.style.display, 'block');
+
+	test_area.removeChild(container);
+}
+
+function should_create_link()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		class_name: 'clckwrkbdgr-test-container',
+		id: 'clckwrkbdgr-test-container-with-class'
+	}, [
+		{type: 'link', args: [
+			'http://localhost:20113',
+			'Link',
+			{
+				id: 'clckwrkbdgr-test-link',
+				class_name: 'clckwrkbdgr-test-link-class',
+				style: 'background-color: red',
+			}
+		]}
+	]);
+	var container = document.querySelector('#clckwrkbdgr-test-container-with-class');
+
+	var subcontrol = document.querySelector('#clckwrkbdgr-test-link');
+	unittest.assertTrue(subcontrol);
+	var subcontrol_parent = subcontrol.parentElement;
+	unittest.assertEqual(subcontrol_parent, container);
+
+	unittest.assertEqual(subcontrol.classList[0], 'clckwrkbdgr-test-link-class');
+	unittest.assertEqual(subcontrol.style['background-color'], 'red');
+	unittest.assertEqual(subcontrol.innerText, 'Link');
+	unittest.assertEqual(subcontrol.href, 'http://localhost:20113/');
 
 	test_area.removeChild(container);
 }
