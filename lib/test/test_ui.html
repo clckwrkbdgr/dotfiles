@@ -124,6 +124,21 @@ try {
 				},
 			},
 		]},
+		{type: 'spin', args: [
+			'Spin value',
+			1, 10, 1,
+			{
+				id: 'manual-spin',
+				class_name: 'manual-control',
+				class_down: 'manual-control-spins',
+				style: 'float:left; border: 2px solid #000; background: #005',
+				style_down: 'float:left; border: 2px solid #000; background: #500',
+				style_up: 'float:left; border: 2px solid #000; background: #050',
+				onchange: function(new_value) {
+					document.querySelector('#manual-spin').style.height = 30 + new_value;
+				},
+			},
+		]},
 	]);
 
 	clckwrkbdgr.ui.create_gui_container('#test-area', {
@@ -574,6 +589,73 @@ function should_create_link()
 	unittest.assertEqual(subcontrol.style['background-color'], 'red');
 	unittest.assertEqual(subcontrol.innerText, 'Link');
 	unittest.assertEqual(subcontrol.href, 'http://localhost:20113/');
+
+	test_area.removeChild(container);
+}
+
+function should_create_spin()
+{
+	var spin_log = [];
+
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		class_name: 'clckwrkbdgr-test-container',
+		id: 'clckwrkbdgr-test-container-with-class'
+	}, [
+		{type: 'spin', args: [
+			'Spin',
+			1, 5, 0,
+			{
+				id: 'clckwrkbdgr-test-spin',
+				class_name: 'clckwrkbdgr-test-spin-class',
+				style: 'background-color: red',
+				onchange: function(new_value) {
+					spin_log.push(new_value);
+				},
+			}
+		]}
+	]);
+	var container = document.querySelector('#clckwrkbdgr-test-container-with-class');
+
+	var subcontrol = document.querySelector('#clckwrkbdgr-test-spin-container');
+	unittest.assertTrue(subcontrol);
+	var subcontrol_parent = subcontrol.parentElement;
+	unittest.assertEqual(subcontrol_parent, container);
+
+	unittest.assertEqual(subcontrol.innerText, 'Spin\n-\n1\n+');
+
+	var up = document.querySelector('#clckwrkbdgr-test-spin-inc');
+	var label = document.querySelector('#clckwrkbdgr-test-spin');
+	var down = document.querySelector('#clckwrkbdgr-test-spin-dec');
+
+	unittest.assertEqual(label.classList[0], 'clckwrkbdgr-test-spin-class');
+	unittest.assertEqual(label.style['background-color'], 'red');
+
+	up.click();
+	unittest.assertEqual(label.innerText, '2');
+	up.click();
+	unittest.assertEqual(label.innerText, '3');
+	up.click();
+	unittest.assertEqual(label.innerText, '4');
+	up.click();
+	unittest.assertEqual(label.innerText, '5');
+	up.click();
+	unittest.assertEqual(label.innerText, '5');
+	down.click();
+	unittest.assertEqual(label.innerText, '4');
+	down.click();
+	unittest.assertEqual(label.innerText, '3');
+	down.click();
+	unittest.assertEqual(label.innerText, '2');
+	down.click();
+	unittest.assertEqual(label.innerText, '1');
+	down.click();
+	unittest.assertEqual(label.innerText, '1');
+
+	clckwrkbdgr.ui.set_spin_value('clckwrkbdgr-test-spin', 100);
+	unittest.assertEqual(label.innerText, '5');
+
+	unittest.assertEqual(spin_log, [2, 3, 4, 5, 5, 4, 3, 2, 1, 1, 5]);
 
 	test_area.removeChild(container);
 }
