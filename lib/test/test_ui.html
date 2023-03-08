@@ -16,6 +16,7 @@
 	</div>
 
 <script type="application/javascript">
+try {
 	console.log('Creating manual testing layout...');
 
 	clckwrkbdgr.ui.create_gui_container('#test-area', {
@@ -72,6 +73,57 @@
 				},
 			},
 		]},
+		{type: 'info_item', args: [
+			'Tristate button value',
+			{
+				id: 'manual-tristate-button-value',
+				class_name: 'manual-control',
+				style: 'border: 1px solid #333; background: #133',
+			},
+		]},
+		{type: 'multistate_button', args: [
+			[
+				{
+					value: 'on',
+					caption: 'Manual tri-state button: ON',
+					class_name: 'manual-control',
+					style: 'border: 2px solid #060; background: #355',
+					onchange: function() {
+						document.querySelector('#manual-tristate-button-value').innerText = 'ON';
+					},
+				}, {
+					value: 'semi',
+					caption: 'Manual tri-state button: SeMi',
+					class_name: 'manual-control',
+					style: 'border: 2px solid #006; background: #355',
+					onchange: function() {
+						document.querySelector('#manual-tristate-button-value').innerText = 'semi';
+					},
+				}, {
+					value: 'off',
+					caption: 'Manual tri-state button: off',
+					class_name: 'manual-control',
+					style: 'border: 2px solid #600; background: #355',
+					onchange: function() {
+						document.querySelector('#manual-tristate-button-value').innerText = 'OFF';
+					},
+				},
+			],
+			{
+				id: 'manual-tri-button',
+			},
+		]},
+		{type: 'button', args: [
+			'Show/hide UL block',
+			{
+				id: 'manual-showhide-button',
+				class_name: 'manual-control',
+				style: 'border: 2px solid #000; background: #555',
+				onclick: function(el) {
+					clckwrkbdgr.ui.toggle_visibility('#manual-gui-list-container');
+				},
+			},
+		]},
 	]);
 
 	clckwrkbdgr.ui.create_gui_container('#test-area', {
@@ -99,7 +151,9 @@
 			},
 		]},
 	]);
-
+} catch(e) {
+	console.error(e);
+}
 </script>
 
 <script type="application/javascript">
@@ -366,6 +420,121 @@ function should_create_anchor_as_button()
 	unittest.assertEqual(subcontrol.innerText, 'Click me');
 	subcontrol.click();
 	unittest.assertEqual(subcontrol.innerText, 'Clicked');
+
+	test_area.removeChild(container);
+}
+
+function should_create_multistate_button()
+{
+	var click_log = [];
+
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		class_name: 'clckwrkbdgr-test-container',
+		id: 'clckwrkbdgr-test-container-with-class'
+	}, [
+		{type: 'multistate_button', args: [
+			[
+				{
+					value: 'first',
+					caption: 'One',
+					class_name: 'clckwrkbdgr-test-multibutton-class-1',
+					style: 'background-color: red',
+					onchange: function() {
+						click_log.push(1);
+					},
+				},
+				{
+					value: 'second',
+					caption: 'Two',
+					class_name: 'clckwrkbdgr-test-multibutton-class-2',
+					style: 'background-color: blue',
+					onchange: function() {
+						click_log.push(2);
+					},
+				},
+				{
+					value: 'third',
+					caption: 'Three',
+					class_name: 'clckwrkbdgr-test-multibutton-class-3',
+					style: 'background-color: green',
+					onchange: function() {
+						click_log.push(3);
+					},
+				},
+			],
+			{
+				id: 'clckwrkbdgr-test-multibutton',
+			}
+		]}
+	]);
+	var container = document.querySelector('#clckwrkbdgr-test-container-with-class');
+
+	var subcontrol = document.querySelector('#clckwrkbdgr-test-multibutton');
+	unittest.assertTrue(subcontrol);
+	var subcontrol_parent = subcontrol.parentElement;
+	unittest.assertEqual(subcontrol_parent, container);
+
+	unittest.assertEqual(subcontrol.classList[0], 'clckwrkbdgr-test-multibutton-class-1');
+	unittest.assertEqual(subcontrol.style['background-color'], 'red');
+	unittest.assertEqual(subcontrol.innerText, 'One');
+	unittest.assertEqual(subcontrol.getAttribute('clckwrkbdgr-value'), 'first');
+
+	subcontrol.click();
+
+	unittest.assertEqual(subcontrol.classList[0], 'clckwrkbdgr-test-multibutton-class-2');
+	unittest.assertEqual(subcontrol.style['background-color'], 'blue');
+	unittest.assertEqual(subcontrol.innerText, 'Two');
+	unittest.assertEqual(subcontrol.getAttribute('clckwrkbdgr-value'), 'second');
+
+	subcontrol.click();
+
+	unittest.assertEqual(subcontrol.classList[0], 'clckwrkbdgr-test-multibutton-class-3');
+	unittest.assertEqual(subcontrol.style['background-color'], 'green');
+	unittest.assertEqual(subcontrol.innerText, 'Three');
+	unittest.assertEqual(subcontrol.getAttribute('clckwrkbdgr-value'), 'third');
+
+	subcontrol.click();
+
+	unittest.assertEqual(subcontrol.getAttribute('clckwrkbdgr-value'), 'first');
+
+	clckwrkbdgr.ui.set_multistate_button_state(subcontrol, 'third')
+
+	unittest.assertEqual(subcontrol.classList[0], 'clckwrkbdgr-test-multibutton-class-3');
+	unittest.assertEqual(subcontrol.style['background-color'], 'green');
+	unittest.assertEqual(subcontrol.innerText, 'Three');
+	unittest.assertEqual(subcontrol.getAttribute('clckwrkbdgr-value'), 'third');
+
+	unittest.assertEqual(click_log, [2, 3, 1, 3]);
+
+	test_area.removeChild(container);
+}
+
+function should_toggle_visibility()
+{
+	var test_area = document.querySelector('div#test-area');
+	clckwrkbdgr.ui.create_gui_container(test_area, {
+		class_name: 'clckwrkbdgr-test-container',
+		id: 'clckwrkbdgr-test-container-with-class'
+	}, [
+		{type: 'info_item', args: [
+			'Hello world',
+			{
+				id: 'clckwrkbdgr-test-info-item',
+				class_name: 'clckwrkbdgr-test-info-item-class',
+				style: 'background-color: red',
+			}
+		]}
+	]);
+	var container = document.querySelector('#clckwrkbdgr-test-container-with-class');
+
+	var subcontrol = document.querySelector('#clckwrkbdgr-test-info-item');
+
+	unittest.assertEqual(subcontrol.style.display, '');
+	clckwrkbdgr.ui.toggle_visibility(subcontrol);
+	unittest.assertEqual(subcontrol.style.display, 'none');
+	clckwrkbdgr.ui.toggle_visibility('#clckwrkbdgr-test-info-item');
+	unittest.assertEqual(subcontrol.style.display, 'block');
 
 	test_area.removeChild(container);
 }
