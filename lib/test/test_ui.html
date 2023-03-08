@@ -12,6 +12,28 @@
 	<div id="unittest-main">
 	</div>
 
+	<div id="test-area">
+	</div>
+
+<script type="application/javascript">
+	console.log('Creating manual testing layout...');
+
+	clckwrkbdgr.ui.create_gui_container('#test-area', {
+		id: 'manual-gui-div-container',
+		class_name: 'manual-gui-container',
+		style: 'border: 1px solid #666; background: #222; min-width: 300px; min-height: 100px;',
+	});
+
+	clckwrkbdgr.ui.create_gui_container('#test-area', {
+		type: 'ul',
+		id: 'manual-gui-list-container',
+		class_name: 'manual-gui-container',
+		style: 'border: 1px solid #933; background: #233; min-width: 100px; max-width: 500px; min-height: 10px;',
+		prepend: true,
+	});
+
+</script>
+
 <script type="application/javascript">
 var unittest = clckwrkbdgr.unittest;
 
@@ -19,13 +41,6 @@ function setUp()
 {
 	unittest.assertTrue(window.clckwrkbdgr);
 	unittest.assertTrue(window.clckwrkbdgr.ui);
-
-	var test_area = document.querySelector('div#test-area');
-	if(!test_area) {
-		test_area = document.createElement('div');
-		test_area.setAttribute('id', 'test-area');
-		document.body.appendChild(test_area);
-	}
 }
 
 function should_create_empty_container()
