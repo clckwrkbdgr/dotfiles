@@ -97,6 +97,7 @@ user_pref("browser.startup.upgradeDialog.version", 89);
 user_pref("browser.tabs.crashReporting.sendReport", false);
 user_pref("browser.tabs.loadDivertedInBackground", true);
 user_pref("browser.tabs.remote.autostart.2", true);
+user_pref("browser.tabs.unloadOnLowMemory", false);
 user_pref("browser.theme.content-theme", 0);
 user_pref("browser.theme.toolbar-theme", 0);
 user_pref("browser.toolbarbuttons.introduced.pocket-button", true);
