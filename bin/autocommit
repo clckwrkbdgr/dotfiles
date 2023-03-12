@@ -3,12 +3,14 @@ import os, sys, subprocess
 import shutil, glob
 import json
 import logging
+Log = logging.getLogger('autocommit')
 try:
 	from pathlib2 import Path
 except ImportError: # pragma: py3 only
 	from pathlib import Path
 import clckwrkbdgr.fs
 import clckwrkbdgr.vcs.git as git
+import clckwrkbdgr.logging
 
 class AutocommitError(RuntimeError):
 	pass
@@ -17,20 +19,20 @@ def file_has_changed(dest_path, source_path):
 	source_path = Path(source_path)
 	dest_path = Path(dest_path)
 	if not dest_path.exists():
-		logging.debug('{0}: does not exist'.format(dest_path))
+		Log.debug('{0}: does not exist'.format(dest_path))
 		return True
 	source_stat = source_path.stat()
 	dest_stat = dest_path.stat()
-	logging.debug('{0}: dest: {1}'.format(dest_path, dest_stat.st_mtime))
-	logging.debug('{0}: src : {1}'.format(source_path, source_stat.st_mtime))
+	Log.debug('{0}: dest: {1}'.format(dest_path, dest_stat.st_mtime))
+	Log.debug('{0}: src : {1}'.format(source_path, source_stat.st_mtime))
 	if dest_stat.st_mtime < source_stat.st_mtime:
-		logging.debug('{0}: outdated.'.format(dest_path))
+		Log.debug('{0}: outdated.'.format(dest_path))
 		return True
 	return False
 
 def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_diff=False):
 	if not Path(path).exists():
-		logging.debug('{0}: does not exist, skipping.'.format(path))
+		Log.debug('{0}: does not exist, skipping.'.format(path))
 		return
 	if dest_repo and dest_repo != '.':
 		if dest_path:
@@ -40,9 +42,9 @@ def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_
 			dest_path = Path(dest_repo)/dest_path
 		else:
 			dest_path = Path(dest_repo)/path
-		logging.debug('{0}: Checking state in {1}.'.format(path, dest_path))
+		Log.debug('{0}: Checking state in {1}.'.format(path, dest_path))
 		if file_has_changed(dest_path, path):
-			logging.info('{0}: Updating.'.format(dest_path))
+			Log.info('{0}: Updating.'.format(dest_path))
 			if not dest_path.parent.exists():
 				dest_path.parent.mkdir(parents=True)
 			shutil.copy(str(path), str(dest_path))
@@ -50,7 +52,7 @@ def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_
 	with clckwrkbdgr.fs.CurrentDir(dest_repo or '.'):
 		try:
 			if git.commit_one_file(path, commit_message, show_diff=show_diff):
-				logging.info('{0}: Committed: {1}'.format(path, commit_message))
+				Log.info('{0}: Committed: {1}'.format(path, commit_message))
 		except RuntimeError as e:
 			raise AutocommitError(str(e))
 
@@ -91,24 +93,21 @@ def cli(config_file, patterns, verbose=False, debug=False):
 	If PATTERNS are specified, commits only those files that match them
 	(file name contains pattern as substring).
 	"""
-	if debug:
-		logging.getLogger().setLevel(logging.DEBUG)
-	elif verbose:
-		logging.getLogger().setLevel(logging.INFO)
+	clckwrkbdgr.logging.init(Log, verbose=verbose, debug=debug)
 	if patterns:
-		logging.debug('Patterns: {0}'.format(patterns))
+		Log.debug('Patterns: {0}'.format(patterns))
 	os.chdir(str(config_file.parent))
-	logging.debug('Switching to main repo: {0}'.format(os.getcwd()))
+	Log.debug('Switching to main repo: {0}'.format(os.getcwd()))
 	config = json.loads(config_file.read_text())
 	for repo in config:
-		logging.debug('{0}: Processing repo...'.format(repo))
+		Log.debug('{0}: Processing repo...'.format(repo))
 		files = config[repo]
 		repo_path = Path(os.path.expandvars(os.path.expanduser(repo)))
 		for filename in files:
 			if patterns and not any(str(pattern) in str(filename) for pattern in patterns):
-				logging.debug('{0}: File does not match any pattern.'.format(filename))
+				Log.debug('{0}: File does not match any pattern.'.format(filename))
 				continue
-			logging.debug('{0}: Processing file...'.format(filename))
+			Log.debug('{0}: Processing file...'.format(filename))
 			props = files[filename]
 			for real_filename in glob.iglob(filename):
 				process_one_file(real_filename,

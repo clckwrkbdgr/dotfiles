@@ -3,6 +3,7 @@ import os, sys
 import logging
 import atexit
 import clckwrkbdgr.jobsequence.script
+import clckwrkbdgr.logging
 
 def _comply_about_accumulated_return_code(): # pragma: no cover
 	if Context._global_return_code != 0:
@@ -104,13 +105,10 @@ class Context: # pragma: no cover -- TODO need mocks
 		self._script_rootdir = script_rootdir
 
 		self._logger = logging.getLogger(logger_name or 'jobsequence')
-		if not self._logger.handlers:
-			handler = logging.StreamHandler() # TODO custom formatter to display level, module, logger name etc.; and generic clckwrkbdgr module for such loggers.
-			self._logger.addHandler(handler)
-		if self._verbose_level == 1:
-			self._logger.setLevel(logging.INFO)
-		elif self._verbose_level is not None and self._verbose_level > 1:
-			self._logger.setLevel(logging.DEBUG)
+		clckwrkbdgr.logger.init(self._logger,
+				verbose=(self._verbose_level == 1),
+				debug=(self._verbose_level is not None and self._verbose_level > 1),
+				)
 		self._returncode = 0
 	def script(self, name=None, shebang=None, rootdir=None, overwrite=True):
 		""" Initializes fixer script with given name (by default is taken from the current script)

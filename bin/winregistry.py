@@ -1,6 +1,8 @@
 import os, sys, subprocess
 import re, itertools, types
-import logging, tempfile
+import tempfile
+import logging
+Log = logging.getLogger('winregistry')
 from collections import defaultdict
 try:
 	from pathlib2 import Path
@@ -35,10 +37,10 @@ def parse_pattern_file(filename):
 
 def save_snapshot(rootkey, dest_file, quiet=False):
 	args = ["REG", "EXPORT", rootkey, str(dest_file), '/y']
-	logging.debug(args)
+	Log.debug(args)
 	rc = subprocess.call(args, stdout=subprocess.DEVNULL if quiet else None)
 	if rc != 0:
-		logging.error("Failed to extract registry snapshot of {0}!".format(rootkey))
+		Log.error("Failed to extract registry snapshot of {0}!".format(rootkey))
 		return False
 	return True
 
@@ -54,7 +56,7 @@ def backup_registry_rootkeys(rootkeys, dest_file, exclude_patterns=None, quiet=F
 		filename = Path(filename)
 		tempfiles.append(filename)
 		if not save_snapshot(rootkey.upper(), filename, quiet=quiet):
-			logging.error("Failed to backup registry!")
+			Log.error("Failed to backup registry!")
 			return False
 	with open(str(dest_file), 'w', encoding='utf-16') as f:
 		parsed = itertools.chain.from_iterable(
@@ -171,7 +173,7 @@ def extract(args, snapshot_file, exclude=None, include=None):
 	Expects prepared registry SNAPSHOT FILE.
 	"""
 	if not exclude and not include:
-		logging.error("Expected at least one of the --exclude or --include arguments!")
+		Log.error("Expected at least one of the --exclude or --include arguments!")
 		return False
 	quiet = args.quiet
 	exclude_patterns = list(parse_pattern_file(exclude)) if exclude else []

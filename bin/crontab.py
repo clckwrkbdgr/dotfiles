@@ -10,6 +10,7 @@ import shlex
 import time, datetime
 import pickle
 import logging
+Log = logging.getLogger('crontab')
 import threading
 try:
 	from pathlib2 import Path
@@ -22,6 +23,7 @@ except:
 	pass
 import crontab
 from clckwrkbdgr.winnt.schtasks import run_immediately
+import clckwrkbdgr.logging
 
 DATABASE_FILE = Path(os.environ['LOCALAPPDATA'])/'crontab.db' # FIXME Use XDG_STATE_HOME for Windows.
 
@@ -67,11 +69,10 @@ def command_daemon(logdir, debug=False): # pragma: no cover -- TODO use crontab.
 	The only exception is PRIORITY which works only for the job it is defined before. It is a priority of Windows Task Scheduler task and value should be integer within range [4;7].
 	See <https://docs.microsoft.com/en-us/windows/win32/taskschd/tasksettings-priority> for details.
 	"""
-	if debug:
-		logging.basicConfig(level=logging.DEBUG)
+	clckwrkbdgr.logging.init(debug=debug)
 	last_run = datetime.datetime.now()
 	last_run = last_run.replace(second=0)
-	logging.debug("Starting: {0}".format(last_run))
+	Log.debug("Starting: {0}".format(last_run))
 	while True:
 		now = datetime.datetime.now()
 		minute_is_up = now.second == 0 and now - last_run > datetime.timedelta(seconds=50)
@@ -90,18 +91,18 @@ def command_daemon(logdir, debug=False): # pragma: no cover -- TODO use crontab.
 				continue
 			os.environ[k] = v
 
-		logging.debug("Last run: {0}".format(last_run))
-		logging.debug("Now: {0}".format(now))
+		Log.debug("Last run: {0}".format(last_run))
+		Log.debug("Now: {0}".format(now))
 		commands_to_run = []
 		for job in jobs:
-			logging.debug(job)
+			Log.debug(job)
 			schedule = job.schedule(last_run)
 			next_time = schedule.get_next()
-			logging.debug("    Next time: {0}".format(next_time))
+			Log.debug("    Next time: {0}".format(next_time))
 			if last_run < next_time < now:
-				logging.debug("    Should fire.")
+				Log.debug("    Should fire.")
 				command = shlex.split(job.command)
-				logging.debug('    ' + str(command))
+				Log.debug('    ' + str(command))
 				command = list(map(os.path.expanduser, map(str, command)))
 				commands_to_run.append( (command, job.env) )
 
@@ -109,10 +110,10 @@ def command_daemon(logdir, debug=False): # pragma: no cover -- TODO use crontab.
 		for command, command_env in commands_to_run:
 			try:
 				command = subprocess.list2cmdline(command)
-				logging.debug("Running: {0}".format(repr(command)))
+				Log.debug("Running: {0}".format(repr(command)))
 				priority = command_env.get('PRIORITY')
 				if priority:
-					logging.debug("With priority: {0}".format(repr(priority)))
+					Log.debug("With priority: {0}".format(repr(priority)))
 					run_immediately(command, 'crontab', logdir, priority=int(priority))
 				else:
 					run_immediately(command, 'crontab', logdir)

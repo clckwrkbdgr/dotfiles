@@ -2,6 +2,7 @@ import os, sys, subprocess, shutil
 import platform, fnmatch, re
 import clckwrkbdgr.backup
 import logging
+Log = logging.getLogger('backup.sevenzip')
 
 class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and processes.
 	def __init__(self, context):
@@ -17,7 +18,7 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 			backup_command.append('-xr!' + str(entry))
 		backup_command += [str(backup_archive), str(backup_dir)]
 
-		logging.debug('+{0}'.format(' '.join(map(str, backup_command))))
+		Log.debug('+{0}'.format(' '.join(map(str, backup_command))))
 		try:
 			if backup_archive.exists():
 				os.unlink(str(backup_archive))
@@ -28,12 +29,12 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				return False
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
-			logging.exception('Failed to run backup command {0}:'.format(backup_command))
+			Log.exception('Failed to run backup command {0}:'.format(backup_command))
 			return False
 		except Exception as e:
-			logging.exception('Failed to run backup command {0}:'.format(backup_command))
+			Log.exception('Failed to run backup command {0}:'.format(backup_command))
 			return False
-		logging.debug('Everything is Ok')
+		Log.debug('Everything is Ok')
 		return True
 	def check(self):
 		backup_dir = os.path.abspath(str(self.context.root))
@@ -45,7 +46,7 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 		if self.context.password:
 			list_command.append(clckwrkbdgr.backup.PasswordArg(self.context.password))
 
-		logging.debug('+{0}'.format(' '.join(map(str, integrity_command))))
+		Log.debug('+{0}'.format(' '.join(map(str, integrity_command))))
 		try:
 			with self.context.password.disclosed():
 				output = subprocess.check_output(list(map(str, integrity_command)), shell=True)
@@ -54,14 +55,14 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				return False
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
-			logging.exception('Failed to run check command {0}:'.format(integrity_command))
+			Log.exception('Failed to run check command {0}:'.format(integrity_command))
 			return False
 		except Exception as e:
-			logging.exception('Failed to run check command {0}:'.format(integrity_command))
+			Log.exception('Failed to run check command {0}:'.format(integrity_command))
 			return False
-		logging.debug('Everything is Ok')
+		Log.debug('Everything is Ok')
 
-		logging.debug('+{0}'.format(' '.join(map(str, list_command))))
+		Log.debug('+{0}'.format(' '.join(map(str, list_command))))
 		try:
 			with self.context.password.disclosed():
 				output = subprocess.check_output(list(map(str, list_command)), shell=True)
@@ -112,10 +113,10 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				return False
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
-			logging.exception('Failed to run list command {0}:'.format(list_command))
+			Log.exception('Failed to run list command {0}:'.format(list_command))
 			return False
 		except Exception as e:
-			logging.exception('Failed to verify backup listing:')
+			Log.exception('Failed to verify backup listing:')
 			return False
 
 		try:
@@ -124,22 +125,22 @@ class SevenZipArchiver: # pragma: no cover -- TODO uses direct access to FS and 
 				output = subprocess.check_output(list(map(str, list_command)), shell=True)
 				output = output.decode('utf-8', 'replace').splitlines()
 				output = sort_backup_size(output)
-				logging.warning('WARNING: Backup archive size is greater than allowed: {0} > {1}'.format(backup_archive.stat().st_size, self.context.max_archive_size))
+				Log.warning('WARNING: Backup archive size is greater than allowed: {0} > {1}'.format(backup_archive.stat().st_size, self.context.max_archive_size))
 				sys.stderr.write('\n'.join(output) + '\n')
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('utf-8', 'replace'))
-			logging.exception('Failed to run list command {0}:'.format(list_command))
+			Log.exception('Failed to run list command {0}:'.format(list_command))
 			return False
 		except Exception as e:
-			logging.exception('Failed to check backup size:')
+			Log.exception('Failed to check backup size:')
 			return False
 
-		logging.debug('Everything is Ok')
+		Log.debug('Everything is Ok')
 		return True
 	def deploy(self):
 		backup_archive = self.context.tempdir/'{0}.zip'.format(self.context.name)
 		for location in self.context.destinations:
-			logging.debug(location)
+			Log.debug(location)
 			shutil.copy(str(backup_archive), str(location))
 		return True
 
@@ -195,12 +196,12 @@ def sort_backup_size(lines): # pragma: no cover -- TODO
 		try:
 			size = int(parts[3])
 		except Exception as e:
-			logging.warning("sort_backup_size: cannot parse line: {0}:".format(e) + repr(line))
+			Log.warning("sort_backup_size: cannot parse line: {0}:".format(e) + repr(line))
 			continue
 		try:
 			compressed_size = int(parts[4])
 		except Exception as e:
-			logging.warning("sort_backup_size: cannot parse line: {0}:".format(e) + repr(line))
+			Log.warning("sort_backup_size: cannot parse line: {0}:".format(e) + repr(line))
 			continue
 		name = parts[-1]
 		for entry in reversed(stack):

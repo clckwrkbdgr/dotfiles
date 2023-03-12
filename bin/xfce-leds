@@ -4,10 +4,12 @@ import time, threading, functools
 import re
 import configparser
 import logging
+Log = logging.getLogger('leds')
 from pathlib import Path
 from clckwrkbdgr import xdg, utils
 import clckwrkbdgr.collections
 from clckwrkbdgr.leds import LEDList, GenMon, join_image_strip
+import clckwrkbdgr.logging
 
 CONFIG_FILES = [
 		xdg.save_config_path('xfce4')/"xfce-leds.ini",
@@ -55,7 +57,7 @@ def read_xset_led_status():
 	out, err = xset.communicate()
 	if xset.returncode != 0:
 		if err:
-			logging.error('failed to read xset state: {0}'.format(err))
+			Log.error('failed to read xset state: {0}'.format(err))
 
 	out = out.decode('utf-8')
 	out = out.splitlines()[3:8]
@@ -86,7 +88,7 @@ def builtin_plugin_command(command, update_state, terminator):
 				state = new_state
 				update_state(state)
 		except FileNotFoundError:
-			logging.error("Error executing command {0}".format(repr(command)))
+			Log.error("Error executing command {0}".format(repr(command)))
 		time.sleep(1)
 
 @builtins('led')
@@ -101,7 +103,7 @@ def builtin_plugin_led(led_name, update_state, terminator):
 				state = new_state
 				update_state(state)
 		else:
-			logging.error("Unknown led {0}".format(led_name))
+			Log.error("Unknown led {0}".format(led_name))
 		time.sleep(1)
 
 @builtins('led_off')
@@ -116,7 +118,7 @@ def builtin_plugin_led_off(led_name, update_state, terminator):
 				state = new_state
 				update_state(state)
 		else:
-			logging.error("Unknown led {0}".format(led_name))
+			Log.error("Unknown led {0}".format(led_name))
 		time.sleep(1)
 
 @builtins('inotify_exists')
@@ -174,7 +176,7 @@ class Config(object):
 		value = category.get(setting_name)
 		if value is None:
 			if default_value is None:
-				logging.error("Missing setting {1} for group {0}.".format(repr(category), repr(setting_name)))
+				Log.error("Missing setting {1} for group {0}.".format(repr(category), repr(setting_name)))
 			return default_value
 		return utils.unquote_string(value, fix_unicode_escape=True)
 	def parse_plugin_function(self, group):
@@ -183,34 +185,34 @@ class Config(object):
 		if plugin_func:
 			m = re.match(r'^(.+):([A-Za-z_][A-Za-z_0-9]*)$', plugin_func)
 			if not m:
-				logging.error("{0}:Cannot parse plugin_func='{1}'. Expected: '<path or literal builtin>:<function_name>'".format(group, plugin_func))
+				Log.error("{0}:Cannot parse plugin_func='{1}'. Expected: '<path or literal builtin>:<function_name>'".format(group, plugin_func))
 				return None, None
 			plugin_file, plugin_func = m.groups()
 			if plugin_file == 'builtin':
 				try:
 					plugin_func = builtins[plugin_func]
 				except KeyError:
-					logging.error("{0}:Unknown builtin function '{1}'".format(group, plugin_func))
+					Log.error("{0}:Unknown builtin function '{1}'".format(group, plugin_func))
 					return None, None
 			else:
 				# TODO load plugin file.
-				logging.error('{0}:Loading plugins from files are not supported yet.'.format(group))
+				Log.error('{0}:Loading plugins from files are not supported yet.'.format(group))
 				return None, None
 			return plugin_func, plugin_data
 		# Legacy way of setting built-in plugins.
 		command, name = None, None
 		if 'command' in group:
-			logging.warning("Config value 'command' is deprecated. Use plugin_func='builtin:command' and plugin_data='<command>' instead.")
+			Log.warning("Config value 'command' is deprecated. Use plugin_func='builtin:command' and plugin_data='<command>' instead.")
 			command = utils.unquote_string(group['command'], fix_unicode_escape=True)
 			return builtin_plugin_command, command
 		elif 'name' in group:
-			logging.warning("Config value 'name' is deprecated. Use plugin_func='builtin:led[_off]' and plugin_data='<LED name>' instead.")
+			Log.warning("Config value 'name' is deprecated. Use plugin_func='builtin:led[_off]' and plugin_data='<LED name>' instead.")
 			name = utils.unquote_string(group['name'], fix_unicode_escape=True)
 			if name.startswith('!'):
 				return builtin_plugin_led_off, name[1:]
 			else:
 				return builtin_plugin_led, name
-		logging.error("Config section {0} does not have plugin_func defined.".format(group))
+		Log.error("Config section {0} does not have plugin_func defined.".format(group))
 		return None, None
 	def load_plugins(self, led_list_callback):
 		for index, title in enumerate(self.parser):
@@ -221,7 +223,7 @@ class Config(object):
 			image = self._read_value(group, 'image')
 			tooltip = self._read_value(group, 'tooltip', title)
 			if not image:
-				logging.warning("{0}: Config value 'image_on' was renamed to 'image'".format(group))
+				Log.warning("{0}: Config value 'image_on' was renamed to 'image'".format(group))
 				image = self._read_value(group, 'image_on')
 			group = Plugin(led_list_callback,
 					image=os.path.expanduser(image),

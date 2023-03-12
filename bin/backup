@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+Log = logging.getLogger('backup')
 import json
 import inspect
 try:
@@ -8,6 +9,7 @@ except ImportError: # pragma: py3 only
 	from pathlib import Path
 from clckwrkbdgr import utils
 import clckwrkbdgr.backup
+import clckwrkbdgr.logging
 import clckwrkbdgr.backup.handlers.sevenzip
 
 CONFIG_FILE_DESC = """\b
@@ -26,16 +28,16 @@ def process_location(root, settings):
 	context = clckwrkbdgr.backup.Config(root=root, **settings)
 	action = clckwrkbdgr.backup.handlers.sevenzip.SevenZipArchiver(context)
 
-	logging.info('Archiving...')
+	Log.info('Archiving...')
 	if not action.perform():
 		return False
-	logging.info('Checking...')
+	Log.info('Checking...')
 	if not action.check():
 		return False
-	logging.info('Copying archive to remote locations...')
+	Log.info('Copying archive to remote locations...')
 	if not action.deploy():
 		return False
-	logging.info('Done.')
+	Log.info('Done.')
 	return True
 
 import click
@@ -48,10 +50,7 @@ import click
 def cli(config_file, verbose=False, debug=False):
 	""" Performs backup according to specified configuration.
 	"""
-	if debug:
-		logging.getLogger().setLevel(logging.DEBUG)
-	elif verbose:
-		logging.getLogger().setLevel(logging.INFO)
+	clckwrkbdgr.logging.init(Log, debug=debug, verbose=verbose)
 	presets = json.loads(config_file.read_text(encoding='utf-8'))
 	errors = 0
 	for root, settings in presets.items():

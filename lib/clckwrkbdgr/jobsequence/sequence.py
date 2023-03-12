@@ -5,6 +5,7 @@ try:
 except ImportError: # pragma: no cover
 	from pathlib import Path, PurePath
 from .. import xdg
+from .. import logging as clckwrkbdgr_logging
 
 CLI_USAGE = """
 Job actions are defined as executable files (scripts, binaries) under job directory (see --dir option).
@@ -137,10 +138,8 @@ class JobSequence:
 		job_dirs = list(map(Path, job_dirs or self.default_job_dirs))
 		if dry_run:
 			verbose = max(1, verbose)
-		logging.basicConfig()
 		logger = logging.getLogger('jobsequence')
-		if verbose:
-			logger.setLevel(logging.INFO if verbose == 1 else logging.DEBUG)
+		clckwrkbdgr_logging.init(logger, verbose=verbose, debug=(verbose is not None and verbose > 1))
 		if not dry_run:
 			os.environ[self.verbose_var_name] = 'v' * verbose
 		else:

@@ -2,6 +2,13 @@ from clckwrkbdgr import unittest
 from clckwrkbdgr.unittest import mock
 
 import os, sys, subprocess, logging
+try:
+	logging.NullHandler
+except AttributeError: # pragma: no cover
+	class logging_NullHandler(logging.Handler):
+		def emit(self, record):
+			pass
+	logging.NullHandler = logging_NullHandler
 import clckwrkbdgr.jobsequence
 import clckwrkbdgr.jobsequence.sequence
 import clckwrkbdgr.jobsequence.context
@@ -310,45 +317,50 @@ class TestJobSequence(unittest.TestCase):
 class TestWorkerStats(unittest.fs.TestCase):
 	def setUp(self):
 		self.setUpPyfakefs(modules_to_reload=[clckwrkbdgr.jobsequence.context])
+		self.logger = logging.getLogger('TestWorkerStats')
+		self.logger.addHandler(logging.NullHandler())
+		self.logger.propagate = False
 	def should_load_worker_stats_from_file(self):
-		stats = WorkerStats.load('/test.worker')
+		stats = WorkerStats.load('/test.worker', logger=self.logger)
 		self.assertIsNone(stats.hostname)
 		self.assertIsNone(stats.caps)
 
 		self.fs.create_file('/test.worker', contents='')
-		stats = WorkerStats.load('/test.worker')
+		stats = WorkerStats.load('/test.worker', logger=self.logger)
 		self.assertIsNone(stats.hostname)
 		self.assertIsNone(stats.caps)
 
 		self.fs.remove_object('/test.worker')
 		self.fs.create_file('/test.worker', contents='hostname\n')
-		stats = WorkerStats.load('/test.worker')
+		stats = WorkerStats.load('/test.worker', logger=self.logger)
 		self.assertEqual(stats.hostname, 'hostname')
 		self.assertIsNone(stats.caps)
 
 		self.fs.remove_object('/test.worker')
 		self.fs.create_file('/test.worker', contents='hostname\ncaps\n')
-		stats = WorkerStats.load('/test.worker')
+		stats = WorkerStats.load('/test.worker', logger=self.logger)
 		self.assertEqual(stats.hostname, 'hostname')
 		self.assertEqual(stats.caps, 'caps')
 
 		self.fs.remove_object('/test.worker')
 		self.fs.create_file('/test.worker', contents='hostname\n666\n')
-		stats = WorkerStats.load('/test.worker', caps_type=int)
+		stats = WorkerStats.load('/test.worker', caps_type=int, logger=self.logger)
 		self.assertEqual(stats.hostname, 'hostname')
 		self.assertEqual(stats.caps, 666)
 	def should_save_worker_stats_to_file(self):
-		stats = WorkerStats('hostname', None)
+		stats = WorkerStats('hostname', None, logger=self.logger)
 		stats.save('/test.worker')
 		self.assertEqual(Path('/test.worker').read_text(), 'hostname\n')
 
-		stats = WorkerStats('hostname', 'caps')
+		stats = WorkerStats('hostname', 'caps', logger=self.logger)
 		stats.save('/test.worker')
 		self.assertEqual(Path('/test.worker').read_text(), 'hostname\ncaps\n')
 	def should_check_acceptance_of_worker_host_stats(self):
 		__ = self.assertFalse
 		OK = self.assertTrue
 
+		original_WorkerStats = globals()['WorkerStats']
+		WorkerStats = lambda *args: original_WorkerStats(*args, **({'logger':self.logger}))
 		# CURRENT:     host    caps                  STORED:     host  caps   REQ.caps
 		OK(WorkerStats('this', None)   .is_preferred(WorkerStats(None, None), None))
 		__(WorkerStats('this', None)   .is_preferred(WorkerStats(None, None), 'False'))

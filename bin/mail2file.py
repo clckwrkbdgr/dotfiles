@@ -4,6 +4,7 @@ import os, sys, shutil, subprocess
 import getpass
 import datetime
 import logging
+Log = logging.getLogger('mail2file')
 import functools, contextlib
 import email.parser
 try:
@@ -21,7 +22,7 @@ def mail_command(commands):
 	p = subprocess.Popen(MAIL_COMMAND, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 	_, errors = p.communicate('\n'.join(commands).encode('utf-8', 'replace'))
 	if errors:
-		logging.error(errors)
+		Log.error(errors)
 	return 0 == p.wait()
 
 def run_custom_filter(command, filename):
@@ -34,7 +35,7 @@ def run_custom_filter(command, filename):
 	try:
 		return 0 == subprocess.call([command, str(filename)])
 	except Exception as e:
-		logging.exception('Failed to run custom filter.')
+		Log.exception('Failed to run custom filter.')
 		return True
 
 def save_mail(index, destdir, custom_filters=None):
@@ -45,10 +46,10 @@ def save_mail(index, destdir, custom_filters=None):
 	if mail_file.exists():
 		os.unlink(str(mail_file))
 	if not mail_command(["save {index}".format(index=index), 'delete {index}'.format(index=index)]):
-		logging.error("Cannot save first message.")
+		Log.error("Cannot save first message.")
 		return False
 	if not mail_file.exists():
-		logging.error("Cannot save first message.")
+		Log.error("Cannot save first message.")
 		return False
 	try:
 		try:
@@ -66,7 +67,7 @@ def save_mail(index, destdir, custom_filters=None):
 			destdir.mkdir(parents=True, exist_ok=True)
 			os.rename(str(mail_file), str(destfile))
 	except:
-		logging.exception('Failed to process saved mail file {0}. Backup of original mbox is stored at {1}'.format(mail_file, MAILBOX_BAK))
+		Log.exception('Failed to process saved mail file {0}. Backup of original mbox is stored at {1}'.format(mail_file, MAILBOX_BAK))
 		return False
 	return True
 
@@ -131,7 +132,7 @@ def main(destdir, custom_filters=None):
 		os.chdir('/')
 		shutil.rmtree(str(TEMPDIR))
 	except OSError as e:
-		logging.exception('Failed to remove temp dir.')
+		Log.exception('Failed to remove temp dir.')
 	os.unlink(str(MAILBOX_BAK))
 	return True
 

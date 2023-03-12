@@ -31,6 +31,12 @@ class TestBasicLogger(unittest.TestCase):
 			logger = init('should_reinit_logger', stream=stream)
 			logger.warning(u'Reinit logger!')
 			self.assertEqual(stream.getvalue(), '[WARNING] should_reinit_logger: Reinit logger!\n' * 2)
+	def should_init_already_requested_logger(self):
+		logger = logging.getLogger('should_init_already_requested_logger')
+		with io.StringIO() as stream:
+			logger = init(logger, stream=stream)
+			logger.warning(u'Redefine logger!')
+			self.assertEqual(stream.getvalue(), '[WARNING] should_init_already_requested_logger: Redefine logger!\n')
 	def should_create_verbose_logger(self):
 		with io.StringIO() as stream:
 			logger = init('should_create_verbose_logger', verbose=True, stream=stream)

@@ -7,7 +7,9 @@ Works for Py2/Py3, Windows/Unix. No external dependencies. Only batteries are re
 import os, sys, subprocess
 import posixpath, fnmatch
 import logging
+Log = logging.getLogger('git-archive')
 from clckwrkbdgr import requests
+import clckwrkbdgr.logging
 
 def update_sparse_checkout_attributes(attributes, export_ignore_files):
 	EXPORT_IGNORE_BEGIN, EXPORT_IGNORE_END = '##{ SPARSE_CHECKOUT', '##} SPARSE_CHECKOUT'
@@ -88,9 +90,9 @@ def fetch_repo(repo_root, url, force_removed=False):
 	"""
 	gitdir_info = os.path.join(repo_root, '.git', 'info')
 	if not os.path.exists(gitdir_info):
-		logging.error("Cannot find {0}. Is it .git repo at all?".format(gitdir_info))
+		Log.error("Cannot find {0}. Is it .git repo at all?".format(gitdir_info))
 
-	logging.info("Fetching archive...")
+	Log.info("Fetching archive...")
 	if os.path.exists(os.path.join(gitdir_info, 'archive.tar')):
 		os.rename(
 				os.path.join(gitdir_info, 'archive.tar'),
@@ -100,20 +102,20 @@ def fetch_repo(repo_root, url, force_removed=False):
 	with open(os.path.join(gitdir_info, 'archive.tar.gz'), 'wb') as f:
 		f.write(data)
 
-	logging.info("Fetching sparse checkout list...")
+	Log.info("Fetching sparse checkout list...")
 	try:
 		data = requests.get(url + '/sparse-checkout', timeout=5).as_binary()
 		with open(os.path.join(gitdir_info, 'sparse-checkout'), 'wb') as f:
 			f.write(data)
 	except Exception as e:
-		logging.info("Failed to fetch sparse checkout file: {0}".format(e))
+		Log.info("Failed to fetch sparse checkout file: {0}".format(e))
 		pass
 
-	logging.info("Unpacking archive...")
+	Log.info("Unpacking archive...")
 	subprocess.call(["gzip", "-d", os.path.join(gitdir_info, 'archive.tar.gz')])
 	subprocess.call(["tar", "-xpf", os.path.join(gitdir_info, 'archive.tar')])
 
-	logging.info("Removing empty directories...")
+	Log.info("Removing empty directories...")
 	for line in reversed(subprocess.check_output(["tar", "-tf", os.path.join(gitdir_info, 'archive.tar')]).decode('utf-8', 'replace').splitlines()):
 		if not line.endswith('/'):
 			continue
@@ -121,7 +123,7 @@ def fetch_repo(repo_root, url, force_removed=False):
 			os.rmdir(line)
 
 	if os.path.exists(os.path.join(gitdir_info, 'archive.tar.bak')):
-		logging.info("Checking removed archived files...")
+		Log.info("Checking removed archived files...")
 		old_content = subprocess.check_output(['tar', '-tf', os.path.join(gitdir_info, 'archive.tar.bak')]).splitlines()
 		new_content = subprocess.check_output(['tar', '-tf', os.path.join(gitdir_info, 'archive.tar')]).splitlines()
 		for removed_file in set(old_content) - set(new_content):
@@ -129,12 +131,12 @@ def fetch_repo(repo_root, url, force_removed=False):
 				if force_removed:
 					try:
 						os.unlink(removed_file)
-						logging.info('Removed file {0}'.format(removed_file))
+						Log.info('Removed file {0}'.format(removed_file))
 					except:
-						logging.warning('D  {0}'.format(removed_file))
-						logging.error('Failed to remove file {0}'.format(removed_file))
+						Log.warning('D  {0}'.format(removed_file))
+						Log.error('Failed to remove file {0}'.format(removed_file))
 				else:
-					logging.warning('D  {0}'.format(removed_file))
+					Log.warning('D  {0}'.format(removed_file))
 
 		os.unlink(os.path.join(gitdir_info, 'archive.tar.bak'))
 
@@ -154,10 +156,7 @@ def cli():
 	status_command = commands.add_parser('status', description='Checks status of local copy. Currently only checks for "unversioned" files (i.e. missing from archive).')
 
 	args = parser.parse_args()
-	if args.quiet:
-		logging.basicConfig(level=logging.WARNING)
-	else:
-		logging.basicConfig(level=logging.INFO)
+	clckwrkbdgr.logging.init(Log, verbose=not quiet)
 	if args.command == 'clone':
 		return clone(args.url, dest=args.dest)
 	elif args.command == 'pull':
@@ -166,17 +165,17 @@ def cli():
 		return create_archive(sparse_checkout=args.sparse_checkout)
 	elif args.command == 'status':
 		return status()
-	logging.error('Unknown command: {0}'.format(args.command))
+	Log.error('Unknown command: {0}'.format(args.command))
 	return False
 
 def create_archive(sparse_checkout=None):
 	gitdir = '.git'
 	if not os.path.isdir(gitdir):
 		if os.path.isfile('HEAD'):
-			logging.debug('.git/ is absent, but HEAD is found. Considering a bare Git repo.')
+			Log.debug('.git/ is absent, but HEAD is found. Considering a bare Git repo.')
 			gitdir = '.'
 		else:
-			logging.error("Cannot find .git/ in current directory. Is should be a root of a .git repo.")
+			Log.error("Cannot find .git/ in current directory. Is should be a root of a .git repo.")
 			return False
 	sparse_checkout = sparse_checkout or os.path.join(gitdir, 'info', 'sparse-checkout')
 	if os.path.isfile(sparse_checkout):
@@ -201,35 +200,35 @@ def clone(url, dest=None):
 
 	gitdir = '.git'
 	if os.path.exists(gitdir):
-		logging.error('Directory .git already exists: {0}'.format(gitdir))
+		Log.error('Directory .git already exists: {0}'.format(gitdir))
 		return False
 	gitdir_info = os.path.join(gitdir, 'info')
 	if not os.path.isdir(gitdir_info):
 		os.makedirs(gitdir_info)
 
-	logging.info("Cloning into {0}...".format(dest))
+	Log.info("Cloning into {0}...".format(dest))
 	with open(os.path.join(gitdir_info, 'pseudogit.url'), 'w') as f:
 		f.write(url)
 	fetch_repo('.', url)
-	logging.info("Done.")
+	Log.info("Done.")
 
 def pull(force_removed=False):
 	gitdir = '.git'
 	if not os.path.exists(gitdir):
-		logging.error("Cannot find {0}. Is should be a root of a .git repo.".format(gitdir))
+		Log.error("Cannot find {0}. Is should be a root of a .git repo.".format(gitdir))
 		return False
 	gitdir_info = os.path.join(gitdir, 'info')
 	with open(os.path.join(gitdir_info, 'pseudogit.url'), 'r') as f:
 		url = f.read().strip()
 
-	logging.info("Pulling remote {0}...".format(url))
+	Log.info("Pulling remote {0}...".format(url))
 	fetch_repo('.', url, force_removed=force_removed)
-	logging.info("Done.")
+	Log.info("Done.")
 
 def status():
 	gitdir = '.git'
 	if not os.path.exists(gitdir):
-		logging.error("Cannot find {0}. Is should be a root of a .git repo.".format(gitdir))
+		Log.error("Cannot find {0}. Is should be a root of a .git repo.".format(gitdir))
 		return False
 	gitdir_info = os.path.join(gitdir, 'info')
 	archive = os.path.join(gitdir_info, 'archive.tar')

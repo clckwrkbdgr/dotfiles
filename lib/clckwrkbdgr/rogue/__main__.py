@@ -755,8 +755,11 @@ import click
 @click.command()
 @click.option('--debug', is_flag=True)
 def cli(debug=False):
-	if debug:
-		trace.setLevel(logging.DEBUG)
+	clckwrkbdgr.logging.init('rogue',
+			debug=debug,
+			filename=xdg.save_state_path('dotrogue')/'rogue.log',
+			stream=None,
+			)
 	curses.wrapper(main)
 
 if __name__ == '__main__':

@@ -5,9 +5,10 @@ from clckwrkbdgr.collections import dotdict
 from clckwrkbdgr.utils import get_type_by_name, classfield
 from clckwrkbdgr.math import Point, Size, Rect, Matrix
 import clckwrkbdgr.math
+import logging
+trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
 from clckwrkbdgr import xdg
-trace = clckwrkbdgr.logging.getFileLogger('rogue', xdg.save_state_path('dotrogue')/'rogue.log')
 
 def is_diagonal_movement(point_from, point_to):
 	shift = abs(point_to - point_from)

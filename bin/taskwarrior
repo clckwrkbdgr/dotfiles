@@ -5,6 +5,7 @@ logger = logging.getLogger('taskwarrior')
 from clckwrkbdgr import utils
 import clckwrkbdgr.taskwarrior
 from clckwrkbdgr.taskwarrior import TaskWarrior, Config
+import clckwrkbdgr.logging
 
 import click, click_default_group
 import clckwrkbdgr.click
@@ -18,10 +19,7 @@ def get_taskwarrior():
 @click.option('--debug', is_flag=True, help='Enables debug output.')
 def cli(debug=False):
 	""" Provides simple interface to manage user's task flow. """
-	handler = logging.StreamHandler() # TODO custom formatter to display level, module, logger name etc.; and generic clckwrkbdgr module for such loggers.
-	logger.addHandler(handler)
-	if debug:
-		logger.setLevel(logging.DEBUG)
+	clckwrkbdgr.logging.init(logger, debug=debug)
 
 @cli.command('current')
 @utils.exits_with_return_value

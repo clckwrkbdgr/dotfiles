@@ -39,6 +39,9 @@ class TestEmail(unittest.TestCase):
 		if filename:
 			attachment.add_header('Content-Disposition', 'attachment', filename=filename)
 		return attachment
+	def setUp(self):
+		import logging
+		logging.getLogger('email').setLevel(logging.CRITICAL)
 	def should_construct_email_from_bytes(self):
 		msg = self._create()
 		if six.PY2: # pragma: no cover
