@@ -105,7 +105,7 @@ class Context: # pragma: no cover -- TODO need mocks
 		self._script_rootdir = script_rootdir
 
 		self._logger = logging.getLogger(logger_name or 'jobsequence')
-		clckwrkbdgr.logger.init(self._logger,
+		clckwrkbdgr.logging.init(self._logger,
 				verbose=(self._verbose_level == 1),
 				debug=(self._verbose_level is not None and self._verbose_level > 1),
 				)

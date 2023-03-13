@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import os, sys
 import subprocess
-import clckwrkbdgr.logging
-trace = clckwrkbdgr.logging.init(debug=os.environ.get('DOTFILES_SETUP_VERBOSE'))
 try:
 	from pathlib2 import Path
 except ImportError:
