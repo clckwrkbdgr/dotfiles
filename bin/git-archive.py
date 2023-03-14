@@ -156,7 +156,7 @@ def cli():
 	status_command = commands.add_parser('status', description='Checks status of local copy. Currently only checks for "unversioned" files (i.e. missing from archive).')
 
 	args = parser.parse_args()
-	clckwrkbdgr.logging.init(Log, verbose=not quiet)
+	clckwrkbdgr.logging.init(Log, verbose=not args.quiet)
 	if args.command == 'clone':
 		return clone(args.url, dest=args.dest)
 	elif args.command == 'pull':
