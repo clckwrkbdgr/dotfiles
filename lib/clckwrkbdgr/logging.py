@@ -60,7 +60,7 @@ def init(logger,
 			# TODO DEBUG logging.basicConfig(format='%(module)s:%(lineno)d:%(funcName)s:%(levelname)s:%(message)s')
 			# TODO DEBUG _handler.setFormatter(logging.Formatter('%(process)d: %(asctime)s: %(module)s:%(lineno)d:%(funcName)s: [%(levelname)s] %(message)s'))
 		if filename:
-			file_handler = logging.FileHandler(str(filename), delay=True)
+			file_handler = logging.FileHandler(str(filename), delay=True, encoding='utf-8')
 			file_handler.setFormatter(logging.Formatter(
 				'%(asctime)s:%(name)s:%(levelname)s: %(message)s',
 				datefmt='%Y-%m-%d %H:%M:%S',
