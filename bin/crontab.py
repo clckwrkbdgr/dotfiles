@@ -69,7 +69,7 @@ def command_daemon(logdir, debug=False): # pragma: no cover -- TODO use crontab.
 	The only exception is PRIORITY which works only for the job it is defined before. It is a priority of Windows Task Scheduler task and value should be integer within range [4;7].
 	See <https://docs.microsoft.com/en-us/windows/win32/taskschd/tasksettings-priority> for details.
 	"""
-	clckwrkbdgr.logging.init(debug=debug)
+	clckwrkbdgr.logging.init(Log, debug=debug)
 	last_run = datetime.datetime.now()
 	last_run = last_run.replace(second=0)
 	Log.debug("Starting: {0}".format(last_run))
