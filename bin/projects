@@ -11,6 +11,7 @@ from clckwrkbdgr import utils
 import clckwrkbdgr.vcs.git as vcs
 from clckwrkbdgr.fs import CurrentDir
 import clckwrkbdgr.projects
+import clckwrkbdgr.logging
 
 LOCAL_REMOTE_NAME = 'local'
 
@@ -24,10 +25,12 @@ def cli():
 	pass
 
 @cli.command('check')
+@click.option('-v', '--verbose', is_flag=True, help='Print more details.')
 @click.option('--todo', is_flag=True, help='Also print todo entries found in this dir (see "todo search")')
 @utils.exits_with_return_value
-def check_project(todo=False):
+def check_project(todo=False, verbose=False):
 	""" Check projects for consistency. """
+	clckwrkbdgr.logging.init('projects', verbose=verbose)
 	rootdir = Path('.').resolve()
 	rc = 0
 	for module in clckwrkbdgr.projects.qualify(rootdir):

@@ -258,6 +258,7 @@ lib/clckwrkbdgr/pkg/test/__init__.py caps=work
 lib/clckwrkbdgr/pkg/test/test_base.py caps=work
 lib/clckwrkbdgr/projects/__init__.py caps=work
 lib/clckwrkbdgr/projects/python.py caps=work
+lib/clckwrkbdgr/projects/docs.py caps=work
 lib/clckwrkbdgr/projects/test/__init__.py caps=work
 lib/clckwrkbdgr/projects/test/test_projects.py caps=work
 lib/clckwrkbdgr/sql.py caps=work

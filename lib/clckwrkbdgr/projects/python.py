@@ -1,6 +1,8 @@
 import os, sys
+import re
 import clckwrkbdgr.fs
 from .. import lint
+from . import docs
 
 def qualify(project_root_dir): # pragma: no cover -- TODO
 	for filename in clckwrkbdgr.fs.find(project_root_dir, exclude_dir_names=['.git', '.svn']):
@@ -10,6 +12,14 @@ def qualify(project_root_dir): # pragma: no cover -- TODO
 
 def check(project_root_dir): # pragma: no cover -- TODO
 	rc = 0
+
+	readme_file = docs.find_readme(project_root_dir)
+	if readme_file:
+		readme = readme_file.read_text()
+		SUPPORTED_PYTHON_VERSIONS = re.compile('Supported Python versions:', flags=re.MULTILINE)
+		if not SUPPORTED_PYTHON_VERSIONS.search(readme):
+			print('{0}: No info about supported Python versions.'.format(readme_file))
+			rc += 1
 
 	for filename in clckwrkbdgr.fs.find(project_root_dir, exclude_dir_names=['.git', '.svn']):
 		if filename.name == 'Makefile':
