@@ -66,6 +66,7 @@ IGNORED_PATHS = list(map(os.path.abspath, [
 	'libreoffice/4/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu140.tmp/Paths.xcu', # External plugin, TODO: should be loaded on-demand and not stored in config.
 	'gtk-3.0/gtk.css', # FIXME: violation of GPL, should create own theme.
 	'gimp/tags.xml', # May contain 'GPL' in entity names.
+	'lib/clckwrkbdgr/projects/docs.py', # Checks for license files in other projects, TODO: this whole script should be moved to projects.docs, probably?
 	]))
 
 if __name__ == '__main__':
