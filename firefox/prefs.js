@@ -14,7 +14,6 @@ user_pref("accessibility.typeaheadfind.autostart", false);
 user_pref("accessibility.typeaheadfind.flashBar", 0);
 user_pref("alerts.showFavicons", true);
 user_pref("app.normandy.first_run", false);
-user_pref("app.normandy.startupRolloutPrefs.security.cert_pinning.enforcement_level", 0);
 user_pref("app.shield.optoutstudies.enabled", false);
 user_pref("app.update.backgroundErrors", 2);
 user_pref("browser.anchor_color", "#FFFF33");
