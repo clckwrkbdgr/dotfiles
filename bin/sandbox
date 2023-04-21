@@ -32,8 +32,8 @@ def setup_environment(config):
 	trace('Updated PATH={0}'.format(os.environ['PATH']))
 
 	os.environ['PYTHONPATH'] = os.pathsep.join(filter(None, [
-		os.environ.get('PYTHONPATH', ''),
 		sandbox_root,
+		os.environ.get('PYTHONPATH', ''),
 		]))
 	trace('Updated PYTHONPATH={0}'.format(os.environ['PYTHONPATH']))
 
