@@ -64,7 +64,7 @@ def quiet_call(args,
 	sys.stderr.flush()
 	return rc
 
-def run_python_unittests(version, test, quiet=False): # pragma: no cover -- TODO
+def run_python_unittests(version, test, quiet=False, verbose=False): # pragma: no cover -- TODO
 	allowed_versions = ['2', '3']
 	assert version in allowed_versions, 'Unknown python version {0}, choose from following: {1}'.format(version, allowed_versions)
 
@@ -99,11 +99,15 @@ def run_python_unittests(version, test, quiet=False): # pragma: no cover -- TODO
 	if test:
 		if quiet:
 			args += ['--quiet']
+		if verbose:
+			args += ['--verbose']
 		args += [test]
 	else:
 		args += ['discover']
 		if version == '3' and quiet: # FIXME py2 discover does not recognize --quiet.
 			args += ['--quiet']
+		if verbose:
+			args += ['--verbose']
 	quiet_stderr_patterns = []
 	if quiet:
 		quiet_stderr_patterns.extend(PYTHON_UNITTEST_QUIET_PATTERNS[version])
@@ -124,9 +128,9 @@ def run_python_unittests(version, test, quiet=False): # pragma: no cover -- TODO
 			)
 
 @runner.test_suite('py2')
-def python_2_unittest(test, quiet=False): # pragma: no cover -- TODO
-	return run_python_unittests('2', test, quiet=quiet)
+def python_2_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
+	return run_python_unittests('2', test, quiet=quiet, verbose=verbose)
 
 @runner.test_suite('py3')
-def python_3_unittest(test, quiet=False): # pragma: no cover -- TODO
-	return run_python_unittests('3', test, quiet=quiet)
+def python_3_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
+	return run_python_unittests('3', test, quiet=quiet, verbose=verbose)

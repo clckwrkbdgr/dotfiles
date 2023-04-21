@@ -9,7 +9,7 @@ except ImportError: # pragma: no cover
 from . import runner
 
 @runner.test_suite('html')
-def html_javascript_unittest(test, quiet=False): # pragma: no cover -- TODO
+def html_javascript_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
 	try:
 		from blackcompany.util.adhocserver import AdhocBackgroundServer
 	except ImportError:

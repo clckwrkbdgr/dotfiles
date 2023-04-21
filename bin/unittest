@@ -37,10 +37,12 @@ def ensure_test_data_dir():
 @click.argument('tests', nargs=-1)
 @click.option('-q', '--quiet', is_flag=True, default=False,
 		help='Quiet run (less output, report errors only)')
+@click.option('-v', '--verbose', is_flag=True, default=False,
+		help='Verbose output.')
 @click.option('-p', '--platform', default=['all'], multiple=True,
 		type=click.Choice(['all'] + list(test_suite.keys()), case_sensitive=False),
 		help='List of testing platforms to execute tests for.')
-def main(tests, quiet=False, platform=None):
+def main(tests, quiet=False, verbose=False, platform=None):
 	""" Runs specified test suites/modules/cases in current directory
 	for a number of known platforms/languages.
 	See list of supported platforms in --platform option description.
@@ -59,7 +61,7 @@ def main(tests, quiet=False, platform=None):
 		for test in tests:
 			if not quiet:
 				print(termcolor.colored('Running {0} tests for: {1}'.format(runner_name, test or '<autodiscovery>'), 'blue'))
-			result = runner(test, quiet=quiet)
+			result = runner(test, quiet=quiet, verbose=verbose)
 			rc += result
 			if not quiet:
 				if result == 0:

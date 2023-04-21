@@ -7,7 +7,7 @@ import clckwrkbdgr.xdg as xdg
 from . import runner
 
 @runner.test_suite('bash')
-def bash_unittest(test, quiet=False): # pragma: no cover -- TODO
+def bash_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
 	unittest_bash = xdg.XDG_CONFIG_HOME/'lib'/'unittest.bash'
 	bash = ['bash']
 	if platform.system() == 'Windows':
