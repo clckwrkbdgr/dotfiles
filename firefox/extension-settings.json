@@ -2,19 +2,7 @@
     "commands": {},
     "default_search": {},
     "homepageNotification": {},
-    "newTabNotification": {
-        "newtaboverride@agenedia.com": {
-            "initialValue": false,
-            "precedenceList": [
-                {
-                    "enabled": true,
-                    "id": "newtaboverride@agenedia.com",
-                    "installDate": 1640848372656,
-                    "value": true
-                }
-            ]
-        }
-    },
+    "newTabNotification": {},
     "prefs": {
         "network.networkPredictionEnabled": {
             "initialValue": {},
@@ -22,22 +10,8 @@
                 {
                     "enabled": true,
                     "id": "uBlock0@raymondhill.net",
-                    "installDate": 1511006749000,
+                    "installDate": 1682145814682,
                     "value": false
-                }
-            ]
-        },
-        "privacy.containers": {
-            "initialValue": {
-                "privacy.userContext.longPressBehavior": 0,
-                "privacy.usercontext.about_newtab_segregation.enabled": false
-            },
-            "precedenceList": [
-                {
-                    "enabled": true,
-                    "id": "{60f82f00-9ad5-4de5-b31c-b16a47c51558}",
-                    "installDate": 1572103923000,
-                    "value": "{60f82f00-9ad5-4de5-b31c-b16a47c51558}"
                 }
             ]
         },
@@ -47,7 +21,7 @@
                 {
                     "enabled": true,
                     "id": "uBlock0@raymondhill.net",
-                    "installDate": 1511006749000,
+                    "installDate": 1682145814682,
                     "value": false
                 }
             ]
@@ -61,7 +35,7 @@
                 {
                     "enabled": true,
                     "id": "newtaboverride@agenedia.com",
-                    "installDate": 1640848372656,
+                    "installDate": 1682145878439,
                     "value": "moz-extension://efb3eaa1-7dd4-485f-aaad-d95a080ed979/html/newtab.html"
                 }
             ]

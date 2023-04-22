@@ -13,31 +13,25 @@
             "amazondotcom@search.mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
-                "lastModifiedTime": 0,
                 "loader": null,
                 "rootURI": "resource://search-extensions/amazondotcom/",
                 "runInSafeMode": true,
-                "startupData": {},
                 "version": "0.0"
             },
             "bing@search.mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
-                "lastModifiedTime": 0,
                 "loader": null,
                 "rootURI": "resource://search-extensions/bing/",
                 "runInSafeMode": true,
-                "startupData": {},
                 "version": "0.0"
             },
             "ddg@search.mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
-                "lastModifiedTime": 0,
                 "loader": null,
                 "rootURI": "resource://search-extensions/ddg/",
                 "runInSafeMode": true,
-                "startupData": {},
                 "version": "0.0"
             },
             "default-theme@mozilla.org": {
@@ -83,17 +77,14 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/google/",
                 "runInSafeMode": true,
-                "startupData": {},
                 "version": "0.0"
             },
             "wikipedia@search.mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
-                "lastModifiedTime": 0,
                 "loader": null,
                 "rootURI": "resource://search-extensions/wikipedia/",
                 "runInSafeMode": true,
-                "startupData": {},
                 "version": "0.0"
             }
         }
@@ -126,7 +117,6 @@
                 "path": "@mutelinks.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/@mutelinks.xpi!/",
                 "runInSafeMode": false,
-                "startupData": {},
                 "version": "0.0"
             },
             "firefox@tampermonkey.net": {
@@ -148,7 +138,6 @@
                 "path": "godville-ui-plus@erinome.net.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/godville-ui-plus@erinome.net.xpi!/",
                 "runInSafeMode": false,
-                "startupData": {},
                 "version": "0.0"
             },
             "newtaboverride@agenedia.com": {
@@ -161,16 +150,6 @@
                 "runInSafeMode": false,
                 "version": "0.0"
             },
-            "ruffle-player-extension@ruffle.rs": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "ruffle-player-extension@ruffle.rs.xpi",
-                "rootURI": "jar:file://$HOME/.config/firefox/extensions/ruffle-player-extension@ruffle.rs.xpi!/",
-                "runInSafeMode": false,
-                "version": "0.0"
-            },
             "uBlock0@raymondhill.net": {
                 "dependencies": [],
                 "enabled": true,
@@ -180,16 +159,6 @@
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/uBlock0@raymondhill.net.xpi!/",
                 "runInSafeMode": false,
                 "startupData": {},
-                "version": "0.0"
-            },
-            "{60f82f00-9ad5-4de5-b31c-b16a47c51558}": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "{60f82f00-9ad5-4de5-b31c-b16a47c51558}.xpi",
-                "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B60f82f00-9ad5-4de5-b31c-b16a47c51558%7D.xpi!/",
-                "runInSafeMode": false,
                 "version": "0.0"
             },
             "{73a6fe31-595d-460b-a920-fcc0f8843232}": {
@@ -211,7 +180,6 @@
                 "path": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B7a7a4a92-a2a0-41d1-9fd7-1e92480d612d%7D.xpi!/",
                 "runInSafeMode": false,
-                "startupData": {},
                 "version": "0.0"
             },
             "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}": {
@@ -222,7 +190,6 @@
                 "path": "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc%7D.xpi!/",
                 "runInSafeMode": false,
-                "startupData": {},
                 "version": "0.0"
             },
             "{980500da-0b6d-4de9-ad90-93d17605276c}": {
@@ -233,7 +200,6 @@
                 "path": "{980500da-0b6d-4de9-ad90-93d17605276c}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7B980500da-0b6d-4de9-ad90-93d17605276c%7D.xpi!/",
                 "runInSafeMode": false,
-                "startupData": {},
                 "version": "0.0"
             },
             "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
@@ -244,7 +210,6 @@
                 "path": "{d7742d87-e61d-4b78-b8a1-b469842139fa}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7Bd7742d87-e61d-4b78-b8a1-b469842139fa%7D.xpi!/",
                 "runInSafeMode": false,
-                "startupData": {},
                 "version": "0.0"
             },
             "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
@@ -255,7 +220,6 @@
                 "path": "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/%7Bd7ce25e4-e6a8-433e-bb29-ec763dcd26bf%7D.xpi!/",
                 "runInSafeMode": false,
-                "startupData": {},
                 "version": "0.0"
             }
         },

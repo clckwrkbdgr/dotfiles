@@ -75,7 +75,8 @@
     "google@search.mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
         ]
     },
     "newtaboverride@agenedia.com": {
@@ -163,8 +164,6 @@
     },
     "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
         "origins": [],
-        "permissions": [
-            "internal:privateBrowsingAllowed"
-        ]
+        "permissions": []
     }
 }
