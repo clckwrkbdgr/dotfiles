@@ -203,6 +203,8 @@ QueryPerformanceFrequency(
 /*******************************************************************************
  * HELPERS */
 
+#define BADGER_ISPRINTABLE(c)  ( c >= 0x20 && c <= 0x7e )
+
 /** Bold colors are 1;31m */
 #define BADGER_RED     "\033[0;31m"
 #define BADGER_GREEN   "\033[0;32m"
@@ -401,6 +403,71 @@ void BADGER_FPRINTF(FILE * outfile,
    free((void*)message);
 
    BADGER_FPUTS(outfile, "\n");
+   fflush(outfile);
+}
+
+/** Prints formatted array of chars (bytes) with caption.
+ * Outputs printable characters as-is with heading dot symbol, for non-printable dumps their hex equivalent.
+ * Dumps 16 charactes in a row.
+ * Default format follows basic BADGER_FPRINTF().
+ * See BADGER_FPRINTF() for more details.
+ */
+BADGER_STATIC_FUNCTION
+void BADGER_FPRINTF_ARRAY(FILE * outfile,
+      const char * filename, int line_number, const char * func_name,
+      const char * caption, const char * arr, size_t arr_size)
+{
+   char * header;
+   char * part;
+   static char _badger_char;
+   static char _badger_output[4];
+   static char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+   size_t _badger_index;
+   size_t _badger_subindex;
+   if(outfile == NULL)
+   {
+      return;
+   }
+
+   _badger_output[0] = ' ';
+   _badger_output[3] = '\0';
+
+   header = BADGER_GET_TRACE_HEADER(filename, line_number, func_name,
+         BADGER_USE_COLORS(outfile)
+         );
+   BADGER_FPUTS(outfile, header);
+   free((void*)header);
+   BADGER_FPUTS(outfile, caption);
+   BADGER_FPUTS(outfile, ":\n");
+
+#define BADGER_ARRAY_CHARS_IN_A_ROW 16
+   for (_badger_index = 0; _badger_index <= (size_t)(arr_size / BADGER_ARRAY_CHARS_IN_A_ROW); ++_badger_index)
+   {
+      part = BADGER_SNPRINTF( /* TODO should re-use static buffer instead of allocating anew */
+            "  %u-%u = [ ",
+            _badger_index * BADGER_ARRAY_CHARS_IN_A_ROW,
+            _badger_index * BADGER_ARRAY_CHARS_IN_A_ROW + BADGER_ARRAY_CHARS_IN_A_ROW - 1
+            );
+      BADGER_FPUTS(outfile, part);
+      free((void*)part);
+
+      for (_badger_subindex = 0; _badger_subindex < BADGER_ARRAY_CHARS_IN_A_ROW; ++_badger_subindex)
+      {
+         if (_badger_index * BADGER_ARRAY_CHARS_IN_A_ROW + _badger_subindex >= arr_size) {
+            break;
+         }
+         _badger_char = arr[_badger_index * BADGER_ARRAY_CHARS_IN_A_ROW + _badger_subindex];
+         if (BADGER_ISPRINTABLE(_badger_char)) {
+            _badger_output[1] = '.';
+            _badger_output[2] = _badger_char;
+         } else {
+            _badger_output[1] = hex_chars[(_badger_char & 0xF0) >> 4];
+            _badger_output[2] = hex_chars[(_badger_char & 0x0F) >> 0];
+         }
+         BADGER_FPUTS(outfile, _badger_output);
+      }
+      BADGER_FPUTS(outfile, " ]\n");
+   }
    fflush(outfile);
 }
 
@@ -647,6 +714,22 @@ BADGER_PROFILE_FPRINTF(
    BADGER_FPRINTF(BADGER_CURRENT_LOG_STREAM(NULL), \
          __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 
+/** Printf-like macro to print arguments to the current stream.
+ * (see BADGER_CURRENT_LOG_STREAM, default is stderr)
+ * Default format is following:
+ *   <date/time>:<pid>:<filename>:<ln>:<func>: <message...>
+ * Where:
+ *   date/time - ISO repr. of current timestamp;
+ *   pid - current process ID;
+ *   filename - source file name;
+ *   ln - number of line where trace is placed;
+ *   func - name of the function where traces is placed;
+ *   message - printf-formatted message.
+ */
+#define BADGER_TRACE_ARRAY(caption, arr, arr_size) \
+   BADGER_FPRINTF_ARRAY(BADGER_CURRENT_LOG_STREAM(NULL), \
+         __FILE__, __LINE__, __FUNCTION__, caption, arr, arr_size)
+
 /** Function to start profiling in scope.
  * Required for BADGER_PROFILE() calls (see below).
  * May print optional trace (using printf-like formatting).
@@ -680,6 +763,7 @@ BADGER_PROFILE_FPRINTF(
 #  pragma warning(pop) // For C4505 (unreferenced local function has been removed)
 // On some version it still does not work, so forcing usage:
 static long long BADGER__UNUSED_FUNCTION_1 = reinterpret_cast<long long>(BADGER_FPRINTF);
+static long long BADGER__UNUSED_FUNCTION_1_1 = reinterpret_cast<long long>(BADGER_FPRINTF_ARRAY);
 static long long BADGER__UNUSED_FUNCTION_2 = reinterpret_cast<long long>(BADGER_CURRENT_LOG_STREAM);
 static long long BADGER__UNUSED_FUNCTION_3 = reinterpret_cast<long long>(BADGER_GET_DIRECT_STDERR);
 static long long BADGER__UNUSED_FUNCTION_4 = reinterpret_cast<long long>(BADGER_DEFAULT_TRACE_FILE_NAME);
