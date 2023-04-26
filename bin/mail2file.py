@@ -62,7 +62,7 @@ def save_mail(index, destdir, custom_filters=None):
 				break
 		else:
 			name = eml['Subject'] or 'mail.{0}.{1}'.format(os.getpid(), datetime.datetime.now().isoformat())
-			name = clckwrkbdgr.fs.make_valid_filename(name)
+			name = clckwrkbdgr.fs.make_valid_filename(str(name))
 			destfile = clckwrkbdgr.fs.make_unique_filename(destdir/name)
 			destdir.mkdir(parents=True, exist_ok=True)
 			os.rename(str(mail_file), str(destfile))
