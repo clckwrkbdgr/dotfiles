@@ -33,7 +33,7 @@
 
 [filter "ignore_moc_fastdir"]
 	smudge = cat
-	clean = "sed '/^Fast[Dd]ir[0-9][0-9]* *=/d'"
+	clean = "sed 's/^\\(Fast[Dd]ir[0-9][0-9]*\\) *=.*$/\\1 = ${HOME}/'"
 
 [filter "gajim_config"]
 	smudge = cat

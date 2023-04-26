@@ -50,6 +50,9 @@ FileNamesIconv = no
 Softmixer_SaveState = no
 Equalizer_SaveState = no
 
+FastDir1 = ${HOME}
+FastDir2 = ${HOME}
+FastDir3 = ${HOME}
 MusicDir = ${FastDir1}
 
 TagsCacheSize		= 256
