@@ -2,7 +2,19 @@
     "commands": {},
     "default_search": {},
     "homepageNotification": {},
-    "newTabNotification": {},
+    "newTabNotification": {
+        "newtaboverride@agenedia.com": {
+            "initialValue": false,
+            "precedenceList": [
+                {
+                    "enabled": true,
+                    "id": "newtaboverride@agenedia.com",
+                    "installDate": 1682145878439,
+                    "value": true
+                }
+            ]
+        }
+    },
     "prefs": {
         "network.networkPredictionEnabled": {
             "initialValue": {},
