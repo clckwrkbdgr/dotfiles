@@ -68,6 +68,7 @@ deprecated() {
 	#   deprecated 'Use X instead.'
 	if [ "${FUNCNAME[1]}" == 'main' ]; then
 		echo "$0:${BASH_LINENO[0]}:script is deprecated: $@" >&2
+		pstree -s -A -a $$ >&2
 	elif [ "${FUNCNAME[1]}" == 'source' ]; then
 		echo "${BASH_SOURCE[1]}:${BASH_LINENO[0]}:script is deprecated: $@" >&2
 	else
