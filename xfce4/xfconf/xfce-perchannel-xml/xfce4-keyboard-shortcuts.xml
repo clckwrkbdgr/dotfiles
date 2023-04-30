@@ -24,19 +24,19 @@
       <property name="override" type="bool" value="true"/>
       <property name="&lt;Super&gt;a" type="string" value="timed-notification"/>
       <property name="&lt;Super&gt;l" type="string" value="lock_ws"/>
-      <property name="&lt;Super&gt;space" type="string" value="xdg mocp -G"/>
       <property name="&lt;Super&gt;q" type="string" value="rpg.sh"/>
       <property name="&lt;Super&gt;Down" type="string" value="volume -n down"/>
       <property name="&lt;Super&gt;Up" type="string" value="volume -n up"/>
       <property name="&lt;Super&gt;e" type="string" value="fix_lc urxvt"/>
-      <property name="&lt;Super&gt;f" type="string" value="xdg firefox"/>
       <property name="&lt;Super&gt;p" type="string" value="xfce4-screenshooter"/>
       <property name="&lt;Super&gt;h" type="string" value="backlight_off"/>
       <property name="&lt;Super&gt;KP_0" type="string" value="xdotool click 1"/>
       <property name="&lt;Super&gt;KP_Decimal" type="string" value="xdotool click 3"/>
-      <property name="&lt;Super&gt;m" type="string" value="xdg in_call.sh toggle"/>
       <property name="&lt;Super&gt;grave" type="string" value="fix_lc quakestyle quake_xterm bash &apos;$XDG_CONFIG_HOME/lib/desktop.bash&apos; start-main-quake-terminal"/>
       <property name="&lt;Super&gt;u" type="string" value="setxkbmap_ua_ru"/>
+      <property name="&lt;Super&gt;space" type="string" value="user-env.cmd mocp -G"/>
+      <property name="&lt;Super&gt;f" type="string" value="user-env.cmd firefox"/>
+      <property name="&lt;Super&gt;m" type="string" value="user-env.cmd in_call.sh toggle"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
