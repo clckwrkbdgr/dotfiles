@@ -58,16 +58,21 @@ def main(tests, quiet=False, verbose=False, platform=None):
 		if not ('all' in platform or runner_name in platform):
 			continue
 		runner = test_suite[runner_name]
-		for test in tests:
-			if not quiet:
-				print(termcolor.colored('Running {0} tests for: {1}'.format(runner_name, test or '<autodiscovery>'), 'blue'))
-			result = runner(test, quiet=quiet, verbose=verbose)
-			rc += result
-			if not quiet:
-				if result == 0:
-					print(termcolor.colored('Success.', 'green'))
+		if not quiet:
+			test_name = '<autodiscovery>'
+			if tests:
+				if len(tests) == 1:
+					test_name = tests[0]
 				else:
-					print(termcolor.colored('RC: {0}'.format(result), 'red'))
+					test_name = '{0} tests'.format(len(tests))
+			print(termcolor.colored('Running {0} tests for: {1}'.format(runner_name, test_name), 'blue'))
+		result = runner(tests, quiet=quiet, verbose=verbose)
+		rc += result
+		if not quiet:
+			if result == 0:
+				print(termcolor.colored('Success.', 'green'))
+			else:
+				print(termcolor.colored('RC: {0}'.format(result), 'red'))
 	if not quiet and rc != 0:
 		print(termcolor.colored('Total RC: {0}'.format(rc), 'red'))
 	sys.exit(rc)

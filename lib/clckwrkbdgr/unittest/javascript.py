@@ -9,7 +9,7 @@ except ImportError: # pragma: no cover
 from . import runner
 
 @runner.test_suite('html')
-def html_javascript_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
+def html_javascript_unittest(tests, quiet=False, verbose=False): # pragma: no cover -- TODO
 	try:
 		from blackcompany.util.adhocserver import AdhocBackgroundServer
 	except ImportError:
@@ -23,7 +23,7 @@ def html_javascript_unittest(test, quiet=False, verbose=False): # pragma: no cov
 			print('Cannot import bottle, skipping tests.', file=sys.stderr)
 		return 0
 
-	found_tests = discover_tests('.', test=test)
+	found_tests = discover_tests('.', tests=tests)
 	if not found_tests:
 		return 0
 
@@ -74,15 +74,16 @@ def html_javascript_unittest(test, quiet=False, verbose=False): # pragma: no cov
 	rc += sum(len(module['errors']) for module in unittest_results.values())
 	return rc
 
-def discover_tests(rootpath, test=None): # pragma: no cover -- TODO
+def discover_tests(rootpath, tests=None): # pragma: no cover -- TODO
 	found_tests = []
 	for root, dirnames, filenames in os.walk(str(rootpath)):
 		for filename in filenames:
 			if filename.startswith('test_') and filename.endswith('.html'):
-				if test:
-					print(test, filename)
-					if filename == test or os.path.splitext(filename)[0] == test:
-						found_tests.append(os.path.join(root, filename))
+				if tests:
+					for test in tests:
+						print(test, filename)
+						if filename == test or os.path.splitext(filename)[0] == test:
+							found_tests.append(os.path.join(root, filename))
 				else:
 					found_tests.append(os.path.join(root, filename))
 	return found_tests

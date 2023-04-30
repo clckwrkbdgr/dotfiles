@@ -7,7 +7,7 @@ import clckwrkbdgr.xdg as xdg
 from . import runner
 
 @runner.test_suite('bash')
-def bash_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
+def bash_unittest(tests, quiet=False, verbose=False): # pragma: no cover -- TODO
 	unittest_bash = xdg.XDG_CONFIG_HOME/'lib'/'unittest.bash'
 	bash = ['bash']
 	if platform.system() == 'Windows':
@@ -22,6 +22,6 @@ def bash_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
 	args = bash + [str(unittest_bash)]
 	if quiet:
 		args += ['--quiet']
-	args += [test or 'discover']
+	args += tests or ['discover']
 	rc = subprocess.call(args)
 	return rc

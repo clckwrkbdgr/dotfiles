@@ -64,7 +64,7 @@ def quiet_call(args,
 	sys.stderr.flush()
 	return rc
 
-def run_python_unittests(version, test, quiet=False, verbose=False): # pragma: no cover -- TODO
+def run_python_unittests(version, tests, quiet=False, verbose=False): # pragma: no cover -- TODO
 	allowed_versions = ['2', '3']
 	assert version in allowed_versions, 'Unknown python version {0}, choose from following: {1}'.format(version, allowed_versions)
 
@@ -93,15 +93,15 @@ def run_python_unittests(version, test, quiet=False, verbose=False): # pragma: n
 			return 0
 
 	args = python_runner + ['-m', 'coverage', 'run']
-	if not test:
+	if not tests:
 		args += ['--source=.']
 	args += ['-m', 'unittest']
-	if test:
+	if tests:
 		if quiet:
 			args += ['--quiet']
 		if verbose:
 			args += ['--verbose']
-		args += [test]
+		args += tests
 	else:
 		args += ['discover']
 		if version == '3' and quiet: # FIXME py2 discover does not recognize --quiet.
@@ -109,12 +109,14 @@ def run_python_unittests(version, test, quiet=False, verbose=False): # pragma: n
 		if verbose:
 			args += ['--verbose']
 	quiet_stderr_patterns = []
+	subprocess_call = subprocess.call
 	if quiet:
 		quiet_stderr_patterns.extend(PYTHON_UNITTEST_QUIET_PATTERNS[version])
-
-	rc = quiet_call(args,
+		subprocess_call = lambda _args: quiet_call(_args,
 			quiet_stderr_patterns=quiet_stderr_patterns,
 			)
+
+	rc = subprocess_call(args)
 	if rc != 0:
 		return rc
 	args = python_runner + ['-m', 'coverage', 'report', '-m']
@@ -128,9 +130,9 @@ def run_python_unittests(version, test, quiet=False, verbose=False): # pragma: n
 			)
 
 @runner.test_suite('py2')
-def python_2_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
-	return run_python_unittests('2', test, quiet=quiet, verbose=verbose)
+def python_2_unittest(tests, quiet=False, verbose=False): # pragma: no cover -- TODO
+	return run_python_unittests('2', tests, quiet=quiet, verbose=verbose)
 
 @runner.test_suite('py3')
-def python_3_unittest(test, quiet=False, verbose=False): # pragma: no cover -- TODO
-	return run_python_unittests('3', test, quiet=quiet, verbose=verbose)
+def python_3_unittest(tests, quiet=False, verbose=False): # pragma: no cover -- TODO
+	return run_python_unittests('3', tests, quiet=quiet, verbose=verbose)
