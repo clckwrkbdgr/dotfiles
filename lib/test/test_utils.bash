@@ -70,12 +70,23 @@ should_warn_about_deprecated_function() {
 
 should_warn_about_deprecated_script() {
 	local tmpscript=$(mktemp)
-	finally "rm -f '$tmpscript'"
+	local tmpbindir=$(mktemp -d)
+	finally "rm -f '$tmpscript'; rm -rf '$tmpbindir'; "
+	cat >"$tmpbindir/pstree" <<EOF
+echo Mock pstree \$1 \$2 \$3
+EOF
+	chmod u+x "$tmpbindir/pstree"
 	cat >"$tmpscript" <<EOF
 . "$XDG_CONFIG_HOME/lib/utils.bash"
 deprecated 'This whole script.'
 EOF
-	assertOutputEqual "bash $tmpscript 2>&1" "$tmpscript:2:script is deprecated: This whole script."
+	(
+		export PATH="$tmpbindir:$PATH"
+		assertOutputEqual "bash $tmpscript 2>&1" - <<EOF
+$tmpscript:2:script is deprecated: This whole script.
+Mock pstree -s -A -a
+EOF
+	)
 }
 
 should_warn_about_deprecated_source_file() {

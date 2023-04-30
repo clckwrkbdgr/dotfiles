@@ -1,4 +1,5 @@
 #!/bin/bash
+. "$XDG_CONFIG_HOME/lib/utils.bash"
 
 say_mbrola() {
 	IFS='\n'
@@ -12,6 +13,9 @@ say_mbrola() {
 }
 
 say_rhvoice() {
+	text_to_speech_lock=$XDG_RUNTIME_DIR/clckwrkbdgr_text_to_speech.lock
+	lockfile -1 -r 10 -l 10 -s 2 "$text_to_speech_lock"
+
 	IFS='\n'
 	while read line; do
 		if python -c 'import re,sys;sys.exit(not re.search(r"[\u0400-\u0500]", sys.argv[1]))' "$line"; then
@@ -20,6 +24,8 @@ say_rhvoice() {
 			echo "$line" | spd-say -e -w -o rhvoice -i +100 -p +60 -r -30 -l english -y SLT >/dev/null
 		fi
 	done
+
+	rm -rf "$text_to_speech_lock"
 }
 
 # TODO custom configuration for this.
