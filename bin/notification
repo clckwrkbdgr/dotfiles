@@ -110,6 +110,10 @@ cli() {
 		icon="$XDG_DATA_HOME/icons/$icon"
 	fi
 
+	notification_lock=$XDG_RUNTIME_DIR/clckwrkbdgr_notification.lock
+	lockfile -1 -r 10 -l 10 -s 2 "$notification_lock"
+	finally  "rm -rf '$notification_lock'"
+
 	if [ -z "$quiet" ]; then
 		prev_volume="$(volume)"
 		if [ "$prev_volume" -gt "$MAX_VOLUME" ]; then
