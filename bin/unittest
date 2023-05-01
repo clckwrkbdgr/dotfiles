@@ -51,7 +51,7 @@ def main(tests, quiet=False, verbose=False, platform=None):
 	If test specs are omitted, complete discovery is executed (depends on corresponding platform).
 	"""
 	ensure_test_data_dir()
-	tests = tests or [None]
+	tests = tests or []
 
 	rc = 0
 	for runner_name in test_suite.keys():
