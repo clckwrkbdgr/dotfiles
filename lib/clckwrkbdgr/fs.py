@@ -141,6 +141,17 @@ class SerializedEntity: # pragma: no cover -- TODO requires functional tests.
 	def __exit__(self, *args, **kwargs):
 		self.save()
 
+class LineReader:
+	def __init__(self, filename):
+		self.filename = Path(filename)
+	def __str__(self):
+		return str(self.filename)
+	def __iter__(self):
+		if not self.filename.exists():
+			return
+		for line in self.filename.read_text().splitlines():
+			yield line
+
 class FileWatcher(object):
 	""" Performs action when file is modified. """
 	def __init__(self, filename, action, quiet=False):

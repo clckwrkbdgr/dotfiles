@@ -50,6 +50,18 @@ class TestFSUtils(unittest.TestCase):
 		watcher = clckwrkbdgr.fs.FileWatcher('filename', action)
 		self.assertFalse(watcher.check()) # Exists but not modified.
 
+class TestFileUtils(unittest.fs.TestCase):
+	def setUp(self):
+		self.setUpPyfakefs(modules_to_reload=[clckwrkbdgr.fs])
+	def should_iter_over_file_lines(self):
+		test_file = '/brief.log'
+		reader = clckwrkbdgr.fs.LineReader(test_file)
+		self.assertEqual(reader.filename, Path(test_file))
+		self.assertEqual(str(reader), str(test_file))
+		self.assertEqual(list(reader), [])
+		self.fs.create_file(test_file, contents='foo\nbar\nbaz')
+		self.assertEqual(list(reader), ['foo', 'bar', 'baz'])
+
 class TestSearchForFiles(unittest.fs.TestCase):
 	FILES = {
 			'/search_test/filename',
