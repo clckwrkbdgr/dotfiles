@@ -64,6 +64,14 @@
 	smudge = cat
 	clean = "python -c 'import sys,json; data = json.loads(sys.stdin.read()); data[\"mimeTypes\"] = dict( (key,dict( (k,v if k != \"action\" else 1) for k,v in value.items() if k != \"ask\")) for key,value in data[\"mimeTypes\"].items()); print(json.dumps(data, indent=4, sort_keys=True))'"
 
+[filter "firefox_addons_json"]
+	smudge = cat
+	clean = "clean-firefox-addons.py addons"
+
+[filter "firefox_extensions_json"]
+	smudge = cat
+	clean = "clean-firefox-addons.py extensions"
+
 [filter "firefox_pref_js"]
 	smudge = clean-firefox-prefs.sh --restore
 	clean = clean-firefox-prefs.sh

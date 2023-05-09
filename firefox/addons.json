@@ -1,0 +1,85 @@
+{
+	"addons": [
+		{
+			"homepageURL": "https://github.com/gorhill/uBlock#ublock-origin",
+			"id": "uBlock0@raymondhill.net",
+			"name": "uBlock Origin",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4103048/ublock_origin-1.49.2.xpi",
+			"type": "extension",
+			"version": "1.49.2"
+		},
+		{
+			"homepageURL": "https://noscript.net",
+			"id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
+			"name": "NoScript Security Suite",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4090970/noscript-11.4.21.xpi",
+			"type": "extension",
+			"version": "11.4.21"
+		},
+		{
+			"homepageURL": "https://add0n.com/stylus.html",
+			"id": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}",
+			"name": "Stylus",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4075896/styl_us-1.5.30.xpi",
+			"type": "extension",
+			"version": "1.5.30"
+		},
+		{
+			"homepageURL": "https://www.soeren-hentzschel.at/firefox-webextensions/new-tab-override/",
+			"id": "newtaboverride@agenedia.com",
+			"name": "New Tab Override",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3782413/new_tab_override-15.1.1.xpi",
+			"type": "extension",
+			"version": "15.1.1"
+		},
+		{
+			"homepageURL": "https://tampermonkey.net",
+			"id": "firefox@tampermonkey.net",
+			"name": "Tampermonkey",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4030629/tampermonkey-4.18.1.xpi",
+			"type": "extension",
+			"version": "4.18.1"
+		},
+		{
+			"homepageURL": "https://github.com/philc/vimium",
+			"id": "{d7742d87-e61d-4b78-b8a1-b469842139fa}",
+			"name": "Vimium-FF",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4046008/vimium_ff-1.67.6.xpi",
+			"type": "extension",
+			"version": "1.67.6"
+		},
+		{
+			"homepageURL": null,
+			"id": "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}",
+			"name": "I'm not robot captcha clicker",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3897119/i_m_not_robot_captcha_clicker-1.3.1.xpi",
+			"type": "extension",
+			"version": "1.3.1"
+		},
+		{
+			"homepageURL": null,
+			"id": "@mutelinks",
+			"name": "MuteLinks",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/904936/mutelinks-0.2.2.xpi",
+			"type": "extension",
+			"version": "0.2.2"
+		},
+		{
+			"homepageURL": null,
+			"id": "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}",
+			"name": "Request Blocker",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4005177/request_blocker_we-0.6.1.xpi",
+			"type": "extension",
+			"version": "0.6.1"
+		},
+		{
+			"homepageURL": null,
+			"id": "{980500da-0b6d-4de9-ad90-93d17605276c}",
+			"name": "OurStickys - Sticky Notes on every page",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3486391/ourstickys_sticky_notes-0.1.99.xpi",
+			"type": "extension",
+			"version": "0.1.99"
+		}
+	],
+	"schema": 6
+}

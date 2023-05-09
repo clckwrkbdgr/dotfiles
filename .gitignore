@@ -85,10 +85,8 @@ firefox/protections.sqlite
 firefox/activity-stream.discovery_stream.json
 firefox/Telemetry.FailedProfileLocks.txt
 # Firefox local/share
-firefox/addons.json
 firefox/content-prefs.sqlite
 firefox/cookies.sqlite
-firefox/extensions.json
 firefox/extensions/*.xpi
 firefox/extensions/staged/
 firefox/formhistory.sqlite
