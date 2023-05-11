@@ -6,7 +6,7 @@ if has('win32')
   set viminfo='100,<50,s10,h,rA:,rB:,n$TEMP/viminfo
 endif
 if !has('win32')
-	set directory=/var/tmp//,.,/tmp//
+	set directory=~/.cache/vim/,/var/tmp//,.,/tmp//
 endif
 if !has('win32')
   set shell=bash
