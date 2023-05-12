@@ -16,6 +16,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/amazondotcom/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "bing@search.mozilla.org": {
@@ -24,6 +25,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/bing/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "ddg@search.mozilla.org": {
@@ -32,6 +34,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/ddg/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "default-theme@mozilla.org": {
@@ -77,6 +80,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/google/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "wikipedia@search.mozilla.org": {
@@ -85,6 +89,7 @@
                 "loader": null,
                 "rootURI": "resource://search-extensions/wikipedia/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             }
         }
