@@ -135,7 +135,7 @@ class Builder(AbstractBuilder):
 			except Exception as e:
 				print(e)
 	def remove_old_dir(self, path):
-		shutil.rmtree(str(build_dir))
+		shutil.rmtree(str(self.build_dir))
 	def install(self, src, dest, executable=True):
 		dest.parent.mkdir(parents=True, exist_ok=True)
 		params = '-D'
@@ -167,7 +167,7 @@ def load_config_value(parser, category, name, default_value=None):
 
 @click.command()
 @click.argument('package_name', required=False)
-@click.option('-v', '--version', required=True, help='Package version.')
+@click.option('-v', '--version', required=False, help='Package version. If omitted, script `project` will try to determine current version from git tags.')
 @click.option('-f', '--setup-file', default='setup.cfg', help='Path to custom setup.cfg file with instructions for building Debian package. See usage for details.')
 @click.option('--dry', is_flag=True, help='Dry run. Do not execute any actions, just log them.')
 @click.option('--maintainer', help='Maintaner of the package, usually in form "NAME <name@email>". By default current OS user is picked (name only). If setup.cfg exists, maintainer is constructed from `metadata.author` and `metadata.author_email`')
@@ -177,8 +177,8 @@ def load_config_value(parser, category, name, default_value=None):
 @click.option('--header', 'headers', multiple=True, help='Include headers to install. If setup.cfg is specified, value of `debian.headers` (multiline) is included.')
 @click.option('--doc', 'docs', multiple=True, help='Docs to install. If setup.cfg is specified, value of `debian.docs` (multiline) is included.')
 @click.option('--arch', help='Package architecture. Default is arch of the current system. If setup.cfg is specified, value of `debian.arch` is used.')
-@click.option('--build-dir', help='Directory to store intermediate files. Default is within system temp directory.')
-@click.option('--dest-dir', help='Directory to store final package. Default is one level up from build-dir.')
+@click.option('--build-dir', help='Directory to store intermediate files. If setup.cfg exists, value is taken from `debian.build_dir`. Default is within system temp directory.')
+@click.option('--dest-dir', help='Directory to store final package. If setup.cfg exists, value is taken from `debian.dest_dir`. Default is one level up from build-dir.')
 def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintainer=None, description=None, bins=None, libs=None, headers=None, docs=None, build_dir=None, dest_dir=None, arch=None):
 	""" Utility to create Debian package.
 
@@ -190,6 +190,8 @@ def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintaine
 
 	Command-line options take precendence over values from setup.cfg.
 	"""
+	if version is None:
+		version = subprocess.check_output(['projects', 'version']).decode().strip()
 	setup_cfg = configparser.ConfigParser()
 	setup_cfg.read([setup_file])
 	package_name = package_name or load_config_value(setup_cfg, 'metadata', 'name')
@@ -203,6 +205,8 @@ def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintaine
 			maintainer = os.environ['USER']
 	description = description or load_config_value(setup_cfg, 'metadata', 'description')
 	arch = arch or load_config_value(setup_cfg, 'debian', 'arch')
+	build_dir = build_dir or load_config_value(setup_cfg, 'debian', 'build_dir')
+	dest_dir = dest_dir or load_config_value(setup_cfg, 'debian', 'dest_dir')
 	get_multiline_value = lambda _value: filter(
 			lambda _:_,
 			map(
