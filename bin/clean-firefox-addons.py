@@ -59,7 +59,7 @@ def filter_extensions(extensions):
 			if name in extension:
 				del extension[name]
 		filtered.append(extension)
-	extensions['addons'] = filtered
+	extensions['addons'] = sorted(filtered, key=lambda extension: extension.get('location', '') + extension.get('id'))
 	return extensions
 
 data = json.loads(sys.stdin.read())
