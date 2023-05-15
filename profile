@@ -18,6 +18,7 @@ export EDITOR=vim
 export PAGER=less
 export GREP_COLOR='1;32'
 export WINEPREFIX=/opt/wine-$USER
+export QT_STYLE_OVERRIDE=kvantum
 if [ -n "$PYTHONPATH" ]; then
 	export PYTHONPATH="$HOME/.local/lib:$HOME/.config/lib:$PYTHONPATH"
 else
