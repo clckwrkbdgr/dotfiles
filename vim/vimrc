@@ -138,8 +138,8 @@ let g:detectindent_preferred_expandtab = 0
 let g:vim_markdown_frontmatter = 1
 
 au FileType make set noexpandtab
-au FileType c set expandtab
-au FileType cpp set expandtab
+au FileType c set noexpandtab
+au FileType cpp set noexpandtab
 au FileType changelog set expandtab
 au FileType python set noexpandtab
 au FileType python set foldmethod=indent
