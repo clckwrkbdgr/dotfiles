@@ -34,6 +34,8 @@ mc/ini filter=mc_ini
 libreoffice/4/user/extensions/bundled/registry/*/*.xml filter=pretty_xml
 checkio/config.ini filter=checkio_config
 QtProject.conf filter=qtproject_conf
+QtProject/Designer.conf filter=qtproject_designer_conf
+QtProject/Linguist.conf filter=qtproject_linguist_conf
 WindowsTerminal/settings.json filter=windows_terminal_settings
 mapeditor.org/tiled.conf filter=mapeditor_tiled_conf
 qvge/Qt?Visual?Graph?Editor.conf filter=qvge_conf
@@ -68,6 +70,8 @@ mplayer/* caps=home
 klavaro/* caps=home
 autostart/dropbox.desktop caps=home
 QtProject.conf caps=home
+QtProject/Designer.conf caps=home
+QtProject/Linguist.conf caps=home
 mimeapps.list caps=home
 
 bin/audiostreaming caps=home

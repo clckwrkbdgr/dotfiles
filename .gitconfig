@@ -148,6 +148,16 @@
 	clean = "sed '/^history=.*/d;/^lastVisited=.*/d;/^qtVersion=.*/d;/^shortcuts=.*/d;/^sidebarWidth=.*/d;/^treeViewHeader=.*/d;/^viewMode=.*/d;'"
 
 # TODO to filterconf
+[filter "qtproject_designer_conf"]
+	smudge = cat
+	clean = "sed '/^SplitterPosition=.*/d;/^geometry=.*/d;/^\\[WidgetBox\\]/,/^$/{/^Closed%20categories=/d;};/^\\[PropertyEditor\\]/,/^$/{/^ExpandedItems=/d;};/^\\[General\\]/,/^$/{/^recentFilesList=/d;/^ToolBarsState452=/d;/^MainWindowState452=/d;};'"
+
+# TODO to filterconf
+[filter "qtproject_linguist_conf"]
+	smudge = cat
+	clean = "sed '/^Geometry.WindowGeometry=.*/d;/^MainWindowState=.*/d;/^PhraseViewHeader=.*/d;/^RecentlyOpenedFiles=.*/d;/^Options.EditorFontsize=.*/d;'"
+
+# TODO to filterconf
 [filter "mapeditor_tiled_conf"]
 	smudge = cat
 	clean = "sed '/^\\[recentFiles\\]/,/^$/d;/^\\[mainwindow\\]/,/^$/d;/^\\[Install\\]/,/^$/d;/^\\[LastPaths\\]/,/^$/d;/^\\[ObjectsDock\\]/,/^$/d;/^\\[Tileset\\]/,/^$/d;/^\\[TilesetDock\\]/,/^$/d;/^\\[General\\]/,/^$/{/^commandList=/d;/^lastUsedOpenFilter/d};/^\\[Map\\]/,/^$/{/^FixedSize=/d;/^Height=/d;/^Width=/d;/^TileHeight=/d;/^TileWidth=/d;/^Orientation=/d;};/^\\[MapEditor\\]/,/^$/{/^MapStates=/d;/^State=/d;/^Size=/d};/^\\[TilesetEditor\\]/,/^$/{/^State=/d;/^Size=/d};/^\\[TileAnimationEditor\\]/,/^$/{/^Geometry=/d};/^\\[ResizeDialog\\]/,/^$/{/^Geometry=/d};/^\\[AddPropertyDialog\\]/,/^$/{/^PropertyType=/d}' | python -c 'import sys;data=sys.stdin.read();data=data.replace(\"\\n[Map]\\n\\n[\", \"\\n[\").replace(\"\\n[ResizeDialog]\\n\\n[\", \"\\n[\");sys.stdout.write(data)'"
