@@ -82,6 +82,19 @@ class TestTaskWarrior(unittest.fs.TestCase):
 		task.stop()
 		self.assertTrue(task.start())
 		self.assertEqual(task.get_current_task(), 'foo')
+	def should_ignore_duplicate_task_and_time_entries(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		self.assertEqual([_.title for _ in task.get_history()], ['foo'])
+	def should_slightly_shift_start_time_for_consequent_entries_with_the_same_time(self):
+		task = TaskWarrior()
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('bar', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		self.assertEqual([(_.title, _.datetime.time()) for _ in task.get_history()], [
+			('foo', datetime.time(8, 0)),
+			('bar', datetime.time(8, 0, 1)),
+			])
 	def should_list_task_history(self):
 		task = TaskWarrior()
 		task.start('foo')
