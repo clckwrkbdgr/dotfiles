@@ -1,2 +1,2 @@
 from clckwrkbdgr import unittest
-import clckwrkbdgr.rogue.pcg
+from .. import pcg

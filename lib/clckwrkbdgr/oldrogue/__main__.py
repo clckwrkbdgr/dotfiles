@@ -22,9 +22,9 @@ from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 from clckwrkbdgr.events import Events, MessageEvent
-from clckwrkbdgr.rogue import game
-from clckwrkbdgr.rogue.game import Version, Item, Consumable, Wearable, Monster, Room, Tunnel, GridRoomMap, GridRoomMap as Map, Furniture, LevelPassage, GodMode, Dungeon, Event
-from clckwrkbdgr.rogue import pcg
+from . import game
+from .game import Version, Item, Consumable, Wearable, Monster, Room, Tunnel, GridRoomMap, GridRoomMap as Map, Furniture, LevelPassage, GodMode, Dungeon, Event
+from . import pcg
 
 class MakeEntity:
 	""" Creates builders for bare-properties-based classes to create subclass in one line. """

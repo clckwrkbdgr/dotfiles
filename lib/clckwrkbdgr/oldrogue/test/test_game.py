@@ -1,10 +1,10 @@
 from clckwrkbdgr import unittest
 import textwrap, functools
 from clckwrkbdgr.math import Point, Matrix, get_neighbours
-from clckwrkbdgr.rogue import game
-from clckwrkbdgr.rogue.game import Item, Wearable, Consumable, LevelPassage
-from clckwrkbdgr.rogue.game import Monster
-from clckwrkbdgr.rogue.game import Tunnel, Room, GridRoomMap, Dungeon
+from .. import game
+from ..game import Item, Wearable, Consumable, LevelPassage
+from ..game import Monster
+from ..game import Tunnel, Room, GridRoomMap, Dungeon
 
 class Elevator(LevelPassage):
 	_sprite = '>'
