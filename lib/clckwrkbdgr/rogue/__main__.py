@@ -16,10 +16,12 @@ def main(stdscr):
 		'b' : Point(-1, +1),
 		'n' : Point(+1, +1),
 		}.items()}
+	view_center = Point(12, 12)
 	while True:
-		for y in range(25):
-			for x in range(25):
-				stdscr.addstr(y, x, dungeon.get_sprite((x, y)))
+		for y in range(-view_center.y, 25 - view_center.y):
+			for x in range(-view_center.x, 25 - view_center.x):
+				stdscr.addstr(view_center.y + y, view_center.x + x, dungeon.get_sprite((x, y)))
+		stdscr.addstr(0, 27, 'X:{x} Y:{y}'.format(x=dungeon.rogue.x, y=dungeon.rogue.y))
 		stdscr.refresh()
 
 		control = controls.get(stdscr.getch())
