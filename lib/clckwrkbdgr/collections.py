@@ -20,11 +20,16 @@ class AutoRegistry(object):
 	"""
 	def __init__(self):
 		self._entries = {} # name: entry
-	def __call__(self, name):
+	def __call__(self, name=None):
 		""" Decorator to register entry under given name.
+		If name is omitted, tries to autoguess from the object (class or functions).
 		Raises KeyError on attempt to register another entry to the same name.
 		"""
-		def _actual(cls_or_func):
+		def _actual(cls_or_func, name=name):
+			if name is None:
+				if not hasattr(cls_or_func, '__name__'):
+					raise ValueError("Name is not given and cannot autoguess from object: {0}".format(repr(cls_or_func)))
+				name = cls_or_func.__name__
 			if name in self._entries:
 				raise KeyError('Entry with name {0} is already registered ({1})'.format(repr(name), repr(self._entries[name])))
 			self._entries[name] = cls_or_func

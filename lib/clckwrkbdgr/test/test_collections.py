@@ -49,6 +49,19 @@ class TestAutoRegistry(unittest.TestCase):
 		def foo_function(): # pragma: no cover
 			pass
 		self.assertEqual(reg['foo'], foo_function)
+	def should_register_entry_with_autoguessed_name(self):
+		reg = AutoRegistry()
+		@reg()
+		def foo_function(): # pragma: no cover
+			pass
+		@reg()
+		class FooClass: # pragma: no cover
+			pass
+		self.assertEqual(reg['foo_function'], foo_function)
+		self.assertEqual(reg['FooClass'], FooClass)
+
+		with self.assertRaises(ValueError):
+			reg()('not a named object')
 	def should_raise_on_attempt_to_rebind_name(self):
 		reg = AutoRegistry()
 		@reg('foo')
