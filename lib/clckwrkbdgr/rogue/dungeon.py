@@ -1,5 +1,5 @@
-import random
 from clckwrkbdgr.math import Point, Size, Matrix
+from . import builders
 
 class Strata:
 	def __init__(self, block_size, builder):
@@ -43,19 +43,11 @@ class Strata:
 				block_shift.y * self.block_size.height,
 				)
 
-class Builder:
-	def build_block(self, block):
-		for _ in range((block.width * block.height) // 3):
-			pos = Point(random.randrange(block.width), random.randrange(block.height))
-			block.set_cell(pos, '#')
-	def place_rogue(self, terrain):
-		return Point(terrain.block_size.width // 2, terrain.block_size.height // 2)
-
 class Dungeon:
 	BLOCK_SIZE = Size(32, 32)
 
 	def __init__(self, builder=None):
-		self.builder = builder or Builder()
+		self.builder = builder or builders.Builders()
 		self.terrain = Strata(block_size=self.BLOCK_SIZE, builder=self.builder)
 		self.rogue = Point(self.builder.place_rogue(self.terrain))
 	def get_sprite(self, pos):

@@ -1,6 +1,6 @@
 from ...math import Point, Size, Matrix
 from ... import unittest
-from ..dungeon import Dungeon, Strata, Builder
+from ..dungeon import Dungeon, Strata
 
 class MockDungeon(Dungeon):
 	BLOCK_SIZE = Size(3, 3)
@@ -229,16 +229,3 @@ class TestStrata(unittest.TestCase):
 		self.strata.recalibrate((20, 20))
 		self.assertEqual(self.strata.shift, Point(15, 15))
 		self.assertEqual(self.to_string(self.strata), completely_new)
-
-class TestBuilder(unittest.TestCase):
-	@unittest.mock.patch('random.randrange', side_effect=[0, 1, 1, 0, 2, 2])
-	def should_build_block(self, random_randrange):
-		block = Matrix((3, 3), '.')
-		builder = Builder()
-		builder.build_block(block)
-		self.assertEqual(block.tostring(), '.#.\n#..\n..#\n')
-	def should_place_rogue(self):
-		terrain = Strata(block_size=(3, 3), builder=MockBuilder(rogue_pos=(0, 0)))
-		builder = Builder()
-		pos = builder.place_rogue(terrain)
-		self.assertEqual(pos, (1, 1))
