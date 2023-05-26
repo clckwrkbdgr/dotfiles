@@ -52,7 +52,7 @@ class Builder:
 		return Point(terrain.block_size.width // 2, terrain.block_size.height // 2)
 
 class Dungeon:
-	BLOCK_SIZE = Size(25, 25)
+	BLOCK_SIZE = Size(32, 32)
 
 	def __init__(self, builder=None):
 		self.builder = builder or Builder()
