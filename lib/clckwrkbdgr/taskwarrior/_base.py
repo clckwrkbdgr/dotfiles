@@ -127,10 +127,10 @@ class TaskWarrior:
 				return False
 		if self.config.taskfile.exists():
 			total_history = list(self._parse_history(self.config.taskfile, self.config.separator))
-			if total_history and total_history[-1][0] == now:
+			if total_history and total_history[-1][0] >= now:
 				if total_history[-1][1] == task:
 					return True # Already have the same task with the same time added.
-				now += datetime.timedelta(seconds=1) # Otherwise it is a new task, but it should have slightly different start time.
+				now = total_history[-1][0] + datetime.timedelta(microseconds=1) # Otherwise it is a new task, but it should have slightly different start time.
 		self._append(now, task)
 		return True
 	def stop(self, now=None):

@@ -93,7 +93,7 @@ class TestTaskWarrior(unittest.fs.TestCase):
 		task.start('bar', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
 		self.assertEqual([(_.title, _.datetime.time()) for _ in task.get_history()], [
 			('foo', datetime.time(8, 0)),
-			('bar', datetime.time(8, 0, 1)),
+			('bar', datetime.time(8, 0, 0, 1)),
 			])
 	def should_list_task_history(self):
 		task = TaskWarrior()
@@ -236,12 +236,12 @@ class TestTaskWarrior(unittest.fs.TestCase):
 			])
 	def should_not_consider_consequent_tasks_as_resume(self):
 		task = TaskWarrior()
-		task.start('foo')
-		task.start('foo')
-		task.stop()
-		task.start()
-		task.stop()
-		task.start('foo')
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 0, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 1, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 2, 0))
+		task.start(now=datetime.datetime(2020, 12, 31, 8, 3, 0))
+		task.stop(now=datetime.datetime(2020, 12, 31, 8, 4, 0))
+		task.start('foo', now=datetime.datetime(2020, 12, 31, 8, 5, 0))
 		history = list(task.get_history())
 		self.assertFalse(history[0].is_resume)
 		self.assertFalse(history[1].is_resume)
