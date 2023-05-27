@@ -20,7 +20,8 @@ def filter_addons(addons):
 			]
 	for addon in addons['addons']:
 		for name in fields_to_drop:
-			del addon[name]
+			if name in addon:
+				del addon[name]
 	return addons
 
 def filter_extensions(extensions):
