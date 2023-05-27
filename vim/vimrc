@@ -42,6 +42,7 @@ if !has('win32')
 endif
 map <C-a> :e %:p:s,.h$,.X123X,:s,.cpp$,.h,:s,.X123X$,.cpp,<CR> " switching between .h and .cpp files that in the SAME directory.
 nmap <Space> <PageDown>
+vmap <Space> <PageDown>
 nmap <C-L> :make<up><CR>
 nmap Q l
 nmap QQ :w<CR>
