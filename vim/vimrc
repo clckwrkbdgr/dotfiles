@@ -63,7 +63,10 @@ set incsearch		" do incremental searching
 set hlsearch
 set nobackup
 if has('win32')
-   set nowritebackup
+	set nowritebackup
+else
+	" On Linux, saving without this option=yes will change inode of the file.
+	set backupcopy=yes
 endif
 set belloff=all
 silent! set keymap=russian-badger " Toggle with C-^
