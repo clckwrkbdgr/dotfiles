@@ -150,7 +150,7 @@ au FileType python set foldmethod=indent
 au FileType python set efm=%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m,%Z%m
 au FileType python DetectIndent
 au BufRead,BufNewFile *.md setfiletype markdown
-au FileType markdown set noexpandtab
+au FileType markdown setlocal ts=2 sts=2 sw=2 expandtab
 au BufRead,BufNewFile *.xsh setfiletype python
 if !has('win32')
   au FileType cpp set foldmarker={,}
