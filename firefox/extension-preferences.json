@@ -5,6 +5,12 @@
             "internal:privateBrowsingAllowed"
         ]
     },
+    "addons-restricted-domains@mozilla.com": {
+        "origins": [],
+        "permissions": [
+            "internal:svgContextPropertiesAllowed"
+        ]
+    },
     "addons-search-detection@mozilla.com": {
         "origins": [],
         "permissions": [

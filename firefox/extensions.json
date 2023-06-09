@@ -296,6 +296,33 @@
 			"userDisabled": false,
 			"version": "1.3.1",
 			"visible": true
+		},
+		{
+			"aboutURL": null,
+			"active": true,
+			"appDisabled": false,
+			"blocklistState": 0,
+			"blocklistURL": null,
+			"dependencies": [],
+			"embedderDisabled": false,
+			"foreignInstall": false,
+			"hidden": true,
+			"id": "addons-restricted-domains@mozilla.com",
+			"loader": null,
+			"location": "app-system-addons",
+			"manifestVersion": 2,
+			"optionsBrowserStyle": true,
+			"optionsType": null,
+			"signedState": 3,
+			"skinnable": false,
+			"softDisabled": false,
+			"sourceURI": "file:///tmp/tmpaddon",
+			"strictCompatibility": true,
+			"syncGUID": "{8b793e36-b29c-4a64-b603-e1cdb35e4603}",
+			"type": "extension",
+			"userDisabled": false,
+			"version": "1.0.0buildid20230525.154501",
+			"visible": true
 		}
 	],
 	"schemaVersion": 35
