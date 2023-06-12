@@ -16,16 +16,24 @@ def main(stdscr):
 			stream=None,
 			)
 	curses.curs_set(0)
-	with SerializedEntity(xdg.save_data_path('dotrogue')/'rogue.sav', 0, entity_name='dungeon', unlink=False, readable=True) as savefile:
-		if savefile.entity:
-			dungeon = savefile.entity
-		else:
-			dungeon = Dungeon()
-			savefile.reset(dungeon)
-		run(stdscr, dungeon)
+	savefile = SerializedEntity(xdg.save_data_path('dotrogue')/'rogue.sav', 0, entity_name='dungeon', unlink=False, readable=True)
+	savefile.load()
+	if savefile.entity:
+		dungeon = savefile.entity
+	else:
+		dungeon = Dungeon()
+		savefile.reset(dungeon)
+	game = Game(dungeon)
+	game.run(stdscr)
+	savefile.save()
 
-def run(stdscr, dungeon):
-	controls = {ord(k):v for k,v in {
+class Autoexplorer:
+	def process(self, dungeon):
+		control = Game.CONTROLS.get(ord(random.choice('hjklyubn')))
+		return control
+
+class Game:
+	CONTROLS = {(ord(k) if isinstance(k, str) else k):v for k,v in {
 		'q' : SystemExit,
 		'o' : 'autoexplore',
 		'h' : Point(-1,  0),
@@ -36,49 +44,58 @@ def run(stdscr, dungeon):
 		'u' : Point(+1, -1),
 		'b' : Point(-1, +1),
 		'n' : Point(+1, +1),
-		}.items()}
-	controls[-1] = 'autoexplore'
-	controls[27] = 'ESC'
-	view_center = Point(12, 12)
-	autoexplore = False
-	game_time = 0
-	while True:
-		for y in range(-view_center.y, 25 - view_center.y):
-			for x in range(-view_center.x, 25 - view_center.x):
-				stdscr.addstr(view_center.y + y, view_center.x + x, dungeon.get_sprite((x, y)))
-		stdscr.addstr(0, 27, 'Time: {0}'.format(game_time))
-		stdscr.addstr(1, 27, 'X:{x} Y:{y}'.format(x=dungeon.rogue.x, y=dungeon.rogue.y))
-		stdscr.addstr(24, 27, '[autoexploring, press ESC...]' if autoexplore else '                             ')
-		stdscr.refresh()
 
-		game_time += 1
+		-1 : 'autoexplore',
+		27 : 'ESC',
+		}.items()}
+	VIEW_CENTER = Point(12, 12)
+
+	def __init__(self, dungeon):
+		self.dungeon = dungeon
+		self.autoexplore = None
+	def run(self, stdscr):
+		while True:
+			self.view(stdscr)
+			if not self.control(stdscr):
+				break
+	def view(self, stdscr):
+		for y in range(-self.VIEW_CENTER.y, 25 - self.VIEW_CENTER.y):
+			for x in range(-self.VIEW_CENTER.x, 25 - self.VIEW_CENTER.x):
+				stdscr.addstr(self.VIEW_CENTER.y + y, self.VIEW_CENTER.x + x, self.dungeon.get_sprite((x, y)))
+		stdscr.addstr(0, 27, 'Time: {0}'.format(self.dungeon.time))
+		stdscr.addstr(1, 27, 'X:{x} Y:{y}'.format(x=self.dungeon.rogue.x, y=self.dungeon.rogue.y))
+		stdscr.addstr(24, 27, '[autoexploring, press ESC...]' if self.autoexplore else '                             ')
+		stdscr.refresh()
+	def control(self, stdscr):
 		char = stdscr.getch()
-		control = controls.get(char)
+		control = self.CONTROLS.get(char)
 		trace.debug('Curses char: {0}'.format(repr(char)))
 		trace.debug('Control: {0}'.format(repr(control)))
-		trace.debug('Autoexplore={0}'.format(autoexplore))
-		if control is not None:
-			if control == 'autoexplore':
-				if autoexplore:
-					control = controls.get(ord(random.choice('hjklyubn')))
-					trace.debug('Autoexploring: {0}'.format(repr(control)))
-				else:
-					trace.debug('Starting autoexplore.')
-					autoexplore = True
-					stdscr.nodelay(1)
-					stdscr.timeout(100)
-					continue
-			elif control == 'ESC':
-				trace.debug('Stopping autoexplore.')
-				autoexplore = False
-				stdscr.timeout(-1)
-				stdscr.nodelay(0)
-				continue
-			try:
-				dungeon.control(control)
-			except SystemExit:
-				trace.debug('Exiting...')
-				break
+		trace.debug('Autoexplore={0}'.format(self.autoexplore))
+		if control is None:
+			return True
+		if control == 'autoexplore':
+			if self.autoexplore:
+				control = self.autoexplore.process(self.dungeon)
+				trace.debug('Autoexploring: {0}'.format(repr(control)))
+			else:
+				trace.debug('Starting self.autoexplore.')
+				self.autoexplore = Autoexplorer()
+				stdscr.nodelay(1)
+				stdscr.timeout(100)
+				return True
+		elif control == 'ESC':
+			trace.debug('Stopping self.autoexplore.')
+			self.autoexplore = None
+			stdscr.timeout(-1)
+			stdscr.nodelay(0)
+			return True
+		try:
+			self.dungeon.control(control)
+		except SystemExit:
+			trace.debug('Exiting...')
+			return False
+		return True
 
 if __name__ == '__main__':
 	curses.wrapper(main)

@@ -50,6 +50,13 @@ class Dungeon:
 		self.builder = builder or builders.Builders()
 		self.terrain = Strata(block_size=self.BLOCK_SIZE, builder=self.builder)
 		self.rogue = Point(self.builder.place_rogue(self.terrain))
+		self.time = 0
+	def __getstate__(self): # pragma: no cover -- TODO
+		return self.__dict__
+	def __setstate__(self, state): # pragma: no cover -- TODO
+		self.__dict__.update(state)
+		if 'time' not in state:
+			self.time = 0
 	def get_sprite(self, pos):
 		if pos == Point(0, 0):
 			return "@"
@@ -65,3 +72,4 @@ class Dungeon:
 			if self.terrain.is_passable(new_pos):
 				self.rogue = new_pos
 				self.terrain.recalibrate(self.rogue)
+			self.time += 1
