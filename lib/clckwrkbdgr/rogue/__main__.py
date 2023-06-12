@@ -1,10 +1,20 @@
 import curses
+from ..fs import SerializedEntity
+from .. import xdg
 from ..math import Point
 from .dungeon import Dungeon
 
 def main(stdscr):
 	curses.curs_set(0)
-	dungeon = Dungeon()
+	with SerializedEntity(xdg.save_data_path('dotrogue')/'rogue.sav', 0, entity_name='dungeon', unlink=False, readable=True) as savefile:
+		if savefile.entity:
+			dungeon = savefile.entity
+		else:
+			dungeon = Dungeon()
+			savefile.reset(dungeon)
+		run(stdscr, dungeon)
+
+def run(stdscr, dungeon):
 	controls = {ord(k):v for k,v in {
 		'q' : SystemExit,
 		'h' : Point(-1,  0),

@@ -65,4 +65,3 @@ class Dungeon:
 			if self.terrain.is_passable(new_pos):
 				self.rogue = new_pos
 				self.terrain.recalibrate(self.rogue)
-
