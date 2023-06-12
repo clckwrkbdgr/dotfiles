@@ -11,6 +11,14 @@ class Strata:
 			for col in range(self.blocks.width):
 				self.blocks.set_cell((col, row), Matrix(self.block_size, '.'))
 				self.builder.build_block(self.blocks.cell((col, row)))
+	def valid(self, pos): # pragma: no cover -- TODO
+		relative_pos = Point(pos) - self.shift
+		block_pos = Point(relative_pos.x // self.block_size.width, relative_pos.y // self.block_size.height)
+		if not self.blocks.valid(block_pos):
+			return False
+		block = self.blocks.cell(block_pos)
+		block_rel_pos = Point(relative_pos.x % self.block_size.width, relative_pos.y % self.block_size.height)
+		return block.valid(block_rel_pos)
 	def cell(self, pos):
 		relative_pos = Point(pos) - self.shift
 		block_pos = Point(relative_pos.x // self.block_size.width, relative_pos.y // self.block_size.height)

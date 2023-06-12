@@ -6,7 +6,8 @@ trace = logging.getLogger('rogue')
 from .. import logging
 from ..fs import SerializedEntity
 from .. import xdg
-from ..math import Point
+from ..math import algorithm
+from ..math import Point, Size, Rect, get_neighbours
 from .dungeon import Dungeon
 
 def main(stdscr):
@@ -27,10 +28,49 @@ def main(stdscr):
 	game.run(stdscr)
 	savefile.save()
 
+class DungeonWave(algorithm.Wave):
+	def __init__(self, matrix, region):
+		self.matrix = matrix
+		self.region = region
+	def is_linked(self, node_from, node_to):
+		distance = abs(node_from - node_to)
+		return distance.x <= 1 and distance.y <= 1
+	def get_links(self, node):
+		return [p for p in get_neighbours(
+			self.matrix, node,
+			with_diagonal=True,
+			check=lambda c: c == '.'
+			)
+			 if self.region.contains(p, with_border=True)
+			 ]
+
 class Autoexplorer:
+	def __init__(self):
+		self.path = None
 	def process(self, dungeon):
-		control = Game.CONTROLS.get(ord(random.choice('hjklyubn')))
-		return control
+		if self.path:
+			return self.path.pop(0)
+		target = dungeon.rogue
+		for _ in range(100):
+			target = Point(
+					random.randrange(dungeon.rogue.x - 10, dungeon.rogue.x + 10),
+					random.randrange(dungeon.rogue.y - 10, dungeon.rogue.y + 10),
+					)
+			if dungeon.terrain.cell(target) != '.':
+				continue
+			diff = abs(target - dungeon.rogue)
+			if 3 < diff.x < 10 and 3 < diff.y < 10:
+				break
+		wave = DungeonWave(dungeon.terrain, Rect(
+			topleft=dungeon.rogue - Point(10, 10),
+			size=Size(21, 21),
+			))
+		trace.debug('Autoexplorer forming path: {0} -> {1}'.format(dungeon.rogue, target))
+		path = wave.run(dungeon.rogue, target)
+		trace.debug('Autoexplorer wave: {0}'.format(path))
+		self.path = list(b - a for a, b in zip(path, path[1:]))
+		trace.debug('Autoexplorer sequence: {0}'.format(self.path))
+		return self.path.pop(0)
 
 class Game:
 	CONTROLS = {(ord(k) if isinstance(k, str) else k):v for k,v in {
