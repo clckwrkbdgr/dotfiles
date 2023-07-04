@@ -8,7 +8,8 @@
     "addons-restricted-domains@mozilla.com": {
         "origins": [],
         "permissions": [
-            "internal:svgContextPropertiesAllowed"
+            "internal:svgContextPropertiesAllowed",
+            "internal:privateBrowsingAllowed"
         ]
     },
     "addons-search-detection@mozilla.com": {
