@@ -109,7 +109,11 @@ def cli(config_file, patterns, verbose=False, debug=False):
 				continue
 			Log.debug('{0}: Processing file...'.format(filename))
 			props = files[filename]
+			modified_files = set(Path(_).resolve() for _ in git.files_need_commit())
 			for real_filename in glob.iglob(filename):
+				if Path(real_filename).resolve() not in modified_files:
+					Log.debug('{0}: File is not in modified, skipping...'.format(real_filename))
+					continue
 				process_one_file(real_filename,
 					commit_message=props.get('message', 'autocommit'),
 					dest_repo=repo_path if repo != '.' else None,

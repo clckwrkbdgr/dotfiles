@@ -318,6 +318,9 @@ def has_changes(check_diff=False): # pragma: no cover -- TODO commands
 def has_staged_files(): # pragma: no cover -- TODO commands
 	return 0 != subprocess.call(['git', 'diff', '--cached', '--quiet', '--exit-code'])
 
+def files_need_commit(): # pragma: no cover -- TODO commands
+	return subprocess.check_output(['git', 'ls-files', '--modified', '--others', '--exclude-standard']).decode().splitlines()
+
 def file_needs_commit(path): # pragma: no cover -- TODO commands
 	if 0 != subprocess.call(['git', 'diff', '--quiet', '--exit-code', str(path)]):
 		return True # Unstaged, but modified.
