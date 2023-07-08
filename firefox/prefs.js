@@ -390,6 +390,8 @@ user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{8b0dd2c0-b9e8-
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{980500da-0b6d-4de9-ad90-93d17605276c}", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{d7742d87-e61d-4b78-b8a1-b469842139fa}", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}", true);
+user_pref("extensions.webextensions.addons-restricted-domains@mozilla.com.domainsToPreserve", "");
+user_pref("extensions.webextensions.restrictedDomains", "accounts-static.cdn.mozilla.net,accounts.firefox.com,addons.cdn.mozilla.net,addons.mozilla.org,api.accounts.firefox.com,content.cdn.mozilla.net,discovery.addons.mozilla.org,install.mozilla.org,oauth.accounts.firefox.com,profile.accounts.firefox.com,support.mozilla.org,sync.services.mozilla.com,autoatendimento.bb.com.br,ibpf.sicredi.com.br,ibpj.sicredi.com.br,internetbanking.caixa.gov.br,www.ib12.bradesco.com.br,www2.bancobrasil.com.br");
 user_pref("font.default.x-cyrillic", "sans-serif");
 user_pref("font.default.x-user-def", "sans-serif");
 user_pref("font.language.group", "ja");
