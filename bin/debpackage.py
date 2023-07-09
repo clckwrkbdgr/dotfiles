@@ -18,6 +18,7 @@ class Package(object):
 		self.libs = []
 		self.bins = []
 		self.docs = []
+		self.data = []
 		self.headers = []
 		self.arch = arch or get_current_arch()
 		self.maintainer = os.environ['USER']
@@ -40,6 +41,10 @@ class Package(object):
 		""" Adds docs to package from iterable. """
 		if docs:
 			self.docs.extend(docs)
+	def add_data(self, data):
+		""" Adds data files to package from iterable. """
+		if data:
+			self.data.extend(data)
 	def add_headers(self, headers):
 		""" Adds include headers to package from iterable. """
 		if headers:
@@ -176,10 +181,11 @@ def load_config_value(parser, category, name, default_value=None):
 @click.option('--lib', 'libs', multiple=True, help='Libraries to install. If setup.cfg is specified, value of `debian.libs` (multiline) is included.')
 @click.option('--header', 'headers', multiple=True, help='Include headers to install. If setup.cfg is specified, value of `debian.headers` (multiline) is included.')
 @click.option('--doc', 'docs', multiple=True, help='Docs to install. If setup.cfg is specified, value of `debian.docs` (multiline) is included.')
+@click.option('--data', 'data', multiple=True, help='Data files to install. If setup.cfg is specified, value of `debian.data` (multiline) is included.')
 @click.option('--arch', help='Package architecture. Default is arch of the current system. If setup.cfg is specified, value of `debian.arch` is used.')
 @click.option('--build-dir', help='Directory to store intermediate files. If setup.cfg exists, value is taken from `debian.build_dir`. Default is within system temp directory.')
 @click.option('--dest-dir', help='Directory to store final package. If setup.cfg exists, value is taken from `debian.dest_dir`. Default is one level up from build-dir.')
-def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintainer=None, description=None, bins=None, libs=None, headers=None, docs=None, build_dir=None, dest_dir=None, arch=None):
+def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintainer=None, description=None, bins=None, libs=None, headers=None, docs=None, data=None, build_dir=None, dest_dir=None, arch=None):
 	""" Utility to create Debian package.
 
 	If there is a 'setup.cfg' file in current directory (alternative path can be specified via command line option --setup-file),
@@ -218,6 +224,7 @@ def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintaine
 	libs = list(libs) + list(get_multiline_value('libs'))
 	headers = list(headers) + list(get_multiline_value('headers'))
 	docs = list(docs) + list(get_multiline_value('docs'))
+	data = list(data) + list(get_multiline_value('data'))
 
 	if package_name is None:
 		raise click.ClickException('Package name was not specified neither on command line, nor in setup.cfg file!')
@@ -226,6 +233,7 @@ def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintaine
 	package.add_libs(libs)
 	package.add_bins(bins)
 	package.add_docs(docs)
+	package.add_data(data)
 	package.add_headers(headers)
 	package.set_maintainer(maintainer)
 	package.set_description(description)
@@ -261,6 +269,13 @@ def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintaine
 			dest_version.mkdir(parents=True, exist_ok=True)
 			print('Copying docs: {0}'.format(doc))
 			builder.copy(doc, dest_version)
+			builder.symlink(dest_version.name, dest)
+		for datafile in package.data:
+			dest = build_dir/'usr'/'local'/'share'/package.name
+			dest_version = Path(str(dest) + '.{0}'.format(package.version))
+			dest_version.mkdir(parents=True, exist_ok=True)
+			print('Copying data: {0}'.format(datafile))
+			builder.copy(datafile, dest_version)
 			builder.symlink(dest_version.name, dest)
 
 		print('Creating manifest...')
