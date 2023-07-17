@@ -68,7 +68,9 @@ else
 	" On Linux, saving without this option=yes will change inode of the file.
 	set backupcopy=yes
 endif
-set belloff=all
+if exists('&belloff')
+	set belloff=all
+endif
 silent! set keymap=russian-badger " Toggle with C-^
 set iminsert=0
 set imsearch=0
