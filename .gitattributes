@@ -384,6 +384,7 @@ lib/utils.js caps=work
 lib/rss.js caps=work
 lib/test/test_rss.html caps=work
 lib/ui.js caps=work
+lib/autoidle.js caps=work
 lib/test/test_ui.html caps=work
 lib/test/test_userscript.html caps=work
 lib/test/test_userscript_grant.html caps=work
