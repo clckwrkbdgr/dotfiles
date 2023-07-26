@@ -11,9 +11,10 @@ shift
 
 active_window_id="$(xdotool getactivewindow)"
 if [ "$(get_window_class "$active_window_id")" == "$window_class" ]; then
-	roll_window_in $(xdotool getactivewindow) 10
+	roll_window_in "$active_window_id" 10
 elif wmctrl -R "$window_class" -x ; then
-	roll_window_out $(xdotool getactivewindow) 10
+	active_window_id="$(xdotool search --classname "$window_class")"
+	roll_window_out "$active_window_id" 10
 else
 	eval "$@ &"
 	pid=$!
