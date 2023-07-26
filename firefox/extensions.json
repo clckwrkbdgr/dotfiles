@@ -127,12 +127,12 @@
 			"signedState": 2,
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4121906/ublock_origin-1.50.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4141256/ublock_origin-1.51.0.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{c1f4c119-9cc0-4da2-b91a-7cba61f68243}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.50.0",
+			"version": "1.51.0",
 			"visible": true
 		},
 		{
@@ -154,12 +154,12 @@
 			"signedState": 2,
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4136347/noscript-11.4.25.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4141345/noscript-11.4.26.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{a4224489-1408-4951-a90f-510526edd38e}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "11.4.25",
+			"version": "11.4.26",
 			"visible": true
 		},
 		{
