@@ -66,6 +66,9 @@
 #if defined(__cplusplus)
 #  if defined(_WIN32)
 #    define BADGER_EXTERN extern "C" __declspec(dllimport)
+#    if !defined(_DLL)
+#      define BADGER_EXTERN_CRT extern "C"
+#    endif
 #  else
 #    define BADGER_EXTERN extern "C"
 #  endif
@@ -75,6 +78,9 @@
 #  else
 #    define BADGER_EXTERN extern
 #  endif
+#endif
+#ifndef BADGER_EXTERN_CRT
+#  define BADGER_EXTERN_CRT BADGER_EXTERN
 #endif
 
 #ifdef __cplusplus
@@ -137,7 +143,7 @@
 #endif//GNUC
 
 #if defined(_WIN32)
-   BADGER_EXTERN
+   BADGER_EXTERN_CRT
 #     if _MSC_VER >= 1900 // VS2015+
       __declspec(allocator)
 #     else
@@ -145,7 +151,7 @@
 #     endif
       __declspec(restrict)
       void * malloc (size_t __size);
-   BADGER_EXTERN
+   BADGER_EXTERN_CRT
 #     if _MSC_VER < 1900 // VS2015+
       __declspec(noalias)
 #     endif
@@ -162,7 +168,7 @@
 
 /* #include <stdlib.h> */
 #if defined(_WIN32)
-   BADGER_EXTERN char * getenv(const char*);
+   BADGER_EXTERN_CRT char * getenv(const char*);
 #elif defined(__GNUC__)
 #  ifdef _AIX
      BADGER_EXTERN char * getenv(const char*);
