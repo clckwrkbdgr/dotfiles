@@ -64,6 +64,8 @@ def cli(ctx, debug=False, config_file=None):
 @utils.exits_with_return_value
 def inbox(config, add_notes=None):
 	config.inbox_file.parent.mkdir(parents=True, exist_ok=True)
+	if not add_notes and not sys.stdin.isatty():
+		add_notes = [sys.stdin.read().rstrip()]
 	if add_notes:
 		new_data = ' '.join(add_notes) + '\n'
 		if config.prepend_inbox:
