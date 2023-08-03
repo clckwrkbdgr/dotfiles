@@ -1,4 +1,4 @@
-import sys, platform, subprocess
+import os, sys, platform, subprocess
 import itertools
 import re
 try:
@@ -101,7 +101,19 @@ def run_python_unittests(version, tests, quiet=False, verbose=False): # pragma: 
 			args += ['--quiet']
 		if verbose:
 			args += ['--verbose']
-		args += tests
+		expanded_tests = []
+		for name in tests:
+			if not os.path.exists(name):
+				expanded_tests.append(name)
+				continue
+			if os.path.isfile(name):
+				expanded_tests.append(name)
+				continue
+			for rootdir, dirnames, filenames in os.walk(name):
+				for filename in filenames:
+					if filename.startswith('test') and filename.endswith('.py'):
+						expanded_tests.append(os.path.join(rootdir, filename))
+		args += expanded_tests
 	else:
 		args += ['discover']
 		if version == '3' and quiet: # FIXME py2 discover does not recognize --quiet.
