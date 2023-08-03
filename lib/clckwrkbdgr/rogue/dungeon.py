@@ -1,7 +1,7 @@
 from clckwrkbdgr.math import Point, Size, Matrix
 from . import builders
 
-class Strata:
+class Strata(object):
 	def __init__(self, block_size, builder):
 		self.builder = builder
 		self.block_size = Size(block_size)
@@ -11,7 +11,12 @@ class Strata:
 			for col in range(self.blocks.width):
 				self.blocks.set_cell((col, row), Matrix(self.block_size, '.'))
 				self.builder.build_block(self.blocks.cell((col, row)))
-	def valid(self, pos): # pragma: no cover -- TODO
+	def __eq__(self, other):
+		return type(other) is type(self) \
+				and self.block_size == other.block_size \
+				and self.shift == other.shift \
+				and self.blocks == other.blocks
+	def valid(self, pos):
 		relative_pos = Point(pos) - self.shift
 		block_pos = Point(relative_pos.x // self.block_size.width, relative_pos.y // self.block_size.height)
 		if not self.blocks.valid(block_pos):
@@ -51,7 +56,7 @@ class Strata:
 				block_shift.y * self.block_size.height,
 				)
 
-class Dungeon:
+class Dungeon(object):
 	BLOCK_SIZE = Size(32, 32)
 
 	def __init__(self, builder=None):
@@ -59,9 +64,9 @@ class Dungeon:
 		self.terrain = Strata(block_size=self.BLOCK_SIZE, builder=self.builder)
 		self.rogue = Point(self.builder.place_rogue(self.terrain))
 		self.time = 0
-	def __getstate__(self): # pragma: no cover -- TODO
+	def __getstate__(self):
 		return self.__dict__
-	def __setstate__(self, state): # pragma: no cover -- TODO
+	def __setstate__(self, state):
 		self.__dict__.update(state)
 		if 'time' not in state:
 			self.time = 0

@@ -27,7 +27,6 @@ class TestDungeon(unittest.TestCase):
 			for x in range(-4, 5):
 				result[-1] += dungeon.get_sprite((x, y))
 		return '\n'.join(result) + '\n'
-
 	def should_generate_random_dungeon(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
@@ -108,6 +107,26 @@ class TestDungeon(unittest.TestCase):
 		with self.assertRaises(MockEvent):
 			dungeon.control(MockEvent())
 
+class TestSerialization(unittest.TestCase):
+	def should_serialize_deserialize_dungeon(self):
+		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
+		dungeon = MockDungeon(builder=builder)
+		dungeon.time = 666
+
+		import pickle
+		other = pickle.loads(pickle.dumps(dungeon))
+		self.assertEqual(dungeon.terrain, other.terrain)
+		self.assertEqual(dungeon.rogue, other.rogue)
+		self.assertEqual(dungeon.time, other.time)
+	def should_deserialize_dungeons_from_previous_versions(self):
+		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
+		dungeon = MockDungeon(builder=builder)
+
+		state = {'terrain':dungeon.terrain, 'rogue':dungeon.rogue}
+		other = object.__new__(Dungeon)
+		other.__setstate__(state)
+		self.assertEqual(other.time, 0)
+
 class TestStrata(unittest.TestCase):
 	@staticmethod
 	def to_string(strata):
@@ -159,6 +178,10 @@ class TestStrata(unittest.TestCase):
 		self.assertTrue(self.strata.is_passable((0, 0)))
 		self.assertFalse(self.strata.is_passable((1, 1)))
 		self.assertFalse(self.strata.is_passable((-10, -10)))
+	def should_check_if_cell_coords_are_valid(self):
+		self.assertTrue(self.strata.valid((0, 0)))
+		self.assertTrue(self.strata.valid((1, 1)))
+		self.assertFalse(self.strata.valid((-10, -10)))
 	def should_return_empty_sprite_for_cells_outside(self):
 		self.assertEqual(self.strata.cell((-10, -10)), ' ')
 	def should_recalibrate_layout_when_anchor_point_is_changed(self):
