@@ -15,6 +15,12 @@ class Wave(object):
 	def get_links(self, node): # pragma: no cover
 		""" Should return iterable of all nodes directly reachable from given node. """
 		raise NotImplementedError
+	def reorder_links(self, previous_node, links): # pragma: no cover
+		""" Could reorder found links by priority if needed.
+		First link will be used when constructing the final path.
+		Does nothing by default.
+		"""
+		return links
 	def run(self, start, target, depth=10000):
 		""" Parameter depth serves as safeguard. After that number of waves algorithm
 		gives up if target is not reached yet and returns None.
@@ -30,7 +36,7 @@ class Wave(object):
 			if target in new_wave:
 				path = [target]
 				for wave in reversed(waves):
-					path.insert(0, next(node for node in wave if self.is_linked(node, path[0])))
+					path.insert(0, next(node for node in self.reorder_links(path[0], wave) if self.is_linked(node, path[0])))
 				return path
 			already_used |= new_wave
 			waves.append(new_wave)

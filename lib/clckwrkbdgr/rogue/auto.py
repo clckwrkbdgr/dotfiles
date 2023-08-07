@@ -11,6 +11,8 @@ class DungeonWave(algorithm.Wave):
 	def is_linked(self, node_from, node_to):
 		distance = abs(node_from - node_to)
 		return distance.x <= 1 and distance.y <= 1
+	def reorder_links(self, previous_node, links):
+		return sorted(links, key=lambda p: sum(abs(previous_node - p)))
 	def get_links(self, node):
 		return [p for p in get_neighbours(
 			self.matrix, node,

@@ -106,8 +106,8 @@ class TestAutoExplorer(unittest.TestCase):
 		self.step((1, 1))
 		self.step((1, 1))
 		self.step((1, 0))
-		self.step((1, 0))
 		self.step((1, -1))
+		self.step((1, 0))
 	@unittest.mock.patch('random.randrange')
 	def should_not_walk_in_old_directions(self, random_randrange):
 		random_randrange.side_effect = [
@@ -115,10 +115,10 @@ class TestAutoExplorer(unittest.TestCase):
 				]
 
 		self.step((1, 0))
-		self.step((1, -1))
-		self.step((1, -1))
-		self.step((1, 1))
-		self.step((1, 1))
+		self.step((1, 0))
+		self.step((1, 0))
+		self.step((1, 0))
+		self.step((1, 0))
 
 		random_randrange.side_effect = [
 				5, 10, # Old direction.
