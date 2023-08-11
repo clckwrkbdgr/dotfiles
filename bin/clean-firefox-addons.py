@@ -54,6 +54,8 @@ def filter_extensions(extensions):
 	for extension in extensions['addons']:
 		if extension.get('userDisabled'):
 			continue
+		if extension.get('id') == "addons-restricted-domains@mozilla.com": # Built-in addon for Brazil only.
+			continue
 		if extension.get('location') in ['app-builtin', 'app-system-defaults']:
 			continue
 		for name in fields_to_drop:
