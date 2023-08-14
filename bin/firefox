@@ -6,12 +6,19 @@ browser=${firefox_binary:-/usr/bin/firefox-esr}
 pnames="${firefox_pnames:-firefox-esr x-www-browser iceweasel}"
 
 click::command cli 'Firefox CLI interface.'
+click::flag '-I' '--ensure-instance' 'ensure_instance' --help='Opens urls only if some Firefox instance is running.'
 click::flag '-H' '--hide' '' --help='Do not activate browser window.'
 click::flag '-A' '--activate' '' --help='Activate browser window. Without urls will just bring existing window to top. Overrides --hide if both are present.'
 click::argument 'urls' --nargs=-1 --help='URL(s) to open. May be a local file path. May be an *.url file: treated like a *.desktop entry, searches for URL field.'
 cli() {
 	if [ -n "${CLICK_ARGS[activate]}" -a -n "${CLICK_ARGS[hide]}" ]; then
 		CLICK_ARGS[hide]=''
+	fi
+
+	if [ -n "${CLICK_ARGS[ensure_instance]}" ]; then
+		if ! processes_by_names $pnames | grep -q '.'; then
+			return 1
+		fi
 	fi
 	
 	[ -z "${CLICK_ARGS[hide]}" ] && bring_to_top_by_pnames $pnames
