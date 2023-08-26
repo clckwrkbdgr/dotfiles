@@ -133,9 +133,7 @@ def run_python_unittests(version, tests, quiet=False, verbose=False): # pragma: 
 		return rc
 	args = python_runner + ['-m', 'coverage', 'report', '-m']
 	if custom_omit:
-		args.extend(itertools.chain.from_iterable(
-			('--omit', entry) for entry in custom_omit
-			))
+		args.extend(['--omit', ','.join(custom_omit)])
 	return quiet_call(args,
 			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None,
 			exclude_stdout_patterns=PYTHON_COVERAGE_QUIET_EXCLUDE_PATTERNS if quiet else None,
