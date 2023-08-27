@@ -126,10 +126,12 @@ cli() {
 	if [ -z "$quiet" -a -z "$no_signal" ]; then
 		[ -t 1 ] && tput bel
 		play_signal &
+		signal_pid=$!
 	fi
 
 	if [ -n "$text" ]; then
 		$display_notification "$title" "$text" --icon="$icon" &
+		notification_pid=$!
 
 		if [ -z "${CLICK_ARGS[no_history]}" ]; then
 			echo "$(date) <${title}> $text" >>"$MESSAGE_LOG_FILE"
@@ -138,6 +140,17 @@ cli() {
 
 		[ -z "$quiet" ] && text-to-speech "$text"
 	fi
+
+	rc=0
+	if [ -n "$signal_pid" ]; then
+		wait $signal_pid
+		rc=$?
+	fi
+	if [ -n "$notification_pid" ]; then
+		wait $notification_pid
+		rc=$?
+	fi
+	return $rc
 }
 
 click::run "$@"
