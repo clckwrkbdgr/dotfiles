@@ -19,10 +19,10 @@
 try {
 	console.log('Creating manual testing layout...');
 
-   // UI.
-   var test_area = document.querySelector('#test-area');
+	// UI.
+	var test_area = document.querySelector('#test-area');
 
-   // Checkbox to emulate trigger.
+	// Checkbox to emulate trigger.
 	var buy_trigger = document.createElement('input');
 	buy_trigger.setAttribute('type', 'checkbox');
 	buy_trigger.setAttribute('id', 'test-buy-trigger');
@@ -34,31 +34,31 @@ try {
 	buy_trigger_label.innerText = 'Trigger buying';
 	test_area.appendChild(buy_trigger_label);
 
-   // Console.
-   var text_output = document.createElement('div');
-   text_output.setAttribute('id', 'test-text-output');
-   text_output.style['white-space'] = 'pre-wrap';
-   text_output.style['border'] = '1px dashed black';
+	// Console.
+	var text_output = document.createElement('div');
+	text_output.setAttribute('id', 'test-text-output');
+	text_output.style['white-space'] = 'pre-wrap';
+	text_output.style['border'] = '1px dashed black';
 	test_area.appendChild(text_output);
 
-   // Rules.
-   function need_to_buy()
-   {
-      return document.querySelector('#test-buy-trigger').checked;
-   }
-   function autobuy_thing()
-   {
-      document.querySelector('#test-text-output').innerText += '\n' + 'Auto-bought thing.';
-      document.querySelector('#test-buy-trigger').checked = false;
-   }
+	// Rules.
+	function need_to_buy()
+	{
+		return document.querySelector('#test-buy-trigger').checked;
+	}
+	function autobuy_thing()
+	{
+		document.querySelector('#test-text-output').innerText += '\n' + 'Auto-bought thing.';
+		document.querySelector('#test-buy-trigger').checked = false;
+	}
 
-   // Init.
-   clckwrkbdgr.autoidle.install('#test-area', {
-      delay_start: function(callback) { setTimeout(callback, 1000); },
-   });
-   clckwrkbdgr.autoidle.setup_trigger("Need to buy", need_to_buy);
-   clckwrkbdgr.autoidle.setup_action("Buy thing", autobuy_thing);
-   clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
+	// Init.
+	clckwrkbdgr.autoidle.install('#test-area', {
+		delay_start: function(callback) { setTimeout(callback, 1000); },
+	});
+	clckwrkbdgr.autoidle.setup_trigger("Need to buy", need_to_buy);
+	clckwrkbdgr.autoidle.setup_action("Buy thing", autobuy_thing);
+	clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
 } catch(e) {
 	console.error(e);
 }
@@ -66,99 +66,91 @@ try {
 
 <script type="application/javascript">
 var unittest = clckwrkbdgr.unittest;
+var mock = {};
 
 function setUp()
 {
 	unittest.assertTrue(window.clckwrkbdgr);
 	unittest.assertTrue(window.clckwrkbdgr.autoidle);
+
+	mock.autoidle = {
+		_triggers_registry:{},
+		_actions_registry:{},
+		_rules:[],
+		_enable_all:true,
+	};
+	mock.action_log = [];
+	mock.default_trigger = function() { return true; }
+	mock.default_action = function() { mock.action_log.push('acted'); }
 }
 
 function should_check_rules()
 {
-   var action_log = [];
-   function mock_trigger() { return true; }
-   function mock_action() { action_log.push('acted'); }
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock.default_trigger, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], "Mock Action", {autoidle:mock.autoidle});
 
-   var mock_autoidle = {_triggers:{}, _actions:{}, _rules:[], _enable_all:true };
-   clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock_trigger, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.setup_action("Mock Action", mock_action, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], "Mock Action", {autoidle:mock_autoidle});
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
 
-   clckwrkbdgr.autoidle._check_rules({autoidle:mock_autoidle});
-
-	unittest.assertEqual(action_log, ['acted']);
+	unittest.assertEqual(mock.action_log, ['acted']);
 }
 
 function should_not_check_rules_when_disabled_all()
 {
-   var action_log = [];
-   function mock_trigger() { return true; }
-   function mock_action() { action_log.push('acted'); }
+	mock.autoidle._enable_all = false;
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock.default_trigger, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], "Mock Action", {autoidle:mock.autoidle});
 
-   var mock_autoidle = {_triggers:{}, _actions:{}, _rules:[], _enable_all:false };
-   clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock_trigger, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.setup_action("Mock Action", mock_action, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], "Mock Action", {autoidle:mock_autoidle});
+	console.log(mock.autoidle._enable_all);
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
 
-   clckwrkbdgr.autoidle._check_rules({autoidle:mock_autoidle});
-
-	unittest.assertEqual(action_log, []);
+	unittest.assertEqual(mock.action_log, []);
 }
 
 function should_run_action_only_when_all_triggers_are_fired()
 {
-   var action_log = [];
-   var triggers = [false, false];
-   function mock_trigger_a() { return triggers[0]; }
-   function mock_trigger_b() { return triggers[1]; }
-   function mock_action() { action_log.push('acted'); }
+	var triggers = [false, false];
+	function mock_trigger_a() { return triggers[0]; }
+	function mock_trigger_b() { return triggers[1]; }
 
-   var mock_autoidle = {_triggers:{}, _actions:{}, _rules:[], _enable_all:true };
-   clckwrkbdgr.autoidle.setup_trigger("Mock Trigger A", mock_trigger_a, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.setup_trigger("Mock Trigger B", mock_trigger_b, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.setup_action("Mock Action", mock_action, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.add_rule(["Mock Trigger A", "Mock Trigger B"], "Mock Action", {autoidle:mock_autoidle});
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger A", mock_trigger_a, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger B", mock_trigger_b, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Mock Trigger A", "Mock Trigger B"], "Mock Action", {autoidle:mock.autoidle});
 
-   clckwrkbdgr.autoidle._check_rules({autoidle:mock_autoidle});
-	unittest.assertEqual(action_log, []);
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
 
-   triggers[0] = true;
-   clckwrkbdgr.autoidle._check_rules({autoidle:mock_autoidle});
-	unittest.assertEqual(action_log, []);
+	triggers[0] = true;
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
 
-   triggers[1] = true;
-   clckwrkbdgr.autoidle._check_rules({autoidle:mock_autoidle});
-	unittest.assertEqual(action_log, ['acted']);
+	triggers[1] = true;
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, ['acted']);
 }
 
 function should_ignore_undefined_triggers()
 {
-   var action_log = [];
-   function mock_trigger() { return true; }
-   function mock_action() { action_log.push('acted'); }
+	mock.autoidle._enable_all = false;
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock.default_trigger, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Undefined Trigger"], "Mock Action", {autoidle:mock.autoidle});
 
-   var mock_autoidle = {_triggers:{}, _actions:{}, _rules:[], _enable_all:false };
-   clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock_trigger, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.setup_action("Mock Action", mock_action, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.add_rule(["Undefined Trigger"], "Mock Action", {autoidle:mock_autoidle});
-
-   clckwrkbdgr.autoidle._check_rules({autoidle:mock_autoidle});
-	unittest.assertEqual(action_log, []);
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
 }
 
 function should_ignore_undefined_actions()
 {
-   var action_log = [];
-   function mock_trigger() { return true; }
-   function mock_action() { action_log.push('acted'); }
+	mock.autoidle._enable_all = false;
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock.default_trigger, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], "Undefined Action", {autoidle:mock.autoidle});
 
-   var mock_autoidle = {_triggers:{}, _actions:{}, _rules:[], _enable_all:false };
-   clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock_trigger, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.setup_action("Mock Action", mock_action, {autoidle:mock_autoidle});
-   clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], "Undefined Action", {autoidle:mock_autoidle});
-
-   clckwrkbdgr.autoidle._check_rules({autoidle:mock_autoidle});
-	unittest.assertEqual(action_log, []);
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
 }
 
 </script>
