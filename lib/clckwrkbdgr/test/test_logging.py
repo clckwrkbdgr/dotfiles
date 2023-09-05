@@ -17,6 +17,14 @@ class TestBasicLogger(unittest.TestCase):
 			logger.info(u'Info.')
 			logger.debug(u'Debug...')
 			self.assertEqual(stream.getvalue(), '[WARNING] should_print_message_to_stream: Hello world!\n')
+	@unittest.mock.patch('logging.Formatter.converter', side_effect=[time.gmtime(10000)])
+	def should_print_message_to_stream_with_timestamps(self, time_localtime):
+		with io.StringIO() as stream:
+			logger = init('should_print_message_to_stream', stream=stream, timestamps=True)
+			logger.warning(u'Hello world!')
+			logger.info(u'Info.')
+			logger.debug(u'Debug...')
+			self.assertEqual(stream.getvalue(), '1970-01-01 02:46:40 [WARNING] should_print_message_to_stream: Hello world!\n')
 	def should_print_message_to_stream_using_root_logger(self):
 		for _handler in logging.root.handlers[:]: # pragma: no cover
 			logging.root.removeHandler(_handler)

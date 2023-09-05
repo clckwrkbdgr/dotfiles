@@ -9,6 +9,7 @@ def getFileLogger(name, filename): # pragma: no cover
 
 def init(logger,
 		debug=False, verbose=False,
+		timestamps=False,
 		filename=None, stream=sys.stderr,
 		):
 	""" Creates and initializes specified logger (logging.Logger object or name).
@@ -22,6 +23,8 @@ def init(logger,
 	Uses following formats:
 	- stream: [<LEVEL>] <logger name>:<message>
 	- file: <time>:<logger name>:<LEVEL>:<message>
+
+	If timestamps is True, then stream logger also will have timestamps.
 
 	Returns created logger. Logger can also be accessed later using logging.getLogger(name)
 	Returned logger will be callable, direct call will be equivalent to calling logging function corresponding to minimal logging level (e.g. logger.debug, logger.warning etc).
@@ -52,8 +55,11 @@ def init(logger,
 	for logger_obj in loggers:
 		if stream:
 			stream_handler = logging.StreamHandler(stream)
-			stream_handler.setFormatter(logging.Formatter(
-				'[%(levelname)s] %(name)s: %(message)s',
+			fmt_string = '[%(levelname)s] %(name)s: %(message)s'
+			if timestamps:
+				fmt_string = '%(asctime)s ' + fmt_string
+			stream_handler.setFormatter(logging.Formatter(fmt_string,
+				datefmt='%Y-%m-%d %H:%M:%S',
 				))
 			logger_obj.addHandler(stream_handler)
 			# TODO colors
