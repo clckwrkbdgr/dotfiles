@@ -34,6 +34,18 @@ try {
 	buy_trigger_label.innerText = 'Trigger buying';
 	test_area.appendChild(buy_trigger_label);
 
+	// Text field to emulate string-parameter trigger.
+	var name_trigger = document.createElement('input');
+	name_trigger.setAttribute('type', 'text');
+	name_trigger.setAttribute('id', 'test-name-trigger');
+	name_trigger.setAttribute('name', 'test-name-trigger');
+	test_area.appendChild(name_trigger);
+
+	var name_trigger_label = document.createElement('label');
+	name_trigger_label.setAttribute('for', 'test-name-trigger');
+	name_trigger_label.innerText = 'Trigger name';
+	test_area.appendChild(name_trigger_label);
+
 	// Console.
 	var text_output = document.createElement('div');
 	text_output.setAttribute('id', 'test-text-output');
@@ -46,10 +58,19 @@ try {
 	{
 		return document.querySelector('#test-buy-trigger').checked;
 	}
+	function have_name()
+	{
+		return document.querySelector('#test-name-trigger').value;
+	}
 	function autobuy_thing()
 	{
 		document.querySelector('#test-text-output').innerText += '\n' + 'Auto-bought thing.';
 		document.querySelector('#test-buy-trigger').checked = false;
+	}
+	function autoname_thing()
+	{
+		document.querySelector('#test-text-output').innerText += '\n' + 'Auto-named thing.';
+		document.querySelector('#test-name-trigger').value = "";
 	}
 
 	// Init.
@@ -57,8 +78,13 @@ try {
 		delay_start: function(callback) { setTimeout(callback, 1000); },
 	});
 	clckwrkbdgr.autoidle.setup_trigger("Need to buy", need_to_buy);
+	clckwrkbdgr.autoidle.setup_trigger("Have name", have_name, "string");
 	clckwrkbdgr.autoidle.setup_action("Buy thing", autobuy_thing);
+	clckwrkbdgr.autoidle.setup_action("Name thing", autoname_thing);
 	clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
+	clckwrkbdgr.autoidle.add_rule([
+		["Have name", "equal", "name"],
+	], "Name thing");
 } catch(e) {
 	console.error(e);
 }
@@ -102,7 +128,6 @@ function should_not_check_rules_when_disabled_all()
 	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
 	clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], "Mock Action", {autoidle:mock.autoidle});
 
-	console.log(mock.autoidle._enable_all);
 	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
 
 	unittest.assertEqual(mock.action_log, []);
@@ -151,6 +176,31 @@ function should_ignore_undefined_actions()
 
 	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
 	unittest.assertEqual(mock.action_log, []);
+}
+
+function should_run_have_triggers_with_parameters()
+{
+	var trigger_value = "none";
+	function mock_trigger_str() { return trigger_value; }
+
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger String", mock_trigger_str,
+		"string",
+		{autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule([
+		["Mock Trigger String", "equal", "two"],
+	], "Mock Action", {autoidle:mock.autoidle});
+
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
+
+	trigger_value = "one";
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
+
+	trigger_value = "two";
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, ['acted']);
 }
 
 </script>
