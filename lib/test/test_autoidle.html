@@ -12,7 +12,11 @@
 	<div id="unittest-main">
 	</div>
 
-	<div id="test-area">
+	<div id="test-area" style="display:flex;border:1px solid yellow">
+		<div id="test-area-controls" style="flex:30%;border:1px solid yellow">
+		</div>
+		<div id="test-area-log" style="flex:70%;border:1px solid yellow">
+		</div>
 	</div>
 
 <script type="application/javascript">
@@ -21,37 +25,60 @@ try {
 
 	// UI.
 	var test_area = document.querySelector('#test-area');
+	var test_area_log = document.querySelector('#test-area-log');
+	var test_area_controls = document.querySelector('#test-area-controls');
 
 	// Checkbox to emulate trigger.
 	var buy_trigger = document.createElement('input');
 	buy_trigger.setAttribute('type', 'checkbox');
 	buy_trigger.setAttribute('id', 'test-buy-trigger');
 	buy_trigger.setAttribute('name', 'test-buy-trigger');
-	test_area.appendChild(buy_trigger);
+	test_area_controls.appendChild(buy_trigger);
 
 	var buy_trigger_label = document.createElement('label');
 	buy_trigger_label.setAttribute('for', 'test-buy-trigger');
 	buy_trigger_label.innerText = 'Trigger buying';
-	test_area.appendChild(buy_trigger_label);
+	test_area_controls.appendChild(buy_trigger_label);
+
+	test_area_controls.appendChild(document.createElement('br'));
 
 	// Text field to emulate string-parameter trigger.
+	var name_trigger_label = document.createElement('label');
+	name_trigger_label.setAttribute('for', 'test-name-trigger');
+	name_trigger_label.innerText = 'Trigger name';
+	test_area_controls.appendChild(name_trigger_label);
+
 	var name_trigger = document.createElement('input');
 	name_trigger.setAttribute('type', 'text');
 	name_trigger.setAttribute('id', 'test-name-trigger');
 	name_trigger.setAttribute('name', 'test-name-trigger');
-	test_area.appendChild(name_trigger);
+	test_area_controls.appendChild(name_trigger);
 
-	var name_trigger_label = document.createElement('label');
-	name_trigger_label.setAttribute('for', 'test-name-trigger');
-	name_trigger_label.innerText = 'Trigger name';
-	test_area.appendChild(name_trigger_label);
+	test_area_controls.appendChild(document.createElement('br'));
+
+	// Input field to emulate number-parameter trigger.
+	var amount_trigger_label = document.createElement('label');
+	amount_trigger_label.setAttribute('for', 'test-amount-trigger');
+	amount_trigger_label.innerText = 'Trigger 10 amount';
+	test_area_controls.appendChild(amount_trigger_label);
+
+	var amount_trigger = document.createElement('input');
+	amount_trigger.setAttribute('type', 'number');
+	amount_trigger.setAttribute('value', '0');
+	amount_trigger.setAttribute('min', '0');
+	amount_trigger.setAttribute('max', '999');
+	amount_trigger.setAttribute('id', 'test-amount-trigger');
+	amount_trigger.setAttribute('name', 'test-amount-trigger');
+	test_area_controls.appendChild(amount_trigger);
+
+	test_area_controls.appendChild(document.createElement('br'));
 
 	// Console.
 	var text_output = document.createElement('div');
 	text_output.setAttribute('id', 'test-text-output');
 	text_output.style['white-space'] = 'pre-wrap';
 	text_output.style['border'] = '1px dashed black';
-	test_area.appendChild(text_output);
+	test_area_log.appendChild(text_output);
 
 	// Rules.
 	function need_to_buy()
@@ -61,6 +88,10 @@ try {
 	function have_name()
 	{
 		return document.querySelector('#test-name-trigger').value;
+	}
+	function have_amount()
+	{
+		return document.querySelector('#test-amount-trigger').value;
 	}
 	function autobuy_thing()
 	{
@@ -72,19 +103,29 @@ try {
 		document.querySelector('#test-text-output').innerText += '\n' + 'Auto-named thing.';
 		document.querySelector('#test-name-trigger').value = "";
 	}
+	function autobuild_thing()
+	{
+		document.querySelector('#test-text-output').innerText += '\n' + 'Auto-built thing.';
+		document.querySelector('#test-amount-trigger').value = 0;
+	}
 
 	// Init.
-	clckwrkbdgr.autoidle.install('#test-area', {
+	clckwrkbdgr.autoidle.install('#test-area-controls', {
 		delay_start: function(callback) { setTimeout(callback, 1000); },
 	});
 	clckwrkbdgr.autoidle.setup_trigger("Need to buy", need_to_buy);
 	clckwrkbdgr.autoidle.setup_trigger("Have name", have_name, "string");
+	clckwrkbdgr.autoidle.setup_trigger("Have amount", have_amount, "number");
 	clckwrkbdgr.autoidle.setup_action("Buy thing", autobuy_thing);
 	clckwrkbdgr.autoidle.setup_action("Name thing", autoname_thing);
+	clckwrkbdgr.autoidle.setup_action("Build thing", autobuild_thing);
 	clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
 	clckwrkbdgr.autoidle.add_rule([
 		["Have name", "equal", "name"],
 	], "Name thing");
+	clckwrkbdgr.autoidle.add_rule([
+		["Have amount", ">=", 10],
+	], "Build thing");
 } catch(e) {
 	console.error(e);
 }
@@ -199,6 +240,31 @@ function should_run_have_triggers_with_parameters()
 	unittest.assertEqual(mock.action_log, []);
 
 	trigger_value = "two";
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, ['acted']);
+}
+
+function should_run_have_triggers_with_number_parameters()
+{
+	var trigger_value = 0;
+	function mock_trigger_number() { return trigger_value; }
+
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger Number", mock_trigger_number,
+		"number",
+		{autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule([
+		["Mock Trigger Number", ">=", 2],
+	], "Mock Action", {autoidle:mock.autoidle});
+
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
+
+	++trigger_value; // 1
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
+
+	++trigger_value; // 2
 	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
 	unittest.assertEqual(mock.action_log, ['acted']);
 }
