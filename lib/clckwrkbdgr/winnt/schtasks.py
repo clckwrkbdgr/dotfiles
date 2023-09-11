@@ -1,8 +1,15 @@
 import os, sys, subprocess
 import tempfile
 import logging
+Log = logging.getLogger('schtasks')
+import functools
 from collections import namedtuple
 import xml.etree.ElementTree as ET
+try:
+	from pathlib2 import Path
+except ImportError: # pragma: no cover
+	from pathlib import Path
+import clckwrkbdgr.logging
 from clckwrkbdgr import xdg
 from clckwrkbdgr import utils
 
@@ -28,6 +35,15 @@ TASK_XML_DEFINITION = """\
 </Task>
 """
 
+@functools.lru_cache()
+def get_pythonw(): # pragma: no cover -- TODO
+	for path in os.environ['PATH'].split(os.pathsep):
+		result = os.path.join(path, "pythonw.exe")
+		if os.path.exists(result):
+			Log.debug("Initialized full path to pythonw: {0}".format(result))
+			return result
+	return "pythonw.exe"
+
 def run_immediately(commandline, task_scheduler_path, logdir=None, priority=7): # pragma: no cover -- calls external commands and available on Win only.
 	""" Runs command (string) immediately using Windows Task Scheduler.
 	Should produce not output.
@@ -48,18 +64,21 @@ def run_immediately(commandline, task_scheduler_path, logdir=None, priority=7): 
 		raise RuntimeError("Expected integer priority in range [4; 10], got: {0}".format(priority))
 	if utils.is_collection(commandline):
 		commandline = subprocess.list2cmdline(commandline)
-	command = ["pythonw", "-m", "clckwrkbdgr.commands"]
+	pythonw = get_pythonw()
+	if not os.path.exists(pythonw):
+		Log.error("Executable does not exist in PATH: {0}".format(pythonw))
+	command = ["\"{0}\"".format(pythonw), "-m", "clckwrkbdgr.commands"]
 	command += ['--start-dir', subprocess.list2cmdline([os.getcwd()])]
 	if logdir:
 		command += ['--output-dir', subprocess.list2cmdline([str(logdir)])]
 	command += [commandline]
-	logging.debug('Running command: {0}'.format(command))
+	Log.debug('Running command: {0}'.format(command))
 	command, command_args = command[0], ' '.join(command[1:])
 
 	import time
 	guid = str(time.time()).replace('.', '_') # TODO proper guid
 	job_id = "{0}\\{1}".format(task_scheduler_path.rstrip('\\'), guid)
-	logging.debug('Task Scheduler Job ID: {0}'.format(job_id))
+	Log.debug('Task Scheduler Job ID: {0}'.format(job_id))
 
 	xml_content = TASK_XML_DEFINITION.format(
 			command=command,
@@ -76,13 +95,13 @@ def run_immediately(commandline, task_scheduler_path, logdir=None, priority=7): 
 		except subprocess.CalledProcessError as e:
 			sys.stderr.write(e.output.decode('ascii', 'replace'))
 			raise
-		logging.debug(output)
+		Log.debug(output)
 	finally:
 		os.unlink(task_xml.name)
 	output = subprocess.check_output(['schtasks', '/run', '/tn', job_id], stderr=subprocess.STDOUT)
-	logging.debug(output)
+	Log.debug(output)
 	output = subprocess.check_output(['schtasks', '/delete', '/f', '/tn', job_id], stderr=subprocess.STDOUT)
-	logging.debug(output)
+	Log.debug(output)
 
 class TaskScheduler: # pragma: no cover -- TODO calls external command and available on win only.
 	RegistrationInfo = namedtuple('RegistrationInfo', 'author description uri')
@@ -99,7 +118,7 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 		BootTrigger = namedtuple('BootTrigger', 'enabled delay repetition')
 		TimeTrigger = namedtuple('TimeTrigger', 'enabled start_boundary random_delay repetition')
 		SessionStateChangeTrigger = namedtuple('SessionStateChangeTrigger', 'enabled state_change user_id')
-		CalendarTrigger = namedtuple('CalendarTrigger', 'enabled start_boundary end_boundary random_delay schedule_by_day execution_time_limit repetition')
+		CalendarTrigger = namedtuple('CalendarTrigger', 'enabled start_boundary end_boundary random_delay schedule_by_day execution_time_limit repetition schedule_by_week')
 	class Action:
 		Exec = namedtuple('ActionExec', 'command arguments working_directory')
 		ComHandler = namedtuple('ComHandler', 'class_id data')
@@ -120,7 +139,7 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 		fields = [''.join(map(str.title, field.split('_'))) for field in object_class._fields]
 		for subelement in node.find('.', namespaces=self.nsmap):
 			if self.get_tag_name(subelement) not in fields:
-				logging.warning("Unknown field for node {1}: {0}".format(ET.tostring(subelement), self.get_tag_name(node)))
+				Log.warning("Unknown field for node {1}: {0}".format(ET.tostring(subelement), self.get_tag_name(node)))
 		values = []
 		for field in fields:
 			if field in class_root.__dict__:
@@ -138,7 +157,7 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 			command = ['schtasks', '/query', '/XML', 'ONE']
 			output = subprocess.check_output(command)
 		except Exception as e:
-			logging.error("Failed to collect schtasks dump {0}: {1}\n".format(command, e))
+			Log.error("Failed to collect schtasks dump {0}: {1}\n".format(command, e))
 			return
 		dom = ET.ElementTree(ET.fromstring(output))
 		for task in dom.findall('./tasks:Task', namespaces=self.nsmap):
@@ -167,7 +186,7 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 						self.Trigger, trigger,
 						))
 				else:
-					logging.warning('Unknown trigger class: {0}'.format(ET.tostring(trigger)))
+					Log.warning('Unknown trigger class: {0}'.format(ET.tostring(trigger)))
 
 			actions = []
 			for action in task.find('./tasks:Actions', namespaces=self.nsmap):
@@ -176,6 +195,23 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 						self.Action, action,
 						))
 				else:
-					logging.warning('Unknown action class: {0}'.format(ET.tostring(action)))
+					Log.warning('Unknown action class: {0}'.format(ET.tostring(action)))
 
 			yield self.Task(registration_info, settings, triggers, actions)
+
+import click
+
+@click.command(context_settings=dict(ignore_unknown_options=True))
+@click.argument('args', nargs=-1, required=True)
+@click.option('--debug', is_flag=True, help="Show debug traces.")
+@click.option('-L', '--logdir', default=Path.home(), type=Path, help="Directory to store report logs for executed jobs.")
+def cli(args, logdir=None, debug=False): # pragma: no cover
+	""" Runs program via Windows Scheduler immediately.
+
+	Creates trace file if there was any output or if program exited with non-zero.
+	"""
+	clckwrkbdgr.logging.init(Log, debug=debug)
+	run_immediately(' '.join(args), "crontab", logdir=logdir)
+
+if __name__ == '__main__': # pragma: no cover
+	cli()
