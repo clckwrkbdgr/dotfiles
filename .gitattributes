@@ -121,6 +121,7 @@ caps.py caps=work
 Makefile caps=work
 LICENSE caps=work
 README.md caps=work
+requirements.txt caps=work
 WindowsTerminal/settings.json caps=work
 Xresources caps=work
 bash/aliases.inc.bash caps=work

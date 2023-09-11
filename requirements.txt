@@ -1,0 +1,22 @@
+# setup
+vintage
+six
+bs4
+termcolor
+click
+click-default-group
+click-aliases
+# build
+wheel
+# crontab
+python-crontab
+croniter
+# unittest
+coverage
+pyfakefs
+# userservice
+pywin32
+# clckwrkbdgr.firefox
+lz4
+# web
+blackcompany
