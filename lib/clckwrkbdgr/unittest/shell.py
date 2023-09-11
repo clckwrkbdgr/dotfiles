@@ -11,12 +11,17 @@ def bash_unittest(tests, quiet=False, verbose=False): # pragma: no cover -- TODO
 	unittest_bash = xdg.XDG_CONFIG_HOME/'lib'/'unittest.bash'
 	bash = ['bash']
 	if platform.system() == 'Windows':
-		# WSL Bash does not read .profile or .bashrc when started from command line.
-		bash = ['wsl', '--exec', 'bash', '-i'] # Need to start it interactively.
-		# WSL Bash accepts only POSIX paths with drives as /mnt/<drive>/
-		parts = list(unittest_bash.parts)
-		parts[0] = '/mnt/{0}'.format(unittest_bash.drive.replace(':', '').lower())
-		unittest_bash = Path(*parts).as_posix()
+		from .. import pyshell
+		bash = pyshell.which('bash')
+		if bash:
+			bash = [bash]
+		else:
+			# WSL Bash does not read .profile or .bashrc when started from command line.
+			bash = ['wsl', '--exec', 'bash', '-i'] # Need to start it interactively.
+			# WSL Bash accepts only POSIX paths with drives as /mnt/<drive>/
+			parts = list(unittest_bash.parts)
+			parts[0] = '/mnt/{0}'.format(unittest_bash.drive.replace(':', '').lower())
+			unittest_bash = Path(*parts).as_posix()
 	else:
 		unittest_bash = str(unittest_bash)
 	args = bash + [str(unittest_bash)]
