@@ -106,7 +106,17 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 
 	@classmethod
 	def list_all(cls):
-		output = subprocess.check_output(['wmic', 'service', 'where', 'StartName like "ISD\\\\icha"', 'get', '/format:csv'], shell=True)
+		domain = os.environ['USERDOMAIN']
+		username = os.environ['USERNAME']
+		qualified_username = '{0}\\{1}'.format(domain, username)
+		fqdn = next(line for line in subprocess.check_output(['ipconfig', '/all']).decode().splitlines() if line.lstrip().startswith('Primary Dns Suffix')).split(':')[-1].strip()
+		fully_qualified_username = '{1}@{0}'.format(fqdn, username)
+
+		output = subprocess.check_output([
+			'wmic', 'service',
+			'where', 'StartName like "{0}" OR StartName like "{1}"'.format(qualified_username.replace('\\', '\\\\'), fully_qualified_username),
+			'get', '/format:csv',
+			], shell=True)
 		import csv
 		for row in csv.DictReader(filter(None, output.decode('utf-8', 'replace').splitlines())):
 			yield cls.Status(row['Name'], row['State'] == 'Running')
@@ -115,13 +125,17 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		return 0 == rc
 	def install(self):
 		wrapper = self._ensure_service_wrapper()
-		domain = os.environ['USERDOMAIN']
 		username = os.environ['USERNAME']
-		qualified_username = '{0}\\{1}'.format(domain, username)
+		# Windows 11 may require fully-quialified domain name.
+		# Otherwise it may fail to start the first time because user may have no rights to "Logon as a service"
+		# So it has to be granted manually first:
+		# <https://stackoverflow.com/questions/25619112/how-do-i-fix-the-error1069-the-service-did-not-start-due-to-logon-failure>
+		fqdn = next(line for line in subprocess.check_output(['ipconfig', '/all']).decode().splitlines() if line.lstrip().startswith('Primary Dns Suffix')).split(':')[-1].strip()
+		fully_qualified_username = '{1}@{0}'.format(fqdn, username)
 		import getpass
-		password = getpass.getpass('Enter password for {0}: '.format(qualified_username))
+		password = getpass.getpass('Enter password for {0}: '.format(fully_qualified_username))
 		subprocess.check_call(['python', str(wrapper),
-			'--username', qualified_username,
+			'--username', fully_qualified_username,
 			'--password', password,
 			'--startup=delayed',
 			'install',
