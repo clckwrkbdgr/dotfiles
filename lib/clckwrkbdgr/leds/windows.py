@@ -11,7 +11,7 @@ except ImportError: # pragma: no cover -- py3 only
 IconResource = namedtuple('IconResource', 'dll_name index')
 
 DESKTOP_INI = """[.ShellClassInfo]
-IconResource={dll_name},{icon_index}
+IconResource={icon_data}
 [ViewState]
 Mode=
 Vid=
@@ -30,7 +30,11 @@ def _write_desktop_ini(dirpath, icon=None): # pragma: no cover -- TODO
 		if platform.system() == 'Windows':
 			dirpath.chmod(stat.S_IWRITE)
 		subprocess.call(['attrib', '-s', str(desktop_ini)])
-	desktop_ini.write_text(DESKTOP_INI.format(icon_index=icon.index, dll_name=icon.dll_name))
+	if hasattr(icon, 'dll_name'):
+		icon_data = "{dll_name},{icon_index}".format(icon_index=icon.index, dll_name=icon.dll_name)
+	else:
+		icon_data = str(icon)
+	desktop_ini.write_text(DESKTOP_INI.format(icon_data=icon_data))
 	subprocess.call(['attrib', '+s', str(dirpath)])
 	subprocess.call(['attrib', '+s', str(desktop_ini)])
 
