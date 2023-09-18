@@ -408,6 +408,7 @@ mc/ini caps=work
 mc/mc.ext caps=work
 mc/panels.ini caps=work
 patch/when-1.1.36-xdg.patch caps=work
+patch/bottle.py-0.12.25-resourcewarning-on-video.patch caps=work
 profile caps=work
 ranger/colorschemes/dim.py caps=work
 ranger/rc.conf caps=work
