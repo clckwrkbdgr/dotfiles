@@ -92,6 +92,8 @@
                 "useAcrylic": true
             },
             {
+                "altGrAliasing": false,
+                "antialiasingMode": "grayscale",
                 "bellStyle": "taskbar",
                 "closeOnExit": "graceful",
                 "colorScheme": "Dim",
@@ -102,7 +104,7 @@
                     "face": "Consolas",
                     "size": 11.0
                 },
-                "guid": "{58ad8b0c-3ef8-5f4d-bc6f-13e4c00f2530}",
+                "guid": "{a421a36a-dbce-4c78-852a-e89a6ad71a75}",
                 "hidden": false,
                 "historySize": 9001,
                 "icon": "ms-appx:///ProfileIcons/{9acb9455-ca41-5af7-950f-6bca1bc9722f}.png",
@@ -110,7 +112,6 @@
                 "opacity": 50,
                 "padding": "0, 0, 0, 0",
                 "snapOnInput": true,
-                "source": "Windows.Terminal.Wsl",
                 "useAcrylic": false
             }
         ]
