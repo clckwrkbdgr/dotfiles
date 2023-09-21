@@ -121,6 +121,7 @@ try {
 	clckwrkbdgr.autoidle.setup_action("Build thing", autobuild_thing);
 	clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
 	clckwrkbdgr.autoidle.add_rule([
+		["Have amount", ">=", 5],
 		["Have name", "equal", "name"],
 	], "Name thing");
 	clckwrkbdgr.autoidle.add_rule([
