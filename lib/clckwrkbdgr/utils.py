@@ -279,9 +279,16 @@ def load_entry_point(module_spec, function=None, reload_module=False): # pragma:
 	Returns pair (<module obj>, <function obj>)
 	See also import_module()
 	"""
-	import pkg_resources, inspect
+	import inspect
 	if isinstance(module_spec, six.string_types):
-		entry_point = pkg_resources.EntryPoint.parse("name="+module_spec)
+		try:
+			import importlib.metadata
+			entry_point = importlib.metadata.EntryPoint(name=None, group=None, value=module_spec)
+			from collections import namedtuple
+			entry_point = namedtuple('_EntryPoint', 'module_name attrs')(entry_point.module, tuple([entry_point.attr]))
+		except: # Deprecated way.
+			import pkg_resources
+			entry_point = pkg_resources.EntryPoint.parse("name="+module_spec)
 		module_spec = entry_point.module_name
 		if entry_point.attrs:
 			function = entry_point.attrs[0]
