@@ -119,14 +119,16 @@ try {
 	clckwrkbdgr.autoidle.setup_action("Buy thing", autobuy_thing);
 	clckwrkbdgr.autoidle.setup_action("Name thing", autoname_thing);
 	clckwrkbdgr.autoidle.setup_action("Build thing", autobuild_thing);
-	clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
-	clckwrkbdgr.autoidle.add_rule([
-		["Have amount", ">=", 5],
-		["Have name", "equal", "name"],
-	], "Name thing");
-	clckwrkbdgr.autoidle.add_rule([
-		["Have amount", ">=", 10],
-	], "Build thing");
+	if(!clckwrkbdgr.autoidle.load_from_storage()) {
+		clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
+		clckwrkbdgr.autoidle.add_rule([
+			["Have amount", ">=", 5],
+			["Have name", "equal", "name"],
+		], "Name thing");
+		clckwrkbdgr.autoidle.add_rule([
+			["Have amount", ">=", 10],
+		], "Build thing");
+	}
 } catch(e) {
 	console.error(e);
 }
