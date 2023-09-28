@@ -420,6 +420,7 @@ setup.d/00.hooks.py caps=work
 setup.d/01.gitconfig.py caps=work
 setup.d/02.git.submodules.py caps=work
 setup.d/03.windows-cmd-user-env.py caps=work
+setup.d/04.shebang.py caps=work
 setup.d/05.tmp-on-tmpfs.py caps=work
 setup.d/10.crontab.py caps=work
 setup.d/20.XXkb.py caps=work
