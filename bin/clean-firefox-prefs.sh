@@ -140,4 +140,6 @@ sed '/devtools.netmonitor.customRequest/d' | \
 sed '/devtools.netmonitor.panes-search-height/d' | \
 sed '/extensions.webextensions.addons-restricted-domains@mozilla.com.domainsToPreserve/d' | \
 sed '/extensions.webextensions.restrictedDomains/d' | \
+sed '/browser.topsites.contile.lastFetch/d' | \
+sed '/extensions.quarantinedDomains.list/d' | \
 sed 's|'"$HOME"'|$HOME|g'

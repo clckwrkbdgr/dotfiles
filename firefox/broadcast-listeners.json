@@ -2,7 +2,7 @@
     "listeners": {
         "remote-settings/monitor_changes": {
             "sourceInfo": {
-                "moduleURI": "resource://services-settings/remote-settings.js",
+                "moduleURI": "resource://services-settings/remote-settings.sys.mjs",
                 "symbolName": "remoteSettingsBroadcastHandler"
             },
         }

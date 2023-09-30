@@ -232,17 +232,6 @@
     },
     "app-system-defaults": {
         "addons": {
-            "doh-rollout@mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "doh-rollout@mozilla.org.xpi",
-                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/doh-rollout@mozilla.org.xpi!/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            },
             "formautofill@mozilla.org": {
                 "dependencies": [],
                 "enabled": true,

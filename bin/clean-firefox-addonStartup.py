@@ -48,6 +48,7 @@ for addon_group in tree:
 process_recursively(tree, 'telemetryKey', None)
 process_recursively(tree, 'signedDate', None)
 process_recursively(tree, 'signedState', None)
+process_recursively(tree, 'recommendationState', None)
 process_recursively(tree, 'lastModifiedTime', 0)
 process_recursively(tree, 'version', "0.0")
 process_recursively(tree, 'path', None, skip_if=lambda v: v is not None)
