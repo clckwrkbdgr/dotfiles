@@ -287,6 +287,21 @@ function should_run_have_triggers_with_number_parameters()
 	unittest.assertEqual(mock.action_log, ['acted']);
 }
 
+function should_run_actions_with_parameters()
+{
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock.default_trigger, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Param Action", function(amount, word) {
+		for(var i = 0; i < amount; ++ i) {
+			mock.action_log.push(word);
+		}
+	}, ["amount", "word"], {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], ["Mock Param Action", 3, "foobar"], {autoidle:mock.autoidle});
+
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+
+	unittest.assertEqual(mock.action_log, ['foobar', 'foobar', 'foobar']);
+}
+
 </script>
 
 </body>
