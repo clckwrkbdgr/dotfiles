@@ -108,6 +108,11 @@ try {
 		document.querySelector('#test-text-output').innerText += '\n' + 'Auto-built thing.';
 		document.querySelector('#test-amount-trigger').value = 0;
 	}
+	function autonotify(message)
+	{
+		clckwrkbdgr.notify(message);
+		document.querySelector('#test-name-trigger').value = "";
+	}
 
 	// Init.
 	clckwrkbdgr.autoidle.install('#test-area-controls', {
@@ -119,6 +124,7 @@ try {
 	clckwrkbdgr.autoidle.setup_action("Buy thing", autobuy_thing);
 	clckwrkbdgr.autoidle.setup_action("Name thing", autoname_thing);
 	clckwrkbdgr.autoidle.setup_action("Build thing", autobuild_thing);
+	clckwrkbdgr.autoidle.setup_action("Notify", autonotify, ["message"]);
 	if(!clckwrkbdgr.autoidle.load_from_storage()) {
 		clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
 		clckwrkbdgr.autoidle.add_rule([
