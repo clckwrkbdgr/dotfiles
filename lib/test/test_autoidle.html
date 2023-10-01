@@ -165,6 +165,21 @@ function should_check_rules()
 	unittest.assertEqual(mock.action_log, ['acted']);
 }
 
+function should_not_check_disabled_rules()
+{
+	clckwrkbdgr.autoidle.setup_trigger("Mock Trigger", mock.default_trigger, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Mock Trigger"], "Mock Action", {disabled: true, autoidle:mock.autoidle});
+
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
+
+	mock.autoidle._rules[0].enabled = true;
+
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, ['acted']);
+}
+
 function should_not_check_rules_when_disabled_all()
 {
 	mock.autoidle._enable_all = false;
