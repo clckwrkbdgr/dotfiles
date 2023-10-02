@@ -142,4 +142,5 @@ sed '/extensions.webextensions.addons-restricted-domains@mozilla.com.domainsToPr
 sed '/extensions.webextensions.restrictedDomains/d' | \
 sed '/browser.topsites.contile.lastFetch/d' | \
 sed '/extensions.quarantinedDomains.list/d' | \
+sed '/storage.vacuum.last.content-prefs.sqlite/d' | \
 sed 's|'"$HOME"'|$HOME|g'
