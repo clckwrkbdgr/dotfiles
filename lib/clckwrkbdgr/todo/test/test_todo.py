@@ -182,9 +182,10 @@ class TestTask(unittest.TestCase):
 
 class TestConfig(unittest.fs.TestCase):
 	MODULES = [todo, xdg]
-	@unittest.mock.patch('os.environ.get', new=lambda name,*_: {
+	@unittest.mock.patch.dict('os.environ', {
 		'EDITOR':'myeditor',
-		}[name])
+		'MYVAR':'myvalue',
+		}, clear=True)
 	@unittest.mock.patch('os.path.expandvars', new=lambda p: p.replace('$MYVAR', 'myvalue'))
 	@unittest.mock.patch('importlib.import_module')
 	def should_read_config(self, import_module):
