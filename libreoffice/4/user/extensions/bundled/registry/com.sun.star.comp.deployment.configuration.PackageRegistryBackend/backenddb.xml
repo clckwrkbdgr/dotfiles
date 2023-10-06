@@ -13,19 +13,19 @@
     <conf:ini-entry>$BUNDLED_EXTENSIONS/wiki-publisher/WikiExtension.xcu</conf:ini-entry>
   </conf:configuration>
   <conf:configuration url="vnd.sun.star.expand:$BUNDLED_EXTENSIONS/wiki-publisher/OptionsDialog.xcu">
-    <conf:data-url>vnd.sun.star.expand:$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13x.tmp</conf:data-url>
-    <conf:ini-entry>$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13x.tmp/OptionsDialog.xcu</conf:ini-entry>
+    <conf:data-url>vnd.sun.star.expand:$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu29358d2tyef.tmp</conf:data-url>
+    <conf:ini-entry>$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu29358d2tyef.tmp/OptionsDialog.xcu</conf:ini-entry>
   </conf:configuration>
   <conf:configuration url="vnd.sun.star.expand:$BUNDLED_EXTENSIONS/wiki-publisher/Filter.xcu">
-    <conf:data-url>vnd.sun.star.expand:$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13y.tmp</conf:data-url>
-    <conf:ini-entry>$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu13y.tmp/Filter.xcu</conf:ini-entry>
+    <conf:data-url>vnd.sun.star.expand:$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu29358d2tyeg.tmp</conf:data-url>
+    <conf:ini-entry>$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu29358d2tyeg.tmp/Filter.xcu</conf:ini-entry>
   </conf:configuration>
   <conf:configuration url="vnd.sun.star.expand:$BUNDLED_EXTENSIONS/wiki-publisher/Types.xcu">
     <conf:ini-entry>$BUNDLED_EXTENSIONS/wiki-publisher/Types.xcu</conf:ini-entry>
   </conf:configuration>
   <conf:configuration url="vnd.sun.star.expand:$BUNDLED_EXTENSIONS/wiki-publisher/Paths.xcu">
-    <conf:data-url>vnd.sun.star.expand:$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu140.tmp</conf:data-url>
-    <conf:ini-entry>$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu140.tmp/Paths.xcu</conf:ini-entry>
+    <conf:data-url>vnd.sun.star.expand:$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu29358d2tyei.tmp</conf:data-url>
+    <conf:ini-entry>$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu29358d2tyei.tmp/Paths.xcu</conf:ini-entry>
   </conf:configuration>
   <conf:configuration url="vnd.sun.star.expand:$BUNDLED_EXTENSIONS/voikko/config.xcs">
     <conf:ini-entry>$BUNDLED_EXTENSIONS/voikko/config.xcs</conf:ini-entry>
@@ -34,8 +34,8 @@
     <conf:ini-entry>$BUNDLED_EXTENSIONS/voikko/config.xcu</conf:ini-entry>
   </conf:configuration>
   <conf:configuration url="vnd.sun.star.expand:$BUNDLED_EXTENSIONS/voikko/SettingsDialog.xcu">
-    <conf:data-url>vnd.sun.star.expand:$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu142.tmp</conf:data-url>
-    <conf:ini-entry>$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu5876ngu142.tmp/SettingsDialog.xcu</conf:ini-entry>
+    <conf:data-url>vnd.sun.star.expand:$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu29358d2tyek.tmp</conf:data-url>
+    <conf:ini-entry>$BUNDLED_EXTENSIONS_USER/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu29358d2tyek.tmp/SettingsDialog.xcu</conf:ini-entry>
   </conf:configuration>
   <conf:configuration url="vnd.sun.star.expand:$BUNDLED_EXTENSIONS/voikko/Linguistic.xcu">
     <conf:ini-entry>$BUNDLED_EXTENSIONS/voikko/Linguistic.xcu</conf:ini-entry>

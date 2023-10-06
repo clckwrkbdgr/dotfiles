@@ -137,6 +137,7 @@ libreoffice/4/user/database/biblio.odb
 libreoffice/4/user/database/evolocal.odb
 libreoffice/4/user/registrymodifications.xcu
 libreoffice/4/user/extensions/bundled/extensions.pmap
+libreoffice/4/user/extensions/bundled/registry/*/*.tmp/
 libreoffice/4/user/pack/*.pack
 libreoffice/4/user/pack/*/*.pack
 libreoffice/4/user/pack/*/*/*.pack
