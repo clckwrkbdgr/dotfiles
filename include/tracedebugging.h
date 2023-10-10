@@ -567,7 +567,7 @@ FILE * BADGER_GET_TRACE_FILE(const char * filename)
 /*******************************************************************************
  * PROFILING */
 
-#if defined(_WIN32) && defined(__cplusplus)
+#if defined(_WIN32) && defined(__cplusplus) // [platform-specific]
 
 typedef long long BADGER_ULTRA_TIME;
 
@@ -585,12 +585,76 @@ BADGER_ULTRA_TIME BADGER_GET_ULTRA_TIMESTAMP(void)
    return current;
 }
 
-/** Converts ultra timestamp with microseconds to long long. */
+/** Converts ultra timestamp with microseconds to unsigned long long. */
 BADGER_STATIC_FUNCTION
-long long BADGER_ULTRA_TIME_TO_LLONG(BADGER_ULTRA_TIME timestamp)
+unsigned long long BADGER_ULTRA_TIME_TO_ULLONG(BADGER_ULTRA_TIME timestamp)
 {
    return timestamp;
 }
+
+/** Returns difference between two ultra timestamps with microseconds. */
+BADGER_STATIC_FUNCTION
+BADGER_ULTRA_TIME BADGER_ULTRA_TIME_DIFF(BADGER_ULTRA_TIME end, BADGER_ULTRA_TIME begin)
+{
+   return end - begin;
+}
+
+#elif __linux__
+
+typedef struct timespec BADGER_ULTRA_TIME;
+
+/** Returns current timestamp with microseconds. */
+BADGER_STATIC_FUNCTION
+BADGER_ULTRA_TIME BADGER_GET_ULTRA_TIMESTAMP(void)
+{
+   BADGER_ULTRA_TIME current;
+   clock_gettime(CLOCK_REALTIME, &current);
+   return current;
+}
+
+/** Converts ultra timestamp with microseconds to unsigned long long. */
+BADGER_STATIC_FUNCTION
+unsigned long long BADGER_ULTRA_TIME_TO_ULLONG(BADGER_ULTRA_TIME timestamp)
+{
+   return timestamp.tv_sec * 1000000 + timestamp.tv_nsec / 1000;
+}
+
+/** Returns difference between two ultra timestamps with microseconds. */
+BADGER_STATIC_FUNCTION
+BADGER_ULTRA_TIME BADGER_ULTRA_TIME_DIFF(BADGER_ULTRA_TIME end, BADGER_ULTRA_TIME begin)
+{
+   BADGER_ULTRA_TIME result;
+   result.tv_sec = end.tv_sec - begin.tv_sec;
+   result.tv_nsec = end.tv_nsec - begin.tv_nsec;
+   return result;
+}
+
+#else // Default dumb implementation.
+
+typedef time_t BADGER_ULTRA_TIME;
+
+/** Returns current timestamp with microseconds. */
+BADGER_STATIC_FUNCTION
+BADGER_ULTRA_TIME BADGER_GET_ULTRA_TIMESTAMP(void)
+{
+   return time(NULL);
+}
+
+/** Converts ultra timestamp with microseconds to unsigned long long. */
+BADGER_STATIC_FUNCTION
+unsigned long long BADGER_ULTRA_TIME_TO_ULLONG(BADGER_ULTRA_TIME timestamp)
+{
+   return timestamp;
+}
+
+/** Returns difference between two ultra timestamps with microseconds. */
+BADGER_STATIC_FUNCTION
+BADGER_ULTRA_TIME BADGER_ULTRA_TIME_DIFF(BADGER_ULTRA_TIME end, BADGER_ULTRA_TIME begin)
+{
+   return end - begin;
+}
+
+#endif // [platform-specific]
 
 /** Profile tracking data. */
 struct BADGER_PROFILE_STAMP
@@ -629,9 +693,12 @@ BADGER_PROFILE_INIT_FPRINTF(FILE * outfile,
    BADGER_FPUTS(outfile, header);
    free((void*)header);
 
+   unsigned long long value = BADGER_ULTRA_TIME_TO_ULLONG(stamp.start);
+   unsigned long long full_secs = value / 1000000;
+   unsigned long long full_msecs = value % 1000000;
    time_profile = BADGER_SNPRINTF(
-         "[profile started at %lld] ",
-         BADGER_ULTRA_TIME_TO_LLONG(stamp.start)
+         "[profile started at %llu.%6llu] ",
+         full_secs, full_msecs
          );
    BADGER_FPUTS(outfile, time_profile);
    free((void*)time_profile);
@@ -680,9 +747,9 @@ BADGER_PROFILE_FPRINTF(
    free((void*)header);
 
    time_profile = BADGER_SNPRINTF(
-         "[passed: %lld msec, total: %lld msec] ",
-         BADGER_ULTRA_TIME_TO_LLONG(now - stamp->last),
-         BADGER_ULTRA_TIME_TO_LLONG(now - stamp->start)
+         "[passed: %llu msec, total: %llu msec] ",
+         BADGER_ULTRA_TIME_TO_ULLONG(BADGER_ULTRA_TIME_DIFF(now, stamp->last)),
+         BADGER_ULTRA_TIME_TO_ULLONG(BADGER_ULTRA_TIME_DIFF(now, stamp->start))
          );
    BADGER_FPUTS(outfile, time_profile);
    free((void*)time_profile);
@@ -698,8 +765,6 @@ BADGER_PROFILE_FPRINTF(
 
    stamp->last = now;
 }
-
-#endif//_WIN32 && __cplusplus
 
 /*******************************************************************************
  * MAIN */
