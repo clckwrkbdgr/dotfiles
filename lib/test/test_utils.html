@@ -246,6 +246,58 @@ async function should_repeat_callback()
    }
 }
 
+function should_compare_objects()
+{
+	unittest.assertTrue(clckwrkbdgr.objects_equal({}, {}));
+	unittest.assertTrue(clckwrkbdgr.objects_equal({'a':1}, {'a':1}));
+	unittest.assertTrue(clckwrkbdgr.objects_equal({
+		'a':[1, 'b'],
+	}, {
+		'a':[1, 'b'],
+	}));
+	unittest.assertTrue(clckwrkbdgr.objects_equal({
+		'a':{'b': 1},
+	}, {
+		'a':{'b': 1},
+	}));
+
+	unittest.assertFalse(clckwrkbdgr.objects_equal({
+		'a':1,
+	}, {
+	}));
+	unittest.assertFalse(clckwrkbdgr.objects_equal({
+		'a':1,
+	}, {
+		'b':1,
+	}));
+	unittest.assertFalse(clckwrkbdgr.objects_equal({
+		'a':1,
+	}, {
+		'a':1,
+		'b':2,
+	}));
+	unittest.assertFalse(clckwrkbdgr.objects_equal({
+		'a':1,
+	}, {
+		'a':'b',
+	}));
+	unittest.assertFalse(clckwrkbdgr.objects_equal({
+		'a':['b'],
+	}, {
+		'a':'b',
+	}));
+	unittest.assertFalse(clckwrkbdgr.objects_equal({
+		'a':[1, 'b'],
+	}, {
+		'a':['b', 1],
+	}));
+	unittest.assertFalse(clckwrkbdgr.objects_equal({
+		'a':{'b': 1},
+	}, {
+		'a':{'b': 2},
+	}));
+}
+
 </script>
 
 </body>
