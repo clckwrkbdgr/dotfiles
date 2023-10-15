@@ -152,6 +152,9 @@ function setUp()
 	mock.autoidle = {
 		_triggers_registry:{},
 		_actions_registry:{},
+		_watchers_registry:{},
+		_watchers:{},
+		_watchers_changed:{},
 		_rules:[],
 		_enable_all:true,
 	};
@@ -306,6 +309,33 @@ function should_run_actions_with_parameters()
 	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
 
 	unittest.assertEqual(mock.action_log, ['foobar', 'foobar', 'foobar']);
+}
+
+function should_trigger_when_watched_value_changed()
+{
+	var mock_value = {'value' : 0};
+	clckwrkbdgr.autoidle.setup_watcher("mock_watcher", function() {
+		return mock_value.value;
+	}, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_trigger("Mock Watcher Trigger", function() {
+		return clckwrkbdgr.autoidle.watcher_changed('mock_watcher', {autoidle:mock.autoidle});
+	}, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Action", mock.default_action, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.setup_action("Mock Second Action", function() {
+		mock.action_log.push('acted second time');
+	}, {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Mock Watcher Trigger"], "Mock Action", {autoidle:mock.autoidle});
+	clckwrkbdgr.autoidle.add_rule(["Mock Watcher Trigger"], "Mock Second Action", {autoidle:mock.autoidle});
+
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, []);
+
+	mock_value.value++;
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, ['acted', 'acted second time']);
+
+	clckwrkbdgr.autoidle._check_rules({autoidle:mock.autoidle});
+	unittest.assertEqual(mock.action_log, ['acted', 'acted second time']);
 }
 
 </script>
