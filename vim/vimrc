@@ -157,6 +157,9 @@ au BufRead,BufNewFile *.xsh setfiletype python
 if !has('win32')
   au FileType cpp set foldmarker={,}
   au FileType cpp set foldmethod=marker
+
+  au FileType javascript set foldmarker={,}
+  au FileType javascript set foldmethod=marker
 endif
 
 function! RestoreCursorPositionForFile()
