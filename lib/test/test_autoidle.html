@@ -114,6 +114,10 @@ try {
 		clckwrkbdgr.notify(message);
 		document.querySelector('#test-name-trigger').value = "";
 	}
+	function multiparam_notify(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+	{
+		clckwrkbdgr.notify(JSON.stringify([arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9]));
+	}
 
 	// Init.
 	clckwrkbdgr.autoidle.install('#test-area-controls', {
@@ -126,6 +130,7 @@ try {
 	clckwrkbdgr.autoidle.setup_action("Name thing", autoname_thing);
 	clckwrkbdgr.autoidle.setup_action("Build thing", autobuild_thing);
 	clckwrkbdgr.autoidle.setup_action("Notify", autonotify, ["message"]);
+	clckwrkbdgr.autoidle.setup_action("Multiparam", multiparam_notify, ["arg0", "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8", "arg9"]);
 	if(!clckwrkbdgr.autoidle.load_from_storage()) {
 		clckwrkbdgr.autoidle.add_rule(["Need to buy"], "Buy thing");
 		clckwrkbdgr.autoidle.add_rule([
