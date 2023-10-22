@@ -121,6 +121,7 @@ try {
 
 	// Init.
 	clckwrkbdgr.autoidle.install('#test-area-controls', {
+		webworker: true,
 		delay_start: function(callback) { setTimeout(callback, 1000); },
 	});
 	clckwrkbdgr.autoidle.setup_trigger("Need to buy", need_to_buy);
