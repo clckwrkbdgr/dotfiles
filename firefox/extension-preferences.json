@@ -164,9 +164,13 @@
         ]
     },
     "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
-        "origins": [],
+        "origins": [
+            "<all_urls>",
+            "file:///*"
+        ],
         "permissions": [
-            "internal:privateBrowsingAllowed"
+            "internal:privateBrowsingAllowed",
+            "<all_urls>"
         ]
     },
     "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
