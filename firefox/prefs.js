@@ -214,6 +214,7 @@ user_pref("devtools.onboarding.telemetry.logged", true);
 user_pref("devtools.selfxss.count", 5);
 user_pref("devtools.theme", "dark");
 user_pref("devtools.toolsidebar-height.inspector", 350);
+user_pref("devtools.webconsole.input.editorOnboarding", false);
 user_pref("distribution.iniFile.exists.value", false);
 user_pref("dom.allow_scripts_to_close_windows", true);
 user_pref("dom.apps.reset-permissions", true);
