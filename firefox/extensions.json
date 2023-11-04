@@ -78,7 +78,7 @@
 			"syncGUID": "{a16e5fd6-ec26-4c0e-9c0b-9ad73f67b7cb}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.1.35.11",
+			"version": "1.1.35.12",
 			"visible": true
 		},
 		{
@@ -122,17 +122,17 @@
 			"loader": null,
 			"location": "app-profile",
 			"manifestVersion": 2,
-			"optionsBrowserStyle": true,
+			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"signedState": 2,
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4171020/ublock_origin-1.52.2.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4188488/ublock_origin-1.53.0.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{c1f4c119-9cc0-4da2-b91a-7cba61f68243}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.52.2",
+			"version": "1.53.0",
 			"visible": true
 		},
 		{
