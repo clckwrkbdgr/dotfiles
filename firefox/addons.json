@@ -68,9 +68,9 @@
 			"homepageURL": null,
 			"id": "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}",
 			"name": "Request Blocker",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4005177/request_blocker_we-0.6.1.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4193619/request_blocker_we-0.6.2.xpi",
 			"type": "extension",
-			"version": "0.6.1"
+			"version": "0.6.2"
 		},
 		{
 			"homepageURL": null,
