@@ -91,11 +91,13 @@ cli() {
 		quiet=true
 	fi
 
+	wait_for_notification=true
 	display_notification=display_default_notification
 	if [ "${CLICK_ARGS[notification_type]}" == 'default' ]; then
 		display_notification=display_default_notification
 	elif [ "${CLICK_ARGS[notification_type]}" == 'fixed' ]; then
 		display_notification=display_fixed_notification
+		wait_for_notification=
 	elif [ "${CLICK_ARGS[notification_type]}" == 'strong' ]; then
 		display_notification=display_strong_notification
 	fi
@@ -146,7 +148,7 @@ cli() {
 		wait $signal_pid
 		rc=$?
 	fi
-	if [ -n "$notification_pid" ]; then
+	if [ -n "$wait_for_notification" -a -n "$notification_pid" ]; then
 		wait $notification_pid
 		rc=$?
 	fi
