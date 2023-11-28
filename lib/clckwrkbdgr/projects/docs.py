@@ -27,8 +27,12 @@ def check(project_root_dir): # pragma: no cover -- TODO
 	if not readme_file:
 		print('{0}: README was not found'.format(project_root_dir))
 		errors += 1
+	else:
+		errors += check_readme(readme_file)
 
-	readme = readme_file.read_text() if readme_file else ''
+def check_readme(readme_file): # pragma: no cover -- TODO
+	readme = readme_file.read_text()
+
 	GITHUB_LINK = re.compile('https://github.com/[^/]+/[^/]+', flags=re.MULTILINE)
 	if not GITHUB_LINK.search(readme):
 		print('{0}: No links to github project.'.format(readme_file))
@@ -44,9 +48,9 @@ def check(project_root_dir): # pragma: no cover -- TODO
 		print('{0}: No installation instructions.'.format(readme_file))
 		errors += 1
 
-	code_examples = find_code_examples(readme)
-	if not code_examples:
-		print('{0}: No code examples.'.format(readme_file))
+	usage = find_usage_examples(readme)
+	if not usage:
+		print('{0}: No usage info or examples.'.format(readme_file))
 		errors += 1
 
 	docs_link = find_docs_link(readme)
@@ -117,12 +121,13 @@ def find_installation_instructions(text): # pragma: no cover -- TODO
 		return None
 	return install_header
 
-def find_code_examples(text): # pragma: no cover -- TODO
-	code_examples = text.find('Code examples\n---')
-	if code_examples < 0:
-		Log.info("No 'Code examples' header line is found in README.")
+def find_usage_examples(text): # pragma: no cover -- TODO
+	usage = text.find('Usage\n---')
+	examples = text.find('Examples\n---')
+	if usage < 0 and examples < 0:
+		Log.info("No 'Usage' or 'Examples' header lines were found in README.")
 		return None
-	return code_examples
+	return usage or examples
 
 def find_docs_link(text): # pragma: no cover -- TODO
 	docs_link = re.search(r'https://readthedocs.io/\S+', text)
