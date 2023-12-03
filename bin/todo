@@ -140,15 +140,31 @@ def sort_tasks(config):
 	tasklist = tasklist_class()
 	return tasklist.sort()
 
-@cli.command()
+### SEARCH #####################################################################
+
+SEARCH_PROJECT_ROOT = xdg.save_state_path('todo_search')
+
+@cli.group('search', cls=click_default_group.DefaultGroup, default='direct', default_if_no_args=True)
+def search():
+	""" Search for TODO markers or similar tech-debt entries. """
+	pass
+
+@search.command('direct')
 @click.option('--rc', is_flag=True, help='Return number of found entries as exit code. By default will always return 0 when no other errors found.')
 @click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
 @click.option('-o', '--output-file', help='Output file to store found results. If no entries were found, file will not be touched. By default prints to stdout, and color is applied if output is terminal.')
 @utils.exits_with_return_value
-def search(exclude=None, output_file=None, rc=False):
-	exclude = [Path(path).absolute() for path in (exclude or [])]
+def search_direct(exclude=None, output_file=None, rc=False):
+	""" Searches for todo markers in current directory.
+	"""
 	if not sys.stderr.isatty() or output_file:
 		os.environ['ANSI_COLORS_DISABLED'] = '1'
+	found_entries = perform_todo_search(exclude=exclude, output_file=output_file)
+	if rc:
+		return found_entries
+
+def perform_todo_search(exclude=None, output_file=None):
+	exclude = [Path(path).absolute() for path in (exclude or [])]
 
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
 	files = clckwrkbdgr.fs.find('.',
@@ -177,8 +193,37 @@ def search(exclude=None, output_file=None, rc=False):
 			else:
 				print(line)
 			first_result = False
-	if rc:
-		return found_entries
+	return found_entries
+
+@search.command('collect')
+@click.argument('project_name')
+@click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
+def collect_search(project_name, exclude=None):
+	""" Collects todo entries in current directory and stores under given PROJECT_NAME.
+	"""
+	os.environ['ANSI_COLORS_DISABLED'] = '1'
+	entry = SEARCH_PROJECT_ROOT/project_name
+	found_entries = perform_todo_search(exclude=exclude, output_file=entry)
+	if not found_entries and entry.exists():
+		entry.unlink()
+
+@search.command('show')
+@click.argument('project_name')
+@utils.exits_with_return_value
+def show_collected_search(project_name):
+	""" Displays all collected todo entries under given PROJECT_NAME.
+	"""
+	entry = SEARCH_PROJECT_ROOT/project_name
+	if not entry.exists():
+		return 1
+	sys.stdout.write(entry.read_text())
+
+@search.command('list')
+def list_collected_search():
+	""" List all currently collected batches by project names.
+	"""
+	for entry in SEARCH_PROJECT_ROOT.iterdir():
+		print(entry.name)
 
 if __name__ == '__main__':
 	cli()
