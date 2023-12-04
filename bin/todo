@@ -17,10 +17,19 @@ import clckwrkbdgr.fs
 import clckwrkbdgr.logging
 
 def format_file_line(filename, line_number, value):
-	""" Formats colored search result line:
+	""" Formats search result line:
 	  <filename>:<line number>:<line>
 	If line_number is 0 or None, treats value as error message and formats without line number:
 	  <filename>:<message>
+	"""
+	result = str(filename) + ':'
+	if line_number:
+		result += str(line_number) + ':'
+	result += str(value)
+	return result
+
+def format_file_line_colored(filename, line_number, value):
+	""" Like format_file_line, but adds colors.
 	"""
 	result = termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan')
 	if line_number:
@@ -157,13 +166,74 @@ def search():
 def search_direct(exclude=None, output_file=None, rc=False):
 	""" Searches for todo markers in current directory.
 	"""
-	if not sys.stderr.isatty() or output_file:
-		os.environ['ANSI_COLORS_DISABLED'] = '1'
-	found_entries = perform_todo_search(exclude=exclude, output_file=output_file)
+	handle_dirs = track_directory
+	if output_file:
+		handle_dirs = None
+		printer = SyncFilePrinter(output_file)
+	elif not sys.stderr.isatty():
+		printer = StdoutPrinter()
+	else:
+		printer = StdoutColorPrinter()
+	found_entries = perform_todo_search(exclude=exclude, printer=printer, handle_dirs=handle_dirs)
 	if rc:
 		return found_entries
 
-def perform_todo_search(exclude=None, output_file=None):
+class StdoutColorPrinter:
+	def __call__(self, filename, line_number, search_result):
+		if line_number:
+			line = format_file_line_colored(filename, line_number, colored_matches(search_result))
+		else:
+			line = format_file_line_colored(filename, 0, search_result)
+		print(line)
+
+class StdoutPrinter:
+	def __call__(self, filename, line_number, search_result):
+		if line_number:
+			line = format_file_line(filename, line_number, ''.join(search_result))
+		else:
+			line = format_file_line(filename, 0, search_result)
+		print(line)
+
+class CollectFilePrinter:
+	def __init__(self, output_file):
+		self.output_file = output_file
+		self.f = open(self.output_file, 'wb')
+		self.changed = False
+	def __call__(self, filename, line_number, search_result):
+		self.changed = True
+		if line_number:
+			line = format_file_line(filename, line_number, ''.join(search_result))
+		else:
+			line = format_file_line(filename, 0, search_result)
+		try:
+			self.f.write(line.encode('utf-8', 'replace'))
+		except:
+			self.f.write(line.encode('ascii', 'replace'))
+		self.f.write(b'\n')
+	def close(self):
+		self.f.close()
+		if not self.changed:
+			os.unlink(str(self.output_file))
+
+class SyncFilePrinter:
+	def __init__(self, output_file):
+		self.output_file = output_file
+		self.first_result = True
+	def __call__(self, filename, line_number, search_result):
+		if line_number:
+			line = format_file_line(filename, line_number, ''.join(search_result))
+		else:
+			line = format_file_line(filename, 0, search_result)
+		mode = 'wb' if self.first_result else 'ab+'
+		with open(self.output_file, mode) as f:
+			try:
+				f.write(line.encode('utf-8', 'replace'))
+			except:
+				f.write(line.encode('ascii', 'replace'))
+			f.write(b'\n')
+		self.first_result = False
+
+def perform_todo_search(exclude=None, printer=None, handle_dirs=None):
 	exclude = [Path(path).absolute() for path in (exclude or [])]
 
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
@@ -171,28 +241,13 @@ def perform_todo_search(exclude=None, output_file=None):
 			exclude_dir_names=['.git'],
 			exclude_extensions=['.sqlite', '.pyc'],
 			exclude_wildcards=exclude,
-			handle_dirs=track_directory if not output_file else (lambda _:_),
+			handle_dirs=handle_dirs or (lambda _:_),
 			)
-	first_result = True
 	found_entries = 0
 	for filename in files:
 		for line_number, search_result in clckwrkbdgr.todo.search.search_in_file(filename, MARKERS):
 			found_entries += 1
-			if line_number:
-				line = format_file_line(filename, line_number, colored_matches(search_result))
-			else:
-				line = format_file_line(filename, 0, search_result)
-			if output_file:
-				mode = 'wb' if first_result else 'ab+'
-				with open(output_file, mode) as f:
-					try:
-						f.write(line.encode('utf-8', 'replace'))
-					except:
-						f.write(line.encode('ascii', 'replace'))
-					f.write(b'\n')
-			else:
-				print(line)
-			first_result = False
+			printer(filename, line_number, search_result)
 	return found_entries
 
 @search.command('collect')
@@ -201,11 +256,11 @@ def perform_todo_search(exclude=None, output_file=None):
 def collect_search(project_name, exclude=None):
 	""" Collects todo entries in current directory and stores under given PROJECT_NAME.
 	"""
-	os.environ['ANSI_COLORS_DISABLED'] = '1'
-	entry = SEARCH_PROJECT_ROOT/project_name
-	found_entries = perform_todo_search(exclude=exclude, output_file=entry)
-	if not found_entries and entry.exists():
-		entry.unlink()
+	printer = CollectFilePrinter(SEARCH_PROJECT_ROOT/project_name)
+	try:
+		perform_todo_search(exclude=exclude, printer=printer)
+	finally:
+		printer.close()
 
 @search.command('show')
 @click.argument('project_name')
