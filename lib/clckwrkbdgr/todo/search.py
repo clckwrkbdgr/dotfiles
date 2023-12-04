@@ -20,7 +20,7 @@ def search_in_bytes(byte_content, pattern, encoding='utf-8'):
 	Yields pairs (<line_number>, [<matches>])
 	Line numbers start with 1.
 	See search_in_line() for the format of <matches> sequence.
-	If any exception is encountered, yields pair (0, <exception object).
+	If any exception is encountered, yields pair (-1, <exception object).
 	"""
 	for index, line in enumerate(byte_content.splitlines(), 1):
 		try:
@@ -29,7 +29,7 @@ def search_in_bytes(byte_content, pattern, encoding='utf-8'):
 			if matches:
 				yield index, matches
 		except Exception as e: # pragma: no cover
-			yield 0, e
+			yield -1, e
 
 def search_in_file(filename, pattern, encoding='utf-8'):
 	""" Searches for matching lines in given file (if exists).
@@ -37,7 +37,7 @@ def search_in_file(filename, pattern, encoding='utf-8'):
 	Yields pairs (<line_number>, [<matches>])
 	Line numbers start with 1.
 	See search_in_line() for the format of <matches> sequence.
-	If any exception is encountered, yields pair (0, <exception object).
+	If any exception is encountered, yields pair (-1, <exception object).
 	"""
 	filename = Path(filename)
 	try:
@@ -46,4 +46,4 @@ def search_in_file(filename, pattern, encoding='utf-8'):
 		for line_number, search_result in search_in_bytes(filename.read_bytes(), pattern):
 			yield line_number, search_result
 	except Exception as e: # pragma: no cover
-		yield 0, e
+		yield -1, e

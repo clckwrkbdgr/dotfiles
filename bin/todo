@@ -4,7 +4,8 @@ import logging
 logger = logging.getLogger('todo')
 import platform
 import click, click_default_group
-import json
+import json, textwrap
+import mimetypes, magic
 import termcolor
 from pathlib import Path
 from clckwrkbdgr import utils, xdg
@@ -23,7 +24,7 @@ def format_file_line(filename, line_number, value):
 	  <filename>:<message>
 	"""
 	result = str(filename) + ':'
-	if line_number:
+	if line_number > 0:
 		result += str(line_number) + ':'
 	result += str(value)
 	return result
@@ -32,9 +33,9 @@ def format_file_line_colored(filename, line_number, value):
 	""" Like format_file_line, but adds colors.
 	"""
 	result = termcolor.colored(str(filename), 'magenta') + termcolor.colored(':', 'cyan')
-	if line_number:
+	if line_number > 0:
 		result += termcolor.colored(str(line_number), 'green') + termcolor.colored(':', 'cyan')
-	if line_number:
+	if line_number >= 0:
 		result += str(value)
 	else:
 		result += termcolor.colored(str(value), 'red')
@@ -180,18 +181,18 @@ def search_direct(exclude=None, output_file=None, rc=False):
 
 class StdoutColorPrinter:
 	def __call__(self, filename, line_number, search_result):
-		if line_number:
+		if line_number >= 0:
 			line = format_file_line_colored(filename, line_number, colored_matches(search_result))
 		else:
-			line = format_file_line_colored(filename, 0, search_result)
+			line = format_file_line_colored(filename, line_number, search_result)
 		print(line)
 
 class StdoutPrinter:
 	def __call__(self, filename, line_number, search_result):
-		if line_number:
+		if line_number >= 0:
 			line = format_file_line(filename, line_number, ''.join(search_result))
 		else:
-			line = format_file_line(filename, 0, search_result)
+			line = format_file_line(filename, line_number, search_result)
 		print(line)
 
 class CollectFilePrinter:
@@ -201,10 +202,10 @@ class CollectFilePrinter:
 		self.changed = False
 	def __call__(self, filename, line_number, search_result):
 		self.changed = True
-		if line_number:
+		if line_number >= 0:
 			line = format_file_line(filename, line_number, ''.join(search_result))
 		else:
-			line = format_file_line(filename, 0, search_result)
+			line = format_file_line(filename, line_number, search_result)
 		try:
 			self.f.write(line.encode('utf-8', 'replace'))
 		except:
@@ -220,10 +221,10 @@ class SyncFilePrinter:
 		self.output_file = output_file
 		self.first_result = True
 	def __call__(self, filename, line_number, search_result):
-		if line_number:
+		if line_number >= 0:
 			line = format_file_line(filename, line_number, ''.join(search_result))
 		else:
-			line = format_file_line(filename, 0, search_result)
+			line = format_file_line(filename, line_number, search_result)
 		mode = 'wb' if self.first_result else 'ab+'
 		with open(self.output_file, mode) as f:
 			try:
@@ -245,6 +246,25 @@ def perform_todo_search(exclude=None, printer=None, handle_dirs=None):
 			)
 	found_entries = 0
 	for filename in files:
+		if filename.name.lower() == 'todo' or filename.name.lower().startswith('todo.'):
+			file_type = mimetypes.guess_type(str(filename))[0]
+			if file_type is None:
+				file_type = magic.from_file(str(filename), mime=True)
+			str_file_type = file_type
+			file_type = file_type.split('/')
+			if file_type[0] != 'text':
+				printer(filename, 0, ['', str_file_type])
+			elif file_type[1].startswith('x-'):
+				try:
+					output = subprocess.check_output(str(filename), shell=True).decode('utf-8')
+				except subprocess.CalledProcessError as e:
+					output = e.stdout.decode('utf-8', 'replace')
+				except Exception as e:
+					output = str(e)
+				printer(filename, 0, ['', str_file_type + '\n', textwrap.indent(output, '\t')])
+			else:
+				printer(filename, 0, ['', str_file_type + '\n', textwrap.indent(filename.read_text().rstrip(), '\t')])
+			continue
 		for line_number, search_result in clckwrkbdgr.todo.search.search_in_file(filename, MARKERS):
 			found_entries += 1
 			printer(filename, line_number, search_result)

@@ -8,6 +8,10 @@ click-default-group
 click-aliases
 # build
 wheel
+# todo
+python-magic
+# todo:win only
+python-magic-bin
 # crontab
 python-crontab
 croniter
