@@ -294,11 +294,19 @@ def show_collected_search(project_name):
 	sys.stdout.write(entry.read_text())
 
 @search.command('list')
-def list_collected_search():
+@click.option('-c', '--count', is_flag=True, help='Print number of entries in every batch (in the first column, separated by TAB character).')
+def list_collected_search(count=False):
 	""" List all currently collected batches by project names.
 	"""
 	for entry in SEARCH_PROJECT_ROOT.iterdir():
-		print(entry.name)
+		if count:
+			try:
+				number = len(entry.read_bytes().splitlines())
+			except:
+				number = -1
+			print('{0}\t{1}'.format(number, entry.name))
+		else:
+			print(entry.name)
 
 if __name__ == '__main__':
 	cli()
