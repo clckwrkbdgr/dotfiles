@@ -29,8 +29,10 @@ def check(project_root_dir): # pragma: no cover -- TODO
 		errors += 1
 	else:
 		errors += check_readme(readme_file)
+	return errors
 
 def check_readme(readme_file): # pragma: no cover -- TODO
+	errors = 0
 	readme = readme_file.read_text()
 
 	GITHUB_LINK = re.compile('https://github.com/[^/]+/[^/]+', flags=re.MULTILINE)

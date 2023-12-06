@@ -8,7 +8,7 @@ except ImportError: # pragma: no cover
 	from pathlib import Path
 import re
 from .. import _base as todo
-from .. import search
+from .. import search, search_plugins
 from .. import provider
 from .. import tasklist
 

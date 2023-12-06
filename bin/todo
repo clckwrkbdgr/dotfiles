@@ -16,6 +16,7 @@ import clckwrkbdgr.todo.search
 import clckwrkbdgr.todo.tasklist
 import clckwrkbdgr.fs
 import clckwrkbdgr.logging
+from clckwrkbdgr import utils
 
 def format_file_line(filename, line_number, value):
 	""" Formats search result line:
@@ -234,8 +235,13 @@ class SyncFilePrinter:
 			f.write(b'\n')
 		self.first_result = False
 
-def perform_todo_search(exclude=None, printer=None, handle_dirs=None):
+def perform_todo_search(exclude=None, printer=None, handle_dirs=None, plugins=None):
 	exclude = [Path(path).absolute() for path in (exclude or [])]
+
+	abs_root = Path('.').resolve()
+	for plugin in plugins:
+		for filename, line_number, search_result in plugin(abs_root):
+			printer(filename, line_number, search_result)
 
 	MARKERS = re.compile(r'(TO''DO|FIX''ME)')
 	files = clckwrkbdgr.fs.find('.',
@@ -273,12 +279,18 @@ def perform_todo_search(exclude=None, printer=None, handle_dirs=None):
 @search.command('collect')
 @click.argument('project_name')
 @click.option('-e', '--exclude', multiple=True, default=[], help='Exclude these paths from search. Paths can be either relative to the current dir or absolute.')
-def collect_search(project_name, exclude=None):
+@click.option('-p', '--plugin', multiple=True, default=[], help='Plugin for generating backlog entries. Plugins are defined as entry points (module:name) and should be functions or callables that accept rootdir as a single parameter, perform some action based on that dir and yield tuples of (filename, line_nubmer, search_result).')
+def collect_search(project_name, exclude=None, plugin=None):
 	""" Collects todo entries in current directory and stores under given PROJECT_NAME.
 	"""
+	plugins = []
+	for plugin_def in plugin:
+		plugin_module, plugin_function = utils.load_entry_point(plugin_def)
+		plugins.append(plugin_function)
+
 	printer = CollectFilePrinter(SEARCH_PROJECT_ROOT/project_name)
 	try:
-		perform_todo_search(exclude=exclude, printer=printer)
+		perform_todo_search(exclude=exclude, printer=printer, plugins=plugins)
 	finally:
 		printer.close()
 

@@ -282,8 +282,11 @@ def load_entry_point(module_spec, function=None, reload_module=False): # pragma:
 	import inspect
 	if isinstance(module_spec, six.string_types):
 		try:
-			import importlib.metadata
-			entry_point = importlib.metadata.EntryPoint(name=None, group=None, value=module_spec)
+			try:
+				import importlib.metadata as importlib_metadata
+			except ImportError:
+				import importlib_metadata
+			entry_point = importlib_metadata.EntryPoint(name=None, group=None, value=module_spec)
 			from collections import namedtuple
 			entry_point = namedtuple('_EntryPoint', 'module_name attrs')(entry_point.module, tuple([entry_point.attr]))
 		except: # Deprecated way.
