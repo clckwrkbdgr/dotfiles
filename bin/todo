@@ -239,7 +239,7 @@ def perform_todo_search(exclude=None, printer=None, handle_dirs=None, plugins=No
 	exclude = [Path(path).absolute() for path in (exclude or [])]
 
 	abs_root = Path('.').resolve()
-	for plugin in plugins:
+	for plugin in (plugins or []):
 		for filename, line_number, search_result in plugin(abs_root):
 			printer(filename, line_number, search_result)
 
