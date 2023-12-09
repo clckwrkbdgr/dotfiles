@@ -181,12 +181,12 @@
 			"signedState": 2,
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4190287/styl_us-1.5.38.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4204840/styl_us-1.5.41.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{9473608a-d068-45af-90a5-ff851165b8a9}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.5.38",
+			"version": "1.5.41",
 			"visible": true
 		},
 		{
