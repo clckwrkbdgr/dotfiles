@@ -28,7 +28,10 @@ def get_idle_msec(): # pragma: no cover -- TODO WinApi call
 	lastInputInfo = LASTINPUTINFO()
 	lastInputInfo.cbSize = sizeof(lastInputInfo)
 	windll.user32.GetLastInputInfo(byref(lastInputInfo))
-	millis = windll.kernel32.GetTickCount() - lastInputInfo.dwTime
+	tickcount = windll.kernel32.GetTickCount()
+	if tickcount < 0:
+		tickcount = c_ulong(tickcount).value
+	millis = tickcount - lastInputInfo.dwTime
 	return millis
 
 def IsRemoteSession(): # pragma: no cover -- TODO WinApi call
