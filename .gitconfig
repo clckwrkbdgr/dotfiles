@@ -166,3 +166,8 @@
 [filter "qvge_conf"]
 	smudge = cat
 	clean = "sed '/^\\[CustomFiles\\]/,/^$/d;/^\\[General\\]/,/^$/{/^geometry=/d;/^instances=/d;/^lastPath=/d;/^maximized=/d;/^recentFiles=/d;/^windowState=/d;/^cacheRam=/d;};/^\\[UI\\]/,/^$/{/^[^=]*splitterPosition=/d}'"
+
+# TODO to filterconf
+[filter "aisleriot"]
+	smudge = cat
+	clean = "sed '/^\\[.*[.]scm\\]/,/^$/d;/^\\[Aisleriot Config\\]/,/^$/{/^Recent=/d;/^Variation=/d;};'"

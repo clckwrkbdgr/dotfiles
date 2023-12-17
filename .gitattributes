@@ -39,6 +39,7 @@ QtProject/Linguist.conf filter=qtproject_linguist_conf
 WindowsTerminal/settings.json filter=windows_terminal_settings
 mapeditor.org/tiled.conf filter=mapeditor_tiled_conf
 qvge/Qt?Visual?Graph?Editor.conf filter=qvge_conf
+gnome-games/aisleriot filter=aisleriot
 
 xfce4/** caps=home
 xinitrc caps=home
@@ -111,6 +112,8 @@ xdg/bin/pidgin caps=home
 xdg/bin/prboom caps=home
 xdg/bin/sylpheed caps=home
 zathura/zathurarc caps=home
+gnome-games/aisleriot caps=home
+gnome-games/aisleriot.accels caps=home
 
 .gitattributes caps=work
 .gitconfig caps=work
