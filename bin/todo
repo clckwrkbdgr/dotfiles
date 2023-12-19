@@ -204,7 +204,7 @@ class CollectFilePrinter:
 	def __call__(self, filename, line_number, search_result):
 		self.changed = True
 		if line_number >= 0:
-			line = format_file_line(filename, line_number, ''.join(search_result))
+			line = format_file_line(filename, line_number, ''.join(map(str, search_result)))
 		else:
 			line = format_file_line(filename, line_number, search_result)
 		try:
@@ -223,7 +223,7 @@ class SyncFilePrinter:
 		self.first_result = True
 	def __call__(self, filename, line_number, search_result):
 		if line_number >= 0:
-			line = format_file_line(filename, line_number, ''.join(search_result))
+			line = format_file_line(filename, line_number, ''.join(map(str, search_result)))
 		else:
 			line = format_file_line(filename, line_number, search_result)
 		mode = 'wb' if self.first_result else 'ab+'
