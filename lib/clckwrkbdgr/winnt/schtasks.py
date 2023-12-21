@@ -109,16 +109,19 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 	class Trigger:
 		Repetition = namedtuple('Repetition', 'interval duration')
 		ScheduleByDay = namedtuple('ScheduleByDay', 'days_interval')
+		ScheduleByMonth = namedtuple('ScheduleByDay', 'months days_of_month')
+		Months = namedtuple('Months', 'months january february march april may june july august september october november december')
+		DaysOfMonth = namedtuple('DaysOfMonth', 'day days_of_month')
 
 		IdleTrigger = namedtuple('IdleTrigger', 'id enabled repetition')
 		EventTrigger = namedtuple('EventTrigger', 'subscription delay execution_time_limit repetition')
 		WnfStateChangeTrigger = namedtuple('WnfStateChangeTrigger', 'enabled delay state_name data')
 		LogonTrigger = namedtuple('LogonTrigger', 'enabled delay repetition user_id start_boundary end_boundary')
 		RegistrationTrigger = namedtuple('RegistrationTrigger', 'delay')
-		BootTrigger = namedtuple('BootTrigger', 'enabled delay repetition')
+		BootTrigger = namedtuple('BootTrigger', 'enabled delay repetition, end_boundary')
 		TimeTrigger = namedtuple('TimeTrigger', 'enabled start_boundary random_delay repetition')
 		SessionStateChangeTrigger = namedtuple('SessionStateChangeTrigger', 'enabled state_change user_id')
-		CalendarTrigger = namedtuple('CalendarTrigger', 'enabled start_boundary end_boundary random_delay schedule_by_day execution_time_limit repetition schedule_by_week')
+		CalendarTrigger = namedtuple('CalendarTrigger', 'enabled start_boundary end_boundary random_delay schedule_by_day execution_time_limit repetition schedule_by_week, schedule_by_month')
 	class Action:
 		Exec = namedtuple('ActionExec', 'command arguments working_directory')
 		ComHandler = namedtuple('ComHandler', 'class_id data')
