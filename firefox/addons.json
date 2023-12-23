@@ -79,6 +79,14 @@
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3486391/ourstickys_sticky_notes-0.1.99.xpi",
 			"type": "extension",
 			"version": "0.1.99"
+		},
+		{
+			"homepageURL": "https://github.com/fregante/GhostText",
+			"id": "ghosttext@bfred.it",
+			"name": "GhostText",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4111649/ghosttext-23.5.16.xpi",
+			"type": "extension",
+			"version": "23.5.16"
 		}
 	],
 	"schema": 6

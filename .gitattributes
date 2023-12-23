@@ -459,6 +459,7 @@ vim/bundle/vim-surround caps=work
 vim/bundle/vim-textile caps=work
 vim/bundle/vimoutliner caps=work
 vim/bundle/vim-markdown caps=work
+vim/bundle/ghost-text.vim caps=work
 vim/keymap/russian-badger.vim caps=work
 vim/keymap/ukrainian-badger.vim caps=work
 vim/less.vim caps=work

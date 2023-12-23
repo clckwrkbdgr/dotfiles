@@ -384,6 +384,7 @@ user_pref("extensions.webcompat.perform_ua_overrides", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.@mutelinks", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.doh-rollout@mozilla.org", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.firefox@tampermonkey.net", true);
+user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.ghosttext@bfred.it", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.newtaboverride@agenedia.com", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.ruffle-player-extension@ruffle.rs", true);
 user_pref("extensions.webextensions.ExtensionStorageIDB.migrated.uBlock0@raymondhill.net", true);

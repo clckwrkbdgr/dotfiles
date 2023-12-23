@@ -1,5 +1,18 @@
 {
-    "commands": {},
+    "commands": {
+        "open": {
+            "precedenceList": [
+                {
+                    "enabled": true,
+                    "id": "ghosttext@bfred.it",
+                    "installDate": 1703336720421,
+                    "value": {
+                        "shortcut": "Ctrl+E"
+                    }
+                }
+            ]
+        }
+    },
     "default_search": {},
     "homepageNotification": {},
     "newTabNotification": {

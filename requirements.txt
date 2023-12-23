@@ -24,3 +24,5 @@ pywin32
 lz4
 # web
 blackcompany
+# vim: ghost-text
+websockets

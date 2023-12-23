@@ -135,6 +135,16 @@
                 "startupData": {},
                 "version": "0.0"
             },
+            "ghosttext@bfred.it": {
+                "dependencies": [],
+                "enabled": true,
+                "lastModifiedTime": 0,
+                "loader": null,
+                "path": "ghosttext@bfred.it.xpi",
+                "rootURI": "jar:file://$HOME/.config/firefox/extensions/ghosttext@bfred.it.xpi!/",
+                "runInSafeMode": false,
+                "version": "0.0"
+            },
             "godville-ui-plus@erinome.net": {
                 "dependencies": [],
                 "enabled": true,
