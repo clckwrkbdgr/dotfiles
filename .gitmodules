@@ -25,3 +25,4 @@
 [submodule "vim/bundle/ghost-text.vim"]
 	path = vim/bundle/ghost-text.vim
 	url = https://github.com/pandysong/ghost-text.vim
+	ignore = untracked
