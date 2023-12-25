@@ -65,6 +65,14 @@
 			"version": "0.2.2"
 		},
 		{
+			"homepageURL": "https://github.com/fregante/GhostText",
+			"id": "ghosttext@bfred.it",
+			"name": "GhostText",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4111649/ghosttext-23.5.16.xpi",
+			"type": "extension",
+			"version": "23.5.16"
+		},
+		{
 			"homepageURL": null,
 			"id": "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}",
 			"name": "Request Blocker",
@@ -79,14 +87,6 @@
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3486391/ourstickys_sticky_notes-0.1.99.xpi",
 			"type": "extension",
 			"version": "0.1.99"
-		},
-		{
-			"homepageURL": "https://github.com/fregante/GhostText",
-			"id": "ghosttext@bfred.it",
-			"name": "GhostText",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4111649/ghosttext-23.5.16.xpi",
-			"type": "extension",
-			"version": "23.5.16"
 		}
 	],
 	"schema": 6
