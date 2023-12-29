@@ -68,7 +68,9 @@ def get_search_range(datestart=None, datestop=None, now=None):
 	return (datetime.datetime.combine(datestart.date(), datetime.time.min),
 			datetime.datetime.combine(datestart.date(), datetime.time.max))
 
-CONFIG_FILE_DESC = """Configuration is stored in $XDG_DATA_HOME/retro/config.json
+CONFIG_FILE_DESC = """Configuration is stored in files (the first existing one is picked):
+- $XDG_CONFIG_HOME/local/retro/config.json
+- $XDG_DATA_HOME/retro/config.json
 
 \b
 Fields:
@@ -87,10 +89,15 @@ Arguments specified in config file will be passed as additional keyword argument
 
 @functools.lru_cache()
 def read_config(): # pragma: no cover
-	config_file = xdg.save_data_path('retro')/'config.json'
 	data = {}
-	if config_file.exists():
-		data = json.loads(config_file.read_text())
+	config_files = [
+			xdg.save_config_path('local/retro')/'config.json',
+			xdg.save_data_path('retro')/'config.json',
+			]
+	for config_file in config_files:
+		if config_file.exists():
+			data = json.loads(config_file.read_text())
+			break
 
 	providers = []
 	for provider_def in data.get('providers', []):

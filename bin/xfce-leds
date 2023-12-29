@@ -13,6 +13,7 @@ import clckwrkbdgr.logging
 
 CONFIG_FILES = [
 		xdg.save_config_path('xfce4')/"xfce-leds.ini",
+		xdg.save_config_path('local')/"xfce-leds.ini",
 		xdg.XDG_DATA_HOME/"xfce-leds.ini",
 		Path('~/.local').expanduser()/"xfce-leds.ini",
 		]

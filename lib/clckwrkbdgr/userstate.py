@@ -84,5 +84,6 @@ def list_current_flags(): # pragma: no cover -- TODO operates on global state.
 		yield marker
 
 read_config_file(xdg.XDG_CONFIG_HOME/'userstate.cfg')
+read_config_file(xdg.save_config_path('local')/'userstate.cfg')
 read_config_file(xdg.XDG_DATA_HOME/'userstate.cfg')
 read_config_file(Path().home()/'.local'/'userstate.cfg')

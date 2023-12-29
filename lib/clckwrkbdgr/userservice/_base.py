@@ -61,6 +61,7 @@ class UserService(object): # pragma: no cover -- TODO
 		return json.loads(filename.read_text())
 	def _find_def_file(self, service_id):
 		paths = [
+				xdg.save_config_path('local/userservice'),
 				xdg.save_data_path('userservice'),
 				Path('~/.local/share/userservice').expanduser(),
 				xdg.save_config_path('userservice'),
