@@ -97,7 +97,8 @@ class Task(object):
 
 task_provider = AutoRegistry()
 
-CONFIG_FILE_DESC = """Configuration is stored in $XDG_DATA_HOME/todo/config.json
+CONFIG_FILE_DESC = """Configuration is stored in $XDG_CONFIG_HOME/local/todo/config.json
+Optional configuration file is keeped for backward compatibility at $XDG_DATA_HOME/todo/config.json
 
 \b
 Fields:
@@ -111,7 +112,12 @@ Fields:
 
 @functools.lru_cache()
 def read_config(config_file=None):
-	config_file = Path(config_file or xdg.save_data_path('todo')/'config.json')
+	if config_file: # pragma: no cover -- TODO
+		config_file = Path(config_file)
+	else: # pragma: no cover -- TODO
+		config_file = xdg.save_data_path('todo')/'config.json'
+		if not config_file.exists():
+			config_file = xdg.save_config_path('local/todo')/'config.json'
 	data = {}
 	if config_file.exists():
 		data = json.loads(config_file.read_text())
