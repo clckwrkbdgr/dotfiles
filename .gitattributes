@@ -477,6 +477,7 @@ web/dotfiles/docs.py caps=work
 web/dotfiles/template.html caps=work
 web/dotfiles/template_dirlist.html caps=work
 when/preferences caps=work
+when/main.cal caps=work
 windows/capslock.ahk caps=work
 windows/disable_taskbar_preview.reg caps=work
 windows/reg_exclude.lst caps=work
