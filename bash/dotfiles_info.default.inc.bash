@@ -25,6 +25,18 @@ dotfiles_info() {
 		known_dotfiles["$name"]="$value"
 	done <"$XDG_CONFIG_HOME/dotfiles_info.cfg"
 
+	if [ -f "$XDG_CONFIG_HOME/local/dotfiles_info.cfg" ]; then
+		# TODO complete duplication of the loop above, but cannot use pipes because of array inside the loop.
+		while IFS='\n' read line; do
+			[[ -z "$line" ]] && continue
+			local comment="^ *#.*$"
+			[[ "$line" =~ $comment ]] && continue
+			local name=${line%=*}
+			local value=${line##*=}
+			known_dotfiles["$name"]="$value"
+		done <"$XDG_CONFIG_HOME/local/dotfiles_info.cfg"
+	fi
+
 	if [ -f "$XDG_DATA_HOME/dotfiles_info.cfg" ]; then
 		# TODO complete duplication of the loop above, but cannot use pipes because of array inside the loop.
 		while IFS='\n' read line; do

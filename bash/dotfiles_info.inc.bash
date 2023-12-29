@@ -8,7 +8,10 @@
 # Uses following data sources for known :
 # - Built-in entries: XDG dirs, some legacy values etc.
 # - Main data file: $XDG_CONFIG_HOME/dotfiles_info.cfg
-# - User data file: ~/.local/dotfiles_info.cfg
+# - User data files:
+#   - $XDG_CONFIG_HOME/local/dotfiles_info.cfg
+#   - $XDG_DATA_HOME/dotfiles_info.cfg
+#   - ~/.local/dotfiles_info.cfg
 # File format is <filename>=<group name>, comments start with '#'
 # Group name can be empty.
 

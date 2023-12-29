@@ -9,6 +9,7 @@ import clckwrkbdgr.xdg as xdg
 
 dirs = [
 		xdg.XDG_CONFIG_HOME,
+		xdg.XDG_CONFIG_HOME/'local',
 		xdg.XDG_DATA_HOME,
 		Path().home()/'.local'/'share',
 		Path().home()/'.local',

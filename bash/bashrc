@@ -30,6 +30,8 @@ which dircolors >/dev/null 2>&1 && eval `dircolors "$XDG_CONFIG_HOME/dir_colors"
 _clckwrkbdgr_debug_profile "Loaded dircolors."
 
 # User private settings.
+[ -f "$XDG_CONFIG_HOME/local/bashrc" ] && source "$XDG_CONFIG_HOME/local/bashrc"
+_clckwrkbdgr_debug_profile "Checked XDG_CONFIG_HOME/local bashrc"
 [ -f "$XDG_DATA_HOME/bashrc" ] && source "$XDG_DATA_HOME/bashrc"
 _clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME bashrc"
 [ -f ~/.local/bashrc ] && source ~/.local/bashrc
