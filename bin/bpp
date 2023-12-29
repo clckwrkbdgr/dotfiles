@@ -2,7 +2,7 @@
 import os, sys, re, subprocess
 from clckwrkbdgr.fs import CurrentDir
 
-INCLUDE = re.compile(r'^\s*#\s*include\s*["<]([^>"]+)[">]\s*$')
+INCLUDE = re.compile(r'^\s*#\s*include\s*["<]([^>"]+)[">]\s*(!?)$')
 SHELL_COMMAND = re.compile(r'^\s*#\s*shell\s+[`]([^`]+)[`]\s*$')
 
 def find_file(filename, paths):
@@ -19,8 +19,11 @@ def preprocess(lines, include_path=None):
 		if include:
 			try:
 				filename = include.group(1)
+				ignore_errors = (include.group(2) == '!')
 				filename = os.path.expanduser(filename)
 				filename = find_file(filename, include_path)
+				if not os.path.exists(filename) and ignore_errors:
+					continue
 				with open(filename) as f:
 					with CurrentDir(os.path.dirname(filename)):
 						yield from preprocess(f)
@@ -50,6 +53,8 @@ MANUAL = """
 Recognizes C-like #include instructions:
   #include <~/.config/include/...>
   #include "include_path_subdir/..."
+  #include "optionally non existent file"!
+NOTE: Appending "!" at the end will ignore errors if file does not exist.
 WARNING: Have NO protection against recursive inclusion.
 
 \b
