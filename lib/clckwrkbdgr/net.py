@@ -22,6 +22,7 @@ def read_known_hosts(filename): # pragma: no cover -- TODO generic routine to re
 		]
 
 custom_hosts_files = [
+		xdg.save_config_path('local')/'known_hosts.lst',
 		xdg.XDG_DATA_HOME/'known_hosts.lst',
 		Path('~/.local/known_hosts.lst').expanduser(),
 		]

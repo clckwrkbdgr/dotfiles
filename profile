@@ -51,12 +51,21 @@ _clckwrkbdgr_debug_profile "Loaded XDG configuration."
 _osname=`uname`
 _hostname=`hostname`
 _clckwrkbdgr_debug_profile "Read os/host names."
+
+[ -f "$XDG_CONFIG_HOME/local/profile" ] && . "$XDG_CONFIG_HOME/local/profile"
+_clckwrkbdgr_debug_profile "Checked XDG_CONFIG_HOME/local profile"
+[ -f "$XDG_CONFIG_HOME/local/profile.${_osname}" ] && . "$XDG_CONFIG_HOME/local/profile.${_osname}"
+_clckwrkbdgr_debug_profile "Checked XDG_CONFIG_HOME/local os-specific profile"
+[ -f "$XDG_CONFIG_HOME/local/profile.${_hostname}" ] && . "$XDG_CONFIG_HOME/local/profile.${_hostname}"
+_clckwrkbdgr_debug_profile "Checked XDG_CONFIG_HOME/local host-specific profile"
+
 [ -f "$XDG_DATA_HOME/profile" ] && . "$XDG_DATA_HOME/profile"
 _clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME profile"
 [ -f "$XDG_DATA_HOME/profile.${_osname}" ] && . "$XDG_DATA_HOME/profile.${_osname}"
 _clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME os-specific profile"
 [ -f "$XDG_DATA_HOME/profile.${_hostname}" ] && . "$XDG_DATA_HOME/profile.${_hostname}"
 _clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME host-specific profile"
+
 [ -f ~/.local/profile ] && . ~/.local/profile
 _clckwrkbdgr_debug_profile "Checked ~/.local profile"
 [ -f ~/.local/profile.${_osname} ] && . ~/.local/profile.${_osname}
