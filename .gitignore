@@ -4,6 +4,10 @@
 *.pyc
 __pycache__/
 
+# Dir/symlink to a dir with custom user-defined local configuration.
+# Defined to be always related to the local host/system/profile, so should be never committed here.
+/local
+
 # W3m stores everything in config dir.
 w3m/cookie
 w3m/history
