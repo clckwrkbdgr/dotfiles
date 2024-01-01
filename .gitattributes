@@ -207,6 +207,7 @@ git/config caps=work
 git/gitignore caps=work
 .githooks/pre-commit caps=work
 git/git_config_submodule_diff_option.py caps=work
+icons/leds_*.png caps=work
 images/quake-tile.png caps=work
 include/build.mak caps=work
 include/build/main_.mak caps=work

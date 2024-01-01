@@ -110,7 +110,7 @@ cli() {
 	parse_special_tags "$text"
 
 	if [ ! -f "$icon" ]; then
-		icon="$XDG_DATA_HOME/icons/$icon"
+		icon="${XDG_ICON_DIR:-$XDG_DATA_HOME/icons}/$icon"
 	fi
 
 	notification_lock=$XDG_RUNTIME_DIR/clckwrkbdgr_notification.lock
