@@ -52,7 +52,7 @@ gnome::set_wallpaper() {
 }
 
 if [ "$1" == 'start-main-quake-terminal' ]; then
-	background_tile=~/.local/share/backgrounds/quake-tile.png
+	background_tile=~/.config/images/quake-tile.png
 	cd ~
 	export FIX_SHLVL=$SHLVL
 	exec urxvt  +tr -pixmap "$background_tile;0x0-100-100:op=tile"
