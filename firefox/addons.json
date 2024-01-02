@@ -43,7 +43,7 @@
 		{
 			"homepageURL": "https://github.com/philc/vimium",
 			"id": "{d7742d87-e61d-4b78-b8a1-b469842139fa}",
-			"name": "Vimium-FF",
+			"name": "Vimium",
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4191523/vimium_ff-2.0.6.xpi",
 			"type": "extension",
 			"version": "2.0.6"
