@@ -92,4 +92,4 @@ def find_unknown_symlinks(root, known_symlinks):
 
 entries = find_unknown_symlinks(XDG_CONFIG_HOME, known_symlinks)
 if entries:
-	context.die('Found unknown symlinks:\n' + '\n'.join(entries))
+	context.die('Found unknown symlinks:\n' + '\n'.join(map(str, entries)))
