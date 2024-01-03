@@ -53,6 +53,8 @@ class XDGSymlinks:
 
 known_symlinks = XDGSymlinks()
 
+known_symlinks.ignore(XDG_CONFIG_HOME/'local') # In case when local config is stored somewhere else and the whole dir is symlinked.
+
 if (Path.home()/'.macromedia').exists():
 	known_symlinks.ensure(Path.home()/'.macromedia', XDG_DATA_HOME/'macromedia')
 if (Path.home()/'.adobe').exists():
