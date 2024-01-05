@@ -113,17 +113,17 @@ def list_tasks(config, verbose=False):
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
 	prefixes = (
-			termcolor.colored('+', 'magenta', attrs=['bold']),
-			termcolor.colored('|', 'magenta'),
-			termcolor.colored('\\', 'magenta'),
+			termcolor.colored('x', 'blue', 'on_blue'),
+			termcolor.colored('+', 'yellow', 'on_yellow'),
 			)
+	group_index = 0
 	for item in tasklist.list_all(with_groups=True):
+		group_index = 1 - group_index
 		if utils.is_collection(item):
 			for index, subtask in enumerate(item):
-				prefix = prefixes[0] if index == 0 else (prefixes[2] if index == len(item) - 1 else prefixes[1])
-				print_single_task(subtask, verbose=verbose, prefix=prefix)
+				print_single_task(subtask, verbose=verbose, prefix=prefixes[group_index])
 		else:
-			print_single_task(item, verbose=verbose)
+			print_single_task(item, verbose=verbose, prefix=prefixes[group_index])
 
 def print_single_task(task, verbose=False, prefix=None):
 	priority_color = 'green'
