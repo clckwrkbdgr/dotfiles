@@ -4,9 +4,9 @@
 			"homepageURL": "https://github.com/gorhill/uBlock#ublock-origin",
 			"id": "uBlock0@raymondhill.net",
 			"name": "uBlock Origin",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4198829/ublock_origin-1.54.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4216633/ublock_origin-1.55.0.xpi",
 			"type": "extension",
-			"version": "1.54.0"
+			"version": "1.55.0"
 		},
 		{
 			"homepageURL": "https://noscript.net",
@@ -36,9 +36,9 @@
 			"homepageURL": "https://tampermonkey.net",
 			"id": "firefox@tampermonkey.net",
 			"name": "Tampermonkey",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4202809/tampermonkey-5.0.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4216231/tampermonkey-5.0.1.xpi",
 			"type": "extension",
-			"version": "5.0.0"
+			"version": "5.0.1"
 		},
 		{
 			"homepageURL": "https://github.com/philc/vimium",
