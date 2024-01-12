@@ -11,6 +11,11 @@ try:
 except: # pragma: no cover
 	jsonpickle = None
 
+try:
+	from ctypes.wintypes import MAX_PATH
+except: # Fox Unix.
+	MAX_PATH = os.pathconf('/', 'PC_NAME_MAX')
+
 @contextlib.contextmanager
 def CurrentDir(path):
 	try:
@@ -24,7 +29,7 @@ def make_valid_filename(name):
 	""" Converts given name to a valid filename. """
 	return name.replace('/', '_')
 
-def make_unique_filename(name):
+def make_unique_filename(name, max_path=MAX_PATH):
 	""" Creates filename that does not collide with existing files.
 	May add random stuff between name and extension to make filename unique.
 	Returns Path object.
@@ -32,11 +37,18 @@ def make_unique_filename(name):
 	"""
 	name = Path(name)
 	parent, stem, ext = name.parent, name.stem, name.suffix
+	if len(str(parent)) >= max_path:
+		return name # Even dirname is longer than allowed, no sense to try to fit the basename part into limit, give up and let it fail.
 	result = name
+	if len(str(result)) > max_path:
+		result = Path(str(result)[:max_path])
 	for counter in range(0, 1000): # Very large number.
 		if not result.exists():
 			break
-		result = parent/(stem + '.{0}'.format(counter) + ext)
+		str_counter = '.{0}'.format(counter)
+		result = parent/(stem + str_counter + ext)
+		if len(str(result)) > max_path: # If too long, shrink the basename and apped counter as a suffix.
+			result = Path(str(parent/(stem + ext))[:max_path - len(str_counter)] + str_counter)
 	return result
 
 class CrossHostFSMutex(object): # pragma: no cover -- TODO requires functional tests.

@@ -28,6 +28,16 @@ class TestFSUtils(unittest.TestCase):
 	@mock.patch(pathlib.__name__ + '.Path.exists', side_effect=(True, True, True, False))
 	def should_create_unique_name(self, *mocks):
 		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('foo.bar'), Path('foo.2.bar'))
+	@mock.patch(pathlib.__name__ + '.Path.exists', side_effect=(
+		True, True, True, False,
+		True, True, True, False,
+		True, True, True, False,
+		))
+	def should_create_unique_name_considering_max_path_length(self, *mocks):
+		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('verylongfilename.bar', max_path=255), Path('verylongfilename.2.bar'))
+		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('verylongfilename.bar', max_path=10), Path('verylong.2'))
+		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('dirname/verylongfilename.bar', max_path=18), Path('dirname/verylong.2'))
+		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('verylongdirname/verylongfilename.bar', max_path=10), Path('verylongdirname/verylongfilename.bar'))
 	@mock.patch('os.path.exists', side_effect=(False, False, True, True, False, True, True, True))
 	@mock.patch('os.stat', side_effect=(dotdict(st_mtime=2), dotdict(st_mtime=2), dotdict(st_mtime=3), dotdict(st_mtime=3), dotdict(st_mtime=3)))
 	def should_react_to_modified_files(self, *mocks):
