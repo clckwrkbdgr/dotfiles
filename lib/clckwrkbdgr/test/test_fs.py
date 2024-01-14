@@ -35,8 +35,8 @@ class TestFSUtils(unittest.TestCase):
 		))
 	def should_create_unique_name_considering_max_path_length(self, *mocks):
 		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('verylongfilename.bar', max_path=255), Path('verylongfilename.2.bar'))
-		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('verylongfilename.bar', max_path=10), Path('very.bar.2'))
-		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('dirname/verylongfilename.bar', max_path=18), Path('dirname/very.bar.2'))
+		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('verylongfilename.bar', max_path=10), Path('very.2.bar'))
+		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('dirname/verylongfilename.bar', max_path=18), Path('dirname/very.2.bar'))
 		self.assertEqual(clckwrkbdgr.fs.make_unique_filename('verylongdirname/verylongfilename.bar', max_path=10), Path('verylongdirname/verylongfilename.bar'))
 	@mock.patch('os.path.exists', side_effect=(False, False, True, True, False, True, True, True))
 	@mock.patch('os.stat', side_effect=(dotdict(st_mtime=2), dotdict(st_mtime=2), dotdict(st_mtime=3), dotdict(st_mtime=3), dotdict(st_mtime=3)))

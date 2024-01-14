@@ -48,7 +48,7 @@ def make_unique_filename(name, max_path=MAX_PATH):
 		str_counter = '.{0}'.format(counter)
 		result = parent/(stem + str_counter + ext)
 		if len(str(result)) > max_path: # If too long, shrink the basename and apped counter as a suffix.
-			result = Path(str(parent/stem)[:max_path - len(str_counter) - len(ext)] + ext + str_counter)
+			result = Path(str(parent/stem)[:max_path - len(str_counter) - len(ext)] + str_counter + ext)
 	return result
 
 class CrossHostFSMutex(object): # pragma: no cover -- TODO requires functional tests.
