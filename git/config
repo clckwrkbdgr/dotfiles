@@ -12,6 +12,7 @@
 
 [diff]
 	submodule = {DIFF}
+	tool = vimdiff
 
 [core]
 	pager = less
