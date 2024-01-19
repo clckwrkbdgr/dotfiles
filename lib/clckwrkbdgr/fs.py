@@ -41,7 +41,8 @@ def make_unique_filename(name, max_path=MAX_PATH):
 		return name # Even dirname is longer than allowed, no sense to try to fit the basename part into limit, give up and let it fail.
 	result = name
 	if len(str(result)) > max_path:
-		result = Path(str(result)[:max_path])
+		shorter_stem = stem[:len(stem) - (len(str(result)) - max_path)]
+		result = Path(parent/(shorter_stem + ext))
 	for counter in range(0, 1000): # Very large number.
 		if not result.exists():
 			break
