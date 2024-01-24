@@ -10,6 +10,40 @@ try:
 except ImportError: # pragma: no cover
 	from pathlib import Path
 
+def run(args):
+	""" Runs command and return its exit code. """
+	return subprocess.call(args)
+
+def run_quiet(args):
+	""" Runs command quietly (no output) and just returns its exit code. """
+	return subprocess.call(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+def run_detached(args):
+	""" Runs command in background, ignore all output and return immediately. """
+	return subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+def run_terminal(args):
+	""" Runs command in external standalone terminal instance. """
+	return run_detached(['urxvt', '-e'] + args) # TODO other types of terminals
+
+def get_output(args, encoding='utf-8'):
+	""" Runs command and return its decoded output.
+	Ignores failure exit codes.
+	"""
+	try:
+		return subprocess.check_output(args).decode(encoding, 'replace')
+	except subprocess.CalledProcessError as e:
+		return e.output.decode(encoding, 'replace')
+
+def pipe(args, input_text, encoding='utf-8'):
+	""" Runs command, feeds given input and return its decoded output.
+	Ignores failure exit codes.
+	"""
+	p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	stdout, _ = p.communicate(input_text.encode(encoding, 'replace'))
+	p.wait()
+	return stdout.decode(encoding, 'replace')
+
 def run_command_and_collect_output(args, start_dir=None, output_dir=None): # pragma: no cover -- TODO accesses and uses FS, subprocesses
 	""" Imitates Unix crontab job.
 
