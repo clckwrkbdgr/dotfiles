@@ -49,11 +49,11 @@ class DesktopFile(Provider):
 		""" By default dest dir is XDG_DESKTOP_DIR. """
 		from . import xdg 
 		self.dest_dir = Path(dest_dir or xdg.XDG_DESKTOP_DIR)
-		self.dest_dir.mkdir(parents=True, exist_ok=True)
 	@classmethod
 	def qualify(cls):
 		return True # Works where FS is present, so always.
 	def send(self, subject, body, payload=None):
+		self.dest_dir.mkdir(parents=True, exist_ok=True)
 		filename = fs.make_valid_filename(subject)
 		dest = fs.make_unique_filename(self.dest_dir/filename)
 		dest.write_text(body)
@@ -79,8 +79,12 @@ class MailX(Provider):
 		import getpass
 		import subprocess
 		mailx = subprocess.Popen(['mail', '-s', str(subject), getpass.getuser()], stdin=subprocess.PIPE)
-		data = body.encode('utf-8', 'replace')
-		if payload: # pragma: no cover
-			raise NotImplementedError("MailX does not send attached files yet.")
-		mailx.communicate(data)
+		body = body.encode('utf-8', 'replace')
+		if payload: # pragma: no cover -- TODO proper attachments
+			for name, data in payload.items():
+				body += '\n\n=== Attachment: {0}\n\n'.format(name).encode('utf-8', 'replace')
+				if hasattr(data, 'encode'):
+					data = data.encode('utf-8', 'replace')
+				body += data
+		mailx.communicate(body)
 		return 0 == mailx.wait()
