@@ -1,13 +1,13 @@
 #!/bin/bash
 . "$XDG_CONFIG_HOME/lib/click.bash"
 
-click::command cli "opens URL stored in EXIT::relation tag for specified image file(s)"
+click::command cli "opens URL stored in EXIF::relation tag for specified image file(s)"
 click::argument 'image_file' --nargs=-1
 cli() {
 	declare -a relations
 
 	for filename in "${CLICK_NARGS[@]}"; do
-		relation=$(exiftool -s3 -relation "$filename")
+		relation=$(python -m clckwrkbdgr.image relation "$filename")
 		if [ -z "$relation" ]; then
 			echo "$filename: No EXIF::relation tag." >&2
 			continue
