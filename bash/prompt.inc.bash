@@ -33,6 +33,13 @@ _PS_tmux() {
 	fi
 }
 
+_PS_rc() {
+	_rc=$? # FIXME will not work properly everywhere
+	if [ "${_rc}" -ne 0 ]; then
+		echo "(RC=${_rc})"
+	fi
+}
+
 prompt::clear
 prompt::append_section _PS_in_vim bold_red
 prompt::append_section _PS_shlvl bold_red
@@ -42,6 +49,8 @@ prompt::append_section _PS_tmux bold_red
 # Current dir state/info.
 . "$XDG_CONFIG_HOME/bash/dotfiles_info.inc.bash"
 prompt::prepend_section dotfiles_info bold_yellow
+
+prompt::prepend_section _PS_rc bold_red
 
 # Main prompt settings.
 prompt::append_section '\W' bold_white

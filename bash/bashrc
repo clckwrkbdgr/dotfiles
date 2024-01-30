@@ -36,3 +36,5 @@ _clckwrkbdgr_debug_profile "Checked XDG_CONFIG_HOME/local bashrc"
 _clckwrkbdgr_debug_profile "Checked XDG_DATA_HOME bashrc"
 [ -f ~/.local/bashrc ] && source ~/.local/bashrc
 _clckwrkbdgr_debug_profile "Checked ~/.local bashrc"
+
+true # To ensure that the first "last" exit code after opening a new shell will be 0.
