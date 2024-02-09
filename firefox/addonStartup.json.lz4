@@ -163,6 +163,7 @@
                 "path": "newtaboverride@agenedia.com.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/newtaboverride@agenedia.com.xpi!/",
                 "runInSafeMode": false,
+                "startupData": {},
                 "version": "0.0"
             },
             "uBlock0@raymondhill.net": {
