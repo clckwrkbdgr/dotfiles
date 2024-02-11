@@ -8,6 +8,16 @@ except ImportError: # pragma: no cover
 	from pathlib import Path
 from . import runner
 
+# Hiding BrokenPipeError stacks from log.
+# TODO: duplicating the same monkey-patching hack from //web/server.py
+# TODO: should be replaced by more robust WSGI server, e.g. CherryPy.
+from wsgiref.handlers import BaseHandler
+import sys
+def ignore_broken_pipes(self): # pragma: no cover
+	if sys.exc_info()[0] != BrokenPipeError: BaseHandler.__handle_error_original_(self)
+BaseHandler.__handle_error_original_ = BaseHandler.handle_error
+BaseHandler.handle_error = ignore_broken_pipes
+
 @runner.test_suite('html')
 def html_javascript_unittest(tests, quiet=False, verbose=False): # pragma: no cover -- TODO
 	try:
