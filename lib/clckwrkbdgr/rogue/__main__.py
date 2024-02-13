@@ -1,11 +1,42 @@
+import sys
 import copy
 import random
 from collections import namedtuple
+import logging
+Log = logging.getLogger('rogue')
 import curses
+from clckwrkbdgr import xdg
 from clckwrkbdgr.math import Point, Matrix, Size, Rect
 import clckwrkbdgr.math.graph
+import clckwrkbdgr.logging
 
-Cell = namedtuple('Cell', 'sprite passable')
+class Cell:
+	def __init__(self, sprite, passable=True):
+		self.sprite = sprite
+		self.passable = passable
+
+def bresenham(start, stop):
+	dx = abs(stop.x - start.x)
+	sx = 1 if start.x < stop.x else -1
+	dy = -abs(stop.y - start.y)
+	sy = 1 if start.y < stop.y else -1
+	error = dx + dy
+	
+	while True:
+		yield start
+		if start.x == stop.x and start.y == stop.y:
+			break
+		e2 = 2 * error
+		if e2 >= dy:
+			if start.x == stop.x:
+				break
+			error = error + dy
+			start.x += sx
+		if e2 <= dx:
+			if start.y == stop.y:
+				break
+			error = error + dx
+			start.y += sy
 
 def build_rogue_dungeon(size):
 	strata = Matrix(size, Cell(' ', False))
@@ -118,20 +149,67 @@ def build_rogue_dungeon(size):
 
 def main_loop(window):
 	curses.curs_set(0)
+	Log.debug('Building dungeon...')
 	player, strata = build_rogue_dungeon((80, 23))
+	field_of_view = Matrix((21, 21), False)
 	playing = True
+	Log.debug('Starting playing...')
 	while playing:
+		Log.debug('Recalculating Field Of View.')
+		field_of_view.clear(False)
+		for pos in field_of_view:
+			Log.debug('FOV pos: {0}'.format(pos))
+			half_size = field_of_view.size // 2
+			rel_pos = Point(half_size) - pos
+			Log.debug('FOV rel pos: {0}'.format(rel_pos))
+			if (rel_pos.x / half_size.width) ** 2 + (rel_pos.y / half_size.height) ** 2 <= 1:
+				Log.debug('Is inside FOV ellipse.')
+				Log.debug('Traversing line of sight: [0;0] -> {0}'.format(rel_pos))
+				for inner_line_pos in bresenham(Point(0, 0), rel_pos):
+					real_world_pos = player + inner_line_pos
+					Log.debug('Line pos: {0}, real world pos: {1}'.format(inner_line_pos, real_world_pos))
+					fov_pos = half_size + inner_line_pos
+					Log.debug('Setting as visible: {0}'.format(fov_pos))
+					cell = strata.cell(real_world_pos)
+					field_of_view.set_cell(fov_pos, True)
+					if not cell.passable:
+						Log.debug('Not passable, stop: {0}'.format(repr(cell.sprite)))
+						break
+		Log.debug("Full FOV:\n{0}".format(field_of_view.tostring(lambda v: '*' if v else '.')))
+
+		Log.debug('Redrawing interface.')
+		Log.debug('Player at: {0}'.format(player))
 		for row in range(strata.height):
 			for col in range(strata.width):
-				window.addstr(1+row, col, strata.cell((col, row)).sprite)
+				Log.debug('Cell {0},{1}'.format(col, row))
+				cell = strata.cell((col, row))
+				rel_pos = Point(col, row) - player
+				Log.debug('Relative pos: {0}'.format(rel_pos))
+
+				is_visible = False
+				fov_pos = rel_pos + Point(field_of_view.size // 2)
+				Log.debug('Relative FOV pos: {0}'.format(fov_pos))
+				if field_of_view.valid(fov_pos):
+					is_visible = field_of_view.cell(fov_pos)
+					Log.debug('Valid FOV pos, is visible: {0}'.format(is_visible))
+				Log.debug('Visible: {0}'.format(is_visible))
+
+				if is_visible:
+					window.addstr(1+row, col, cell.sprite)
+				else:
+					window.addstr(1+row, col, ' ')
 		window.addstr(1+player.y, player.x, '@')
 		window.refresh()
 
+		Log.debug('Performing user actions.')
 		control = window.getch()
+		Log.debug('Control: {0} ({1}).'.format(control, repr(chr(control))))
 		if control == ord('q'):
+			Log.debug('Quitting.')
 			playing = False
 			break
 		elif chr(control) in 'hjklyubn':
+			Log.debug('Moving.')
 			shift = {
 					'h' : Point(-1,  0),
 					'j' : Point( 0, +1),
@@ -142,12 +220,21 @@ def main_loop(window):
 					'b' : Point(-1, +1),
 					'n' : Point(+1, +1),
 					}[chr(control)]
+			Log.debug('Shift: {0}'.format(shift))
 			new_pos = player + shift
 			if strata.valid(new_pos) and strata.cell(new_pos).passable:
+				Log.debug('Shift is valid, updating player pos: {0}'.format(player))
 				player = new_pos
 
 def cli():
+	clckwrkbdgr.logging.init('rogue',
+			debug='--debug' in sys.argv,
+			filename=xdg.save_state_path('dotrogue')/'rogue.log',
+			stream=None,
+			)
+	Log.debug('started')
 	curses.wrapper(main_loop)
+	Log.debug('exited')
 
 if __name__ == '__main__':
 	cli()
