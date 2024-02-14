@@ -11,6 +11,7 @@ def init(logger,
 		debug=False, verbose=False,
 		timestamps=False,
 		filename=None, stream=sys.stderr,
+		rewrite_file=False,
 		):
 	""" Creates and initializes specified logger (logging.Logger object or name).
 
@@ -19,6 +20,7 @@ def init(logger,
 
 	By default writes to stderr. Stream could be specified or set to None.
 	If filename is given, duplicates output to the given file.
+	If rewrite_file is True, file is cleared. Otherwise new log entries will be appened to the existing file (default mode).
 
 	Uses following formats:
 	- stream: [<LEVEL>] <logger name>:<message>
@@ -66,7 +68,9 @@ def init(logger,
 			# TODO DEBUG logging.basicConfig(format='%(module)s:%(lineno)d:%(funcName)s:%(levelname)s:%(message)s')
 			# TODO DEBUG _handler.setFormatter(logging.Formatter('%(process)d: %(asctime)s: %(module)s:%(lineno)d:%(funcName)s: [%(levelname)s] %(message)s'))
 		if filename:
-			file_handler = logging.FileHandler(str(filename), delay=True, encoding='utf-8')
+			file_handler = logging.FileHandler(str(filename), delay=True, encoding='utf-8',
+								  mode='w' if rewrite_file else 'a',
+								  )
 			file_handler.setFormatter(logging.Formatter(
 				'%(asctime)s:%(name)s:%(levelname)s: %(message)s',
 				datefmt='%Y-%m-%d %H:%M:%S',

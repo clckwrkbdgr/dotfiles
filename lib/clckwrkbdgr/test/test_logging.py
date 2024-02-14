@@ -80,6 +80,14 @@ class TestFileLogger(unittest.fs.TestCase):
 	@unittest.mock.patch('logging.Formatter.converter', side_effect=[time.gmtime(10000)])
 	def should_print_message_to_file_only(self, time_localtime):
 		logfile = Path('/trace.log')
+		logfile.write_text(u'previous_content\n')
 		logger = init('should_print_message_to_file_and_stream', stream=None, filename=logfile)
 		logger.warning(u'File only!')
-		self.assertEqual(logfile.read_text(), '1970-01-01 02:46:40:should_print_message_to_file_and_stream:WARNING: File only!\n')
+		self.assertEqual(logfile.read_text(), 'previous_content\n1970-01-01 02:46:40:should_print_message_to_file_and_stream:WARNING: File only!\n')
+	@unittest.mock.patch('logging.Formatter.converter', side_effect=[time.gmtime(10000)])
+	def should_rewrite_file_if_requested(self, time_localtime):
+		logfile = Path('/trace.log')
+		logfile.write_text(u'previous_content\n')
+		logger = init('should_rewrite_file_if_requested', stream=None, filename=logfile, rewrite_file=True)
+		logger.warning(u'Rewriting file!')
+		self.assertEqual(logfile.read_text(), '1970-01-01 02:46:40:should_rewrite_file_if_requested:WARNING: Rewriting file!\n')
