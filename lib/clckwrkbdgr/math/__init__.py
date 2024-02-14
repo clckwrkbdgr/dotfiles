@@ -123,6 +123,10 @@ class Rect(object):
 		"""
 		self._topleft = Point(topleft)
 		self._size = Size(size)
+	def __str__(self): # pragma: no cover
+		return str((self._topleft, self._size))
+	def __repr__(self): # pragma: no cover
+		return str(type(self)) + str(self)
 	def __setstate__(self, data): # pragma: no cover
 		self._topleft = data['topleft']
 		self._size = data['size']
