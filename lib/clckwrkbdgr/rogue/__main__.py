@@ -320,12 +320,97 @@ def build_cave(size):
 	strata = strata.transform(lambda cell: Cell('.') if cell else Cell('#', False))
 	return start_pos, strata
 
+# this changes the direction to go from the current square, to the next available
+def RandomDirections():
+	cDir = [Point(0, 0), Point(0, 0), Point(0, 0), Point(0, 0)]
+	direction = random.randrange(4)
+	if direction == 0:
+		cDir[0].x = -1; cDir[1].x = 1
+		cDir[2].y = -1; cDir[3].y = 1
+	elif direction == 1:
+		cDir[3].x = -1; cDir[2].x = 1
+		cDir[1].y = -1; cDir[0].y = 1
+	elif direction == 2:
+		cDir[2].x = -1; cDir[3].x = 1
+		cDir[0].y = -1; cDir[1].y = 1
+	elif direction == 3:
+		cDir[1].x = -1; cDir[0].x = 1
+		cDir[3].y = -1; cDir[2].y = 1
+	return cDir
+
+def build_maze(size):
+	size = Size(size)
+	layout_size = size - Size(2, 2) # For walls.
+	# Layout size should be odd (for connections between cells).
+	if layout_size.width % 2 == 0:
+		layout_size.width -= 1
+	if layout_size.height % 2 == 0:
+		layout_size.height -= 1
+	layout = Matrix(layout_size, False)
+
+	# 0 is the most random, randomisation gets lower after that
+	# less randomisation means more straight corridors
+	RANDOMISATION = 0
+
+	intDone = 0
+	while True:
+		Log.debug("Done {0} cells:\n{1}".format(intDone, layout.tostring(lambda c:'.' if c else '#')))
+		# this code is used to make sure the numbers are odd
+		current = Point(
+				random.randrange((layout_size.width // 2)) * 2,
+				random.randrange((layout_size.height // 2)) * 2,
+				)
+		# first one is free!
+		if intDone == 0:
+			layout.set_cell(current, True)
+		if layout.cell(current):
+			# always randomisation directions to start
+			cDir = RandomDirections()
+			blnBlocked = False
+			while not blnBlocked:
+				# only randomisation directions, based on the constant
+				if RANDOMISATION == 0 or random.randrange(RANDOMISATION) == 0:
+					cDir = RandomDirections()
+				blnBlocked = True
+				# loop through order of directions
+				for intDir in range(4):
+					# work out where this direction is
+					new_cell = Point(0, 0)
+					new_cell.x = current.x + (cDir[intDir].x * 2)
+					new_cell.y = current.y + (cDir[intDir].y * 2)
+					# check if the tile can be used
+					if layout.valid(new_cell) and not layout.cell(new_cell):
+						# create a path
+						layout.set_cell(new_cell, True)
+						# and the square inbetween
+						layout.set_cell(current + cDir[intDir], True)
+						# this is now the current square
+						current = new_cell
+						blnBlocked = False
+						# increment paths created
+						intDone = intDone + 1
+						break
+		if not ( intDone + 1 < ((layout_size.width + 1) * (layout_size.height + 1)) / 4):
+			break
+
+	strata = Matrix(size, Cell('#', False)) # FIXME
+	for pos in layout:
+		if layout.cell(pos):
+			strata.set_cell(pos + Point(1, 1), Cell('.'))
+
+	floor_only = lambda pos: strata.cell(pos).passable
+	start_pos = generate_pos(size, floor_only)
+	Log.debug("Generated player pos: {0}".format(start_pos))
+
+	return start_pos, strata
+
 def main_loop(window):
 	curses.curs_set(0)
 	builders = [
 			build_bsp_dungeon,
 			build_rogue_dungeon,
 			build_cave,
+			build_maze,
 			]
 	builder = random.choice(builders)
 	Log.debug('Building dungeon: {0}...'.format(builder))
