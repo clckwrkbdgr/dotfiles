@@ -19,13 +19,6 @@
             "internal:privateBrowsingAllowed"
         ]
     },
-    "amazondotcom@search.mozilla.org": {
-        "origins": [],
-        "permissions": [
-            "internal:privateBrowsingAllowed",
-            "internal:svgContextPropertiesAllowed"
-        ]
-    },
     "bing@search.mozilla.org": {
         "origins": [],
         "permissions": [
