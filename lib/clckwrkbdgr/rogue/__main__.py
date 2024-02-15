@@ -1,13 +1,14 @@
 import sys
 import copy
 import random
+import itertools
 from collections import namedtuple
 import logging
 Log = logging.getLogger('rogue')
 import curses
 from clckwrkbdgr import xdg
 from clckwrkbdgr.math import Point, Matrix, Size, Rect
-import clckwrkbdgr.math.graph
+import clckwrkbdgr.math.graph, clckwrkbdgr.math.algorithm
 import clckwrkbdgr.logging
 
 class Cell:
@@ -262,11 +263,69 @@ def build_bsp_dungeon(size):
 
 	return start_pos, strata
 
+def build_cave(size):
+	size = Size(size)
+	strata = Matrix(size, 0)
+	for x in range(1, strata.width - 1):
+		for y in range(1, strata.height - 1):
+			strata.set_cell((x, y), 0 if random.random() < 0.50 else 1)
+	Log.debug("Initial state:\n{0}".format(strata.tostring()))
+
+	new_layer = Matrix(strata)
+	drop_wall_2_at = 4
+	for step in range(drop_wall_2_at+1):
+		for x in range(1, strata.width - 1):
+			for y in range(1, strata.height - 1):
+				neighs = set(clckwrkbdgr.math.get_neighbours(strata, (x, y), with_diagonal=True))
+				neighs2 = set(itertools.chain.from_iterable(
+					clckwrkbdgr.math.get_neighbours(strata, n, with_diagonal=True)
+					for n in neighs
+					)) - set(Point(x, y))
+				wall_count = sum(int(strata.cell(n) == 0) for n in neighs)
+				wall_2_count = sum(int(strata.cell(n) == 0) for n in neighs2)
+				is_wall = strata.cell((x, y)) == 0
+				if wall_count >= 5:
+					new_layer.set_cell((x, y), 0)
+				elif step < drop_wall_2_at and wall_2_count <= 2:
+					new_layer.set_cell((x, y), 0)
+				else:
+					new_layer.set_cell((x, y), 1)
+		strata, new_layer = new_layer, strata
+		Log.debug("Step {1}:\n{0}".format(strata.tostring(), step))
+	
+	cavern = next(pos for pos in strata if strata.cell(pos) == 1)
+	caverns = []
+	while cavern:
+		area = clckwrkbdgr.math.algorithm.floodfill(
+				cavern,
+				spread_function=lambda p: [x for x in clckwrkbdgr.math.get_neighbours(strata, p) if strata.cell(x) == 1]
+				)
+		count = 0
+		for point in area:
+			count += 1
+			strata.set_cell(point, 2 + len(caverns))
+		caverns.append(count)
+		Log.debug("Filling cavern #{1}:\n{0}".format(strata.tostring(), len(caverns)))
+		cavern = next((pos for pos in strata if strata.cell(pos) == 1), None)
+	max_cavern = 2 + caverns.index(max(caverns))
+	for pos in strata:
+		if strata.cell(pos) in [0, max_cavern]:
+			continue
+		strata.set_cell(pos, 0)
+	Log.debug("Finalized cave:\n{0}".format(strata.tostring()))
+
+	floor_only = lambda pos: strata.cell(pos) > 1
+	start_pos = generate_pos(size, floor_only)
+
+	strata = strata.transform(lambda cell: Cell('.') if cell else Cell('#', False))
+	return start_pos, strata
+
 def main_loop(window):
 	curses.curs_set(0)
 	builders = [
 			build_bsp_dungeon,
 			build_rogue_dungeon,
+			build_cave,
 			]
 	builder = random.choice(builders)
 	Log.debug('Building dungeon: {0}...'.format(builder))
