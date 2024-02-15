@@ -10,15 +10,6 @@
                 "startupData": {},
                 "version": "0.0"
             },
-            "amazondotcom@search.mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "loader": null,
-                "rootURI": "resource://search-extensions/amazondotcom/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            },
             "bing@search.mozilla.org": {
                 "dependencies": [],
                 "enabled": true,
