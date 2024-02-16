@@ -146,7 +146,10 @@ def build_rogue_dungeon(size):
 				random.randrange(enter_room.top + 1, enter_room.bottom + 1 - 1),
 				)
 
-	return start_pos, strata
+	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
+	Log.debug("Generated exit pos: {0}".format(exit_pos))
+
+	return start_pos, exit_pos, strata
 
 def generate_single_pos(size):
 	return Point(random.randrange(size.width), random.randrange(size.height))
@@ -261,7 +264,10 @@ def build_bsp_dungeon(size):
 	start_pos = generate_pos(size, floor_only)
 	Log.debug("Generated player pos: {0}".format(start_pos))
 
-	return start_pos, strata
+	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
+	Log.debug("Generated exit pos: {0}".format(exit_pos))
+
+	return start_pos, exit_pos, strata
 
 def build_cave(size):
 	size = Size(size)
@@ -318,7 +324,11 @@ def build_cave(size):
 	start_pos = generate_pos(size, floor_only)
 
 	strata = strata.transform(lambda cell: Cell('.') if cell else Cell('#', False))
-	return start_pos, strata
+
+	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
+	Log.debug("Generated exit pos: {0}".format(exit_pos))
+
+	return start_pos, exit_pos, strata
 
 # this changes the direction to go from the current square, to the next available
 def RandomDirections():
@@ -402,7 +412,10 @@ def build_maze(size):
 	start_pos = generate_pos(size, floor_only)
 	Log.debug("Generated player pos: {0}".format(start_pos))
 
-	return start_pos, strata
+	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
+	Log.debug("Generated exit pos: {0}".format(exit_pos))
+
+	return start_pos, exit_pos, strata
 
 def main_loop(window):
 	curses.curs_set(0)
@@ -414,7 +427,7 @@ def main_loop(window):
 			]
 	builder = random.choice(builders)
 	Log.debug('Building dungeon: {0}...'.format(builder))
-	player, strata = builder((80, 23))
+	player, exit_pos, strata = builder((80, 23))
 	field_of_view = Matrix((21, 21), False)
 	playing = True
 	god_vision = False
@@ -463,7 +476,17 @@ def main_loop(window):
 					window.addstr(1+row, col, cell.sprite)
 				else:
 					window.addstr(1+row, col, ' ')
+
+		is_exit_visible = False
+		exit_rel_pos = exit_pos - player
+		exit_fov_pos = exit_rel_pos + Point(field_of_view.size // 2)
+		if field_of_view.valid(exit_fov_pos):
+			is_exit_visible = field_of_view.cell(exit_fov_pos)
+		if is_exit_visible or god_vision:
+			window.addstr(1+exit_pos.y, exit_pos.x, '>')
+
 		window.addstr(1+player.y, player.x, '@')
+
 		status = []
 		if god_vision:
 			status.append('[vis]')
@@ -479,6 +502,11 @@ def main_loop(window):
 			break
 		elif control == ord('v'):
 			god_vision = not god_vision
+		elif control == ord('>'):
+			if player == exit_pos:
+				builder = random.choice(builders)
+				Log.debug('Building new dungeon: {0}...'.format(builder))
+				player, exit_pos, strata = builder((80, 23))
 		elif chr(control) in 'hjklyubn':
 			Log.debug('Moving.')
 			shift = {
