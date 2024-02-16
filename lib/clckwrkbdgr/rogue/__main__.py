@@ -6,6 +6,7 @@ from collections import namedtuple
 import logging
 Log = logging.getLogger('rogue')
 import curses
+import jsonpickle
 from clckwrkbdgr import xdg
 from clckwrkbdgr.math import Point, Matrix, Size, Rect
 import clckwrkbdgr.math.graph, clckwrkbdgr.math.algorithm
@@ -146,7 +147,15 @@ def build_rogue_dungeon(size):
 				random.randrange(enter_room.top + 1, enter_room.bottom + 1 - 1),
 				)
 
-	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
+	for _ in range(9):
+		exit_room_key = random.choice(list(grid.keys()))
+		exit_room = grid.cell(exit_room_key)
+		exit_pos = Point(
+				random.randrange(exit_room.left + 1, exit_room.right + 1 - 1),
+				random.randrange(exit_room.top + 1, exit_room.bottom + 1 - 1),
+				)
+		if exit_room_key != enter_room_key:
+			break
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 	return start_pos, exit_pos, strata
@@ -322,11 +331,10 @@ def build_cave(size):
 
 	floor_only = lambda pos: strata.cell(pos) > 1
 	start_pos = generate_pos(size, floor_only)
-
-	strata = strata.transform(lambda cell: Cell('.') if cell else Cell('#', False))
-
 	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
+
+	strata = strata.transform(lambda cell: Cell('.') if cell else Cell('#', False))
 
 	return start_pos, exit_pos, strata
 
@@ -425,13 +433,22 @@ def main_loop(window):
 			build_cave,
 			build_maze,
 			]
-	builder = random.choice(builders)
-	Log.debug('Building dungeon: {0}...'.format(builder))
-	player, exit_pos, strata = builder((80, 23))
+	savefile = xdg.save_state_path('dotrogue')/'rogue.sav'
+	if savefile.exists():
+		Log.debug('Loading savefile: {0}...'.format(savefile))
+		data = savefile.read_text()
+		savedata = jsonpickle.decode(data, keys=True)
+		player, exit_pos, strata = savedata
+		Log.debug('Loaded.')
+	else:
+		builder = random.choice(builders)
+		Log.debug('Building dungeon: {0}...'.format(builder))
+		player, exit_pos, strata = builder((80, 23))
 	field_of_view = Matrix((21, 21), False)
 	playing = True
 	god_vision = False
 	Log.debug('Starting playing...')
+	alive = True
 	while playing:
 		Log.debug('Recalculating Field Of View.')
 		field_of_view.clear(False)
@@ -497,11 +514,16 @@ def main_loop(window):
 		control = window.getch()
 		Log.debug('Control: {0} ({1}).'.format(control, repr(chr(control))))
 		if control == ord('q'):
-			Log.debug('Quitting.')
+			Log.debug('Exiting the game.')
 			playing = False
 			break
 		elif control == ord('v'):
 			god_vision = not god_vision
+		elif control == ord('Q'):
+			Log.debug('Suicide.')
+			alive = False
+			playing = False
+			break
 		elif control == ord('>'):
 			if player == exit_pos:
 				builder = random.choice(builders)
@@ -524,6 +546,12 @@ def main_loop(window):
 			if strata.valid(new_pos) and strata.cell(new_pos).passable:
 				Log.debug('Shift is valid, updating player pos: {0}'.format(player))
 				player = new_pos
+	if alive:
+		savedata = player, exit_pos, strata
+		data = jsonpickle.encode(savedata, indent=2, keys=True)
+		savefile.write_bytes(data.encode('utf-8', 'replace'))
+	elif savefile.exists():
+		savefile.unlink()
 
 def cli():
 	debug = '--debug' in sys.argv
