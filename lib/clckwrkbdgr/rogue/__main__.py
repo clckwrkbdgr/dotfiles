@@ -13,9 +13,17 @@ import clckwrkbdgr.math.graph, clckwrkbdgr.math.algorithm
 import clckwrkbdgr.logging
 
 class Cell:
-	def __init__(self, sprite, passable=True):
+	def __init__(self, sprite, passable=True, remembered=None):
 		self.sprite = sprite
 		self.passable = passable
+		self.remembered = remembered
+		self.visited = False
+	def __setstate__(self, state):
+		state.setdefault('visited', False)
+		state.setdefault('remembered', None)
+		self.__dict__.update(state)
+	def __getstate__(self):
+		return self.__dict__
 
 def bresenham(start, stop):
 	dx = abs(stop.x - start.x)
@@ -120,25 +128,25 @@ def build_rogue_dungeon(size):
 			))
 
 	for room in grid.values():
-		strata.set_cell((room.left, room.top), Cell("+", False))
-		strata.set_cell((room.left, room.bottom), Cell("+", False))
-		strata.set_cell((room.right, room.top), Cell("+", False))
-		strata.set_cell((room.right, room.bottom), Cell("+", False))
+		strata.set_cell((room.left, room.top), Cell("+", False, remembered='+'))
+		strata.set_cell((room.left, room.bottom), Cell("+", False, remembered='+'))
+		strata.set_cell((room.right, room.top), Cell("+", False, remembered='+'))
+		strata.set_cell((room.right, room.bottom), Cell("+", False, remembered='+'))
 		for x in range(room.left+1, room.right):
-			strata.set_cell((x, room.top), Cell("-", False))
-			strata.set_cell((x, room.bottom), Cell("-", False))
+			strata.set_cell((x, room.top), Cell("-", False, remembered='-'))
+			strata.set_cell((x, room.bottom), Cell("-", False, remembered='-'))
 		for y in range(room.top+1, room.bottom):
-			strata.set_cell((room.left, y), Cell("|", False))
-			strata.set_cell((room.right, y), Cell("|", False))
+			strata.set_cell((room.left, y), Cell("|", False, remembered='|'))
+			strata.set_cell((room.right, y), Cell("|", False, remembered='|'))
 		for y in range(room.top+1, room.bottom):
 			for x in range(room.left+1, room.right):
 				strata.set_cell((x, y), Cell(".", True))
 
 	for tunnel in tunnels:
 		for cell in tunnel.iter_points():
-			strata.set_cell((cell.x, cell.y), Cell("#", True))
-		strata.set_cell((tunnel.start.x, tunnel.start.y), Cell("+", True))
-		strata.set_cell((tunnel.stop.x, tunnel.stop.y), Cell("+", True))
+			strata.set_cell((cell.x, cell.y), Cell("#", True, remembered='#'))
+		strata.set_cell((tunnel.start.x, tunnel.start.y), Cell("+", True, remembered='+'))
+		strata.set_cell((tunnel.stop.x, tunnel.stop.y), Cell("+", True, remembered='+'))
 
 	enter_room_key = random.choice(list(grid.keys()))
 	enter_room = grid.cell(enter_room_key)
@@ -252,17 +260,17 @@ def build_bsp_dungeon(size):
 
 	Log.debug("Building surrounding walls.")
 	for x in range(size.width):
-		strata.set_cell((x, 0), Cell('#', False))
-		strata.set_cell((x, size.height - 1), Cell('#', False))
+		strata.set_cell((x, 0), Cell('#', False, remembered='#'))
+		strata.set_cell((x, size.height - 1), Cell('#', False, remembered='#'))
 	for y in range(size.height):
-		strata.set_cell((0, y), Cell('#', False))
-		strata.set_cell((size.width - 1, y), Cell('#', False))
+		strata.set_cell((0, y), Cell('#', False, remembered='#'))
+		strata.set_cell((size.width - 1, y), Cell('#', False, remembered='#'))
 
 	Log.debug("Running BSP...")
 	bsp = BinarySpacePartition()
 	builder = BSPBuilder(strata,
 							 free=lambda: Cell('.'),
-							 obstacle=lambda: Cell('#', False),
+							 obstacle=lambda: Cell('#', False, remembered='#'),
 							 door=lambda: Cell('.'),
 					 )
 	for splitter in bsp.generate(Point(1, 1), Point(size.width - 2, size.height - 2)):
@@ -334,7 +342,7 @@ def build_cave(size):
 	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
-	strata = strata.transform(lambda cell: Cell('.') if cell else Cell('#', False))
+	strata = strata.transform(lambda cell: Cell('.') if cell else Cell('#', False, remembered='#'))
 
 	return start_pos, exit_pos, strata
 
@@ -411,7 +419,7 @@ def build_maze(size):
 		if not ( intDone + 1 < ((layout_size.width + 1) * (layout_size.height + 1)) / 4):
 			break
 
-	strata = Matrix(size, Cell('#', False)) # FIXME
+	strata = Matrix(size, Cell('#', False, remembered='#')) # FIXME
 	for pos in layout:
 		if layout.cell(pos):
 			strata.set_cell(pos + Point(1, 1), Cell('.'))
@@ -425,6 +433,18 @@ def build_maze(size):
 
 	return start_pos, exit_pos, strata
 
+class Game:
+	def __init__(self, start_pos, exit_pos, strata):
+		self.player = start_pos
+		self.exit_pos = exit_pos
+		self.remembered_exit = False
+		self.strata = strata
+	def __setstate__(self, state):
+		state.setdefault('remembered_exit', False)
+		self.__dict__.update(state)
+	def __getstate__(self):
+		return self.__dict__
+
 def main_loop(window):
 	curses.curs_set(0)
 	builders = [
@@ -437,13 +457,15 @@ def main_loop(window):
 	if savefile.exists():
 		Log.debug('Loading savefile: {0}...'.format(savefile))
 		data = savefile.read_text()
-		savedata = jsonpickle.decode(data, keys=True)
-		player, exit_pos, strata = savedata
+		game = jsonpickle.decode(data, keys=True)
+		if not isinstance(game, Game):
+			game = Game(*game)
 		Log.debug('Loaded.')
 	else:
 		builder = random.choice(builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))
 		player, exit_pos, strata = builder((80, 23))
+		game = Game(player, exit_pos, strata)
 	field_of_view = Matrix((21, 21), False)
 	playing = True
 	god_vision = False
@@ -461,11 +483,12 @@ def main_loop(window):
 				Log.debug('Is inside FOV ellipse.')
 				Log.debug('Traversing line of sight: [0;0] -> {0}'.format(rel_pos))
 				for inner_line_pos in bresenham(Point(0, 0), rel_pos):
-					real_world_pos = player + inner_line_pos
+					real_world_pos = game.player + inner_line_pos
 					Log.debug('Line pos: {0}, real world pos: {1}'.format(inner_line_pos, real_world_pos))
 					fov_pos = half_size + inner_line_pos
 					Log.debug('Setting as visible: {0}'.format(fov_pos))
-					cell = strata.cell(real_world_pos)
+					cell = game.strata.cell(real_world_pos)
+					cell.visited = True
 					field_of_view.set_cell(fov_pos, True)
 					if not cell.passable:
 						Log.debug('Not passable, stop: {0}'.format(repr(cell.sprite)))
@@ -473,12 +496,12 @@ def main_loop(window):
 		Log.debug("Full FOV:\n{0}".format(field_of_view.tostring(lambda v: '*' if v else '.')))
 
 		Log.debug('Redrawing interface.')
-		Log.debug('Player at: {0}'.format(player))
-		for row in range(strata.height):
-			for col in range(strata.width):
+		Log.debug('Player at: {0}'.format(game.player))
+		for row in range(game.strata.height):
+			for col in range(game.strata.width):
 				Log.debug('Cell {0},{1}'.format(col, row))
-				cell = strata.cell((col, row))
-				rel_pos = Point(col, row) - player
+				cell = game.strata.cell((col, row))
+				rel_pos = Point(col, row) - game.player
 				Log.debug('Relative pos: {0}'.format(rel_pos))
 
 				is_visible = False
@@ -489,20 +512,25 @@ def main_loop(window):
 					Log.debug('Valid FOV pos, is visible: {0}'.format(is_visible))
 				Log.debug('Visible: {0}'.format(is_visible))
 
+				assert hasattr(Cell, '__setstate__')
 				if is_visible or god_vision:
 					window.addstr(1+row, col, cell.sprite)
+				elif cell.visited and cell.remembered:
+					window.addstr(1+row, col, cell.remembered)
 				else:
 					window.addstr(1+row, col, ' ')
 
 		is_exit_visible = False
-		exit_rel_pos = exit_pos - player
+		exit_rel_pos = game.exit_pos - game.player
 		exit_fov_pos = exit_rel_pos + Point(field_of_view.size // 2)
 		if field_of_view.valid(exit_fov_pos):
 			is_exit_visible = field_of_view.cell(exit_fov_pos)
-		if is_exit_visible or god_vision:
-			window.addstr(1+exit_pos.y, exit_pos.x, '>')
+			if is_exit_visible:
+				game.remembered_exit = True
+		if is_exit_visible or god_vision or game.remembered_exit:
+			window.addstr(1+game.exit_pos.y, game.exit_pos.x, '>')
 
-		window.addstr(1+player.y, player.x, '@')
+		window.addstr(1+game.player.y, game.player.x, '@')
 
 		status = []
 		if god_vision:
@@ -525,10 +553,11 @@ def main_loop(window):
 			playing = False
 			break
 		elif control == ord('>'):
-			if player == exit_pos:
+			if game.player == game.exit_pos:
 				builder = random.choice(builders)
 				Log.debug('Building new dungeon: {0}...'.format(builder))
 				player, exit_pos, strata = builder((80, 23))
+				game = Game(player, exit_pos, strata)
 		elif chr(control) in 'hjklyubn':
 			Log.debug('Moving.')
 			shift = {
@@ -542,13 +571,12 @@ def main_loop(window):
 					'n' : Point(+1, +1),
 					}[chr(control)]
 			Log.debug('Shift: {0}'.format(shift))
-			new_pos = player + shift
-			if strata.valid(new_pos) and strata.cell(new_pos).passable:
-				Log.debug('Shift is valid, updating player pos: {0}'.format(player))
-				player = new_pos
+			new_pos = game.player + shift
+			if game.strata.valid(new_pos) and game.strata.cell(new_pos).passable:
+				Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
+				game.player = new_pos
 	if alive:
-		savedata = player, exit_pos, strata
-		data = jsonpickle.encode(savedata, indent=2, keys=True)
+		data = jsonpickle.encode(game, indent=2, keys=True)
 		savefile.write_bytes(data.encode('utf-8', 'replace'))
 	elif savefile.exists():
 		savefile.unlink()
