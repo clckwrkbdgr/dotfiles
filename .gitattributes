@@ -64,6 +64,7 @@ purple/* caps=home
 prboom-plus/* caps=home
 openttd/* caps=home
 freeciv/* caps=home
+freeciv-qt-client.ini caps=home
 fbless/* caps=home
 moc/** caps=home
 naev/* caps=home
