@@ -36,7 +36,8 @@
       <property name="&lt;Super&gt;space" type="string" value="user-env.cmd mocp -G"/>
       <property name="&lt;Super&gt;f" type="string" value="user-env.cmd firefox"/>
       <property name="&lt;Super&gt;m" type="string" value="user-env.cmd in_call.sh toggle"/>
-      <property name="&lt;Super&gt;q" type="string" value="rpg.sh --open"/>
+      <property name="&lt;Super&gt;q" type="string" value="termsession RPG --open"/>
+      <property name="&lt;Super&gt;j" type="string" value="termsession job --open"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
