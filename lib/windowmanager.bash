@@ -2,7 +2,8 @@
 
 get_parent_process() { # <pid>
 	# Finds and prints parent process ID.
-	ps --no-header -o ppid $1 | tr -d ' '
+	ps --no-header -o ppid "$1" | tr -d ' '
+	return ${PIPESTATUS[0]}
 }
 
 find_subprocess() { # <pattern> [<process ID>]
@@ -96,8 +97,13 @@ find_parent_x_window() { # <pid>
 	# Prints ID (decimal) of the first window for the found process.
 	current_pid=$1
 	window_id=
-	while [ -n "$current_pid" ] && [ -z "$window_id" ]; do
-		current_pid=$(get_parent_process $current_pid)
+	while [ -n "$current_pid" ] && [ "$current_pid" -gt 1 ] && [ -z "$window_id" ]; do
+		original_pid=$current_pid
+		current_pid=$(get_parent_process "$original_pid")
+		if [ -z "$current_pid" ]; then
+			echo "Failed to find parent process for $original_pid" >&2
+			return 1
+		fi
 		window_id=$(xdotool search --pid "$current_pid" | head -1)
 	done
 	echo "$window_id"
