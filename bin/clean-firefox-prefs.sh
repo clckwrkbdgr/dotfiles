@@ -143,4 +143,5 @@ sed '/extensions.webextensions.restrictedDomains/d' | \
 sed '/browser.topsites.contile.lastFetch/d' | \
 sed '/extensions.quarantinedDomains.list/d' | \
 sed '/storage.vacuum.last.content-prefs.sqlite/d' | \
+sed '/devtools.debugger.search-options/d' | \
 sed 's|'"$HOME"'|$HOME|g'
