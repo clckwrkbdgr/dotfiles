@@ -2,13 +2,12 @@ import copy
 import random
 import itertools
 from collections import namedtuple
-import logging
-Log = logging.getLogger('rogue')
 import curses
 import jsonpickle
 from clckwrkbdgr import xdg
 from clckwrkbdgr.math import Point, Matrix, Size, Rect
 import clckwrkbdgr.math.graph, clckwrkbdgr.math.algorithm
+from .messages import Log
 
 class Cell: # pragma: no cover -- TODO
 	def __init__(self, sprite, passable=True, remembered=None):
