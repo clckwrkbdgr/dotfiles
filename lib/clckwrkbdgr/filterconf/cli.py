@@ -25,9 +25,6 @@ xml:
 	sort ?
 	sort-xml - sort tags by attribute
 
-json:
-	pretty json (consider it as sort ?? or maybe the other way around: consider prettification and it would be sort for xml/ini/etc)
-
 firefox pref.js
 	user_pref("accessibility.blockautorefresh", true);
 	delete preference by pattern (including regexp and wildcard)
