@@ -91,6 +91,7 @@ bin/notification caps=home
 bin/open_exif_relation caps=home
 bin/pidgin_has_unread caps=home
 bin/play_signal caps=home
+bin/playback caps=home
 bin/post_torrent.sh caps=home
 bin/quakestyle caps=home
 bin/screenshot caps=home

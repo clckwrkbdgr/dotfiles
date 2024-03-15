@@ -1,0 +1,12 @@
+#!/bin/bash
+mpv_pid=$(pgrep --exact --oldest mpv)
+if [ -n "$mpv_pid" ]; then
+	echo cycle pause | socat - "$XDG_CONFIG_HOME/mpv/remote-control.socket"
+	exit
+fi
+
+if [ "$(mocp -Q '%state')" == STOP ]; then
+	mocp -p
+else
+	mocp -G
+fi
