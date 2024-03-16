@@ -145,4 +145,5 @@ sed '/extensions.quarantinedDomains.list/d' | \
 sed '/storage.vacuum.last.content-prefs.sqlite/d' | \
 sed '/devtools.debugger.search-options/d' | \
 sed '/devtools.debugger.start-panel-size/d' | \
+sed '/devtools.webconsole.persistlog/d' | \
 sed 's|'"$HOME"'|$HOME|g'
