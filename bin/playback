@@ -1,12 +1,65 @@
 #!/bin/bash
-mpv_pid=$(pgrep --exact --oldest mpv)
-if [ -n "$mpv_pid" ]; then
-	echo cycle pause | socat - "$XDG_CONFIG_HOME/mpv/remote-control.socket"
-	exit
-fi
+. "$XDG_CONFIG_HOME/lib/click.bash"
 
-if [ "$(mocp -Q '%state')" == STOP ]; then
-	mocp -p
-else
-	mocp -G
-fi
+control_mpv() { # <action>
+	if [ "$action" == "state" ]; then
+		echo '{"command":["get_property","core-idle"]}' | socat - "$XDG_CONFIG_HOME/mpv/remote-control.socket" | grep -q '"data":true'
+		return $?
+	fi
+	mpv_command="cycle pause"
+	if [ "$action" == "pause" ]; then
+		mpv_command=pause
+	elif [ "$action" == "resume" ]; then
+		mpv_command=resume
+	fi
+	echo "$mpv_command" | socat - "$XDG_CONFIG_HOME/mpv/remote-control.socket"
+}
+
+control_mocp() { # <action>
+	if [ "$action" == "state" ]; then
+		mocp -i | grep -q 'State: PLAY'
+		return $?
+	fi
+	if [ "$action" == "pause" ]; then
+		mocp -P
+	elif [ "$action" == "resume" ]; then
+		if [ "$(mocp -Q '%state')" == STOP ]; then
+			mocp -p
+		else
+			mocp -U
+		fi
+	else
+		if [ "$(mocp -Q '%state')" == STOP ]; then
+			mocp -p
+		else
+			mocp -G
+		fi
+	fi
+}
+
+click::command cli 'Pause/resume media playback.'
+click::epilog "Currently supports following media players: mpv, mocp."
+click::flag '-p' '--pause' 'pause' 'Force pause (does nothing if playback is already paused).'
+click::flag '-u' '--resume' 'resume' 'Force resume (does nothing if already resumed).'
+click::flag '-t' '--toggle' 'toggle' 'Toggle between pause/playing states (default action).'
+click::flag '-s' '--state' 'state' 'Return current state as exit code (0 - playing, 1 - paused/stopped).'
+cli() {
+	action=toggle
+	if [ -n "${CLICK_ARGS[state]}" ]; then
+		action=state
+	elif [ -n "${CLICK_ARGS[pause]}" ]; then
+		action=pause
+	elif [ -n "${CLICK_ARGS[resume]}" ]; then
+		action=resume
+	fi
+
+	if [ -n "$(pgrep --exact --oldest mpv)" ]; then
+		control_mpv "$action"
+		exit $?
+	fi
+
+	control_mocp
+	exit $?
+}
+
+click::run "$@"
