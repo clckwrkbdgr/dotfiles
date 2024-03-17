@@ -16,6 +16,7 @@ from clckwrkbdgr.filterconf import Environment, ConfigFilter, config_filter
 
 # ConfigFilters:
 import clckwrkbdgr.filterconf.txt
+import clckwrkbdgr.filterconf.jsonfile
 
 """
 xml:
@@ -48,6 +49,7 @@ def get_epilog():
 		filterclass = config_filter[name]
 		result +=   '  {0}  - '.format(name)
 		result += '\n         '.join(filterclass.description().splitlines())
+		result += '\n'
 	return result
 
 def prepare_envvars(enviro_args):
@@ -227,3 +229,6 @@ def script(settings, filename):
 				rc = e.code
 			if rc != 0: # pragma: no cover
 				return rc
+
+if __name__ == '__main__': # pragma: no cover
+	main()
