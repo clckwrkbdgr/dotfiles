@@ -5,7 +5,7 @@ from collections import namedtuple
 import curses
 import jsonpickle
 from clckwrkbdgr import xdg
-from clckwrkbdgr.math import Point, Matrix, Size, Rect
+from .math import Point, Matrix, Size, Rect
 import clckwrkbdgr.math.graph, clckwrkbdgr.math.algorithm
 from .messages import Log
 
@@ -29,21 +29,22 @@ def bresenham(start, stop): # pragma: no cover -- TODO
 	sy = 1 if start.y < stop.y else -1
 	error = dx + dy
 	
+	x, y = start.x, start.y
 	while True:
-		yield start
-		if start.x == stop.x and start.y == stop.y:
+		yield Point(x, y)
+		if x == stop.x and y == stop.y:
 			break
 		e2 = 2 * error
 		if e2 >= dy:
-			if start.x == stop.x:
+			if x == stop.x:
 				break
 			error = error + dy
-			start.x += sx
+			x += sx
 		if e2 <= dx:
-			if start.y == stop.y:
+			if y == stop.y:
 				break
 			error = error + dx
-			start.y += sy
+			y += sy
 
 def build_rogue_dungeon(size): # pragma: no cover -- TODO
 	strata = Matrix(size, Cell(' ', False))
@@ -54,12 +55,15 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 	margin = Size(1, 1)
 	grid = Matrix(grid_size)
 	cell_size = Size(map_size.width // grid_size.width, map_size.height // grid_size.height)
-	max_room_size = cell_size - margin * 2
+	max_room_size = Size(
+			cell_size.width - margin.width * 2,
+			cell_size.height - margin.height * 2
+			)
 	if max_room_size.width < min_room_size.width:
 		max_room_size.width = min_room_size.width
 	if max_room_size.height < min_room_size.height:
 		max_room_size.height = min_room_size.height
-	for cell in grid:
+	for cell in grid.size:
 		room_size = Size(
 				random.randrange(min_room_size.width, max_room_size.width + 1),
 				random.randrange(min_room_size.height, max_room_size.height + 1),
@@ -70,7 +74,7 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 				random_non_negative(cell_size.width - room_size.width - 1),
 				random_non_negative(cell_size.height - room_size.height - 1),
 				)
-		grid.set_cell(cell, Rect(topleft, room_size))
+		grid.set_cell(cell.x, cell.y, Rect(topleft, room_size))
 
 	maze = clckwrkbdgr.math.graph.grid_from_matrix(grid)
 	for i in range(5):
@@ -87,36 +91,36 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 			direction = 'H'
 		else:
 			direction = 'V'
-		start_room = grid.cell(start_room)
-		stop_room = grid.cell(stop_room)
+		start_room = grid.cell(start_room.x, start_room.y)
+		stop_room = grid.cell(stop_room.x, stop_room.y)
 
 		bending_point = 1
 		if direction == 'H':
-			if start_room.left > stop_room.left:
+			if start_room.topleft.x > stop_room.topleft.x:
 				start_room, stop_room = stop_room, start_room
 			start = Point(
-				start_room.right,
-				random.randrange(start_room.top+1, start_room.bottom),
+				start_room.topleft.x + start_room.size.width,
+				random.randrange(start_room.topleft.y+1, start_room.topleft.y + stop_room.size.height),
 				)
 			stop = Point(
-				stop_room.left,
-				random.randrange(stop_room.top+1, stop_room.bottom),
+				stop_room.topleft.x,
+				random.randrange(stop_room.topleft.y+1, stop_room.topleft.y + stop_room.size.height),
 				)
-			if abs(stop_room.left - start_room.right) > 1:
-				bending_point = random.randrange(1, abs(stop_room.left - start_room.right))
+			if abs(stop_room.topleft.x - (start_room.topleft.x + start_room.size.width)) > 1:
+				bending_point = random.randrange(1, abs(stop_room.topleft.x - (start_room.topleft.x + start_room.size.width)))
 		else:
-			if start_room.top > stop_room.top:
+			if start_room.topleft.y > stop_room.topleft.y:
 				start_room, stop_room = stop_room, start_room
 			start = Point(
-				random.randrange(start_room.left+1, start_room.right),
-				start_room.bottom,
+				random.randrange(start_room.topleft.x+1, start_room.topleft.x+start_room.size.width),
+				start_room.topleft.y + start_room.size.height,
 				)
 			stop = Point(
-				random.randrange(stop_room.left+1, stop_room.right),
-				stop_room.top,
+				random.randrange(stop_room.topleft.x+1, stop_room.topleft.x+stop_room.size.width),
+				stop_room.topleft.y,
 				)
-			if abs(stop_room.top - start_room.bottom) > 1:
-				bending_point = random.randrange(1, abs(stop_room.top - start_room.bottom))
+			if abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)) > 1:
+				bending_point = random.randrange(1, abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)))
 		tunnels.append(clckwrkbdgr.math.geometry.RectConnection(
 			start=start,
 			stop=stop,
@@ -124,40 +128,41 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 			bending_point=bending_point,
 			))
 
-	for room in grid.values():
-		strata.set_cell((room.left, room.top), Cell("+", False, remembered='+'))
-		strata.set_cell((room.left, room.bottom), Cell("+", False, remembered='+'))
-		strata.set_cell((room.right, room.top), Cell("+", False, remembered='+'))
-		strata.set_cell((room.right, room.bottom), Cell("+", False, remembered='+'))
-		for x in range(room.left+1, room.right):
-			strata.set_cell((x, room.top), Cell("-", False, remembered='-'))
-			strata.set_cell((x, room.bottom), Cell("-", False, remembered='-'))
-		for y in range(room.top+1, room.bottom):
-			strata.set_cell((room.left, y), Cell("|", False, remembered='|'))
-			strata.set_cell((room.right, y), Cell("|", False, remembered='|'))
-		for y in range(room.top+1, room.bottom):
-			for x in range(room.left+1, room.right):
-				strata.set_cell((x, y), Cell(".", True))
+	for room in grid.size:
+		room = grid.cell(room.x, room.y)
+		strata.set_cell(room.topleft.x, room.topleft.y, Cell("+", False, remembered='+'))
+		strata.set_cell(room.topleft.x, room.topleft.y+room.size.height, Cell("+", False, remembered='+'))
+		strata.set_cell(room.topleft.x+room.size.width, room.topleft.y, Cell("+", False, remembered='+'))
+		strata.set_cell(room.topleft.x+room.size.width, room.topleft.y+room.size.height, Cell("+", False, remembered='+'))
+		for x in range(room.topleft.x+1, room.topleft.x+room.size.width):
+			strata.set_cell(x, room.topleft.y, Cell("-", False, remembered='-'))
+			strata.set_cell(x, room.topleft.y+room.size.height, Cell("-", False, remembered='-'))
+		for y in range(room.topleft.y+1, room.topleft.y+room.size.height):
+			strata.set_cell(room.topleft.x, y, Cell("|", False, remembered='|'))
+			strata.set_cell(room.topleft.x+room.size.width, y, Cell("|", False, remembered='|'))
+		for y in range(room.topleft.y+1, room.topleft.y+room.size.height):
+			for x in range(room.topleft.x+1, room.topleft.x+room.size.width):
+				strata.set_cell(x, y, Cell(".", True))
 
 	for tunnel in tunnels:
 		for cell in tunnel.iter_points():
-			strata.set_cell((cell.x, cell.y), Cell("#", True, remembered='#'))
-		strata.set_cell((tunnel.start.x, tunnel.start.y), Cell("+", True, remembered='+'))
-		strata.set_cell((tunnel.stop.x, tunnel.stop.y), Cell("+", True, remembered='+'))
+			strata.set_cell(cell.x, cell.y, Cell("#", True, remembered='#'))
+		strata.set_cell(tunnel.start.x, tunnel.start.y, Cell("+", True, remembered='+'))
+		strata.set_cell(tunnel.stop.x, tunnel.stop.y, Cell("+", True, remembered='+'))
 
 	enter_room_key = random.choice(list(grid.keys()))
-	enter_room = grid.cell(enter_room_key)
+	enter_room = grid.cell(enter_room_key.x, enter_room_key.y)
 	start_pos = Point(
-				random.randrange(enter_room.left + 1, enter_room.right + 1 - 1),
-				random.randrange(enter_room.top + 1, enter_room.bottom + 1 - 1),
+				random.randrange(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
+				random.randrange(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
 				)
 
 	for _ in range(9):
 		exit_room_key = random.choice(list(grid.keys()))
-		exit_room = grid.cell(exit_room_key)
+		exit_room = grid.cell(exit_room_key.x, exit_room_key.y)
 		exit_pos = Point(
-				random.randrange(exit_room.left + 1, exit_room.right + 1 - 1),
-				random.randrange(exit_room.top + 1, exit_room.bottom + 1 - 1),
+				random.randrange(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
+				random.randrange(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
 				)
 		if exit_room_key != enter_room_key:
 			break
@@ -183,8 +188,8 @@ class BinarySpacePartition(object): # pragma: no cover -- TODO
 		No need to determine wall facing and location, the algorithm would decide automatically.
 		By default door is generated in random manner.
 		"""
-		x = random.randrange(room.left, room.right)
-		y = random.randrange(room.top, room.bottom)
+		x = random.randrange(room.topleft.x, room.topleft.x + room.size.width - 1)
+		y = random.randrange(room.topleft.y, room.topleft.y + room.size.height - 1)
 		Log.debug("Generating door in {0}:  ({1}, {2})".format(room, x, y))
 		return Point(x, y)
 	def hor_ver_generator(self): # pragma: no cover
@@ -199,7 +204,6 @@ class BinarySpacePartition(object): # pragma: no cover -- TODO
 		Tuples go from the biggest room to the all subrooms descending.
 		Sibling rooms go left-to-right and top-to-bottom.
 		"""
-		topleft, bottomright = map(Point, (topleft, bottomright))
 		Log.debug("topleft={0}, bottomright={1}".format(topleft, bottomright))
 		too_narrow = abs(topleft.x - bottomright.x) <= self.min_size[0]
 		too_low = abs(topleft.y - bottomright.y) <= self.min_size[1]
@@ -209,14 +213,16 @@ class BinarySpacePartition(object): # pragma: no cover -- TODO
 		new_topleft = Point(topleft.x + 2, topleft.y + 2)
 		userspace = Rect(
 				new_topleft,
-				bottomright - new_topleft + Point(1, 1),
-				)
-		if userspace.width <= 0 or userspace.height <= 0:
+				Size(
+					bottomright.x - new_topleft.x + 1,
+					bottomright.y - new_topleft.y + 1,
+				))
+		if userspace.size.width <= 0 or userspace.size.height <= 0:
 			return
-		if userspace.width <= 1 or userspace.height <= 1: # TODO why is it needed?
+		if userspace.size.width <= 1 or userspace.size.height <= 1: # TODO why is it needed?
 			return
 		door = self.door_generator(userspace)
-		assert userspace.contains(door, with_border=True), "Door {0} not in room user space {1}".format(door, userspace)
+		assert userspace.contains(door), "Door {0} not in room user space {1}".format(door, userspace)
 		yield (topleft, bottomright, horizontal, door)
 		if horizontal:
 			the_divide, door_pos = door
@@ -240,28 +246,29 @@ class BSPBuilder(object): # pragma: no cover -- TODO
 		self.field = field
 		self.free, self.obstacle, self.door = free, obstacle, door
 	def fill(self, topleft, bottomright, is_horizontal, door_pos):
-		self.field.fill(topleft, bottomright, self.free())
+		for x in range(topleft.x, bottomright.x + 1):
+			for y in range(topleft.y, bottomright.y + 1):
+				self.field.set_cell(x, y, self.free())
 		if is_horizontal:
 			the_divide = door_pos.x
 			for y in range(topleft.y, bottomright.y + 1):
-				self.field.set_cell(Point(the_divide, y), self.obstacle())
+				self.field.set_cell(the_divide, y, self.obstacle())
 		else:
 			the_divide = door_pos.y
 			for x in range(topleft.x, bottomright.x + 1):
-				self.field.set_cell(Point(x, the_divide), self.obstacle())
-		self.field.set_cell(door_pos, self.door())
+				self.field.set_cell(x, the_divide, self.obstacle())
+		self.field.set_cell(door_pos.x, door_pos.y, self.door())
 
 def build_bsp_dungeon(size): # pragma: no cover -- TODO
-	size = Size(size)
 	strata = Matrix(size, Cell(' ', False))
 
 	Log.debug("Building surrounding walls.")
 	for x in range(size.width):
-		strata.set_cell((x, 0), Cell('#', False, remembered='#'))
-		strata.set_cell((x, size.height - 1), Cell('#', False, remembered='#'))
+		strata.set_cell(x, 0, Cell('#', False, remembered='#'))
+		strata.set_cell(x, size.height - 1, Cell('#', False, remembered='#'))
 	for y in range(size.height):
-		strata.set_cell((0, y), Cell('#', False, remembered='#'))
-		strata.set_cell((size.width - 1, y), Cell('#', False, remembered='#'))
+		strata.set_cell(0, y, Cell('#', False, remembered='#'))
+		strata.set_cell(size.width - 1, y, Cell('#', False, remembered='#'))
 
 	Log.debug("Running BSP...")
 	bsp = BinarySpacePartition()
@@ -274,7 +281,7 @@ def build_bsp_dungeon(size): # pragma: no cover -- TODO
 		Log.debug("Splitter: {0}".format(splitter))
 		builder.fill(*splitter)
 
-	floor_only = lambda pos: strata.cell(pos).passable
+	floor_only = lambda pos: strata.cell(pos.x, pos.y).passable
 	start_pos = generate_pos(size, floor_only)
 	Log.debug("Generated player pos: {0}".format(start_pos))
 
@@ -284,14 +291,13 @@ def build_bsp_dungeon(size): # pragma: no cover -- TODO
 	return start_pos, exit_pos, strata
 
 def build_cave(size): # pragma: no cover -- TODO
-	size = Size(size)
 	strata = Matrix(size, 0)
 	for x in range(1, strata.width - 1):
 		for y in range(1, strata.height - 1):
-			strata.set_cell((x, y), 0 if random.random() < 0.50 else 1)
-	Log.debug("Initial state:\n{0}".format(strata.tostring()))
+			strata.set_cell(x, y, 0 if random.random() < 0.50 else 1)
+	Log.debug("Initial state:\n{0}".format(repr(strata)))
 
-	new_layer = Matrix(strata)
+	new_layer = Matrix(strata.size)
 	drop_wall_2_at = 4
 	for step in range(drop_wall_2_at+1):
 		for x in range(1, strata.width - 1):
@@ -301,74 +307,71 @@ def build_cave(size): # pragma: no cover -- TODO
 					clckwrkbdgr.math.get_neighbours(strata, n, with_diagonal=True)
 					for n in neighs
 					)) - set(Point(x, y))
-				wall_count = sum(int(strata.cell(n) == 0) for n in neighs)
-				wall_2_count = sum(int(strata.cell(n) == 0) for n in neighs2)
-				is_wall = strata.cell((x, y)) == 0
+				wall_count = sum(int(strata.cell(n.x, n.y) == 0) for n in neighs)
+				wall_2_count = sum(int(strata.cell(n.x, n.y) == 0) for n in neighs2)
+				is_wall = strata.cell(x, y) == 0
 				if wall_count >= 5:
-					new_layer.set_cell((x, y), 0)
+					new_layer.set_cell(x, y, 0)
 				elif step < drop_wall_2_at and wall_2_count <= 2:
-					new_layer.set_cell((x, y), 0)
+					new_layer.set_cell(x, y, 0)
 				else:
-					new_layer.set_cell((x, y), 1)
+					new_layer.set_cell(x, y, 1)
 		strata, new_layer = new_layer, strata
-		Log.debug("Step {1}:\n{0}".format(strata.tostring(), step))
+		Log.debug("Step {1}:\n{0}".format(repr(strata), step))
 	
-	cavern = next(pos for pos in strata if strata.cell(pos) == 1)
+	cavern = next(pos for pos in strata.size if strata.cell(pos.x, pos.y) == 1)
 	caverns = []
 	while cavern:
 		area = clckwrkbdgr.math.algorithm.floodfill(
 				cavern,
-				spread_function=lambda p: [x for x in clckwrkbdgr.math.get_neighbours(strata, p) if strata.cell(x) == 1]
+				spread_function=lambda p: [x for x in clckwrkbdgr.math.get_neighbours(strata, p) if strata.cell(x.x, x.y) == 1]
 				)
 		count = 0
 		for point in area:
 			count += 1
-			strata.set_cell(point, 2 + len(caverns))
+			strata.set_cell(point.x, point.y, 2 + len(caverns))
 		caverns.append(count)
-		Log.debug("Filling cavern #{1}:\n{0}".format(strata.tostring(), len(caverns)))
-		cavern = next((pos for pos in strata if strata.cell(pos) == 1), None)
+		Log.debug("Filling cavern #{1}:\n{0}".format(repr(strata), len(caverns)))
+		cavern = next((pos for pos in strata.size if strata.cell(pos.x, pos.y) == 1), None)
 	max_cavern = 2 + caverns.index(max(caverns))
-	for pos in strata:
-		if strata.cell(pos) in [0, max_cavern]:
+	for pos in strata.size:
+		if strata.cell(pos.x, pos.y) in [0, max_cavern]:
 			continue
-		strata.set_cell(pos, 0)
-	Log.debug("Finalized cave:\n{0}".format(strata.tostring()))
+		strata.set_cell(pos.x, pos.y, 0)
+	Log.debug("Finalized cave:\n{0}".format(repr(strata)))
 
-	floor_only = lambda pos: strata.cell(pos) > 1
+	floor_only = lambda pos: strata.cell(pos.x, pos.y) > 1
 	start_pos = generate_pos(size, floor_only)
 	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
-	strata = strata.transform(lambda cell: Cell('.') if cell else Cell('#', False, remembered='#'))
+	for pos in strata.size:
+		if strata.cell(pos.x, pos.y):
+			strata.set_cell(pos.x, pos.y, Cell('.'))
+		else:
+			strata.set_cell(pos.x, pos.y, Cell('#', False, remembered='#'))
 
 	return start_pos, exit_pos, strata
 
 # this changes the direction to go from the current square, to the next available
 def RandomDirections(): # pragma: no cover -- TODO
-	cDir = [Point(0, 0), Point(0, 0), Point(0, 0), Point(0, 0)]
 	direction = random.randrange(4)
 	if direction == 0:
-		cDir[0].x = -1; cDir[1].x = 1
-		cDir[2].y = -1; cDir[3].y = 1
+		cDir = [Point(-1, 0), Point(1, 0), Point(0, -1), Point(0, 1)]
 	elif direction == 1:
-		cDir[3].x = -1; cDir[2].x = 1
-		cDir[1].y = -1; cDir[0].y = 1
+		cDir = [Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0)]
 	elif direction == 2:
-		cDir[2].x = -1; cDir[3].x = 1
-		cDir[0].y = -1; cDir[1].y = 1
+		cDir = [Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0)]
 	elif direction == 3:
-		cDir[1].x = -1; cDir[0].x = 1
-		cDir[3].y = -1; cDir[2].y = 1
+		cDir = [Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1)]
 	return cDir
 
 def build_maze(size): # pragma: no cover -- TODO
-	size = Size(size)
-	layout_size = size - Size(2, 2) # For walls.
-	# Layout size should be odd (for connections between cells).
-	if layout_size.width % 2 == 0:
-		layout_size.width -= 1
-	if layout_size.height % 2 == 0:
-		layout_size.height -= 1
+	layout_size = Size(
+			# Layout size should be odd (for connections between cells).
+			size.width - 2 - (1 - size.width % 2),
+			size.height - 2 - (1 - size.height % 2),
+			) # For walls.
 	layout = Matrix(layout_size, False)
 
 	# 0 is the most random, randomisation gets lower after that
@@ -377,7 +380,7 @@ def build_maze(size): # pragma: no cover -- TODO
 
 	intDone = 0
 	while True:
-		Log.debug("Done {0} cells:\n{1}".format(intDone, layout.tostring(lambda c:'.' if c else '#')))
+		Log.debug("Done {0} cells:\n{1}".format(intDone, repr(layout)))
 		# this code is used to make sure the numbers are odd
 		current = Point(
 				random.randrange((layout_size.width // 2)) * 2,
@@ -385,8 +388,8 @@ def build_maze(size): # pragma: no cover -- TODO
 				)
 		# first one is free!
 		if intDone == 0:
-			layout.set_cell(current, True)
-		if layout.cell(current):
+			layout.set_cell(current.x, current.y, True)
+		if layout.cell(current.x, current.y):
 			# always randomisation directions to start
 			cDir = RandomDirections()
 			blnBlocked = False
@@ -398,15 +401,16 @@ def build_maze(size): # pragma: no cover -- TODO
 				# loop through order of directions
 				for intDir in range(4):
 					# work out where this direction is
-					new_cell = Point(0, 0)
-					new_cell.x = current.x + (cDir[intDir].x * 2)
-					new_cell.y = current.y + (cDir[intDir].y * 2)
+					new_cell = Point(
+							current.x + (cDir[intDir].x * 2),
+							current.y + (cDir[intDir].y * 2),
+							)
 					# check if the tile can be used
-					if layout.valid(new_cell) and not layout.cell(new_cell):
+					if layout.valid(new_cell) and not layout.cell(new_cell.x, new_cell.y):
 						# create a path
-						layout.set_cell(new_cell, True)
+						layout.set_cell(new_cell.x, new_cell.y, True)
 						# and the square inbetween
-						layout.set_cell(current + cDir[intDir], True)
+						layout.set_cell(current.x + cDir[intDir].x, current.y + cDir[intDir].y, True)
 						# this is now the current square
 						current = new_cell
 						blnBlocked = False
@@ -417,11 +421,11 @@ def build_maze(size): # pragma: no cover -- TODO
 			break
 
 	strata = Matrix(size, Cell('#', False, remembered='#')) # FIXME
-	for pos in layout:
-		if layout.cell(pos):
-			strata.set_cell(pos + Point(1, 1), Cell('.'))
+	for pos in layout.size:
+		if layout.cell(pos.x, pos.y):
+			strata.set_cell(pos.x + 1, pos.y + 1, Cell('.'))
 
-	floor_only = lambda pos: strata.cell(pos).passable
+	floor_only = lambda pos: strata.cell(pos.x, pos.y).passable
 	start_pos = generate_pos(size, floor_only)
 	Log.debug("Generated player pos: {0}".format(start_pos))
 
@@ -451,7 +455,7 @@ def main_loop(window): # pragma: no cover -- TODO
 			build_maze,
 			]
 	savefile = xdg.save_state_path('dotrogue')/'rogue.sav'
-	if savefile.exists():
+	if savefile.exists() and False: # FIXME temp. switched off until streaming serialization is implemented.
 		Log.debug('Loading savefile: {0}...'.format(savefile))
 		data = savefile.read_text()
 		if '__main__.' in data:
@@ -463,9 +467,9 @@ def main_loop(window): # pragma: no cover -- TODO
 	else:
 		builder = random.choice(builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))
-		player, exit_pos, strata = builder((80, 23))
+		player, exit_pos, strata = builder(Size(80, 23))
 		game = Game(player, exit_pos, strata)
-	field_of_view = Matrix((21, 21), False)
+	field_of_view = Matrix(Size(21, 21), False)
 	playing = True
 	god_vision = False
 	Log.debug('Starting playing...')
@@ -473,10 +477,13 @@ def main_loop(window): # pragma: no cover -- TODO
 	while playing:
 		Log.debug('Recalculating Field Of View.')
 		field_of_view.clear(False)
-		for pos in field_of_view:
+		for pos in field_of_view.size:
 			Log.debug('FOV pos: {0}'.format(pos))
-			half_size = field_of_view.size // 2
-			rel_pos = Point(half_size) - pos
+			half_size = Size(field_of_view.size.width // 2, field_of_view.size.height // 2)
+			rel_pos = Point(
+					half_size.width - pos.x,
+					half_size.height - pos.y,
+					)
 			Log.debug('FOV rel pos: {0}'.format(rel_pos))
 			if (rel_pos.x / half_size.width) ** 2 + (rel_pos.y / half_size.height) ** 2 <= 1:
 				Log.debug('Is inside FOV ellipse.')
@@ -484,30 +491,35 @@ def main_loop(window): # pragma: no cover -- TODO
 				for inner_line_pos in bresenham(Point(0, 0), rel_pos):
 					real_world_pos = game.player + inner_line_pos
 					Log.debug('Line pos: {0}, real world pos: {1}'.format(inner_line_pos, real_world_pos))
-					fov_pos = half_size + inner_line_pos
+					fov_pos = Point(half_size.width + inner_line_pos.x,
+							half_size.height + inner_line_pos.y,
+							)
 					Log.debug('Setting as visible: {0}'.format(fov_pos))
-					cell = game.strata.cell(real_world_pos)
+					cell = game.strata.cell(real_world_pos.x, real_world_pos.y)
 					cell.visited = True
-					field_of_view.set_cell(fov_pos, True)
+					field_of_view.set_cell(fov_pos.x, fov_pos.y, True)
 					if not cell.passable:
 						Log.debug('Not passable, stop: {0}'.format(repr(cell.sprite)))
 						break
-		Log.debug("Full FOV:\n{0}".format(field_of_view.tostring(lambda v: '*' if v else '.')))
+		Log.debug("Full FOV:\n{0}".format(repr(field_of_view)))
 
 		Log.debug('Redrawing interface.')
 		Log.debug('Player at: {0}'.format(game.player))
 		for row in range(game.strata.height):
 			for col in range(game.strata.width):
 				Log.debug('Cell {0},{1}'.format(col, row))
-				cell = game.strata.cell((col, row))
+				cell = game.strata.cell(col, row)
 				rel_pos = Point(col, row) - game.player
 				Log.debug('Relative pos: {0}'.format(rel_pos))
 
 				is_visible = False
-				fov_pos = rel_pos + Point(field_of_view.size // 2)
+				fov_pos = rel_pos + Point(
+						field_of_view.size.width // 2,
+						field_of_view.size.height // 2,
+						)
 				Log.debug('Relative FOV pos: {0}'.format(fov_pos))
 				if field_of_view.valid(fov_pos):
-					is_visible = field_of_view.cell(fov_pos)
+					is_visible = field_of_view.cell(fov_pos.x, fov_pos.y)
 					Log.debug('Valid FOV pos, is visible: {0}'.format(is_visible))
 				Log.debug('Visible: {0}'.format(is_visible))
 
@@ -521,9 +533,12 @@ def main_loop(window): # pragma: no cover -- TODO
 
 		is_exit_visible = False
 		exit_rel_pos = game.exit_pos - game.player
-		exit_fov_pos = exit_rel_pos + Point(field_of_view.size // 2)
+		exit_fov_pos = exit_rel_pos + Point(
+				field_of_view.size.width // 2,
+				field_of_view.size.height // 2,
+				)
 		if field_of_view.valid(exit_fov_pos):
-			is_exit_visible = field_of_view.cell(exit_fov_pos)
+			is_exit_visible = field_of_view.cell(exit_fov_pos.x, exit_fov_pos.y)
 			if is_exit_visible:
 				game.remembered_exit = True
 		if is_exit_visible or god_vision or game.remembered_exit:
@@ -555,7 +570,7 @@ def main_loop(window): # pragma: no cover -- TODO
 			if game.player == game.exit_pos:
 				builder = random.choice(builders)
 				Log.debug('Building new dungeon: {0}...'.format(builder))
-				player, exit_pos, strata = builder((80, 23))
+				player, exit_pos, strata = builder(Size(80, 23))
 				game = Game(player, exit_pos, strata)
 		elif chr(control) in 'hjklyubn':
 			Log.debug('Moving.')
@@ -571,7 +586,7 @@ def main_loop(window): # pragma: no cover -- TODO
 					}[chr(control)]
 			Log.debug('Shift: {0}'.format(shift))
 			new_pos = game.player + shift
-			if game.strata.valid(new_pos) and game.strata.cell(new_pos).passable:
+			if game.strata.valid(new_pos) and game.strata.cell(new_pos.x, new_pos.y).passable:
 				Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
 				game.player = new_pos
 	if alive:
