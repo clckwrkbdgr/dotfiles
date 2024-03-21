@@ -1,0 +1,25 @@
+2456,2461d2455
+<     fp.seek(offset)
+<     while bytes > 0:
+<         part = fp.read(min(bytes, maxread))
+<         if not part: break
+<         bytes -= len(part)
+<         yield part
+2463,2466c2457,2468
+<         fp.close()
+<     except:
+<         import traceback
+<         traceback.print_exc(file=sys.stderr)
+---
+>         fp.seek(offset)
+>         while bytes > 0:
+>             part = fp.read(min(bytes, maxread))
+>             if not part: break
+>             bytes -= len(part)
+>             yield part
+>     finally:
+>         try:
+>             fp.close()
+>         except:
+>             import traceback
+>             traceback.print_exc(file=sys.stderr)
