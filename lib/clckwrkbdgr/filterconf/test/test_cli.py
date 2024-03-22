@@ -63,7 +63,7 @@ class TestCLI(unittest.TestCase):
 		""".format(XHOME=os.environ['XHOME'], USER=os.environ['USER'])))
 	def should_sort_plain_text(self):
 		runner = CliRunner()
-		result = runner.invoke(cli.main, ['-f', 'txt', 'sort'], input="b\nc\na\n")
+		result = runner.invoke(cli.main, ['-f', 'txt', 'sort', '_path'], input="b\nc\na\n")
 		self.assertEqual(result.output, textwrap.dedent("""\
 		a
 		b
@@ -71,34 +71,28 @@ class TestCLI(unittest.TestCase):
 		"""))
 	def should_delete_value_from_plain_text(self):
 		runner = CliRunner()
-		result = runner.invoke(cli.main, ['-f', 'txt', 'delete', 'b'], input="a\nb\nc\n")
+		result = runner.invoke(cli.main, ['-f', 'txt', 'delete', '_path', 'b'], input="a\nb\nc\n")
 		self.assertEqual(result.output, textwrap.dedent("""\
 		a
 		c
 		"""))
-	def should_delete_multiple_values_from_plain_text(self):
-		runner = CliRunner()
-		result = runner.invoke(cli.main, ['-f', 'txt', 'delete', 'b', 'c'], input="a\nb\nc\n")
-		self.assertEqual(result.output, textwrap.dedent("""\
-		a
-		"""))
 	def should_delete_line_with_substring_from_plain_text(self):
 		runner = CliRunner()
-		result = runner.invoke(cli.main, ['-f', 'txt', 'delete', 'eco'], input="first\nsecond\nthird\n")
+		result = runner.invoke(cli.main, ['-f', 'txt', 'delete', '_path', 'eco'], input="first\nsecond\nthird\n")
 		self.assertEqual(result.output, textwrap.dedent("""\
 		first
 		third
 		"""))
 	def should_delete_regex_from_plain_text(self):
 		runner = CliRunner()
-		result = runner.invoke(cli.main, ['-f', 'txt', 'delete', '^se.on+d$', '--pattern-type', 'regex'], input="first\nsecond\nthird\n")
+		result = runner.invoke(cli.main, ['-f', 'txt', 'delete', '_path', '^se.on+d$', '--pattern-type', 'regex'], input="first\nsecond\nthird\n")
 		self.assertEqual(result.output, textwrap.dedent("""\
 		first
 		third
 		"""))
 	def should_replace_substring_in_plain_text(self):
 		runner = CliRunner()
-		result = runner.invoke(cli.main, ['-f', 'txt', 'replace', 'seco', '--with', '2'], input="first\nsecond\nthird\n")
+		result = runner.invoke(cli.main, ['-f', 'txt', 'replace', '_path', 'seco', '--with', '2'], input="first\nsecond\nthird\n")
 		self.assertEqual(result.output, textwrap.dedent("""\
 		first
 		2nd
@@ -106,7 +100,7 @@ class TestCLI(unittest.TestCase):
 		"""))
 	def should_replace_regex_in_plain_text(self):
 		runner = CliRunner()
-		result = runner.invoke(cli.main, ['-f', 'txt', 'replace', '^seco([a-z]+)$', '--pattern-type', 'regex', '--with', '2\\1'], input="first\nsecond\nthird\n")
+		result = runner.invoke(cli.main, ['-f', 'txt', 'replace', '_path', '^seco([a-z]+)$', '--pattern-type', 'regex', '--with', '2\\1'], input="first\nsecond\nthird\n")
 		self.assertEqual(result.output, textwrap.dedent("""\
 		first
 		2nd
@@ -121,14 +115,15 @@ class TestCLI(unittest.TestCase):
 			third
 		"""))
 	def should_perform_multiple_commands(self):
+		self.maxDiff = None
 		runner = CliRunner()
 		with runner.isolated_filesystem():
 			with open('script.sh', 'w') as f:
 				f.write(textwrap.dedent("""\
 				# Comment
-				delete --pattern-type regex "^.*remove"
-				sort
-				replace --pattern-type regex "seco(nd)" --with "2\\1"
+				delete "" --pattern-type regex "^.*remove"
+				sort ""
+				replace "" --pattern-type regex "seco(nd)" --with "2\\1"
 				"""))
 			result = runner.invoke(cli.main, ['-f', 'txt', 'script', 'script.sh'], input="second\nthird\nto remove\nfirst\n")
 			self.assertEqual(result.output, textwrap.dedent("""\

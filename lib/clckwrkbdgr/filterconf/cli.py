@@ -149,31 +149,33 @@ def enviro(settings):
 	pass
 
 @main.command()
+@click.argument('path')
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
 @utils.exits_with_return_value
-def sort(settings):
+def sort(settings, path):
 	""" Sort content depending on format. """
-	filter = settings.format(settings.content)
-	filter.sort()
+	with settings.format(settings.content) as filter:
+		filter.sort(path)
 	settings.content = filter.content
 
 @main.command()
-@click.argument('patterns', nargs=-1)
+@click.argument('path')
+@click.argument('pattern')
 @click.option('--pattern-type', default='plain', type=click.Choice('plain regex wildcard'.split()),
 			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
 			)
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
 @utils.exits_with_return_value
-def delete(settings, patterns, pattern_type=None):
-	""" Delete entries that match specified patterns/paths (depends on format). """
-	filter = settings.format(settings.content)
-	for pattern in patterns:
-		filter.delete(pattern, pattern_type)
+def delete(settings, path, pattern, pattern_type=None):
+	""" Delete entries at provided path that match specified patterns (depends on format). """
+	with settings.format(settings.content) as filter:
+		filter.delete(path, pattern, pattern_type)
 	settings.content = filter.content
 
 @main.command()
+@click.argument('path')
 @click.argument('pattern')
 @click.option('--pattern-type', default='plain', type=click.Choice('plain regex wildcard'.split()),
 			help="Sets type of the supplied pattern (if any and if recognizable by current format)."
@@ -184,10 +186,10 @@ def delete(settings, patterns, pattern_type=None):
 @click.pass_obj
 @with_stdin_content(enviro_action='expand')
 @utils.exits_with_return_value
-def replace(settings, pattern, pattern_type=None, with_value=None):
-	""" Replace entry specified by pattern/path with another value (depends on format). """
-	filter = settings.format(settings.content)
-	filter.replace(pattern, with_value, pattern_type)
+def replace(settings, path, pattern, pattern_type=None, with_value=None):
+	""" Replace entry at specified path that match pattern with another value (depends on format). """
+	with settings.format(settings.content) as filter:
+		filter.replace(path, pattern, with_value, pattern_type)
 	settings.content = filter.content
 
 @main.command()
@@ -196,9 +198,20 @@ def replace(settings, pattern, pattern_type=None, with_value=None):
 @utils.exits_with_return_value
 def pretty(settings):
 	""" Prettify content depending on format. """
-	filter = settings.format(settings.content)
-	filter.pretty()
+	with settings.format(settings.content) as filter:
+		filter.pretty()
 	settings.content = filter.content
+
+def parse_script_file(filename):
+	""" Yields list of tuples: (command_name, [args])
+	"""
+	with open(filename) as f:
+		for line in f:
+			if not line.strip() or line.lstrip().startswith('#'):
+				continue
+			args = shlex.split(line)
+			command_name = args.pop(0)
+			yield command_name, args
 
 @main.command()
 @click.argument('filename')
@@ -211,13 +224,9 @@ def script(settings, filename):
 	Format and enviro options do not need to be specified for each command,
 	they are taken from main command line.
 	"""
-	with open(filename) as f:
-		for line in f:
-			if not line.strip() or line.lstrip().startswith('#'):
-				continue
+	with settings.format(settings.content) as filter:
+		for command_name, args in parse_script_file(filename):
 			try:
-				args = shlex.split(line)
-				command_name = args.pop(0)
 				try:
 					command = globals()[command_name]
 				except KeyError:

@@ -1,14 +1,6 @@
-import re, fnmatch
 import contextlib
 from . import ConfigFilter, config_filter
-
-def convert_pattern(pattern, pattern_type=None):
-	""" Returns compiled regex object. """
-	if pattern_type == 'regex':
-		return re.compile(pattern)
-	elif pattern_type == 'wildcard':
-		return re.compile(fnmatch.translate(pattern))
-	return re.compile(re.escape(pattern))
+from . import convert_pattern
 
 @config_filter('txt')
 class PlainText(ConfigFilter):
@@ -27,16 +19,16 @@ class PlainText(ConfigFilter):
 			self.content = '\n'.join(self.lines)
 			if ends_with_cr:
 				self.content += '\n'
-	def sort(self):
+	def sort(self, _path):
 		""" Sorting is performed by lines alphabetically. """
 		with self.AutoSplitlines():
 			self.lines = sorted(self.lines)
-	def delete(self, pattern, pattern_type=None):
+	def delete(self, _path, pattern, pattern_type=None):
 		""" Removes lines that contain specified substring/regex/wildcard. """
 		pattern = convert_pattern(pattern, pattern_type)
 		with self.AutoSplitlines():
 			self.lines = [line for line in self.lines if not pattern.search(line)]
-	def replace(self, pattern, substitute, pattern_type=None):
+	def replace(self, _path, pattern, substitute, pattern_type=None):
 		""" Replaces value specified by substring/regex with substitute. """
 		pattern = convert_pattern(pattern, pattern_type)
 		with self.AutoSplitlines():

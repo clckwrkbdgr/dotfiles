@@ -13,6 +13,6 @@ class TestXMLConfig(unittest.TestCase):
 				</root>
 				""")
 
-		filter = XMLConfig(content)
-		filter.pretty()
+		with XMLConfig(content) as filter:
+			filter.pretty()
 		self.assertEqual(filter.content, expected)

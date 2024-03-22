@@ -20,6 +20,23 @@ class TestEnvironment(unittest.TestCase):
 		self.assertEqual(env.get('MY_VAR'), '1')
 		self.assertEqual(env.get('MY_VAR'), '1')
 
+class TestUtils(unittest.TestCase):
+	def should_convert_pattern_by_type(self):
+		regex = _base.convert_pattern('[a-z]+', 'regex')
+		self.assertTrue(regex.match('foo'))
+		self.assertFalse(regex.match('123 foo'))
+		self.assertTrue(regex.search('123 foo'))
+
+		wildcard = _base.convert_pattern('[a-z][a-z][a-z]', 'wildcard')
+		self.assertTrue(wildcard.match('foo'))
+		self.assertFalse(wildcard.match('123 foo'))
+		self.assertTrue(wildcard.search('123 foo'))
+
+		plain = _base.convert_pattern('foo')
+		self.assertTrue(plain.match('foo'))
+		self.assertFalse(plain.match('123 foo'))
+		self.assertTrue(plain.search('123 foo'))
+
 class TestConfigFilter(unittest.TestCase):
 	def should_prepare_description_from_docstring(self):
 		class MockFilter(_base.ConfigFilter): # pragma: no cover

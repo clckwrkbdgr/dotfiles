@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import re, fnmatch
 import inspect
 from clckwrkbdgr.collections import AutoRegistry
 
@@ -23,6 +24,16 @@ class Environment(object):
 			self.envvars[name] = self.known_vars[name]()
 		return self.envvars[name]
 
+def convert_pattern(pattern, pattern_type=None):
+	""" Helper function to handle all pattern types for text replacement.
+	Returns compiled regex object.
+	"""
+	if pattern_type == 'regex':
+		return re.compile(pattern)
+	elif pattern_type == 'wildcard':
+		return re.compile(fnmatch.translate(pattern))
+	return re.compile(re.escape(pattern))
+
 class ConfigFilter:
 	""" Basic class for config filter.
 	Should be created for specific content.
@@ -30,6 +41,11 @@ class ConfigFilter:
 	"""
 	def __init__(self, content): # pragma: no cover
 		self.content = content
+	def __enter__(self):
+		self.content = self.unpack(self.content)
+		return self
+	def __exit__(self, *args, **kwargs):
+		self.content = self.pack(self.content)
 	@classmethod
 	def description(filterclass):
 		docs = [
@@ -37,13 +53,30 @@ class ConfigFilter:
 				inspect.getdoc(filterclass.sort),
 				]
 		return '\n'.join(docs)
-	def sort(self): # pragma: no cover
+	def unpack(self, content): # pragma: no cover
+		""" Should unpack text content into format-dependent data structure.
+		It will be available in field .data.
+		By default returns text as-is.
+		"""
+		return content
+	def pack(self, data): # pragma: no cover
+		""" Should pack working format-dependent data structure back into text content.
+		By default returns text as-is.
+		"""
+		return data
+	def sort(self, path): # pragma: no cover
+		""" Should sort list of values at provided path. """
 		raise NotImplementedError
-	def delete(self, pattern, pattern_type=None): # pragma: no cover
+	def delete(self, path, pattern, pattern_type=None): # pragma: no cover
+		""" Should delete values at provided path that match given pattern. """
 		raise NotImplementedError
 	def replace(self, pattern, substitute, pattern_type=None): # pragma: no cover
+		""" Should replace values at provided path that match given pattern with given substitute value. """
 		raise NotImplementedError
 	def pretty(self): # pragma: no cover
+		""" Should prettify result output.
+		Default output is allowed to be not pretty.
+		"""
 		raise NotImplementedError
 
 config_filter = AutoRegistry()
