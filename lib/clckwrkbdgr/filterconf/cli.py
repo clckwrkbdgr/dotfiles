@@ -19,13 +19,6 @@ import clckwrkbdgr.filterconf.txt
 import clckwrkbdgr.filterconf.jsonfile
 
 """
-xml:
-	delete tag (full node) by xpath
-	delete
-	replace attribute value by xpath
-	sort ?
-	sort-xml - sort tags by attribute
-
 firefox pref.js
 	user_pref("accessibility.blockautorefresh", true);
 	delete preference by pattern (including regexp and wildcard)
