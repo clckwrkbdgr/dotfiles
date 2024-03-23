@@ -55,10 +55,13 @@ cli() {
 
 	if [ -n "$(pgrep --exact --oldest mpv)" ]; then
 		control_mpv "$action"
+		if [ "$action" == "pause" ]; then
+			control_mocp "$action"
+		fi
 		exit $?
 	fi
 
-	control_mocp
+	control_mocp "$action"
 	exit $?
 }
 
