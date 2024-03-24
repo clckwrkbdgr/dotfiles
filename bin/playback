@@ -16,6 +16,7 @@ control_mpv() { # <action>
 }
 
 control_mocp() { # <action>
+	action="$1"
 	if [ "$action" == "state" ]; then
 		mocp -i | grep -q 'State: PLAY'
 		return $?
@@ -55,9 +56,7 @@ cli() {
 
 	if [ -n "$(pgrep --exact --oldest mpv)" ]; then
 		control_mpv "$action"
-		if [ "$action" == "pause" ]; then
-			control_mocp "$action"
-		fi
+		control_mocp "pause"
 		exit $?
 	fi
 
