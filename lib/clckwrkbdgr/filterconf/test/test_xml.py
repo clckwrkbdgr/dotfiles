@@ -14,10 +14,6 @@ class TestXMLConfig(unittest.TestCase):
 				""")
 
 		with XMLConfig(content) as filter:
-			pass # Not pretty.
-		self.assertEqual(filter.content, content)
-
-		with XMLConfig(content) as filter:
 			filter.pretty()
 		self.assertEqual(filter.content, expected)
 	def should_sort_xml_by_specified_path(self):
@@ -59,7 +55,8 @@ class TestXMLConfig(unittest.TestCase):
 				    <item attr="baz"/>
 				    <item attr="bar"/>
 				  </list>
-				</root>""")
+				</root>
+				""")
 		with XMLConfig(content) as filter:
 			filter.delete('/root/list/item@attr', '.*o$', pattern_type='regex')
 		self.assertEqual(filter.content, expected)
@@ -79,7 +76,8 @@ class TestXMLConfig(unittest.TestCase):
 				    <item>baz</item>
 				    <item>bar</item>
 				  </list>
-				</root>""")
+				</root>
+				""")
 		with XMLConfig(content) as filter:
 			filter.delete('/root/list/item', '.*o$', pattern_type='regex')
 		self.assertEqual(filter.content, expected)
@@ -100,7 +98,8 @@ class TestXMLConfig(unittest.TestCase):
 				    <item attr="baz"/>
 				    <item attr="bar"/>
 				  </list>
-				</root>""")
+				</root>
+				""")
 		with XMLConfig(content) as filter:
 			filter.replace('/root/list/item@attr', '.*o$', 'FOOBAR', pattern_type='regex')
 		self.assertEqual(filter.content, expected)
@@ -121,7 +120,8 @@ class TestXMLConfig(unittest.TestCase):
 				    <item>baz</item>
 				    <item>bar</item>
 				  </list>
-				</root>""")
+				</root>
+				""")
 		with XMLConfig(content) as filter:
 			filter.replace('/root/list/item', '.*o$', 'FOOBAR', pattern_type='regex')
 		self.assertEqual(filter.content, expected)
