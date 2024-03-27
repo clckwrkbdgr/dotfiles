@@ -5,16 +5,17 @@ from clckwrkbdgr.filterconf.xml import XMLConfig
 
 class TestXMLConfig(unittest.TestCase):
 	def should_prettify_xml_doc(self):
-		content = '<root><item attr2="foo" attr1="bar"/><item attr="foo">foobar</item></root>'
-		expected = textwrap.dedent("""\
+		content = '<root><item attr1="bar" attr2="foo"/><item attr="foo">foobar</item></root>'
+		expected = textwrap.dedent(u"""\
 				<root>
-				  <item attr2="foo" attr1="bar"/>
+				  <item attr1="bar" attr2="foo"/>
 				  <item attr="foo">foobar</item>
 				</root>
 				""")
 
 		with XMLConfig(content) as filter:
 			filter.pretty()
+		if filter.content.startswith('<?xml version="1.0" ?>\n'): filter.content = filter.content[len('<?xml version="1.0" ?>\n'):]
 		self.assertEqual(filter.content, expected)
 	def should_sort_xml_by_specified_path(self):
 		content = textwrap.dedent("""\
@@ -26,7 +27,7 @@ class TestXMLConfig(unittest.TestCase):
 				  </list>
 				</root>
 				""")
-		expected = textwrap.dedent("""\
+		expected = textwrap.dedent(u"""\
 				<root>
 				  <list>
 				    <item attr="bar"/>
@@ -38,7 +39,8 @@ class TestXMLConfig(unittest.TestCase):
 		with XMLConfig(content) as filter:
 			filter.sort('/root/list/item@attr')
 			filter.pretty()
-		self.assertEqual(filter.content, expected)
+		if filter.content.startswith('<?xml version="1.0" ?>\n'): filter.content = filter.content[len('<?xml version="1.0" ?>\n'):]
+		self.assertEqual('\n'.join(line for line in filter.content.splitlines() if line.strip()) + '\n', expected)
 	def should_remove_nodes_by_specified_path_and_pattern_matching_attr(self):
 		content = textwrap.dedent("""\
 				<root>

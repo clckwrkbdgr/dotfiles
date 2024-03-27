@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 try: # pragma: no cover
 	import lxml.etree as ET
 	def _find_abs_xpath(el, xpath):
@@ -12,6 +13,7 @@ try: # pragma: no cover
 		return ET.tostring(root, encoding='unicode').rstrip() + '\n'
 except ImportError: # pragma: no cover
 	import xml.etree.ElementTree as ET
+	import xml.dom.minidom
 	def _find_abs_xpath(el, xpath):
 		assert xpath.startswith('/')
 		root_name, rel_xpath = xpath[1:].split('/', 1)
@@ -21,10 +23,12 @@ except ImportError: # pragma: no cover
 		parent_map = dict((c, p) for p in root.iter() for c in p)
 		return parent_map[element]
 	def _prettify(root):
-		ET.indent(root, space="  ", level=0)
-		return _tostring(root)
+		return xml.dom.minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ")
 	def _tostring(root):
-		return ET.tostring(root, encoding='unicode').replace(' />', '/>').rstrip() + '\n'
+		try:
+			return ET.tostring(root, encoding='unicode').replace(' />', '/>').rstrip() + '\n'
+		except LookupError: # pragma: no cover
+			return ET.tostring(root, encoding='utf-8').replace(' />', '/>').rstrip() + '\n'
 import contextlib
 from . import ConfigFilter, config_filter, convert_pattern
 
