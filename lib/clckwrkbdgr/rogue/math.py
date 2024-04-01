@@ -1,4 +1,5 @@
 from collections import namedtuple
+import copy
 import itertools
 
 _Point = namedtuple('Point', 'x y')
@@ -40,7 +41,7 @@ class Matrix:
 	def cell(self, x, y):
 		return self.cells[x + y * self.size.width]
 	def clear(self, value):
-		self.cells = [value for _ in range(self.size.width * self.size.height)]
+		self.cells = [copy.copy(value) for _ in range(self.size.width * self.size.height)]
 	def keys(self): # pragma: no cover -- FIXME temporary. Remove after migrating to standalone math.
 		return iter(self.size)
 	@property
@@ -49,3 +50,21 @@ class Matrix:
 	@property
 	def height(self): # pragma: no cover -- FIXME temporary. Remove after migrating to standalone math.
 		return self.size.height
+	def get_neighbours(self, x, y, with_diagonal=False):
+		neighbours = [
+				Point(x + 1, y    ),
+				Point(x    , y + 1),
+				Point(x - 1, y    ),
+				Point(x    , y - 1),
+				]
+		if with_diagonal:
+			neighbours += [
+					Point(x + 1, y + 1),
+					Point(x - 1, y + 1),
+					Point(x + 1, y - 1),
+					Point(x - 1, y - 1),
+					]
+		for p in neighbours:
+			if not self.valid(p):
+				continue
+			yield p

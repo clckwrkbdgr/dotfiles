@@ -6,7 +6,6 @@ import curses
 import jsonpickle
 from clckwrkbdgr import xdg
 from .math import Point, Matrix, Size, Rect
-import clckwrkbdgr.math.graph, clckwrkbdgr.math.algorithm
 from .messages import Log
 
 class Cell: # pragma: no cover -- TODO
@@ -76,16 +75,50 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 				)
 		grid.set_cell(cell.x, cell.y, Rect(topleft, room_size))
 
-	maze = clckwrkbdgr.math.graph.grid_from_matrix(grid)
+	maze = {k:set() for k in grid.keys()}
+	for column in range(grid.width):
+		for row in range(grid.height):
+			if column < grid.width - 1:
+				a, b = Point(column, row), Point(column + 1, row)
+				maze[a].add(b)
+				maze[b].add(a)
+			if row < grid.height - 1:
+				a, b = Point(column, row), Point(column, row + 1)
+				maze[a].add(b)
+				maze[b].add(a)
 	for i in range(5):
-		new_config = copy.copy(maze)
-		removed = random.choice(list(maze.all_links()))
-		new_config.disconnect(*removed)
-		if clckwrkbdgr.math.graph.is_connected(new_config):
+		new_config = copy.deepcopy(maze)
+		all_links = set(tuple(sorted((node_from, node_to))) for node_from in maze for node_to in maze[node_from])
+		removed = random.choice(list(all_links))
+		node, other = removed
+		if node in new_config and other in new_config[node]:
+			new_config[node].remove(other)
+		if other in new_config and node in new_config[other]:
+			new_config[other].remove(node)
+
+		all_links = set(tuple(sorted((node_from, node_to))) for node_from in new_config for node_to in new_config[node_from])
+		clusters = []
+		for a, b in all_links:
+			new_clusters = [{a, b}]
+			for cluster in clusters:
+				for other in new_clusters:
+					if cluster & other:
+						other.update(cluster)
+						break
+				else:
+					new_clusters.append(cluster)
+			clusters = new_clusters
+		for node in new_config.keys():
+			if any(node in cluster for cluster in clusters):
+				continue
+			clusters.append({node})
+		is_connected = len(clusters) == 1
+		if is_connected:
 			maze = new_config
 
 	tunnels = []
-	for start_room, stop_room in maze.all_links():
+	all_links = set(tuple(sorted((node_from, node_to))) for node_from in maze for node_to in maze[node_from])
+	for start_room, stop_room in all_links:
 		assert abs(start_room.x - stop_room.x) + abs(start_room.y - stop_room.y) == 1
 		if abs(start_room.x - stop_room.x) > 0:
 			direction = 'H'
@@ -121,11 +154,11 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 				)
 			if abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)) > 1:
 				bending_point = random.randrange(1, abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)))
-		tunnels.append(clckwrkbdgr.math.geometry.RectConnection(
-			start=start,
-			stop=stop,
-			direction=direction,
-			bending_point=bending_point,
+		tunnels.append((
+			start,
+			stop,
+			direction,
+			bending_point,
 			))
 
 	for room in grid.size:
@@ -144,11 +177,36 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 			for x in range(room.topleft.x+1, room.topleft.x+room.size.width):
 				strata.set_cell(x, y, Cell(".", True))
 
-	for tunnel in tunnels:
-		for cell in tunnel.iter_points():
+	for start, stop, direction, bending_point in tunnels:
+		iter_points = []
+		if direction == 'H':
+			lead = start.y
+			for x in range(start.x, stop.x + 1):
+				iter_points.append( Point(x, lead))
+				if x == start.x + bending_point:
+					if start.y < stop.y:
+						for y in range(start.y + 1, stop.y + 1):
+							iter_points.append( Point(x, y))
+					else:
+						for y in reversed(range(stop.y, start.y)):
+							iter_points.append( Point(x, y))
+					lead = stop.y
+		else:
+			lead = start.x
+			for y in range(start.y, stop.y + 1):
+				iter_points.append( Point(lead, y))
+				if y == start.y + bending_point:
+					if start.x < stop.x:
+						for x in range(start.x + 1, stop.x + 1):
+							iter_points.append( Point(x, y))
+					else:
+						for x in reversed(range(stop.x, start.x)):
+							iter_points.append( Point(x, y))
+					lead = stop.x
+		for cell in iter_points:
 			strata.set_cell(cell.x, cell.y, Cell("#", True, remembered='#'))
-		strata.set_cell(tunnel.start.x, tunnel.start.y, Cell("+", True, remembered='+'))
-		strata.set_cell(tunnel.stop.x, tunnel.stop.y, Cell("+", True, remembered='+'))
+		strata.set_cell(start.x, start.y, Cell("+", True, remembered='+'))
+		strata.set_cell(stop.x, stop.y, Cell("+", True, remembered='+'))
 
 	enter_room_key = random.choice(list(grid.keys()))
 	enter_room = grid.cell(enter_room_key.x, enter_room_key.y)
@@ -302,9 +360,9 @@ def build_cave(size): # pragma: no cover -- TODO
 	for step in range(drop_wall_2_at+1):
 		for x in range(1, strata.width - 1):
 			for y in range(1, strata.height - 1):
-				neighs = set(clckwrkbdgr.math.get_neighbours(strata, (x, y), with_diagonal=True))
+				neighs = set(strata.get_neighbours(x, y, with_diagonal=True))
 				neighs2 = set(itertools.chain.from_iterable(
-					clckwrkbdgr.math.get_neighbours(strata, n, with_diagonal=True)
+					strata.get_neighbours(n.x, n.y, with_diagonal=True)
 					for n in neighs
 					)) - set(Point(x, y))
 				wall_count = sum(int(strata.cell(n.x, n.y) == 0) for n in neighs)
@@ -322,10 +380,20 @@ def build_cave(size): # pragma: no cover -- TODO
 	cavern = next(pos for pos in strata.size if strata.cell(pos.x, pos.y) == 1)
 	caverns = []
 	while cavern:
-		area = clckwrkbdgr.math.algorithm.floodfill(
-				cavern,
-				spread_function=lambda p: [x for x in clckwrkbdgr.math.get_neighbours(strata, p) if strata.cell(x.x, x.y) == 1]
-				)
+		area = []
+		already_affected = {cavern}
+		last_wave = {cavern}
+		area.append(cavern)
+		while last_wave:
+			Log.debug('Last wave: {0}'.format(len(last_wave)))
+			wave = set()
+			for point in last_wave:
+				wave |= {x for x in strata.get_neighbours(point.x, point.y) if strata.cell(x.x, x.y) == 1}
+			for point in wave - already_affected:
+				area.append(point)
+			last_wave = wave - already_affected
+			already_affected |= wave
+
 		count = 0
 		for point in area:
 			count += 1
@@ -380,7 +448,8 @@ def build_maze(size): # pragma: no cover -- TODO
 
 	intDone = 0
 	while True:
-		Log.debug("Done {0} cells:\n{1}".format(intDone, repr(layout)))
+		expected = ((layout_size.width + 1) * (layout_size.height + 1)) / 4
+		Log.debug("Done {0}/{1} cells:\n{2}".format(intDone, expected, repr(layout)))
 		# this code is used to make sure the numbers are odd
 		current = Point(
 				random.randrange((layout_size.width // 2)) * 2,

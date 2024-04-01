@@ -57,3 +57,29 @@ class TestMatrix(unittest.TestCase):
 		matrix = Matrix(Size(2, 3), '.')
 		matrix.clear('#')
 		self.assertEqual(matrix.cells, ['#', '#', '#', '#', '#', '#'])
+	def should_get_valid_neighbours(self):
+		matrix = Matrix(Size(4, 5), '.')
+		self.assertEqual(list(matrix.get_neighbours(0, 0)), [
+			Point(x=1, y=0), Point(x=0, y=1)
+			])
+		self.assertEqual(list(matrix.get_neighbours(0, 0, with_diagonal=True)), [
+			Point(x=1, y=0), Point(x=0, y=1), Point(x=1, y=1)
+			])
+		self.assertEqual(list(matrix.get_neighbours(2, 0)), [
+			Point(x=3, y=0), Point(x=2, y=1), Point(x=1, y=0)
+			])
+		self.assertEqual(list(matrix.get_neighbours(2, 0, with_diagonal=True)), [
+			Point(x=3, y=0), Point(x=2, y=1), Point(x=1, y=0), Point(x=3, y=1), Point(x=1, y=1)
+			])
+		self.assertEqual(list(matrix.get_neighbours(0, 2)), [
+			Point(x=1, y=2), Point(x=0, y=3), Point(x=0, y=1)
+			])
+		self.assertEqual(list(matrix.get_neighbours(0, 2, with_diagonal=True)), [
+			Point(x=1, y=2), Point(x=0, y=3), Point(x=0, y=1), Point(x=1, y=3), Point(x=1, y=1)
+			])
+		self.assertEqual(list(matrix.get_neighbours(2, 2)), [
+			Point(x=3, y=2), Point(x=2, y=3), Point(x=1, y=2), Point(x=2, y=1)
+			])
+		self.assertEqual(list(matrix.get_neighbours(2, 2, with_diagonal=True)), [
+			Point(x=3, y=2), Point(x=2, y=3), Point(x=1, y=2), Point(x=2, y=1), Point(x=3, y=3), Point(x=1, y=3), Point(x=3, y=1), Point(x=1, y=1)
+			])
