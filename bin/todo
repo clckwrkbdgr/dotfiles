@@ -5,7 +5,7 @@ logger = logging.getLogger('todo')
 import platform
 import click, click_default_group
 import json, textwrap
-import mimetypes, magic
+import mimetypes
 import termcolor
 from pathlib import Path
 from clckwrkbdgr import utils, xdg
@@ -259,6 +259,10 @@ def perform_todo_search(exclude=None, printer=None, handle_dirs=None, plugins=No
 		if filename.name.lower() == 'todo' or filename.name.lower().startswith('todo.'):
 			file_type = mimetypes.guess_type(str(filename))[0]
 			if file_type is None:
+				try:
+					from winmagic import magic # pip install python-magic-win64
+				except ImportError:
+					import magic
 				file_type = magic.from_file(str(filename), mime=True)
 			str_file_type = file_type
 			file_type = file_type.split('/')
