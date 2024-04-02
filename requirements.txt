@@ -10,8 +10,10 @@ click-aliases
 wheel
 # todo
 python-magic
-# todo:win only
+# todo:win32 only
 python-magic-bin
+# todo:win64 only
+python-magic-win64
 # crontab
 python-crontab
 croniter
