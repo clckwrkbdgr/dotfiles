@@ -17,13 +17,9 @@ from clckwrkbdgr.filterconf import Environment, ConfigFilter, config_filter
 # ConfigFilters:
 import clckwrkbdgr.filterconf.txt
 import clckwrkbdgr.filterconf.jsonfile
+import clckwrkbdgr.filterconf.firefox_prefs
 
 """
-firefox pref.js
-	user_pref("accessibility.blockautorefresh", true);
-	delete preference by pattern (including regexp and wildcard)
-	replace preference value by name and possibly regexp pattern with match groups
-
 ini:
 	sort sections/ sort values in sections
 	delete ini setting by section/name
