@@ -1,12 +1,13 @@
+import os
 import copy
 import random
 import itertools
 from collections import namedtuple
 import curses
-import jsonpickle
-from clckwrkbdgr import xdg
 from .math import Point, Matrix, Size, Rect
 from .messages import Log
+
+SAVEFILE_VERSION = 1
 
 class Cell: # pragma: no cover -- TODO
 	def __init__(self, sprite, passable=True, remembered=None):
@@ -14,12 +15,8 @@ class Cell: # pragma: no cover -- TODO
 		self.passable = passable
 		self.remembered = remembered
 		self.visited = False
-	def __setstate__(self, state):
-		state.setdefault('visited', False)
-		state.setdefault('remembered', None)
-		self.__dict__.update(state)
-	def __getstate__(self):
-		return self.__dict__
+	def __str__(self):
+		return '*' if self.visited else '.'
 
 def bresenham(start, stop): # pragma: no cover -- TODO
 	dx = abs(stop.x - start.x)
@@ -509,11 +506,44 @@ class Game: # pragma: no cover -- TODO
 		self.exit_pos = exit_pos
 		self.remembered_exit = False
 		self.strata = strata
-	def __setstate__(self, state):
-		state.setdefault('remembered_exit', False)
-		self.__dict__.update(state)
-	def __getstate__(self):
-		return self.__dict__
+
+def save_game(game): # pragma: no cover -- TODO
+	dump_str = lambda _value: _value if _value is None else _value
+	dump_bool = lambda _value: int(_value)
+	yield game.player.x
+	yield game.player.y
+	yield game.exit_pos.x
+	yield game.exit_pos.y
+	yield dump_bool(game.remembered_exit)
+	yield game.strata.size.width
+	yield game.strata.size.height
+	for cell in game.strata.cells:
+		yield cell.sprite
+		yield dump_bool(cell.passable)
+		yield cell.remembered
+		yield dump_bool(cell.visited)
+
+def load_game(version, data): # pragma: no cover -- TODO
+	parse_str = lambda _value: _value if _value != 'None' else None
+	parse_bool = lambda _value: _value == '1'
+
+	player = Point(int(next(data)), int(next(data)))
+	exit_pos = Point(int(next(data)), int(next(data)))
+	remembered_exit = parse_bool(next(data))
+
+	strata_size = Size(int(next(data)), int(next(data)))
+	strata = Matrix(strata_size, None)
+	for _ in range(strata_size.width * strata_size.height):
+		strata.cells[_] = Cell(
+				parse_str(next(data)),
+				parse_bool(next(data)),
+				parse_str(next(data)),
+				)
+		strata.cells[_].visited = parse_bool(next(data))
+
+	game = Game(player, exit_pos, strata)
+	game.remembered_exit = remembered_exit
+	return game
 
 def main_loop(window): # pragma: no cover -- TODO
 	curses.curs_set(0)
@@ -523,16 +553,17 @@ def main_loop(window): # pragma: no cover -- TODO
 			build_cave,
 			build_maze,
 			]
-	savefile = xdg.save_state_path('dotrogue')/'rogue.sav'
-	if savefile.exists() and False: # FIXME temp. switched off until streaming serialization is implemented.
+	savefile = os.path.expanduser('~/.rogue.sav')
+	if os.path.exists(savefile):
 		Log.debug('Loading savefile: {0}...'.format(savefile))
-		data = savefile.read_text()
-		if '__main__.' in data:
-			data = data.replace('__main__.', 'clckwrkbdgr.rogue.game.')
-		game = jsonpickle.decode(data, keys=True)
-		if not isinstance(game, Game):
-			game = Game(*game)
+		with open(savefile, 'r') as f:
+			data = f.read().split('\0')
+		data = iter(data)
+		version = next(data)
+		game = load_game(version, data)
 		Log.debug('Loaded.')
+		Log.debug(repr(game.strata))
+		Log.debug('Player: {0}'.format(game.player))
 	else:
 		builder = random.choice(builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))
@@ -563,6 +594,8 @@ def main_loop(window): # pragma: no cover -- TODO
 					fov_pos = Point(half_size.width + inner_line_pos.x,
 							half_size.height + inner_line_pos.y,
 							)
+					if not game.strata.valid(real_world_pos):
+						continue
 					Log.debug('Setting as visible: {0}'.format(fov_pos))
 					cell = game.strata.cell(real_world_pos.x, real_world_pos.y)
 					cell.visited = True
@@ -592,7 +625,6 @@ def main_loop(window): # pragma: no cover -- TODO
 					Log.debug('Valid FOV pos, is visible: {0}'.format(is_visible))
 				Log.debug('Visible: {0}'.format(is_visible))
 
-				assert hasattr(Cell, '__setstate__')
 				if is_visible or god_vision:
 					window.addstr(1+row, col, cell.sprite)
 				elif cell.visited and cell.remembered:
@@ -659,10 +691,12 @@ def main_loop(window): # pragma: no cover -- TODO
 				Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
 				game.player = new_pos
 	if alive:
-		data = jsonpickle.encode(game, indent=2, keys=True)
-		savefile.write_bytes(data.encode('utf-8', 'replace'))
-	elif savefile.exists():
-		savefile.unlink()
+		dump = save_game(game)
+		with open(savefile, 'w') as f:
+			f.write(str(SAVEFILE_VERSION) + '\0')
+			f.write('\0'.join(map(str, dump)))
+	elif os.path.exists(savefile):
+		os.unlink(savefile)
 
 def run(): # pragma: no cover
 	curses.wrapper(main_loop)
