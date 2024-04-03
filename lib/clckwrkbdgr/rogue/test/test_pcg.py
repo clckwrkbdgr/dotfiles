@@ -1,4 +1,5 @@
-from clckwrkbdgr import unittest
+import unittest
+unittest.defaultTestLoader.testMethodPrefix = 'should'
 from .. import pcg
 
 class TestRNG(unittest.TestCase):

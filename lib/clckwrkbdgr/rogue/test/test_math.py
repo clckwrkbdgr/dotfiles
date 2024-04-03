@@ -1,4 +1,5 @@
-from clckwrkbdgr import unittest
+import unittest
+unittest.defaultTestLoader.testMethodPrefix = 'should'
 from ..math import Point, Size, Rect, Matrix
 
 class TestPoint(unittest.TestCase):
