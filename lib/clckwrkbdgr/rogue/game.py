@@ -1,9 +1,9 @@
 import os
 import copy
-import random
 import itertools
 from collections import namedtuple
 import curses
+from .pcg import RNG
 from .math import Point, Matrix, Size, Rect
 from .messages import Log
 
@@ -42,7 +42,7 @@ def bresenham(start, stop): # pragma: no cover -- TODO
 			error = error + dx
 			y += sy
 
-def build_rogue_dungeon(size): # pragma: no cover -- TODO
+def build_rogue_dungeon(rng, size): # pragma: no cover -- TODO
 	strata = Matrix(size, Cell(' ', False))
 
 	map_size = strata.size
@@ -61,11 +61,11 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 		max_room_size.height = min_room_size.height
 	for cell in grid.size:
 		room_size = Size(
-				random.randrange(min_room_size.width, max_room_size.width + 1),
-				random.randrange(min_room_size.height, max_room_size.height + 1),
+				rng.range(min_room_size.width, max_room_size.width + 1),
+				rng.range(min_room_size.height, max_room_size.height + 1),
 				)
 		topleft = Point(cell.x * cell_size.width, cell.y * cell_size.height)
-		random_non_negative = lambda _:random.randrange(_) if _ > 0 else 0
+		random_non_negative = lambda _:rng.range(_) if _ > 0 else 0
 		topleft += Point(
 				random_non_negative(cell_size.width - room_size.width - 1),
 				random_non_negative(cell_size.height - room_size.height - 1),
@@ -86,7 +86,7 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 	for i in range(5):
 		new_config = copy.deepcopy(maze)
 		all_links = set(tuple(sorted((node_from, node_to))) for node_from in maze for node_to in maze[node_from])
-		removed = random.choice(list(all_links))
+		removed = rng.choice(list(all_links))
 		node, other = removed
 		if node in new_config and other in new_config[node]:
 			new_config[node].remove(other)
@@ -130,27 +130,27 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 				start_room, stop_room = stop_room, start_room
 			start = Point(
 				start_room.topleft.x + start_room.size.width,
-				random.randrange(start_room.topleft.y+1, start_room.topleft.y + stop_room.size.height),
+				rng.range(start_room.topleft.y+1, start_room.topleft.y + stop_room.size.height),
 				)
 			stop = Point(
 				stop_room.topleft.x,
-				random.randrange(stop_room.topleft.y+1, stop_room.topleft.y + stop_room.size.height),
+				rng.range(stop_room.topleft.y+1, stop_room.topleft.y + stop_room.size.height),
 				)
 			if abs(stop_room.topleft.x - (start_room.topleft.x + start_room.size.width)) > 1:
-				bending_point = random.randrange(1, abs(stop_room.topleft.x - (start_room.topleft.x + start_room.size.width)))
+				bending_point = rng.range(1, abs(stop_room.topleft.x - (start_room.topleft.x + start_room.size.width)))
 		else:
 			if start_room.topleft.y > stop_room.topleft.y:
 				start_room, stop_room = stop_room, start_room
 			start = Point(
-				random.randrange(start_room.topleft.x+1, start_room.topleft.x+start_room.size.width),
+				rng.range(start_room.topleft.x+1, start_room.topleft.x+start_room.size.width),
 				start_room.topleft.y + start_room.size.height,
 				)
 			stop = Point(
-				random.randrange(stop_room.topleft.x+1, stop_room.topleft.x+stop_room.size.width),
+				rng.range(stop_room.topleft.x+1, stop_room.topleft.x+stop_room.size.width),
 				stop_room.topleft.y,
 				)
 			if abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)) > 1:
-				bending_point = random.randrange(1, abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)))
+				bending_point = rng.range(1, abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)))
 		tunnels.append((
 			start,
 			stop,
@@ -205,19 +205,19 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 		strata.set_cell(start.x, start.y, Cell("+", True, remembered='+'))
 		strata.set_cell(stop.x, stop.y, Cell("+", True, remembered='+'))
 
-	enter_room_key = random.choice(list(grid.keys()))
+	enter_room_key = rng.choice(list(grid.keys()))
 	enter_room = grid.cell(enter_room_key.x, enter_room_key.y)
 	start_pos = Point(
-				random.randrange(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
-				random.randrange(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
+				rng.range(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
+				rng.range(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
 				)
 
 	for _ in range(9):
-		exit_room_key = random.choice(list(grid.keys()))
+		exit_room_key = rng.choice(list(grid.keys()))
 		exit_room = grid.cell(exit_room_key.x, exit_room_key.y)
 		exit_pos = Point(
-				random.randrange(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
-				random.randrange(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
+				rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
+				rng.range(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
 				)
 		if exit_room_key != enter_room_key:
 			break
@@ -225,26 +225,27 @@ def build_rogue_dungeon(size): # pragma: no cover -- TODO
 
 	return start_pos, exit_pos, strata
 
-def generate_single_pos(size): # pragma: no cover -- TODO
-	return Point(random.randrange(size.width), random.randrange(size.height))
+def generate_single_pos(rng, size): # pragma: no cover -- TODO
+	return Point(rng.range(size.width), rng.range(size.height))
 
-def generate_pos(size, check=None, counter=1000): # pragma: no cover -- TODO
-	result = generate_single_pos(size)
+def generate_pos(rng, size, check=None, counter=1000): # pragma: no cover -- TODO
+	result = generate_single_pos(rng, size)
 	while counter > 0 and not check(result):
-		result = generate_single_pos(size)
+		result = generate_single_pos(rng, size)
 		counter -= 1
 	return result
 
 class BinarySpacePartition(object): # pragma: no cover -- TODO
-	def __init__(self, min_width=15, min_height=10):
+	def __init__(self, rng, min_width=15, min_height=10):
+		self.rng = rng
 		self.min_size = (min_width, min_height)
 	def door_generator(self, room): # pragma: no cover
 		""" Takes a Rect object and generates random Point for door position inside it.
 		No need to determine wall facing and location, the algorithm would decide automatically.
 		By default door is generated in random manner.
 		"""
-		x = random.randrange(room.topleft.x, room.topleft.x + room.size.width - 1)
-		y = random.randrange(room.topleft.y, room.topleft.y + room.size.height - 1)
+		x = self.rng.range(room.topleft.x, room.topleft.x + room.size.width - 1)
+		y = self.rng.range(room.topleft.y, room.topleft.y + room.size.height - 1)
 		Log.debug("Generating door in {0}:  ({1}, {2})".format(room, x, y))
 		return Point(x, y)
 	def hor_ver_generator(self): # pragma: no cover
@@ -252,7 +253,7 @@ class BinarySpacePartition(object): # pragma: no cover -- TODO
 		It should return True for horizontal and False for vertical room.
 		By default these values are generated in random manner.
 		"""
-		return random.choice([False, True])
+		return self.rng.choice([False, True])
 	def generate(self, topleft, bottomright):
 		""" Generates BS partition for given rectangle.
 		Yield tuples (topleft, bottomright, is_horizontal, door).
@@ -314,7 +315,7 @@ class BSPBuilder(object): # pragma: no cover -- TODO
 				self.field.set_cell(x, the_divide, self.obstacle())
 		self.field.set_cell(door_pos.x, door_pos.y, self.door())
 
-def build_bsp_dungeon(size): # pragma: no cover -- TODO
+def build_bsp_dungeon(rng, size): # pragma: no cover -- TODO
 	strata = Matrix(size, Cell(' ', False))
 
 	Log.debug("Building surrounding walls.")
@@ -326,7 +327,7 @@ def build_bsp_dungeon(size): # pragma: no cover -- TODO
 		strata.set_cell(size.width - 1, y, Cell('#', False, remembered='#'))
 
 	Log.debug("Running BSP...")
-	bsp = BinarySpacePartition()
+	bsp = BinarySpacePartition(rng)
 	builder = BSPBuilder(strata,
 							 free=lambda: Cell('.'),
 							 obstacle=lambda: Cell('#', False, remembered='#'),
@@ -337,19 +338,19 @@ def build_bsp_dungeon(size): # pragma: no cover -- TODO
 		builder.fill(*splitter)
 
 	floor_only = lambda pos: strata.cell(pos.x, pos.y).passable
-	start_pos = generate_pos(size, floor_only)
+	start_pos = generate_pos(rng, size, floor_only)
 	Log.debug("Generated player pos: {0}".format(start_pos))
 
-	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
+	exit_pos = generate_pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 	return start_pos, exit_pos, strata
 
-def build_cave(size): # pragma: no cover -- TODO
+def build_cave(rng, size): # pragma: no cover -- TODO
 	strata = Matrix(size, 0)
 	for x in range(1, strata.width - 1):
 		for y in range(1, strata.height - 1):
-			strata.set_cell(x, y, 0 if random.random() < 0.50 else 1)
+			strata.set_cell(x, y, 0 if rng.get() < 0.50 else 1)
 	Log.debug("Initial state:\n{0}".format(repr(strata)))
 
 	new_layer = Matrix(strata.size)
@@ -406,8 +407,8 @@ def build_cave(size): # pragma: no cover -- TODO
 	Log.debug("Finalized cave:\n{0}".format(repr(strata)))
 
 	floor_only = lambda pos: strata.cell(pos.x, pos.y) > 1
-	start_pos = generate_pos(size, floor_only)
-	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
+	start_pos = generate_pos(rng, size, floor_only)
+	exit_pos = generate_pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 	for pos in strata.size:
@@ -419,8 +420,8 @@ def build_cave(size): # pragma: no cover -- TODO
 	return start_pos, exit_pos, strata
 
 # this changes the direction to go from the current square, to the next available
-def RandomDirections(): # pragma: no cover -- TODO
-	direction = random.randrange(4)
+def RandomDirections(rng): # pragma: no cover -- TODO
+	direction = rng.range(4)
 	if direction == 0:
 		cDir = [Point(-1, 0), Point(1, 0), Point(0, -1), Point(0, 1)]
 	elif direction == 1:
@@ -431,7 +432,7 @@ def RandomDirections(): # pragma: no cover -- TODO
 		cDir = [Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1)]
 	return cDir
 
-def build_maze(size): # pragma: no cover -- TODO
+def build_maze(rng, size): # pragma: no cover -- TODO
 	layout_size = Size(
 			# Layout size should be odd (for connections between cells).
 			size.width - 2 - (1 - size.width % 2),
@@ -449,20 +450,20 @@ def build_maze(size): # pragma: no cover -- TODO
 		Log.debug("Done {0}/{1} cells:\n{2}".format(intDone, expected, repr(layout)))
 		# this code is used to make sure the numbers are odd
 		current = Point(
-				random.randrange((layout_size.width // 2)) * 2,
-				random.randrange((layout_size.height // 2)) * 2,
+				rng.range((layout_size.width // 2)) * 2,
+				rng.range((layout_size.height // 2)) * 2,
 				)
 		# first one is free!
 		if intDone == 0:
 			layout.set_cell(current.x, current.y, True)
 		if layout.cell(current.x, current.y):
 			# always randomisation directions to start
-			cDir = RandomDirections()
+			cDir = RandomDirections(rng)
 			blnBlocked = False
 			while not blnBlocked:
 				# only randomisation directions, based on the constant
-				if RANDOMISATION == 0 or random.randrange(RANDOMISATION) == 0:
-					cDir = RandomDirections()
+				if RANDOMISATION == 0 or rng.range(RANDOMISATION) == 0:
+					cDir = RandomDirections(rng)
 				blnBlocked = True
 				# loop through order of directions
 				for intDir in range(4):
@@ -492,10 +493,10 @@ def build_maze(size): # pragma: no cover -- TODO
 			strata.set_cell(pos.x + 1, pos.y + 1, Cell('.'))
 
 	floor_only = lambda pos: strata.cell(pos.x, pos.y).passable
-	start_pos = generate_pos(size, floor_only)
+	start_pos = generate_pos(rng, size, floor_only)
 	Log.debug("Generated player pos: {0}".format(start_pos))
 
-	exit_pos = generate_pos(size, lambda pos: floor_only(pos) and pos != start_pos)
+	exit_pos = generate_pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 	return start_pos, exit_pos, strata
@@ -547,6 +548,7 @@ def load_game(version, data): # pragma: no cover -- TODO
 
 def main_loop(window): # pragma: no cover -- TODO
 	curses.curs_set(0)
+	rng = RNG()
 	builders = [
 			build_bsp_dungeon,
 			build_rogue_dungeon,
@@ -565,9 +567,9 @@ def main_loop(window): # pragma: no cover -- TODO
 		Log.debug(repr(game.strata))
 		Log.debug('Player: {0}'.format(game.player))
 	else:
-		builder = random.choice(builders)
+		builder = rng.choice(builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))
-		player, exit_pos, strata = builder(Size(80, 23))
+		player, exit_pos, strata = builder(rng, Size(80, 23))
 		game = Game(player, exit_pos, strata)
 	field_of_view = Matrix(Size(21, 21), False)
 	playing = True
@@ -669,9 +671,9 @@ def main_loop(window): # pragma: no cover -- TODO
 			break
 		elif control == ord('>'):
 			if game.player == game.exit_pos:
-				builder = random.choice(builders)
+				builder = rng.choice(builders)
 				Log.debug('Building new dungeon: {0}...'.format(builder))
-				player, exit_pos, strata = builder(Size(80, 23))
+				player, exit_pos, strata = builder(rng, Size(80, 23))
 				game = Game(player, exit_pos, strata)
 		elif chr(control) in 'hjklyubn':
 			Log.debug('Moving.')
