@@ -546,6 +546,11 @@ def load_game(version, data): # pragma: no cover -- TODO
 	game.remembered_exit = remembered_exit
 	return game
 
+class God: # pragma: no cover -- TODO
+	def __init__(self):
+		self.vision = False
+		self.noclip = False
+
 def main_loop(window): # pragma: no cover -- TODO
 	curses.curs_set(0)
 	rng = RNG()
@@ -573,7 +578,7 @@ def main_loop(window): # pragma: no cover -- TODO
 		game = Game(player, exit_pos, strata)
 	field_of_view = Matrix(Size(21, 21), False)
 	playing = True
-	god_vision = False
+	god = God()
 	Log.debug('Starting playing...')
 	alive = True
 	while playing:
@@ -627,7 +632,7 @@ def main_loop(window): # pragma: no cover -- TODO
 					Log.debug('Valid FOV pos, is visible: {0}'.format(is_visible))
 				Log.debug('Visible: {0}'.format(is_visible))
 
-				if is_visible or god_vision:
+				if is_visible or god.vision:
 					window.addstr(1+row, col, cell.sprite)
 				elif cell.visited and cell.remembered:
 					window.addstr(1+row, col, cell.remembered)
@@ -644,14 +649,16 @@ def main_loop(window): # pragma: no cover -- TODO
 			is_exit_visible = field_of_view.cell(exit_fov_pos.x, exit_fov_pos.y)
 			if is_exit_visible:
 				game.remembered_exit = True
-		if is_exit_visible or god_vision or game.remembered_exit:
+		if is_exit_visible or god.vision or game.remembered_exit:
 			window.addstr(1+game.exit_pos.y, game.exit_pos.x, '>')
 
 		window.addstr(1+game.player.y, game.player.x, '@')
 
 		status = []
-		if god_vision:
+		if god.vision:
 			status.append('[vis]')
+		if god.noclip:
+			status.append('[clip]')
 		window.addstr(24, 0, (' '.join(status) + " " * 80)[:80])
 		window.refresh()
 
@@ -662,8 +669,12 @@ def main_loop(window): # pragma: no cover -- TODO
 			Log.debug('Exiting the game.')
 			playing = False
 			break
-		elif control == ord('v'):
-			god_vision = not god_vision
+		elif control == ord('~'):
+			control = window.getch()
+			if control == ord('v'):
+				god.vision = not god.vision
+			elif control == ord('c'):
+				god.noclip = not god.noclip
 		elif control == ord('Q'):
 			Log.debug('Suicide.')
 			alive = False
@@ -689,9 +700,14 @@ def main_loop(window): # pragma: no cover -- TODO
 					}[chr(control)]
 			Log.debug('Shift: {0}'.format(shift))
 			new_pos = game.player + shift
-			if game.strata.valid(new_pos) and game.strata.cell(new_pos.x, new_pos.y).passable:
-				Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
-				game.player = new_pos
+			if game.strata.valid(new_pos):
+				if god.noclip:
+					passable = True
+				else:
+					passable = game.strata.cell(new_pos.x, new_pos.y).passable
+				if passable:
+					Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
+					game.player = new_pos
 	if alive:
 		dump = save_game(game)
 		with open(savefile, 'w') as f:
