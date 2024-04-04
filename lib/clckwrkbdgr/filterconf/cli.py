@@ -18,16 +18,9 @@ from clckwrkbdgr.filterconf import Environment, ConfigFilter, config_filter
 import clckwrkbdgr.filterconf.txt
 import clckwrkbdgr.filterconf.jsonfile
 import clckwrkbdgr.filterconf.firefox_prefs
+import clckwrkbdgr.filterconf.inifile
 
 """
-ini:
-	sort sections/ sort values in sections
-	delete ini setting by section/name
-	delete whole section
-	including search by regexp
-	replace value for given section/name to another one
-	including regexp and regexp match groups
-
 scheme:
 	delete value by setting name (including regex in names)
 	"""
