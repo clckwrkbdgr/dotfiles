@@ -4,9 +4,9 @@
 			"homepageURL": "https://github.com/gorhill/uBlock#ublock-origin",
 			"id": "uBlock0@raymondhill.net",
 			"name": "uBlock Origin",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4237670/ublock_origin-1.56.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4257361/ublock_origin-1.57.0.xpi",
 			"type": "extension",
-			"version": "1.56.0"
+			"version": "1.57.0"
 		},
 		{
 			"homepageURL": "https://noscript.net",
@@ -44,9 +44,9 @@
 			"homepageURL": "https://github.com/philc/vimium",
 			"id": "{d7742d87-e61d-4b78-b8a1-b469842139fa}",
 			"name": "Vimium",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4191523/vimium_ff-2.0.6.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4259790/vimium_ff-2.1.2.xpi",
 			"type": "extension",
-			"version": "2.0.6"
+			"version": "2.1.2"
 		},
 		{
 			"homepageURL": null,
