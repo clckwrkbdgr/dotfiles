@@ -71,3 +71,15 @@ class JSONConfig(ConfigFilter):
 		""" Sorting keys, indenting (trying to guess current indent or using TAB).
 		"""
 		pass # No op, just serialize pretty data back.
+
+@config_filter('json_mozLz4')
+class JSONMozLz4Config(ConfigFilter):
+	""" JSON config encoded with mozLz4 codec (Mozilla). """
+	@classmethod
+	def decode(cls, raw_data):
+		from .. import firefox
+		return firefox.decompress_mozLz4(raw_data).decode('utf-8')
+	@classmethod
+	def encode(cls, text_data):
+		from .. import firefox
+		return firefox.compress_mozLz4(text_data.encode('utf-8'))

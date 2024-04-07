@@ -1,7 +1,7 @@
 import textwrap
 import six
 from clckwrkbdgr import unittest
-from clckwrkbdgr.filterconf.jsonfile import JSONConfig
+from clckwrkbdgr.filterconf.jsonfile import JSONConfig, JSONMozLz4Config
 
 class TestJSONConfig(unittest.TestCase):
 	def should_sort_json(self):
@@ -123,3 +123,15 @@ class TestJSONConfig(unittest.TestCase):
 		with JSONConfig(content) as filter:
 			filter.replace("foo.1.0", "sublist", "fixed_sublist")
 		self.assertEqual(filter.content, expected)
+
+class TestJSONMozLz4Config(unittest.TestCase):
+	def should_decode_mozlz4_json(self):
+		self.assertEqual(
+				JSONMozLz4Config.decode(b'mozLz40\0\r\0\0\0\xd0{"foo":"bar"}'),
+				'{"foo":"bar"}',
+				)
+	def should_encode_mozlz4_json(self):
+		self.assertEqual(
+				JSONMozLz4Config.encode('{"foo":"bar"}'),
+				b'mozLz40\0\r\0\0\0\xd0{"foo":"bar"}',
+				)
