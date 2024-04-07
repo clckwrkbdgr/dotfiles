@@ -20,11 +20,6 @@ import clckwrkbdgr.filterconf.jsonfile
 import clckwrkbdgr.filterconf.firefox_prefs
 import clckwrkbdgr.filterconf.inifile
 
-"""
-scheme:
-	delete value by setting name (including regex in names)
-	"""
-
 def get_epilog():
 	result = 'FORMATS:\n'
 	for name in config_filter.keys():
@@ -83,7 +78,9 @@ def with_stdin_content(enviro_action=None):
 	""" Reads stdin content and adds to context object under .content.
 	After execution writes content back to stdout.
 	If enviro_action = 'expand', expands environment variables in .envvars.
+	Additionally, converts binary form to text representation.
 	If enviro_action = 'restore', smudges environment variables in .envvars.
+	Additionallly, converts text representation back to binary form.
 	If incoming context object already has .content, all content actions are skipped.
 	"""
 	def _actual(func):
@@ -91,12 +88,23 @@ def with_stdin_content(enviro_action=None):
 		def _wrapper(settings, *args, **kwargs):
 			has_content = hasattr(settings, 'content')
 			if not has_content:
-				settings.content = sys.stdin.read()
 				if enviro_action == 'expand':
+					if sys.version_info >= (3, 0): # pragma: no cover -- os/py-version dependent.
+						bin_stdin = sys.stdin.buffer
+					else: # pragma: no cover -- os/py-version dependent.
+						if sys.platform == "win32":
+							import msvcrt
+							msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+						bin_stdin = sys.stdin
+					settings.content = settings.format.decode(bin_stdin.read()) # Expecting binary data.
+					settings.content.encode # Assert that decoded output is a text.
+
 					for name in settings.envvars.known_names():
 						placeholder = '${0}'.format(name)
 						settings.content = settings.content.replace(settings.envvars.get(name), placeholder)
 				elif enviro_action == 'restore':
+					settings.content = sys.stdin.read() # Expecting text.
+
 					for name in settings.envvars.known_names():
 						placeholder = '${0}'.format(name)
 						if placeholder in settings.content:
@@ -107,7 +115,19 @@ def with_stdin_content(enviro_action=None):
 				return func(settings, *args, **kwargs)
 			finally:
 				if not has_content:
-					sys.stdout.write(settings.content)
+					if enviro_action == 'restore':
+						if sys.version_info >= (3, 0): # pragma: no cover -- os/py-version dependent.
+							bin_stdout = sys.stdout.buffer
+						else: # pragma: no cover -- os/py-version dependent.
+							if sys.platform == "win32":
+								import msvcrt
+								msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+							bin_stdout = sys.stdout
+						data = settings.format.encode(settings.content)
+						data.decode # Assert that encoded output is binary.
+						bin_stdout.write(data) # Returning binary data.
+					else:
+						sys.stdout.write(settings.content) # Returning text representation.
 					delattr(settings, 'content')
 		return _wrapper
 	return _actual
@@ -117,7 +137,9 @@ def with_stdin_content(enviro_action=None):
 @with_stdin_content(enviro_action='restore')
 @utils.exits_with_return_value
 def restore(settings):
-	""" Restore filtered config file to normal state instead of filtering. """
+	""" Restore filtered config file to normal state instead of filtering.
+	That also includes converting back to original binary form, if format requires.
+	"""
 	pass
 
 @main.command()
@@ -126,7 +148,9 @@ def restore(settings):
 @utils.exits_with_return_value
 def enviro(settings):
 	""" Dummy action for the cases when only environment variables are needed to be expanded.
-	Every other action will do the same expansion but "enviro" will do nothing except that.
+	Every other action will do the same expansion but "enviro" will do nothing except that
+	and converting original binary form to text representation fit to be stored in VCS,
+	if format requires.
 	"""
 	pass
 
@@ -136,7 +160,9 @@ def enviro(settings):
 @with_stdin_content(enviro_action='expand')
 @utils.exits_with_return_value
 def sort(settings, path):
-	""" Sort content depending on format. """
+	""" Sort content depending on format.
+	See also `expand` command on additional implicit conversions.
+	"""
 	with settings.format(settings.content) as filter:
 		filter.sort(path)
 	settings.content = filter.content
@@ -151,7 +177,9 @@ def sort(settings, path):
 @with_stdin_content(enviro_action='expand')
 @utils.exits_with_return_value
 def delete(settings, path, pattern, pattern_type=None):
-	""" Delete entries at provided path that match specified patterns (depends on format). """
+	""" Delete entries at provided path that match specified patterns (depends on format).
+	See also `expand` command on additional implicit conversions.
+	"""
 	with settings.format(settings.content) as filter:
 		filter.delete(path, pattern, pattern_type)
 	settings.content = filter.content
@@ -169,7 +197,9 @@ def delete(settings, path, pattern, pattern_type=None):
 @with_stdin_content(enviro_action='expand')
 @utils.exits_with_return_value
 def replace(settings, path, pattern, pattern_type=None, with_value=None):
-	""" Replace entry at specified path that match pattern with another value (depends on format). """
+	""" Replace entry at specified path that match pattern with another value (depends on format).
+	See also `expand` command on additional implicit conversions.
+	"""
 	with settings.format(settings.content) as filter:
 		filter.replace(path, pattern, with_value, pattern_type)
 	settings.content = filter.content
@@ -179,7 +209,9 @@ def replace(settings, path, pattern, pattern_type=None, with_value=None):
 @with_stdin_content(enviro_action='expand')
 @utils.exits_with_return_value
 def pretty(settings):
-	""" Prettify content depending on format. """
+	""" Prettify content depending on format.
+	See also `expand` command on additional implicit conversions.
+	"""
 	with settings.format(settings.content) as filter:
 		filter.pretty()
 	settings.content = filter.content
@@ -205,6 +237,8 @@ def script(settings, filename):
 	Commands are applied in the given order.
 	Format and enviro options do not need to be specified for each command,
 	they are taken from main command line.
+	See also `expand` command on additional implicit conversions,
+	which will be performed once for all commands (before or after, depending on the conversion).
 	"""
 	with settings.format(settings.content) as filter:
 		for command_name, args in parse_script_file(filename):

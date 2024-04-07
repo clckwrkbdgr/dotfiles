@@ -53,6 +53,19 @@ class ConfigFilter:
 				inspect.getdoc(filterclass.sort),
 				]
 		return '\n'.join(docs)
+	@classmethod
+	def decode(cls, binary_data):
+		""" Converts config from binary form to text representation
+		suitable to be stored in VCS.
+		By default just treats input as UTF-8 text.
+		"""
+		return binary_data.decode('utf-8')
+	@classmethod
+	def encode(cls, text_repr):
+		""" Converts text representation back to the original binary form.
+		By default just encodes output as UTF-8 text.
+		"""
+		return text_repr.encode('utf-8')
 	def unpack(self, content): # pragma: no cover
 		""" Should unpack text content into format-dependent data structure.
 		It will be available in field .data.
@@ -80,4 +93,3 @@ class ConfigFilter:
 		raise NotImplementedError
 
 config_filter = AutoRegistry()
-

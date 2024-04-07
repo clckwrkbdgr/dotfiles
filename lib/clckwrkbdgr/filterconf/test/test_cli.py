@@ -1,9 +1,30 @@
 import os, textwrap
+import base64
 from click.testing import CliRunner
 from clckwrkbdgr import unittest
+from .. import _base
+
+@_base.config_filter('mock-binary-format')
+class MockBase64TextConfig(_base.ConfigFilter):
+	""" Mock config format for testing encode/decode part. """
+	@classmethod
+	def decode(cls, bin_data):
+		return base64.b64decode(bin_data).decode('utf-8')
+	@classmethod
+	def encode(cls, text_repr):
+		return base64.b64encode(text_repr.encode('utf-8'))
+
 from .. import cli
 
 class TestCLI(unittest.TestCase):
+	def should_decode_incoming_binary_form(self):
+		runner = CliRunner()
+		result = runner.invoke(cli.main, ['-f', 'mock-binary-format', 'enviro'], input=b"SGVsbG8gd29ybGQhCg==\n")
+		self.assertEqual(result.output, "Hello world!\n")
+	def should_encode_back_to_binary_form(self):
+		runner = CliRunner()
+		result = runner.invoke(cli.main, ['-f', 'mock-binary-format', 'restore'], input="Hello world!\n")
+		self.assertEqual(result.output, "SGVsbG8gd29ybGQhCg==")
 	def should_smudge_home_dir_in_plain_text(self):
 		runner = CliRunner()
 		result = runner.invoke(cli.main, ['-f', 'txt', 'enviro'], input="First: {HOME}\nSecond: {HOME}\n".format(HOME=os.environ['HOME']))
