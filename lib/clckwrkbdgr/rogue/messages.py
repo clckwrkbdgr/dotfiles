@@ -1,6 +1,6 @@
 import datetime
 
-class Logger: # pragma: no cover -- TODO
+class Logger:
 	def __init__(self):
 		self.fd = None
 	def log(self, levelname, message):
@@ -13,9 +13,9 @@ class Logger: # pragma: no cover -- TODO
 			))
 		self.fd.flush()
 	def debug(self, message): self.log('debug', message)
-	def info(self, message): self.log('debug', message)
-	def warning(self, message): self.log('debug', message)
-	def error(self, message): self.log('debug', message)
+	def info(self, message): self.log('info', message)
+	def warning(self, message): self.log('warning', message)
+	def error(self, message): self.log('error', message)
 	def init(self, filename):
 		if self.fd:
 			self.fd.close()
