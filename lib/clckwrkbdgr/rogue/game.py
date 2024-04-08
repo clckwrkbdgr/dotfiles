@@ -72,14 +72,14 @@ def build_rogue_dungeon(rng, size): # pragma: no cover -- TODO
 				)
 		grid.set_cell(cell.x, cell.y, Rect(topleft, room_size))
 
-	maze = {k:set() for k in grid.keys()}
-	for column in range(grid.width):
-		for row in range(grid.height):
-			if column < grid.width - 1:
+	maze = {k:set() for k in grid.size}
+	for column in range(grid.size.width):
+		for row in range(grid.size.height):
+			if column < grid.size.width - 1:
 				a, b = Point(column, row), Point(column + 1, row)
 				maze[a].add(b)
 				maze[b].add(a)
-			if row < grid.height - 1:
+			if row < grid.size.height - 1:
 				a, b = Point(column, row), Point(column, row + 1)
 				maze[a].add(b)
 				maze[b].add(a)
@@ -205,7 +205,7 @@ def build_rogue_dungeon(rng, size): # pragma: no cover -- TODO
 		strata.set_cell(start.x, start.y, Cell("+", True, remembered='+'))
 		strata.set_cell(stop.x, stop.y, Cell("+", True, remembered='+'))
 
-	enter_room_key = rng.choice(list(grid.keys()))
+	enter_room_key = rng.choice(list(grid.size))
 	enter_room = grid.cell(enter_room_key.x, enter_room_key.y)
 	start_pos = Point(
 				rng.range(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
@@ -213,7 +213,7 @@ def build_rogue_dungeon(rng, size): # pragma: no cover -- TODO
 				)
 
 	for _ in range(9):
-		exit_room_key = rng.choice(list(grid.keys()))
+		exit_room_key = rng.choice(list(grid.size))
 		exit_room = grid.cell(exit_room_key.x, exit_room_key.y)
 		exit_pos = Point(
 				rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
@@ -348,16 +348,16 @@ def build_bsp_dungeon(rng, size): # pragma: no cover -- TODO
 
 def build_cave(rng, size): # pragma: no cover -- TODO
 	strata = Matrix(size, 0)
-	for x in range(1, strata.width - 1):
-		for y in range(1, strata.height - 1):
+	for x in range(1, strata.size.width - 1):
+		for y in range(1, strata.size.height - 1):
 			strata.set_cell(x, y, 0 if rng.get() < 0.50 else 1)
 	Log.debug("Initial state:\n{0}".format(repr(strata)))
 
 	new_layer = Matrix(strata.size)
 	drop_wall_2_at = 4
 	for step in range(drop_wall_2_at+1):
-		for x in range(1, strata.width - 1):
-			for y in range(1, strata.height - 1):
+		for x in range(1, strata.size.width - 1):
+			for y in range(1, strata.size.height - 1):
 				neighs = set(strata.get_neighbours(x, y, with_diagonal=True))
 				neighs2 = set(itertools.chain.from_iterable(
 					strata.get_neighbours(n.x, n.y, with_diagonal=True)
@@ -487,7 +487,7 @@ def build_maze(rng, size): # pragma: no cover -- TODO
 		if not ( intDone + 1 < ((layout_size.width + 1) * (layout_size.height + 1)) / 4):
 			break
 
-	strata = Matrix(size, Cell('#', False, remembered='#')) # FIXME
+	strata = Matrix(size, Cell('#', False, remembered='#'))
 	for pos in layout.size:
 		if layout.cell(pos.x, pos.y):
 			strata.set_cell(pos.x + 1, pos.y + 1, Cell('.'))
@@ -614,8 +614,8 @@ def main_loop(window): # pragma: no cover -- TODO
 
 		Log.debug('Redrawing interface.')
 		Log.debug('Player at: {0}'.format(game.player))
-		for row in range(game.strata.height):
-			for col in range(game.strata.width):
+		for row in range(game.strata.size.height):
+			for col in range(game.strata.size.width):
 				Log.debug('Cell {0},{1}'.format(col, row))
 				cell = game.strata.cell(col, row)
 				rel_pos = Point(col, row) - game.player

@@ -42,14 +42,6 @@ class Matrix:
 		return self.cells[x + y * self.size.width]
 	def clear(self, value):
 		self.cells = [copy.copy(value) for _ in range(self.size.width * self.size.height)]
-	def keys(self): # pragma: no cover -- FIXME temporary. Remove after migrating to standalone math.
-		return iter(self.size)
-	@property
-	def width(self): # pragma: no cover -- FIXME temporary. Remove after migrating to standalone math.
-		return self.size.width
-	@property
-	def height(self): # pragma: no cover -- FIXME temporary. Remove after migrating to standalone math.
-		return self.size.height
 	def get_neighbours(self, x, y, with_diagonal=False):
 		neighbours = [
 				Point(x + 1, y    ),
