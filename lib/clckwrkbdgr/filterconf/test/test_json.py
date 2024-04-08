@@ -2,6 +2,10 @@ import textwrap
 import six
 from clckwrkbdgr import unittest
 from clckwrkbdgr.filterconf.jsonfile import JSONConfig, JSONMozLz4Config
+try:
+	import lz4.block
+except ImportError: # pragma: no cover
+	lz4 = None
 
 class TestJSONConfig(unittest.TestCase):
 	def should_sort_json(self):
@@ -125,11 +129,13 @@ class TestJSONConfig(unittest.TestCase):
 		self.assertEqual(filter.content, expected)
 
 class TestJSONMozLz4Config(unittest.TestCase):
+	@unittest.skipUnless(lz4, 'lz4.block is not detected.')
 	def should_decode_mozlz4_json(self):
 		self.assertEqual(
 				JSONMozLz4Config.decode(b'mozLz40\0\r\0\0\0\xd0{"foo":"bar"}'),
 				'{"foo":"bar"}',
 				)
+	@unittest.skipUnless(lz4, 'lz4.block is not detected.')
 	def should_encode_mozlz4_json(self):
 		self.assertEqual(
 				JSONMozLz4Config.encode('{"foo":"bar"}'),

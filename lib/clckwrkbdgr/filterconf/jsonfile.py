@@ -76,10 +76,10 @@ class JSONConfig(ConfigFilter):
 class JSONMozLz4Config(ConfigFilter):
 	""" JSON config encoded with mozLz4 codec (Mozilla). """
 	@classmethod
-	def decode(cls, raw_data):
+	def decode(cls, raw_data): # pragma: no cover -- package lz4 may not be accessible
 		from .. import firefox
 		return firefox.decompress_mozLz4(raw_data).decode('utf-8')
 	@classmethod
-	def encode(cls, text_data):
+	def encode(cls, text_data): # pragma: no cover -- package lz4 may not be accessible
 		from .. import firefox
 		return firefox.compress_mozLz4(text_data.encode('utf-8'))
