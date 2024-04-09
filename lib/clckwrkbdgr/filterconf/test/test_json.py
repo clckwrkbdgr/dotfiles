@@ -130,13 +130,13 @@ class TestJSONConfig(unittest.TestCase):
 
 class TestJSONMozLz4Config(unittest.TestCase):
 	@unittest.skipUnless(lz4, 'lz4.block is not detected.')
-	def should_decode_mozlz4_json(self):
+	def should_decode_mozlz4_json(self): # pragma: no cover -- package lz4 may not be accessible
 		self.assertEqual(
 				JSONMozLz4Config.decode(b'mozLz40\0\r\0\0\0\xd0{"foo":"bar"}'),
 				'{"foo":"bar"}',
 				)
 	@unittest.skipUnless(lz4, 'lz4.block is not detected.')
-	def should_encode_mozlz4_json(self):
+	def should_encode_mozlz4_json(self): # pragma: no cover -- package lz4 may not be accessible
 		self.assertEqual(
 				JSONMozLz4Config.encode('{"foo":"bar"}'),
 				b'mozLz40\0\r\0\0\0\xd0{"foo":"bar"}',
