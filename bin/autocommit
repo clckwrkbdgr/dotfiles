@@ -30,29 +30,28 @@ def file_has_changed(dest_path, source_path):
 		return True
 	return False
 
-def process_one_file(path, commit_message, dest_repo=None, dest_path=None, show_diff=False):
-	if not Path(path).exists():
-		Log.debug('{0}: does not exist, skipping.'.format(path))
-		return
+def process_files(paths, commit_message, dest_repo=None, show_diff=False):
+	for path in paths:
+		if not Path(path).exists():
+			Log.debug('{0}: does not exist, skipping.'.format(path))
+			return
 	if dest_repo and dest_repo != '.':
-		if dest_path:
-			dest_path = Path(dest_path)
-			if dest_path.is_absolute():
-				raise RuntimeError("{0}: dest_path is absolute; it should be relative to the history repo root ({1}): {2}".format(path, dest_repo, dest_path))
-			dest_path = Path(dest_repo)/dest_path
-		else:
+		dest_paths = []
+		for path in paths:
 			dest_path = Path(dest_repo)/path
-		Log.debug('{0}: Checking state in {1}.'.format(path, dest_path))
-		if file_has_changed(dest_path, path):
-			Log.info('{0}: Updating.'.format(dest_path))
-			if not dest_path.parent.exists():
-				dest_path.parent.mkdir(parents=True)
-			shutil.copy(str(path), str(dest_path))
-		path = dest_path
+			Log.debug('{0}: Checking state in {1}.'.format(path, dest_path))
+			if file_has_changed(dest_path, path):
+				Log.info('{0}: Updating.'.format(dest_path))
+				if not dest_path.parent.exists():
+					dest_path.parent.mkdir(parents=True)
+				shutil.copy(str(path), str(dest_path))
+			dest_path.append(dest_path)
+		paths = dest_paths
 	with clckwrkbdgr.fs.CurrentDir(dest_repo or '.'):
 		try:
-			if git.commit_one_file(path, commit_message, show_diff=show_diff):
-				Log.info('{0}: Committed: {1}'.format(path, commit_message))
+			if git.commit_files(paths, commit_message, show_diff=show_diff):
+				for path in paths:
+					Log.info('{0}: Committed: {1}'.format(path, commit_message))
 		except RuntimeError as e:
 			raise AutocommitError(str(e))
 
@@ -70,7 +69,7 @@ Configuration file should be in JSON format:
 			# Default message is 'autocommit'.
 			'message' : '<Commit message>'
 			# Path where the file will copied to. Relative to the root of the history repo. By default uses the same relative path (from the key of this dict).
-			'dest_path' : '<Commit message>'
+			'dest_path' : '<path>'
 			# If True, will display diff to stdout before commit. By default is False.
 			'show_diff' : <bool>
 		},
@@ -109,16 +108,20 @@ def cli(config_file, patterns, verbose=False, debug=False):
 				continue
 			Log.debug('{0}: Processing file...'.format(filename))
 			props = files[filename]
+			if props.get('dest_path'):
+				Log.error("{0}: property dest_path is obsolete.".format(filename))
+				continue
 			modified_files = set(Path(_).resolve() for _ in git.files_need_commit())
+			to_commit = []
 			for real_filename in glob.iglob(filename):
 				if Path(real_filename).resolve() not in modified_files:
 					Log.debug('{0}: File is not in modified, skipping...'.format(real_filename))
 					continue
-				process_one_file(real_filename,
+				to_commit.append(real_filename)
+			process_files(to_commit,
 					commit_message=props.get('message', 'autocommit'),
 					dest_repo=repo_path if repo != '.' else None,
 					show_diff=props.get('show_diff', False),
-					dest_path=props.get('dest_path', None),
 					)
 
 if __name__ == '__main__':

@@ -351,3 +351,24 @@ def commit_one_file(path, commit_message, show_diff=False): # pragma: no cover -
 	subprocess.call(['git', 'add', str(path)])
 	rc = subprocess.call(['git', 'commit', '--quiet', '-m', str(commit_message)])
 	return rc == 0
+
+def commit_files(paths, commit_message, show_diff=False): # pragma: no cover -- TODO commands
+	for path in paths:
+		if not Path(path).exists():
+			raise RuntimeError('Cannot find file to commit in current WD: {0} ({1})'.format(path, os.getcwd()))
+	if has_staged_files():
+		raise RuntimeError('Some files are staged, cannot commit new files: {0}'.format(paths))
+	need_commits = []
+	for path in paths:
+		if file_needs_commit(path):
+			need_commits.append(path)
+		else:
+			logging.debug('{0}: No changes, skipping'.format(path))
+	if not need_commits:
+		logging.debug('No changes at all, skipping')
+		return False # No changes.
+	if show_diff:
+		subprocess.call(['git', '--no-pager', 'diff'] + list(map(str, need_commits)))
+	subprocess.call(['git', 'add'] + list(map(str, need_commits)))
+	rc = subprocess.call(['git', 'commit', '--quiet', '-m', str(commit_message)])
+	return rc == 0
