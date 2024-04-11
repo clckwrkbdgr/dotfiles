@@ -154,12 +154,12 @@
 			"signedState": 2,
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4257361/ublock_origin-1.57.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4261710/ublock_origin-1.57.2.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{c1f4c119-9cc0-4da2-b91a-7cba61f68243}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.57.0",
+			"version": "1.57.2",
 			"visible": true
 		},
 		{
