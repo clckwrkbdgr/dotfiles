@@ -48,10 +48,10 @@ class ConfigFilter:
 		self.content = self.pack(self.content)
 	@classmethod
 	def description(filterclass):
-		docs = [
+		docs = list(filter(None, (
 				inspect.getdoc(filterclass),
 				inspect.getdoc(filterclass.sort),
-				]
+				)))
 		return '\n'.join(docs)
 	@classmethod
 	def decode(cls, binary_data):

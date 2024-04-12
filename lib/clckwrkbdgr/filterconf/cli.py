@@ -19,6 +19,7 @@ import clckwrkbdgr.filterconf.txt
 import clckwrkbdgr.filterconf.jsonfile
 import clckwrkbdgr.filterconf.firefox_prefs
 import clckwrkbdgr.filterconf.inifile
+import clckwrkbdgr.filterconf.sqlite
 
 def get_epilog():
 	result = 'FORMATS:\n'
@@ -97,7 +98,7 @@ def with_stdin_content(enviro_action=None):
 							msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
 						bin_stdin = sys.stdin
 					settings.content = settings.format.decode(bin_stdin.read()) # Expecting binary data.
-					settings.content.encode # Assert that decoded output is a text.
+					assert hasattr(settings.content, 'encode'), "Content decoded from stdin does not look like string."
 
 					for name in settings.envvars.known_names():
 						placeholder = '${0}'.format(name)
@@ -124,7 +125,7 @@ def with_stdin_content(enviro_action=None):
 								msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 							bin_stdout = sys.stdout
 						data = settings.format.encode(settings.content)
-						data.decode # Assert that encoded output is binary.
+						assert hasattr(data, 'decode'), "Encoded output does not look like binary data"
 						bin_stdout.write(data) # Returning binary data.
 					else:
 						sys.stdout.write(settings.content) # Returning text representation.
