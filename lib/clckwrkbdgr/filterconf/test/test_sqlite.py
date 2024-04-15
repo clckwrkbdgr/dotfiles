@@ -47,6 +47,7 @@ class TestSQLiteBinaryContent(unittest.TestCase):
 		raw_sql_data = SQLiteConfig.encode(content)
 		with tempfile.NamedTemporaryFile() as f:
 			f.write(raw_sql_data)
+			f.seek(0) # Some old Py2 version fail to sync written chanages with FS for some reason.
 			db = sqlite3.connect(f.name)
 			content = '\n'.join(db.iterdump()) + '\n'
 			db.close()
@@ -66,6 +67,7 @@ class TestSQLiteBinaryContent(unittest.TestCase):
 		raw_sql_data = SQLiteConfig.encode(filter.content)
 		with tempfile.NamedTemporaryFile() as f:
 			f.write(raw_sql_data)
+			f.seek(0) # Some old Py2 version fail to sync written chanages with FS for some reason.
 			db = sqlite3.connect(f.name)
 			content = '\n'.join(db.iterdump()) + '\n'
 			db.close()
