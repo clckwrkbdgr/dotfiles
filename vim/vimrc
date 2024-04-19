@@ -162,6 +162,19 @@ if !has('win32')
   au FileType javascript set foldmethod=marker
 endif
 
+function! SwitchTodoBox()
+   let l:line = getline(".")
+   let questa = l:line =~ "\[[ ]\]"
+   if questa || (l:line =~ "\[X\]")
+	if (questa)
+      substitute/\[.\]/\="[X]"/
+	else
+      substitute/\[.\]/\="[ ]"/
+	endif
+   endif
+endfunction
+au FileType markdown noremap <silent><buffer> <localleader>cx :call SwitchTodoBox()<cr>
+
 function! RestoreCursorPositionForFile()
    if line("`\"") <= line("$")
       silent! normal! g`"
