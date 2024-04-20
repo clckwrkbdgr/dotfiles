@@ -73,7 +73,7 @@ class JSONConfig(ConfigFilter):
 		pass # No op, just serialize pretty data back.
 
 @config_filter('json_mozLz4')
-class JSONMozLz4Config(ConfigFilter):
+class JSONMozLz4Config(JSONConfig):
 	""" JSON config encoded with mozLz4 codec (Mozilla). """
 	@classmethod
 	def decode(cls, raw_data): # pragma: no cover -- package lz4 may not be accessible
