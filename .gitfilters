@@ -1,3 +1,5 @@
+# vi: ft=gitconfig
+
 [filter "mc_ini"]
 	smudge = cat
 	clean = "sed 's|ftpfs_password=.*|ftpfs_password=anonymous@|'"

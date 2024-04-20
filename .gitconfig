@@ -2,6 +2,8 @@
 # Should be either added manually to .git/config, or include'd in .git/config:
 # [include]
 # 	path = <full path to repo>/.gitconfig
+[include]
+	path = .gitfilters
 
 [filter "textsort"]
 	smudge = cat
