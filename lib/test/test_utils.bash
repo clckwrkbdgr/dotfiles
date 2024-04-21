@@ -53,7 +53,7 @@ should_perform_actions_finally() {
 }
 
 should_accumulate_finally_statements() {
-	assertOutputEqual "( finally 'echo first finally'; echo 'test'; finally 'echo second finally';  )" "test\nfirst finally\nsecond finally"
+	assertOutputEqual "( finally 'echo first finally'; echo 'test'; finally 'echo second finally';  )" "test\nsecond finally\nfirst finally"
 }
 
 should_perform_finally_in_separate_subshells_independently() {

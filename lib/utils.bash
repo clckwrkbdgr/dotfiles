@@ -54,7 +54,7 @@ _finally_init () {
 	local next="$1"
 	eval "finally () {
 		local oldcmd='$(echo "$next" | sed -e s/\'/\'\\\\\'\'/g)'
-		local newcmd=\"\$oldcmd; \$1\"
+		local newcmd=\"\$1; \$oldcmd\"
 		trap -- \"\$newcmd\" 0
 		_finally_init \"\$newcmd\"
 	}"
