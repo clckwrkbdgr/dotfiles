@@ -45,7 +45,7 @@ def process_files(paths, commit_message, dest_repo=None, show_diff=False):
 				if not dest_path.parent.exists():
 					dest_path.parent.mkdir(parents=True)
 				shutil.copy(str(path), str(dest_path))
-			dest_path.append(dest_path)
+			dest_paths.append(dest_path)
 		paths = dest_paths
 	with clckwrkbdgr.fs.CurrentDir(dest_repo or '.'):
 		try:
@@ -113,11 +113,14 @@ def cli(config_file, patterns, verbose=False, debug=False):
 				continue
 			modified_files = set(Path(_).resolve() for _ in git.files_need_commit())
 			to_commit = []
-			for real_filename in glob.iglob(filename):
-				if Path(real_filename).resolve() not in modified_files:
-					Log.debug('{0}: File is not in modified, skipping...'.format(real_filename))
-					continue
-				to_commit.append(real_filename)
+			if repo == '.':
+				for real_filename in glob.iglob(filename):
+					if Path(real_filename).resolve() not in modified_files:
+						Log.debug('{0}: File is not in modified, skipping...'.format(real_filename))
+						continue
+					to_commit.append(real_filename)
+			else:
+				to_commit = list(glob.iglob(filename))
 			process_files(to_commit,
 					commit_message=props.get('message', 'autocommit'),
 					dest_repo=repo_path if repo != '.' else None,
