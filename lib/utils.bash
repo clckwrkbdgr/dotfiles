@@ -49,12 +49,16 @@ _finally_init () {
 	# from the current scope (function, subshell).
 	# Usage:
 	#   finally 'do some cleanup;'
-	#   finally 'do more cleanup;'
+	#   finally 'do some more cleanup;'
 	# Note: this one is a helper function and should not be called directly.
 	local next="$1"
 	eval "finally () {
 		local oldcmd='$(echo "$next" | sed -e s/\'/\'\\\\\'\'/g)'
-		local newcmd=\"\$1; \$oldcmd\"
+		if [ -z \"\$1\" ]; then
+			local newcmd=\"\$oldcmd\"
+		else
+			local newcmd=\"\$(echo \"\$1\" | sed 's/; *\$//'); \$oldcmd\"
+		fi
 		trap -- \"\$newcmd\" 0
 		_finally_init \"\$newcmd\"
 	}"
