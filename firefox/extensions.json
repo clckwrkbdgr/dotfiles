@@ -19,12 +19,12 @@
 			"signedState": 2,
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/904936/mutelinks-0.2.2.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4271092/mutelinks-0.2.3resigned1.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{fa548d43-837e-4f6a-b54d-4115e8b82723}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "0.2.2",
+			"version": "0.2.3resigned1",
 			"visible": true
 		},
 		{
