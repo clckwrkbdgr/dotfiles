@@ -3,3 +3,19 @@
 [filter "mc_ini"]
 	smudge = cat
 	clean = "sed 's|ftpfs_password=.*|ftpfs_password=anonymous@|'"
+
+[filter "textsort"]
+	smudge = "filterconf -f txt restore"
+	clean = "filterconf -f txt sort ."
+
+[filter "mozLz4"]
+	smudge = "filterconf -f json_mozLz4 restore"
+	clean = "filterconf -f json_mozLz4 pretty"
+
+[filter "pretty_json"]
+	smudge = cat
+	clean = "filterconf -f json pretty | sed 's/\\t/    /g'"
+
+[filter "sqlite_text_dump"]
+	smudge = "filterconf -f sqlite restore"
+	clean = "filterconf -f sqlite enviro"

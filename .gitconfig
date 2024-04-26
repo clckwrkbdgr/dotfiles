@@ -5,17 +5,9 @@
 [include]
 	path = .gitfilters
 
-[filter "textsort"]
-	smudge = cat
-	clean = sort
-
 [filter "zipfile"]
 	smudge = "zipdump load"
 	clean = "zipdump dump"
-
-[filter "mozLz4"]
-	smudge = "mozLz4.py compress"
-	clean = "mozLz4.py decompress | python -m json.tool --sort-keys"
 
 [filter "addonStartupLz4"]
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g' | mozLz4.py compress"
@@ -44,14 +36,6 @@
 [filter "insteadrc_remove_state"]
 	smudge = cat
 	clean = "sed 's/^game = .*$/game = /;s/^fs = [01]$/fs = 0/'"
-
-[filter "sqlite_text_dump"]
-	smudge = "sqlitedump --load"
-	clean = "sqlitedump --dump"
-
-[filter "pretty_json"]
-	smudge = cat
-	clean = "python -m json.tool --sort-keys"
 
 [filter "windows_terminal_settings"]
 	smudge = cat
@@ -129,10 +113,6 @@
 [filter "git_config"]
 	smudge = "python ~/.config/git/git_config_submodule_diff_option.py smudge"
 	clean = "python ~/.config/git/git_config_submodule_diff_option.py clean"
-
-[filter "mc_ini"]
-	smudge = cat
-	clean = "sed 's|ftpfs_password=.*|ftpfs_password=anonymous@|'"
 
 # TODO to filterconf
 [filter "svn_config"]
