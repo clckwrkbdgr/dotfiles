@@ -100,16 +100,3 @@ class SQLiteConfig(ConfigFilter):
 		self.db.commit()
 	def pretty(self):
 		pass # SQLite DB has no option to "prettify" its content.
-
-"""
-smudge = "sqlitedump --load"
-UPDATE moz_cookies SET lastAccessed = '${current_timestamp}000000';
-
-clean = "sqlitedump --dump"
-
-TODO batch actions for script mode, like:
-  delete path 'pattern1'
-    'pattern2'
-    'pattern3'
-  ensure treat as one batch command and/or transaction for SQL
-  """

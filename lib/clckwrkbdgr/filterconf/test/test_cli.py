@@ -3,6 +3,7 @@ import base64
 from click.testing import CliRunner
 from clckwrkbdgr import unittest
 from .. import _base
+from .. import txt
 
 @_base.config_filter('mock-binary-format')
 class MockBase64TextConfig(_base.ConfigFilter):
@@ -13,6 +14,19 @@ class MockBase64TextConfig(_base.ConfigFilter):
 	@classmethod
 	def encode(cls, text_repr):
 		return base64.b64encode(text_repr.encode('utf-8'))
+
+@_base.config_filter('mock-pack-format')
+class MockPackConfig(txt.PlainText):
+	_pack_actions = []
+
+	def unpack(self, content):
+		self._pack_actions.append('unpack')
+		result = textwrap.dedent(content)
+		return result
+	def pack(self, data):
+		self._pack_actions.append('pack')
+		result = textwrap.indent(data, '\t\t\t')
+		return result
 
 from .. import cli
 
@@ -152,6 +166,34 @@ class TestCLI(unittest.TestCase):
 			2nd
 			third
 			"""))
+	def should_pack_unpack_only_once_in_multiple_commands_mode(self):
+		self.maxDiff = None
+		runner = CliRunner()
+		with runner.isolated_filesystem():
+			with open('script.sh', 'w') as f:
+				f.write(textwrap.dedent("""\
+				# Comment
+				delete "" --pattern-type regex "^.*remove"
+				sort ""
+				replace "" --pattern-type regex "seco(nd)" --with "2\\1"
+				"""))
+			input_data = """\
+			second
+			third
+			to remove
+			first
+			"""
+
+			MockPackConfig._pack_actions = []
+			result = runner.invoke(cli.main, ['-f', 'mock-pack-format', 'script', 'script.sh'], input=input_data)
+			self.assertEqual(MockPackConfig._pack_actions, [
+				'unpack', 'pack',
+				])
+			self.assertEqual(result.output, """\
+			first
+			2nd
+			third
+			""".rstrip() + '\n')
 	def should_fail_on_unknown_command_in_script(self):
 		runner = CliRunner()
 		with runner.isolated_filesystem():

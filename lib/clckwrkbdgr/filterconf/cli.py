@@ -1,5 +1,6 @@
 import os, sys, subprocess
 import types, functools
+import contextlib
 try:
 	types.SimpleNamespace
 except AttributeError: # pragma: no cover
@@ -75,6 +76,12 @@ def main(ctx, format=None, enviro=None):
 	ctx.ensure_object(types.SimpleNamespace)
 	ctx.obj.envvars = prepare_envvars(enviro)
 	ctx.obj.format = format
+	ctx.obj.filter = None
+
+def unpack_current_filter(settings):
+	if settings.filter:
+		return settings.filter()
+	return settings.format(settings.content)
 
 def with_stdin_content(enviro_action=None):
 	""" Reads stdin content and adds to context object under .content.
@@ -165,7 +172,7 @@ def sort(settings, path):
 	""" Sort content depending on format.
 	See also `expand` command on additional implicit conversions.
 	"""
-	with settings.format(settings.content) as filter:
+	with unpack_current_filter(settings) as filter:
 		filter.sort(path)
 	settings.content = filter.content
 
@@ -182,7 +189,7 @@ def delete(settings, path, pattern, pattern_type=None):
 	""" Delete entries at provided path that match specified patterns (depends on format).
 	See also `expand` command on additional implicit conversions.
 	"""
-	with settings.format(settings.content) as filter:
+	with unpack_current_filter(settings) as filter:
 		filter.delete(path, pattern, pattern_type)
 	settings.content = filter.content
 
@@ -202,7 +209,7 @@ def replace(settings, path, pattern, pattern_type=None, with_value=None):
 	""" Replace entry at specified path that match pattern with another value (depends on format).
 	See also `expand` command on additional implicit conversions.
 	"""
-	with settings.format(settings.content) as filter:
+	with unpack_current_filter(settings) as filter:
 		filter.replace(path, pattern, with_value, pattern_type)
 	settings.content = filter.content
 
@@ -214,7 +221,7 @@ def pretty(settings):
 	""" Prettify content depending on format.
 	See also `expand` command on additional implicit conversions.
 	"""
-	with settings.format(settings.content) as filter:
+	with unpack_current_filter(settings) as filter:
 		filter.pretty()
 	settings.content = filter.content
 
@@ -243,6 +250,11 @@ def script(settings, filename):
 	which will be performed once for all commands (before or after, depending on the conversion).
 	"""
 	with settings.format(settings.content) as filter:
+		@contextlib.contextmanager
+		def _using_already_unpacked_content():
+			yield filter
+		settings.filter = _using_already_unpacked_content
+
 		for command_name, args in parse_script_file(filename):
 			try:
 				try:
@@ -256,6 +268,7 @@ def script(settings, filename):
 				rc = e.code
 			if rc != 0: # pragma: no cover
 				return rc
+	settings.content = filter.content
 
 if __name__ == '__main__': # pragma: no cover
 	main()
