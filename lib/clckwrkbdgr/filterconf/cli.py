@@ -16,6 +16,7 @@ from clckwrkbdgr.filterconf import Environment, ConfigFilter, config_filter
 
 # ConfigFilters:
 import clckwrkbdgr.filterconf.txt
+import clckwrkbdgr.filterconf.xml
 import clckwrkbdgr.filterconf.jsonfile
 import clckwrkbdgr.filterconf.firefox_prefs
 import clckwrkbdgr.filterconf.inifile

@@ -8,9 +8,9 @@ try: # pragma: no cover
 	def _prettify(root):
 		parser = ET.XMLParser(remove_blank_text=True)
 		data = ET.XML(ET.tostring(root), parser=parser)
-		return ET.tostring(data, encoding='unicode', pretty_print=True).rstrip() + '\n'
+		return ET.tostring(data, encoding='utf-8', xml_declaration=True, pretty_print=True).decode('utf-8').rstrip() + '\n'
 	def _tostring(root):
-		return ET.tostring(root, encoding='unicode').rstrip() + '\n'
+		return ET.tostring(root, encoding='utf-8', xml_declaration=True).decode('utf-8').rstrip() + '\n'
 except ImportError: # pragma: no cover
 	import xml.etree.ElementTree as ET
 	import xml.dom.minidom
@@ -36,7 +36,7 @@ from . import ConfigFilter, config_filter, convert_pattern
 class XMLConfig(ConfigFilter):
 	""" XML config. """
 	def unpack(self, content):
-		return ET.fromstring(self.content)
+		return ET.fromstring(self.content.encode('utf-8'))
 	def pack(self, data):
 		pretty = hasattr(self, 'do_prettify') and self.do_prettify
 		if pretty:
@@ -66,6 +66,10 @@ class XMLConfig(ConfigFilter):
 				if pattern.match(element.text):
 					_getparent(element, self.content).remove(element)
 	def replace(self, xpath, pattern, substitute, pattern_type=None):
+		""" If substitute starts with 'xpath:', the rest of the string is evaluated as XPath expression and result is used as a substitute, e.g.: xpath:count(/root/items/item)
+		"""
+		if substitute.startswith('xpath:'):
+			substitute = str(self.content.xpath(substitute[len('xpath:'):]))
 		attr = None
 		if '@' in xpath:
 			xpath, attr = xpath.split('@')
