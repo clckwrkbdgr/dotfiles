@@ -49,7 +49,7 @@ class TestXMLConfig(unittest.TestCase):
 				  <list>
 				    <item attr="foo"/>
 				    <item attr="baz"/>
-				    <item attr="bar"/>
+				    <item>bar</item>
 				  </list>
 				</root>
 				""")
@@ -58,7 +58,7 @@ class TestXMLConfig(unittest.TestCase):
 				<root>
 				  <list>
 				    <item attr="baz"/>
-				    <item attr="bar"/>
+				    <item>bar</item>
 				  </list>
 				</root>
 				""")
@@ -93,7 +93,7 @@ class TestXMLConfig(unittest.TestCase):
 				  <list>
 				    <item attr="foo"/>
 				    <item attr="baz"/>
-				    <item attr="bar"/>
+				    <item>bar</item>
 				  </list>
 				</root>
 				""")
@@ -103,12 +103,35 @@ class TestXMLConfig(unittest.TestCase):
 				  <list>
 				    <item attr="FOOBAR"/>
 				    <item attr="baz"/>
-				    <item attr="bar"/>
+				    <item>bar</item>
 				  </list>
 				</root>
 				""")
 		with XMLConfig(content) as filter:
 			filter.replace('/root/list/item@attr', '.*o$', 'FOOBAR', pattern_type='regex')
+		self.assertEqual(filter.content, expected)
+	def should_replace_attr_values_in_nodes_by_xpath_search_expression_with_another_attr(self):
+		content = textwrap.dedent("""\
+				<root>
+				  <list>
+				    <item attr="foo" value="1"/>
+				    <item attr="baz" value="2"/>
+				    <item>bar</item>
+				  </list>
+				</root>
+				""")
+		expected = textwrap.dedent("""\
+				<?xml version='1.0' encoding='utf-8'?>
+				<root>
+				  <list>
+				    <item attr="foo" value="666"/>
+				    <item attr="baz" value="2"/>
+				    <item>bar</item>
+				  </list>
+				</root>
+				""")
+		with XMLConfig(content) as filter:
+			filter.replace('/root/list/item[@attr="foo"]@value', '1', '666')
 		self.assertEqual(filter.content, expected)
 	def should_replace_attr_values_in_the_root_node(self):
 		content = textwrap.dedent("""\

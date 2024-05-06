@@ -56,11 +56,12 @@ class XMLConfig(ConfigFilter):
 		"""
 		attr = None
 		if '@' in xpath:
-			xpath, attr = xpath.split('@')
+			xpath, attr = xpath.rsplit('@', 1)
 		pattern = convert_pattern(pattern, pattern_type)
 		for element in _find_abs_xpath(self.content, xpath):
 			if attr:
-				if pattern.match(element.get(attr)):
+				element_attr = element.get(attr)
+				if element_attr and pattern.match(element_attr):
 					_getparent(element, self.content).remove(element)
 			else:
 				if pattern.match(element.text):
@@ -72,11 +73,12 @@ class XMLConfig(ConfigFilter):
 			substitute = str(self.content.xpath(substitute[len('xpath:'):]))
 		attr = None
 		if '@' in xpath:
-			xpath, attr = xpath.split('@')
+			xpath, attr = xpath.rsplit('@', 1)
 		pattern = convert_pattern(pattern, pattern_type)
 		for element in _find_abs_xpath(self.content, xpath):
 			if attr:
-				if pattern.match(element.get(attr)):
+				element_attr = element.get(attr)
+				if element_attr and pattern.match(element_attr):
 					element.attrib[attr] = pattern.sub(substitute, element.attrib[attr])
 			else:
 				if pattern.match(element.text):
