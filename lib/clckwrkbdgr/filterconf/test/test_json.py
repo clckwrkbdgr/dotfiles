@@ -90,6 +90,108 @@ class TestJSONConfig(unittest.TestCase):
 		with JSONConfig(content) as filter:
 			filter.delete("foo.1", "sublist")
 		self.assertEqual(filter.content, expected)
+	def should_delete_keys_by_path_with_wildcards(self):
+		content = '{"root":{"foo":{"value":1,"to_delete":true},"bar":{"value":2}},"another-root":{"baz":{"value":3}}}'
+		expected = textwrap.dedent("""\
+				{
+					"another-root": {
+						"baz": {
+							"value": 3
+						}
+					},
+					"root": {
+						"bar": {
+							"value": 2
+						},
+						"foo": {
+							"value": 1
+						}
+					}
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
+			filter.delete("*.*", "to_delete")
+		self.assertEqual(filter.content, expected)
+
+		content = '{"root":{"foo":{"value":1,"to_delete":true},"bar":{"value":2}},"another-root":{"foo":{"value":3,"to_delete":true}}}'
+		expected = textwrap.dedent("""\
+				{
+					"another-root": {
+						"foo": {
+							"value": 3
+						}
+					},
+					"root": {
+						"bar": {
+							"value": 2
+						},
+						"foo": {
+							"value": 1
+						}
+					}
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
+			filter.delete("*.foo", "to_delete")
+		self.assertEqual(filter.content, expected)
+
+		content = '[{"foo":{"value":1,"to_delete":true},"bar":{"value":2}},{"foo":{"value":3,"to_delete":true}}]'
+		expected = textwrap.dedent("""\
+				[
+					{
+						"bar": {
+							"value": 2
+						},
+						"foo": {
+							"value": 1
+						}
+					},
+					{
+						"foo": {
+							"value": 3
+						}
+					}
+				]
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
+			filter.delete("*.foo", "to_delete")
+		self.assertEqual(filter.content, expected)
+
+		content = '{"root":{"foo":{"value":1,"to_delete":true},"bar":{"value":2},"baz":{"value":3,"to_delete":true},"foobar":[false]}}'
+		expected = textwrap.dedent("""\
+				{
+					"root": {
+						"bar": {
+							"value": 2
+						},
+						"baz": {
+							"value": 3
+						},
+						"foo": {
+							"value": 1
+						},
+						"foobar": [
+							false
+						]
+					}
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
+			filter.delete("root.*", "to_delete")
+			filter.delete("root.foobar.*", "to_delete")
+		self.assertEqual(filter.content, expected)
 	def should_replace_values_by_path(self):
 		content = '{"foo":["value",1],"bar":"baz"}'
 		expected = textwrap.dedent("""\
@@ -105,7 +207,7 @@ class TestJSONConfig(unittest.TestCase):
 			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
 
 		with JSONConfig(content) as filter:
-			filter.replace("bar", "baz", "foobar")
+			filter.replace("bar", "baz", '"foobar"')
 		self.assertEqual(filter.content, expected)
 
 		content = '{"foo":["value",["sublist", 1]],"bar":"baz"}'
@@ -115,7 +217,9 @@ class TestJSONConfig(unittest.TestCase):
 					"foo": [
 						"value",
 						[
-							"fixed_sublist",
+							[
+								"fixed_sublist"
+							],
 							1
 						]
 					]
@@ -125,7 +229,25 @@ class TestJSONConfig(unittest.TestCase):
 			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
 
 		with JSONConfig(content) as filter:
-			filter.replace("foo.1.0", "sublist", "fixed_sublist")
+			filter.replace("foo.1.0", "sublist", '["fixed_sublist"]')
+		self.assertEqual(filter.content, expected)
+
+		content = '{"foo":{"bar":{"value":1},"baz":2}}'
+		expected = textwrap.dedent("""\
+				{
+					"foo": {
+						"bar": {
+							"value": {}
+						},
+						"baz": 2
+					}
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
+			filter.replace("*.bar", "value", '{}')
 		self.assertEqual(filter.content, expected)
 
 class TestJSONMozLz4Config(unittest.TestCase):

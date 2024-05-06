@@ -30,43 +30,65 @@ class JSONConfig(ConfigFilter):
 	def sort(self, path):
 		""" For JSON, sorting is a part of prettifying.
 		Specifically: sorting keys in dictionaries.
+		Path should not contain wildcards.
 		"""
-		obj, key = self._navigate(path)
+		obj, key = next(self._navigate(path))
 		obj[key] = sorted(obj[key])
 	def _navigate(self, path):
 		path = path.split('/' if '/' in path else '.')
 		value = self.content
-		while len(path) > 1:
-			key = path.pop(0)
-			if not isinstance(value, dict):
-				key = int(key)
-			value = value[key]
-		key = path[0]
-		if not isinstance(value, dict):
+		for result in self._subnavigate(path, value):
+			yield result
+	def _keys(self, value):
+		if isinstance(value, dict):
+			return value.keys()
+		return range(len(value)) if isinstance(value, list) else []
+	def _subnavigate(self, path, value):
+		key, path = path[0], path[1:]
+		if not isinstance(value, dict) and key != '*':
 			key = int(key)
-		return value, key
+		if not path:
+			if key == '*':
+				for key in self._keys(value):
+					yield value, key
+				return
+			yield value, key
+			return
+		if key == '*':
+			for key in self._keys(value):
+				for result in self._subnavigate(path, value[key]):
+					yield result
+			return
+		for result in self._subnavigate(path, value[key]):
+			yield result
 	def delete(self, path, pattern, pattern_type=None):
 		""" Removes item for specified path (sequence of keys separated by dots or slashes).
+		Path can contain wildcards ('*' can match any children node).
 		Pattern type is ignored.
 		"""
 		pattern = convert_pattern(pattern, pattern_type)
-		obj, key = self._navigate(path)
-		if key:
-			obj = obj[key]
-		for entry in list(obj):
-			if pattern.search(str(entry)):
-				if isinstance(obj, dict):
-					del obj[entry]
-				else:
-					obj.remove(entry)
+		for obj, key in self._navigate(path):
+			if key:
+				obj = obj[key]
+			for entry in list(obj):
+				if pattern.search(str(entry)):
+					if isinstance(obj, dict):
+						del obj[entry]
+					else:
+						obj.remove(entry)
 	def replace(self, path, pattern, substitute, pattern_type=None):
-		""" Replaces item at specified path with another value.
+		""" Replaces item at specified path with another JSON object (e.g. a dict or even a string).
 		Path is treated as for delete().
 		"""
 		pattern = convert_pattern(pattern, pattern_type)
-		obj, key = self._navigate(path)
-		if pattern.search(obj[key]):
-			obj[key] = substitute
+		for obj, key in self._navigate(path):
+			if isinstance(obj[key], dict):
+				for subkey in obj[key]:
+					if pattern.search(subkey):
+						obj[key][subkey] = json.loads(substitute)
+			else:
+				if pattern.search(obj[key]):
+					obj[key] = json.loads(substitute)
 	def pretty(self):
 		""" Sorting keys, indenting (trying to guess current indent or using TAB).
 		"""
