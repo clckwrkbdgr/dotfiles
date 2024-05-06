@@ -120,6 +120,7 @@ gnome-games/aisleriot.accels caps=home
 .gitattributes caps=work
 .gitconfig caps=work
 .gitfilters caps=work
+.gitfilters.d/* caps=work
 .gitignore caps=work
 .gitmodules caps=work
 caps.py caps=work

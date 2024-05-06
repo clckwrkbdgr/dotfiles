@@ -9,10 +9,6 @@
 	smudge = "zipdump load"
 	clean = "zipdump dump"
 
-[filter "addonStartupLz4"]
-	smudge = "sed 's|$HOME|'\"$HOME\"'|g' | mozLz4.py compress"
-	clean = clean-firefox-addonStartup.py
-
 [filter "firefoxBroadcastListeners"]
 	smudge = "cat"
 	clean = "python -m json.tool --sort-keys | sed '/\"version\" *: *\"\\\\\"[0-9]\\+\\\\\"\",\\?/d'"

@@ -1,0 +1,19 @@
+delete '' app-system-addons
+
+# Staged addons.
+delete '*' staged
+
+# Cleaning startupData - it often changes or even breaks,
+# and probably it's just a cache and will be restored automatically.
+replace '*.addons.*' startupData --with {}
+
+# Cleaning cache/state values.
+delete '*.*.*' 'telemetryKey'
+delete '*.*.*' 'signedDate'
+delete '*.*.*' 'signedState'
+delete '*.*.*' 'recommendationState'
+replace '*.*.*' 'lastModifiedTime' --with 0
+replace '*.*.*' 'version' --with '"0.0"'
+
+# Built-in addons.
+delete app-system-defaults.addons proxy-failover@mozilla.com
