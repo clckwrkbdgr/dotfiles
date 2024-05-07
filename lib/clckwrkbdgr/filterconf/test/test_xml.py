@@ -182,6 +182,31 @@ class TestXMLConfig(unittest.TestCase):
 		with XMLConfig(content) as filter:
 			filter.replace('/root@bar', '0', 'xpath:count(/root/list/item)')
 		self.assertEqual(filter.content, expected)
+	@unittest.mock.patch('time.time', side_effect=[123456.789])
+	def should_replace_attr_values_with_timestamp_using_xpath_expr(self, time_time):
+		content = textwrap.dedent("""\
+				<?xml version="1.0" encoding="utf-8"?>
+				<root foo="0" bar="0">
+				  <list>
+				    <item attr="foo"/>
+				    <item attr="baz"/>
+				    <item attr="bar"/>
+				  </list>
+				</root>
+				""")
+		expected = textwrap.dedent("""\
+				<?xml version='1.0' encoding='utf-8'?>
+				<root foo="0" bar="123456.0">
+				  <list>
+				    <item attr="foo"/>
+				    <item attr="baz"/>
+				    <item attr="bar"/>
+				  </list>
+				</root>
+				""")
+		with XMLConfig(content) as filter:
+			filter.replace('/root@bar', '0', 'xpath:current-timestamp()')
+		self.assertEqual(filter.content, expected)
 	def should_replace_content_in_nodes_by_specified_path_and_pattern(self):
 		content = textwrap.dedent("""\
 				<root>

@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import time
 try: # pragma: no cover
 	import lxml.etree as ET
 	def _find_abs_xpath(el, xpath):
@@ -11,6 +12,7 @@ try: # pragma: no cover
 		return ET.tostring(data, encoding='utf-8', xml_declaration=True, pretty_print=True).decode('utf-8').rstrip() + '\n'
 	def _tostring(root):
 		return ET.tostring(root, encoding='utf-8', xml_declaration=True).decode('utf-8').rstrip() + '\n'
+	ET.FunctionNamespace(None)['current-timestamp'] = lambda dummy: int(time.time())
 except ImportError: # pragma: no cover
 	import xml.etree.ElementTree as ET
 	import xml.dom.minidom
