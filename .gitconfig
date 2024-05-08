@@ -13,10 +13,6 @@
 	smudge = cat
 	clean = "sed 's/^\\(Fast[Dd]ir[0-9][0-9]*\\) *=.*$/\\1 = ${HOME}/'"
 
-[filter "gajim_config"]
-	smudge = cat
-	clean = "sed 's/^ *\\(last_[a-z]\\+_dir\\|latest_disco_addresses\\|collapsed_rows\\|accounts[.][^ =]*[.]last_status_msg\\|accounts[.][^ =]*[.]ssl_fingerprint_sha1\\|accounts[.][^ =]*[.]password\\) *= *.*$/\\1 =/'"
-
 [filter "insteadrc_remove_state"]
 	smudge = cat
 	clean = "sed 's/^game = .*$/game = /;s/^fs = [01]$/fs = 0/'"

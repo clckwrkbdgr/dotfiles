@@ -1,0 +1,10 @@
+replace latest_disco_addresses '^.*$' --with '' --pattern-type=regex
+replace collapsed_rows '^.*$' --with '' --pattern-type=regex
+replace last_sounds_dir '^.*$' --with '' --pattern-type=regex
+replace last_emoticons_dir '^.*$' --with '' --pattern-type=regex
+replace last_send_dir '^.*$' --with '' --pattern-type=regex
+replace last_save_dir '^.*$' --with '' --pattern-type=regex
+
+replace accounts.*.last_status_msg '^.*$' --with '' --pattern-type=regex
+replace accounts.*.ssl_fingerprint_sha1 '^.*$' --with '' --pattern-type=regex
+replace accounts.*.password '^.*$' --with '' --pattern-type=regex

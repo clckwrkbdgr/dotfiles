@@ -39,3 +39,7 @@
 [filter "ignore_systray_visibility"]
 	smudge = cat
 	clean = filterconf -f xml script .gitfilters.d/ignore_systray_visibility
+
+[filter "gajim_config"]
+	smudge = cat
+	clean = filterconf -f flat_ini script .gitfilters.d/gajim_config
