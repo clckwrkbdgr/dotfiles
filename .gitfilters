@@ -27,3 +27,7 @@
 [filter "firefoxBroadcastListeners"]
 	smudge = cat
 	clean = filterconf -f json delete  'listeners.*' 'version' --pattern-type=regex | sed 's/\\t/    /g'
+
+[filter "ignorewallpaper"]
+	smudge = cat
+	clean = filterconf -f xml script .gitfilters.d/ignorewallpaper

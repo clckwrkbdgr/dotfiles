@@ -1,0 +1,5 @@
+delete '/channel/*/*/*/*/property[@name="last-image"]' ''
+delete '/channel/*/*/*/property[@name="last-image"]' ''
+delete '/channel/*/*/*/property[@name="image-path"]' ''
+delete '/channel/*/*/*/property[@name="last-single-image"]' ''
+pretty
