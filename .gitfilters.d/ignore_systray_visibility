@@ -1,0 +1,3 @@
+delete '//property[@name="names-visible"]' ''
+delete '//property[@name="names-hidden"]' ''
+pretty

@@ -9,10 +9,6 @@
 	smudge = "zipdump load"
 	clean = "zipdump dump"
 
-[filter "ignore_systray_visibility"]
-	smudge = cat
-	clean = "sed '/<property name=\"names-visible\" type=\"array\">/,/<\\/property>/d' | sed '/<property name=\"names-hidden\" type=\"array\">/,/<\\/property>/d'"
-
 [filter "ignore_moc_fastdir"]
 	smudge = cat
 	clean = "sed 's/^\\(Fast[Dd]ir[0-9][0-9]*\\) *=.*$/\\1 = ${HOME}/'"
@@ -28,10 +24,6 @@
 [filter "windows_terminal_settings"]
 	smudge = cat
 	clean = "python -c \"import sys,json;data=sys.stdin.read();data=json.loads(data);BUILT_IN_SCHEMES=['Campbell', 'Campbell Powershell', 'One Half Dark', 'One Half Light', 'Solarized Dark', 'Solarized Light', 'Tango Dark', 'Tango Light', 'Vintage'];data['schemes'] = [scheme for scheme in data['schemes'] if scheme.get('name') not in BUILT_IN_SCHEMES];data='\\n'.join(map(str.rstrip, json.dumps(data,indent=4,sort_keys=True).splitlines()));(sys.stdout.buffer if hasattr(sys.stdout, 'buffer') else sys.stdout).write(data.encode('utf-8', 'replace')+b'\\n')\""
-
-[filter "pretty_xml"]
-	smudge = cat
-	clean = "xmllint --format -"
 
 # action=1 => AlwaysAsk
 [filter "firefox_handlers_json"]

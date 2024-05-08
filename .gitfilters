@@ -16,6 +16,10 @@
 	smudge = cat
 	clean = "filterconf -f json pretty | sed 's/\\t/    /g'"
 
+[filter "pretty_xml"]
+	smudge = cat
+	clean = "filterconf -f xml pretty"
+
 [filter "sqlite_text_dump"]
 	smudge = "filterconf -f sqlite restore"
 	clean = "filterconf -f sqlite enviro"
@@ -31,3 +35,7 @@
 [filter "ignorewallpaper"]
 	smudge = cat
 	clean = filterconf -f xml script .gitfilters.d/ignorewallpaper
+
+[filter "ignore_systray_visibility"]
+	smudge = cat
+	clean = filterconf -f xml script .gitfilters.d/ignore_systray_visibility
