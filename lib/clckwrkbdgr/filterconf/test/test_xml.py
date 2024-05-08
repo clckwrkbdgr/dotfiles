@@ -18,6 +18,31 @@ class TestXMLConfig(unittest.TestCase):
 			filter.pretty()
 		if filter.content.startswith('<?xml version="1.0" ?>\n'): filter.content = filter.content[len('<?xml version="1.0" ?>\n'):]
 		self.assertEqual(filter.content, expected)
+	def should_process_xml_with_nsmap(self):
+		content = textwrap.dedent("""\
+				<MY:root xmlns:MY="http://localhost/nsmap/MY#">
+				  <MY:list>
+					<MY:item attr="foo"/>
+					<MY:item attr="baz"/>
+					<MY:item attr="bar"/>
+				  </MY:list>
+				</MY:root>
+				""")
+		expected = textwrap.dedent(u"""\
+				<?xml version='1.0' encoding='utf-8'?>
+				<MY:root xmlns:MY="http://localhost/nsmap/MY#">
+				  <MY:list>
+				    <MY:item attr="bar"/>
+				    <MY:item attr="baz"/>
+				    <MY:item attr="foo"/>
+				  </MY:list>
+				</MY:root>
+				""")
+		with XMLConfig(content) as filter:
+			filter.sort('/MY:root/MY:list/MY:item/@attr')
+			filter.pretty()
+		if filter.content.startswith('<?xml version="1.0" ?>\n'): filter.content = filter.content[len('<?xml version="1.0" ?>\n'):]
+		self.assertEqual('\n'.join(line for line in filter.content.splitlines() if line.strip()) + '\n', expected)
 	def should_sort_xml_by_specified_path(self):
 		content = textwrap.dedent("""\
 				<root>

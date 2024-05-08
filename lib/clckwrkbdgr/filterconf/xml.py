@@ -3,7 +3,7 @@ import time
 try: # pragma: no cover
 	import lxml.etree as ET
 	def _find_abs_xpath(el, xpath):
-		elements = el.xpath(xpath)
+		elements = el.xpath(xpath, namespaces=el.nsmap)
 		for element in elements:
 			if isinstance(element, ET._ElementUnicodeResult) or isinstance(element, ET._ElementStringResult) :
 				yield element.getparent(), element.attrname
@@ -57,7 +57,7 @@ class XMLConfig(ConfigFilter):
 		for sort_item, _attr in _find_abs_xpath(self.content, xpath):
 			parents[sort_item.getparent()] = (sort_item.tag, _attr)
 		for sort_parent, (sort_item, sort_key) in parents.items():
-			sort_parent[:] = sorted(sort_parent, key=lambda child: None if child.tag != sort_item else child.get(sort_key))
+			sort_parent[:] = sorted(sort_parent, key=lambda child: '' if child.tag != sort_item else child.get(sort_key))
 	def delete(self, xpath, pattern, pattern_type=None):
 		""" Deletes XML nodes at specified xpath (node/attr) matching given pattern.
 		E.g. /root/sub/item/@attr - removes ./item where attr matches pattern,
