@@ -4,7 +4,7 @@
             "sourceInfo": {
                 "moduleURI": "resource://services-settings/remote-settings.sys.mjs",
                 "symbolName": "remoteSettingsBroadcastHandler"
-            },
+            }
         }
     },
     "version": 1

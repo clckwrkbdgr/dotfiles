@@ -9,10 +9,6 @@
 	smudge = "zipdump load"
 	clean = "zipdump dump"
 
-[filter "firefoxBroadcastListeners"]
-	smudge = "cat"
-	clean = "python -m json.tool --sort-keys | sed '/\"version\" *: *\"\\\\\"[0-9]\\+\\\\\"\",\\?/d'"
-
 [filter "ignorewallpaper"]
 	smudge = cat
 	clean = "sed '/name=\"image-path\"/d;/name=\"last-[^\"]*image\"/d'"

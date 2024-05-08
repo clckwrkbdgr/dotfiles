@@ -23,3 +23,7 @@
 [filter "addonStartupLz4"]
 	smudge = "filterconf -f json_mozLz4 restore"
 	clean = "filterconf -f json_mozLz4 script .gitfilters.d/addonStartupLz4 | sed 's/\\t/    /g'"
+
+[filter "firefoxBroadcastListeners"]
+	smudge = cat
+	clean = filterconf -f json delete  'listeners.*' 'version' --pattern-type=regex | sed 's/\\t/    /g'
