@@ -39,7 +39,7 @@ class TestXMLConfig(unittest.TestCase):
 				</root>
 				""")
 		with XMLConfig(content) as filter:
-			filter.sort('/root/list/item@attr')
+			filter.sort('/root/list/item/@attr')
 			filter.pretty()
 		if filter.content.startswith('<?xml version="1.0" ?>\n'): filter.content = filter.content[len('<?xml version="1.0" ?>\n'):]
 		self.assertEqual('\n'.join(line for line in filter.content.splitlines() if line.strip()) + '\n', expected)
@@ -63,7 +63,7 @@ class TestXMLConfig(unittest.TestCase):
 				</root>
 				""")
 		with XMLConfig(content) as filter:
-			filter.delete('/root/list/item@attr', '.*o$', pattern_type='regex')
+			filter.delete('/root/list/item/@attr', '.*o$', pattern_type='regex')
 		self.assertEqual(filter.content, expected)
 	def should_remove_nodes_by_specified_path_and_pattern_matching_text(self):
 		content = textwrap.dedent("""\
@@ -108,7 +108,7 @@ class TestXMLConfig(unittest.TestCase):
 				</root>
 				""")
 		with XMLConfig(content) as filter:
-			filter.replace('/root/list/item@attr', '.*o$', 'FOOBAR', pattern_type='regex')
+			filter.replace('/root/list/item/@attr', '.*o$', 'FOOBAR', pattern_type='regex')
 		self.assertEqual(filter.content, expected)
 	def should_replace_attr_values_in_nodes_by_xpath_search_expression_with_another_attr(self):
 		content = textwrap.dedent("""\
@@ -131,7 +131,7 @@ class TestXMLConfig(unittest.TestCase):
 				</root>
 				""")
 		with XMLConfig(content) as filter:
-			filter.replace('/root/list/item[@attr="foo"]@value', '1', '666')
+			filter.replace('/root/list/item[@attr="foo"]/@value', '1', '666')
 		self.assertEqual(filter.content, expected)
 	def should_replace_attr_values_in_the_root_node(self):
 		content = textwrap.dedent("""\
@@ -155,8 +155,8 @@ class TestXMLConfig(unittest.TestCase):
 				</root>
 				""")
 		with XMLConfig(content) as filter:
-			filter.replace('/root@foo', '^.*$', '666', pattern_type='regex')
-			filter.replace('/root@bar', '^.*$', '0', pattern_type='regex')
+			filter.replace('/root/@foo', '^.*$', '666', pattern_type='regex')
+			filter.replace('/root/@bar', '^.*$', '0', pattern_type='regex')
 		self.assertEqual(filter.content, expected)
 	def should_replace_attr_values_with_xpath_expr_values(self):
 		content = textwrap.dedent("""\
@@ -180,7 +180,7 @@ class TestXMLConfig(unittest.TestCase):
 				</root>
 				""")
 		with XMLConfig(content) as filter:
-			filter.replace('/root@bar', '0', 'xpath:count(/root/list/item)')
+			filter.replace('/root/@bar', '0', 'xpath:count(/root/list/item)')
 		self.assertEqual(filter.content, expected)
 	@unittest.mock.patch('time.time', side_effect=[123456.789])
 	def should_replace_attr_values_with_timestamp_using_xpath_expr(self, time_time):
@@ -205,7 +205,7 @@ class TestXMLConfig(unittest.TestCase):
 				</root>
 				""")
 		with XMLConfig(content) as filter:
-			filter.replace('/root@bar', '0', 'xpath:current-timestamp()')
+			filter.replace('/root/@bar', '0', 'xpath:current-timestamp()')
 		self.assertEqual(filter.content, expected)
 	def should_replace_content_in_nodes_by_specified_path_and_pattern(self):
 		content = textwrap.dedent("""\

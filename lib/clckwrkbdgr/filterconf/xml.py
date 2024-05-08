@@ -3,7 +3,12 @@ import time
 try: # pragma: no cover
 	import lxml.etree as ET
 	def _find_abs_xpath(el, xpath):
-		return el.xpath(xpath)
+		elements = el.xpath(xpath)
+		for element in elements:
+			if isinstance(element, ET._ElementUnicodeResult) or isinstance(element, ET._ElementStringResult) :
+				yield element.getparent(), element.attrname
+			else:
+				yield element, None
 	def _getparent(element, root):
 		return element.getparent()
 	def _prettify(root):
@@ -20,7 +25,8 @@ except ImportError: # pragma: no cover
 		assert xpath.startswith('/')
 		root_name, rel_xpath = xpath[1:].split('/', 1)
 		assert el.tag == root_name
-		return el.findall("./" + rel_xpath)
+		for element in el.findall("./" + rel_xpath):
+			yield element, None # FIXME need to parse attrs
 	def _getparent(element, root):
 		parent_map = dict((c, p) for p in root.iter() for c in p)
 		return parent_map[element]
@@ -45,39 +51,34 @@ class XMLConfig(ConfigFilter):
 			return _prettify(data)
 		return _tostring(data)
 	def sort(self, xpath):
-		""" Sorts XML nodes in-place at specified xpath@attr, e.g.: /root/sub/item@attr.
+		""" Sorts XML nodes in-place at specified xpath/@attr, e.g.: /root/sub/item/@attr.
 		"""
-		sort_item, sort_key = xpath.split('@')
-		sort_parent, sort_item = sort_item.rsplit('/', 1)
-		for sort_parent in _find_abs_xpath(self.content, sort_parent):
+		parents = {}
+		for sort_item, _attr in _find_abs_xpath(self.content, xpath):
+			parents[sort_item.getparent()] = (sort_item.tag, _attr)
+		for sort_parent, (sort_item, sort_key) in parents.items():
 			sort_parent[:] = sorted(sort_parent, key=lambda child: None if child.tag != sort_item else child.get(sort_key))
 	def delete(self, xpath, pattern, pattern_type=None):
 		""" Deletes XML nodes at specified xpath (node/attr) matching given pattern.
-		E.g. /root/sub/item@attr - removes ./item where attr matches pattern,
+		E.g. /root/sub/item/@attr - removes ./item where attr matches pattern,
 		or /root/sub/item - removes item where content matches pattern.
 		"""
-		attr = None
-		if '@' in xpath:
-			xpath, attr = xpath.rsplit('@', 1)
 		pattern = convert_pattern(pattern, pattern_type)
-		for element in _find_abs_xpath(self.content, xpath):
+		for element, attr in _find_abs_xpath(self.content, xpath):
 			if attr:
 				element_attr = element.get(attr)
 				if element_attr and pattern.match(element_attr):
 					_getparent(element, self.content).remove(element)
 			else:
-				if pattern.match(element.text):
+				if element.text is None or pattern.match(element.text):
 					_getparent(element, self.content).remove(element)
 	def replace(self, xpath, pattern, substitute, pattern_type=None):
 		""" If substitute starts with 'xpath:', the rest of the string is evaluated as XPath expression and result is used as a substitute, e.g.: xpath:count(/root/items/item)
 		"""
 		if substitute.startswith('xpath:'):
 			substitute = str(self.content.xpath(substitute[len('xpath:'):]))
-		attr = None
-		if '@' in xpath:
-			xpath, attr = xpath.rsplit('@', 1)
 		pattern = convert_pattern(pattern, pattern_type)
-		for element in _find_abs_xpath(self.content, xpath):
+		for element, attr in _find_abs_xpath(self.content, xpath):
 			if attr:
 				element_attr = element.get(attr)
 				if element_attr and pattern.match(element_attr):
