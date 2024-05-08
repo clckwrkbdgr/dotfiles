@@ -34,7 +34,7 @@ def convert_pattern(pattern, pattern_type=None):
 		return re.compile(fnmatch.translate(pattern))
 	return re.compile(re.escape(pattern))
 
-class ConfigFilter:
+class ConfigFilter(object):
 	""" Basic class for config filter.
 	Should be created for specific content.
 	Supports several actions performed on this content, see ACTIONS in args.

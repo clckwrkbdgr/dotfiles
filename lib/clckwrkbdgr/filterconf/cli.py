@@ -260,9 +260,9 @@ def script(settings, filename):
 				try:
 					command = globals()[command_name]
 				except KeyError:
-					raise ValueError('Unknown command: {0}. See usage for list of available commands.'.format(command))
+					raise ValueError('Unknown command: {0}. See usage for list of available commands.'.format(command_name))
 				if not isinstance(command, click.core.Command):
-					raise ValueError('Unknown command: {0}. See usage for list of available commands.'.format(command))
+					raise ValueError('Unknown command: {0}. See usage for list of available commands.'.format(command_name))
 				rc = command(args=args, standalone_mode=False, obj=settings)
 			except SystemExit as e:
 				rc = e.code

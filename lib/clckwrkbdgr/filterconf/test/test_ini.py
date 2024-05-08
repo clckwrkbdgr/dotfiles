@@ -1,7 +1,7 @@
 import textwrap
 import six
 from clckwrkbdgr import unittest
-from clckwrkbdgr.filterconf.inifile import IniConfig
+from clckwrkbdgr.filterconf.inifile import IniConfig, FlatIni
 
 CONTENT = """[foo]
 string = "Hello world"
@@ -78,3 +78,60 @@ class TestIniConfig(unittest.TestCase):
 			filter.replace('foo/string', 'llo wor', 'ra')
 			filter.replace('bar/integer', '[1-5]', '_', pattern_type='regex')
 		self.assertEqual(filter.content, expected)
+
+FLAT_CONTENT = """Empty=
+string ="Hello world"
+boolean = true
+integer= 123456
+"""
+
+class TestFlatIniConfig(unittest.TestCase):
+	def should_prettify_ini_file(self):
+		expected = unittest.dedent("""
+			Empty = 
+			string = "Hello world"
+			boolean = true
+			integer = 123456
+
+			""").lstrip()
+		with FlatIni(FLAT_CONTENT) as filter:
+			filter.pretty()
+		self.assertEqual(filter.content, expected)
+	def should_sort_keys(self):
+		expected = unittest.dedent("""
+			Empty = 
+			boolean = true
+			integer = 123456
+			string = "Hello world"
+
+			""").lstrip()
+		with FlatIni(FLAT_CONTENT) as filter:
+			filter.sort('')
+		self.assertEqual(filter.content, expected)
+	def should_remove_keys(self):
+		expected = unittest.dedent("""
+			Empty = 
+			boolean = true
+
+			""").lstrip()
+		with FlatIni(FLAT_CONTENT) as filter:
+			filter.delete('string', '*llo*', pattern_type='wildcard')
+			filter.delete('integer', '')
+		self.assertEqual(filter.content, expected)
+	def should_replace_attr_values_in_nodes_by_specified_path_and_pattern(self):
+		self.maxDiff = None
+		expected = unittest.dedent("""
+			Empty = 
+			string = "Herald"
+			boolean = true
+			integer = _____6
+
+			""").lstrip()
+		with FlatIni(FLAT_CONTENT) as filter:
+			filter.replace('string', 'llo wor', 'ra')
+			filter.replace('integer', '[1-5]', '_', pattern_type='regex')
+		self.assertEqual(filter.content, expected)
+	def should_address_keys_by_wildcard_patterns(self):
+		with FlatIni("foo.bar.baz = 1\n") as filter:
+			filter.replace('foo.*.baz', '1', '2')
+		self.assertEqual(filter.content, "foo.bar.baz = 2\n\n")
