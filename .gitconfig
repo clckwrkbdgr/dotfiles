@@ -42,10 +42,6 @@
 	smudge = clean-firefox-userscripts.sh --restore
 	clean = clean-firefox-userscripts.sh
 
-[filter "firefox_mimetypes"]
-	smudge = cat
-	clean = sort-xml /RDF:RDF/RDF:Description @RDF:about | sort-xml /RDF:RDF/RDF:Seq @RDF:about
-
 [filter "expand_homedir"]
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
 	clean = "sed 's|'\"$HOME\"'|$HOME|g'"
@@ -65,18 +61,6 @@
 [filter "gtkfilechooser"]
 	smudge = cat
 	clean = "sed 's|Geometry\\([XY]\\)=[0-9]\\+|Geometry\\1=0|;s|GeometryWidth=[0-9]\\+|GeometryWidth=200|;s|GeometryHeight=[0-9]\\+|GeometryHeight=200|'"
-
-[filter "remove_known_applications"]
-	smudge = cat
-	clean = "xmlstarlet ed -d \"/channel/property[@name='applications']/property[@name='known_applications']\""
-
-[filter "remove_xfce_window_size"]
-	smudge = cat
-	clean = "xmlstarlet ed -d \"/channel/property[@name='last']/property[@name='window-width']\" | xmlstarlet ed -d \"/channel/property[@name='last']/property[@name='window-height']\""
-
-[filter "gimp_tags"]
-	smudge = cat
-	clean = "tr -d '\\n' | sort-xml /tags/resource @identifier | sed 's/></>\\n  </g;s/>  </>\\n  </g;s|> *</tags>|>\\n</tags>|' | sed 's/checksum=.[0-9a-f]\\+./checksum=\"(null)\"/'"
 
 [filter "gimp_menurc"]
 	smudge = cat

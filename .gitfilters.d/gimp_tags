@@ -1,0 +1,3 @@
+sort /tags/resource/@identifier
+replace /tags/resource/@checksum '^.*' --with '(null)' --pattern-type=regex
+pretty

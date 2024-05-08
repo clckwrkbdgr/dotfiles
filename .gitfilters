@@ -43,3 +43,19 @@
 [filter "gajim_config"]
 	smudge = cat
 	clean = filterconf -f flat_ini script .gitfilters.d/gajim_config
+
+[filter "firefox_mimetypes"]
+	smudge = cat
+	clean = filterconf -f xml script .gitfilters.d/firefox_mimetypes
+
+[filter "remove_known_applications"]
+	smudge = cat
+	clean = filterconf -f xml script .gitfilters.d/remove_known_applications
+
+[filter "remove_xfce_window_size"]
+	smudge = cat
+	clean = filterconf -f xml script .gitfilters.d/remove_xfce_window_size
+
+[filter "gimp_tags"]
+	smudge = cat
+	clean = filterconf -f xml script .gitfilters.d/gimp_tags

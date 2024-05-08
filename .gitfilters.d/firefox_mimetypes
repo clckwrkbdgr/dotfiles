@@ -1,0 +1,3 @@
+sort /RDF:RDF/RDF:Seq/@RDF:about
+sort /RDF:RDF/RDF:Description/@RDF:about
+pretty

@@ -1,0 +1,2 @@
+delete "/channel/property[@name='last']/property[@name='window-width']" ''
+delete "/channel/property[@name='last']/property[@name='window-height']" ''

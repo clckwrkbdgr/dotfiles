@@ -1,0 +1,1 @@
+delete "/channel/property[@name='applications']/property[@name='known_applications']" ''
