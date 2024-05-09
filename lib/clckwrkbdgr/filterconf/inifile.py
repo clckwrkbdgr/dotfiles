@@ -11,7 +11,8 @@ from . import ConfigFilter, config_filter, convert_pattern
 class IniConfig(ConfigFilter):
 	""" INI file. """
 	def unpack(self, content):
-		config = configparser.ConfigParser()
+		config = configparser.RawConfigParser()
+		config.optionxform = str # To prevent keys from being converted to lower case.
 		if hasattr(config, 'read_string'): # pragma: no cover -- py3
 			config.read_string(content)
 		else: # pragma: no cover -- py2
@@ -45,6 +46,8 @@ class IniConfig(ConfigFilter):
 			self.content.remove_section(section)
 		else:
 			pattern = convert_pattern(pattern, pattern_type) if pattern else None
+			if not self.content.has_option(section, key):
+				return # Already removed.
 			value = self.content.get(section, key)
 			if pattern is None or pattern.match(value):
 				self.content.remove_option(section, key)
@@ -62,7 +65,7 @@ class IniConfig(ConfigFilter):
 class FlatIni(IniConfig):
 	""" Flat INI file (no sections, just settings). """
 	def unpack(self, content):
-		config = configparser.ConfigParser()
+		config = configparser.RawConfigParser()
 		config.optionxform = str # To prevent keys from being converted to lower case.
 		content = '[_dummy_root]\n' + content
 		if hasattr(config, 'read_string'): # pragma: no cover -- py3

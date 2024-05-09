@@ -54,6 +54,20 @@ class TestIniConfig(unittest.TestCase):
 			filter.delete('foo/string', '*llo*', pattern_type='wildcard')
 			filter.delete('bar/integer', '')
 		self.assertEqual(filter.content, expected)
+	def should_skip_non_existent_keys(self):
+		expected = unittest.dedent("""
+			[foo]
+			string = "Hello world"
+			boolean = true
+
+			[bar]
+
+			""").lstrip()
+		with IniConfig(CONTENT) as filter:
+			filter.delete('bar/integer', '')
+			filter.delete('bar/integer', '')
+			filter.delete('foo/nonexistent', '')
+		self.assertEqual(filter.content, expected)
 	def should_remove_categories(self):
 		expected = unittest.dedent("""
 			[bar]
@@ -77,6 +91,27 @@ class TestIniConfig(unittest.TestCase):
 		with IniConfig(CONTENT) as filter:
 			filter.replace('foo/string', 'llo wor', 'ra')
 			filter.replace('bar/integer', '[1-5]', '_', pattern_type='regex')
+		self.assertEqual(filter.content, expected)
+	def should_preserve_case(self):
+		CONTENT = unittest.dedent("""
+		[Foo]
+		string = "Hello world"
+		BOOlean = true
+
+		[bAr]
+		integeR = 123456
+		""")
+		expected = unittest.dedent("""
+			[Foo]
+			BOOlean = true
+			string = "Hello world"
+
+			[bAr]
+			integeR = 123456
+
+			""").lstrip()
+		with IniConfig(CONTENT) as filter:
+			filter.sort('Foo')
 		self.assertEqual(filter.content, expected)
 
 FLAT_CONTENT = """Empty=
