@@ -1,0 +1,3 @@
+delete '//pref[@name="userlist_width"]' ''
+delete '//pref[@name="default"]' ''
+delete '//pref[@name="idleaway"]' ''

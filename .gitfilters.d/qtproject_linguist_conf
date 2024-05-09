@@ -1,0 +1,5 @@
+delete 5.11/Geometry\\WindowGeometry ''
+delete 5.11/MainWindowState ''
+delete 5.11/PhraseViewHeader ''
+delete 5.11/RecentlyOpenedFiles ''
+delete 5.11/Options\\EditorFontsize ''

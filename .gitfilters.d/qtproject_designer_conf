@@ -1,0 +1,8 @@
+delete ResourceBrowser/SplitterPosition ''
+delete MDIWindow/geometry ''
+delete WidgetBox/Closed%20categories ''
+delete PropertyEditor/SplitterPosition ''
+delete PropertyEditor/ExpandedItems ''
+delete General/MainWindowState452 ''
+delete General/ToolBarsState452 ''
+delete General/recentFilesList ''

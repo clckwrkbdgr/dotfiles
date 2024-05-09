@@ -9,14 +9,6 @@
 	smudge = "zipdump load"
 	clean = "zipdump dump"
 
-[filter "ignore_moc_fastdir"]
-	smudge = cat
-	clean = "sed 's/^\\(Fast[Dd]ir[0-9][0-9]*\\) *=.*$/\\1 = ${HOME}/'"
-
-[filter "insteadrc_remove_state"]
-	smudge = cat
-	clean = "sed 's/^game = .*$/game = /;s/^fs = [01]$/fs = 0/'"
-
 [filter "windows_terminal_settings"]
 	smudge = cat
 	clean = "python -c \"import sys,json;data=sys.stdin.read();data=json.loads(data);BUILT_IN_SCHEMES=['Campbell', 'Campbell Powershell', 'One Half Dark', 'One Half Light', 'Solarized Dark', 'Solarized Light', 'Tango Dark', 'Tango Light', 'Vintage'];data['schemes'] = [scheme for scheme in data['schemes'] if scheme.get('name') not in BUILT_IN_SCHEMES];data='\\n'.join(map(str.rstrip, json.dumps(data,indent=4,sort_keys=True).splitlines()));(sys.stdout.buffer if hasattr(sys.stdout, 'buffer') else sys.stdout).write(data.encode('utf-8', 'replace')+b'\\n')\""
@@ -46,10 +38,6 @@
 	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
 	clean = "sed 's|'\"$HOME\"'|$HOME|g'"
 
-[filter "pidgin_prefs"]
-	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
-	clean = "sed 's|'\"$HOME\"'|$HOME|g;/pref name=.userlist_width. type=.int./d;/pref name=.default. type=.int./d;/pref name=.idleaway. type=.int./d'"
-
 [filter "freeciv_rc"]
 	smudge = clean-freeciv-rc.sh --restore
 	clean = clean-freeciv-rc.sh
@@ -57,10 +45,6 @@
 [filter "openttd_config"]
 	smudge = clean-openttd-cfg.sh --restore
 	clean = clean-openttd-cfg.sh
-
-[filter "gtkfilechooser"]
-	smudge = cat
-	clean = "sed 's|Geometry\\([XY]\\)=[0-9]\\+|Geometry\\1=0|;s|GeometryWidth=[0-9]\\+|GeometryWidth=200|;s|GeometryHeight=[0-9]\\+|GeometryHeight=200|'"
 
 [filter "gimp_menurc"]
 	smudge = cat
@@ -78,38 +62,3 @@
 [filter "svn_config"]
 	smudge = cat
 	clean = "sed '/### <INCLUDE/,/### >INCLUDE/d;' | sed '${/^$/d}'"
-
-# TODO to filterconf
-[filter "checkio_config"]
-	smudge = cat
-   clean = "sed '/^key *= */d;/^solutions *= */d;'"
-
-# TODO to filterconf
-[filter "qtproject_conf"]
-	smudge = cat
-	clean = "sed '/^history=.*/d;/^lastVisited=.*/d;/^qtVersion=.*/d;/^shortcuts=.*/d;/^sidebarWidth=.*/d;/^treeViewHeader=.*/d;/^viewMode=.*/d;'"
-
-# TODO to filterconf
-[filter "qtproject_designer_conf"]
-	smudge = cat
-	clean = "sed '/^SplitterPosition=.*/d;/^geometry=.*/d;/^\\[WidgetBox\\]/,/^$/{/^Closed%20categories=/d;};/^\\[PropertyEditor\\]/,/^$/{/^ExpandedItems=/d;};/^\\[General\\]/,/^$/{/^recentFilesList=/d;/^ToolBarsState452=/d;/^MainWindowState452=/d;};'"
-
-# TODO to filterconf
-[filter "qtproject_linguist_conf"]
-	smudge = cat
-	clean = "sed '/^Geometry.WindowGeometry=.*/d;/^MainWindowState=.*/d;/^PhraseViewHeader=.*/d;/^RecentlyOpenedFiles=.*/d;/^Options.EditorFontsize=.*/d;'"
-
-# TODO to filterconf
-[filter "mapeditor_tiled_conf"]
-	smudge = cat
-	clean = "sed '/^\\[recentFiles\\]/,/^$/d;/^\\[mainwindow\\]/,/^$/d;/^\\[Install\\]/,/^$/d;/^\\[LastPaths\\]/,/^$/d;/^\\[ObjectsDock\\]/,/^$/d;/^\\[Tileset\\]/,/^$/d;/^\\[TilesetDock\\]/,/^$/d;/^\\[General\\]/,/^$/{/^commandList=/d;/^lastUsedOpenFilter/d;/^lastUsedTilesetFilter/d};/^\\[Map\\]/,/^$/{/^FixedSize=/d;/^Height=/d;/^Width=/d;/^TileHeight=/d;/^TileWidth=/d;/^Orientation=/d;};/^\\[MapEditor\\]/,/^$/{/^MapStates=/d;/^State=/d;/^Size=/d};/^\\[TilesetEditor\\]/,/^$/{/^State=/d;/^Size=/d;/^TilesetScale\\\\/d};/^\\[Storage\\]/,/^$/{/^TemplatesDirectory=/d};/^\\[TextEditorDialog\\]/,/^$/{/^Geometry=/d};/^\\[CommandDialog\\]/,/^$/{/^Geometry=/d};/^\\[ExportAsImageDialog\\]/,/^$/{/^Geometry=/d};/^\\[TileAnimationEditor\\]/,/^$/{/^Geometry=/d};/^\\[ResizeDialog\\]/,/^$/{/^Geometry=/d};/^\\[AddPropertyDialog\\]/,/^$/{/^PropertyType=/d}' | python -c 'import sys;data=sys.stdin.read();data=data.replace(\"\\n[Map]\\n\\n[\", \"\\n[\").replace(\"\\n[ResizeDialog]\\n\\n[\", \"\\n[\");data=(data.replace(\"[Export]\", \"[CommandDialog]\\n\\n[Export]\") if \"[CommandDialog]\" not in data else data);data=(data.replace(\"[Interface]\", \"[ExportAsImageDialog]\\n\\n[Interface]\") if \"[ExportAsImageDialog]\" not in data else data);data=(data.replace(\"[TileAnimationEditor]\", \"[TextEditorDialog]\\n\\n[TileAnimationEditor]\") if \"[TextEditorDialog]\" not in data else data);sys.stdout.write(data)'"
-
-# TODO to filterconf
-[filter "qvge_conf"]
-	smudge = cat
-	clean = "sed '/^\\[CustomFiles\\]/,/^$/d;/^\\[General\\]/,/^$/{/^geometry=/d;/^instances=/d;/^lastPath=/d;/^maximized=/d;/^recentFiles=/d;/^windowState=/d;/^cacheRam=/d;};/^\\[UI\\]/,/^$/{/^[^=]*splitterPosition=/d}'"
-
-# TODO to filterconf
-[filter "aisleriot"]
-	smudge = cat
-	clean = "sed '/^\\[.*[.]scm\\]/,/^$/d;/^\\[Aisleriot Config\\]/,/^$/{/^Recent=/d;/^Variation=/d;};'"

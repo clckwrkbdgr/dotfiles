@@ -1,0 +1,2 @@
+replace game '^.*$' --with '' --pattern-type=regex
+replace fs '[01]' --with '0' --pattern-type=regex

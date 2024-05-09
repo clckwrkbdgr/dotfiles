@@ -1,0 +1,1 @@
+replace '' '^(Fast[Dd]ir\d+)\s*=.*$' --with '\1 = ${HOME}' --pattern-type=regex

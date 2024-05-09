@@ -1,0 +1,3 @@
+delete 'klondike.scm' ''
+delete 'Aisleriot Config/Recent' ''
+delete 'Aisleriot Config/Variation' ''

@@ -1,0 +1,4 @@
+replace 'Filechooser Settings/GeometryX' '[0-9]+' --with 0 --pattern-type=regex
+replace 'Filechooser Settings/GeometryY' '[0-9]+' --with 0 --pattern-type=regex
+replace 'Filechooser Settings/GeometryWidth' '[0-9]+' --with 200 --pattern-type=regex
+replace 'Filechooser Settings/GeometryHeight' '[0-9]+' --with 200 --pattern-type=regex

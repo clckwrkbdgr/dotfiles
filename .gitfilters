@@ -59,3 +59,47 @@
 [filter "gimp_tags"]
 	smudge = cat
 	clean = filterconf -f xml script .gitfilters.d/gimp_tags
+
+[filter "pidgin_prefs"]
+	smudge = filterconf -f xml restore
+	clean = filterconf -f xml script .gitfilters.d/pidgin_prefs
+
+[filter "ignore_moc_fastdir"]
+	smudge = cat
+	clean = filterconf -f txt script .gitfilters.d/ignore_moc_fastdir
+
+[filter "insteadrc_remove_state"]
+	smudge = cat
+	clean = filterconf -f flat_ini script .gitfilters.d/insteadrc_remove_state
+
+[filter "gtkfilechooser"]
+	smudge = cat
+	clean = filterconf -f ini script .gitfilters.d/gtkfilechooser
+
+[filter "checkio_config"]
+	smudge = cat
+	clean = filterconf -f ini script .gitfilters.d/checkio_config
+
+[filter "qtproject_conf"]
+	smudge = cat
+	clean = filterconf -f ini script .gitfilters.d/qtproject_conf
+
+[filter "qtproject_designer_conf"]
+	smudge = cat
+	clean = filterconf -f ini script .gitfilters.d/qtproject_designer_conf
+
+[filter "qtproject_linguist_conf"]
+	smudge = cat
+	clean = filterconf -f ini script .gitfilters.d/qtproject_linguist_conf
+
+[filter "mapeditor_tiled_conf"]
+	smudge = cat
+	clean = filterconf -f ini script .gitfilters.d/mapeditor_tiled_conf
+
+[filter "qvge_conf"]
+	smudge = cat
+	clean = filterconf -f ini script .gitfilters.d/qvge_conf
+
+[filter "aisleriot"]
+	smudge = cat
+	clean = filterconf -f ini script .gitfilters.d/aisleriot

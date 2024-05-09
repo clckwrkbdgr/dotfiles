@@ -1,0 +1,7 @@
+delete FileDialog/history ''
+delete FileDialog/lastVisited ''
+delete FileDialog/qtVersion ''
+delete FileDialog/shortcuts ''
+delete FileDialog/sidebarWidth ''
+delete FileDialog/treeViewHeader ''
+delete FileDialog/viewMode ''
