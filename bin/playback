@@ -8,9 +8,9 @@ control_mpv() { # <action>
 	fi
 	mpv_command="cycle pause"
 	if [ "$action" == "pause" ]; then
-		mpv_command=pause
+		mpv_command="set pause yes"
 	elif [ "$action" == "resume" ]; then
-		mpv_command=resume
+		mpv_command="set pause no"
 	fi
 	echo "$mpv_command" | socat - "$XDG_CONFIG_HOME/mpv/remote-control.socket"
 }
