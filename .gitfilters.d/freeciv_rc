@@ -1,0 +1,1 @@
+delete '' '^default_user_name=' --pattern-type=regex

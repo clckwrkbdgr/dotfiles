@@ -1,0 +1,1 @@
+replace '' '^(\(plug-in-def "[^"]+") [0-9]+' --with '\1 0' --pattern-type=regex

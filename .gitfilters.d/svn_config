@@ -1,0 +1,1 @@
+#sed '/### <INCLUDE/,/### >INCLUDE/d;' | sed '${/^$/d}'

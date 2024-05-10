@@ -1,0 +1,2 @@
+delete '' --pattern-type=regex '^(gtk_accel_path \"<Actions>\/windows\/windows-display-[0-9]\+\" \"<Alt>[0-9]\+\")'
+sort ''

@@ -1,0 +1,54 @@
+#clean-openttd-cfg.sh
+
+#!/bin/sh
+#if [ "$1" = "--restore" ]; then
+	#XRESOLUTION=$(xrandr |grep \* |awk '{print $1}' | sed 's/x/,/')
+	#sed 's|$HOME|'"$HOME"'|g'
+	#sed 's|$XRESOLUTION|'"$XRESOLUTION"'|g'
+	#exit
+#fi
+
+delete difficulty/max_no_competitors ''
+delete difficulty/number_towns ''
+delete difficulty/industry_density ''
+delete difficulty/max_loan ''
+delete difficulty/initial_interest ''
+delete difficulty/vehicle_costs ''
+delete difficulty/competitor_speed ''
+delete difficulty/vehicle_breakdowns ''
+delete difficulty/subsidy_multiplier ''
+delete difficulty/construction_cost ''
+delete difficulty/terrain_type ''
+delete difficulty/quantity_sea_lakes ''
+delete difficulty/economy ''
+delete difficulty/line_reverse_mode ''
+delete difficulty/disasters ''
+delete difficulty/town_council_tolerance ''
+
+delete game_creation/town_name ''
+delete game_creation/landscape ''
+delete game_creation/snow_line_height ''
+delete game_creation/starting_year ''
+delete game_creation/land_generator ''
+delete game_creation/oil_refinery_limit ''
+delete game_creation/tgen_smoothness ''
+delete game_creation/variety ''
+delete game_creation/generation_seed ''
+delete game_creation/tree_placer ''
+delete game_creation/heightmap_rotation ''
+delete game_creation/se_flat_world_height ''
+delete game_creation/map_x ''
+delete game_creation/map_y ''
+delete game_creation/water_borders ''
+delete game_creation/custom_town_number ''
+delete game_creation/custom_sea_level ''
+delete game_creation/min_river_length ''
+delete game_creation/river_route_random ''
+delete game_creation/amount_of_rivers ''
+
+delete gui/station_numtracks ''
+delete gui/station_platlength ''
+replace gui/autosave '^.*$' --with off --pattern-type=regex
+replace company/engine_renew '^.*$' --with false --pattern-type=regex
+delete misc/transparency_options ''
+replace misc/resolution '^.*$' --with '$XRESOLUTION' --pattern-type=regex

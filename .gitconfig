@@ -33,32 +33,3 @@
 [filter "firefox_userscript_config"]
 	smudge = clean-firefox-userscripts.sh --restore
 	clean = clean-firefox-userscripts.sh
-
-[filter "expand_homedir"]
-	smudge = "sed 's|$HOME|'\"$HOME\"'|g'"
-	clean = "sed 's|'\"$HOME\"'|$HOME|g'"
-
-[filter "freeciv_rc"]
-	smudge = clean-freeciv-rc.sh --restore
-	clean = clean-freeciv-rc.sh
-
-[filter "openttd_config"]
-	smudge = clean-openttd-cfg.sh --restore
-	clean = clean-openttd-cfg.sh
-
-[filter "gimp_menurc"]
-	smudge = cat
-	clean = "sort | sed '/^(gtk_accel_path \"<Actions>\\/windows\\/windows-display-[0-9]\\+\" \"<Alt>[0-9]\\+\")/d'"
-
-[filter "gimp_pluginrc"]
-	smudge = cat
-	clean = "sed 's/^\\((plug-in-def \"[^\"]\\+\"\\) [0-9]\\+/\\1 0/g'"
-
-[filter "git_config"]
-	smudge = "python ~/.config/git/git_config_submodule_diff_option.py smudge"
-	clean = "python ~/.config/git/git_config_submodule_diff_option.py clean"
-
-# TODO to filterconf
-[filter "svn_config"]
-	smudge = cat
-	clean = "sed '/### <INCLUDE/,/### >INCLUDE/d;' | sed '${/^$/d}'"

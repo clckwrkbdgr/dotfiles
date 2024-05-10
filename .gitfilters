@@ -4,6 +4,10 @@
 	smudge = cat
 	clean = "sed 's|ftpfs_password=.*|ftpfs_password=anonymous@|'"
 
+[filter "expand_homedir"]
+	smudge = filterconf -f txt restore
+	clean = filterconf -f txt enviro
+
 [filter "textsort"]
 	smudge = "filterconf -f txt restore"
 	clean = "filterconf -f txt sort ."
@@ -103,3 +107,27 @@
 [filter "aisleriot"]
 	smudge = cat
 	clean = filterconf -f ini script .gitfilters.d/aisleriot
+
+[filter "freeciv_rc"]
+	smudge = filterconf -f txt restore
+	clean = filterconf -f txt script .gitfilters.d/freeciv_rc
+
+[filter "openttd_config"]
+	smudge = filterconf -f ini --enviro "XRESOLUTION=xrandr | grep \\* | awk '{print \\$1}' | sed 's/x/,/'" restore
+	clean = filterconf -f ini script .gitfilters.d/openttd_config
+
+[filter "svn_config"]
+	smudge = cat
+	clean = "sed '/### <INCLUDE/,/### >INCLUDE/d;' | sed '${/^$/d}'"
+
+[filter "git_config"]
+	smudge = "python ~/.config/git/git_config_submodule_diff_option.py smudge"
+	clean = "python ~/.config/git/git_config_submodule_diff_option.py clean"
+
+[filter "gimp_menurc"]
+	smudge = cat
+	clean = filterconf -f txt script .gitfilters.d/gimp_menurc
+
+[filter "gimp_pluginrc"]
+	smudge = cat
+	clean = "python -c 'import sys;print(sys.stdin.buffer.read().decode(\"utf-8\", \"replace\"))' | filterconf -f txt script .gitfilters.d/gimp_pluginrc"
