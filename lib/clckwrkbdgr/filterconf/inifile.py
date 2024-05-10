@@ -11,7 +11,8 @@ from . import ConfigFilter, config_filter, convert_pattern
 class IniConfig(ConfigFilter):
 	""" INI file. """
 	def unpack(self, content):
-		config = configparser.RawConfigParser()
+		kwargs = {'strict':False} if six.PY3 else {}
+		config = configparser.RawConfigParser(**kwargs)
 		config.optionxform = str # To prevent keys from being converted to lower case.
 		if hasattr(config, 'read_string'): # pragma: no cover -- py3
 			config.read_string(content)
@@ -65,7 +66,8 @@ class IniConfig(ConfigFilter):
 class FlatIni(IniConfig):
 	""" Flat INI file (no sections, just settings). """
 	def unpack(self, content):
-		config = configparser.RawConfigParser()
+		kwargs = {'strict':False} if six.PY3 else {}
+		config = configparser.RawConfigParser(**kwargs)
 		config.optionxform = str # To prevent keys from being converted to lower case.
 		content = '[_dummy_root]\n' + content
 		if hasattr(config, 'read_string'): # pragma: no cover -- py3
