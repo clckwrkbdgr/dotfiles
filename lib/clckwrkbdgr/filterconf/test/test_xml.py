@@ -145,7 +145,7 @@ class TestXMLConfig(unittest.TestCase):
 				  </list>
 				</root>
 				""")
-		expected = textwrap.dedent("""\
+		expected = textwrap.dedent(u"""\
 				<?xml version='1.0' encoding='utf-8'?>
 				<root>
 				  <list>
@@ -161,7 +161,7 @@ class TestXMLConfig(unittest.TestCase):
 	def should_replace_attr_values_in_the_root_node(self):
 		content = textwrap.dedent("""\
 				<?xml version="1.0" encoding="utf-8"?>
-				<root foo="123456" bar="1">
+				<root bar="1" foo="123456">
 				  <list>
 				    <item attr="foo"/>
 				    <item attr="baz"/>
@@ -171,7 +171,7 @@ class TestXMLConfig(unittest.TestCase):
 				""")
 		expected = textwrap.dedent("""\
 				<?xml version='1.0' encoding='utf-8'?>
-				<root foo="666" bar="0">
+				<root bar="0" foo="666">
 				  <list>
 				    <item attr="foo"/>
 				    <item attr="baz"/>
@@ -186,7 +186,7 @@ class TestXMLConfig(unittest.TestCase):
 	def should_replace_attr_values_with_xpath_expr_values(self):
 		content = textwrap.dedent("""\
 				<?xml version="1.0" encoding="utf-8"?>
-				<root foo="0" bar="0">
+				<root bar="0" foo="0">
 				  <list>
 				    <item attr="foo"/>
 				    <item attr="baz"/>
@@ -194,9 +194,9 @@ class TestXMLConfig(unittest.TestCase):
 				  </list>
 				</root>
 				""")
-		expected = textwrap.dedent("""\
+		expected = textwrap.dedent(u"""\
 				<?xml version='1.0' encoding='utf-8'?>
-				<root foo="0" bar="3.0">
+				<root bar="3.0" foo="0">
 				  <list>
 				    <item attr="foo"/>
 				    <item attr="baz"/>
@@ -211,7 +211,7 @@ class TestXMLConfig(unittest.TestCase):
 	def should_replace_attr_values_with_timestamp_using_xpath_expr(self, time_time):
 		content = textwrap.dedent("""\
 				<?xml version="1.0" encoding="utf-8"?>
-				<root foo="0" bar="0">
+				<root bar="0" foo="0">
 				  <list>
 				    <item attr="foo"/>
 				    <item attr="baz"/>
@@ -219,9 +219,9 @@ class TestXMLConfig(unittest.TestCase):
 				  </list>
 				</root>
 				""")
-		expected = textwrap.dedent("""\
+		expected = textwrap.dedent(u"""\
 				<?xml version='1.0' encoding='utf-8'?>
-				<root foo="0" bar="123456.0">
+				<root bar="123456.0" foo="0">
 				  <list>
 				    <item attr="foo"/>
 				    <item attr="baz"/>
