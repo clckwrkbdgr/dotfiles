@@ -10,7 +10,7 @@ CONTENT = r"""
 
 user_pref("boolean.value.true", true);
 user_pref("integer.value", 123456);
-user_pref("integer.other_value", 666);
+user_pref("integer.other_value", -666);
 
 user_pref("some_string.value", "foobar");
 user_pref("boolean.value.false", false);
@@ -29,7 +29,7 @@ class TestPrefsJSConfig(unittest.TestCase):
 			// Comment.
 
 			user_pref("boolean.value.true", true);
-			user_pref("integer.other_value", 666);
+			user_pref("integer.other_value", -666);
 			user_pref("integer.value", 123456);
 
 			user_pref("boolean.value.false", false);
@@ -46,7 +46,7 @@ class TestPrefsJSConfig(unittest.TestCase):
 			// Comment.
 
 			user_pref("integer.value", 123456);
-			user_pref("integer.other_value", 666);
+			user_pref("integer.other_value", -666);
 
 			user_pref("some_string.value", "foobar");
 			user_pref("value.with.escaped-quotes.inside", "{\"foo\":\"bar\"}");
@@ -62,7 +62,7 @@ class TestPrefsJSConfig(unittest.TestCase):
 
 			user_pref("boolean.value.true", true);
 			user_pref("integer.value", 123456);
-			user_pref("integer.other_value", 666);
+			user_pref("integer.other_value", -666);
 
 			user_pref("boolean.value.false", false);
 			user_pref("value.with.escaped-quotes.inside", "{\"foo\":\"bar\"}");
@@ -79,7 +79,7 @@ class TestPrefsJSConfig(unittest.TestCase):
 
 			user_pref("boolean.value.true", true);
 			user_pref("integer.value", "foobar");
-			user_pref("integer.other_value", 667);
+			user_pref("integer.other_value", -667);
 
 			user_pref("some_string.value", "123456");
 			user_pref("boolean.value.false", true);
@@ -87,7 +87,7 @@ class TestPrefsJSConfig(unittest.TestCase):
 			""")
 		with PrefsJSConfig(CONTENT) as filter:
 			filter.replace('integer.*value', '^1.*$', 'foobar', pattern_type='regex')
-			filter.replace('integer.other_value', '666', '667', pattern_type='regex')
+			filter.replace('integer.other_value', '-666', '-667', pattern_type='regex')
 			filter.replace('some_string.*', '^.*$', '123456', pattern_type='regex')
 			filter.replace('boolean.value.*', 'false', 'true', pattern_type='regex')
 			filter.replace('value.*', 'bar', 'baz', pattern_type='regex')

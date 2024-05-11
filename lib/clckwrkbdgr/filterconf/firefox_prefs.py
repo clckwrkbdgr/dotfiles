@@ -9,7 +9,7 @@ class PrefsJSConfig(ConfigFilter):
 	Comment = namedtuple('Comment', 'content')
 	Empty = namedtuple('Empty', '')
 	UserPref = namedtuple('UserPref', 'name value')
-	USERPREF = re.compile(r'^user_pref\("([A-Za-z0-9._-]+)", (true|false|\d+|".*")\);$')
+	USERPREF = re.compile(r'^user_pref\("([^"]+)", (true|false|-?\d+|".*")\);$')
 
 	def unpack(self, content):
 		entries = []
