@@ -1,0 +1,29 @@
+delete addons "'userDisabled':\s*True" --pattern-type=regex
+delete addons "'location':\s*'app-builtin'" --pattern-type=regex
+delete addons "'location':\s*'app-system-defaults'" --pattern-type=regex
+
+delete addons/* 'locales'
+delete addons/* 'defaultLocale'
+delete addons/* 'path'
+delete addons/* 'seen'
+delete addons/* 'rootURI'
+delete addons/* 'recommendationState'
+delete addons/* 'installTelemetryInfo'
+delete addons/* 'icons'
+delete addons/* 'applyBackgroundUpdates'
+delete addons/* 'incognito'
+delete addons/* 'installOrigins'
+delete addons/* 'targetApplications'
+delete addons/* 'targetPlatforms'
+delete addons/* 'startupData'
+delete addons/* 'optionalPermissions'
+delete addons/* 'userPermissions'
+delete addons/* 'installDate'
+delete addons/* 'signedDate'
+delete addons/* 'updateDate'
+delete addons/* 'iconURL'
+delete addons/* 'updateURL'
+delete addons/* 'optionsURL'
+delete addons/* 'releaseNotesURI'
+
+sort addons[location+id]

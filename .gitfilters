@@ -131,3 +131,19 @@
 [filter "gimp_pluginrc"]
 	smudge = cat
 	clean = "python -c 'import sys;print(sys.stdin.buffer.read().decode(\"utf-8\", \"replace\"))' | filterconf -f txt script .gitfilters.d/gimp_pluginrc"
+
+[filter "firefox_handlers_json"]
+	smudge = cat
+	clean = "filterconf -f json script .gitfilters.d/firefox_handlers_json | sed 's/\\t/    /g'"
+
+[filter "firefox_addons_json"]
+	smudge = cat
+	clean = filterconf -f json script .gitfilters.d/firefox_addons_json
+
+[filter "firefox_extensions_json"]
+	smudge = cat
+	clean = filterconf -f json script .gitfilters.d/firefox_extensions_json
+
+[filter "firefox_pref_js"]
+	smudge = filterconf -f txt restore
+	clean = filterconf -f prefs_js script .gitfilters.d/firefox_pref_js

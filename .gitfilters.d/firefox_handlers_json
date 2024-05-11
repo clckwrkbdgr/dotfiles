@@ -1,0 +1,4 @@
+# action=1 => AlwaysAsk
+replace mimeTypes/*/action '[03]' --with '1' --pattern-type=wildcard
+
+
