@@ -24,6 +24,31 @@ class TestJSONConfig(unittest.TestCase):
 		with JSONConfig(content) as filter:
 			filter.sort("foo")
 		self.assertEqual(filter.content, expected)
+	def should_sort_json_by_compound_condition(self):
+		content = '{"root":[{"location":"b","id":2},{"location":"a","id":2},{"location":"a","id":1}]}'
+		expected = textwrap.dedent("""\
+				{
+					"root": [
+						{
+							"id": 1,
+							"location": "a"
+						},
+						{
+							"id": 2,
+							"location": "a"
+						},
+						{
+							"id": 2,
+							"location": "b"
+						}
+					]
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+		with JSONConfig(content) as filter:
+			filter.sort("root[location+id]")
+		self.assertEqual(filter.content, expected)
 	def should_prettify_json(self):
 		content = '{"foo":["value","1"],"bar":"baz"}'
 		expected = textwrap.dedent("""\
@@ -90,7 +115,7 @@ class TestJSONConfig(unittest.TestCase):
 		with JSONConfig(content) as filter:
 			filter.delete("foo.1", "sublist")
 		self.assertEqual(filter.content, expected)
-	def should_delete_keys_by_path_with_wildcards(self):
+	def should_delete_keys_by_path_full_of_wildcards(self):
 		content = '{"root":{"foo":{"value":1,"to_delete":true},"bar":{"value":2}},"another-root":{"baz":{"value":3}}}'
 		expected = textwrap.dedent("""\
 				{
@@ -115,7 +140,7 @@ class TestJSONConfig(unittest.TestCase):
 		with JSONConfig(content) as filter:
 			filter.delete("*.*", "to_delete")
 		self.assertEqual(filter.content, expected)
-
+	def should_delete_keys_by_path_with_wildcards_in_dict(self):
 		content = '{"root":{"foo":{"value":1,"to_delete":true},"bar":{"value":2}},"another-root":{"foo":{"value":3,"to_delete":true}}}'
 		expected = textwrap.dedent("""\
 				{
@@ -140,7 +165,7 @@ class TestJSONConfig(unittest.TestCase):
 		with JSONConfig(content) as filter:
 			filter.delete("*.foo", "to_delete")
 		self.assertEqual(filter.content, expected)
-
+	def should_delete_keys_by_path_with_wildcards_in_list(self):
 		content = '[{"foo":{"value":1,"to_delete":true},"bar":{"value":2}},{"foo":{"value":3,"to_delete":true}}]'
 		expected = textwrap.dedent("""\
 				[
@@ -165,7 +190,30 @@ class TestJSONConfig(unittest.TestCase):
 		with JSONConfig(content) as filter:
 			filter.delete("*.foo", "to_delete")
 		self.assertEqual(filter.content, expected)
+	def should_delete_objects_in_list_by_path_with_wildcards_and_condition(self):
+		content = '{"root":[{"name":"foo","value":1,"to_delete":false},{"name":"bar","value":2},{"name":"baz","value":3,"to_delete":true}]}'
+		expected = textwrap.dedent("""\
+				{
+					"root": [
+						{
+							"name": "foo",
+							"to_delete": false,
+							"value": 1
+						},
+						{
+							"name": "bar",
+							"value": 2
+						}
+					]
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
 
+		with JSONConfig(content) as filter:
+			filter.delete("root", r"to_delete':\s*True", pattern_type='regex')
+		self.assertEqual(filter.content, expected)
+	def should_delete_keys_by_path_with_wildcards_as_keys(self):
 		content = '{"root":{"foo":{"value":1,"to_delete":true},"bar":{"value":2},"baz":{"value":3,"to_delete":true},"foobar":[false]}}'
 		expected = textwrap.dedent("""\
 				{
@@ -190,7 +238,56 @@ class TestJSONConfig(unittest.TestCase):
 
 		with JSONConfig(content) as filter:
 			filter.delete("root.*", "to_delete")
+		self.assertEqual(filter.content, expected)
+	def should_ignore_wildcards_pointing_to_missing_keys(self):
+		content = '{"root":{"foo":{"value":1,"to_delete":true},"bar":{"value":2},"baz":{"value":3,"to_delete":true},"foobar":[false]}}'
+		expected = textwrap.dedent("""\
+				{
+					"root": {
+						"bar": {
+							"value": 2
+						},
+						"baz": {
+							"to_delete": true,
+							"value": 3
+						},
+						"foo": {
+							"to_delete": true,
+							"value": 1
+						},
+						"foobar": [
+							false
+						]
+					}
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
 			filter.delete("root.foobar.*", "to_delete")
+		self.assertEqual(filter.content, expected)
+	def should_address_list_elements_by_wildcards(self):
+		content = '{"root":[{"foo":1,"baz":true},{"bar":2,"baz":false},{"foo":3}]}'
+		expected = textwrap.dedent("""\
+				{
+					"root": [
+						{
+							"baz": true
+						},
+						{
+							"baz": false
+						},
+						{}
+					]
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
+			filter.delete("root/*", "foo")
+			filter.delete("root/*", "bar")
 		self.assertEqual(filter.content, expected)
 	def should_replace_values_by_path(self):
 		content = '{"foo":["value",1],"bar":"baz"}'
@@ -248,6 +345,22 @@ class TestJSONConfig(unittest.TestCase):
 
 		with JSONConfig(content) as filter:
 			filter.replace("*.bar", "value", '{}')
+		self.assertEqual(filter.content, expected)
+	def should_replace_int_values(self):
+		content = '{"foo":{"value":1},"bar":"baz"}'
+		expected = textwrap.dedent("""\
+				{
+					"bar": "baz",
+					"foo": {
+						"value": 2
+					}
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
+			filter.replace("foo/value", "1", '2')
 		self.assertEqual(filter.content, expected)
 
 class TestJSONMozLz4Config(unittest.TestCase):

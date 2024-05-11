@@ -31,9 +31,23 @@ class JSONConfig(ConfigFilter):
 		""" For JSON, sorting is a part of prettifying.
 		Specifically: sorting keys in dictionaries.
 		Path should not contain wildcards.
+
+		Supports very limited sortkey conditions:
+		- /path/...[key] - sort by subkey
+		- /path/...[key1+key2] - sort by compound keys
 		"""
+		condition = None
+		if '[' in path:
+			path, condition = path.split('[', 1)
+			condition = condition[:-1] # Closing ]
 		obj, key = next(self._navigate(path))
-		obj[key] = sorted(obj[key])
+		if condition:
+			condition = condition.split('+')
+			def sortkey(subobj):
+				return ''.join(str(subobj.get(subkey, '')) for subkey in condition)
+			obj[key] = sorted(obj[key], key=sortkey)
+		else:
+			obj[key] = sorted(obj[key])
 	def _navigate(self, path):
 		path = path.split('/' if '/' in path else '.')
 		value = self.content
@@ -68,8 +82,10 @@ class JSONConfig(ConfigFilter):
 		"""
 		pattern = convert_pattern(pattern, pattern_type)
 		for obj, key in self._navigate(path):
-			if key:
+			if key or isinstance(key, int):
 				obj = obj[key]
+			if not isinstance(obj, list) and not isinstance(obj, dict):
+				continue
 			for entry in list(obj):
 				if pattern.search(str(entry)):
 					if isinstance(obj, dict):
@@ -87,7 +103,7 @@ class JSONConfig(ConfigFilter):
 					if pattern.search(subkey):
 						obj[key][subkey] = json.loads(substitute)
 			else:
-				if pattern.search(obj[key]):
+				if pattern.search(str(obj[key])):
 					obj[key] = json.loads(substitute)
 	def pretty(self):
 		""" Sorting keys, indenting (trying to guess current indent or using TAB).
