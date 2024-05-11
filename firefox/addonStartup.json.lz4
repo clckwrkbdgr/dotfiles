@@ -32,7 +32,6 @@
                 "dependencies": [],
                 "enabled": false,
                 "loader": null,
-                "path": null,
                 "rootURI": "resource://default-theme/",
                 "runInSafeMode": true,
                 "type": "theme",

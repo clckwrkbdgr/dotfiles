@@ -36,9 +36,9 @@
 			"homepageURL": "https://tampermonkey.net",
 			"id": "firefox@tampermonkey.net",
 			"name": "Tampermonkey",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4250678/tampermonkey-5.1.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4282688/tampermonkey-5.1.1.xpi",
 			"type": "extension",
-			"version": "5.1.0"
+			"version": "5.1.1"
 		},
 		{
 			"homepageURL": "https://github.com/philc/vimium",
