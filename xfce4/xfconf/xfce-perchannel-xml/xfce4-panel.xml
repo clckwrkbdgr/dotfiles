@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
+<?xml version='1.0' encoding='utf-8'?>
 <channel name="xfce4-panel" version="1.0">
   <property name="panels" type="array">
     <value type="int" value="0"/>
@@ -47,7 +46,7 @@
       <property name="rows" type="uint" value="1"/>
     </property>
     <property name="plugin-6" type="string" value="systray">
-    </property>
+      </property>
     <property name="plugin-2" type="string" value="genmon"/>
   </property>
   <property name="configver" type="int" value="2"/>
