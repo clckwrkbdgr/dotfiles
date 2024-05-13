@@ -147,3 +147,7 @@
 [filter "firefox_pref_js"]
 	smudge = filterconf -f txt restore
 	clean = filterconf -f prefs_js script .gitfilters.d/firefox_pref_js
+
+[filter "windows_terminal_settings"]
+	smudge = cat
+	clean = filterconf -f json script .gitfilters.d/windows_terminal_settings | dos2unix

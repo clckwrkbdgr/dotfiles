@@ -1,0 +1,11 @@
+#BUILT_IN_SCHEMES=['Campbell', 'Campbell Powershell', 'One Half Dark', 'One Half Light', 'Solarized Dark', 'Solarized Light', 'Tango Dark', 'Tango Light', 'Vintage']
+#data['schemes'] = [scheme for scheme in data['schemes'] if scheme.get('name') not in BUILT_IN_SCHEMES]
+delete schemes "'name': 'Campbell'"
+delete schemes "'name': 'Campbell Powershell'"
+delete schemes "'name': 'One Half Dark'"
+delete schemes "'name': 'One Half Light'"
+delete schemes "'name': 'Solarized Dark'"
+delete schemes "'name': 'Solarized Light'"
+delete schemes "'name': 'Tango Dark'"
+delete schemes "'name': 'Tango Light'"
+delete schemes "'name': 'Vintage'"

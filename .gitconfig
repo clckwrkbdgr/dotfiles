@@ -8,7 +8,3 @@
 [filter "zipfile"]
 	smudge = "zipdump load"
 	clean = "zipdump dump"
-
-[filter "windows_terminal_settings"]
-	smudge = cat
-	clean = "python -c \"import sys,json;data=sys.stdin.read();data=json.loads(data);BUILT_IN_SCHEMES=['Campbell', 'Campbell Powershell', 'One Half Dark', 'One Half Light', 'Solarized Dark', 'Solarized Light', 'Tango Dark', 'Tango Light', 'Vintage'];data['schemes'] = [scheme for scheme in data['schemes'] if scheme.get('name') not in BUILT_IN_SCHEMES];data='\\n'.join(map(str.rstrip, json.dumps(data,indent=4,sort_keys=True).splitlines()));(sys.stdout.buffer if hasattr(sys.stdout, 'buffer') else sys.stdout).write(data.encode('utf-8', 'replace')+b'\\n')\""

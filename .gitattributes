@@ -189,6 +189,7 @@ bin/windows/autocommit.cmd caps=work
 bin/windows/backup.cmd caps=work
 bin/windows/bpp.cmd caps=work
 bin/windows/clipcp.cmd caps=work
+bin/windows/filterconf.cmd caps=work
 bin/windows/retro.cmd caps=work
 bin/windows/todo.cmd caps=work
 bin/windows/unittest.cmd caps=work
