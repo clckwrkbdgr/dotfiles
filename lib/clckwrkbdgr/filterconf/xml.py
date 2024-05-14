@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import time
+import six
 try: # pragma: no cover
 	import lxml.etree as ET
 	def _parse(content):
@@ -31,7 +32,7 @@ except ImportError: # pragma: no cover
 		root = ET.fromstring(content.encode('utf-8'))
 		namespaces = dict([
 			node for _, node in ET.iterparse(
-				StringIO(content.decode('utf-8')), events=[u'start-ns']
+				StringIO(six.text_type(content)), events=[u'start-ns']
 				)
 			])
 		for name, value in namespaces.items():
@@ -82,8 +83,9 @@ except ImportError: # pragma: no cover
 		return parent_map[element]
 	def _prettify(root):
 		result = xml.dom.minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ", encoding='utf-8')
-		xml_declaration, result = result.split('>', 1)
-		return xml_declaration.replace('"', "'") + '>' + result
+		xml_declaration, result = result.split(b'>', 1)
+		result = xml_declaration.replace(b'"', b"'") + b'>' + result
+		return result.decode('utf-8')
 	def _tostring(root):
 		f = BytesIO()
 		ET.ElementTree(root).write(f, encoding='utf-8', xml_declaration=True) 
