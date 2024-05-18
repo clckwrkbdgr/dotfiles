@@ -14,6 +14,7 @@ delete '*.*.*' 'signedState'
 delete '*.*.*' 'recommendationState'
 replace '*.*.*' 'lastModifiedTime' --with 0
 replace '*.*.*' 'version' --with '"0.0"'
+delete '*.*.*.path' 'null'
 
 # Built-in addons.
 delete app-system-defaults.addons proxy-failover@mozilla.com

@@ -239,6 +239,29 @@ class TestJSONConfig(unittest.TestCase):
 		with JSONConfig(content) as filter:
 			filter.delete("root.*", "to_delete")
 		self.assertEqual(filter.content, expected)
+	def should_delete_keys_with_null_values(self):
+		content = '{"root":{"foo":{"value":null,"to_delete":true},"bar":{"value":"str"},"baz":{"value":null,"to_delete":true}}}'
+		expected = textwrap.dedent("""\
+				{
+					"root": {
+						"bar": {
+							"value": "str"
+						},
+						"baz": {
+							"to_delete": true
+						},
+						"foo": {
+							"to_delete": true
+						}
+					}
+				}
+				""")
+		if six.PY2: # pragma: no cover
+			expected = expected.replace('\t', ' '*2).replace(',\n', ', \n')
+
+		with JSONConfig(content) as filter:
+			filter.delete("*.*.value", "null")
+		self.assertEqual(filter.content, expected)
 	def should_ignore_wildcards_pointing_to_missing_keys(self):
 		content = '{"root":{"foo":{"value":1,"to_delete":true},"bar":{"value":2},"baz":{"value":3,"to_delete":true},"foobar":[false]}}'
 		expected = textwrap.dedent("""\
