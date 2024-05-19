@@ -5,6 +5,18 @@
 browser=${firefox_binary:-/usr/bin/firefox-esr}
 pnames="${firefox_pnames:-firefox-esr x-www-browser iceweasel}"
 
+clean_deprecated_profile_folder()
+{
+	sleep 30
+	[ -d ~/.mozilla ] || return
+	find ~/.mozilla/ -name 'InstallTime*' -delete
+	rmdir -p .mozilla/firefox/Crash\ Reports/events/ 2>/dev/null
+	rmdir -p .mozilla/firefox/Pending\ Pings/ 2>/dev/null
+	rmdir -p .mozilla/extensions/ 2>/dev/null
+	rmdir -p .mozilla/systemextensionsdev/ 2>/dev/null
+	rmdir -p .mozilla/firefox/ 2>/dev/null
+}
+
 click::command cli 'Firefox CLI interface.'
 click::flag '-I' '--ensure-instance' 'ensure_instance' --help='Opens urls only if some Firefox instance is running.'
 click::flag '-H' '--hide' '' --help='Do not activate browser window.'
@@ -26,6 +38,8 @@ cli() {
 	if [ -n "${CLICK_ARGS[activate]}" -a 0 -eq "${#CLICK_NARGS[@]}" ]; then
 		return 0
 	fi
+
+	clean_deprecated_profile_folder &
 
 	for f in "${CLICK_NARGS[@]}"; do
 		if [ -f "$f" ]; then
