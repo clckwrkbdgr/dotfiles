@@ -82,7 +82,7 @@
 
 [filter "checkio_config"]
 	smudge = cat
-	clean = filterconf -f ini script .gitfilters.d/checkio_config
+	clean = filterconf -f ini script .gitfilters.d/checkio_config | dos2unix
 
 [filter "qtproject_conf"]
 	smudge = cat
