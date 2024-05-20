@@ -1,4 +1,16 @@
 #!/bin/sh
 XINPUT_DEVICE_NAME='AT Translated Set 2 keyboard'
-while xinput query-state "$XINPUT_DEVICE_NAME" | fgrep -q '=down'; do : ; done # To wait until all keys are released.
+# To wait until all keys are released.
+fuse=60
+while xinput query-state "$XINPUT_DEVICE_NAME" | fgrep -q '=down'; do
+	fuse=$((fuse-1))
+	if [ "$fuse" -le 0 ]; then
+		xinput query-state "$XINPUT_DEVICE_NAME" | fgrep '=down' | sed 's/^ *key\[\([0-9]*\)\]=down/\1/' | while read keycode; do
+			echo "Key $keycode is still pressed, cannot backlight." >&@
+			xmodmap -pk | grep "^ $keycode " >&2
+		done
+		break
+	fi
+done
+
 xset dpms force off
