@@ -249,6 +249,8 @@ def import_module(module_spec, reload_module=False): # pragma: no cover -- TODO 
 	if os.path.exists(module_spec):
 		module_filename = module_spec
 		module_name = os.path.basename(os.path.splitext(module_spec)[0])
+		import re
+		module_name = re.sub(r'\W|^(?=\d)','_', module_name)
 	if reload_module and module_name in sys.modules:
 		del sys.modules[module_name]
 
