@@ -84,7 +84,10 @@ class JSONConfig(ConfigFilter):
 		for obj, key in self._navigate(path):
 			parent_obj = obj
 			if key or isinstance(key, int):
-				obj = obj[key]
+				try:
+					obj = obj[key]
+				except KeyError:
+					continue
 			if not isinstance(obj, list) and not isinstance(obj, dict):
 				if not (obj is None and pattern.match('null')):
 					continue # pragma: no cover -- single continue statement is not covered by py2 coverage.

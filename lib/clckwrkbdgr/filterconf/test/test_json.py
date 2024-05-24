@@ -240,7 +240,7 @@ class TestJSONConfig(unittest.TestCase):
 			filter.delete("root.*", "to_delete")
 		self.assertEqual(filter.content, expected)
 	def should_delete_keys_with_null_values(self):
-		content = '{"root":{"foo":{"value":null,"to_delete":true},"bar":{"value":"str"},"baz":{"value":null,"to_delete":true}}}'
+		content = '{"root":{"foo":{"value":null,"to_delete":true},"bar":{"value":"str"},"baz":{"value":null,"to_delete":true},"without_value":{"to_delete":true}}}'
 		expected = textwrap.dedent("""\
 				{
 					"root": {
@@ -251,6 +251,9 @@ class TestJSONConfig(unittest.TestCase):
 							"to_delete": true
 						},
 						"foo": {
+							"to_delete": true
+						},
+						"without_value": {
 							"to_delete": true
 						}
 					}
