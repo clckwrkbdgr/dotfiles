@@ -66,6 +66,13 @@
             "internal:privateBrowsingAllowed"
         ]
     },
+    "ghosttext@bfred.it": {
+        "origins": [
+            "http://localhost/*",
+            "http://localhost:4001/*"
+        ],
+        "permissions": []
+    },
     "godville-ui-plus@erinome.net": {
         "origins": [],
         "permissions": [

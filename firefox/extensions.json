@@ -73,12 +73,12 @@
 			"signedState": 2,
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4111649/ghosttext-23.5.16.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4299538/ghosttext-24.6.7.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{4915360e-6908-4ad5-af60-caf15bb31d7b}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "23.5.16",
+			"version": "24.6.7",
 			"visible": true
 		},
 		{
