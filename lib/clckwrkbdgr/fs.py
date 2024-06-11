@@ -13,7 +13,7 @@ except: # pragma: no cover
 
 try:
 	from ctypes.wintypes import MAX_PATH
-except: # Fox Unix.
+except: # pragma: no cover - For Unix.
 	MAX_PATH = os.pathconf('/', 'PC_NAME_MAX')
 
 @contextlib.contextmanager

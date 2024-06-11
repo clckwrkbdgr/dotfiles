@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import os, sys, io
 import click
 from clckwrkbdgr import firefox

@@ -3,6 +3,10 @@ import time
 import six
 try: # pragma: no cover
 	import lxml.etree as ET
+	try:
+		ET._ElementStringResult
+	except AttributeError: # pragma: no cover
+		ET._ElementStringResult = ET._ElementUnicodeResult
 	def _parse(content):
 		return ET.fromstring(content.encode('utf-8'))
 	def _get_xpath_value(root, xpath):
