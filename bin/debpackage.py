@@ -180,12 +180,13 @@ def load_config_value(parser, category, name, default_value=None):
 @click.option('--bin', 'bins', multiple=True, help='Executables to install. If setup.cfg is specified, value of `debian.bins` (multiline) is included.')
 @click.option('--lib', 'libs', multiple=True, help='Libraries to install. If setup.cfg is specified, value of `debian.libs` (multiline) is included.')
 @click.option('--header', 'headers', multiple=True, help='Include headers to install. If setup.cfg is specified, value of `debian.headers` (multiline) is included.')
+@click.option('--header-root', 'header_root', help='Root dir for headers. It will be stripped from header paths, e.g. src/header.h -> (src/) -> header.h')
 @click.option('--doc', 'docs', multiple=True, help='Docs to install. If setup.cfg is specified, value of `debian.docs` (multiline) is included.')
 @click.option('--data', 'data', multiple=True, help='Data files to install. If setup.cfg is specified, value of `debian.data` (multiline) is included.')
 @click.option('--arch', help='Package architecture. Default is arch of the current system. If setup.cfg is specified, value of `debian.arch` is used.')
 @click.option('--build-dir', help='Directory to store intermediate files. If setup.cfg exists, value is taken from `debian.build_dir`. Default is within system temp directory.')
 @click.option('--dest-dir', help='Directory to store final package. If setup.cfg exists, value is taken from `debian.dest_dir`. Default is one level up from build-dir.')
-def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintainer=None, description=None, bins=None, libs=None, headers=None, docs=None, data=None, build_dir=None, dest_dir=None, arch=None):
+def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintainer=None, description=None, bins=None, libs=None, headers=None, header_root=None, docs=None, data=None, build_dir=None, dest_dir=None, arch=None):
 	""" Utility to create Debian package.
 
 	If there is a 'setup.cfg' file in current directory (alternative path can be specified via command line option --setup-file),
@@ -260,8 +261,13 @@ def cli(package_name, version=None, setup_file='setup.cfg', dry=False, maintaine
 		for header in package.headers:
 			dest = build_dir/'usr'/'local'/'include'/package.name
 			dest_version = Path(str(dest) + '.{0}'.format(package.version))
-			print('Copying header: {0}'.format(header))
-			builder.install(header, dest_version/header, executable=False)
+			if header_root:
+				header_dest = os.path.relpath(header, header_root)
+				print('Copying header: {0} -> {1}'.format(header, header_dest))
+				builder.install(header, dest_version/header_dest, executable=False)
+			else:
+				print('Copying header: {0}'.format(header))
+				builder.install(header, dest_version/header, executable=False)
 			builder.symlink(dest_version.name, dest)
 		for doc in package.docs:
 			dest = build_dir/'usr'/'local'/'share'/'doc'/package.name
