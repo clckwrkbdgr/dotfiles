@@ -148,6 +148,7 @@ delete 'storage.vacuum.last.content-prefs.sqlite' ''
 delete 'devtools.debugger.search-options' ''
 delete 'devtools.debugger.start-panel-size' ''
 delete 'devtools.webconsole.persistlog' ''
+delete 'browser.shell.didSkipDefaultBrowserCheckOnFirstRun' ''
 
 #sed 's/"extensions.systemAddonSet", "{.*");/"extensions.systemAddonSet", "{\\"schema\\":1,\\"addons\\":{}}");/' | \
 #sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
