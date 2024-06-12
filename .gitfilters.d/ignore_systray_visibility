@@ -1,3 +1,5 @@
 delete '//property[@name="names-visible"]' ''
 delete '//property[@name="names-hidden"]' ''
+delete '//property[@name="known-items"]' ''
+delete '//property[@name="known-legacy-items"]' ''
 pretty

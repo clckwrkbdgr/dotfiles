@@ -54,7 +54,25 @@
         <property name="color-style" type="empty"/>
         <property name="image-show" type="empty"/>
       </property>
+      <property name="monitoreDP-1" type="empty">
+        <property name="workspace0" type="empty">
+          <property name="color-style" type="int" value="0"/>
+          <property name="image-style" type="int" value="4"/>
+          <property name="rgba1" type="array">
+            <value type="double" value="0.000000"/>
+            <value type="double" value="0.000000"/>
+            <value type="double" value="0.000000"/>
+            <value type="double" value="1.000000"/>
+          </property>
+        </property>
+        <property name="workspace1" type="empty">
+          <property name="color-style" type="int" value="0"/>
+          <property name="image-style" type="int" value="4"/>
+        </property>
+      </property>
     </property>
+    <property name="single-workspace-mode" type="bool" value="true"/>
+    <property name="single-workspace-number" type="int" value="0"/>
   </property>
   <property name="desktop-icons" type="empty">
     <property name="file-icons" type="empty">

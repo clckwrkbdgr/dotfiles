@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <channel name="xfce4-settings-manager" version="1.0">
-  <property name="last" type="empty"/>
+  <property name="last" type="empty">
+    </property>
 </channel>
