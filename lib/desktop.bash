@@ -33,15 +33,20 @@ get_wallpaper() {
 	$(current_desktop_environment)::get_wallpaper "$@"
 }
 
+get_monitor_name() {
+	xrandr --query | grep '\bconnected\b' | awk '{print $1}'
+}
+_monitor_name=$(get_monitor_name)
+
 xfce4::get_wallpaper() {
-	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image
+	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor${_monitor_name}/workspace0/last-image
 }
 
 xfce4::set_wallpaper() {
 	# Sets wallpaper for XFCE DE.
 	wallpfile="$1"
-	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image -s "$wallpfile"
-	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/image-style -s 4 # Scaled
+	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor${_monitor_name}/workspace0/last-image -s "$wallpfile"
+	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor${_monitor_name}/workspace0/image-style -s 4 # Scaled
 }
 
 gnome::set_wallpaper() {
