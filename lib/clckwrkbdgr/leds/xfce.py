@@ -11,6 +11,7 @@ def join_image_strip(image_files, output_file): # pragma: no cover -- TODO image
 	if not image_files:
 		empty_transparent_pixel = Image.new('RGBA', (1, 1), (0, 0, 0, 0))
 		empty_transparent_pixel.save(str(output_file))
+		empty_transparent_pixel.close()
 		return
 	frames = [Image.open(str(image)) for image in image_files if image]
 	widths = [image.width for image in frames]
@@ -19,7 +20,9 @@ def join_image_strip(image_files, output_file): # pragma: no cover -- TODO image
 	band = Image.new('RGBA', (full_width, full_height))
 	for index, frame in enumerate(frames):
 		band.paste(frame, (frame_width * index, 0))
+		frame.close()
 	band.save(str(output_file))
+	band.close()
 
 class GenMon: # pragma: no cover -- TODO OS
 	IMAGE_PATH = xdg.save_runtime_path('xfce4', 'leds')/"state.png"
@@ -27,6 +30,8 @@ class GenMon: # pragma: no cover -- TODO OS
 
 	def __init__(self, genmon_id):
 		self.genmon_id = genmon_id
+		self._cached_images = []
+		self._cached_tooltip = ''
 	def update(self, plugins):
 		tooltip = []
 		images = []
@@ -35,11 +40,15 @@ class GenMon: # pragma: no cover -- TODO OS
 			images.append(group.image)
 		tooltip = '\n'.join(tooltip)
 		try:
-			join_image_strip(images, GenMon.IMAGE_PATH)
+			if self._cached_images != images:
+				join_image_strip(images, GenMon.IMAGE_PATH)
+				self._cached_images = images
 		except:
 			import traceback
 			traceback.print_exc()
-		GenMon.TOOLTIP_PATH.write_text(tooltip)
+		if self._cached_tooltip != tooltip:
+			GenMon.TOOLTIP_PATH.write_text(tooltip)
+			self._cached_tooltip == tooltip
 	def refresh_plugin(self):
 		# FIXME works only with xfce4-plugin-genmon >= 4.0.2, but there is no way to get current version of a plugin.
 		# FIXME otherwise need to set genmon to refresh rate = 1s

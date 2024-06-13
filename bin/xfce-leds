@@ -56,6 +56,7 @@ def read_xset_led_status():
 		return read_xset_led_status.data
 	xset = subprocess.Popen(["xset", "q"], stdout=subprocess.PIPE)
 	out, err = xset.communicate()
+	xset.wait()
 	if xset.returncode != 0:
 		if err:
 			Log.error('failed to read xset state: {0}'.format(err))

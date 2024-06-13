@@ -1,6 +1,6 @@
 Command=xfce-leds-genmon.sh
 UseLabel=0
 Text=(genmon)
-UpdatePeriod=1000
+UpdatePeriod=10000000
 Font=Monospace 10
 
