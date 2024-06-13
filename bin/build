@@ -36,7 +36,7 @@ def build_python_setuptools(install=False, install_global=False, quiet=False):
 		args = ['sudo'] + args
 	else:
 		args += ['--user']
-	if pip_version >= (21, 0, 0): # pip 21+ refuse to reinstall wheel file if package is already installed with this exact version.
+	if pip_version >= (20, 0, 0): # pip 21+ refuse to reinstall wheel file if package is already installed with this exact version.
 		args += ['--force-reinstall']
 	rc = subprocess.call(args)
 	return rc
