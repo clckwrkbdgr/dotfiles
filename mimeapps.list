@@ -24,3 +24,6 @@ x-scheme-handler\chrome=userapp-Firefox-AMP0IY.desktop
 x-scheme-handler\ftp=userapp-Firefox-AMP0IY.desktop
 x-scheme-handler\http=userapp-Firefox-AMP0IY.desktop
 x-scheme-handler\https=userapp-Firefox-AMP0IY.desktop
+
+[Default Applications]
+x-scheme-handler/magnet=transmission-gtk.desktop
