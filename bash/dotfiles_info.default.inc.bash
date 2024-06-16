@@ -65,6 +65,7 @@ dotfiles_info() {
 	local unknown=0
 	for dotfile in .?*; do
 		[ "$dotfile" == '..' ] && continue
+		[ "$dotfile" == '.?*' ] && continue
 		if [ ${known_dotfiles[$dotfile]+true} ]; then
 			local name="${known_dotfiles[$dotfile]}"
 			[ -n "$XDG_DOTFILES_VERBOSE" ] && echo "Known as [$name]: $dotfile" >&2
