@@ -23,10 +23,10 @@
       <property name="icon-size" type="uint" value="0"/>
       <property name="background-style" type="uint" value="1"/>
       <property name="background-rgba" type="array">
-        <value type="double" value="0.368627"/>
-        <value type="double" value="0.360784"/>
-        <value type="double" value="0.392157"/>
-        <value type="double" value="1.000000"/>
+        <value type="double" value="0.36862699999999998"/>
+        <value type="double" value="0.36078399999999999"/>
+        <value type="double" value="0.39215699999999998"/>
+        <value type="double" value="1"/>
       </property>
     </property>
     <property name="panel-1" type="empty">
