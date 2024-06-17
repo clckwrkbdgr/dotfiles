@@ -16,7 +16,15 @@ export PYGAME_HIDE_SUPPORT_PROMPT=true
 [ -z "$PKG_CONFIG_PATH" ] && export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 export EDITOR=vim
 export PAGER=less
-export GREP_COLOR='1;32'
+
+_grep_version=$(grep -V 2>/dev/null | head -1 | sed 's/.* \([0-9][0-9.]*\)$/\1/' | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
+if [ "${_grep_version}" -ge 3008000000 ]; then
+	export GREP_COLORS='mt=1;32'
+else
+	export GREP_COLOR='1;32'
+fi
+unset _grep_version
+
 export WINEPREFIX=/opt/wine-$USER
 export QT_STYLE_OVERRIDE=kvantum
 if [ -n "$PYTHONPATH" ]; then
