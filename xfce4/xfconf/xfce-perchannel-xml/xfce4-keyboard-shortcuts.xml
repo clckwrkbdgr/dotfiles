@@ -51,6 +51,17 @@
       <property name="&lt;Super&gt;q" type="string" value="termsession RPG --open"/>
       <property name="&lt;Super&gt;j" type="string" value="termsession job --open"/>
       <property name="&lt;Super&gt;space" type="string" value="user-env.cmd playback"/>
+      <property name="&lt;Super&gt;Cyrillic_er" type="string" value="backlight_off"/>
+      <property name="&lt;Super&gt;apostrophe" type="string" value="fix_lc quakestyle quake_xterm bash &apos;$XDG_CONFIG_HOME/lib/desktop.bash&apos; start-main-quake-terminal"/>
+      <property name="&lt;Super&gt;Cyrillic_ze" type="string" value="xfce4-screenshooter"/>
+      <property name="&lt;Super&gt;Cyrillic_softsign" type="string" value="user-env.cmd in_call.sh toggle"/>
+      <property name="&lt;Super&gt;Cyrillic_a" type="string" value="user-env.cmd firefox"/>
+      <property name="&lt;Super&gt;Cyrillic_ef" type="string" value="timed-notification"/>
+      <property name="&lt;Super&gt;Cyrillic_o" type="string" value="termsession job --open"/>
+      <property name="&lt;Super&gt;Cyrillic_shorti" type="string" value="termsession RPG --open"/>
+      <property name="&lt;Super&gt;Cyrillic_ghe" type="string" value="setxkbmap_ua_ru"/>
+      <property name="&lt;Super&gt;Cyrillic_de" type="string" value="lock_ws"/>
+      <property name="&lt;Super&gt;Cyrillic_u" type="string" value="fix_lc urxvt"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
