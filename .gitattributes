@@ -199,6 +199,7 @@ bin/winregistry.py caps=work
 bin/xdg caps=work
 bin/zipdump caps=work
 bin/pqiv-trash.sh caps=home
+pip/pip.conf caps=work
 pqivrc caps=home
 checkio/config.ini caps=work
 crontab caps=work
