@@ -62,6 +62,7 @@
       <property name="&lt;Super&gt;Cyrillic_ghe" type="string" value="setxkbmap_ua_ru"/>
       <property name="&lt;Super&gt;Cyrillic_de" type="string" value="lock_ws"/>
       <property name="&lt;Super&gt;Cyrillic_u" type="string" value="fix_lc urxvt"/>
+      <property name="&lt;Super&gt;Cyrillic_io" type="string" value="fix_lc quakestyle quake_xterm bash &apos;$XDG_CONFIG_HOME/lib/desktop.bash&apos; start-main-quake-terminal"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
