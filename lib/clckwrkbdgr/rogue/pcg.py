@@ -1,4 +1,5 @@
 from __future__ import division
+from .math import Point
 
 class RNG:
 	""" Linear Conguential Generator.
@@ -29,3 +30,17 @@ class RNG:
 		return int(self.get() * (max_value - min_value)) + min_value
 	def choice(self, seq):
 		return seq[self.range(len(seq))]
+
+def pos(rng, size, check=None, counter=1000):
+	""" Generates random Point withing given Size.
+	If check function is supplied, only the first matching value is returned.
+	If no matching values are generated and counter is out, returns last non-matching value.
+	"""
+	result = Point(rng.range(size.width), rng.range(size.height))
+	if check:
+		while counter > 0:
+			result = Point(rng.range(size.width), rng.range(size.height))
+			if check(result):
+				break
+			counter -= 1
+	return result

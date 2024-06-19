@@ -60,3 +60,27 @@ class Matrix:
 			if not self.valid(p):
 				continue
 			yield p
+
+def bresenham(start, stop):
+	dx = abs(stop.x - start.x)
+	sx = 1 if start.x < stop.x else -1
+	dy = -abs(stop.y - start.y)
+	sy = 1 if start.y < stop.y else -1
+	error = dx + dy
+	
+	x, y = start.x, start.y
+	while True:
+		yield Point(x, y)
+		if x == stop.x and y == stop.y:
+			break
+		e2 = 2 * error
+		if e2 >= dy:
+			if x == stop.x: # pragma: no cover -- safeguard, should not be reached.
+				break
+			error = error + dy
+			x += sx
+		if e2 <= dx:
+			if y == stop.y: # pragma: no cover -- safeguard, should not be reached.
+				break
+			error = error + dx
+			y += sy

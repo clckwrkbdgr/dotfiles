@@ -4,6 +4,7 @@ import itertools
 from collections import namedtuple
 import curses
 from .pcg import RNG
+from . import math
 from .math import Point, Matrix, Size, Rect
 from .messages import Log
 
@@ -17,30 +18,6 @@ class Cell: # pragma: no cover -- TODO
 		self.visited = False
 	def __str__(self):
 		return '*' if self.visited else '.'
-
-def bresenham(start, stop): # pragma: no cover -- TODO
-	dx = abs(stop.x - start.x)
-	sx = 1 if start.x < stop.x else -1
-	dy = -abs(stop.y - start.y)
-	sy = 1 if start.y < stop.y else -1
-	error = dx + dy
-	
-	x, y = start.x, start.y
-	while True:
-		yield Point(x, y)
-		if x == stop.x and y == stop.y:
-			break
-		e2 = 2 * error
-		if e2 >= dy:
-			if x == stop.x:
-				break
-			error = error + dy
-			x += sx
-		if e2 <= dx:
-			if y == stop.y:
-				break
-			error = error + dx
-			y += sy
 
 def build_rogue_dungeon(rng, size): # pragma: no cover -- TODO
 	strata = Matrix(size, Cell(' ', False))
@@ -225,16 +202,6 @@ def build_rogue_dungeon(rng, size): # pragma: no cover -- TODO
 
 	return start_pos, exit_pos, strata
 
-def generate_single_pos(rng, size): # pragma: no cover -- TODO
-	return Point(rng.range(size.width), rng.range(size.height))
-
-def generate_pos(rng, size, check=None, counter=1000): # pragma: no cover -- TODO
-	result = generate_single_pos(rng, size)
-	while counter > 0 and not check(result):
-		result = generate_single_pos(rng, size)
-		counter -= 1
-	return result
-
 class BinarySpacePartition(object): # pragma: no cover -- TODO
 	def __init__(self, rng, min_width=15, min_height=10):
 		self.rng = rng
@@ -338,10 +305,10 @@ def build_bsp_dungeon(rng, size): # pragma: no cover -- TODO
 		builder.fill(*splitter)
 
 	floor_only = lambda pos: strata.cell(pos.x, pos.y).passable
-	start_pos = generate_pos(rng, size, floor_only)
+	start_pos = pcg.pos(rng, size, floor_only)
 	Log.debug("Generated player pos: {0}".format(start_pos))
 
-	exit_pos = generate_pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
+	exit_pos = pcg.pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 	return start_pos, exit_pos, strata
@@ -407,8 +374,8 @@ def build_cave(rng, size): # pragma: no cover -- TODO
 	Log.debug("Finalized cave:\n{0}".format(repr(strata)))
 
 	floor_only = lambda pos: strata.cell(pos.x, pos.y) > 1
-	start_pos = generate_pos(rng, size, floor_only)
-	exit_pos = generate_pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
+	start_pos = pcg.pos(rng, size, floor_only)
+	exit_pos = pcg.pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 	for pos in strata.size:
@@ -493,10 +460,10 @@ def build_maze(rng, size): # pragma: no cover -- TODO
 			strata.set_cell(pos.x + 1, pos.y + 1, Cell('.'))
 
 	floor_only = lambda pos: strata.cell(pos.x, pos.y).passable
-	start_pos = generate_pos(rng, size, floor_only)
+	start_pos = pcg.pos(rng, size, floor_only)
 	Log.debug("Generated player pos: {0}".format(start_pos))
 
-	exit_pos = generate_pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
+	exit_pos = pcg.pos(rng, size, lambda pos: floor_only(pos) and pos != start_pos)
 	Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 	return start_pos, exit_pos, strata
@@ -595,7 +562,7 @@ def main_loop(window): # pragma: no cover -- TODO
 			if (rel_pos.x / half_size.width) ** 2 + (rel_pos.y / half_size.height) ** 2 <= 1:
 				Log.debug('Is inside FOV ellipse.')
 				Log.debug('Traversing line of sight: [0;0] -> {0}'.format(rel_pos))
-				for inner_line_pos in bresenham(Point(0, 0), rel_pos):
+				for inner_line_pos in math.bresenham(Point(0, 0), rel_pos):
 					real_world_pos = game.player + inner_line_pos
 					Log.debug('Line pos: {0}, real world pos: {1}'.format(inner_line_pos, real_world_pos))
 					fov_pos = Point(half_size.width + inner_line_pos.x,

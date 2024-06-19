@@ -1,6 +1,7 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 from ..math import Point, Size, Rect, Matrix
+from ..math import bresenham
 
 class TestPoint(unittest.TestCase):
 	def should_add_two_point_values(self):
@@ -84,3 +85,24 @@ class TestMatrix(unittest.TestCase):
 		self.assertEqual(list(matrix.get_neighbours(2, 2, with_diagonal=True)), [
 			Point(x=3, y=2), Point(x=2, y=3), Point(x=1, y=2), Point(x=2, y=1), Point(x=3, y=3), Point(x=1, y=3), Point(x=3, y=1), Point(x=1, y=1)
 			])
+
+class TestGeometry(unittest.TestCase):
+	def should_generate_bresenham_lines(self):
+		self.assertEqual(list(bresenham(Point(0, 0), Point(3, 9))), [Point(*x) for x in [
+			(0,0), (0,1), (1,2), (1,3), (1,4), (2,5), (2,6), (2,7), (3,8), (3,9),
+			]])
+		self.assertEqual(list(bresenham(Point(0, 0), Point(3, 10))), [Point(*x) for x in [
+			(0,0), (0,1), (1,2), (1,3), (1,4), (2,5), (2,6), (2,7), (2,8), (3,9), (3, 10),
+			]])
+		self.assertEqual(list(bresenham(Point(0, 0), Point(9, 3))), [Point(*x) for x in [
+			(0,0), (1,0), (2,1), (3,1), (4,1), (5,2), (6,2), (7,2), (8,3), (9,3),
+			]])
+		self.assertEqual(list(bresenham(Point(0, 0), Point(9, 9))), [Point(*x) for x in [
+			(0,0), (1,1), (2,2), (3,3), (4,4), (5,5), (6,6), (7,7), (8,8), (9,9),
+			]])
+		self.assertEqual(list(bresenham(Point(0, 0), Point(9, 0))), [Point(*x) for x in [
+			(0,0), (1,0), (2,0), (3,0), (4,0), (5,0), (6,0), (7,0), (8,0), (9,0),
+			]])
+		self.assertEqual(list(bresenham(Point(0, 0), Point(0, 9))), [Point(*x) for x in [
+			(0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9),
+			]])
