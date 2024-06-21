@@ -3,6 +3,7 @@ import copy
 import itertools
 from collections import namedtuple
 import curses
+from . import pcg
 from .pcg import RNG
 from . import math
 from .math import Point, Matrix, Size, Rect
