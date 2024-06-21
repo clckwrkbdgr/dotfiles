@@ -1,7 +1,7 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
-from .. import pcg
-from ..math import Point, Size
+from .. import _base as pcg
+from ...math import Point, Size
 
 class TestRNG(unittest.TestCase):
 	def should_generate_random_numbers(self):

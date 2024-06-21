@@ -1,5 +1,5 @@
 from __future__ import division
-from .math import Point
+from ..math import Point
 
 class RNG:
 	""" Linear Conguential Generator.
