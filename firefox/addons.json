@@ -28,9 +28,9 @@
 			"homepageURL": "https://www.soeren-hentzschel.at/firefox-webextensions/new-tab-override/",
 			"id": "newtaboverride@agenedia.com",
 			"name": "New Tab Override",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4231522/new_tab_override-16.0.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4303770/new_tab_override-16.0.1.xpi",
 			"type": "extension",
-			"version": "16.0.0"
+			"version": "16.0.1"
 		},
 		{
 			"homepageURL": "https://tampermonkey.net",
