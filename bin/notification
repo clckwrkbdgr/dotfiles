@@ -13,6 +13,11 @@ MAX_VOLUME=50 # After that volume will be decreased for the time of notification
 
 display_default_notification() { miniclick title text --icon -- "$@"
 	# Display normal floating notification.
+	if which jq >/dev/null; then
+		text="$(echo "$text" | jq -Rr @html)"
+	else
+		text="$(echo "$text" | sed 's/&/&amp;/g;s/>/&gt;/g;s/</&lt;/g;')"
+	fi
 	notify-send "$title" "$text" --icon="$icon"
 }
 
@@ -27,7 +32,7 @@ display_fixed_notification() { miniclick title text --icon -- "$@"
 		wmctrl -l | grep xfce4-notifyd | awk '{print $1}' | while read wnd_id; do
 			xdotool windowkill "$wnd_id"
 		done
-		notify-send "$title" "$text" --icon="$icon"
+		display_default_notification "$title" "$text" --icon="$icon"
 	fi
 }
 
