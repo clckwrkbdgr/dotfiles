@@ -15,7 +15,7 @@ class TestIniConfig(unittest.TestCase):
 	def should_prettify_ini_file(self):
 		with IniConfig(CONTENT) as filter:
 			filter.pretty()
-		self.assertEqual(filter.content, CONTENT.lstrip() + '\n')
+		self.assertEqual(filter.content, CONTENT.lstrip())
 	def should_sort_keys_within_category(self):
 		expected = unittest.dedent("""
 			[foo]
@@ -24,7 +24,6 @@ class TestIniConfig(unittest.TestCase):
 
 			[bar]
 			integer = 123456
-
 			""").lstrip()
 		with IniConfig(CONTENT) as filter:
 			filter.sort('foo')
@@ -37,7 +36,6 @@ class TestIniConfig(unittest.TestCase):
 			[foo]
 			boolean = true
 			string = "Hello world"
-
 			""").lstrip()
 		with IniConfig(CONTENT) as filter:
 			filter.sort('')
@@ -48,7 +46,6 @@ class TestIniConfig(unittest.TestCase):
 			boolean = true
 
 			[bar]
-
 			""").lstrip()
 		with IniConfig(CONTENT) as filter:
 			filter.delete('foo/string', '*llo*', pattern_type='wildcard')
@@ -61,7 +58,6 @@ class TestIniConfig(unittest.TestCase):
 			boolean = true
 
 			[bar]
-
 			""").lstrip()
 		with IniConfig(CONTENT) as filter:
 			filter.delete('bar/integer', '')
@@ -72,7 +68,6 @@ class TestIniConfig(unittest.TestCase):
 		expected = unittest.dedent("""
 			[bar]
 			integer = 123456
-
 			""").lstrip()
 		with IniConfig(CONTENT) as filter:
 			filter.delete('foo', '')
@@ -86,7 +81,6 @@ class TestIniConfig(unittest.TestCase):
 
 			[bar]
 			integer = _____6
-
 			""").lstrip()
 		with IniConfig(CONTENT) as filter:
 			filter.replace('foo/string', 'llo wor', 'ra')
@@ -108,7 +102,6 @@ class TestIniConfig(unittest.TestCase):
 
 			[bAr]
 			integeR = 123456
-
 			""").lstrip()
 		with IniConfig(CONTENT) as filter:
 			filter.sort('Foo')
@@ -127,7 +120,6 @@ class TestFlatIniConfig(unittest.TestCase):
 			string = "Hello world"
 			boolean = true
 			integer = 123456
-
 			""").lstrip()
 		with FlatIni(FLAT_CONTENT) as filter:
 			filter.pretty()
@@ -138,7 +130,6 @@ class TestFlatIniConfig(unittest.TestCase):
 			boolean = true
 			integer = 123456
 			string = "Hello world"
-
 			""").lstrip()
 		with FlatIni(FLAT_CONTENT) as filter:
 			filter.sort('')
@@ -147,7 +138,6 @@ class TestFlatIniConfig(unittest.TestCase):
 		expected = unittest.dedent("""
 			Empty = 
 			boolean = true
-
 			""").lstrip()
 		with FlatIni(FLAT_CONTENT) as filter:
 			filter.delete('string', '*llo*', pattern_type='wildcard')
@@ -160,7 +150,6 @@ class TestFlatIniConfig(unittest.TestCase):
 			string = "Herald"
 			boolean = true
 			integer = _____6
-
 			""").lstrip()
 		with FlatIni(FLAT_CONTENT) as filter:
 			filter.replace('string', 'llo wor', 'ra')
@@ -169,4 +158,4 @@ class TestFlatIniConfig(unittest.TestCase):
 	def should_address_keys_by_wildcard_patterns(self):
 		with FlatIni("foo.bar.baz = 1\n") as filter:
 			filter.replace('foo.*.baz', '1', '2')
-		self.assertEqual(filter.content, "foo.bar.baz = 2\n\n")
+		self.assertEqual(filter.content, "foo.bar.baz = 2\n")

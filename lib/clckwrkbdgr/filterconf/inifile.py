@@ -26,7 +26,7 @@ class IniConfig(ConfigFilter):
 			config.write(stream, space_around_delimiters=True)
 		else: # pragma: no cover -- py2
 			config.write(stream)
-		return stream.getvalue()
+		return stream.getvalue().rstrip('\n') + '\n'
 	def sort(self, section):
 		""" Sorts either specified section or all sections. """
 		if section:
@@ -85,7 +85,7 @@ class FlatIni(IniConfig):
 		content = stream.getvalue()
 		assert content.startswith('[_dummy_root]\n'), content[:100]
 		content = content[len('[_dummy_root]\n'):]
-		return content
+		return content.rstrip('\n') + '\n'
 	def _expand_wildcard(self, name):
 		for key in self.content._sections['_dummy_root']:
 			if fnmatch.fnmatch(key, name):
