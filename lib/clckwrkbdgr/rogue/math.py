@@ -27,12 +27,20 @@ class Matrix:
 		self.size = size
 		self.clear(default_value)
 	def __repr__(self):
-		result = 'Matrix({0}, ['.format(self.size)
+		result = 'Matrix({0}, [\n'.format(self.size)
+		result += self.tostring(indent='\t') + '\t])'
+		return result
+	def tostring(self, cell_str=None, indent=''):
+		cell_str = cell_str or str
+		result = ''
 		for index, c in enumerate(self.cells):
 			if index % self.size.width == 0:
-				result += '\n\t'
-			result += str(c)
-		result += '\n\t])'
+				if index:
+					result += '\n'
+				if indent:
+					result += indent
+			result += cell_str(c)
+		result += '\n'
 		return result
 	def valid(self, pos):
 		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
