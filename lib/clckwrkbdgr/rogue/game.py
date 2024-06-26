@@ -83,6 +83,35 @@ def build_dungeon(builder, rng, size): # pragma: no cover -- TODO
 	builder.build()
 	return builder
 
+def find_path(start, target, strata): # pragma: no cover -- TODO
+	def _reorder_links(_previous_node, _links):
+		return sorted(_links, key=lambda p: abs(_previous_node.x - p.x) + abs(_previous_node.y - p.y))
+	def _is_linked(_node_from, _node_to):
+		return abs(_node_from.x - _node_to.x) <= 1 and abs(_node_from.y - _node_to.y) <= 1
+	def _get_links(_node):
+		return [p for p in strata.get_neighbours(
+			_node.x, _node.y,
+			with_diagonal=True,
+			)
+			 if strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited
+			 ]
+	waves = [{start}]
+	already_used = set()
+	depth = strata.size.width * strata.size.width * strata.size.height * strata.size.height
+	while depth > 0:
+		depth -= 1
+		closest = set(node for previous in waves[-1] for node in _get_links(previous))
+		new_wave = closest - already_used
+		if not new_wave:
+			return None
+		if target in new_wave:
+			path = [target]
+			for wave in reversed(waves):
+				path.insert(0, next(node for node in _reorder_links(path[0], wave) if _is_linked(node, path[0])))
+			return path
+		already_used |= new_wave
+		waves.append(new_wave)
+
 def main_loop(window): # pragma: no cover -- TODO
 	curses.curs_set(0)
 	rng = RNG()
@@ -110,6 +139,8 @@ def main_loop(window): # pragma: no cover -- TODO
 		game = Game(builder.start_pos, builder.exit_pos, builder.strata)
 	field_of_view = Matrix(Size(21, 21), False)
 	playing = True
+	aim = None
+	movement_queue = []
 	god = God()
 	Log.debug('Starting playing...')
 	alive = True
@@ -187,12 +218,30 @@ def main_loop(window): # pragma: no cover -- TODO
 		window.addstr(1+game.player.y, game.player.x, '@')
 
 		status = []
+		if movement_queue:
+			status.append('[auto]')
 		if god.vision:
 			status.append('[vis]')
 		if god.noclip:
 			status.append('[clip]')
 		window.addstr(24, 0, (' '.join(status) + " " * 80)[:80])
+
+		if aim:
+			window.move(1+aim.y, aim.x)
 		window.refresh()
+
+		if movement_queue:
+			Log.debug('Performing queued actions.')
+			new_pos = movement_queue.pop(0)
+			game.player = new_pos
+			if movement_queue:
+				window.nodelay(1)
+				window.timeout(30)
+				window.getch()
+			else:
+				window.timeout(-1)
+				window.nodelay(0)
+			continue
 
 		Log.debug('Performing user actions.')
 		control = window.getch()
@@ -201,6 +250,19 @@ def main_loop(window): # pragma: no cover -- TODO
 			Log.debug('Exiting the game.')
 			playing = False
 			break
+		elif control == ord('x'):
+			if aim:
+				aim = None
+				curses.curs_set(0)
+			else:
+				aim = game.player
+				curses.curs_set(1)
+		elif aim and control == ord('.'):
+			path = find_path(game.player, aim, game.strata)
+			if path:
+				movement_queue.extend(path)
+			aim = None
+			curses.curs_set(0)
 		elif control == ord('~'):
 			control = window.getch()
 			if control == ord('v'):
@@ -212,7 +274,7 @@ def main_loop(window): # pragma: no cover -- TODO
 			alive = False
 			playing = False
 			break
-		elif control == ord('>'):
+		elif not aim and control == ord('>'):
 			if game.player == game.exit_pos:
 				builder = build_dungeon(rng.choice(builders), rng, Size(80, 23))
 				game = Game(builder.start_pos, builder.exit_pos, builder.strata)
@@ -229,15 +291,20 @@ def main_loop(window): # pragma: no cover -- TODO
 					'n' : Point(+1, +1),
 					}[chr(control)]
 			Log.debug('Shift: {0}'.format(shift))
-			new_pos = game.player + shift
-			if game.strata.valid(new_pos):
-				if god.noclip:
-					passable = True
-				else:
-					passable = game.strata.cell(new_pos.x, new_pos.y).passable
-				if passable:
-					Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
-					game.player = new_pos
+			if aim:
+				new_pos = aim + shift
+				if game.strata.valid(new_pos):
+					aim = new_pos
+			else:
+				new_pos = game.player + shift
+				if game.strata.valid(new_pos):
+					if god.noclip:
+						passable = True
+					else:
+						passable = game.strata.cell(new_pos.x, new_pos.y).passable
+					if passable:
+						Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
+						game.player = new_pos
 	if alive:
 		dump = save_game(game)
 		with open(savefile, 'w') as f:
