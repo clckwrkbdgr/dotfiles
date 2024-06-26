@@ -79,6 +79,7 @@ def build_dungeon(builder, rng, size): # pragma: no cover -- TODO
 	builder.add_cell_type('wall', Cell, '#', False, remembered='#')
 	builder.add_cell_type('wall_h', Cell, "-", False, remembered='-')
 	builder.add_cell_type('wall_v', Cell, "|", False, remembered='|')
+	builder.add_cell_type('water', Cell, "~", True)
 	builder.build()
 	return builder
 
@@ -87,6 +88,8 @@ def main_loop(window): # pragma: no cover -- TODO
 	rng = RNG()
 	builders = [
 			pcg.builders.BSPDungeon,
+			pcg.builders.CityBuilder,
+			pcg.builders.Sewers,
 			pcg.builders.RogueDungeon,
 			pcg.builders.CaveBuilder,
 			pcg.builders.MazeBuilder,
