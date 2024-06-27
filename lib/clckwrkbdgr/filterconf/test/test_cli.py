@@ -1,4 +1,4 @@
-import os, textwrap
+import os, platform, textwrap
 import base64
 from click.testing import CliRunner
 from clckwrkbdgr import unittest
@@ -31,6 +31,16 @@ class MockPackConfig(txt.PlainText):
 from .. import cli
 
 class TestCLI(unittest.TestCase):
+	def setUp(self):
+		assert 'BADGER_USER' not in os.environ
+		os.environ['BADGER_USER'] = 'clckwrkbdgr'
+	def tearDown(self):
+		del os.environ['BADGER_USER']
+	def _echo(self, var_name): # pragma: no cover -- os-dependent
+		if platform.system() == 'Windows':
+			return 'echo %{0}%'.format(var_name)
+		return 'echo ${0}'.format(var_name)
+
 	def should_decode_incoming_binary_form(self):
 		runner = CliRunner()
 		result = runner.invoke(cli.main, ['-f', 'mock-binary-format', 'enviro'], input=b"SGVsbG8gd29ybGQhCg==\n")
@@ -66,16 +76,16 @@ class TestCLI(unittest.TestCase):
 		self.assertEqual(result.output, '')
 	def should_smudge_custom_env_var(self):
 		runner = CliRunner()
-		os.environ['XHOME'] = os.environ["LOGNAME"]
-		result = runner.invoke(cli.main, ['-f', 'txt', '-e' 'XHOME=echo $LOGNAME', 'enviro'], input="First: {XHOME}\nSecond: {XHOME}\n".format(XHOME=os.environ['XHOME']))
+		os.environ['XHOME'] = os.environ["BADGER_USER"]
+		result = runner.invoke(cli.main, ['-f', 'txt', '-e' 'XHOME=' + self._echo('BADGER_USER'), 'enviro'], input="First: {XHOME}\nSecond: {XHOME}\n".format(XHOME=os.environ['XHOME']))
 		self.assertEqual(result.output, textwrap.dedent("""\
 		First: $XHOME
 		Second: $XHOME
 		"""))
 	def should_restore_custom_env_var(self):
 		runner = CliRunner()
-		os.environ['XHOME'] = os.environ["LOGNAME"]
-		result = runner.invoke(cli.main, ['-f', 'txt', '-e', 'XHOME=echo $LOGNAME', 'restore'], input='First: $XHOME\nSecond: $XHOME\n')
+		os.environ['XHOME'] = os.environ["BADGER_USER"]
+		result = runner.invoke(cli.main, ['-f', 'txt', '-e', 'XHOME=' + self._echo('BADGER_USER'), 'restore'], input='First: $XHOME\nSecond: $XHOME\n')
 		self.assertEqual(result.output, textwrap.dedent("""\
 		First: {XHOME}
 		Second: {XHOME}
@@ -83,7 +93,7 @@ class TestCLI(unittest.TestCase):
 	def should_smudge_several_custom_env_vars(self):
 		runner = CliRunner()
 		os.environ['XHOME'] = "xhome"
-		result = runner.invoke(cli.main, ['-f', 'txt', '-e', 'XHOME=$XHOME', '-e', 'USERNAME=$USER', 'enviro'], input="First: {XHOME}\nSecond: {USER}\n".format(XHOME=os.environ['XHOME'], USER=os.environ['USER']))
+		result = runner.invoke(cli.main, ['-f', 'txt', '-e', 'XHOME=$XHOME', '-e', 'USERNAME=$BADGER_USER', 'enviro'], input="First: {XHOME}\nSecond: {USER}\n".format(XHOME=os.environ['XHOME'], USER=os.environ['BADGER_USER']))
 		self.assertEqual(result.output, textwrap.dedent("""\
 		First: $XHOME
 		Second: $USERNAME
@@ -91,11 +101,11 @@ class TestCLI(unittest.TestCase):
 	def should_restore_several_custom_env_vars(self):
 		runner = CliRunner()
 		os.environ['XHOME'] = os.environ['HOME']
-		result = runner.invoke(cli.main, ['-f', 'txt', '-e', 'XHOME=echo $HOME', '-e', 'USERNAME=$USER', 'restore'], input='First: $XHOME\nSecond: $USERNAME\n')
+		result = runner.invoke(cli.main, ['-f', 'txt', '-e', 'XHOME=' + self._echo('HOME'), '-e', 'USERNAME=$BADGER_USER', 'restore'], input='First: $XHOME\nSecond: $USERNAME\n')
 		self.assertEqual(result.output, textwrap.dedent("""\
 		First: {XHOME}
 		Second: {USER}
-		""".format(XHOME=os.environ['XHOME'], USER=os.environ['USER'])))
+		""".format(XHOME=os.environ['XHOME'], USER=os.environ['BADGER_USER'])))
 	def should_sort_plain_text(self):
 		runner = CliRunner()
 		result = runner.invoke(cli.main, ['-f', 'txt', 'sort', '_path'], input="b\nc\na\n")

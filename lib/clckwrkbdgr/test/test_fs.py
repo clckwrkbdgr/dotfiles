@@ -135,7 +135,7 @@ class TestSearchForFiles(unittest.fs.TestCase):
 	def should_exclude_files_by_wildcard_in_relative_root(self):
 		os.chdir('/search_test/')
 		self.assertEqual(set(clckwrkbdgr.fs.find('.',
-			exclude_file_wildcards=['/search_test/subdir/sub*'],
+			exclude_file_wildcards=[os.path.abspath('/search_test/subdir/sub*')],
 			)), {
 			Path('filename'),
 			Path('module.pyc'),
@@ -145,7 +145,7 @@ class TestSearchForFiles(unittest.fs.TestCase):
 	def should_exclude_files_by_wildcard_in_abs_root(self):
 		os.chdir('/search_test/')
 		self.assertEqual(set(clckwrkbdgr.fs.find('/search_test/',
-			exclude_file_wildcards=['/search_test/subdir/sub*'],
+			exclude_file_wildcards=[os.path.abspath('/search_test/subdir/sub*')],
 			)), {
 			Path('/search_test/filename'),
 			Path('/search_test/module.pyc'),

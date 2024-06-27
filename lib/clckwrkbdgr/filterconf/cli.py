@@ -48,7 +48,7 @@ def prepare_envvars(enviro_args):
 				raise Exception('Environment variable {0} is not defined!'.format(varname))
 			envvars.register(name, lambda varname=varname: os.getenv(varname))
 		else:
-			envvars.register(name, lambda command=value: subprocess.check_output(command, shell=True).decode('utf-8', 'replace').rstrip('\n'))
+			envvars.register(name, lambda command=value: subprocess.check_output(command, shell=True).decode('utf-8', 'replace').rstrip('\n').rstrip('\r'))
 	return envvars
 
 @click.group(cls=RawEpilogGroup, epilog=get_epilog())
