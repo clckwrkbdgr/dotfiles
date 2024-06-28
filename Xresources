@@ -6,8 +6,16 @@ URxvt*iconFile:/usr/share/icons/Tango/32x32/apps/gnome-terminal.png
 URxvt*font:xft:DejaVu Sans Mono:size=10
 URxvt*scrollBar:false
 URxvt*cursorColor:#bbbbbb
+
 URxvt*foreground:#999999
-URxvt*background:#141212
+URxvt*tintColor:#141212
+! Old transparency (does not work with new composite managers):
+!URxvt*background:#141212
+!URxvt*transparent:true
+! New transparency:
+URxvt.depth: 32
+URxvt*background: rgba:0200/0000/0000/eeee
+
 URxvt*color0:#141212
 URxvt*color1:#ce4242
 URxvt*color2:#4b9a06
@@ -25,8 +33,6 @@ URxvt*color13:#c483b8
 URxvt*color14:#77c9cd
 URxvt*color15:#cccccc
 URxvt*termName: rxvt-unicode-256color
-URxvt*transparent:true
-URxvt*tintColor:#141212
 URxvt.clipboard.autocopy: true
 URxvt.perl-ext-common: selection-to-clipboard
 URxvt*urgentOnBell: true
