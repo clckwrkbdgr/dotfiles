@@ -109,6 +109,11 @@ selftest_display_failure_count() {
 }
 
 selftest_assert_files_same() {
+   fix_msys_paths=cat
+   if [ "$(uname -o)" == Msys ]; then
+      fix_msys_paths="sed 's|C:/Users/.*/AppData/Local/Temp|/tmp|'"
+   fi
+
 	export UNITTEST_QUIET=
 	FIRST_TMPFILE=$(mktemp)
 	SECOND_TMPFILE=$(mktemp)
@@ -125,7 +130,7 @@ selftest_assert_files_same() {
 		assertFilesSame "$FIRST_TMPFILE" "$SECOND_TMPFILE"
 	}
 
-	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1' - <<EOF
+	assertOutputEqual 'FORCE_SOURCED_UNITTESTS=1 unittest::run 2>&1 | '"$fix_msys_paths" - <<EOF
 ${BASH_SOURCE[0]}:$(($LINENO-3)):test_differ: Assert failed:
 Files are not the same:
 --- $FIRST_TMPFILE

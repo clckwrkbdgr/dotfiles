@@ -161,7 +161,11 @@ EOF
 
 should_convert_file_path_to_uri() {
 	this_file="$(realpath "$0")"
-	assertStringsEqual "$(as_uri "$this_file")" "file://$this_file"
+   expected_this_file=$this_file
+   if [ "$(uname -o)" == Msys ]; then
+      expected_this_file="$(echo "$this_file" | sed "s|^/c|/C:|")"
+   fi
+	assertStringsEqual "$(as_uri "$this_file")" "file://$expected_this_file"
 }
 
 should_truncate() {

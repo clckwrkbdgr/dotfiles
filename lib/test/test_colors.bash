@@ -47,7 +47,7 @@ should_autodetect_tty_for_colors() {
 }
 
 should_strip_color_sequences_from_string() {
-	assertOutputEqual 'echo -e "${red}foo${blue}bar" | color::strip' 'foobar'
+	assertOutputEqual 'echo -e "${red}foo${blue}bar" | color::strip | tr -d "\r"' 'foobar'
 }
 
 unittest::run should_

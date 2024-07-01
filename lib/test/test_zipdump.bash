@@ -34,7 +34,7 @@ EOF
 
 	zip "$test_zip" "$test_file" | grep -v '^  adding:' >&2
 
-	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip'" -
+	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip' | sed 's|Users/.*/AppData/Local/Temp|tmp|'" -
 }
 
 should_zip_utf8() {
@@ -58,7 +58,7 @@ EOF
 
 	zip "$test_zip" "$test_file" | grep -v '^  adding:' >&2
 
-	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip'" -
+	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip' | sed 's|Users/.*/AppData/Local/Temp|tmp|'" -
 }
 
 should_zip_cp1251() {
@@ -91,7 +91,7 @@ EOF
 
 	zip "$test_zip" "$test_file" | grep -v '^  adding:' >&2
 
-	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip'" -
+	cat "$expected_file" | assertOutputEqual "zipdump dump '$test_zip' | sed 's|Users/.*/AppData/Local/Temp|tmp|'" -
 }
 
 unittest::run should_

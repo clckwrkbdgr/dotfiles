@@ -77,7 +77,12 @@ unified_diff() { # <left file> <right file>
 	left_file_name="${3:-$1}"
 	right_file_name="${4:-$2}"
 	if which python >/dev/null 2>/dev/null; then
-		python -c 'import sys, difflib; sys.stdout.writelines(difflib.unified_diff(open(sys.argv[1]).readlines(), open(sys.argv[2]).readlines(), sys.argv[3], sys.argv[4]))' "$left_file" "$right_file" "$left_file_name" "$right_file_name"
+      py_version=$(python -c "import sys; print(sys.version_info[0])")
+      if [ "$py_version" == 3 ]; then
+         python -c 'import sys, difflib; sys.stdout.buffer.writelines(difflib.diff_bytes(difflib.unified_diff, open(sys.argv[1], "rb").readlines(), open(sys.argv[2], "rb").readlines(), sys.argv[3].encode("utf-8", "replace"), sys.argv[4].encode("utf-8", "replace")))' "$left_file" "$right_file" "$left_file_name" "$right_file_name"
+      else
+         python -c 'import sys, difflib; sys.stdout.writelines(difflib.unified_diff(open(sys.argv[1]).readlines(), open(sys.argv[2]).readlines(), sys.argv[3], sys.argv[4]))' "$left_file" "$right_file" "$left_file_name" "$right_file_name"
+      fi
 	elif [ $(uname) == AIX -a $(uname -v) == 5 ]; then
 		# AIX 5.* diff does not support unified diff option.
 		# Trying to emulate.
