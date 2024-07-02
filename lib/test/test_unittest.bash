@@ -110,7 +110,9 @@ selftest_display_failure_count() {
 
 selftest_assert_files_same() {
    fix_msys_paths=cat
-   if [ "$(uname -o)" == Msys ]; then
+   if [ "$(uname -s)" == AIX ]; then
+      : # AIX uname has no option -o
+   elif [ "$(uname -o)" == Msys ]; then
       fix_msys_paths="sed 's|C:/Users/.*/AppData/Local/Temp|/tmp|'"
    fi
 

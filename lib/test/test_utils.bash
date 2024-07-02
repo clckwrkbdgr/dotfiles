@@ -162,7 +162,9 @@ EOF
 should_convert_file_path_to_uri() {
 	this_file="$(realpath "$0")"
    expected_this_file=$this_file
-   if [ "$(uname -o)" == Msys ]; then
+   if [ "$(uname -s)" == AIX ]; then
+      : # AIX uname has no option -o
+   elif [ "$(uname -o)" == Msys ]; then
       expected_this_file="$(echo "$this_file" | sed "s|^/c|/C:|")"
    fi
 	assertStringsEqual "$(as_uri "$this_file")" "file://$expected_this_file"

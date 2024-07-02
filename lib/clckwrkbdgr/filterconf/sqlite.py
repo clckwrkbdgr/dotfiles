@@ -4,6 +4,12 @@ from . import ConfigFilter, config_filter
 from . import convert_pattern
 import sqlite3
 
+SharedNamedTemporaryFile = tempfile.NamedTemporaryFile
+import platform
+if platform.system() == 'Windows': # pragma: no cover
+	from ..winnt import fs
+	SharedNamedTemporaryFile = fs.SharedNamedTemporaryFile
+
 class ContentWithDB(str):
 	def add_db(self, db, _tempfile):
 		self._db = db
@@ -35,7 +41,7 @@ class SQLiteConfig(ConfigFilter):
 		suitable to be stored in VCS.
 		By default just treats input as UTF-8 text.
 		"""
-		_tempfile = tempfile.NamedTemporaryFile()
+		_tempfile = SharedNamedTemporaryFile()
 		_tempfile.write(binary_data)
 		_tempfile.flush()
 		os.fsync(_tempfile)

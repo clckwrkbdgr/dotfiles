@@ -4,6 +4,12 @@ import sqlite3
 from clckwrkbdgr import unittest
 from clckwrkbdgr.filterconf.sqlite import SQLiteConfig, ContentWithDB
 
+SharedNamedTemporaryFile = tempfile.NamedTemporaryFile
+import platform
+if platform.system() == 'Windows': # pragma: no cover
+	from ...winnt import fs
+	SharedNamedTemporaryFile = fs.SharedNamedTemporaryFile
+
 DB_SCHEME = """BEGIN TRANSACTION;
 CREATE TABLE table_name (name string, value int);
 INSERT INTO "table_name" VALUES('foo',1);
@@ -19,7 +25,7 @@ class TestSQLiteBinaryContent(unittest.TestCase):
 		self.assertEqual(content._db, 'foo')
 		self.assertEqual(content._tempfile, 'bar')
 	def should_parse_binary_stream_as_sqlite_db_file(self):
-		with tempfile.NamedTemporaryFile() as f:
+		with SharedNamedTemporaryFile() as f:
 			db = sqlite3.connect(f.name)
 			db.cursor().executescript(DB_SCHEME)
 			db.commit()
@@ -28,14 +34,16 @@ class TestSQLiteBinaryContent(unittest.TestCase):
 			f.seek(0)
 			raw_sql_data = f.read()
 		try:
+			content = None
 			content = SQLiteConfig.decode(raw_sql_data)
 			self.assertEqual(content, DB_SCHEME)
 			self.assertTrue(hasattr(content, '_db'))
 			self.assertTrue(hasattr(content, '_tempfile'))
 		finally:
+			content._db.close()
 			content._tempfile.close()
 	def should_encode_sqlite_db_back(self):
-		with tempfile.NamedTemporaryFile() as f:
+		with SharedNamedTemporaryFile() as f:
 			db = sqlite3.connect(f.name)
 			db.cursor().executescript(DB_SCHEME)
 			db.commit()
@@ -45,7 +53,7 @@ class TestSQLiteBinaryContent(unittest.TestCase):
 			raw_sql_data = f.read()
 		content = SQLiteConfig.decode(raw_sql_data)
 		raw_sql_data = SQLiteConfig.encode(content)
-		with tempfile.NamedTemporaryFile() as f:
+		with SharedNamedTemporaryFile() as f:
 			f.write(raw_sql_data)
 			f.seek(0) # Some old Py2 version fail to sync written chanages with FS for some reason.
 			db = sqlite3.connect(f.name)
@@ -53,7 +61,7 @@ class TestSQLiteBinaryContent(unittest.TestCase):
 			db.close()
 		self.assertEqual(content, DB_SCHEME)
 	def should_reuse_db_connection_from_encode_stage(self):
-		with tempfile.NamedTemporaryFile() as f:
+		with SharedNamedTemporaryFile() as f:
 			db = sqlite3.connect(f.name)
 			db.cursor().executescript(DB_SCHEME)
 			db.commit()
@@ -65,7 +73,7 @@ class TestSQLiteBinaryContent(unittest.TestCase):
 		with SQLiteConfig(content) as filter:
 			filter.replace("table_name.name", "bar", "name='baz'")
 		raw_sql_data = SQLiteConfig.encode(filter.content)
-		with tempfile.NamedTemporaryFile() as f:
+		with SharedNamedTemporaryFile() as f:
 			f.write(raw_sql_data)
 			f.seek(0) # Some old Py2 version fail to sync written chanages with FS for some reason.
 			db = sqlite3.connect(f.name)
