@@ -112,6 +112,42 @@ def find_path(start, target, strata): # pragma: no cover -- TODO
 		already_used |= new_wave
 		waves.append(new_wave)
 
+def autoexplore(start, strata): # pragma: no cover -- TODO
+	def _reorder_links(_previous_node, _links):
+		return sorted(_links, key=lambda p: abs(_previous_node.x - p.x) + abs(_previous_node.y - p.y))
+	def _is_linked(_node_from, _node_to):
+		return abs(_node_from.x - _node_to.x) <= 1 and abs(_node_from.y - _node_to.y) <= 1
+	def _get_links(_node):
+		return [p for p in strata.get_neighbours(
+			_node.x, _node.y,
+			with_diagonal=True,
+			)
+			 if strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited
+			 ]
+	waves = [{start}]
+	already_used = set()
+	depth = strata.size.width * strata.size.width * strata.size.height * strata.size.height
+	while depth > 0:
+		depth -= 1
+		closest = set(node for previous in waves[-1] for node in _get_links(previous))
+		new_wave = closest - already_used
+		if not new_wave:
+			return None
+		for target in new_wave:
+			neighs = strata.get_neighbours(target.x, target.y, with_diagonal=True)
+			for p in neighs:
+				if not strata.cell(p.x, p.y).visited:
+					break
+			else:
+				continue
+
+			path = [target]
+			for wave in reversed(waves):
+				path.insert(0, next(node for node in _reorder_links(path[0], wave) if _is_linked(node, path[0])))
+			return path
+		already_used |= new_wave
+		waves.append(new_wave)
+
 def main_loop(window): # pragma: no cover -- TODO
 	curses.curs_set(0)
 	rng = RNG()
@@ -140,6 +176,7 @@ def main_loop(window): # pragma: no cover -- TODO
 	field_of_view = Matrix(Size(21, 21), False)
 	playing = True
 	aim = None
+	autoexploring = False
 	movement_queue = []
 	god = God()
 	Log.debug('Starting playing...')
@@ -147,6 +184,7 @@ def main_loop(window): # pragma: no cover -- TODO
 	while playing:
 		Log.debug('Recalculating Field Of View.')
 		field_of_view.clear(False)
+		new_objects_in_fov = []
 		for pos in field_of_view.size:
 			Log.debug('FOV pos: {0}'.format(pos))
 			half_size = Size(field_of_view.size.width // 2, field_of_view.size.height // 2)
@@ -168,6 +206,9 @@ def main_loop(window): # pragma: no cover -- TODO
 						continue
 					Log.debug('Setting as visible: {0}'.format(fov_pos))
 					cell = game.strata.cell(real_world_pos.x, real_world_pos.y)
+					if not cell.visited:
+						if real_world_pos == game.exit_pos:
+							new_objects_in_fov.append(real_world_pos)
 					cell.visited = True
 					field_of_view.set_cell(fov_pos.x, fov_pos.y, True)
 					if not cell.passable:
@@ -231,16 +272,37 @@ def main_loop(window): # pragma: no cover -- TODO
 		window.refresh()
 
 		if movement_queue:
+			if new_objects_in_fov:
+				Log.debug('New objects in FOV, aborting auto-moving mode.')
+				movement_queue.clear()
+				window.timeout(-1)
+				window.nodelay(0)
+				autoexploring = False
+				continue
 			Log.debug('Performing queued actions.')
 			new_pos = movement_queue.pop(0)
 			game.player = new_pos
 			if movement_queue:
 				window.nodelay(1)
 				window.timeout(30)
-				window.getch()
+				control = window.getch()
+				if control != -1:
+					movement_queue.clear()
+					window.timeout(-1)
+					window.nodelay(0)
+					autoexploring = False
 			else:
-				window.timeout(-1)
-				window.nodelay(0)
+				if autoexploring:
+					path = autoexplore(game.player, game.strata)
+					if path:
+						movement_queue.extend(path)
+					else:
+						window.timeout(-1)
+						window.nodelay(0)
+						autoexploring = False
+				else:
+					window.timeout(-1)
+					window.nodelay(0)
 			continue
 
 		Log.debug('Performing user actions.')
@@ -263,6 +325,11 @@ def main_loop(window): # pragma: no cover -- TODO
 				movement_queue.extend(path)
 			aim = None
 			curses.curs_set(0)
+		elif control == ord('o'):
+			path = autoexplore(game.player, game.strata)
+			if path:
+				movement_queue.extend(path)
+				autoexploring = True
 		elif control == ord('~'):
 			control = window.getch()
 			if control == ord('v'):
