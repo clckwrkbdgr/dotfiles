@@ -7,7 +7,27 @@ from . import math
 from .math import Point, Matrix, Size
 from .messages import Log
 
-SAVEFILE_VERSION = 1
+class VersionType(type): # pragma: no cover -- TODO
+	_versions = [
+			'INITIAL',
+			'PERSISTENT_RNG',
+			]
+	def __getattr__(cls, name):
+		return cls._versions.index(name)
+	@property
+	def CURRENT(self):
+		return len(self._versions)
+def with_metaclass(mcls):
+	def decorator(cls):
+		body = vars(cls).copy()
+		# clean out class body
+		body.pop('__dict__', None)
+		body.pop('__weakref__', None)
+		return mcls(cls.__name__, cls.__bases__, body)
+	return decorator
+@with_metaclass(VersionType)
+class Version(object): # pragma: no cover -- TODO
+	pass
 
 class Cell: # pragma: no cover -- TODO
 	def __init__(self, sprite, passable=True, remembered=None):
@@ -165,7 +185,10 @@ def main_loop(window): # pragma: no cover -- TODO
 		with open(savefile, 'r') as f:
 			data = f.read().split('\0')
 		data = iter(data)
-		version = next(data)
+		version = int(next(data))
+		if version > Version.PERSISTENT_RNG:
+			rng_seed = int(next(data))
+			rng = RNG(rng_seed)
 		game = load_game(version, data)
 		Log.debug('Loaded.')
 		Log.debug(repr(game.strata))
@@ -375,7 +398,8 @@ def main_loop(window): # pragma: no cover -- TODO
 	if alive:
 		dump = save_game(game)
 		with open(savefile, 'w') as f:
-			f.write(str(SAVEFILE_VERSION) + '\0')
+			f.write(str(Version.CURRENT) + '\0')
+			f.write(str(rng.value) + '\0')
 			f.write('\0'.join(map(str, dump)))
 	elif os.path.exists(savefile):
 		os.unlink(savefile)
