@@ -90,6 +90,7 @@ class God: # pragma: no cover -- TODO
 
 def build_dungeon(builder, rng, size): # pragma: no cover -- TODO
 	Log.debug('Building dungeon: {0}...'.format(builder))
+	Log.debug('With RNG: {0}...'.format(rng.value))
 	builder = builder(rng, size)
 	builder.add_cell_type(None, Cell, ' ', False)
 	builder.add_cell_type('corner', Cell, "+", False, remembered='+')

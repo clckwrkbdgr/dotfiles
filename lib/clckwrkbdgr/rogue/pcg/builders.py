@@ -501,47 +501,60 @@ class MazeBuilder(Builder):
 		RANDOMISATION = 0
 
 		intDone = 0
-		while True:
+		while intDone + 1 < ((layout_size.width + 1) * (layout_size.height + 1)) / 4:
 			expected = ((layout_size.width + 1) * (layout_size.height + 1)) / 4
 			Log.debug("Done {0}/{1} cells:\n{2}".format(intDone, expected, repr(layout)))
-			# this code is used to make sure the numbers are odd
-			current = Point(
+			# Search only for cells that have potential option to expand.
+			potential_exits = 0
+			while not potential_exits:
+				# this code is used to make sure the numbers are odd
+				current = Point(
 					self.rng.range((layout_size.width // 2)) * 2,
 					self.rng.range((layout_size.height // 2)) * 2,
 					)
+				if current.x > 1 and not layout.cell(current.x - 2, current.y):
+					potential_exits += 1
+				if current.y > 1 and not layout.cell(current.x, current.y - 2):
+					potential_exits += 1
+				if current.x < layout_size.width - 2 and not layout.cell(current.x + 2, current.y):
+					potential_exits += 1
+				if current.y < layout_size.height - 2 and not layout.cell(current.x, current.y + 2):
+					potential_exits += 1
 			# first one is free!
 			if intDone == 0:
 				layout.set_cell(current.x, current.y, True)
-			if layout.cell(current.x, current.y):
-				# always randomisation directions to start
-				cDir = RandomDirections(self.rng)
-				blnBlocked = False
-				while not blnBlocked:
-					# only randomisation directions, based on the constant
-					if RANDOMISATION == 0 or self.rng.range(RANDOMISATION) == 0:
-						cDir = RandomDirections(self.rng)
-					blnBlocked = True
-					# loop through order of directions
-					for intDir in range(4):
-						# work out where this direction is
-						new_cell = Point(
-								current.x + (cDir[intDir].x * 2),
-								current.y + (cDir[intDir].y * 2),
-								)
-						# check if the tile can be used
-						if layout.valid(new_cell) and not layout.cell(new_cell.x, new_cell.y):
-							# create a path
-							layout.set_cell(new_cell.x, new_cell.y, True)
-							# and the square inbetween
-							layout.set_cell(current.x + cDir[intDir].x, current.y + cDir[intDir].y, True)
-							# this is now the current square
-							current = new_cell
-							blnBlocked = False
-							# increment paths created
-							intDone = intDone + 1
-							break
-			if not ( intDone + 1 < ((layout_size.width + 1) * (layout_size.height + 1)) / 4):
-				break
+			if not layout.cell(current.x, current.y):
+				continue
+			layout.set_cell(current.x, current.y, 123)
+			layout.set_cell(current.x, current.y, True)
+			# always randomisation directions to start
+			cDir = RandomDirections(self.rng)
+			blnBlocked = False
+			while not blnBlocked:
+				# only randomisation directions, based on the constant
+				if RANDOMISATION == 0 or self.rng.range(RANDOMISATION) == 0:
+					cDir = RandomDirections(self.rng)
+				blnBlocked = True
+				# loop through order of directions
+				for intDir in range(4):
+					# work out where this direction is
+					new_cell = Point(
+							current.x + (cDir[intDir].x * 2),
+							current.y + (cDir[intDir].y * 2),
+							)
+					# check if the tile can be used
+					if not layout.valid(new_cell) or layout.cell(new_cell.x, new_cell.y):
+						continue
+					# create a path
+					layout.set_cell(new_cell.x, new_cell.y, True)
+					# and the square inbetween
+					layout.set_cell(current.x + cDir[intDir].x, current.y + cDir[intDir].y, True)
+					# this is now the current square
+					current = new_cell
+					blnBlocked = False
+					# increment paths created
+					intDone = intDone + 1
+					break
 		return layout
 	def _fill_maze(self, layout):
 		self.strata = Matrix(self.size, 'wall')
