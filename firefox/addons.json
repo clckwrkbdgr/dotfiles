@@ -1,6 +1,38 @@
 {
 	"addons": [
 		{
+			"homepageURL": null,
+			"id": "@mutelinks",
+			"name": "MuteLinks",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4271092/mutelinks-0.2.3resigned1.xpi",
+			"type": "extension",
+			"version": "0.2.3resigned1"
+		},
+		{
+			"homepageURL": "https://tampermonkey.net",
+			"id": "firefox@tampermonkey.net",
+			"name": "Tampermonkey",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4282688/tampermonkey-5.1.1.xpi",
+			"type": "extension",
+			"version": "5.1.1"
+		},
+		{
+			"homepageURL": "https://github.com/fregante/GhostText",
+			"id": "ghosttext@bfred.it",
+			"name": "GhostText",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4312001/ghosttext-24.7.1.xpi",
+			"type": "extension",
+			"version": "24.7.1"
+		},
+		{
+			"homepageURL": "https://www.soeren-hentzschel.at/firefox-webextensions/new-tab-override/",
+			"id": "newtaboverride@agenedia.com",
+			"name": "New Tab Override",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4303770/new_tab_override-16.0.1.xpi",
+			"type": "extension",
+			"version": "16.0.1"
+		},
+		{
 			"homepageURL": "https://github.com/gorhill/uBlock#ublock-origin",
 			"id": "uBlock0@raymondhill.net",
 			"name": "uBlock Origin",
@@ -25,20 +57,20 @@
 			"version": "1.5.48"
 		},
 		{
-			"homepageURL": "https://www.soeren-hentzschel.at/firefox-webextensions/new-tab-override/",
-			"id": "newtaboverride@agenedia.com",
-			"name": "New Tab Override",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4303770/new_tab_override-16.0.1.xpi",
+			"homepageURL": null,
+			"id": "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}",
+			"name": "Request Blocker",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4193619/request_blocker_we-0.6.2.xpi",
 			"type": "extension",
-			"version": "16.0.1"
+			"version": "0.6.2"
 		},
 		{
-			"homepageURL": "https://tampermonkey.net",
-			"id": "firefox@tampermonkey.net",
-			"name": "Tampermonkey",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4282688/tampermonkey-5.1.1.xpi",
+			"homepageURL": null,
+			"id": "{980500da-0b6d-4de9-ad90-93d17605276c}",
+			"name": "OurStickys - Sticky Notes on every page",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3486391/ourstickys_sticky_notes-0.1.99.xpi",
 			"type": "extension",
-			"version": "5.1.1"
+			"version": "0.1.99"
 		},
 		{
 			"homepageURL": "https://github.com/philc/vimium",
@@ -55,38 +87,6 @@
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3897119/i_m_not_robot_captcha_clicker-1.3.1.xpi",
 			"type": "extension",
 			"version": "1.3.1"
-		},
-		{
-			"homepageURL": null,
-			"id": "@mutelinks",
-			"name": "MuteLinks",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4271092/mutelinks-0.2.3resigned1.xpi",
-			"type": "extension",
-			"version": "0.2.3resigned1"
-		},
-		{
-			"homepageURL": "https://github.com/fregante/GhostText",
-			"id": "ghosttext@bfred.it",
-			"name": "GhostText",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4312001/ghosttext-24.7.1.xpi",
-			"type": "extension",
-			"version": "24.7.1"
-		},
-		{
-			"homepageURL": null,
-			"id": "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}",
-			"name": "Request Blocker",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4193619/request_blocker_we-0.6.2.xpi",
-			"type": "extension",
-			"version": "0.6.2"
-		},
-		{
-			"homepageURL": null,
-			"id": "{980500da-0b6d-4de9-ad90-93d17605276c}",
-			"name": "OurStickys - Sticky Notes on every page",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3486391/ourstickys_sticky_notes-0.1.99.xpi",
-			"type": "extension",
-			"version": "0.1.99"
 		}
 	],
 	"schema": 6

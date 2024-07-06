@@ -11,3 +11,4 @@ delete addons/* 'supportURL'
 delete addons/* 'reviewURL'
 delete addons/* 'updateDate'
 delete addons/* 'weeklyDownloads'
+sort addons[id]
