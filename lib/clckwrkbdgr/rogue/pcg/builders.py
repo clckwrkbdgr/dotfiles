@@ -402,6 +402,18 @@ class CityBuilder(Builder):
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
 class CaveBuilder(Builder):
+	NEIGHS = [
+			(-1, -1), (-1, 0), (-1, 1),
+			( 0, -1),          ( 0, 1),
+			(+1, -1), (+1, 0), (+1, 1),
+			]
+	NEIGHS_2 = [
+			(-2, -2), (-2, -1), (-2, 0), (-2, 1), (-2, 2),
+			(-1, -2), (-1, -1), (-1, 0), (-1, 1), (-1, 2),
+			( 0, -2), ( 0, -1), ( 0, 0),  ( 0, 1), ( 0, 2),
+			(+1, -2), (+1, -1), (+1, 0), (+1, 1), (+1, 2),
+			(+2, -2), (+2, -1), (+2, 0), (+2, 1), (+2, 2),
+			]
 	def _build(self):
 		self.strata = Matrix(self.size, 0)
 		for x in range(1, self.strata.size.width - 1):
@@ -414,20 +426,29 @@ class CaveBuilder(Builder):
 		for step in range(drop_wall_2_at+1):
 			for x in range(1, self.strata.size.width - 1):
 				for y in range(1, self.strata.size.height - 1):
-					neighs = set(self.strata.get_neighbours(x, y, with_diagonal=True))
-					neighs2 = set(itertools.chain.from_iterable(
-						self.strata.get_neighbours(n.x, n.y, with_diagonal=True)
-						for n in neighs
-						)) - set(Point(x, y))
-					wall_count = sum(int(self.strata.cell(n.x, n.y) == 0) for n in neighs)
-					wall_2_count = sum(int(self.strata.cell(n.x, n.y) == 0) for n in neighs2)
-					is_wall = self.strata.cell(x, y) == 0
+					wall_count = 0
+					for n in self.NEIGHS:
+						if self.strata.cell(x + n[0], y + n[1]) == 0:
+							wall_count += 1
+							if wall_count >= 5:
+								break
 					if wall_count >= 5:
 						new_layer.set_cell(x, y, 0)
-					elif step < drop_wall_2_at and wall_2_count <= 2:
-						new_layer.set_cell(x, y, 0)
-					else:
-						new_layer.set_cell(x, y, 1)
+						continue
+					if step < drop_wall_2_at:
+						wall_2_count = 0
+						for n in self.NEIGHS_2:
+							n = Point(x + n[0], y + n[1])
+							if not self.strata.valid(n):
+								continue
+							if self.strata.cell(n.x, n.y) == 0:
+								wall_2_count += 1
+								if wall_2_count > 2:
+									break
+						if wall_2_count <= 2:
+							new_layer.set_cell(x, y, 0)
+							continue
+					new_layer.set_cell(x, y, 1)
 			self.strata, new_layer = new_layer, self.strata
 			Log.debug("Step {1}:\n{0}".format(repr(self.strata), step))
 		
