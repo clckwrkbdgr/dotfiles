@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ext:extension-backend-db xmlns:ext="http://openoffice.org/extensionmanager/extension-registry/2010">
   <ext:extension url="vnd.sun.star.expand:$BUNDLED_EXTENSIONS/wiki-publisher">
     <ext:extension-items>
