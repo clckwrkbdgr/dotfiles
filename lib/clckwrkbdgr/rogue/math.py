@@ -1,6 +1,7 @@
 from collections import namedtuple
 import copy
 import itertools
+from .messages import Log
 
 _Point = namedtuple('Point', 'x y')
 class Point(_Point):
@@ -92,3 +93,73 @@ def bresenham(start, stop):
 				break
 			error = error + dx
 			y += sy
+
+def find_path(matrix, start, is_passable, find_target):
+	""" Searches for the shortest path on matrix of cells
+	from start point until find_target in new wave.
+	is_passable(point) should return True if cell is passable.
+	find_traget(set of points) should return point which could serve as stop, otherwise None.
+	"""
+	def _reorder_links(_previous_node, _links):
+		return sorted(_links, key=lambda p: abs(_previous_node.x - p.x) + abs(_previous_node.y - p.y))
+	def _is_linked(_node_from, _node_to):
+		return abs(_node_from.x - _node_to.x) <= 1 and abs(_node_from.y - _node_to.y) <= 1
+	def _get_links(_node):
+		return [p for p in matrix.get_neighbours(
+			_node.x, _node.y,
+			with_diagonal=True,
+			)
+			 if is_passable(p)
+			 ]
+	waves = [{start}]
+	already_used = set()
+	depth = matrix.size.width * matrix.size.width * matrix.size.height * matrix.size.height
+	while depth > 0:
+		depth -= 1
+		closest = set(node for previous in waves[-1] for node in _get_links(previous))
+		new_wave = closest - already_used
+		if not new_wave:
+			return None
+		target = find_target(new_wave)
+		if target:
+			path = [target]
+			for wave in reversed(waves):
+				path.insert(0, next(node for node in _reorder_links(path[0], wave) if _is_linked(node, path[0])))
+			return path
+		already_used |= new_wave
+		waves.append(new_wave)
+
+class FieldOfView:
+	def __init__(self, radius):
+		self.sight = Matrix(Size(1 + radius * 2, 1 + radius * 2), False)
+		self.center = Point(0, 0)
+	def update(self, new_center, is_visible):
+		self.center = new_center
+		Log.debug('Recalculating Field Of View.')
+		self.sight.clear(False)
+		for pos in self.sight.size:
+			Log.debug('FOV pos: {0}'.format(pos))
+			half_size = Size(self.sight.size.width // 2, self.sight.size.height // 2)
+			rel_pos = Point(
+					half_size.width - pos.x,
+					half_size.height - pos.y,
+					)
+			Log.debug('FOV rel pos: {0}'.format(rel_pos))
+			if (float(rel_pos.x) / half_size.width) ** 2 + (float(rel_pos.y) / half_size.height) ** 2 > 1:
+				continue
+			Log.debug('Is inside FOV ellipse.')
+			Log.debug('Traversing line of sight: [0;0] -> {0}'.format(rel_pos))
+			for inner_line_pos in bresenham(Point(0, 0), rel_pos):
+				real_world_pos = self.center + inner_line_pos
+				Log.debug('Line pos: {0}, real world pos: {1}'.format(inner_line_pos, real_world_pos))
+				fov_pos = Point(half_size.width + inner_line_pos.x,
+						half_size.height + inner_line_pos.y,
+						)
+				Log.debug('Setting as visible: {0}'.format(fov_pos))
+				if not self.sight.cell(fov_pos.x, fov_pos.y):
+					yield real_world_pos
+					self.sight.set_cell(fov_pos.x, fov_pos.y, True)
+				if not is_visible(real_world_pos):
+					Log.debug('Not passable, stop: {0}'.format(real_world_pos))
+					break
+		Log.debug("Full FOV:\n{0}".format(repr(self.sight)))

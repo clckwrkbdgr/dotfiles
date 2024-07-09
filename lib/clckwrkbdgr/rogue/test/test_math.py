@@ -1,7 +1,10 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
+import textwrap
 from ..math import Point, Size, Rect, Matrix
 from ..math import bresenham
+from ..math import find_path
+from ..math import FieldOfView
 
 class TestPoint(unittest.TestCase):
 	def should_add_two_point_values(self):
@@ -106,3 +109,112 @@ class TestGeometry(unittest.TestCase):
 		self.assertEqual(list(bresenham(Point(0, 0), Point(0, 9))), [Point(*x) for x in [
 			(0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9),
 			]])
+
+class TestMapAlgorithms(unittest.TestCase):
+	def should_find_path_in_matrix(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.cells = list(textwrap.dedent("""\
+				####################
+				#...#....#...#######
+				#.#.####.#.#.......#
+				#.#....#...#.###...#
+				#.#....#.###.###...#
+				#.#......#.........#
+				####################
+				""").replace('\n', ''))
+		target = Point(1, 1)
+		path = find_path(
+				matrix, Point(17, 4),
+				is_passable=lambda p: matrix.cell(p.x, p.y) == '.',
+				find_target=lambda wave: target if target in wave else None,
+				)
+		for p in path:
+			matrix.set_cell(p.x, p.y, '*')
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				####################
+				#**.#....#.**#######
+				#.#*####.#*#.***...#
+				#.#.**.#.*.#.###*..#
+				#.#...*#*###.###.*.#
+				#.#....*.#.........#
+				####################
+				"""))
+	def should_not_find_path_in_matrix_if_exit_is_closed(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.cells = list(textwrap.dedent("""\
+				####################
+				#...#....#...#######
+				#.#.####.#.#.......#
+				#.#....#...#.###...#
+				#.#....#.###.###...#
+				#.#....#.#.........#
+				####################
+				""").replace('\n', ''))
+		target = Point(1, 1)
+		path = find_path(
+				matrix, Point(17, 4),
+				is_passable=lambda p: matrix.cell(p.x, p.y) == '.',
+				find_target=lambda wave: target if target in wave else None,
+				)
+		self.assertIsNone(path)
+	def should_find_path_in_matrix_to_the_first_fit_target(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.cells = list(textwrap.dedent("""\
+				####################
+				#   #    #...#######
+				# # #### #.#.......#
+				# #    # ..#.###...#
+				# #    # ###.###...#
+				# #      #.........#
+				####################
+				""").replace('\n', ''))
+		target = Point(1, 1)
+		path = find_path(
+				matrix, Point(17, 4),
+				is_passable=lambda p: matrix.cell(p.x, p.y) != '#',
+				find_target=lambda wave: next((target for target in wave
+				if any(
+					matrix.cell(p.x, p.y) == ' '
+					for p in matrix.get_neighbours(target.x, target.y, with_diagonal=True)
+					)
+				), None),
+				)
+		for p in path:
+			matrix.set_cell(p.x, p.y, '*')
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				####################
+				#   #    #.**#######
+				# # #### #*#.***...#
+				# #    # *.#.###*..#
+				# #    # ###.###.*.#
+				# #      #.........#
+				####################
+				"""))
+	def should_calculate_field_of_view(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.cells = list(textwrap.dedent("""\
+				####################
+				#                  #
+				#                  #
+				#            #     #
+				#                  #
+				#                  #
+				####################
+				""").replace('\n', ''))
+		fov = FieldOfView(3)
+		for p in fov.update(Point(11, 2), is_visible=lambda p: matrix.valid(p) and matrix.cell(p.x, p.y) != '#'):
+			if not matrix.valid(p):
+				continue
+			if matrix.cell(p.x, p.y) == '#':
+				matrix.set_cell(p.x, p.y, '%')
+			else:
+				matrix.set_cell(p.x, p.y, '.')
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				#########%%%%%######
+				#        .....     #
+				#       .......    #
+				#        ....%     #
+				#        .....     #
+				#          .       #
+				####################
+				"""))

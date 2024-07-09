@@ -4,30 +4,14 @@ import curses
 from . import pcg
 from .pcg import RNG
 from . import math
+from .utils import Enum
 from .math import Point, Matrix, Size
 from .messages import Log
 
-class VersionType(type): # pragma: no cover -- TODO
-	_versions = [
-			'INITIAL',
-			'PERSISTENT_RNG',
-			]
-	def __getattr__(cls, name):
-		return cls._versions.index(name)
-	@property
-	def CURRENT(self):
-		return len(self._versions)
-def with_metaclass(mcls):
-	def decorator(cls):
-		body = vars(cls).copy()
-		# clean out class body
-		body.pop('__dict__', None)
-		body.pop('__weakref__', None)
-		return mcls(cls.__name__, cls.__bases__, body)
-	return decorator
-@with_metaclass(VersionType)
-class Version(object): # pragma: no cover -- TODO
-	pass
+class Version(Enum):
+	""" INITIAL
+	PERSISTENT_RNG
+	"""
 
 class Cell: # pragma: no cover -- TODO
 	def __init__(self, sprite, passable=True, remembered=None):
@@ -104,70 +88,17 @@ def build_dungeon(builder, rng, size): # pragma: no cover -- TODO
 	builder.build()
 	return builder
 
-def find_path(start, target, strata): # pragma: no cover -- TODO
-	def _reorder_links(_previous_node, _links):
-		return sorted(_links, key=lambda p: abs(_previous_node.x - p.x) + abs(_previous_node.y - p.y))
-	def _is_linked(_node_from, _node_to):
-		return abs(_node_from.x - _node_to.x) <= 1 and abs(_node_from.y - _node_to.y) <= 1
-	def _get_links(_node):
-		return [p for p in strata.get_neighbours(
-			_node.x, _node.y,
-			with_diagonal=True,
-			)
-			 if strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited
-			 ]
-	waves = [{start}]
-	already_used = set()
-	depth = strata.size.width * strata.size.width * strata.size.height * strata.size.height
-	while depth > 0:
-		depth -= 1
-		closest = set(node for previous in waves[-1] for node in _get_links(previous))
-		new_wave = closest - already_used
-		if not new_wave:
-			return None
-		if target in new_wave:
-			path = [target]
-			for wave in reversed(waves):
-				path.insert(0, next(node for node in _reorder_links(path[0], wave) if _is_linked(node, path[0])))
-			return path
-		already_used |= new_wave
-		waves.append(new_wave)
-
 def autoexplore(start, strata): # pragma: no cover -- TODO
-	def _reorder_links(_previous_node, _links):
-		return sorted(_links, key=lambda p: abs(_previous_node.x - p.x) + abs(_previous_node.y - p.y))
-	def _is_linked(_node_from, _node_to):
-		return abs(_node_from.x - _node_to.x) <= 1 and abs(_node_from.y - _node_to.y) <= 1
-	def _get_links(_node):
-		return [p for p in strata.get_neighbours(
-			_node.x, _node.y,
-			with_diagonal=True,
+	return math.find_path(
+			strata, start,
+			is_passable=lambda p: strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited,
+			find_target=lambda wave: next((target for target in wave
+			if any(
+				not strata.cell(p.x, p.y).visited
+				for p in strata.get_neighbours(target.x, target.y, with_diagonal=True)
+				)
+			), None),
 			)
-			 if strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited
-			 ]
-	waves = [{start}]
-	already_used = set()
-	depth = strata.size.width * strata.size.width * strata.size.height * strata.size.height
-	while depth > 0:
-		depth -= 1
-		closest = set(node for previous in waves[-1] for node in _get_links(previous))
-		new_wave = closest - already_used
-		if not new_wave:
-			return None
-		for target in new_wave:
-			neighs = strata.get_neighbours(target.x, target.y, with_diagonal=True)
-			for p in neighs:
-				if not strata.cell(p.x, p.y).visited:
-					break
-			else:
-				continue
-
-			path = [target]
-			for wave in reversed(waves):
-				path.insert(0, next(node for node in _reorder_links(path[0], wave) if _is_linked(node, path[0])))
-			return path
-		already_used |= new_wave
-		waves.append(new_wave)
 
 def main_loop(window): # pragma: no cover -- TODO
 	curses.curs_set(0)
@@ -197,7 +128,7 @@ def main_loop(window): # pragma: no cover -- TODO
 	else:
 		builder = build_dungeon(rng.choice(builders), rng, Size(80, 23))
 		game = Game(builder.start_pos, builder.exit_pos, builder.strata)
-	field_of_view = Matrix(Size(21, 21), False)
+	field_of_view = math.FieldOfView(10)
 	playing = True
 	aim = None
 	autoexploring = False
@@ -206,39 +137,18 @@ def main_loop(window): # pragma: no cover -- TODO
 	Log.debug('Starting playing...')
 	alive = True
 	while playing:
-		Log.debug('Recalculating Field Of View.')
-		field_of_view.clear(False)
 		new_objects_in_fov = []
-		for pos in field_of_view.size:
-			Log.debug('FOV pos: {0}'.format(pos))
-			half_size = Size(field_of_view.size.width // 2, field_of_view.size.height // 2)
-			rel_pos = Point(
-					half_size.width - pos.x,
-					half_size.height - pos.y,
-					)
-			Log.debug('FOV rel pos: {0}'.format(rel_pos))
-			if (rel_pos.x / half_size.width) ** 2 + (rel_pos.y / half_size.height) ** 2 <= 1:
-				Log.debug('Is inside FOV ellipse.')
-				Log.debug('Traversing line of sight: [0;0] -> {0}'.format(rel_pos))
-				for inner_line_pos in math.bresenham(Point(0, 0), rel_pos):
-					real_world_pos = game.player + inner_line_pos
-					Log.debug('Line pos: {0}, real world pos: {1}'.format(inner_line_pos, real_world_pos))
-					fov_pos = Point(half_size.width + inner_line_pos.x,
-							half_size.height + inner_line_pos.y,
-							)
-					if not game.strata.valid(real_world_pos):
-						continue
-					Log.debug('Setting as visible: {0}'.format(fov_pos))
-					cell = game.strata.cell(real_world_pos.x, real_world_pos.y)
-					if not cell.visited:
-						if real_world_pos == game.exit_pos:
-							new_objects_in_fov.append(real_world_pos)
-					cell.visited = True
-					field_of_view.set_cell(fov_pos.x, fov_pos.y, True)
-					if not cell.passable:
-						Log.debug('Not passable, stop: {0}'.format(repr(cell.sprite)))
-						break
-		Log.debug("Full FOV:\n{0}".format(repr(field_of_view)))
+		visible_cells = set()
+		for p in field_of_view.update(
+				game.player,
+				is_visible=lambda p: game.strata.valid(p) and game.strata.cell(p.x, p.y).passable
+				):
+			cell = game.strata.cell(p.x, p.y)
+			if not cell.visited:
+				if p == game.exit_pos:
+					new_objects_in_fov.append(p)
+			cell.visited = True
+			visible_cells.add(p)
 
 		Log.debug('Redrawing interface.')
 		Log.debug('Player at: {0}'.format(game.player))
@@ -246,20 +156,7 @@ def main_loop(window): # pragma: no cover -- TODO
 			for col in range(game.strata.size.width):
 				Log.debug('Cell {0},{1}'.format(col, row))
 				cell = game.strata.cell(col, row)
-				rel_pos = Point(col, row) - game.player
-				Log.debug('Relative pos: {0}'.format(rel_pos))
-
-				is_visible = False
-				fov_pos = rel_pos + Point(
-						field_of_view.size.width // 2,
-						field_of_view.size.height // 2,
-						)
-				Log.debug('Relative FOV pos: {0}'.format(fov_pos))
-				if field_of_view.valid(fov_pos):
-					is_visible = field_of_view.cell(fov_pos.x, fov_pos.y)
-					Log.debug('Valid FOV pos, is visible: {0}'.format(is_visible))
-				Log.debug('Visible: {0}'.format(is_visible))
-
+				is_visible = Point(col, row) in visible_cells
 				if is_visible or god.vision:
 					window.addstr(1+row, col, cell.sprite)
 				elif cell.visited and cell.remembered:
@@ -267,16 +164,9 @@ def main_loop(window): # pragma: no cover -- TODO
 				else:
 					window.addstr(1+row, col, ' ')
 
-		is_exit_visible = False
-		exit_rel_pos = game.exit_pos - game.player
-		exit_fov_pos = exit_rel_pos + Point(
-				field_of_view.size.width // 2,
-				field_of_view.size.height // 2,
-				)
-		if field_of_view.valid(exit_fov_pos):
-			is_exit_visible = field_of_view.cell(exit_fov_pos.x, exit_fov_pos.y)
-			if is_exit_visible:
-				game.remembered_exit = True
+		is_exit_visible = game.exit_pos in visible_cells
+		if is_exit_visible:
+			game.remembered_exit = True
 		if is_exit_visible or god.vision or game.remembered_exit:
 			window.addstr(1+game.exit_pos.y, game.exit_pos.x, '>')
 
@@ -344,7 +234,11 @@ def main_loop(window): # pragma: no cover -- TODO
 				aim = game.player
 				curses.curs_set(1)
 		elif aim and control == ord('.'):
-			path = find_path(game.player, aim, game.strata)
+			path = math.find_path(
+					game.strata, game.player,
+					is_passable=lambda p: strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited,
+					find_target=lambda wave: aim if aim in wave else None,
+					)
 			if path:
 				movement_queue.extend(path)
 			aim = None
