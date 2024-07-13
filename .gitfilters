@@ -138,7 +138,7 @@
 
 [filter "firefox_addons_json"]
 	smudge = cat
-	clean = filterconf -f json script .gitfilters.d/firefox_addons_json
+	clean = python .gitfilters.d/firefox_addons_json.restore.py | filterconf -f json script .gitfilters.d/firefox_addons_json
 
 [filter "firefox_extensions_json"]
 	smudge = cat
