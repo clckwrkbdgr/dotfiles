@@ -18,8 +18,11 @@ def cli():
 		command = ['python', '-m', 'coverage', 'run', '-m', 'unittest']
 		if debug:
 			command.append('--verbose')
-		subprocess.check_call(command + tests)
-		sys.exit()
+		rc = subprocess.call(command + tests)
+		if rc != 0:
+			sys.exit(rc)
+		rc = subprocess.call(['python', '-m', 'coverage', 'report', '-m'])
+		sys.exit(rc)
 	Log.debug('started')
 	game.run()
 	Log.debug('exited')

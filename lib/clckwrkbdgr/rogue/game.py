@@ -13,16 +13,14 @@ class Version(Enum):
 	PERSISTENT_RNG
 	"""
 
-class Cell: # pragma: no cover -- TODO
+class Cell(object): # pragma: no cover -- TODO
 	def __init__(self, sprite, passable=True, remembered=None):
 		self.sprite = sprite
 		self.passable = passable
 		self.remembered = remembered
 		self.visited = False
-	def __str__(self):
-		return '*' if self.visited else '.'
 
-class Game: # pragma: no cover -- TODO
+class Game(object): # pragma: no cover -- TODO
 	def __init__(self, start_pos, exit_pos, strata):
 		self.player = start_pos
 		self.exit_pos = exit_pos
@@ -72,7 +70,7 @@ class God: # pragma: no cover -- TODO
 		self.vision = False
 		self.noclip = False
 
-def build_dungeon(builder, rng, size): # pragma: no cover -- TODO
+def build_dungeon(builder, rng, size):
 	Log.debug('Building dungeon: {0}...'.format(builder))
 	Log.debug('With RNG: {0}...'.format(rng.value))
 	builder = builder(rng, size)
@@ -88,11 +86,11 @@ def build_dungeon(builder, rng, size): # pragma: no cover -- TODO
 	builder.build()
 	return builder
 
-def autoexplore(start, strata): # pragma: no cover -- TODO
+def autoexplore(start, strata):
 	return math.find_path(
 			strata, start,
 			is_passable=lambda p: strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited,
-			find_target=lambda wave: next((target for target in wave
+			find_target=lambda wave: next((target for target in sorted(wave)
 			if any(
 				not strata.cell(p.x, p.y).visited
 				for p in strata.get_neighbours(target.x, target.y, with_diagonal=True)
