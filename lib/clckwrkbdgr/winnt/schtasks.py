@@ -119,7 +119,7 @@ class TaskScheduler: # pragma: no cover -- TODO calls external command and avail
 		LogonTrigger = namedtuple('LogonTrigger', 'enabled delay repetition user_id start_boundary end_boundary')
 		RegistrationTrigger = namedtuple('RegistrationTrigger', 'delay')
 		BootTrigger = namedtuple('BootTrigger', 'enabled delay repetition, end_boundary')
-		TimeTrigger = namedtuple('TimeTrigger', 'enabled start_boundary random_delay repetition')
+		TimeTrigger = namedtuple('TimeTrigger', 'enabled start_boundary random_delay repetition execution_time_limit')
 		SessionStateChangeTrigger = namedtuple('SessionStateChangeTrigger', 'enabled state_change user_id')
 		CalendarTrigger = namedtuple('CalendarTrigger', 'enabled start_boundary end_boundary random_delay schedule_by_day execution_time_limit repetition schedule_by_week, schedule_by_month')
 	class Action:
