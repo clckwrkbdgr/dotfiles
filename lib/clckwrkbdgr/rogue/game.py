@@ -13,21 +13,21 @@ class Version(Enum):
 	PERSISTENT_RNG
 	"""
 
-class Cell(object): # pragma: no cover -- TODO
+class Cell(object):
 	def __init__(self, sprite, passable=True, remembered=None):
 		self.sprite = sprite
 		self.passable = passable
 		self.remembered = remembered
 		self.visited = False
 
-class Game(object): # pragma: no cover -- TODO
+class Game(object):
 	def __init__(self, start_pos, exit_pos, strata):
 		self.player = start_pos
 		self.exit_pos = exit_pos
 		self.remembered_exit = False
 		self.strata = strata
 
-def save_game(game): # pragma: no cover -- TODO
+def save_game(game):
 	dump_str = lambda _value: _value if _value is None else _value
 	dump_bool = lambda _value: int(_value)
 	yield game.player.x
@@ -43,7 +43,7 @@ def save_game(game): # pragma: no cover -- TODO
 		yield cell.remembered
 		yield dump_bool(cell.visited)
 
-def load_game(version, data): # pragma: no cover -- TODO
+def load_game(version, data):
 	parse_str = lambda _value: _value if _value != 'None' else None
 	parse_bool = lambda _value: _value == '1'
 

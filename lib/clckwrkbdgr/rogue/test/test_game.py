@@ -20,6 +20,7 @@ class StrBuilder(builders.Builder):
 	""" Set ._map_data to multiline string (one char for each cell).
 	Register cell types according to those chars.
 	Set char to '@' to indicate start pos.
+	Set char to '>' to indicate exit pos.
 	"""
 	def _build(self):
 		self._map_data = self._map_data.splitlines()
@@ -28,6 +29,8 @@ class StrBuilder(builders.Builder):
 				self.strata.set_cell(x, y, self._map_data[y][x])
 				if self._map_data[y][x] == '@':
 					self.start_pos = Point(x, y)
+				elif self._map_data[y][x] == '>':
+					self.exit_pos = Point(x, y)
 
 class MockBuilder(builders.Builder):
 	def _build(self):
@@ -124,3 +127,72 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(path, [
 			Point(x=9, y=6), Point(x=8, y=5), Point(x=7, y=4),
 			])
+
+class TestSerialization(unittest.TestCase):
+	def should_serialize_and_deserialize_game(self):
+		rng = RNG(0)
+		builder = StrBuilder(rng, Size(20, 10))
+		builder._map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##.!$$!$!.....#
+				#....#!!!!!!!!!....#
+				#....$!!!!!!!!!....#
+				#....!!!!@!!!!!....#
+				#....!!!!!!!!!!....#
+				#.....!!!!!!!!!....#
+				####################
+				""")
+		builder.add_cell_type(None, game.Cell, ' ', False)
+		builder.add_cell_type('#', MockCell, "#", False, remembered='+')
+		builder.add_cell_type('$', MockCell, "$", False, remembered='+', visited=True)
+		builder.add_cell_type('.', MockCell, ".", True)
+		builder.add_cell_type('!', MockCell, ".", True, visited=True)
+		builder.add_cell_type('@', MockCell, ".", True, visited=True)
+		builder.add_cell_type('>', MockCell, ".", True)
+		builder.build()
+
+		dungeon = game.Game(builder.start_pos, builder.exit_pos, builder.strata)
+		dump = list(game.save_game(dungeon))
+		self.assertEqual(dump, [
+			9, 6, 10, 1, 0, 20, 10,
+			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
+			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
+			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
+			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
+			'.', 1, None, 0, '#', 0, '+', 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
+			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0,
+			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0,
+			'.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
+			'.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
+			'.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 1, '$', 0, '+', 1, '$', 0, '+', 1,
+			'.', 1, None, 1, '$', 0, '+', 1, '.', 1, None, 1, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
+			'.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
+			'#', 0, '+', 0, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
+			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
+			'#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '$', 0, '+', 1,
+			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
+			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0,
+			'+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
+			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
+			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0,
+			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
+			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 0,
+			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0,
+			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
+			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 0, '.', 1, None, 0,
+			'.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0,
+			'+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
+			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
+			])
+		dump = list(map(str, dump))
+		restored_dungeon = game.load_game(game.Version.CURRENT, iter(dump))
+		self.assertEqual(dungeon.player, restored_dungeon.player)
+		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
+		for pos in dungeon.strata.size:
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).sprite, restored_dungeon.strata.cell(pos.x, pos.y).sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).passable, restored_dungeon.strata.cell(pos.x, pos.y).passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).remembered, restored_dungeon.strata.cell(pos.x, pos.y).remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
