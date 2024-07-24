@@ -80,6 +80,37 @@ class MockBuilder(builders.Builder):
 		self.strata.set_cell(room_pos.x + door_pos, room_pos.y, 'door')
 
 class TestDungeon(unittest.TestCase):
+	def should_create_new_dungeon(self):
+		dungeon = game.Game(rng_seed=123)
+		self.assertEqual(dungeon.player, Point(17, 21))
+		self.assertEqual(dungeon.exit_pos, Point(34, 21))
+		self.maxDiff = None
+		expected = textwrap.dedent("""\
+				################################################################################
+				#..............................................................................#
+				#..............................................................................#
+				#..............................................................................#
+				#...#######...#######...#############...####################...#############...#
+				#...#######...#######...#############...####################...#############...#
+				#...#######...#######...#############...####################...#############...#
+				#...#######...#######...#############...####################...#############...#
+				#...#######...#######...#############...####################...#############...#
+				#...#######...#######...#############...####################...#############...#
+				#...#######...#######...#############..........................#############...#
+				#.......................#############..........................#############...#
+				#.......................#############..........................#############...#
+				#.......................................####################...#############...#
+				#...#######...#######...................####################...#############...#
+				#...#######...#######...................####################...#############...#
+				#...#######...#######...#############...####################...#############...#
+				#...#######...#######...#############...####################...#############...#
+				#...#######...#######...#############...####################...#############...#
+				#..............................................................................#
+				#..............................................................................#
+				#..............................................................................#
+				################################################################################
+				""")
+		self.assertEqual(dungeon.strata.tostring(lambda c: c.sprite), expected)
 	def should_build_dungeon(self):
 		rng = RNG(0)
 		builder = game.build_dungeon(MockBuilder, rng, Size(20, 20))
@@ -150,14 +181,15 @@ class TestSerialization(unittest.TestCase):
 	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_load_game_from_file_if_exists(self, mock_filename, os_path_exists, load_game):
 		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		load_game.side_effect = lambda version, data: (version, list(data))
+		load_game.side_effect = lambda _game_object, version, data: setattr(_game_object, '_data', list(data))
 		stream = mock.mock_open(read_data='{0}\x00123\x00game data'.format(game.Version.CURRENT))
 		with mock.patch(BUILTIN_OPEN, stream):
 			savefile = game.Savefile()
-			rng, game_object = savefile.load()
-			self.assertEqual(rng.seed, 123)
-			self.assertEqual(game_object, (game.Version.CURRENT, ["game data"]))
+			game_object = savefile.load()
+			self.assertEqual(game_object.rng.seed, 123)
+			self.assertEqual(game_object._data, ["game data"])
 
+			load_game.assert_called_once_with(game_object, game.Version.CURRENT, mock.ANY)
 			stream.assert_called_once_with(game.Savefile.FILENAME, 'r')
 			handle = stream()
 			handle.read.assert_called_once()
@@ -165,13 +197,14 @@ class TestSerialization(unittest.TestCase):
 	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_save_game_to_file(self, mock_filename, save_game):
 		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		save_game.side_effect = lambda game_object: (_ for _ in [str(game_object)])
+		save_game.side_effect = lambda game_object: (_ for _ in [game_object._data])
 		stream = mock.mock_open()
 		with mock.patch(BUILTIN_OPEN, stream):
 			savefile = game.Savefile()
-			game_object = "game data"
-			rng = RNG(123)
-			savefile.save(rng, game_object)
+			game_object = game.Game(dummy=True)
+			game_object._data = "game data"
+			game_object.rng = RNG(123)
+			savefile.save(game_object)
 
 			stream.assert_called_once_with(game.Savefile.FILENAME, 'w')
 			handle = stream()
@@ -196,8 +229,7 @@ class TestSerialization(unittest.TestCase):
 		savefile = game.Savefile()
 		savefile.unlink()
 		os_unlink.assert_not_called()
-	def should_serialize_and_deserialize_game(self):
-		rng = RNG(0)
+	def _build_str_dungeon(self, _builder, rng, _size):
 		builder = StrBuilder(rng, Size(20, 10))
 		builder._map_data = textwrap.dedent("""\
 				####################
@@ -219,8 +251,11 @@ class TestSerialization(unittest.TestCase):
 		builder.add_cell_type('@', MockCell, ".", True, visited=True)
 		builder.add_cell_type('>', MockCell, ".", True)
 		builder.build()
-
-		dungeon = game.Game(builder.start_pos, builder.exit_pos, builder.strata)
+		return builder
+	@mock.patch('clckwrkbdgr.rogue.game.build_dungeon')
+	def should_serialize_and_deserialize_game(self, mock_build_dungeon):
+		mock_build_dungeon.side_effect = self._build_str_dungeon
+		dungeon = game.Game(rng_seed=0)
 		dump = list(game.save_game(dungeon))
 		self.assertEqual(dump, [
 			9, 6, 10, 1, 0, 20, 10,
@@ -254,7 +289,8 @@ class TestSerialization(unittest.TestCase):
 			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
 			])
 		dump = list(map(str, dump))
-		restored_dungeon = game.load_game(game.Version.CURRENT, iter(dump))
+		restored_dungeon = game.Game(dummy=True)
+		game.load_game(restored_dungeon, game.Version.CURRENT, iter(dump))
 		self.assertEqual(dungeon.player, restored_dungeon.player)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:

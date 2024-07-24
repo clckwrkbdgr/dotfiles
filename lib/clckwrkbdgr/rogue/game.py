@@ -21,11 +21,26 @@ class Cell(object):
 		self.visited = False
 
 class Game(object):
-	def __init__(self, start_pos, exit_pos, strata):
-		self.player = start_pos
-		self.exit_pos = exit_pos
+	BUILDERS = [
+			pcg.builders.BSPDungeon,
+			pcg.builders.CityBuilder,
+			pcg.builders.Sewers,
+			pcg.builders.RogueDungeon,
+			pcg.builders.CaveBuilder,
+			pcg.builders.MazeBuilder,
+			]
+
+	def __init__(self, rng_seed=None, dummy=False):
+		self.rng = RNG(rng_seed)
+		if dummy:
+			return
+		self.build_new_strata()
+	def build_new_strata(self):
+		builder = build_dungeon(self.rng.choice(Game.BUILDERS), self.rng, Size(80, 23))
+		self.player = builder.start_pos
+		self.exit_pos = builder.exit_pos
+		self.strata = builder.strata
 		self.remembered_exit = False
-		self.strata = strata
 
 def save_game(game):
 	dump_str = lambda _value: _value if _value is None else _value
@@ -43,7 +58,7 @@ def save_game(game):
 		yield cell.remembered
 		yield dump_bool(cell.visited)
 
-def load_game(version, data):
+def load_game(game, version, data):
 	parse_str = lambda _value: _value if _value != 'None' else None
 	parse_bool = lambda _value: _value == '1'
 
@@ -61,9 +76,10 @@ def load_game(version, data):
 				)
 		strata.cells[_].visited = parse_bool(next(data))
 
-	game = Game(player, exit_pos, strata)
+	game.player = player
+	game.exit_pos = exit_pos
+	game.strata = strata
 	game.remembered_exit = remembered_exit
-	return game
 
 class God: # pragma: no cover -- TODO
 	def __init__(self):
@@ -108,17 +124,17 @@ class Savefile:
 			data = f.read().split('\0')
 		data = iter(data)
 		version = int(next(data))
-		rng = RNG()
+		rng_seed = None
 		if version > Version.PERSISTENT_RNG:
 			rng_seed = int(next(data))
-			rng = RNG(rng_seed)
-		game = load_game(version, data)
-		return rng, game
-	def save(self, rng, game):
+		game = Game(rng_seed, dummy=True)
+		load_game(game, version, data)
+		return game
+	def save(self, game):
 		dump = save_game(game)
 		with open(self.FILENAME, 'w') as f:
 			f.write(str(Version.CURRENT) + '\0')
-			f.write(str(rng.value) + '\0')
+			f.write(str(game.rng.value) + '\0')
 			f.write('\0'.join(map(str, dump)))
 	def unlink(self):
 		if not os.path.exists(self.FILENAME):
@@ -127,24 +143,14 @@ class Savefile:
 
 def main_loop(window): # pragma: no cover -- TODO
 	curses.curs_set(0)
-	builders = [
-			pcg.builders.BSPDungeon,
-			pcg.builders.CityBuilder,
-			pcg.builders.Sewers,
-			pcg.builders.RogueDungeon,
-			pcg.builders.CaveBuilder,
-			pcg.builders.MazeBuilder,
-			]
 	savefile = Savefile()
-	rng, game = savefile.load()
+	game = savefile.load()
 	if game is not None:
 		Log.debug('Loaded.')
 		Log.debug(repr(game.strata))
 		Log.debug('Player: {0}'.format(game.player))
 	else:
-		rng = RNG()
-		builder = build_dungeon(rng.choice(builders), rng, Size(80, 23))
-		game = Game(builder.start_pos, builder.exit_pos, builder.strata)
+		game = Game()
 	field_of_view = math.FieldOfView(10)
 	playing = True
 	aim = None
@@ -278,8 +284,7 @@ def main_loop(window): # pragma: no cover -- TODO
 			break
 		elif not aim and control == ord('>'):
 			if game.player == game.exit_pos:
-				builder = build_dungeon(rng.choice(builders), rng, Size(80, 23))
-				game = Game(builder.start_pos, builder.exit_pos, builder.strata)
+				game.make_new_strata()
 		elif chr(control) in 'hjklyubn':
 			Log.debug('Moving.')
 			shift = {
@@ -308,7 +313,7 @@ def main_loop(window): # pragma: no cover -- TODO
 						Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
 						game.player = new_pos
 	if alive:
-		savefile.save(rng, game)
+		savefile.save(game)
 	else:
 		savefile.unlink()
 
