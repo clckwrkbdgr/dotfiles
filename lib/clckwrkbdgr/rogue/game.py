@@ -98,9 +98,35 @@ def autoexplore(start, strata):
 			), None),
 			)
 
+class Savefile:
+	FILENAME = os.path.expanduser('~/.rogue.sav')
+	def load(self):
+		if not os.path.exists(self.FILENAME):
+			return None, None
+		Log.debug('Loading savefile: {0}...'.format(self.FILENAME))
+		with open(self.FILENAME, 'r') as f:
+			data = f.read().split('\0')
+		data = iter(data)
+		version = int(next(data))
+		rng = RNG()
+		if version > Version.PERSISTENT_RNG:
+			rng_seed = int(next(data))
+			rng = RNG(rng_seed)
+		game = load_game(version, data)
+		return rng, game
+	def save(self, rng, game):
+		dump = save_game(game)
+		with open(self.FILENAME, 'w') as f:
+			f.write(str(Version.CURRENT) + '\0')
+			f.write(str(rng.value) + '\0')
+			f.write('\0'.join(map(str, dump)))
+	def unlink(self):
+		if not os.path.exists(self.FILENAME):
+			return
+		os.unlink(self.FILENAME)
+
 def main_loop(window): # pragma: no cover -- TODO
 	curses.curs_set(0)
-	rng = RNG()
 	builders = [
 			pcg.builders.BSPDungeon,
 			pcg.builders.CityBuilder,
@@ -109,21 +135,14 @@ def main_loop(window): # pragma: no cover -- TODO
 			pcg.builders.CaveBuilder,
 			pcg.builders.MazeBuilder,
 			]
-	savefile = os.path.expanduser('~/.rogue.sav')
-	if os.path.exists(savefile):
-		Log.debug('Loading savefile: {0}...'.format(savefile))
-		with open(savefile, 'r') as f:
-			data = f.read().split('\0')
-		data = iter(data)
-		version = int(next(data))
-		if version > Version.PERSISTENT_RNG:
-			rng_seed = int(next(data))
-			rng = RNG(rng_seed)
-		game = load_game(version, data)
+	savefile = Savefile()
+	rng, game = savefile.load()
+	if game is not None:
 		Log.debug('Loaded.')
 		Log.debug(repr(game.strata))
 		Log.debug('Player: {0}'.format(game.player))
 	else:
+		rng = RNG()
 		builder = build_dungeon(rng.choice(builders), rng, Size(80, 23))
 		game = Game(builder.start_pos, builder.exit_pos, builder.strata)
 	field_of_view = math.FieldOfView(10)
@@ -289,13 +308,9 @@ def main_loop(window): # pragma: no cover -- TODO
 						Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
 						game.player = new_pos
 	if alive:
-		dump = save_game(game)
-		with open(savefile, 'w') as f:
-			f.write(str(Version.CURRENT) + '\0')
-			f.write(str(rng.value) + '\0')
-			f.write('\0'.join(map(str, dump)))
-	elif os.path.exists(savefile):
-		os.unlink(savefile)
+		savefile.save(rng, game)
+	else:
+		savefile.unlink()
 
 def run(): # pragma: no cover
 	curses.wrapper(main_loop)

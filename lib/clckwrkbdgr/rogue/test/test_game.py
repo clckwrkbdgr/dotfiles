@@ -1,11 +1,20 @@
+import os, sys
+import tempfile
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
+try:
+	import unittest.mock as mock
+except ImportError: # pragma: no cover
+	import mock
+mock.patch.TEST_PREFIX = 'should'
 import textwrap
 from ..math import Point, Size
 from ..pcg._base import RNG
 from ..pcg import builders
 from .. import pcg
 from .. import game
+
+BUILTIN_OPEN = 'builtins.open' if sys.version_info[0] >= 3 else '__builtin__.open'
 
 class MockCell(game.Cell):
 	def __init__(self, *args, **kwargs):
@@ -129,6 +138,64 @@ class TestDungeon(unittest.TestCase):
 			])
 
 class TestSerialization(unittest.TestCase):
+	@mock.patch('os.path.exists', side_effect=[False])
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_not_load_game_from_non_existent_file(self, mock_filename, os_path_exists):
+		savefile = game.Savefile()
+		self.assertEqual(savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+		result = savefile.load()
+		self.assertEqual(result, (None, None))
+	@mock.patch('clckwrkbdgr.rogue.game.load_game')
+	@mock.patch('os.path.exists', side_effect=[True])
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_load_game_from_file_if_exists(self, mock_filename, os_path_exists, load_game):
+		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+		load_game.side_effect = lambda version, data: (version, list(data))
+		stream = mock.mock_open(read_data='{0}\x00123\x00game data'.format(game.Version.CURRENT))
+		with mock.patch(BUILTIN_OPEN, stream):
+			savefile = game.Savefile()
+			rng, game_object = savefile.load()
+			self.assertEqual(rng.seed, 123)
+			self.assertEqual(game_object, (game.Version.CURRENT, ["game data"]))
+
+			stream.assert_called_once_with(game.Savefile.FILENAME, 'r')
+			handle = stream()
+			handle.read.assert_called_once()
+	@mock.patch('clckwrkbdgr.rogue.game.save_game')
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_save_game_to_file(self, mock_filename, save_game):
+		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+		save_game.side_effect = lambda game_object: (_ for _ in [str(game_object)])
+		stream = mock.mock_open()
+		with mock.patch(BUILTIN_OPEN, stream):
+			savefile = game.Savefile()
+			game_object = "game data"
+			rng = RNG(123)
+			savefile.save(rng, game_object)
+
+			stream.assert_called_once_with(game.Savefile.FILENAME, 'w')
+			handle = stream()
+			handle.write.assert_has_calls([
+				mock.call('{0}\x00'.format(game.Version.CURRENT)),
+				mock.call('123\x00'),
+				mock.call('game data'),
+				])
+	@mock.patch('os.unlink')
+	@mock.patch('os.path.exists', side_effect=[True])
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_unlink_save_file_if_exists(self, mock_filename, os_path_exists, os_unlink):
+		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+		savefile = game.Savefile()
+		savefile.unlink()
+		os_unlink.assert_called_once_with(game.Savefile.FILENAME)
+	@mock.patch('os.unlink')
+	@mock.patch('os.path.exists', side_effect=[False])
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_not_unlink_save_file_if_does_not_exist(self, mock_filename, os_path_exists, os_unlink):
+		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+		savefile = game.Savefile()
+		savefile.unlink()
+		os_unlink.assert_not_called()
 	def should_serialize_and_deserialize_game(self):
 		rng = RNG(0)
 		builder = StrBuilder(rng, Size(20, 10))
