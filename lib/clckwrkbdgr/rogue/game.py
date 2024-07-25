@@ -61,7 +61,22 @@ class Game(object):
 		if dummy:
 			return
 		self.build_new_strata()
-	def update_fov(self):
+	def get_viewport(self):
+		return self.strata.size
+	def get_sprite(self, x, y):
+		if self.player.x == x and self.player.y == y:
+			return '@'
+		if self.exit_pos.x == x and self.exit_pos.y == y:
+			if self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
+				return '>'
+
+		cell = self.strata.cell(x, y)
+		if self.field_of_view.is_visible(x, y) or self.god.vision:
+			return cell.sprite
+		elif cell.visited and cell.remembered:
+			return cell.remembered
+		return None
+	def update_vision(self):
 		for p in self.field_of_view.update(
 				self.player,
 				is_visible=lambda p: self.strata.valid(p) and self.strata.cell(p.x, p.y).passable
@@ -72,13 +87,15 @@ class Game(object):
 			if p == self.exit_pos:
 				self.events.append(p)
 			cell.visited = True
+		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
+			self.remembered_exit = True
 	def build_new_strata(self):
 		builder = build_dungeon(self.rng.choice(self.builders), self.rng, Size(80, 23))
 		self.player = builder.start_pos
 		self.exit_pos = builder.exit_pos
 		self.strata = builder.strata
 		self.remembered_exit = False
-		self.update_fov()
+		self.update_vision()
 	def move(self, direction):
 		shift = self.SHIFT[direction]
 		Log.debug('Shift: {0}'.format(shift))
@@ -93,10 +110,10 @@ class Game(object):
 			return
 		Log.debug('Shift is valid, updating player pos: {0}'.format(self.player))
 		self.player = new_pos
-		self.update_fov()
+		self.update_vision()
 	def jump_to(self, new_pos):
 		self.player = new_pos
-		self.update_fov()
+		self.update_vision()
 	def descend(self):
 		if self.player != self.exit_pos:
 			return
@@ -206,7 +223,7 @@ def main_loop(window): # pragma: no cover -- TODO
 	savefile = Savefile()
 	game = savefile.load()
 	if game is not None:
-		game.update_fov()
+		game.update_vision()
 		Log.debug('Loaded.')
 		Log.debug(repr(game.strata))
 		Log.debug('Player: {0}'.format(game.player))
@@ -221,24 +238,12 @@ def main_loop(window): # pragma: no cover -- TODO
 	while playing:
 		Log.debug('Redrawing interface.')
 		Log.debug('Player at: {0}'.format(game.player))
-		for row in range(game.strata.size.height):
-			for col in range(game.strata.size.width):
+		viewport = game.get_viewport()
+		for row in range(viewport.height):
+			for col in range(viewport.width):
 				Log.debug('Cell {0},{1}'.format(col, row))
-				cell = game.strata.cell(col, row)
-				if game.field_of_view.is_visible(col, row) or game.god.vision:
-					window.addstr(1+row, col, cell.sprite)
-				elif cell.visited and cell.remembered:
-					window.addstr(1+row, col, cell.remembered)
-				else:
-					window.addstr(1+row, col, ' ')
-
-		is_exit_visible = game.field_of_view.is_visible(game.exit_pos.x, game.exit_pos.y)
-		if is_exit_visible:
-			game.remembered_exit = True
-		if is_exit_visible or game.god.vision or game.remembered_exit:
-			window.addstr(1+game.exit_pos.y, game.exit_pos.x, '>')
-
-		window.addstr(1+game.player.y, game.player.x, '@')
+				sprite = game.get_sprite(col, row)
+				window.addstr(1+row, col, sprite or ' ')
 
 		status = []
 		if movement_queue:

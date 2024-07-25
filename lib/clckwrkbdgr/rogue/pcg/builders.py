@@ -524,7 +524,6 @@ class MazeBuilder(Builder):
 		intDone = 0
 		while intDone + 1 < ((layout_size.width + 1) * (layout_size.height + 1)) / 4:
 			expected = ((layout_size.width + 1) * (layout_size.height + 1)) / 4
-			Log.debug("Done {0}/{1} cells:\n{2}".format(intDone, expected, layout.tostring(lambda c:'#' if c else '.')))
 			# Search only for cells that have potential option to expand.
 			potential_exits = 0
 			while not potential_exits:

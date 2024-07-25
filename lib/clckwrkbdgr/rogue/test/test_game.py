@@ -193,6 +193,34 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(path, [
 			Point(x=9, y=6), Point(x=8, y=5), Point(x=7, y=4),
 			])
+	def should_get_visible_surroundings(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				""")
+			_map_size = Size(20, 10)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.get_viewport(), Size(20, 10))
+		self.assertEqual(dungeon.get_sprite(9, 6), '@')
+		self.assertEqual(dungeon.get_sprite(5, 6), '.')
+		self.assertEqual(dungeon.get_sprite(5, 5), '#')
+		self.assertEqual(dungeon.get_sprite(10, 1), None)
+		dungeon.jump_to(Point(11, 2))
+		self.assertEqual(dungeon.get_sprite(9, 6), '.')
+		self.assertEqual(dungeon.get_sprite(5, 6), None)
+		self.assertEqual(dungeon.get_sprite(5, 5), '#')
+		self.assertEqual(dungeon.get_sprite(10, 1), '>')
+		dungeon.jump_to(Point(9, 6))
+		self.assertEqual(dungeon.get_sprite(10, 1), '>')
 	def should_move_player_character(self):
 		class _MockBuilder(StrBuilder):
 			_map_data = textwrap.dedent("""\
@@ -248,6 +276,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
+		self.assertFalse(dungeon.remembered_exit)
 		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
 				####################
 				#    ....#>##  ... #
@@ -261,6 +290,7 @@ class TestDungeon(unittest.TestCase):
 				####################
 				"""))
 		dungeon.move(game.Direction.RIGHT) 
+		self.assertFalse(dungeon.remembered_exit)
 		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
 				####################
 				#    ... #>## .....#
@@ -277,6 +307,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move(game.Direction.UP) 
 		dungeon.move(game.Direction.UP) 
 		dungeon.move(game.Direction.UP) 
+		self.assertTrue(dungeon.remembered_exit)
 		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
 				####################
 				#        #>##      #
@@ -294,7 +325,7 @@ class TestDungeon(unittest.TestCase):
 			_map_data = textwrap.dedent("""\
 				@...#
 				....#
-				....#
+				...>#
 				#####
 				""")
 			_map_size = Size(5, 4)
@@ -310,7 +341,7 @@ class TestDungeon(unittest.TestCase):
 			_map_data = textwrap.dedent("""\
 				#####
 				#.@.#
-				#...#
+				#..>#
 				#####
 				""")
 			_map_size = Size(5, 4)
@@ -326,7 +357,7 @@ class TestDungeon(unittest.TestCase):
 			_map_data = textwrap.dedent("""\
 				######
 				#.@#.#
-				#....#
+				#...>#
 				######
 				""")
 			_map_size = Size(6, 4)
