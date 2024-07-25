@@ -524,22 +524,23 @@ class MazeBuilder(Builder):
 		intDone = 0
 		while intDone + 1 < ((layout_size.width + 1) * (layout_size.height + 1)) / 4:
 			expected = ((layout_size.width + 1) * (layout_size.height + 1)) / 4
-			Log.debug("Done {0}/{1} cells:\n{2}".format(intDone, expected, repr(layout)))
+			Log.debug("Done {0}/{1} cells:\n{2}".format(intDone, expected, layout.tostring(lambda c:'#' if c else '.')))
 			# Search only for cells that have potential option to expand.
 			potential_exits = 0
 			while not potential_exits:
 				# this code is used to make sure the numbers are odd
 				current = Point(
-					self.rng.range((layout_size.width // 2)) * 2,
-					self.rng.range((layout_size.height // 2)) * 2,
+					self.rng.range(((layout_size.width + 1) // 2)) * 2,
+					self.rng.range(((layout_size.height + 1) // 2)) * 2,
 					)
+				Log.debug((current, layout_size))
 				if current.x > 1 and not layout.cell(current.x - 2, current.y):
 					potential_exits += 1
 				if current.y > 1 and not layout.cell(current.x, current.y - 2):
 					potential_exits += 1
-				if current.x < layout_size.width - 2 and not layout.cell(current.x + 2, current.y):
+				if current.x <= layout_size.width - 2 and not layout.cell(current.x + 2, current.y):
 					potential_exits += 1
-				if current.y < layout_size.height - 2 and not layout.cell(current.x, current.y + 2):
+				if current.y <= layout_size.height - 2 and not layout.cell(current.x, current.y + 2):
 					potential_exits += 1
 			# first one is free!
 			if intDone == 0:
@@ -576,6 +577,7 @@ class MazeBuilder(Builder):
 					# increment paths created
 					intDone = intDone + 1
 					break
+		Log.debug("Done {0}/{1} cells:\n{2}".format(intDone, expected, layout.tostring(lambda c:'#' if c else '.')))
 		return layout
 	def _fill_maze(self, layout):
 		self.strata = Matrix(self.size, 'wall')

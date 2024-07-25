@@ -209,6 +209,12 @@ class TestMapAlgorithms(unittest.TestCase):
 				matrix.set_cell(p.x, p.y, '%')
 			else:
 				matrix.set_cell(p.x, p.y, '.')
+		self.assertTrue(fov.is_visible(11, 2))
+		self.assertTrue(fov.is_visible(12, 2))
+		self.assertTrue(fov.is_visible(12, 2))
+		self.assertFalse(fov.is_visible(14, 3))
+		self.assertTrue(fov.is_visible(14, 2))
+		self.assertFalse(fov.is_visible(15, 2))
 		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
 				#########%%%%%######
 				#        .....     #

@@ -31,8 +31,19 @@ class StrBuilder(builders.Builder):
 	Set char to '@' to indicate start pos.
 	Set char to '>' to indicate exit pos.
 	"""
+	def __init__(self, rng, map_size):
+		if hasattr(self, '_map_size'):
+			map_size = self._map_size
+		super(StrBuilder, self).__init__(rng, map_size)
 	def _build(self):
 		self._map_data = self._map_data.splitlines()
+
+		self.add_cell_type(None, game.Cell, ' ', False)
+		self.add_cell_type('#', MockCell, "#", False, remembered='#')
+		self.add_cell_type('.', MockCell, ".", True)
+		self.add_cell_type('@', MockCell, ".", True, visited=True)
+		self.add_cell_type('>', MockCell, ".", True)
+
 		for x in range(self.size.width):
 			for y in range(self.size.height):
 				self.strata.set_cell(x, y, self._map_data[y][x])
@@ -80,6 +91,21 @@ class MockBuilder(builders.Builder):
 		self.strata.set_cell(room_pos.x + door_pos, room_pos.y, 'door')
 
 class TestDungeon(unittest.TestCase):
+	def _str_dungeon(self, dungeon, with_fov=False):
+		result = ""
+		for y in range(dungeon.strata.size.height):
+			for x in range(dungeon.strata.size.width):
+				if dungeon.player.x == x and dungeon.player.y == y:
+					result += "@"
+				elif dungeon.exit_pos.x == x and dungeon.exit_pos.y == y:
+					result += ">"
+				else:
+					if with_fov and not dungeon.field_of_view.is_visible(x, y):
+						result += dungeon.strata.cell(x, y).remembered or ' '
+					else:
+						result += dungeon.strata.cell(x, y).sprite
+			result += "\n"
+		return result
 	def should_create_new_dungeon(self):
 		dungeon = game.Game(rng_seed=123)
 		self.assertEqual(dungeon.player, Point(17, 21))
@@ -156,8 +182,8 @@ class TestDungeon(unittest.TestCase):
 				####################
 				""")
 		builder.add_cell_type(None, game.Cell, ' ', False)
-		builder.add_cell_type('#', MockCell, "#", False, remembered='+')
-		builder.add_cell_type('$', MockCell, "$", False, remembered='+', visited=True)
+		builder.add_cell_type('#', MockCell, "#", False, remembered='#')
+		builder.add_cell_type('$', MockCell, "$", False, remembered='#', visited=True)
 		builder.add_cell_type('.', MockCell, ".", True)
 		builder.add_cell_type('!', MockCell, ".", True, visited=True)
 		builder.add_cell_type('@', MockCell, ".", True, visited=True)
@@ -167,6 +193,200 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(path, [
 			Point(x=9, y=6), Point(x=8, y=5), Point(x=7, y=4),
 			])
+	def should_move_player_character(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				""")
+			_map_size = Size(20, 10)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(9, 6))
+
+		dungeon.move(game.Direction.UP), 
+		self.assertEqual(dungeon.player, Point(9, 5))
+		dungeon.move(game.Direction.RIGHT), 
+		self.assertEqual(dungeon.player, Point(10, 5))
+		dungeon.move(game.Direction.DOWN), 
+		self.assertEqual(dungeon.player, Point(10, 6))
+		dungeon.move(game.Direction.LEFT), 
+		self.assertEqual(dungeon.player, Point(9, 6))
+
+		dungeon.move(game.Direction.UP_LEFT), 
+		self.assertEqual(dungeon.player, Point(8, 5))
+		dungeon.move(game.Direction.DOWN_LEFT), 
+		self.assertEqual(dungeon.player, Point(7, 6))
+		dungeon.move(game.Direction.DOWN_RIGHT), 
+		self.assertEqual(dungeon.player, Point(8, 7))
+		dungeon.move(game.Direction.UP_RIGHT), 
+		self.assertEqual(dungeon.player, Point(9, 6))
+
+		self.assertEqual(self._str_dungeon(dungeon), _MockBuilder._map_data)
+	def should_update_fov_after_movement(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				""")
+			_map_size = Size(20, 10)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(9, 6))
+
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				####################
+				#    ....#>##  ... #
+				#     ...# .# .....#
+				#    ##..##.#......#
+				#    #.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				"""))
+		dungeon.move(game.Direction.RIGHT) 
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				####################
+				#    ... #>## .....#
+				#     ...# .#......#
+				#    ##..##.#......#
+				#    #.............#
+				#    #.............#
+				#.........@........#
+				#..................#
+				#..................#
+				####################
+				"""))
+		dungeon.move(game.Direction.UP_RIGHT) 
+		dungeon.move(game.Direction.UP) 
+		dungeon.move(game.Direction.UP) 
+		dungeon.move(game.Direction.UP) 
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				####################
+				#        #>##      #
+				#        #.@#      #
+				#    ##  ##.#      #
+				#    #    ...      #
+				#    #    ...      #
+				#        .....     #
+				#        .....     #
+				#       .......    #
+				####################
+				"""))
+	def should_not_move_player_into_the_void(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				@...#
+				....#
+				....#
+				#####
+				""")
+			_map_size = Size(5, 4)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(0, 0))
+
+		dungeon.move(game.Direction.UP), 
+		self.assertEqual(dungeon.player, Point(0, 0))
+		dungeon.move(game.Direction.LEFT), 
+		self.assertEqual(dungeon.player, Point(0, 0))
+	def should_not_move_player_into_a_wall(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				#####
+				#.@.#
+				#...#
+				#####
+				""")
+			_map_size = Size(5, 4)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(2, 1))
+
+		dungeon.move(game.Direction.UP), 
+		self.assertEqual(dungeon.player, Point(2, 1))
+		dungeon.move(game.Direction.LEFT), 
+		self.assertEqual(dungeon.player, Point(1, 1))
+	def should_move_player_through_a_wall_in_noclip_mode(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				######
+				#.@#.#
+				#....#
+				######
+				""")
+			_map_size = Size(6, 4)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(2, 1))
+
+		dungeon.god.noclip = True
+		dungeon.move(game.Direction.RIGHT), 
+		self.assertEqual(dungeon.player, Point(3, 1))
+		dungeon.move(game.Direction.RIGHT), 
+		self.assertEqual(dungeon.player, Point(4, 1))
+	def should_descend_to_new_map(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				######
+				#.@>.#
+				#....#
+				######
+				""")
+			_map_size = Size(6, 4)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(2, 1))
+
+		dungeon.descend()
+		self.assertEqual(dungeon.player, Point(2, 1))
+		dungeon.move(game.Direction.RIGHT), 
+		dungeon.descend()
+		self.assertEqual(dungeon.player, Point(2, 1))
+		self.assertEqual(self._str_dungeon(dungeon), _MockBuilder._map_data)
+	def should_directly_jump_to_new_position(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				""")
+			_map_size = Size(20, 10)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(9, 6))
+
+		dungeon.jump_to(Point(11, 2))
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				####################
+				#        #>##      #
+				#        #.@#      #
+				#    ##  ##.#      #
+				#    #    ...      #
+				#    #    ...      #
+				#        .....     #
+				#        .....     #
+				#       .......    #
+				####################
+				"""))
 
 class TestSerialization(unittest.TestCase):
 	@mock.patch('os.path.exists', side_effect=[False])
@@ -244,8 +464,8 @@ class TestSerialization(unittest.TestCase):
 				####################
 				""")
 		builder.add_cell_type(None, game.Cell, ' ', False)
-		builder.add_cell_type('#', MockCell, "#", False, remembered='+')
-		builder.add_cell_type('$', MockCell, "$", False, remembered='+', visited=True)
+		builder.add_cell_type('#', MockCell, "#", False, remembered='#')
+		builder.add_cell_type('$', MockCell, "$", False, remembered='#', visited=True)
 		builder.add_cell_type('.', MockCell, ".", True)
 		builder.add_cell_type('!', MockCell, ".", True, visited=True)
 		builder.add_cell_type('@', MockCell, ".", True, visited=True)
@@ -259,34 +479,16 @@ class TestSerialization(unittest.TestCase):
 		dump = list(game.save_game(dungeon))
 		self.assertEqual(dump, [
 			9, 6, 10, 1, 0, 20, 10,
-			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
-			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
-			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
-			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
-			'.', 1, None, 0, '#', 0, '+', 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
-			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0,
-			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0,
-			'.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
-			'.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
-			'.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 1, '$', 0, '+', 1, '$', 0, '+', 1,
-			'.', 1, None, 1, '$', 0, '+', 1, '.', 1, None, 1, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
-			'.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
-			'#', 0, '+', 0, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
-			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0,
-			'#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '$', 0, '+', 1,
-			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
-			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0,
-			'+', 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
-			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
-			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0,
-			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
-			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 0,
-			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '.', 1, None, 0, '.', 1, None, 0,
-			'.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 0, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1,
-			'.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 1, '.', 1, None, 0, '.', 1, None, 0,
-			'.', 1, None, 0, '.', 1, None, 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0,
-			'+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
-			'#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0, '#', 0, '+', 0,
+			'#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0,
+			'#',0,'#',0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',0, '.',1,None,0, '#',0,'#',0, '#',0,'#',1, '.',1,None,0, '.',1,None,0, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,0, '#',0,'#',0,
+			'#',0,'#',0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',0, '.',1,None,0, '.',1,None,1, '#',0,'#',1, '.',1,None,0, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',0,
+			'#',0,'#',0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '#',0,'#',1, '#',0,'#',1, '.',1,None,1, '.',1,None,1, '$',0,'#',1, '$',0,'#',1, '.',1,None,1, '$',0,'#',1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',0,
+			'#',0,'#',0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '.',1,None,0, '#',0,'#',1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',0,
+			'#',0,'#',1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '$',0,'#',1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',0,
+			'#',0,'#',1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',1,
+			'#',0,'#',1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',0,
+			'#',0,'#',1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '.',1,None,1, '#',0,'#',0,
+			'#',0,'#',0, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0,
 			])
 		dump = list(map(str, dump))
 		restored_dungeon = game.Game(dummy=True)

@@ -20,6 +20,18 @@ class Cell(object):
 		self.remembered = remembered
 		self.visited = False
 
+class Direction(Enum):
+	""" NONE
+	UP_LEFT
+	UP
+	UP_RIGHT
+	LEFT
+	RIGHT
+	DOWN_LEFT
+	DOWN
+	DOWN_RIGHT
+	"""
+
 class Game(object):
 	BUILDERS = [
 			pcg.builders.BSPDungeon,
@@ -29,18 +41,66 @@ class Game(object):
 			pcg.builders.CaveBuilder,
 			pcg.builders.MazeBuilder,
 			]
+	SHIFT = {
+			Direction.LEFT : Point(-1,  0),
+			Direction.DOWN : Point( 0, +1),
+			Direction.UP : Point( 0, -1),
+			Direction.RIGHT : Point(+1,  0),
+			Direction.UP_LEFT : Point(-1, -1),
+			Direction.UP_RIGHT : Point(+1, -1),
+			Direction.DOWN_LEFT : Point(-1, +1),
+			Direction.DOWN_RIGHT : Point(+1, +1),
+			}
 
-	def __init__(self, rng_seed=None, dummy=False):
+	def __init__(self, rng_seed=None, dummy=False, builders=None):
+		self.builders = builders or self.BUILDERS
 		self.rng = RNG(rng_seed)
+		self.god = God()
+		self.field_of_view = math.FieldOfView(10)
+		self.events = []
 		if dummy:
 			return
 		self.build_new_strata()
+	def update_fov(self):
+		for p in self.field_of_view.update(
+				self.player,
+				is_visible=lambda p: self.strata.valid(p) and self.strata.cell(p.x, p.y).passable
+				):
+			cell = self.strata.cell(p.x, p.y)
+			if cell.visited:
+				continue
+			if p == self.exit_pos:
+				self.events.append(p)
+			cell.visited = True
 	def build_new_strata(self):
-		builder = build_dungeon(self.rng.choice(Game.BUILDERS), self.rng, Size(80, 23))
+		builder = build_dungeon(self.rng.choice(self.builders), self.rng, Size(80, 23))
 		self.player = builder.start_pos
 		self.exit_pos = builder.exit_pos
 		self.strata = builder.strata
 		self.remembered_exit = False
+		self.update_fov()
+	def move(self, direction):
+		shift = self.SHIFT[direction]
+		Log.debug('Shift: {0}'.format(shift))
+		new_pos = self.player + shift
+		if not self.strata.valid(new_pos):
+			return
+		if self.god.noclip:
+			passable = True
+		else:
+			passable = self.strata.cell(new_pos.x, new_pos.y).passable
+		if not passable:
+			return
+		Log.debug('Shift is valid, updating player pos: {0}'.format(self.player))
+		self.player = new_pos
+		self.update_fov()
+	def jump_to(self, new_pos):
+		self.player = new_pos
+		self.update_fov()
+	def descend(self):
+		if self.player != self.exit_pos:
+			return
+		self.build_new_strata()
 
 def save_game(game):
 	dump_str = lambda _value: _value if _value is None else _value
@@ -146,51 +206,36 @@ def main_loop(window): # pragma: no cover -- TODO
 	savefile = Savefile()
 	game = savefile.load()
 	if game is not None:
+		game.update_fov()
 		Log.debug('Loaded.')
 		Log.debug(repr(game.strata))
 		Log.debug('Player: {0}'.format(game.player))
 	else:
 		game = Game()
-	field_of_view = math.FieldOfView(10)
 	playing = True
 	aim = None
 	autoexploring = False
 	movement_queue = []
-	god = God()
 	Log.debug('Starting playing...')
 	alive = True
 	while playing:
-		new_objects_in_fov = []
-		visible_cells = set()
-		for p in field_of_view.update(
-				game.player,
-				is_visible=lambda p: game.strata.valid(p) and game.strata.cell(p.x, p.y).passable
-				):
-			cell = game.strata.cell(p.x, p.y)
-			if not cell.visited:
-				if p == game.exit_pos:
-					new_objects_in_fov.append(p)
-			cell.visited = True
-			visible_cells.add(p)
-
 		Log.debug('Redrawing interface.')
 		Log.debug('Player at: {0}'.format(game.player))
 		for row in range(game.strata.size.height):
 			for col in range(game.strata.size.width):
 				Log.debug('Cell {0},{1}'.format(col, row))
 				cell = game.strata.cell(col, row)
-				is_visible = Point(col, row) in visible_cells
-				if is_visible or god.vision:
+				if game.field_of_view.is_visible(col, row) or game.god.vision:
 					window.addstr(1+row, col, cell.sprite)
 				elif cell.visited and cell.remembered:
 					window.addstr(1+row, col, cell.remembered)
 				else:
 					window.addstr(1+row, col, ' ')
 
-		is_exit_visible = game.exit_pos in visible_cells
+		is_exit_visible = game.field_of_view.is_visible(game.exit_pos.x, game.exit_pos.y)
 		if is_exit_visible:
 			game.remembered_exit = True
-		if is_exit_visible or god.vision or game.remembered_exit:
+		if is_exit_visible or game.god.vision or game.remembered_exit:
 			window.addstr(1+game.exit_pos.y, game.exit_pos.x, '>')
 
 		window.addstr(1+game.player.y, game.player.x, '@')
@@ -198,15 +243,20 @@ def main_loop(window): # pragma: no cover -- TODO
 		status = []
 		if movement_queue:
 			status.append('[auto]')
-		if god.vision:
+		if game.god.vision:
 			status.append('[vis]')
-		if god.noclip:
+		if game.god.noclip:
 			status.append('[clip]')
 		window.addstr(24, 0, (' '.join(status) + " " * 80)[:80])
 
 		if aim:
 			window.move(1+aim.y, aim.x)
 		window.refresh()
+
+		new_objects_in_fov = False
+		while game.events:
+			event = game.events.pop()
+			new_objects_in_fov = True
 
 		if movement_queue:
 			if new_objects_in_fov:
@@ -218,7 +268,7 @@ def main_loop(window): # pragma: no cover -- TODO
 				continue
 			Log.debug('Performing queued actions.')
 			new_pos = movement_queue.pop(0)
-			game.player = new_pos
+			game.jump_to(new_pos)
 			if movement_queue:
 				window.nodelay(1)
 				window.timeout(30)
@@ -274,20 +324,20 @@ def main_loop(window): # pragma: no cover -- TODO
 		elif control == ord('~'):
 			control = window.getch()
 			if control == ord('v'):
-				god.vision = not god.vision
+				game.god.vision = not game.god.vision
 			elif control == ord('c'):
-				god.noclip = not god.noclip
+				game.god.noclip = not game.god.noclip
 		elif control == ord('Q'):
 			Log.debug('Suicide.')
 			alive = False
 			playing = False
 			break
 		elif not aim and control == ord('>'):
-			if game.player == game.exit_pos:
-				game.make_new_strata()
+			game.descend()
 		elif chr(control) in 'hjklyubn':
 			Log.debug('Moving.')
-			shift = {
+			if aim:
+				shift = {
 					'h' : Point(-1,  0),
 					'j' : Point( 0, +1),
 					'k' : Point( 0, -1),
@@ -297,21 +347,21 @@ def main_loop(window): # pragma: no cover -- TODO
 					'b' : Point(-1, +1),
 					'n' : Point(+1, +1),
 					}[chr(control)]
-			Log.debug('Shift: {0}'.format(shift))
-			if aim:
 				new_pos = aim + shift
 				if game.strata.valid(new_pos):
 					aim = new_pos
 			else:
-				new_pos = game.player + shift
-				if game.strata.valid(new_pos):
-					if god.noclip:
-						passable = True
-					else:
-						passable = game.strata.cell(new_pos.x, new_pos.y).passable
-					if passable:
-						Log.debug('Shift is valid, updating player pos: {0}'.format(game.player))
-						game.player = new_pos
+				direction = {
+					'h' : Direction.LEFT,
+					'j' : Direction.DOWN,
+					'k' : Direction.UP,
+					'l' : Direction.RIGHT,
+					'y' : Direction.UP_LEFT,
+					'u' : Direction.UP_RIGHT,
+					'b' : Direction.DOWN_LEFT,
+					'n' : Direction.DOWN_RIGHT,
+					}[chr(control)]
+				game.move(direction)
 	if alive:
 		savefile.save(game)
 	else:

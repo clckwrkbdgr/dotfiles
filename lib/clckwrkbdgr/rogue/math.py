@@ -133,27 +133,34 @@ class FieldOfView:
 	def __init__(self, radius):
 		self.sight = Matrix(Size(1 + radius * 2, 1 + radius * 2), False)
 		self.center = Point(0, 0)
+		self.half_size = Size(self.sight.size.width // 2, self.sight.size.height // 2)
+	def is_visible(self, x, y):
+		fov_pos = Point(self.half_size.width + x - self.center.x,
+				  self.half_size.height + y - self.center.y,
+				  )
+		if not self.sight.valid(fov_pos):
+			return False
+		return self.sight.cell(fov_pos.x, fov_pos.y)
 	def update(self, new_center, is_visible):
 		self.center = new_center
 		Log.debug('Recalculating Field Of View.')
 		self.sight.clear(False)
 		for pos in self.sight.size:
 			Log.debug('FOV pos: {0}'.format(pos))
-			half_size = Size(self.sight.size.width // 2, self.sight.size.height // 2)
 			rel_pos = Point(
-					half_size.width - pos.x,
-					half_size.height - pos.y,
+					self.half_size.width - pos.x,
+					self.half_size.height - pos.y,
 					)
 			Log.debug('FOV rel pos: {0}'.format(rel_pos))
-			if (float(rel_pos.x) / half_size.width) ** 2 + (float(rel_pos.y) / half_size.height) ** 2 > 1:
+			if (float(rel_pos.x) / self.half_size.width) ** 2 + (float(rel_pos.y) / self.half_size.height) ** 2 > 1:
 				continue
 			Log.debug('Is inside FOV ellipse.')
 			Log.debug('Traversing line of sight: [0;0] -> {0}'.format(rel_pos))
 			for inner_line_pos in bresenham(Point(0, 0), rel_pos):
 				real_world_pos = self.center + inner_line_pos
 				Log.debug('Line pos: {0}, real world pos: {1}'.format(inner_line_pos, real_world_pos))
-				fov_pos = Point(half_size.width + inner_line_pos.x,
-						half_size.height + inner_line_pos.y,
+				fov_pos = Point(self.half_size.width + inner_line_pos.x,
+						self.half_size.height + inner_line_pos.y,
 						)
 				Log.debug('Setting as visible: {0}'.format(fov_pos))
 				if not self.sight.cell(fov_pos.x, fov_pos.y):
