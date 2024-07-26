@@ -33,6 +33,8 @@ class Direction(Enum):
 	"""
 
 class Game(object):
+	class AutoMovementStopped(BaseException): pass
+
 	BUILDERS = [
 			pcg.builders.BSPDungeon,
 			pcg.builders.CityBuilder,
@@ -57,7 +59,9 @@ class Game(object):
 		self.rng = RNG(rng_seed)
 		self.god = God()
 		self.field_of_view = math.FieldOfView(10)
-		self.events = []
+		self.need_to_stop_automovement = False
+		self.autoexploring = False
+		self.movement_queue = []
 		if dummy:
 			return
 		self.build_new_strata()
@@ -85,7 +89,7 @@ class Game(object):
 			if cell.visited:
 				continue
 			if p == self.exit_pos:
-				self.events.append(p)
+				self.need_to_stop_automovement = True
 			cell.visited = True
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 			self.remembered_exit = True
@@ -118,6 +122,44 @@ class Game(object):
 		if self.player != self.exit_pos:
 			return
 		self.build_new_strata()
+	def walk_to(self, dest):
+		path = math.find_path(
+				self.strata, self.player,
+				is_passable=lambda p: self.strata.cell(p.x, p.y).passable and self.strata.cell(p.x, p.y).visited,
+				find_target=lambda wave: dest if dest in wave else None,
+				)
+		if path:
+			self.movement_queue.extend(path)
+	def start_autoexploring(self):
+		path = autoexplore(self.player, self.strata)
+		if not path:
+			return False
+		self.movement_queue.extend(path)
+		self.autoexploring = True
+		return True
+	def perform_automovement(self):
+		if not self.movement_queue:
+			return False
+		if self.need_to_stop_automovement:
+			Log.debug('New objects in FOV, aborting auto-moving mode.')
+			self.need_to_stop_automovement = False
+			return self.stop_automovement()
+		Log.debug('Performing queued actions.')
+		new_pos = self.movement_queue.pop(0)
+		self.jump_to(new_pos)
+		if self.movement_queue:
+			return True
+		if self.autoexploring:
+			if not self.start_autoexploring():
+				self.autoexploring = False
+				raise Game.AutoMovementStopped()
+		else:
+			raise Game.AutoMovementStopped()
+		return True
+	def stop_automovement(self):
+		self.movement_queue[:] = []
+		self.autoexploring = False
+		raise Game.AutoMovementStopped()
 
 def save_game(game):
 	dump_str = lambda _value: _value if _value is None else _value
@@ -231,8 +273,6 @@ def main_loop(window): # pragma: no cover -- TODO
 		game = Game()
 	playing = True
 	aim = None
-	autoexploring = False
-	movement_queue = []
 	Log.debug('Starting playing...')
 	alive = True
 	while playing:
@@ -246,7 +286,7 @@ def main_loop(window): # pragma: no cover -- TODO
 				window.addstr(1+row, col, sprite or ' ')
 
 		status = []
-		if movement_queue:
+		if game.movement_queue:
 			status.append('[auto]')
 		if game.god.vision:
 			status.append('[vis]')
@@ -258,43 +298,17 @@ def main_loop(window): # pragma: no cover -- TODO
 			window.move(1+aim.y, aim.x)
 		window.refresh()
 
-		new_objects_in_fov = False
-		while game.events:
-			event = game.events.pop()
-			new_objects_in_fov = True
-
-		if movement_queue:
-			if new_objects_in_fov:
-				Log.debug('New objects in FOV, aborting auto-moving mode.')
-				movement_queue.clear()
-				window.timeout(-1)
-				window.nodelay(0)
-				autoexploring = False
-				continue
-			Log.debug('Performing queued actions.')
-			new_pos = movement_queue.pop(0)
-			game.jump_to(new_pos)
-			if movement_queue:
+		try:
+			if game.perform_automovement():
 				window.nodelay(1)
 				window.timeout(30)
 				control = window.getch()
 				if control != -1:
-					movement_queue.clear()
-					window.timeout(-1)
-					window.nodelay(0)
-					autoexploring = False
-			else:
-				if autoexploring:
-					path = autoexplore(game.player, game.strata)
-					if path:
-						movement_queue.extend(path)
-					else:
-						window.timeout(-1)
-						window.nodelay(0)
-						autoexploring = False
-				else:
-					window.timeout(-1)
-					window.nodelay(0)
+					game.stop_automovement()
+				continue
+		except Game.AutoMovementStopped:
+			window.nodelay(0)
+			window.timeout(-1)
 			continue
 
 		Log.debug('Performing user actions.')
@@ -312,20 +326,11 @@ def main_loop(window): # pragma: no cover -- TODO
 				aim = game.player
 				curses.curs_set(1)
 		elif aim and control == ord('.'):
-			path = math.find_path(
-					game.strata, game.player,
-					is_passable=lambda p: strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited,
-					find_target=lambda wave: aim if aim in wave else None,
-					)
-			if path:
-				movement_queue.extend(path)
+			game.walk_to(aim)
 			aim = None
 			curses.curs_set(0)
 		elif control == ord('o'):
-			path = autoexplore(game.player, game.strata)
-			if path:
-				movement_queue.extend(path)
-				autoexploring = True
+			game.start_autoexploring()
 		elif control == ord('~'):
 			control = window.getch()
 			if control == ord('v'):

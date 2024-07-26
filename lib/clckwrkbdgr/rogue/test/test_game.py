@@ -418,6 +418,97 @@ class TestDungeon(unittest.TestCase):
 				#       .......    #
 				####################
 				"""))
+	def should_auto_walk_to_position(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				""")
+			_map_size = Size(20, 10)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(9, 6))
+
+		self.assertFalse(dungeon.perform_automovement())
+		dungeon.walk_to(Point(11, 2))
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement())
+		with self.assertRaises(dungeon.AutoMovementStopped):
+			dungeon.perform_automovement() # Notices stairs and stops.
+		self.assertFalse(dungeon.perform_automovement())
+
+		dungeon.walk_to(Point(11, 2))
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement())
+		with self.assertRaises(dungeon.AutoMovementStopped):
+			dungeon.perform_automovement() # You have reached your destination.
+
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				####################
+				#        #>##      #
+				#        #.@#      #
+				#    ##  ##.#      #
+				#    #    ...      #
+				#    #    ...      #
+				#        .....     #
+				#        .....     #
+				#       .......    #
+				####################
+				"""))
+	def should_autoexplore(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				""")
+			_map_size = Size(20, 10)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(9, 6))
+
+		self.assertFalse(dungeon.perform_automovement())
+		self.assertTrue(dungeon.start_autoexploring())
+		for _ in range(15):
+			self.assertTrue(dungeon.perform_automovement())
+		with self.assertRaises(dungeon.AutoMovementStopped):
+			dungeon.perform_automovement() # Notices stairs and stops.
+		self.assertFalse(dungeon.perform_automovement())
+
+		self.assertTrue(dungeon.start_autoexploring())
+		for _ in range(7):
+			self.assertTrue(dungeon.perform_automovement())
+		with self.assertRaises(dungeon.AutoMovementStopped):
+			dungeon.perform_automovement() # Explored everything.
+
+		self.assertFalse(dungeon.start_autoexploring()) # And Jesus wept.
+
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				####################
+				#        #>##......#
+				#        #  #......#
+				#    ##  ## #@.....#
+				#    #     ........#
+				#    #   ..........#
+				#      ............#
+				#    ..............#
+				#    ..............#
+				####################
+				"""))
 
 class TestSerialization(unittest.TestCase):
 	@mock.patch('os.path.exists', side_effect=[False])
