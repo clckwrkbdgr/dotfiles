@@ -13,6 +13,7 @@ from ..pcg._base import RNG
 from ..pcg import builders
 from .. import pcg
 from .. import game
+from .. import ui
 
 BUILTIN_OPEN = 'builtins.open' if sys.version_info[0] >= 3 else '__builtin__.open'
 
@@ -90,6 +91,26 @@ class MockBuilder(builders.Builder):
 		door_pos = self.rng.range(1, 4)
 		self.strata.set_cell(room_pos.x + door_pos, room_pos.y, 'door')
 
+class MockUI(ui.UI):
+	def __init__(self, user_actions, interrupts):
+		self.events = []
+		self.user_actions = list(user_actions)
+		self.interrupts = interrupts
+	def __enter__(self): # pragma: no cover
+		self.events.append('__enter__')
+		return self
+	def __exit__(self, *targs): # pragma: no cover
+		self.events.append('__exit__')
+		pass
+	def redraw(self, game): # pragma: no cover
+		self.events.append('redraw')
+	def user_interrupted(self): # pragma: no cover
+		self.events.append('user_interrupted')
+		return self.interrupts.pop(0)
+	def user_action(self, game): # pragma: no cover
+		self.events.append('user_action')
+		return self.user_actions.pop(0)
+
 class TestDungeon(unittest.TestCase):
 	def _str_dungeon(self, dungeon, with_fov=False):
 		result = ""
@@ -166,6 +187,91 @@ class TestDungeon(unittest.TestCase):
 				####################
 				""")
 		self.assertEqual(builder.strata.tostring(lambda c: c.sprite), expected)
+	def should_run_main_loop(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				""")
+			_map_size = Size(20, 10)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		mock_ui = MockUI(user_actions=[
+			(ui.Action.MOVE, game.Direction.UP),
+			(ui.Action.MOVE, game.Direction.DOWN),
+			(ui.Action.DESCEND, None),
+			(ui.Action.WALK_TO, Point(11, 2)),
+			(ui.Action.NONE, None),
+			(ui.Action.AUTOEXPLORE, None),
+			(ui.Action.AUTOEXPLORE, None),
+			(ui.Action.GOD_TOGGLE_VISION, None),
+			(ui.Action.GOD_TOGGLE_NOCLIP, None),
+			(ui.Action.EXIT, None),
+			], interrupts=[False] * 3 + [False] * 10 + [True] + [False] * 5,
+		)
+		with mock_ui:
+			dungeon.main_loop(mock_ui)
+		self.maxDiff = None
+		self.assertEqual(mock_ui.events, [
+			'__enter__',
+			] + [ # MOVE MOVE DESCEND WALK_TO
+			'redraw',
+			'user_action',
+			] * 4 + [ # walking...
+			'redraw',
+			'user_interrupted',
+			] * 3 + ['redraw'] + [ # NONE AUTOEXPLORE
+			'redraw',
+			'user_action',
+			] * 2 + [ # exploring...
+			'redraw',
+			'user_interrupted',
+			] * 11 + ['redraw', 'user_action'] + [ # AUTOEXPLORE
+			'redraw',
+			'user_interrupted',
+			] * 5 + ['redraw'] + [ # GOD_TOGGLE_* EXIT
+			'redraw',
+			'user_action',
+			] * 3 + [
+			'__exit__',
+			])
+	def should_suicide_out_of_main_loop(self):
+		class _MockBuilder(StrBuilder):
+			_map_data = textwrap.dedent("""\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				""")
+			_map_size = Size(20, 10)
+		dungeon = game.Game(rng_seed=0, builders=[_MockBuilder])
+		mock_ui = MockUI(user_actions=[
+			(ui.Action.SUICIDE, None),
+			], interrupts=[],
+		)
+		with mock_ui:
+			dungeon.main_loop(mock_ui)
+		self.assertFalse(dungeon.alive)
+		self.maxDiff = None
+		self.assertEqual(mock_ui.events, [
+			'__enter__',
+			'redraw',
+			'user_action',
+			'__exit__',
+			])
 	def should_autoexplore_map(self):
 		rng = RNG(0)
 		builder = StrBuilder(rng, Size(20, 10))
@@ -623,3 +729,40 @@ class TestSerialization(unittest.TestCase):
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).remembered, restored_dungeon.strata.cell(pos.x, pos.y).remembered, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
+
+class TestMain(unittest.TestCase):
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile')
+	@mock.patch('clckwrkbdgr.rogue.ui.auto_ui')
+	@mock.patch('clckwrkbdgr.rogue.game.Game')
+	def should_run_new_game(self, mock_game, mock_ui, mock_savefile):
+		mock_savefile.return_value.load.return_value = None
+		game.run()
+		mock_savefile.assert_called_once_with()
+		mock_savefile.return_value.load.assert_called_once_with()
+		mock_game.return_value.update_vision.assert_not_called()
+		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
+		mock_savefile.return_value.save.assert_called_once_with(mock_game.return_value)
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile')
+	@mock.patch('clckwrkbdgr.rogue.ui.auto_ui')
+	@mock.patch('clckwrkbdgr.rogue.game.Game')
+	def should_load_game(self, mock_game, mock_ui, mock_savefile):
+		mock_savefile.return_value.load.return_value = mock_game.return_value
+		game.run()
+		mock_savefile.assert_called_once_with()
+		mock_savefile.return_value.load.assert_called_once_with()
+		mock_game.return_value.update_vision.assert_called_once_with()
+		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
+		mock_savefile.return_value.save.assert_called_once_with(mock_game.return_value)
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile')
+	@mock.patch('clckwrkbdgr.rogue.ui.auto_ui')
+	@mock.patch('clckwrkbdgr.rogue.game.Game')
+	def should_abandon_game(self, mock_game, mock_ui, mock_savefile):
+		mock_savefile.return_value.load.return_value = mock_game.return_value
+		mock_game.return_value.alive = False
+		game.run()
+		mock_savefile.assert_called_once_with()
+		mock_savefile.return_value.load.assert_called_once_with()
+		mock_game.return_value.update_vision.assert_called_once_with()
+		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
+		mock_savefile.return_value.save.assert_not_called()
+		mock_savefile.return_value.unlink.assert_called_once_with()

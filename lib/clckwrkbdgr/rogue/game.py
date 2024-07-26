@@ -1,12 +1,12 @@
 import os
 from collections import namedtuple
-import curses
 from . import pcg
 from .pcg import RNG
 from . import math
 from .utils import Enum
 from .math import Point, Matrix, Size
 from .messages import Log
+from .ui import Action
 
 class Version(Enum):
 	""" INITIAL
@@ -62,9 +62,44 @@ class Game(object):
 		self.need_to_stop_automovement = False
 		self.autoexploring = False
 		self.movement_queue = []
+		self.alive = True
 		if dummy:
 			return
 		self.build_new_strata()
+	def main_loop(self, ui):
+		playing = True
+		Log.debug('Starting playing...')
+		while playing:
+			ui.redraw(self)
+
+			try:
+				if self.perform_automovement():
+					if ui.user_interrupted():
+						self.stop_automovement()
+					continue
+			except Game.AutoMovementStopped:
+				continue
+
+			action, action_data = ui.user_action(self)
+			if action == Action.NONE:
+				pass
+			elif action == Action.EXIT:
+				playing = False
+			elif action == Action.SUICIDE:
+				self.alive = False
+				playing = False
+			elif action == Action.WALK_TO:
+				self.walk_to(action_data)
+			elif action == Action.AUTOEXPLORE:
+				self.start_autoexploring()
+			elif action == Action.GOD_TOGGLE_VISION:
+				self.god.vision = not self.god.vision
+			elif action == Action.GOD_TOGGLE_NOCLIP:
+				self.god.noclip = not self.god.noclip
+			elif action == Action.DESCEND:
+				self.descend()
+			elif action == Action.MOVE:
+				self.move(action_data)
 	def get_viewport(self):
 		return self.strata.size
 	def get_sprite(self, x, y):
@@ -200,7 +235,7 @@ def load_game(game, version, data):
 	game.strata = strata
 	game.remembered_exit = remembered_exit
 
-class God: # pragma: no cover -- TODO
+class God:
 	def __init__(self):
 		self.vision = False
 		self.noclip = False
@@ -260,8 +295,7 @@ class Savefile:
 			return
 		os.unlink(self.FILENAME)
 
-def main_loop(window): # pragma: no cover -- TODO
-	curses.curs_set(0)
+def run():
 	savefile = Savefile()
 	game = savefile.load()
 	if game is not None:
@@ -271,111 +305,10 @@ def main_loop(window): # pragma: no cover -- TODO
 		Log.debug('Player: {0}'.format(game.player))
 	else:
 		game = Game()
-	playing = True
-	aim = None
-	Log.debug('Starting playing...')
-	alive = True
-	while playing:
-		Log.debug('Redrawing interface.')
-		Log.debug('Player at: {0}'.format(game.player))
-		viewport = game.get_viewport()
-		for row in range(viewport.height):
-			for col in range(viewport.width):
-				Log.debug('Cell {0},{1}'.format(col, row))
-				sprite = game.get_sprite(col, row)
-				window.addstr(1+row, col, sprite or ' ')
-
-		status = []
-		if game.movement_queue:
-			status.append('[auto]')
-		if game.god.vision:
-			status.append('[vis]')
-		if game.god.noclip:
-			status.append('[clip]')
-		window.addstr(24, 0, (' '.join(status) + " " * 80)[:80])
-
-		if aim:
-			window.move(1+aim.y, aim.x)
-		window.refresh()
-
-		try:
-			if game.perform_automovement():
-				window.nodelay(1)
-				window.timeout(30)
-				control = window.getch()
-				if control != -1:
-					game.stop_automovement()
-				continue
-		except Game.AutoMovementStopped:
-			window.nodelay(0)
-			window.timeout(-1)
-			continue
-
-		Log.debug('Performing user actions.')
-		control = window.getch()
-		Log.debug('Control: {0} ({1}).'.format(control, repr(chr(control))))
-		if control == ord('q'):
-			Log.debug('Exiting the game.')
-			playing = False
-			break
-		elif control == ord('x'):
-			if aim:
-				aim = None
-				curses.curs_set(0)
-			else:
-				aim = game.player
-				curses.curs_set(1)
-		elif aim and control == ord('.'):
-			game.walk_to(aim)
-			aim = None
-			curses.curs_set(0)
-		elif control == ord('o'):
-			game.start_autoexploring()
-		elif control == ord('~'):
-			control = window.getch()
-			if control == ord('v'):
-				game.god.vision = not game.god.vision
-			elif control == ord('c'):
-				game.god.noclip = not game.god.noclip
-		elif control == ord('Q'):
-			Log.debug('Suicide.')
-			alive = False
-			playing = False
-			break
-		elif not aim and control == ord('>'):
-			game.descend()
-		elif chr(control) in 'hjklyubn':
-			Log.debug('Moving.')
-			if aim:
-				shift = {
-					'h' : Point(-1,  0),
-					'j' : Point( 0, +1),
-					'k' : Point( 0, -1),
-					'l' : Point(+1,  0),
-					'y' : Point(-1, -1),
-					'u' : Point(+1, -1),
-					'b' : Point(-1, +1),
-					'n' : Point(+1, +1),
-					}[chr(control)]
-				new_pos = aim + shift
-				if game.strata.valid(new_pos):
-					aim = new_pos
-			else:
-				direction = {
-					'h' : Direction.LEFT,
-					'j' : Direction.DOWN,
-					'k' : Direction.UP,
-					'l' : Direction.RIGHT,
-					'y' : Direction.UP_LEFT,
-					'u' : Direction.UP_RIGHT,
-					'b' : Direction.DOWN_LEFT,
-					'n' : Direction.DOWN_RIGHT,
-					}[chr(control)]
-				game.move(direction)
-	if alive:
+	from .ui import auto_ui
+	with auto_ui()() as ui:
+		game.main_loop(ui)
+	if game.alive:
 		savefile.save(game)
 	else:
 		savefile.unlink()
-
-def run(): # pragma: no cover
-	curses.wrapper(main_loop)
