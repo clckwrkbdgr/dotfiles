@@ -617,13 +617,20 @@ class TestDungeon(unittest.TestCase):
 				"""))
 
 class TestSerialization(unittest.TestCase):
+	@mock.patch('os.stat')
+	@mock.patch('os.path.exists', side_effect=[False, True])
+	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_get_last_save_time(self, mock_filename, os_path_exists, os_stat):
+		os_stat.return_value.st_mtime = 123
+		self.assertEqual(game.Savefile.last_save_time(), 0)
+		self.assertEqual(game.Savefile.last_save_time(), 123)
 	@mock.patch('os.path.exists', side_effect=[False])
 	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_not_load_game_from_non_existent_file(self, mock_filename, os_path_exists):
 		savefile = game.Savefile()
 		self.assertEqual(savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 		result = savefile.load()
-		self.assertEqual(result, (None, None))
+		self.assertEqual(result, None)
 	@mock.patch('clckwrkbdgr.rogue.game.load_game')
 	@mock.patch('os.path.exists', side_effect=[True])
 	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))

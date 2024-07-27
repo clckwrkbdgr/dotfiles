@@ -270,9 +270,14 @@ def autoexplore(start, strata):
 
 class Savefile:
 	FILENAME = os.path.expanduser('~/.rogue.sav')
+	@classmethod
+	def last_save_time(cls):
+		if not os.path.exists(cls.FILENAME):
+			return 0
+		return os.stat(cls.FILENAME).st_mtime
 	def load(self):
 		if not os.path.exists(self.FILENAME):
-			return None, None
+			return None
 		Log.debug('Loading savefile: {0}...'.format(self.FILENAME))
 		with open(self.FILENAME, 'r') as f:
 			data = f.read().split('\0')
