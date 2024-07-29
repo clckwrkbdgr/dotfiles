@@ -10,28 +10,11 @@ class Builder(object):
 		self.size = map_size
 		self.strata = None
 		self.original_rng_seed = rng.value
-		self.cellmap = {}
 		self.start_pos = None
 		self.exit_pos = None
-	def add_cell_type(self, name, value, *value_args, **value_kwargs):
-		""" Maps intermediate cell name with real value.
-		Value can be marked for lazy evaluation by specifying just the type
-		and passing args/kwargs for c-tor as remainder arguments,
-		so new instance of cell type will be created for each cell.
-		Otherwise all cells with same name could share a single instance by ref.
-		"""
-		if value_args:
-			self.cellmap[name] = (value, value_args, value_kwargs)
-		else:
-			self.cellmap[name] = (None, value, None)
 	def build(self):
 		self.strata = Matrix(self.size, None)
 		self._build()
-		for pos in self.size:
-			cell_type, cell, cell_kwargs = self.cellmap[self.strata.cell(pos.x, pos.y)]
-			if cell_type is not None:
-				cell = cell_type(*cell, **cell_kwargs)
-			self.strata.set_cell(pos.x, pos.y, cell)
 	def _build(self): # pragma: no cover
 		raise NotImplementedError()
 

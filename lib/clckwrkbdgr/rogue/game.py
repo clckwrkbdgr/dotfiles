@@ -11,14 +11,19 @@ from .ui import Action
 class Version(Enum):
 	""" INITIAL
 	PERSISTENT_RNG
+	TERRAIN_TYPES
 	"""
 
-class Cell(object):
+class Terrain(object):
 	def __init__(self, sprite, passable=True, remembered=None):
 		self.sprite = sprite
 		self.passable = passable
 		self.remembered = remembered
-		self.visited = False
+
+class Cell(object):
+	def __init__(self, terrain, visited=False):
+		self.terrain = terrain
+		self.visited = visited
 
 class Direction(Enum):
 	""" NONE
@@ -52,6 +57,17 @@ class Game(object):
 			Direction.UP_RIGHT : Point(+1, -1),
 			Direction.DOWN_LEFT : Point(-1, +1),
 			Direction.DOWN_RIGHT : Point(+1, +1),
+			}
+	TERRAIN = {
+			None : Terrain(' ', False),
+			'corner' : Terrain("+", False, remembered='+'),
+			'door' : Terrain("+", True, remembered='+'),
+			'floor' : Terrain(".", True),
+			'passage' : Terrain("#", True, remembered='#'),
+			'wall' : Terrain('#', False, remembered='#'),
+			'wall_h' : Terrain("-", False, remembered='-'),
+			'wall_v' : Terrain("|", False, remembered='|'),
+			'water' : Terrain("~", True),
 			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None):
@@ -110,15 +126,18 @@ class Game(object):
 				return '>'
 
 		cell = self.strata.cell(x, y)
+		terrain = self.TERRAIN[cell.terrain]
 		if self.field_of_view.is_visible(x, y) or self.god.vision:
-			return cell.sprite
-		elif cell.visited and cell.remembered:
-			return cell.remembered
+			return terrain.sprite
+		elif cell.visited and terrain.remembered:
+			return terrain.remembered
 		return None
+	def terrain_at(self, x, y):
+		return self.TERRAIN[self.strata.cell(x, y).terrain]
 	def update_vision(self):
 		for p in self.field_of_view.update(
 				self.player,
-				is_visible=lambda p: self.strata.valid(p) and self.strata.cell(p.x, p.y).passable
+				is_visible=lambda p: self.strata.valid(p) and self.terrain_at(p.x, p.y).passable
 				):
 			cell = self.strata.cell(p.x, p.y)
 			if cell.visited:
@@ -144,7 +163,7 @@ class Game(object):
 		if self.god.noclip:
 			passable = True
 		else:
-			passable = self.strata.cell(new_pos.x, new_pos.y).passable
+			passable = self.terrain_at(new_pos.x, new_pos.y).passable
 		if not passable:
 			return
 		Log.debug('Shift is valid, updating player pos: {0}'.format(self.player))
@@ -160,13 +179,13 @@ class Game(object):
 	def walk_to(self, dest):
 		path = math.find_path(
 				self.strata, self.player,
-				is_passable=lambda p: self.strata.cell(p.x, p.y).passable and self.strata.cell(p.x, p.y).visited,
+				is_passable=lambda p: self.terrain_at(p.x, p.y).passable and self.strata.cell(p.x, p.y).visited,
 				find_target=lambda wave: dest if dest in wave else None,
 				)
 		if path:
 			self.movement_queue.extend(path)
 	def start_autoexploring(self):
-		path = autoexplore(self.player, self.strata)
+		path = autoexplore(self.player, self)
 		if not path:
 			return False
 		self.movement_queue.extend(path)
@@ -207,9 +226,7 @@ def save_game(game):
 	yield game.strata.size.width
 	yield game.strata.size.height
 	for cell in game.strata.cells:
-		yield cell.sprite
-		yield dump_bool(cell.passable)
-		yield cell.remembered
+		yield cell.terrain
 		yield dump_bool(cell.visited)
 
 def load_game(game, version, data):
@@ -222,13 +239,20 @@ def load_game(game, version, data):
 
 	strata_size = Size(int(next(data)), int(next(data)))
 	strata = Matrix(strata_size, None)
-	for _ in range(strata_size.width * strata_size.height):
-		strata.cells[_] = Cell(
-				parse_str(next(data)),
-				parse_bool(next(data)),
-				parse_str(next(data)),
-				)
-		strata.cells[_].visited = parse_bool(next(data))
+	if version > Version.TERRAIN_TYPES:
+		for _ in range(strata_size.width * strata_size.height):
+			strata.cells[_] = Cell(parse_str(next(data)))
+			strata.cells[_].visited = parse_bool(next(data))
+	else:
+		for _ in range(strata_size.width * strata_size.height):
+			cell_type = parse_str(next(data)), parse_bool(next(data)), parse_str(next(data))
+			for terrain in game.TERRAIN:
+				if game.TERRAIN[terrain].sprite == cell_type[0] \
+					and game.TERRAIN[terrain].passable == cell_type[1] \
+					and game.TERRAIN[terrain].remembered == cell_type[2]:
+					break
+			strata.cells[_] = Cell(terrain)
+			strata.cells[_].visited = parse_bool(next(data))
 
 	game.player = player
 	game.exit_pos = exit_pos
@@ -244,26 +268,22 @@ def build_dungeon(builder, rng, size):
 	Log.debug('Building dungeon: {0}...'.format(builder))
 	Log.debug('With RNG: {0}...'.format(rng.value))
 	builder = builder(rng, size)
-	builder.add_cell_type(None, Cell, ' ', False)
-	builder.add_cell_type('corner', Cell, "+", False, remembered='+')
-	builder.add_cell_type('door', Cell, "+", True, remembered='+')
-	builder.add_cell_type('floor', Cell, ".", True)
-	builder.add_cell_type('passage', Cell, "#", True, remembered='#')
-	builder.add_cell_type('wall', Cell, '#', False, remembered='#')
-	builder.add_cell_type('wall_h', Cell, "-", False, remembered='-')
-	builder.add_cell_type('wall_v', Cell, "|", False, remembered='|')
-	builder.add_cell_type('water', Cell, "~", True)
 	builder.build()
+	for pos in builder.strata.size:
+		builder.strata.set_cell(
+				pos.x, pos.y,
+				Cell(builder.strata.cell(pos.x, pos.y)),
+				)
 	return builder
 
-def autoexplore(start, strata):
+def autoexplore(start, game):
 	return math.find_path(
-			strata, start,
-			is_passable=lambda p: strata.cell(p.x, p.y).passable and strata.cell(p.x, p.y).visited,
+			game.strata, start,
+			is_passable=lambda p: game.terrain_at(p.x, p.y).passable and game.strata.cell(p.x, p.y).visited,
 			find_target=lambda wave: next((target for target in sorted(wave)
 			if any(
-				not strata.cell(p.x, p.y).visited
-				for p in strata.get_neighbours(target.x, target.y, with_diagonal=True)
+				not game.strata.cell(p.x, p.y).visited
+				for p in game.strata.get_neighbours(target.x, target.y, with_diagonal=True)
 				)
 			), None),
 			)
