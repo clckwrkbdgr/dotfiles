@@ -148,7 +148,16 @@ class Game(object):
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 			self.remembered_exit = True
 	def build_new_strata(self):
-		builder = build_dungeon(self.rng.choice(self.builders), self.rng, Size(80, 23))
+		builder = self.rng.choice(self.builders)
+		Log.debug('Building dungeon: {0}...'.format(builder))
+		Log.debug('With RNG: {0}...'.format(self.rng.value))
+		builder = builder(self.rng, Size(80, 23))
+		builder.build()
+		for pos in builder.strata.size:
+			builder.strata.set_cell(
+					pos.x, pos.y,
+					Cell(builder.strata.cell(pos.x, pos.y)),
+					)
 		self.player = builder.start_pos
 		self.exit_pos = builder.exit_pos
 		self.strata = builder.strata
@@ -263,18 +272,6 @@ class God:
 	def __init__(self):
 		self.vision = False
 		self.noclip = False
-
-def build_dungeon(builder, rng, size):
-	Log.debug('Building dungeon: {0}...'.format(builder))
-	Log.debug('With RNG: {0}...'.format(rng.value))
-	builder = builder(rng, size)
-	builder.build()
-	for pos in builder.strata.size:
-		builder.strata.set_cell(
-				pos.x, pos.y,
-				Cell(builder.strata.cell(pos.x, pos.y)),
-				)
-	return builder
 
 def autoexplore(start, game):
 	return math.find_path(

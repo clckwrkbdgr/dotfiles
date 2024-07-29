@@ -1,5 +1,6 @@
 import itertools
 import copy
+import textwrap
 from ..math import Matrix, Point, Size, Rect
 from ..messages import Log
 from . import _base as pcg
@@ -17,6 +18,40 @@ class Builder(object):
 		self._build()
 	def _build(self): # pragma: no cover
 		raise NotImplementedError()
+
+class CustomMap(Builder):
+	""" Builds map described by custom layout.
+	Forces map size to fit given layout instead of considering passed parameter.
+	Set .MAP_DATA to multiline string (one char for each cell)
+	OR
+	pass it instead of map_size parameter.
+	Dedent is performed automatically.
+	Set char to '@' to indicate start pos.
+	Set char to '>' to indicate exit pos.
+	Set field .ENTER_TERRAIN and/or .EXIT_TERRAIN to use as terrain for those cells.
+	Default is '.' for both.
+	"""
+	ENTER_TERRAIN = '.'
+	EXIT_TERRAIN = '.'
+	def __init__(self, rng, map_size):
+		if hasattr(self, 'MAP_DATA'):
+			self._map_data = self.MAP_DATA
+		elif isinstance(map_size, str):
+			self._map_data = map_size
+		self._map_data = textwrap.dedent(self._map_data).splitlines()
+		map_size = Size(len(self._map_data[0]), len(self._map_data))
+		super(CustomMap, self).__init__(rng, map_size)
+	def _build(self):
+		for x in range(self.size.width):
+			for y in range(self.size.height):
+				if self._map_data[y][x] == '@':
+					self.start_pos = Point(x, y)
+					self.strata.set_cell(x, y, self.ENTER_TERRAIN)
+				elif self._map_data[y][x] == '>':
+					self.exit_pos = Point(x, y)
+					self.strata.set_cell(x, y, self.EXIT_TERRAIN)
+				else:
+					self.strata.set_cell(x, y, self._map_data[y][x])
 
 class RogueDungeon(Builder):
 	def _build(self):

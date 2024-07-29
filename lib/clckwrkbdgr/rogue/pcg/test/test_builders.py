@@ -16,6 +16,11 @@ STR_TERRAIN = {
 		'wall_v' : "|",
 		'door' : "+",
 		'passage' : "#",
+
+		'#' : "#",
+		'.' : ".",
+		'~' : "~",
+		'"' : '"',
 		}
 def str_terrain(name):
 	return STR_TERRAIN[name]
@@ -63,6 +68,74 @@ class TestBuilder(unittest.TestCase):
 				#..................#
 				#..................#
 				#..................#
+				#..................#
+				#..................#
+				####################
+				""")
+		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+
+class TestCustomMapLayout(unittest.TestCase):
+	def should_generate_map_from_given_custom_layout(self):
+		rng = RNG(0)
+		builder = builders.CustomMap(rng, """\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+		""")
+		builder.build()
+		self.assertEqual(builder.start_pos, Point(9, 6))
+		self.assertEqual(builder.exit_pos, Point(10, 1))
+		self.maxDiff = None
+		expected = textwrap.dedent("""\
+				####################
+				#........#.##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#..................#
+				#..................#
+				#..................#
+				####################
+				""")
+		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+	def should_generate_map_from_custom_layout_in_class_field(self):
+		class _MockCustomMap(builders.CustomMap):
+			MAP_DATA = """\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				"""
+			ENTER_TERRAIN = '"'
+			EXIT_TERRAIN = '~'
+		rng = RNG(0)
+		builder = _MockCustomMap(rng, None)
+		builder.build()
+		self.assertEqual(builder.start_pos, Point(9, 6))
+		self.assertEqual(builder.exit_pos, Point(10, 1))
+		self.maxDiff = None
+		expected = textwrap.dedent("""\
+				####################
+				#........#~##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........".........#
 				#..................#
 				#..................#
 				####################

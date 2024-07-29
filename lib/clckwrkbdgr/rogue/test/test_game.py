@@ -26,65 +26,6 @@ class MockGame(game.Game):
 		'>' : game.Terrain(".", True),
 		}
 
-class StrBuilder(builders.Builder):
-	""" Set ._map_data to multiline string (one char for each cell).
-	Register cell types according to those chars.
-	Set char to '@' to indicate start pos.
-	Set char to '>' to indicate exit pos.
-	"""
-	def __init__(self, rng, map_size):
-		if hasattr(self, '_map_size'):
-			map_size = self._map_size
-		super(StrBuilder, self).__init__(rng, map_size)
-	def _build(self):
-		self._map_data = self._map_data.splitlines()
-
-		for x in range(self.size.width):
-			for y in range(self.size.height):
-				self.strata.set_cell(x, y, self._map_data[y][x])
-				if self._map_data[y][x] == '@':
-					self.start_pos = Point(x, y)
-				elif self._map_data[y][x] == '>':
-					self.exit_pos = Point(x, y)
-
-class MockBuilder(builders.Builder):
-	def _build(self):
-		for x in range(self.size.width):
-			self.strata.set_cell(x, 0, '#')
-			self.strata.set_cell(x, self.size.height - 1, '#')
-		for y in range(self.size.height):
-			self.strata.set_cell(0, y, '#')
-			self.strata.set_cell(self.size.width - 1, y, '#')
-		for x in range(1, self.size.width - 1):
-			for y in range(1, self.size.height - 1):
-				self.strata.set_cell(x, y, '.')
-		floor_only = lambda pos: self.strata.cell(pos.x, pos.y) == '.'
-		obstacle_pos = pcg.pos(self.rng, self.size, floor_only)
-		self.strata.set_cell(obstacle_pos.x, obstacle_pos.y, '#')
-
-		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
-		self.exit_pos = pcg.pos(self.rng, self.size, floor_only)
-
-		# Room.
-		room_pos = pcg.pos(self.rng, Size(self.size.width - 6, self.size.height - 5), floor_only)
-		room_width = self.rng.range(3, 5)
-		room_height = self.rng.range(3, 4)
-		for x in range(room_width):
-			self.strata.set_cell(room_pos.x + x, room_pos.y + 0, '-')
-			self.strata.set_cell(room_pos.x + x, room_pos.y + room_height - 1, '-')
-		for y in range(room_height):
-			self.strata.set_cell(room_pos.x + 0, room_pos.y + y, '|')
-			self.strata.set_cell(room_pos.x + room_width - 1, room_pos.y + y, '|')
-		for x in range(1, room_width - 1):
-			for y in range(1, room_height - 1):
-				self.strata.set_cell(room_pos.x + x, room_pos.y + y, '~')
-		self.strata.set_cell(room_pos.x, room_pos.y, '+')
-		self.strata.set_cell(room_pos.x, room_pos.y + room_height - 1, '+')
-		self.strata.set_cell(room_pos.x + room_width - 1, room_pos.y, '+')
-		self.strata.set_cell(room_pos.x + room_width - 1, room_pos.y + room_height - 1, '+')
-		door_pos = self.rng.range(1, 4)
-		self.strata.set_cell(room_pos.x + door_pos, room_pos.y, '+')
-
 class MockUI(ui.UI):
 	def __init__(self, user_actions, interrupts):
 		self.events = []
@@ -106,6 +47,19 @@ class MockUI(ui.UI):
 		return self.user_actions.pop(0)
 
 class TestDungeon(unittest.TestCase):
+	class _MockBuilder(builders.CustomMap):
+		MAP_DATA = """\
+			####################
+			#........#>##......#
+			#........#..#......#
+			#....##..##.#......#
+			#....#.............#
+			#....#.............#
+			#........@.........#
+			#..................#
+			#..................#
+			####################
+			"""
 	def _str_dungeon(self, dungeon, with_fov=False):
 		result = ""
 		for y in range(dungeon.strata.size.height):
@@ -152,51 +106,8 @@ class TestDungeon(unittest.TestCase):
 				################################################################################
 				""")
 		self.assertEqual(dungeon.strata.tostring(lambda c: dungeon.TERRAIN[c.terrain].sprite), expected)
-	def should_build_dungeon(self):
-		rng = RNG(0)
-		builder = game.build_dungeon(MockBuilder, rng, Size(20, 20))
-		self.assertEqual(builder.start_pos, Point(9, 12))
-		self.assertEqual(builder.exit_pos, Point(7, 16))
-		self.maxDiff = None
-		expected = textwrap.dedent("""\
-				####################
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#........+-++......#
-				#........|~~|......#
-				#.....#..+--+......#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				####################
-				""")
-		self.assertEqual(builder.strata.tostring(lambda c: c.terrain), expected)
 	def should_run_main_loop(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		mock_ui = MockUI(user_actions=[
 			(ui.Action.MOVE, game.Direction.UP),
 			(ui.Action.MOVE, game.Direction.DOWN),
@@ -237,21 +148,7 @@ class TestDungeon(unittest.TestCase):
 			'__exit__',
 			])
 	def should_suicide_out_of_main_loop(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		mock_ui = MockUI(user_actions=[
 			(ui.Action.SUICIDE, None),
 			], interrupts=[],
@@ -267,42 +164,14 @@ class TestDungeon(unittest.TestCase):
 			'__exit__',
 			])
 	def should_autoexplore_map(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 
 		path = game.autoexplore(dungeon.player, dungeon)
 		self.assertEqual(path, [
 			Point(x=9, y=6), Point(x=8, y=5), Point(x=8, y=4), Point(x=8, y=3),
 			])
 	def should_get_visible_surroundings(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.get_viewport(), Size(20, 10))
 		self.assertEqual(dungeon.get_sprite(9, 6), '@')
 		self.assertEqual(dungeon.get_sprite(5, 6), '.')
@@ -316,21 +185,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.jump_to(Point(9, 6))
 		self.assertEqual(dungeon.get_sprite(10, 1), '>')
 	def should_move_player_character(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
 		dungeon.move(game.Direction.UP), 
@@ -351,23 +206,9 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move(game.Direction.UP_RIGHT), 
 		self.assertEqual(dungeon.player, Point(9, 6))
 
-		self.assertEqual(self._str_dungeon(dungeon), _MockBuilder._map_data)
+		self.assertEqual(self._str_dungeon(dungeon), textwrap.dedent(self._MockBuilder.MAP_DATA))
 	def should_update_fov_after_movement(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
 		self.assertFalse(dungeon.remembered_exit)
@@ -415,14 +256,13 @@ class TestDungeon(unittest.TestCase):
 				####################
 				"""))
 	def should_not_move_player_into_the_void(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
 				@...#
 				....#
 				...>#
 				#####
-				""")
-			_map_size = Size(5, 4)
+				"""
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
 		self.assertEqual(dungeon.player, Point(0, 0))
 
@@ -431,14 +271,13 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move(game.Direction.LEFT), 
 		self.assertEqual(dungeon.player, Point(0, 0))
 	def should_not_move_player_into_a_wall(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
 				#####
 				#.@.#
 				#..>#
 				#####
-				""")
-			_map_size = Size(5, 4)
+				"""
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
 		self.assertEqual(dungeon.player, Point(2, 1))
 
@@ -447,14 +286,13 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move(game.Direction.LEFT), 
 		self.assertEqual(dungeon.player, Point(1, 1))
 	def should_move_player_through_a_wall_in_noclip_mode(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
 				######
 				#.@#.#
 				#...>#
 				######
-				""")
-			_map_size = Size(6, 4)
+				"""
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
 		self.assertEqual(dungeon.player, Point(2, 1))
 
@@ -464,14 +302,13 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move(game.Direction.RIGHT), 
 		self.assertEqual(dungeon.player, Point(4, 1))
 	def should_descend_to_new_map(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
 				######
 				#.@>.#
 				#....#
 				######
-				""")
-			_map_size = Size(6, 4)
+				"""
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
 		self.assertEqual(dungeon.player, Point(2, 1))
 
@@ -480,23 +317,9 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move(game.Direction.RIGHT), 
 		dungeon.descend()
 		self.assertEqual(dungeon.player, Point(2, 1))
-		self.assertEqual(self._str_dungeon(dungeon), _MockBuilder._map_data)
+		self.assertEqual(self._str_dungeon(dungeon), textwrap.dedent(_MockBuilder.MAP_DATA))
 	def should_directly_jump_to_new_position(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
 		dungeon.jump_to(Point(11, 2))
@@ -513,21 +336,7 @@ class TestDungeon(unittest.TestCase):
 				####################
 				"""))
 	def should_auto_walk_to_position(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
 		self.assertFalse(dungeon.perform_automovement())
@@ -558,21 +367,7 @@ class TestDungeon(unittest.TestCase):
 				####################
 				"""))
 	def should_autoexplore(self):
-		class _MockBuilder(StrBuilder):
-			_map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-			_map_size = Size(20, 10)
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
 		self.assertFalse(dungeon.perform_automovement())
@@ -605,6 +400,19 @@ class TestDungeon(unittest.TestCase):
 				"""))
 
 class TestSerialization(unittest.TestCase):
+	class _MockMap(builders.CustomMap):
+		MAP_DATA = """\
+				####################
+				#........#>##......#
+				#........#..#......#
+				#....##..##.#......#
+				#....#.............#
+				#....#.............#
+				#........@.........#
+				#..................#
+				#..................#
+				####################
+				"""
 	@mock.patch('os.stat')
 	@mock.patch('os.path.exists', side_effect=[False, True])
 	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
@@ -672,41 +480,18 @@ class TestSerialization(unittest.TestCase):
 		savefile = game.Savefile()
 		savefile.unlink()
 		os_unlink.assert_not_called()
-	def _build_str_dungeon(self, _builder, rng, _size):
-		builder = StrBuilder(rng, Size(20, 10))
-		builder._map_data = textwrap.dedent("""\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				""")
-		builder.build()
-		for pos in builder.strata.size:
-			builder.strata.set_cell(
-					pos.x, pos.y,
-					game.Cell(builder.strata.cell(pos.x, pos.y)),
-					)
-		return builder
-	@mock.patch('clckwrkbdgr.rogue.game.build_dungeon')
-	def should_serialize_and_deserialize_game(self, mock_build_dungeon):
-		mock_build_dungeon.side_effect = self._build_str_dungeon
-		dungeon = MockGame(rng_seed=0)
+	def should_serialize_and_deserialize_game(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockMap])
 		dump = list(game.save_game(dungeon))
 		self.assertEqual(dump, [
 			9, 6, 10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '.',1, '#',0, '>',0, '#',0, '#',1, '.',0, '.',0, '.',1, '.',1, '.',1, '.',0, '#',0,
+			'#',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '.',1, '#',0, '.',0, '#',0, '#',1, '.',0, '.',0, '.',1, '.',1, '.',1, '.',0, '#',0,
 			'#',0, '.',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '#',0, '.',0, '.',1, '#',1, '.',0, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '#',1, '.',1, '.',1, '#',1, '#',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',1, '.',1, '.',1, '.',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '@',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',1,
+			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',1,
 			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
@@ -722,10 +507,8 @@ class TestSerialization(unittest.TestCase):
 			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).remembered, restored_dungeon.terrain_at(pos.x, pos.y).remembered, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
-	@mock.patch('clckwrkbdgr.rogue.game.build_dungeon')
-	def should_deserialize_game_before_terrain_types(self, mock_build_dungeon):
-		mock_build_dungeon.side_effect = self._build_str_dungeon
-		dungeon = MockGame(rng_seed=0)
+	def should_deserialize_game_before_terrain_types(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockMap])
 		dump = [
 			9, 6, 10, 1, 0, 20, 10,
 			'#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0,
