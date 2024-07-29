@@ -29,12 +29,24 @@ class MockRogueDungeon(game.Game):
 	TERRAIN = {
 		None : game.Terrain(' ', False),
 		' ' : game.Terrain(' ', False),
-		'#' : game.Terrain("#", True, remembered='#', allow_diagonal=False),
+		'#' : game.Terrain("#", True, remembered='#', allow_diagonal=False, dark=True),
 		'.' : game.Terrain(".", True),
 		'+' : game.Terrain("+", False, remembered='+'),
 		'-' : game.Terrain("-", False, remembered='-'),
 		'|' : game.Terrain("|", False, remembered='|'),
-		'^' : game.Terrain("^", True, remembered='^', allow_diagonal=False),
+		'^' : game.Terrain("^", True, remembered='^', allow_diagonal=False, dark=True),
+		}
+
+class MockDarkRogueDungeon(game.Game):
+	TERRAIN = {
+		None : game.Terrain(' ', False),
+		' ' : game.Terrain(' ', False),
+		'#' : game.Terrain("#", True, allow_diagonal=False, dark=True),
+		'.' : game.Terrain(".", True),
+		'+' : game.Terrain("+", False),
+		'-' : game.Terrain("-", False),
+		'|' : game.Terrain("|", False),
+		'^' : game.Terrain("^", True, allow_diagonal=False, dark=True),
 		}
 
 class MockUI(ui.UI):
@@ -386,6 +398,72 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.move(game.Direction.LEFT))
 		self.assertTrue(dungeon.move(game.Direction.DOWN))
 		self.assertEqual(dungeon.player, Point(2, 3))
+	def should_reduce_visibility_at_dark_tiles(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				+--+ #
+				|@.| #
+				|..^##
+				|.>|  
+				+--+  
+				"""
+		dungeon = MockDarkRogueDungeon(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				+--+  
+				|@.|  
+				|..^  
+				|.>|  
+				+--+  
+				"""))
+		dungeon.move(game.Direction.RIGHT)
+		dungeon.move(game.Direction.DOWN)
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				+--+  
+				|..|  
+				|.@^  
+				|.>|  
+				+--+  
+				"""))
+		dungeon.move(game.Direction.RIGHT)
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				+--   
+				|..|  
+				|..@# 
+				|.>|  
+				+--   
+				"""))
+		dungeon.move(game.Direction.RIGHT)
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				_     
+				_  | #
+				_  ^@#
+				_ >|  
+				_     
+				""").replace('_', ' '))
+		dungeon.move(game.Direction.RIGHT)
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				_     
+				_    #
+				_   #@
+				_ >   
+				_     
+				""").replace('_', ' '))
+		dungeon.move(game.Direction.UP)
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				_    #
+				_    @
+				_   ##
+				_ >   
+				_     
+				""").replace('_', ' '))
+		dungeon.move(game.Direction.UP)
+		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+				_    @
+				_    #
+				_     
+				_ >   
+				_     
+				""").replace('_', ' '))
 	def should_descend_to_new_map(self):
 		class _MockBuilder(builders.CustomMap):
 			MAP_DATA = """\

@@ -131,7 +131,7 @@ def find_path(matrix, start, is_passable, find_target):
 
 class FieldOfView:
 	def __init__(self, radius):
-		self.sight = Matrix(Size(1 + radius * 2, 1 + radius * 2), False)
+		self.sight = Matrix(Size(1 + radius * 2, 1 + radius * 2), 0)
 		self.center = Point(0, 0)
 		self.half_size = Size(self.sight.size.width // 2, self.sight.size.height // 2)
 	def is_visible(self, x, y):
@@ -141,10 +141,10 @@ class FieldOfView:
 		if not self.sight.valid(fov_pos):
 			return False
 		return self.sight.cell(fov_pos.x, fov_pos.y)
-	def update(self, new_center, is_visible):
+	def update(self, new_center, is_transparent):
 		self.center = new_center
 		Log.debug('Recalculating Field Of View.')
-		self.sight.clear(False)
+		self.sight.clear(0)
 		for pos in self.sight.size:
 			Log.debug('FOV pos: {0}'.format(pos))
 			rel_pos = Point(
@@ -166,7 +166,7 @@ class FieldOfView:
 				if not self.sight.cell(fov_pos.x, fov_pos.y):
 					yield real_world_pos
 					self.sight.set_cell(fov_pos.x, fov_pos.y, True)
-				if not is_visible(real_world_pos):
+				if not is_transparent(real_world_pos):
 					Log.debug('Not passable, stop: {0}'.format(real_world_pos))
 					break
 		Log.debug("Full FOV:\n{0}".format(repr(self.sight)))

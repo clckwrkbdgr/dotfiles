@@ -232,7 +232,7 @@ class TestMapAlgorithms(unittest.TestCase):
 				####################
 				""").replace('\n', ''))
 		fov = FieldOfView(3)
-		for p in fov.update(Point(11, 2), is_visible=lambda p: matrix.valid(p) and matrix.cell(p.x, p.y) != '#'):
+		for p in fov.update(Point(11, 2), is_transparent=lambda p: matrix.valid(p) and matrix.cell(p.x, p.y) != '#'):
 			if not matrix.valid(p):
 				continue
 			if matrix.cell(p.x, p.y) == '#':
@@ -252,5 +252,29 @@ class TestMapAlgorithms(unittest.TestCase):
 				#        ....%     #
 				#        .....     #
 				#          .       #
+				####################
+				"""))
+	def should_calculate_field_of_view_in_absolute_darkness(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.cells = list(textwrap.dedent("""\
+				####################
+				#                  #
+				#                  #
+				#            #     #
+				#                  #
+				#                  #
+				####################
+				""").replace('\n', ''))
+		fov = FieldOfView(3)
+		source = Point(11, 2)
+		for p in fov.update(Point(11, 2), is_transparent=lambda p: max(abs(source.x - p.x), abs(source.y - p.y)) < 1):
+			matrix.set_cell(p.x, p.y, '.')
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				####################
+				#         ...      #
+				#         ...      #
+				#         ...#     #
+				#                  #
+				#                  #
 				####################
 				"""))

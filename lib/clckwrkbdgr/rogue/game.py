@@ -15,11 +15,12 @@ class Version(Enum):
 	"""
 
 class Terrain(object):
-	def __init__(self, sprite, passable=True, remembered=None, allow_diagonal=True):
+	def __init__(self, sprite, passable=True, remembered=None, allow_diagonal=True, dark=False):
 		self.sprite = sprite
 		self.passable = passable
 		self.remembered = remembered
 		self.allow_diagonal = allow_diagonal
+		self.dark = dark
 
 class Cell(object):
 	def __init__(self, terrain, visited=False):
@@ -63,11 +64,11 @@ class Game(object):
 			None : Terrain(' ', False),
 			'corner' : Terrain("+", False, remembered='+'),
 			'door' : Terrain("+", True, remembered='+'),
-			'rogue_door' : Terrain("+", True, remembered='+', allow_diagonal=False),
+			'rogue_door' : Terrain("+", True, remembered='+', allow_diagonal=False, dark=True),
 			'floor' : Terrain(".", True),
 			'tunnel_floor' : Terrain(".", True, allow_diagonal=False),
 			'passage' : Terrain("#", True, remembered='#'),
-			'rogue_passage' : Terrain("#", True, remembered='#', allow_diagonal=False),
+			'rogue_passage' : Terrain("#", True, remembered='#', allow_diagonal=False, dark=True),
 			'wall' : Terrain('#', False, remembered='#'),
 			'wall_h' : Terrain("-", False, remembered='-'),
 			'wall_v' : Terrain("|", False, remembered='|'),
@@ -126,7 +127,7 @@ class Game(object):
 		if self.player.x == x and self.player.y == y:
 			return '@'
 		if self.exit_pos.x == x and self.exit_pos.y == y:
-			if self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
+			if self.god.vision or self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 				return '>'
 
 		cell = self.strata.cell(x, y)
@@ -138,10 +139,19 @@ class Game(object):
 		return None
 	def terrain_at(self, x, y):
 		return self.TERRAIN[self.strata.cell(x, y).terrain]
+	def is_transparent(self, p):
+		if not self.strata.valid(p):
+			return False
+		if not self.terrain_at(p.x, p.y).passable:
+			return False
+		if self.terrain_at(p.x, p.y).dark:
+			if max(abs(self.player.x - p.x), abs(self.player.y - p.y)) >= 1:
+				return False
+		return True
 	def update_vision(self):
 		for p in self.field_of_view.update(
 				self.player,
-				is_visible=lambda p: self.strata.valid(p) and self.terrain_at(p.x, p.y).passable
+				is_transparent=self.is_transparent,
 				):
 			cell = self.strata.cell(p.x, p.y)
 			if cell.visited:
