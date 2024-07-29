@@ -15,10 +15,11 @@ class Version(Enum):
 	"""
 
 class Terrain(object):
-	def __init__(self, sprite, passable=True, remembered=None):
+	def __init__(self, sprite, passable=True, remembered=None, allow_diagonal=True):
 		self.sprite = sprite
 		self.passable = passable
 		self.remembered = remembered
+		self.allow_diagonal = allow_diagonal
 
 class Cell(object):
 	def __init__(self, terrain, visited=False):
@@ -62,8 +63,11 @@ class Game(object):
 			None : Terrain(' ', False),
 			'corner' : Terrain("+", False, remembered='+'),
 			'door' : Terrain("+", True, remembered='+'),
+			'rogue_door' : Terrain("+", True, remembered='+', allow_diagonal=False),
 			'floor' : Terrain(".", True),
+			'tunnel_floor' : Terrain(".", True, allow_diagonal=False),
 			'passage' : Terrain("#", True, remembered='#'),
+			'rogue_passage' : Terrain("#", True, remembered='#', allow_diagonal=False),
 			'wall' : Terrain('#', False, remembered='#'),
 			'wall_h' : Terrain("-", False, remembered='-'),
 			'wall_v' : Terrain("|", False, remembered='|'),
@@ -163,21 +167,34 @@ class Game(object):
 		self.strata = builder.strata
 		self.remembered_exit = False
 		self.update_vision()
+	def allow_movement_direction(self, from_point, to_point):
+		shift = to_point - from_point
+		is_diagonal = abs(shift.x) + abs(shift.y) == 2
+		if not is_diagonal:
+			return True
+		if not self.terrain_at(from_point.x, from_point.y).allow_diagonal:
+			return False
+		if not self.terrain_at(to_point.x, to_point.y).allow_diagonal:
+			return False
+		return True
 	def move(self, direction):
 		shift = self.SHIFT[direction]
 		Log.debug('Shift: {0}'.format(shift))
 		new_pos = self.player + shift
 		if not self.strata.valid(new_pos):
-			return
+			return False
 		if self.god.noclip:
 			passable = True
 		else:
 			passable = self.terrain_at(new_pos.x, new_pos.y).passable
 		if not passable:
-			return
+			return False
+		if not self.allow_movement_direction(self.player, new_pos):
+			return False
 		Log.debug('Shift is valid, updating player pos: {0}'.format(self.player))
 		self.player = new_pos
 		self.update_vision()
+		return True
 	def jump_to(self, new_pos):
 		self.player = new_pos
 		self.update_vision()
@@ -185,18 +202,37 @@ class Game(object):
 		if self.player != self.exit_pos:
 			return
 		self.build_new_strata()
-	def walk_to(self, dest):
+	def find_path(self, start, find_target):
 		path = math.find_path(
-				self.strata, self.player,
-				is_passable=lambda p: self.terrain_at(p.x, p.y).passable and self.strata.cell(p.x, p.y).visited,
+				self.strata, start,
+				is_passable=lambda p, from_point: self.terrain_at(p.x, p.y).passable and self.strata.cell(p.x, p.y).visited and self.allow_movement_direction(from_point, p),
+				find_target=find_target,
+				)
+		if not path:
+			return None
+		if path[0] == self.player: # We're already standing there.
+			path.pop(0)
+		return path
+	def walk_to(self, dest):
+		path = self.find_path(self.player,
 				find_target=lambda wave: dest if dest in wave else None,
 				)
 		if path:
 			self.movement_queue.extend(path)
+			self.need_to_stop_automovement = False
 	def start_autoexploring(self):
-		path = autoexplore(self.player, self)
+		path = self.find_path(self.player,
+			find_target=lambda wave: next((target for target in sorted(wave)
+			if any(
+				not self.strata.cell(p.x, p.y).visited
+				for p in self.strata.get_neighbours(target.x, target.y, with_diagonal=True)
+				)
+			), None),
+			)
 		if not path:
 			return False
+		if not self.autoexploring: # Do not do it on restarting autoexplore.
+			self.need_to_stop_automovement = False
 		self.movement_queue.extend(path)
 		self.autoexploring = True
 		return True
@@ -272,18 +308,6 @@ class God:
 	def __init__(self):
 		self.vision = False
 		self.noclip = False
-
-def autoexplore(start, game):
-	return math.find_path(
-			game.strata, start,
-			is_passable=lambda p: game.terrain_at(p.x, p.y).passable and game.strata.cell(p.x, p.y).visited,
-			find_target=lambda wave: next((target for target in sorted(wave)
-			if any(
-				not game.strata.cell(p.x, p.y).visited
-				for p in game.strata.get_neighbours(target.x, target.y, with_diagonal=True)
-				)
-			), None),
-			)
 
 class Savefile:
 	FILENAME = os.path.expanduser('~/.rogue.sav')

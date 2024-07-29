@@ -125,7 +125,7 @@ class TestMapAlgorithms(unittest.TestCase):
 		target = Point(1, 1)
 		path = find_path(
 				matrix, Point(17, 4),
-				is_passable=lambda p: matrix.cell(p.x, p.y) == '.',
+				is_passable=lambda p, _from: matrix.cell(p.x, p.y) == '.',
 				find_target=lambda wave: target if target in wave else None,
 				)
 		for p in path:
@@ -137,6 +137,36 @@ class TestMapAlgorithms(unittest.TestCase):
 				#.#.**.#.*.#.###*..#
 				#.#...*#*###.###.*.#
 				#.#....*.#.........#
+				####################
+				"""))
+	def should_find_path_in_matrix_without_diagonal_shifts(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.cells = list(textwrap.dedent("""\
+				####################
+				#...#....#...#######
+				#.#.####.#.#.......#
+				#.#....#...#.###...#
+				#.#....#.###.###...#
+				#.#......#.........#
+				####################
+				""").replace('\n', ''))
+		target = Point(1, 1)
+
+		is_diagonal = lambda p, _from: abs(p.x - _from.x) + abs(p.y - _from.y) == 2
+		path = find_path(
+				matrix, Point(17, 4),
+				is_passable=lambda p, _from: matrix.cell(p.x, p.y) == '.' and not is_diagonal(p, _from),
+				find_target=lambda wave: target if target in wave else None,
+				)
+		for p in path:
+			matrix.set_cell(p.x, p.y, '*')
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				####################
+				#***#....#***#######
+				#.#*####.#*#*****..#
+				#.#*...#***#.###*..#
+				#.#*...#*###.###**.#
+				#.#******#.........#
 				####################
 				"""))
 	def should_not_find_path_in_matrix_if_exit_is_closed(self):
@@ -153,7 +183,7 @@ class TestMapAlgorithms(unittest.TestCase):
 		target = Point(1, 1)
 		path = find_path(
 				matrix, Point(17, 4),
-				is_passable=lambda p: matrix.cell(p.x, p.y) == '.',
+				is_passable=lambda p, _from: matrix.cell(p.x, p.y) == '.',
 				find_target=lambda wave: target if target in wave else None,
 				)
 		self.assertIsNone(path)
@@ -171,7 +201,7 @@ class TestMapAlgorithms(unittest.TestCase):
 		target = Point(1, 1)
 		path = find_path(
 				matrix, Point(17, 4),
-				is_passable=lambda p: matrix.cell(p.x, p.y) != '#',
+				is_passable=lambda p, _from: matrix.cell(p.x, p.y) != '#',
 				find_target=lambda wave: next((target for target in wave
 				if any(
 					matrix.cell(p.x, p.y) == ' '

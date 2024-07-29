@@ -97,7 +97,7 @@ def bresenham(start, stop):
 def find_path(matrix, start, is_passable, find_target):
 	""" Searches for the shortest path on matrix of cells
 	from start point until find_target in new wave.
-	is_passable(point) should return True if cell is passable.
+	is_passable(point, orig_point) should return True if cell is passable when moving from orig_point.
 	find_traget(set of points) should return point which could serve as stop, otherwise None.
 	"""
 	def _reorder_links(_previous_node, _links):
@@ -109,7 +109,7 @@ def find_path(matrix, start, is_passable, find_target):
 			_node.x, _node.y,
 			with_diagonal=True,
 			)
-			 if is_passable(p)
+			 if is_passable(p, _node)
 			 ]
 	waves = [{start}]
 	already_used = set()
@@ -120,11 +120,11 @@ def find_path(matrix, start, is_passable, find_target):
 		new_wave = closest - already_used
 		if not new_wave:
 			return None
-		target = find_target(new_wave)
+		target = find_target(sorted(new_wave))
 		if target:
 			path = [target]
 			for wave in reversed(waves):
-				path.insert(0, next(node for node in _reorder_links(path[0], wave) if _is_linked(node, path[0])))
+				path.insert(0, next(node for node in _reorder_links(path[0], sorted(wave)) if _is_linked(node, path[0])))
 			return path
 		already_used |= new_wave
 		waves.append(new_wave)

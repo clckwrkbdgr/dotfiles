@@ -208,9 +208,9 @@ class RogueDungeon(Builder):
 								iter_points.append( Point(x, y))
 						lead = stop.x
 			for cell in iter_points:
-				self.strata.set_cell(cell.x, cell.y, 'passage')
-			self.strata.set_cell(start.x, start.y, 'door')
-			self.strata.set_cell(stop.x, stop.y, 'door')
+				self.strata.set_cell(cell.x, cell.y, 'rogue_passage')
+			self.strata.set_cell(start.x, start.y, 'rogue_door')
+			self.strata.set_cell(stop.x, stop.y, 'rogue_door')
 
 		enter_room_key = self.rng.choice(list(grid.size))
 		enter_room = grid.cell(enter_room_key.x, enter_room_key.y)
@@ -596,7 +596,7 @@ class MazeBuilder(Builder):
 					break
 		Log.debug("Done {0}/{1} cells:\n{2}".format(intDone, expected, layout.tostring(lambda c:'#' if c else '.')))
 		return layout
-	def _fill_maze(self, layout):
+	def _fill_maze(self, layout, floor_terrain='tunnel_floor'):
 		self.strata = Matrix(self.size, 'wall')
 		for pos in layout.size:
 			if layout.cell(pos.x, pos.y):
@@ -605,10 +605,10 @@ class MazeBuilder(Builder):
 						self.strata.set_cell(
 								1 + pos.x * self.CELL_SIZE.width + x,
 								1 + pos.y * self.CELL_SIZE.height + y,
-								'floor',
+								floor_terrain,
 								)
 	def _place_points(self):
-		floor_only = lambda pos: self.strata.cell(pos.x, pos.y) == 'floor'
+		floor_only = lambda pos: self.strata.cell(pos.x, pos.y) in ['floor', 'tunnel_floor']
 		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
@@ -622,7 +622,7 @@ class MazeBuilder(Builder):
 class Sewers(MazeBuilder):
 	CELL_SIZE = Size(4, 3)
 	def _fill_maze(self, layout):
-		super(Sewers, self)._fill_maze(layout)
+		super(Sewers, self)._fill_maze(layout, floor_terrain='floor')
 
 		# Fill water streams.
 		for x in range(self.size.width):

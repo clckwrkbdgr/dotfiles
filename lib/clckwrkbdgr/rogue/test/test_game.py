@@ -22,8 +22,19 @@ class MockGame(game.Game):
 		None : game.Terrain(' ', False),
 		'#' : game.Terrain("#", False, remembered='#'),
 		'.' : game.Terrain(".", True),
-		'@' : game.Terrain(".", True),
-		'>' : game.Terrain(".", True),
+		'~' : game.Terrain(".", True, allow_diagonal=False),
+		}
+
+class MockRogueDungeon(game.Game):
+	TERRAIN = {
+		None : game.Terrain(' ', False),
+		' ' : game.Terrain(' ', False),
+		'#' : game.Terrain("#", True, remembered='#', allow_diagonal=False),
+		'.' : game.Terrain(".", True),
+		'+' : game.Terrain("+", False, remembered='+'),
+		'-' : game.Terrain("-", False, remembered='-'),
+		'|' : game.Terrain("|", False, remembered='|'),
+		'^' : game.Terrain("^", True, remembered='^', allow_diagonal=False),
 		}
 
 class MockUI(ui.UI):
@@ -119,7 +130,7 @@ class TestDungeon(unittest.TestCase):
 			(ui.Action.GOD_TOGGLE_VISION, None),
 			(ui.Action.GOD_TOGGLE_NOCLIP, None),
 			(ui.Action.EXIT, None),
-			], interrupts=[False] * 3 + [False] * 10 + [True] + [False] * 5,
+			], interrupts=[False] * 2 + [False] * 8 + [True] + [False] * 6,
 		)
 		with mock_ui:
 			dungeon.main_loop(mock_ui)
@@ -132,16 +143,16 @@ class TestDungeon(unittest.TestCase):
 			] * 4 + [ # walking...
 			'redraw',
 			'user_interrupted',
-			] * 3 + ['redraw'] + [ # NONE AUTOEXPLORE
+			] * 2 + ['redraw'] + [ # NONE AUTOEXPLORE
 			'redraw',
 			'user_action',
 			] * 2 + [ # exploring...
 			'redraw',
 			'user_interrupted',
-			] * 11 + ['redraw', 'user_action'] + [ # AUTOEXPLORE
+			] * 9 + ['redraw', 'user_action'] + [
 			'redraw',
 			'user_interrupted',
-			] * 5 + ['redraw'] + [ # GOD_TOGGLE_* EXIT
+			] * 3 + ['redraw'] + [ # GOD_TOGGLE_* EXIT
 			'redraw',
 			'user_action',
 			] * 3 + [
@@ -162,13 +173,6 @@ class TestDungeon(unittest.TestCase):
 			'redraw',
 			'user_action',
 			'__exit__',
-			])
-	def should_autoexplore_map(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
-
-		path = game.autoexplore(dungeon.player, dungeon)
-		self.assertEqual(path, [
-			Point(x=9, y=6), Point(x=8, y=5), Point(x=8, y=4), Point(x=8, y=3),
 			])
 	def should_get_visible_surroundings(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
@@ -301,6 +305,87 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.player, Point(3, 1))
 		dungeon.move(game.Direction.RIGHT), 
 		self.assertEqual(dungeon.player, Point(4, 1))
+	def should_move_player_diagonally_only_if_allowed(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				######
+				#@#~>#
+				#~#~##
+				#~~~~#
+				######
+				"""
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(1, 1))
+
+		self.assertFalse(dungeon.move(game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertFalse(dungeon.move(game.Direction.DOWN_RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(game.Direction.UP_RIGHT))
+		self.assertFalse(dungeon.move(game.Direction.UP_LEFT))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertEqual(dungeon.player, Point(3, 3))
+	def should_not_allow_move_player_diagonally_in_autoexplore_mode(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				+--+  
+				|.@| #
+				|..^##
+				|.>|  
+				+--+  
+				"""
+		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder])
+		self.assertTrue(dungeon.start_autoexploring())
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.player, Point(2, 2))
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.player, Point(3, 2))
+	def should_not_allow_move_player_diagonally_in_autowalk_mode(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				+--+  
+				|.@| #
+				|..^##
+				|.>|  
+				+--+  
+				"""
+		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder])
+		dungeon.walk_to(Point(5, 1))
+		self.assertTrue(dungeon.start_autoexploring())
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.player, Point(2, 2))
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.player, Point(3, 2))
+	def should_not_allow_move_player_diagonally_both_from_and_to_good_cell(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				+--+  
+				|@.| #
+				|..^##
+				|.>|  
+				+--+  
+				"""
+		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(1, 1))
+
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(game.Direction.DOWN_RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(game.Direction.UP_RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.UP))
+		self.assertEqual(dungeon.player, Point(5, 1))
+		self.assertFalse(dungeon.move(game.Direction.DOWN_LEFT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertTrue(dungeon.move(game.Direction.LEFT))
+		self.assertTrue(dungeon.move(game.Direction.LEFT))
+		self.assertFalse(dungeon.move(game.Direction.DOWN_LEFT))
+		self.assertTrue(dungeon.move(game.Direction.LEFT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertEqual(dungeon.player, Point(2, 3))
 	def should_descend_to_new_map(self):
 		class _MockBuilder(builders.CustomMap):
 			MAP_DATA = """\
@@ -343,13 +428,11 @@ class TestDungeon(unittest.TestCase):
 		dungeon.walk_to(Point(11, 2))
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.perform_automovement())
-		self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Notices stairs and stops.
 		self.assertFalse(dungeon.perform_automovement())
 
 		dungeon.walk_to(Point(11, 2))
-		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # You have reached your destination.
@@ -366,20 +449,34 @@ class TestDungeon(unittest.TestCase):
 				#       .......    #
 				####################
 				"""))
+	def should_not_stop_immediately_in_auto_mode_if_exit_is_already_visible(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				######
+				#.@..#
+				#...>#
+				######
+				"""
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		self.assertEqual(dungeon.player, Point(2, 1))
+
+		dungeon.walk_to(Point(4, 2))
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.player, Point(3, 2))
 	def should_autoexplore(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertTrue(dungeon.start_autoexploring())
-		for _ in range(15):
+		for _ in range(12):
 			self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Notices stairs and stops.
 		self.assertFalse(dungeon.perform_automovement())
 
 		self.assertTrue(dungeon.start_autoexploring())
-		for _ in range(7):
+		for _ in range(5):
 			self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Explored everything.
