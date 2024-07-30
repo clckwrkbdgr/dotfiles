@@ -83,21 +83,6 @@ class TestDungeon(unittest.TestCase):
 			#..................#
 			####################
 			"""
-	def _str_dungeon(self, dungeon, with_fov=False):
-		result = ""
-		for y in range(dungeon.strata.size.height):
-			for x in range(dungeon.strata.size.width):
-				if dungeon.player.x == x and dungeon.player.y == y:
-					result += "@"
-				elif dungeon.exit_pos.x == x and dungeon.exit_pos.y == y:
-					result += ">"
-				else:
-					if with_fov and not dungeon.field_of_view.is_visible(x, y):
-						result += dungeon.terrain_at(x, y).remembered or ' '
-					else:
-						result += dungeon.terrain_at(x, y).sprite
-			result += "\n"
-		return result
 	def should_create_new_dungeon(self):
 		dungeon = game.Game(rng_seed=123)
 		self.assertEqual(dungeon.player, Point(17, 21))
@@ -222,54 +207,55 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move(game.Direction.UP_RIGHT), 
 		self.assertEqual(dungeon.player, Point(9, 6))
 
-		self.assertEqual(self._str_dungeon(dungeon), textwrap.dedent(self._MockBuilder.MAP_DATA))
+		self.assertEqual(dungeon.tostring(), textwrap.dedent(self._MockBuilder.MAP_DATA))
 	def should_update_fov_after_movement(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
 		self.assertFalse(dungeon.remembered_exit)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
-				####################
-				#    ....#>##  ... #
-				#     ...# .# .....#
-				#    ##..##.#......#
-				#    #.............#
-				#....#.............#
+		self.maxDiff = None
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				    #####        #  
+				     ....   #  ...  
+				      ...  .# ..... 
+				     ##..##.#...... 
+				     #............. 
+				#....#............. 
 				#........@.........#
-				#..................#
-				#..................#
-				####################
+				#.................. 
+				#.................. 
+				 #################  
 				"""))
 		dungeon.move(game.Direction.RIGHT) 
 		self.assertFalse(dungeon.remembered_exit)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
-				####################
-				#    ... #>## .....#
-				#     ...# .#......#
-				#    ##..##.#......#
-				#    #.............#
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				    #####      #### 
+				     ...   ## ..... 
+				      ...  .#......#
+				     ##..##.#......#
+				     #.............#
 				#    #.............#
 				#.........@........#
 				#..................#
 				#..................#
-				####################
+				 ################## 
 				"""))
 		dungeon.move(game.Direction.UP_RIGHT) 
 		dungeon.move(game.Direction.UP) 
 		dungeon.move(game.Direction.UP) 
 		dungeon.move(game.Direction.UP) 
 		self.assertTrue(dungeon.remembered_exit)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
-				####################
-				#        #>##      #
-				#        #.@#      #
-				#    ##  ##.#      #
-				#    #    ...      #
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				   ########    #####
+				         #>##      #
+				         #.@#      #
+				     ##  ##.#      #
+				     #    ...      #
 				#    #    ...      #
 				#        .....     #
 				#        .....     #
 				#       .......    #
-				####################
+				 ###################
 				"""))
 	def should_not_move_player_into_the_void(self):
 		class _MockBuilder(builders.CustomMap):
@@ -408,7 +394,7 @@ class TestDungeon(unittest.TestCase):
 				+--+  
 				"""
 		dungeon = MockDarkRogueDungeon(rng_seed=0, builders=[_MockBuilder])
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				+--+  
 				|@.|  
 				|..^  
@@ -417,7 +403,7 @@ class TestDungeon(unittest.TestCase):
 				"""))
 		dungeon.move(game.Direction.RIGHT)
 		dungeon.move(game.Direction.DOWN)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				+--+  
 				|..|  
 				|.@^  
@@ -425,7 +411,7 @@ class TestDungeon(unittest.TestCase):
 				+--+  
 				"""))
 		dungeon.move(game.Direction.RIGHT)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				+--   
 				|..|  
 				|..@# 
@@ -433,7 +419,7 @@ class TestDungeon(unittest.TestCase):
 				+--   
 				"""))
 		dungeon.move(game.Direction.RIGHT)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				_     
 				_  | #
 				_  ^@#
@@ -441,7 +427,7 @@ class TestDungeon(unittest.TestCase):
 				_     
 				""").replace('_', ' '))
 		dungeon.move(game.Direction.RIGHT)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				_     
 				_    #
 				_   #@
@@ -449,7 +435,7 @@ class TestDungeon(unittest.TestCase):
 				_     
 				""").replace('_', ' '))
 		dungeon.move(game.Direction.UP)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				_    #
 				_    @
 				_   ##
@@ -457,7 +443,7 @@ class TestDungeon(unittest.TestCase):
 				_     
 				""").replace('_', ' '))
 		dungeon.move(game.Direction.UP)
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				_    @
 				_    #
 				_     
@@ -480,23 +466,24 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move(game.Direction.RIGHT), 
 		dungeon.descend()
 		self.assertEqual(dungeon.player, Point(2, 1))
-		self.assertEqual(self._str_dungeon(dungeon), textwrap.dedent(_MockBuilder.MAP_DATA))
+		self.assertEqual(dungeon.tostring(), textwrap.dedent(_MockBuilder.MAP_DATA))
 	def should_directly_jump_to_new_position(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		self.assertEqual(dungeon.player, Point(9, 6))
 
 		dungeon.jump_to(Point(11, 2))
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
-				####################
-				#        #>##      #
-				#        #.@#      #
-				#    ##  ##.#      #
-				#    #    ...      #
-				#    #    ...      #
+		self.maxDiff = None
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				    #######      #  
+				         #>##       
+				         #.@#       
+				     ##  ##.#       
+				     #    ...       
+				#    #    ...       
 				#        .....     #
-				#        .....     #
-				#       .......    #
-				####################
+				#        .....      
+				#       .......     
+				 #################  
 				"""))
 	def should_auto_walk_to_position(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
@@ -515,17 +502,17 @@ class TestDungeon(unittest.TestCase):
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # You have reached your destination.
 
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
-				####################
-				#        #>##      #
-				#        #.@#      #
-				#    ##  ##.#      #
-				#    #    ...      #
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				  #########      ###
+				         #>##      #
+				         #.@#      #
+				     ##  ##.#      #
+				     #    ...      #
 				#    #    ...      #
 				#        .....     #
 				#        .....     #
 				#       .......    #
-				####################
+				 ###################
 				"""))
 	def should_not_stop_immediately_in_auto_mode_if_exit_is_already_visible(self):
 		class _MockBuilder(builders.CustomMap):
@@ -561,7 +548,7 @@ class TestDungeon(unittest.TestCase):
 
 		self.assertFalse(dungeon.start_autoexploring()) # And Jesus wept.
 
-		self.assertEqual(self._str_dungeon(dungeon, with_fov=True), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				####################
 				#        #>##......#
 				#        #  #......#

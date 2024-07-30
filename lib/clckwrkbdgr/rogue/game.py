@@ -123,6 +123,19 @@ class Game(object):
 				self.move(action_data)
 	def get_viewport(self):
 		return self.strata.size
+	def tostring(self, with_fov=False):
+		size = self.get_viewport()
+		result = ""
+		if not with_fov:
+			old_god_vision = self.god.vision
+			self.god.vision = True
+		for y in range(size.height):
+			for x in range(size.width):
+				result += self.get_sprite(x, y) or ' '
+			result += "\n"
+		if not with_fov:
+			self.god.vision = old_god_vision
+		return result
 	def get_sprite(self, x, y):
 		if self.player.x == x and self.player.y == y:
 			return '@'
