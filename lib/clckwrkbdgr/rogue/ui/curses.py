@@ -1,15 +1,15 @@
+from __future__ import absolute_import
 from ._base import UI, Action
 import curses
 from ..messages import Log
 from ..game import Direction
 from ..math import Point
 
-class Curses(UI): # pragma: no cover -- TODO
+class Curses(UI):
 	def __init__(self):
 		self.window = None
 		self.aim = None
-	def __enter__(self):
-		# Mostly repeats curses.wrapper - original wrapper has no context manager option.
+	def __enter__(self): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
 		self.window = curses.initscr()
 		curses.noecho()
 		curses.cbreak()
@@ -18,10 +18,10 @@ class Curses(UI): # pragma: no cover -- TODO
 			curses.start_color()
 		except:
 			pass
+		# Custom actions.
 		curses.curs_set(0)
 		return self
-	def __exit__(self, *_targs):
-		# Mostly repeats curses.wrapper - original wrapper has no context manager option.
+	def __exit__(self, *_targs): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
 		self.window.keypad(0)
 		curses.echo()
 		curses.nocbreak()
