@@ -12,6 +12,7 @@ class Version(Enum):
 	""" INITIAL
 	PERSISTENT_RNG
 	TERRAIN_TYPES
+	MONSTERS
 	"""
 
 class Terrain(object):
@@ -26,6 +27,23 @@ class Cell(object):
 	def __init__(self, terrain, visited=False):
 		self.terrain = terrain
 		self.visited = visited
+
+class Species(object):
+	def __init__(self, sprite, max_hp):
+		self.sprite = sprite
+		self.max_hp = max_hp
+
+class Monster(object):
+	def __init__(self, species, pos):
+		self.species = species
+		self.pos = pos
+		self.hp = self.species.max_hp
+	def is_alive(self):
+		return self.hp > 0
+	def __eq__(self, other):
+		return self.species == other.species \
+				and self.pos == other.pos \
+				and self.hp == other.hp
 
 class Direction(Enum):
 	""" NONE
@@ -74,6 +92,9 @@ class Game(object):
 			'wall_v' : Terrain("|", False, remembered='|'),
 			'water' : Terrain("~", True),
 			}
+	SPECIES = {
+			'player' : Species("@", 10),
+			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None):
 		self.builders = builders or self.BUILDERS
@@ -83,7 +104,7 @@ class Game(object):
 		self.need_to_stop_automovement = False
 		self.autoexploring = False
 		self.movement_queue = []
-		self.alive = True
+		self.monsters = []
 		if dummy:
 			return
 		self.build_new_strata()
@@ -107,7 +128,7 @@ class Game(object):
 			elif action == Action.EXIT:
 				playing = False
 			elif action == Action.SUICIDE:
-				self.alive = False
+				self.get_player().hp = 0
 				playing = False
 			elif action == Action.WALK_TO:
 				self.walk_to(action_data)
@@ -137,8 +158,9 @@ class Game(object):
 			self.god.vision = old_god_vision
 		return result
 	def get_sprite(self, x, y):
-		if self.player.x == x and self.player.y == y:
-			return '@'
+		for monster in self.monsters:
+			if monster.pos.x == x and monster.pos.y == y:
+				return monster.species.sprite
 		if self.exit_pos.x == x and self.exit_pos.y == y:
 			if self.god.vision or self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 				return '>'
@@ -158,12 +180,13 @@ class Game(object):
 		if not self.terrain_at(p.x, p.y).passable:
 			return False
 		if self.terrain_at(p.x, p.y).dark:
-			if max(abs(self.player.x - p.x), abs(self.player.y - p.y)) >= 1:
+			player = self.get_player()
+			if max(abs(player.pos.x - p.x), abs(player.pos.y - p.y)) >= 1:
 				return False
 		return True
 	def update_vision(self):
 		for p in self.field_of_view.update(
-				self.player,
+				self.get_player().pos,
 				is_transparent=self.is_transparent,
 				):
 			cell = self.strata.cell(p.x, p.y)
@@ -185,7 +208,9 @@ class Game(object):
 					pos.x, pos.y,
 					Cell(builder.strata.cell(pos.x, pos.y)),
 					)
-		self.player = builder.start_pos
+		self.monsters[:] = [
+				Monster(self.SPECIES['player'], builder.start_pos),
+				]
 		self.exit_pos = builder.exit_pos
 		self.strata = builder.strata
 		self.remembered_exit = False
@@ -200,10 +225,12 @@ class Game(object):
 		if not self.terrain_at(to_point.x, to_point.y).allow_diagonal:
 			return False
 		return True
+	def get_player(self):
+		return next(monster for monster in self.monsters if monster.species is self.SPECIES['player'])
 	def move(self, direction):
 		shift = self.SHIFT[direction]
 		Log.debug('Shift: {0}'.format(shift))
-		new_pos = self.player + shift
+		new_pos = self.get_player().pos + shift
 		if not self.strata.valid(new_pos):
 			return False
 		if self.god.noclip:
@@ -212,17 +239,17 @@ class Game(object):
 			passable = self.terrain_at(new_pos.x, new_pos.y).passable
 		if not passable:
 			return False
-		if not self.allow_movement_direction(self.player, new_pos):
+		if not self.allow_movement_direction(self.get_player().pos, new_pos):
 			return False
-		Log.debug('Shift is valid, updating player pos: {0}'.format(self.player))
-		self.player = new_pos
+		Log.debug('Shift is valid, updating player pos: {0}'.format(self.get_player().pos))
+		self.get_player().pos = new_pos
 		self.update_vision()
 		return True
 	def jump_to(self, new_pos):
-		self.player = new_pos
+		self.get_player().pos = new_pos
 		self.update_vision()
 	def descend(self):
-		if self.player != self.exit_pos:
+		if self.get_player().pos != self.exit_pos:
 			return
 		self.build_new_strata()
 	def find_path(self, start, find_target):
@@ -233,18 +260,18 @@ class Game(object):
 				)
 		if not path:
 			return None
-		if path[0] == self.player: # We're already standing there.
+		if path[0] == self.get_player().pos: # We're already standing there.
 			path.pop(0)
 		return path
 	def walk_to(self, dest):
-		path = self.find_path(self.player,
+		path = self.find_path(self.get_player().pos,
 				find_target=lambda wave: dest if dest in wave else None,
 				)
 		if path:
 			self.movement_queue.extend(path)
 			self.need_to_stop_automovement = False
 	def start_autoexploring(self):
-		path = self.find_path(self.player,
+		path = self.find_path(self.get_player().pos,
 			find_target=lambda wave: next((target for target in sorted(wave)
 			if any(
 				not self.strata.cell(p.x, p.y).visited
@@ -286,8 +313,6 @@ class Game(object):
 def save_game(game):
 	dump_str = lambda _value: _value if _value is None else _value
 	dump_bool = lambda _value: int(_value)
-	yield game.player.x
-	yield game.player.y
 	yield game.exit_pos.x
 	yield game.exit_pos.y
 	yield dump_bool(game.remembered_exit)
@@ -296,12 +321,20 @@ def save_game(game):
 	for cell in game.strata.cells:
 		yield cell.terrain
 		yield dump_bool(cell.visited)
+	yield len(game.monsters)
+	for monster in game.monsters:
+		yield next(name for name, species in game.SPECIES.items() if species is monster.species)
+		yield monster.pos.x
+		yield monster.pos.y
+		yield monster.hp
 
 def load_game(game, version, data):
 	parse_str = lambda _value: _value if _value != 'None' else None
 	parse_bool = lambda _value: _value == '1'
 
-	player = Point(int(next(data)), int(next(data)))
+	legacy_player = None
+	if version <= Version.MONSTERS:
+		legacy_player = Monster(game.SPECIES['player'], Point(int(next(data)), int(next(data))))
 	exit_pos = Point(int(next(data)), int(next(data)))
 	remembered_exit = parse_bool(next(data))
 
@@ -321,8 +354,15 @@ def load_game(game, version, data):
 					break
 			strata.cells[_] = Cell(terrain)
 			strata.cells[_].visited = parse_bool(next(data))
+	if legacy_player:
+		game.monsters.append(legacy_player)
+	if version > Version.MONSTERS:
+		count = int(next(data))
+		for _ in range(count):
+			monster = Monster(game.SPECIES[next(data)], Point(int(next(data)), int(next(data))))
+			monster.hp = int(next(data))
+			game.monsters.append(monster)
 
-	game.player = player
 	game.exit_pos = exit_pos
 	game.strata = strata
 	game.remembered_exit = remembered_exit
@@ -371,13 +411,13 @@ def run():
 		game.update_vision()
 		Log.debug('Loaded.')
 		Log.debug(repr(game.strata))
-		Log.debug('Player: {0}'.format(game.player))
+		Log.debug('Player: {0}'.format(game.get_player()))
 	else:
 		game = Game()
 	from .ui import auto_ui
 	with auto_ui()() as ui:
 		game.main_loop(ui)
-	if game.alive:
+	if game.get_player().is_alive():
 		savefile.save(game)
 	else:
 		savefile.unlink()

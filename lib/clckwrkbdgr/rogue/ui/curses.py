@@ -28,7 +28,7 @@ class Curses(UI): # pragma: no cover -- TODO
 		curses.endwin()
 	def redraw(self, game):
 		Log.debug('Redrawing interface.')
-		Log.debug('Player at: {0}'.format(game.player))
+		Log.debug('Player at: {0}'.format(game.get_player().pos))
 		viewport = game.get_viewport()
 		for row in range(viewport.height):
 			for col in range(viewport.width):
@@ -67,7 +67,7 @@ class Curses(UI): # pragma: no cover -- TODO
 				self.aim = None
 				curses.curs_set(0)
 			else:
-				self.aim = game.player
+				self.aim = game.get_player().pos
 				curses.curs_set(1)
 		elif self.aim and control == ord('.'):
 			dest = self.aim
