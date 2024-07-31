@@ -201,7 +201,11 @@
             ]
         },
         "application/x-msdownload": {
-            "action": 1
+            "action": 1,
+            "ask": true,
+            "extensions": [
+                "exe"
+            ]
         },
         "application/x-octetstream": {
             "action": 1,

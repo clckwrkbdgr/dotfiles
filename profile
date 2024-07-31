@@ -25,7 +25,7 @@ else
 fi
 unset _grep_version
 
-export WINEPREFIX=/opt/wine-$USER
+export WINEPREFIX=~/Wine
 export QT_STYLE_OVERRIDE=kvantum
 if [ -n "$PYTHONPATH" ]; then
 	export PYTHONPATH="$HOME/.local/lib:$HOME/.config/lib:$PYTHONPATH"
