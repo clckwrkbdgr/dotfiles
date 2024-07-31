@@ -2,9 +2,20 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<script type="application/javascript" src="../unittest.js"></script>
+<script type="application/javascript">
+function run_unittest_after_userscript()
+{
+	if(window.clckwrkbdgr_userscript) {
+		setTimeout(function() { clckwrkbdgr.unittest.run('should_'); }, 100);
+	} else {
+		console.log('waiting for userscript...');
+		setTimeout(run_unittest_after_userscript, 100);
+	}
+}
+</script>
 </head>
 <!-- Need to wait until userscript is loaded, as it is loaded only after full original page body is processed. -->
-<body onload="setTimeout(function() { clckwrkbdgr.unittest.run('should_'); }, 100)">
+<body onload="setTimeout(run_unittest_after_userscript, 100)">
 	<noscript>
 		Failed: Javascript is needed to be turned ON to test Javascript functionality!
 	</noscript>
