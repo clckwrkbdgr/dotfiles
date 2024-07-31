@@ -10,7 +10,7 @@ mock.patch.TEST_PREFIX = 'should'
 import textwrap
 from ..math import Point, Size
 from ..pcg._base import RNG
-from ..pcg import builders
+from ..pcg import builders, settlers
 from .. import pcg
 from .. import game
 from .. import ui
@@ -49,6 +49,10 @@ class MockDarkRogueDungeon(game.Game):
 		'^' : game.Terrain("^", True, allow_diagonal=False, dark=True),
 		}
 
+class UnSettler(settlers.Settler):
+	def _populate(self):
+		pass
+
 class MockUI(ui.UI):
 	def __init__(self, user_actions, interrupts):
 		self.events = []
@@ -69,7 +73,7 @@ class MockUI(ui.UI):
 		self.events.append('user_action')
 		return self.user_actions.pop(0)
 
-class TestDungeon(unittest.TestCase):
+class AbstractTestDungeon(unittest.TestCase):
 	class _MockBuilder(builders.CustomMap):
 		MAP_DATA = """\
 			####################
@@ -83,6 +87,8 @@ class TestDungeon(unittest.TestCase):
 			#..................#
 			####################
 			"""
+
+class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_create_new_dungeon(self):
 		dungeon = game.Game(rng_seed=123)
 		self.assertEqual(dungeon.get_player().pos, Point(17, 21))
@@ -107,7 +113,7 @@ class TestDungeon(unittest.TestCase):
 				#...#######...#######...................####################...#############...#
 				#...#######...#######...#############...####################...#############...#
 				#...#######...#######...#############...####################...#############...#
-				#...#######...#######...#############...####################...#############...#
+				#..M#######...#######...#############...####################...#############...#
 				#..............................................................................#
 				#..............................................................................#
 				#................@................>............................................#
@@ -115,7 +121,7 @@ class TestDungeon(unittest.TestCase):
 				""")
 		self.assertEqual(dungeon.tostring(), expected)
 	def should_run_main_loop(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		mock_ui = MockUI(user_actions=[
 			(ui.Action.MOVE, game.Direction.UP),
 			(ui.Action.MOVE, game.Direction.DOWN),
@@ -156,7 +162,7 @@ class TestDungeon(unittest.TestCase):
 			'__exit__',
 			])
 	def should_suicide_out_of_main_loop(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		mock_ui = MockUI(user_actions=[
 			(ui.Action.SUICIDE, None),
 			], interrupts=[],
@@ -171,8 +177,10 @@ class TestDungeon(unittest.TestCase):
 			'user_action',
 			'__exit__',
 			])
+
+class TestVisibility(AbstractTestDungeon):
 	def should_get_visible_surroundings(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_viewport(), Size(20, 10))
 		self.assertEqual(dungeon.get_sprite(9, 6), '@')
 		self.assertEqual(dungeon.get_sprite(5, 6), '.')
@@ -185,205 +193,6 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.get_sprite(10, 1), '>')
 		dungeon.jump_to(Point(9, 6))
 		self.assertEqual(dungeon.get_sprite(10, 1), '>')
-	def should_move_player_character(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
-		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
-
-		dungeon.move(game.Direction.UP), 
-		self.assertEqual(dungeon.get_player().pos, Point(9, 5))
-		dungeon.move(game.Direction.RIGHT), 
-		self.assertEqual(dungeon.get_player().pos, Point(10, 5))
-		dungeon.move(game.Direction.DOWN), 
-		self.assertEqual(dungeon.get_player().pos, Point(10, 6))
-		dungeon.move(game.Direction.LEFT), 
-		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
-
-		dungeon.move(game.Direction.UP_LEFT), 
-		self.assertEqual(dungeon.get_player().pos, Point(8, 5))
-		dungeon.move(game.Direction.DOWN_LEFT), 
-		self.assertEqual(dungeon.get_player().pos, Point(7, 6))
-		dungeon.move(game.Direction.DOWN_RIGHT), 
-		self.assertEqual(dungeon.get_player().pos, Point(8, 7))
-		dungeon.move(game.Direction.UP_RIGHT), 
-		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
-
-		self.assertEqual(dungeon.tostring(), textwrap.dedent(self._MockBuilder.MAP_DATA))
-	def should_update_fov_after_movement(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
-		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
-
-		self.assertFalse(dungeon.remembered_exit)
-		self.maxDiff = None
-		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
-				    #####        #  
-				     ....   #  ...  
-				      ...  .# ..... 
-				     ##..##.#...... 
-				     #............. 
-				#....#............. 
-				#........@.........#
-				#.................. 
-				#.................. 
-				 #################  
-				"""))
-		dungeon.move(game.Direction.RIGHT) 
-		self.assertFalse(dungeon.remembered_exit)
-		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
-				    #####      #### 
-				     ...   ## ..... 
-				      ...  .#......#
-				     ##..##.#......#
-				     #.............#
-				#    #.............#
-				#.........@........#
-				#..................#
-				#..................#
-				 ################## 
-				"""))
-		dungeon.move(game.Direction.UP_RIGHT) 
-		dungeon.move(game.Direction.UP) 
-		dungeon.move(game.Direction.UP) 
-		dungeon.move(game.Direction.UP) 
-		self.assertTrue(dungeon.remembered_exit)
-		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
-				   ########    #####
-				         #>##      #
-				         #.@#      #
-				     ##  ##.#      #
-				     #    ...      #
-				#    #    ...      #
-				#        .....     #
-				#        .....     #
-				#       .......    #
-				 ###################
-				"""))
-	def should_not_move_player_into_the_void(self):
-		class _MockBuilder(builders.CustomMap):
-			MAP_DATA = """\
-				@...#
-				....#
-				...>#
-				#####
-				"""
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-
-		dungeon.move(game.Direction.UP), 
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-		dungeon.move(game.Direction.LEFT), 
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-	def should_not_move_player_into_a_wall(self):
-		class _MockBuilder(builders.CustomMap):
-			MAP_DATA = """\
-				#####
-				#.@.#
-				#..>#
-				#####
-				"""
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
-
-		dungeon.move(game.Direction.UP), 
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
-		dungeon.move(game.Direction.LEFT), 
-		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
-	def should_move_player_through_a_wall_in_noclip_mode(self):
-		class _MockBuilder(builders.CustomMap):
-			MAP_DATA = """\
-				######
-				#.@#.#
-				#...>#
-				######
-				"""
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
-
-		dungeon.god.noclip = True
-		dungeon.move(game.Direction.RIGHT), 
-		self.assertEqual(dungeon.get_player().pos, Point(3, 1))
-		dungeon.move(game.Direction.RIGHT), 
-		self.assertEqual(dungeon.get_player().pos, Point(4, 1))
-	def should_move_player_diagonally_only_if_allowed(self):
-		class _MockBuilder(builders.CustomMap):
-			MAP_DATA = """\
-				######
-				#@#~>#
-				#~#~##
-				#~~~~#
-				######
-				"""
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
-		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
-
-		self.assertFalse(dungeon.move(game.Direction.RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertFalse(dungeon.move(game.Direction.DOWN_RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertFalse(dungeon.move(game.Direction.UP_RIGHT))
-		self.assertFalse(dungeon.move(game.Direction.UP_LEFT))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertEqual(dungeon.get_player().pos, Point(3, 3))
-	def should_not_allow_move_player_diagonally_in_autoexplore_mode(self):
-		class _MockBuilder(builders.CustomMap):
-			MAP_DATA = """\
-				+--+  
-				|.@| #
-				|..^##
-				|.>|  
-				+--+  
-				"""
-		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder])
-		self.assertTrue(dungeon.start_autoexploring())
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
-	def should_not_allow_move_player_diagonally_in_autowalk_mode(self):
-		class _MockBuilder(builders.CustomMap):
-			MAP_DATA = """\
-				+--+  
-				|.@| #
-				|..^##
-				|.>|  
-				+--+  
-				"""
-		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder])
-		dungeon.walk_to(Point(5, 1))
-		self.assertTrue(dungeon.start_autoexploring())
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
-	def should_not_allow_move_player_diagonally_both_from_and_to_good_cell(self):
-		class _MockBuilder(builders.CustomMap):
-			MAP_DATA = """\
-				+--+  
-				|@.| #
-				|..^##
-				|.>|  
-				+--+  
-				"""
-		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder])
-		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
-
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertFalse(dungeon.move(game.Direction.DOWN_RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertFalse(dungeon.move(game.Direction.UP_RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.UP))
-		self.assertEqual(dungeon.get_player().pos, Point(5, 1))
-		self.assertFalse(dungeon.move(game.Direction.DOWN_LEFT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertTrue(dungeon.move(game.Direction.LEFT))
-		self.assertTrue(dungeon.move(game.Direction.LEFT))
-		self.assertFalse(dungeon.move(game.Direction.DOWN_LEFT))
-		self.assertTrue(dungeon.move(game.Direction.LEFT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertEqual(dungeon.get_player().pos, Point(2, 3))
 	def should_reduce_visibility_at_dark_tiles(self):
 		class _MockBuilder(builders.CustomMap):
 			MAP_DATA = """\
@@ -393,7 +202,7 @@ class TestDungeon(unittest.TestCase):
 				|.>|  
 				+--+  
 				"""
-		dungeon = MockDarkRogueDungeon(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockDarkRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				+--+  
 				|@.|  
@@ -450,6 +259,207 @@ class TestDungeon(unittest.TestCase):
 				_ >   
 				_     
 				""").replace('_', ' '))
+
+class TestMovement(AbstractTestDungeon):
+	def should_move_player_character(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
+
+		dungeon.move(game.Direction.UP), 
+		self.assertEqual(dungeon.get_player().pos, Point(9, 5))
+		dungeon.move(game.Direction.RIGHT), 
+		self.assertEqual(dungeon.get_player().pos, Point(10, 5))
+		dungeon.move(game.Direction.DOWN), 
+		self.assertEqual(dungeon.get_player().pos, Point(10, 6))
+		dungeon.move(game.Direction.LEFT), 
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
+
+		dungeon.move(game.Direction.UP_LEFT), 
+		self.assertEqual(dungeon.get_player().pos, Point(8, 5))
+		dungeon.move(game.Direction.DOWN_LEFT), 
+		self.assertEqual(dungeon.get_player().pos, Point(7, 6))
+		dungeon.move(game.Direction.DOWN_RIGHT), 
+		self.assertEqual(dungeon.get_player().pos, Point(8, 7))
+		dungeon.move(game.Direction.UP_RIGHT), 
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
+
+		self.assertEqual(dungeon.tostring(), textwrap.dedent(self._MockBuilder.MAP_DATA))
+	def should_update_fov_after_movement(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
+
+		self.assertFalse(dungeon.remembered_exit)
+		self.maxDiff = None
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				    #####        #  
+				     ....   #  ...  
+				      ...  .# ..... 
+				     ##..##.#...... 
+				     #............. 
+				#....#............. 
+				#........@.........#
+				#.................. 
+				#.................. 
+				 #################  
+				"""))
+		dungeon.move(game.Direction.RIGHT) 
+		self.assertFalse(dungeon.remembered_exit)
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				    #####      #### 
+				     ...   ## ..... 
+				      ...  .#......#
+				     ##..##.#......#
+				     #.............#
+				#    #.............#
+				#.........@........#
+				#..................#
+				#..................#
+				 ################## 
+				"""))
+		dungeon.move(game.Direction.UP_RIGHT) 
+		dungeon.move(game.Direction.UP) 
+		dungeon.move(game.Direction.UP) 
+		dungeon.move(game.Direction.UP) 
+		self.assertTrue(dungeon.remembered_exit)
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				   ########    #####
+				         #>##      #
+				         #.@#      #
+				     ##  ##.#      #
+				     #    ...      #
+				#    #    ...      #
+				#        .....     #
+				#        .....     #
+				#       .......    #
+				 ###################
+				"""))
+	def should_not_move_player_into_the_void(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				@...#
+				....#
+				...>#
+				#####
+				"""
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
+
+		dungeon.move(game.Direction.UP), 
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
+		dungeon.move(game.Direction.LEFT), 
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
+	def should_not_move_player_into_a_wall(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				#####
+				#.@.#
+				#..>#
+				#####
+				"""
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+
+		dungeon.move(game.Direction.UP), 
+		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		dungeon.move(game.Direction.LEFT), 
+		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
+	def should_move_player_through_a_wall_in_noclip_mode(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				######
+				#.@#.#
+				#...>#
+				######
+				"""
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+
+		dungeon.god.noclip = True
+		dungeon.move(game.Direction.RIGHT), 
+		self.assertEqual(dungeon.get_player().pos, Point(3, 1))
+		dungeon.move(game.Direction.RIGHT), 
+		self.assertEqual(dungeon.get_player().pos, Point(4, 1))
+	def should_move_player_diagonally_only_if_allowed(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				######
+				#@#~>#
+				#~#~##
+				#~~~~#
+				######
+				"""
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
+
+		self.assertFalse(dungeon.move(game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertFalse(dungeon.move(game.Direction.DOWN_RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(game.Direction.UP_RIGHT))
+		self.assertFalse(dungeon.move(game.Direction.UP_LEFT))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertEqual(dungeon.get_player().pos, Point(3, 3))
+	def should_not_allow_move_player_diagonally_in_autoexplore_mode(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				+--+  
+				|.@| #
+				|..^##
+				|.>|  
+				+--+  
+				"""
+		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		self.assertTrue(dungeon.start_autoexploring())
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
+	def should_not_allow_move_player_diagonally_in_autowalk_mode(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				+--+  
+				|.@| #
+				|..^##
+				|.>|  
+				+--+  
+				"""
+		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		dungeon.walk_to(Point(5, 1))
+		self.assertTrue(dungeon.start_autoexploring())
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
+	def should_not_allow_move_player_diagonally_both_from_and_to_good_cell(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				+--+  
+				|@.| #
+				|..^##
+				|.>|  
+				+--+  
+				"""
+		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
+
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(game.Direction.DOWN_RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(game.Direction.UP_RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(game.Direction.UP))
+		self.assertEqual(dungeon.get_player().pos, Point(5, 1))
+		self.assertFalse(dungeon.move(game.Direction.DOWN_LEFT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertTrue(dungeon.move(game.Direction.LEFT))
+		self.assertTrue(dungeon.move(game.Direction.LEFT))
+		self.assertFalse(dungeon.move(game.Direction.DOWN_LEFT))
+		self.assertTrue(dungeon.move(game.Direction.LEFT))
+		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertEqual(dungeon.get_player().pos, Point(2, 3))
 	def should_descend_to_new_map(self):
 		class _MockBuilder(builders.CustomMap):
 			MAP_DATA = """\
@@ -458,7 +468,7 @@ class TestDungeon(unittest.TestCase):
 				#....#
 				######
 				"""
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
 
 		dungeon.descend()
@@ -468,7 +478,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
 		self.assertEqual(dungeon.tostring(), textwrap.dedent(_MockBuilder.MAP_DATA))
 	def should_directly_jump_to_new_position(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
 		dungeon.jump_to(Point(11, 2))
@@ -485,8 +495,10 @@ class TestDungeon(unittest.TestCase):
 				#       .......     
 				 #################  
 				"""))
+
+class TestAutoMode(AbstractTestDungeon):
 	def should_auto_walk_to_position(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
 		self.assertFalse(dungeon.perform_automovement())
@@ -522,14 +534,14 @@ class TestDungeon(unittest.TestCase):
 				#...>#
 				######
 				"""
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
 
 		dungeon.walk_to(Point(4, 2))
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
 	def should_autoexplore(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
 		self.assertFalse(dungeon.perform_automovement())
@@ -561,20 +573,7 @@ class TestDungeon(unittest.TestCase):
 				####################
 				"""))
 
-class TestSerialization(unittest.TestCase):
-	class _MockMap(builders.CustomMap):
-		MAP_DATA = """\
-				####################
-				#........#>##......#
-				#........#..#......#
-				#....##..##.#......#
-				#....#.............#
-				#....#.............#
-				#........@.........#
-				#..................#
-				#..................#
-				####################
-				"""
+class TestSavefile(AbstractTestDungeon):
 	@mock.patch('os.stat')
 	@mock.patch('os.path.exists', side_effect=[False, True])
 	@mock.patch('clckwrkbdgr.rogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
@@ -643,8 +642,9 @@ class TestSerialization(unittest.TestCase):
 		savefile.unlink()
 		os_unlink.assert_not_called()
 
+class TestGameSerialization(AbstractTestDungeon):
 	def should_deserialize_game_before_terrain_types(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockMap])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		dump = [
 			9, 6, 10, 1, 0, 20, 10,
 			'#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0,
@@ -670,7 +670,7 @@ class TestSerialization(unittest.TestCase):
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_monsters(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockMap])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		dump = [
 			9, 6, 10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
@@ -697,7 +697,7 @@ class TestSerialization(unittest.TestCase):
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_behavior(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockMap])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		dump = [
 			10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
@@ -710,7 +710,9 @@ class TestSerialization(unittest.TestCase):
 			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
-			1, 'player', 9, 6, 10, 
+			2,
+				'player', 9, 6, 10, 
+				'monster', 2, 5, 3, 
 			]
 		dump = list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
@@ -729,7 +731,7 @@ class TestSerialization(unittest.TestCase):
 			self.assertEqual(monster.hp, restored_monster.hp)
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_serialize_and_deserialize_game(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockMap])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		dump = list(game.save_game(dungeon))
 		self.assertEqual(dump, [
 			10, 1, 0, 20, 10,
@@ -743,7 +745,9 @@ class TestSerialization(unittest.TestCase):
 			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
-			1, 'player', 0, 9, 6, 10, 
+			2,
+				'player', 0, 9, 6, 10, 
+				'monster', 3, 2, 5, 3, 
 			])
 		dump = list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)

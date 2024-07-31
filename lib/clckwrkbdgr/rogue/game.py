@@ -29,13 +29,6 @@ class Cell(object):
 		self.terrain = terrain
 		self.visited = visited
 
-class Behavior(Enum):
-	""" PLAYER
-	DUMMY
-	INERT
-	ANGRY
-	"""
-
 class Species(object):
 	def __init__(self, sprite, max_hp):
 		self.sprite = sprite
@@ -77,6 +70,9 @@ class Game(object):
 			pcg.builders.CaveBuilder,
 			pcg.builders.MazeBuilder,
 			]
+	SETTLERS = [
+			pcg.settlers.SingleMonster,
+			]
 	SHIFT = {
 			Direction.LEFT : Point(-1,  0),
 			Direction.DOWN : Point( 0, +1),
@@ -103,10 +99,12 @@ class Game(object):
 			}
 	SPECIES = {
 			'player' : Species("@", 10),
+			'monster' : Species("M", 3),
 			}
 
-	def __init__(self, rng_seed=None, dummy=False, builders=None):
+	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None):
 		self.builders = builders or self.BUILDERS
+		self.settlers = settlers or self.SETTLERS
 		self.rng = RNG(rng_seed)
 		self.god = God()
 		self.field_of_view = math.FieldOfView(10)
@@ -214,13 +212,25 @@ class Game(object):
 					pos.x, pos.y,
 					Cell(self.TERRAIN[builder.strata.cell(pos.x, pos.y)]),
 					)
+
+		settler = self.rng.choice(self.settlers)
+		Log.debug("Populating dungeon: {0}".format(settler))
+		settler = settler(self.rng, builder)
+		settler.populate()
 		self.monsters[:] = [
-				Monster(self.SPECIES['player'], Behavior.PLAYER, builder.start_pos),
+				Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, builder.start_pos),
 				]
+		for monster_data in settler.monsters:
+			species, monster_data = monster_data[0], monster_data[1:]
+			monster_data = (self.SPECIES[species],) + monster_data
+			self.monsters.append(Monster(*monster_data))
+
+		Log.debug("Finalizing dungeon...")
 		self.exit_pos = builder.exit_pos
 		self.strata = builder.strata
 		self.remembered_exit = False
 		self.update_vision()
+		Log.debug("Dungeon is ready.")
 	def allow_movement_direction(self, from_point, to_point):
 		shift = to_point - from_point
 		is_diagonal = abs(shift.x) + abs(shift.y) == 2
@@ -232,7 +242,7 @@ class Game(object):
 			return False
 		return True
 	def get_player(self):
-		return next(monster for monster in self.monsters if monster.behavior == Behavior.PLAYER)
+		return next(monster for monster in self.monsters if monster.behavior == pcg.settlers.Behavior.PLAYER)
 	def move(self, direction):
 		shift = self.SHIFT[direction]
 		Log.debug('Shift: {0}'.format(shift))
@@ -341,7 +351,7 @@ def load_game(game, version, data):
 
 	legacy_player = None
 	if version <= Version.MONSTERS:
-		legacy_player = Monster(game.SPECIES['player'], Behavior.PLAYER, Point(int(next(data)), int(next(data))))
+		legacy_player = Monster(game.SPECIES['player'], pcg.settlers.Behavior.PLAYER, Point(int(next(data)), int(next(data))))
 	exit_pos = Point(int(next(data)), int(next(data)))
 	remembered_exit = parse_bool(next(data))
 
@@ -366,11 +376,15 @@ def load_game(game, version, data):
 	if version > Version.MONSTERS:
 		count = int(next(data))
 		for _ in range(count):
-			species = game.SPECIES[next(data)]
+			species_name = next(data)
+			species = game.SPECIES[species_name]
 			if version > Version.MONSTER_BEHAVIOR:
 				behavior = int(next(data))
 			else:
-				behavior = Behavior.PLAYER
+				if species_name == 'player':
+					behavior = pcg.settlers.Behavior.PLAYER
+				else:
+					behavior = pcg.settlers.Behavior.ANGRY
 			pos = Point(int(next(data)), int(next(data)))
 			monster = Monster(species, behavior, pos)
 			monster.hp = int(next(data))
