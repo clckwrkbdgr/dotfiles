@@ -175,20 +175,17 @@ class Game(object):
 				return '>'
 
 		cell = self.strata.cell(x, y)
-		terrain = self.TERRAIN[cell.terrain]
 		if self.field_of_view.is_visible(x, y) or self.god.vision:
-			return terrain.sprite
-		elif cell.visited and terrain.remembered:
-			return terrain.remembered
+			return cell.terrain.sprite
+		elif cell.visited and cell.terrain.remembered:
+			return cell.terrain.remembered
 		return None
-	def terrain_at(self, x, y):
-		return self.TERRAIN[self.strata.cell(x, y).terrain]
 	def is_transparent(self, p):
 		if not self.strata.valid(p):
 			return False
-		if not self.terrain_at(p.x, p.y).passable:
+		if not self.strata.cell(p.x, p.y).terrain.passable:
 			return False
-		if self.terrain_at(p.x, p.y).dark:
+		if self.strata.cell(p.x, p.y).terrain.dark:
 			player = self.get_player()
 			if max(abs(player.pos.x - p.x), abs(player.pos.y - p.y)) >= 1:
 				return False
@@ -215,7 +212,7 @@ class Game(object):
 		for pos in builder.strata.size:
 			builder.strata.set_cell(
 					pos.x, pos.y,
-					Cell(builder.strata.cell(pos.x, pos.y)),
+					Cell(self.TERRAIN[builder.strata.cell(pos.x, pos.y)]),
 					)
 		self.monsters[:] = [
 				Monster(self.SPECIES['player'], Behavior.PLAYER, builder.start_pos),
@@ -229,9 +226,9 @@ class Game(object):
 		is_diagonal = abs(shift.x) + abs(shift.y) == 2
 		if not is_diagonal:
 			return True
-		if not self.terrain_at(from_point.x, from_point.y).allow_diagonal:
+		if not self.strata.cell(from_point.x, from_point.y).terrain.allow_diagonal:
 			return False
-		if not self.terrain_at(to_point.x, to_point.y).allow_diagonal:
+		if not self.strata.cell(to_point.x, to_point.y).terrain.allow_diagonal:
 			return False
 		return True
 	def get_player(self):
@@ -245,7 +242,7 @@ class Game(object):
 		if self.god.noclip:
 			passable = True
 		else:
-			passable = self.terrain_at(new_pos.x, new_pos.y).passable
+			passable = self.strata.cell(new_pos.x, new_pos.y).terrain.passable
 		if not passable:
 			return False
 		if not self.allow_movement_direction(self.get_player().pos, new_pos):
@@ -264,7 +261,7 @@ class Game(object):
 	def find_path(self, start, find_target):
 		path = math.find_path(
 				self.strata, start,
-				is_passable=lambda p, from_point: self.terrain_at(p.x, p.y).passable and self.strata.cell(p.x, p.y).visited and self.allow_movement_direction(from_point, p),
+				is_passable=lambda p, from_point: self.strata.cell(p.x, p.y).terrain.passable and self.strata.cell(p.x, p.y).visited and self.allow_movement_direction(from_point, p),
 				find_target=find_target,
 				)
 		if not path:
@@ -328,7 +325,7 @@ def save_game(game):
 	yield game.strata.size.width
 	yield game.strata.size.height
 	for cell in game.strata.cells:
-		yield cell.terrain
+		yield next(name for name, terrain in game.TERRAIN.items() if terrain is cell.terrain)
 		yield dump_bool(cell.visited)
 	yield len(game.monsters)
 	for monster in game.monsters:
@@ -352,7 +349,7 @@ def load_game(game, version, data):
 	strata = Matrix(strata_size, None)
 	if version > Version.TERRAIN_TYPES:
 		for _ in range(strata_size.width * strata_size.height):
-			strata.cells[_] = Cell(parse_str(next(data)))
+			strata.cells[_] = Cell(game.TERRAIN[parse_str(next(data))])
 			strata.cells[_].visited = parse_bool(next(data))
 	else:
 		for _ in range(strata_size.width * strata_size.height):
@@ -362,7 +359,7 @@ def load_game(game, version, data):
 					and game.TERRAIN[terrain].passable == cell_type[1] \
 					and game.TERRAIN[terrain].remembered == cell_type[2]:
 					break
-			strata.cells[_] = Cell(terrain)
+			strata.cells[_] = Cell(game.TERRAIN[terrain])
 			strata.cells[_].visited = parse_bool(next(data))
 	if legacy_player:
 		game.monsters.append(legacy_player)

@@ -110,10 +110,10 @@ class TestDungeon(unittest.TestCase):
 				#...#######...#######...#############...####################...#############...#
 				#..............................................................................#
 				#..............................................................................#
-				#..............................................................................#
+				#................@................>............................................#
 				################################################################################
 				""")
-		self.assertEqual(dungeon.strata.tostring(lambda c: dungeon.TERRAIN[c.terrain].sprite), expected)
+		self.assertEqual(dungeon.tostring(), expected)
 	def should_run_main_loop(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 		mock_ui = MockUI(user_actions=[
@@ -664,9 +664,9 @@ class TestSerialization(unittest.TestCase):
 		self.assertEqual(dungeon.get_player().pos, restored_dungeon.get_player().pos)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).sprite, restored_dungeon.terrain_at(pos.x, pos.y).sprite, str(pos))
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).passable, restored_dungeon.terrain_at(pos.x, pos.y).passable, str(pos))
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).remembered, restored_dungeon.terrain_at(pos.x, pos.y).remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_monsters(self):
@@ -691,9 +691,9 @@ class TestSerialization(unittest.TestCase):
 		self.assertEqual(restored_dungeon.get_player().hp, 10)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).sprite, restored_dungeon.terrain_at(pos.x, pos.y).sprite, str(pos))
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).passable, restored_dungeon.terrain_at(pos.x, pos.y).passable, str(pos))
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).remembered, restored_dungeon.terrain_at(pos.x, pos.y).remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_behavior(self):
@@ -715,14 +715,18 @@ class TestSerialization(unittest.TestCase):
 		dump = list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
 		game.load_game(restored_dungeon, game.Version.MONSTER_BEHAVIOR, iter(dump))
-		self.assertEqual(dungeon.get_player().pos, restored_dungeon.get_player().pos)
-		self.assertEqual(restored_dungeon.get_player().hp, 10)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).sprite, restored_dungeon.terrain_at(pos.x, pos.y).sprite, str(pos))
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).passable, restored_dungeon.terrain_at(pos.x, pos.y).passable, str(pos))
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).remembered, restored_dungeon.terrain_at(pos.x, pos.y).remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
+		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
+			self.assertEqual(monster.species, restored_monster.species)
+			self.assertEqual(monster.behavior, restored_monster.behavior)
+			self.assertEqual(monster.pos, restored_monster.pos)
+			self.assertEqual(monster.hp, restored_monster.hp)
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_serialize_and_deserialize_game(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockMap])
@@ -748,10 +752,16 @@ class TestSerialization(unittest.TestCase):
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).sprite, restored_dungeon.terrain_at(pos.x, pos.y).sprite, str(pos))
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).passable, restored_dungeon.terrain_at(pos.x, pos.y).passable, str(pos))
-			self.assertEqual(dungeon.terrain_at(pos.x, pos.y).remembered, restored_dungeon.terrain_at(pos.x, pos.y).remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
+		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
+			self.assertEqual(monster.species, restored_monster.species)
+			self.assertEqual(monster.behavior, restored_monster.behavior)
+			self.assertEqual(monster.pos, restored_monster.pos)
+			self.assertEqual(monster.hp, restored_monster.hp)
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 
 class TestMain(unittest.TestCase):
