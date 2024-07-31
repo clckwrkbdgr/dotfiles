@@ -13,6 +13,7 @@ class Version(Enum):
 	PERSISTENT_RNG
 	TERRAIN_TYPES
 	MONSTERS
+	MONSTER_BEHAVIOR
 	"""
 
 class Terrain(object):
@@ -28,14 +29,22 @@ class Cell(object):
 		self.terrain = terrain
 		self.visited = visited
 
+class Behavior(Enum):
+	""" PLAYER
+	DUMMY
+	INERT
+	ANGRY
+	"""
+
 class Species(object):
 	def __init__(self, sprite, max_hp):
 		self.sprite = sprite
 		self.max_hp = max_hp
 
 class Monster(object):
-	def __init__(self, species, pos):
+	def __init__(self, species, behavior, pos):
 		self.species = species
+		self.behavior = behavior
 		self.pos = pos
 		self.hp = self.species.max_hp
 	def is_alive(self):
@@ -209,7 +218,7 @@ class Game(object):
 					Cell(builder.strata.cell(pos.x, pos.y)),
 					)
 		self.monsters[:] = [
-				Monster(self.SPECIES['player'], builder.start_pos),
+				Monster(self.SPECIES['player'], Behavior.PLAYER, builder.start_pos),
 				]
 		self.exit_pos = builder.exit_pos
 		self.strata = builder.strata
@@ -226,7 +235,7 @@ class Game(object):
 			return False
 		return True
 	def get_player(self):
-		return next(monster for monster in self.monsters if monster.species is self.SPECIES['player'])
+		return next(monster for monster in self.monsters if monster.behavior == Behavior.PLAYER)
 	def move(self, direction):
 		shift = self.SHIFT[direction]
 		Log.debug('Shift: {0}'.format(shift))
@@ -324,6 +333,7 @@ def save_game(game):
 	yield len(game.monsters)
 	for monster in game.monsters:
 		yield next(name for name, species in game.SPECIES.items() if species is monster.species)
+		yield monster.behavior
 		yield monster.pos.x
 		yield monster.pos.y
 		yield monster.hp
@@ -334,7 +344,7 @@ def load_game(game, version, data):
 
 	legacy_player = None
 	if version <= Version.MONSTERS:
-		legacy_player = Monster(game.SPECIES['player'], Point(int(next(data)), int(next(data))))
+		legacy_player = Monster(game.SPECIES['player'], Behavior.PLAYER, Point(int(next(data)), int(next(data))))
 	exit_pos = Point(int(next(data)), int(next(data)))
 	remembered_exit = parse_bool(next(data))
 
@@ -359,7 +369,13 @@ def load_game(game, version, data):
 	if version > Version.MONSTERS:
 		count = int(next(data))
 		for _ in range(count):
-			monster = Monster(game.SPECIES[next(data)], Point(int(next(data)), int(next(data))))
+			species = game.SPECIES[next(data)]
+			if version > Version.MONSTER_BEHAVIOR:
+				behavior = int(next(data))
+			else:
+				behavior = Behavior.PLAYER
+			pos = Point(int(next(data)), int(next(data)))
+			monster = Monster(species, behavior, pos)
 			monster.hp = int(next(data))
 			game.monsters.append(monster)
 
