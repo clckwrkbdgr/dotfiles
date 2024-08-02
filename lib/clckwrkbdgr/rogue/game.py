@@ -165,9 +165,11 @@ class Game(object):
 			self.god.vision = old_god_vision
 		return result
 	def get_sprite(self, x, y):
-		for monster in self.monsters:
+		monster = self.find_monster(x, y)
+		if monster:
 			if monster.pos.x == x and monster.pos.y == y:
-				return monster.species.sprite
+				if self.field_of_view.is_visible(x, y) or self.god.vision:
+					return monster.species.sprite
 		if self.exit_pos.x == x and self.exit_pos.y == y:
 			if self.god.vision or self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 				return '>'
@@ -257,10 +259,24 @@ class Game(object):
 			return False
 		if not self.allow_movement_direction(self.get_player().pos, new_pos):
 			return False
+		monster = self.find_monster(new_pos.x, new_pos.y)
+		if monster:
+			Log.debug('Monster at dest pos {0}: '.format(new_pos, monster))
+			self.attack(self.get_player(), monster)
+			return True
 		Log.debug('Shift is valid, updating player pos: {0}'.format(self.get_player().pos))
 		self.get_player().pos = new_pos
 		self.update_vision()
 		return True
+	def attack(self, actor, target):
+		target.hp -= 1
+		if target.hp <= 0:
+			self.monsters.remove(target)
+	def find_monster(self, x, y):
+		for monster in self.monsters:
+			if monster.pos.x == x and monster.pos.y == y:
+				return monster
+		return None
 	def jump_to(self, new_pos):
 		self.get_player().pos = new_pos
 		self.update_vision()

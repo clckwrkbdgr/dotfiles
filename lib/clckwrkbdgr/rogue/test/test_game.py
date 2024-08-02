@@ -53,6 +53,12 @@ class UnSettler(settlers.Settler):
 	def _populate(self):
 		pass
 
+class CustomSettler(settlers.Settler):
+	MONSTERS = [
+			]
+	def _populate(self):
+		self.monsters += self.MONSTERS
+
 class MockUI(ui.UI):
 	def __init__(self, user_actions, interrupts):
 		self.events = []
@@ -193,6 +199,38 @@ class TestVisibility(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_sprite(10, 1), '>')
 		dungeon.jump_to(Point(9, 6))
 		self.assertEqual(dungeon.get_sprite(10, 1), '>')
+	def should_see_monsters_only_in_the_field_of_vision(self):
+		class _NowYouSeeMe(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(1, 1)),
+				('monster', settlers.Behavior.DUMMY, Point(1, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_NowYouSeeMe])
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				    #####        #  
+				     ....   #  ...  
+				      ...  .# ..... 
+				     ##..##.#...... 
+				     #............. 
+				#....#............. 
+				#M.......@.........#
+				#.................. 
+				#.................. 
+				 #################  
+				"""))
+		dungeon.jump_to(Point(2, 2))
+		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
+				##########       #  
+				#M.......#  #       
+				#.@......#  #       
+				#....##..## #       
+				#....#              
+				#....#              
+				#M....             #
+				#......             
+				#.......            
+				##################  
+				"""))
 	def should_reduce_visibility_at_dark_tiles(self):
 		class _MockBuilder(builders.CustomMap):
 			MAP_DATA = """\
@@ -495,6 +533,37 @@ class TestMovement(AbstractTestDungeon):
 				#       .......     
 				 #################  
 				"""))
+
+class TestFight(AbstractTestDungeon):
+	def should_move_to_attack_monster(self):
+		class _CloseMonster(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(10, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
+
+		dungeon.move(game.Direction.RIGHT)
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
+		self.assertEqual(dungeon.find_monster(10, 6).hp, 2)
+	def should_attack_monster(self):
+		class _CloseMonster(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(10, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
+
+		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
+		self.assertEqual(dungeon.find_monster(10, 6).hp, 2)
+	def should_kill_monster(self):
+		class _CloseMonster(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(10, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
+
+		dungeon.find_monster(10, 6).hp = 1
+		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
+		self.assertIsNone(dungeon.find_monster(10, 6))
 
 class TestAutoMode(AbstractTestDungeon):
 	def should_auto_walk_to_position(self):
