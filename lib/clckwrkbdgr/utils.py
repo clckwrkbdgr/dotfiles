@@ -306,3 +306,10 @@ def load_entry_point(module_spec, function=None, reload_module=False): # pragma:
 		all_functions = list(inspect.getmembers(module_spec, inspect.isfunction))
 		function = all_functions[0][1]
 	return module_spec, function
+
+@contextlib.contextmanager
+def ignore_warnings(): # pragma: no cover -- TODO very specific functionality.
+	import warnings
+	with warnings.catch_warnings():
+		warnings.simplefilter("ignore")
+		yield
