@@ -2,6 +2,7 @@
 rc=0
 
 diff lib/test/test_userscript.html lib/test/test_userscript_grant.html
+rc=$((rc+$?))
 
 mapfile -t changed_files < <( git diff-index --name-only --cached HEAD )
 python caps.py check "${changed_files[@]}"
