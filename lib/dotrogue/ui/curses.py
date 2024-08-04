@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from ._base import UI, Action
 import curses
 from ..messages import Log
+from .. import messages
 from ..game import Direction
 from ..math import Point
 
@@ -36,6 +37,18 @@ class Curses(UI):
 				sprite = game.get_sprite(col, row)
 				self.window.addstr(1+row, col, sprite or ' ')
 
+		events = []
+		for event in game.events:
+			if isinstance(event, messages.DiscoverEvent):
+				if event.obj == '>':
+					events.append('exit!')
+				else:
+					events.append('{0}!'.format(event.obj.name))
+			else:
+				events.append('Unknown event {0}!'.format(repr(event)))
+		if events:
+			self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])
+
 		status = []
 		if game.movement_queue:
 			status.append('[auto]')
@@ -59,6 +72,9 @@ class Curses(UI):
 		Log.debug('Performing user actions.')
 		control = self.window.getch()
 		Log.debug('Control: {0} ({1}).'.format(control, repr(chr(control))))
+
+		game.perceive_event()
+
 		if control == ord('q'):
 			Log.debug('Exiting the game.')
 			return Action.EXIT, None

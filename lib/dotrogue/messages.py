@@ -22,3 +22,10 @@ class Logger:
 		self.fd = open(filename, 'w')
 
 Log = Logger()
+
+class Event(object):
+	pass
+
+class DiscoverEvent(Event):
+	def __init__(self, obj):
+		self.obj = obj

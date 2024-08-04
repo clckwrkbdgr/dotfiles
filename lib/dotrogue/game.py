@@ -5,6 +5,7 @@ from .pcg import RNG
 from . import math
 from .utils import Enum
 from .math import Point, Matrix, Size
+from . import messages
 from .messages import Log
 from .ui import Action
 from . import monsters
@@ -81,8 +82,8 @@ class Game(object):
 			'water' : Terrain("~", True),
 			}
 	SPECIES = {
-			'player' : monsters.Species("@", 10),
-			'monster' : monsters.Species("M", 3),
+			'player' : monsters.Species('player', "@", 10),
+			'monster' : monsters.Species('monster', "M", 3),
 			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None):
@@ -95,6 +96,7 @@ class Game(object):
 		self.autoexploring = False
 		self.movement_queue = []
 		self.monsters = []
+		self.visible_monsters = []
 		self.events = []
 		if dummy:
 			return
@@ -175,18 +177,36 @@ class Game(object):
 				return False
 		return True
 	def update_vision(self):
+		current_visible_monsters = []
 		for p in self.field_of_view.update(
 				self.get_player().pos,
 				is_transparent=self.is_transparent,
 				):
 			cell = self.strata.cell(p.x, p.y)
+
+			for monster in self.monsters:
+				if monster.behavior == monsters.Behavior.PLAYER:
+					continue
+				if p == monster.pos:
+					if monster not in self.visible_monsters:
+						self.events.append(messages.DiscoverEvent(monster))
+						self.need_to_stop_automovement = True
+					current_visible_monsters.append(monster)
+
 			if cell.visited:
 				continue
 			if p == self.exit_pos:
+				self.events.append(messages.DiscoverEvent('>'))
 				self.need_to_stop_automovement = True
 			cell.visited = True
+		self.visible_monsters = current_visible_monsters
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 			self.remembered_exit = True
+	def perceive_event(self, event=None):
+		if event is None:
+			self.events[:] = []
+		else:
+			self.events.remove(event)
 	def build_new_strata(self):
 		builder = self.rng.choice(self.builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))

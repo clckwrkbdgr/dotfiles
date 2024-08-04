@@ -184,6 +184,61 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'__exit__',
 			])
 
+class TestEvents(AbstractTestDungeon):
+	def should_notify_when_found_exit(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
+		self.assertEqual(dungeon.events, [])
+		dungeon.jump_to(Point(11, 2))
+		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(dungeon.events[0].obj, '>')
+		dungeon.perceive_event()
+		dungeon.jump_to(Point(9, 6))
+		self.assertEqual(dungeon.events, [])
+		dungeon.jump_to(Point(11, 2))
+		self.assertEqual(dungeon.events, [])
+	def should_clear_specific_event_only(self):
+		class _NowYouSeeMe(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(1, 1)),
+				('monster', settlers.Behavior.DUMMY, Point(1, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_NowYouSeeMe])
+		dungeon.jump_to(Point(11, 2))
+		self.assertEqual(len(dungeon.events), 2)
+		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
+		self.assertEqual(dungeon.events[1].obj, '>')
+
+		dungeon.perceive_event(dungeon.events[1])
+		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
+	def should_notify_when_see_monsters(self):
+		class _NowYouSeeMe(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(1, 1)),
+				('monster', settlers.Behavior.DUMMY, Point(1, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_NowYouSeeMe])
+		# At start we see just the one monster.
+		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
+		dungeon.perceive_event()
+
+		# Now we see both, but reporting only the new one.
+		dungeon.jump_to(Point(2, 2))
+		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[1])
+		dungeon.perceive_event()
+
+		# Now we see just the original one - visibility did not change.
+		dungeon.jump_to(Point(9, 6))
+		self.assertEqual(dungeon.events, [])
+
+		# Now we see both, but reporting only the new one again.
+		dungeon.jump_to(Point(2, 2))
+		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[1])
+		dungeon.perceive_event()
+
 class TestVisibility(AbstractTestDungeon):
 	def should_get_visible_surroundings(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])

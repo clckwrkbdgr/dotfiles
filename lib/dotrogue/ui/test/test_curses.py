@@ -59,6 +59,18 @@ class TestCurses(unittest.TestCase):
 			'#.................. ',
 			' #################  ',
 			]
+	DISPLAYED_LAYOUT_EXIT = [
+			'  #########      ###',
+			'          >##    ..#',
+			'          ..#  ....#',
+			'     ##..##.#......#',
+			'     #.....@.......#',
+			'#    #.............#',
+			'#  ................#',
+			'# .................#',
+			'# .................#',
+			' ###################',
+			]
 	DISPLAYED_LAYOUT_FULL = [
 			'####################',
 			'#........#>##......#',
@@ -82,6 +94,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.calls, [
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
+			('addstr', 0, 0, 'monster!                                                                        '),
 			('addstr', 24, 0, '                                                                                '),
 			('refresh',),
 			])
@@ -96,6 +109,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.calls, [
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
+			('addstr', 0, 0, 'monster!                                                                        '),
 			('addstr', 24, 0, '[auto]                                                                          '),
 			('refresh',),
 			])
@@ -110,7 +124,41 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.calls, [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
+			('addstr', 0, 0, 'monster!                                                                        '),
 			('addstr', 24, 0, '[vis] [clip]                                                                    '),
+			('refresh',),
+			])
+	def should_display_events(self):
+		ui = curses.Curses()
+		ui.window = MockCurses()
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+
+		# Monster is already spotted from the beginning,
+		# now move into cave opening to detect exit.
+		dungeon.move(game.Direction.UP_RIGHT)
+		dungeon.move(game.Direction.UP_RIGHT)
+		dungeon.move(game.Direction.UP_RIGHT)
+
+		dungeon.events.append('GIBBERISH')
+
+		ui.redraw(dungeon)
+		self.maxDiff = None
+		self.assertEqual(ui.window.calls, [
+			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'monster! exit! Unknown event {0}!                                       '.format(repr('GIBBERISH'))),
+			('addstr', 24, 0, '                                                                                '),
+			('refresh',),
+			])
+		
+		ui.window = MockCurses('.')
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.maxDiff = None
+		self.assertEqual(ui.window.calls, [
+			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 24, 0, '                                                                                '),
 			('refresh',),
 			])
 	@mock.patch('curses.curs_set')
