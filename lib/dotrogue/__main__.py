@@ -6,8 +6,8 @@ class Tester:
 	def __init__(self):
 		self.all_tests = []
 	def iter_files(self):
-		os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-		for rootdir, dirnames, filenames in os.walk('clckwrkbdgr/rogue'):
+		os.chdir(os.path.dirname(os.path.dirname(__file__)))
+		for rootdir, dirnames, filenames in os.walk('dotrogue'):
 			if '__pycache__' in rootdir:
 				continue
 			for filename in filenames:
@@ -28,7 +28,7 @@ class Tester:
 				result = True
 		return result
 	def get_tests(self, argv):
-		tests = [arg for arg in argv if arg.startswith('clckwrkbdgr.rogue.')]
+		tests = [arg for arg in argv if arg.startswith('dotrogue.')]
 		if not tests:
 			if not self.all_tests:
 				list(self.iter_files())
