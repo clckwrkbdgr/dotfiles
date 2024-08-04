@@ -46,8 +46,7 @@ class Curses(UI):
 					events.append('{0}!'.format(event.obj.name))
 			else:
 				events.append('Unknown event {0}!'.format(repr(event)))
-		if events:
-			self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])
+		self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])
 
 		status = []
 		if game.movement_queue:
@@ -72,8 +71,6 @@ class Curses(UI):
 		Log.debug('Performing user actions.')
 		control = self.window.getch()
 		Log.debug('Control: {0} ({1}).'.format(control, repr(chr(control))))
-
-		game.perceive_event()
 
 		if control == ord('q'):
 			Log.debug('Exiting the game.')

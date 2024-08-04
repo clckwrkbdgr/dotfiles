@@ -503,6 +503,7 @@ class TestMovement(AbstractTestDungeon):
 				+--+  
 				"""
 		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		dungeon.perceive_event() # Clear events.
 		self.assertTrue(dungeon.start_autoexploring())
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
@@ -518,6 +519,7 @@ class TestMovement(AbstractTestDungeon):
 				+--+  
 				"""
 		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		dungeon.perceive_event() # Clear events.
 		dungeon.walk_to(Point(5, 1))
 		self.assertTrue(dungeon.start_autoexploring())
 		self.assertTrue(dungeon.perform_automovement())
@@ -631,6 +633,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Notices stairs and stops.
+		dungeon.perceive_event() # Clear events.
 		self.assertFalse(dungeon.perform_automovement())
 
 		dungeon.walk_to(Point(11, 2))
@@ -660,6 +663,7 @@ class TestAutoMode(AbstractTestDungeon):
 				"""
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		dungeon.perceive_event() # Clear events.
 
 		dungeon.walk_to(Point(4, 2))
 		self.assertTrue(dungeon.perform_automovement())
@@ -674,6 +678,7 @@ class TestAutoMode(AbstractTestDungeon):
 			self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Notices stairs and stops.
+		dungeon.perceive_event() # Clear events.
 		self.assertFalse(dungeon.perform_automovement())
 
 		self.assertTrue(dungeon.start_autoexploring())

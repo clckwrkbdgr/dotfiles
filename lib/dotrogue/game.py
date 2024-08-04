@@ -92,7 +92,6 @@ class Game(object):
 		self.rng = RNG(rng_seed)
 		self.god = God()
 		self.field_of_view = math.FieldOfView(10)
-		self.need_to_stop_automovement = False
 		self.autoexploring = False
 		self.movement_queue = []
 		self.monsters = []
@@ -116,6 +115,7 @@ class Game(object):
 				continue
 
 			action, action_data = ui.user_action(self)
+			self.perceive_event() # If we acted - we've seen all the events.
 			if action == Action.NONE:
 				pass
 			elif action == Action.EXIT:
@@ -190,14 +190,12 @@ class Game(object):
 				if p == monster.pos:
 					if monster not in self.visible_monsters:
 						self.events.append(messages.DiscoverEvent(monster))
-						self.need_to_stop_automovement = True
 					current_visible_monsters.append(monster)
 
 			if cell.visited:
 				continue
 			if p == self.exit_pos:
 				self.events.append(messages.DiscoverEvent('>'))
-				self.need_to_stop_automovement = True
 			cell.visited = True
 		self.visible_monsters = current_visible_monsters
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
@@ -305,7 +303,6 @@ class Game(object):
 				)
 		if path:
 			self.movement_queue.extend(path)
-			self.need_to_stop_automovement = False
 	def start_autoexploring(self):
 		path = self.find_path(self.get_player().pos,
 			find_target=lambda wave: next((target for target in sorted(wave)
@@ -317,17 +314,14 @@ class Game(object):
 			)
 		if not path:
 			return False
-		if not self.autoexploring: # Do not do it on restarting autoexplore.
-			self.need_to_stop_automovement = False
 		self.movement_queue.extend(path)
 		self.autoexploring = True
 		return True
 	def perform_automovement(self):
 		if not self.movement_queue:
 			return False
-		if self.need_to_stop_automovement:
-			Log.debug('New objects in FOV, aborting auto-moving mode.')
-			self.need_to_stop_automovement = False
+		if self.events:
+			Log.debug('New events in FOV, aborting auto-moving mode.')
 			return self.stop_automovement()
 		Log.debug('Performing queued actions.')
 		new_pos = self.movement_queue.pop(0)
