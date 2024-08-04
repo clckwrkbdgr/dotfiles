@@ -97,7 +97,7 @@ class AbstractTestDungeon(unittest.TestCase):
 
 class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_create_new_dungeon(self):
-		dungeon = game.Game(rng_seed=123)
+		dungeon = game.Game(rng_seed=123, settlers=[settlers.SingleMonster])
 		self.assertEqual(dungeon.get_player().pos, Point(17, 21))
 		self.assertEqual(dungeon.exit_pos, Point(34, 21))
 		self.maxDiff = None
@@ -787,7 +787,7 @@ class TestSavefile(AbstractTestDungeon):
 
 class TestGameSerialization(AbstractTestDungeon):
 	def should_deserialize_game_before_terrain_types(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
 		dump = [
 			9, 6, 10, 1, 0, 20, 10,
 			'#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0,
@@ -813,7 +813,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_monsters(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
 		dump = [
 			9, 6, 10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
@@ -840,7 +840,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_behavior(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
 		dump = [
 			10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
@@ -874,7 +874,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(monster.hp, restored_monster.hp)
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_serialize_and_deserialize_game(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
 		dump = list(game.save_game(dungeon))
 		self.assertEqual(dump, [
 			10, 1, 0, 20, 10,

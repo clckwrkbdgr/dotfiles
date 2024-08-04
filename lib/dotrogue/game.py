@@ -55,7 +55,7 @@ class Game(object):
 			pcg.builders.MazeBuilder,
 			]
 	SETTLERS = [
-			pcg.settlers.SingleMonster,
+			pcg.settlers.Squatters,
 			]
 	SHIFT = {
 			Direction.LEFT : Point(-1,  0),
@@ -84,6 +84,10 @@ class Game(object):
 	SPECIES = {
 			'player' : monsters.Species('player', "@", 10),
 			'monster' : monsters.Species('monster', "M", 3),
+
+			'plant' : monsters.Species('plant', "P", 1),
+			'slime' : monsters.Species('slime', "o", 5),
+			'rodent' : monsters.Species('rodent', "r", 3),
 			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None):
