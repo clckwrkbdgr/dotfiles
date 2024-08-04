@@ -7,6 +7,7 @@ from .utils import Enum
 from .math import Point, Matrix, Size
 from .messages import Log
 from .ui import Action
+from . import monsters
 
 class Version(Enum):
 	""" INITIAL
@@ -28,24 +29,6 @@ class Cell(object):
 	def __init__(self, terrain, visited=False):
 		self.terrain = terrain
 		self.visited = visited
-
-class Species(object):
-	def __init__(self, sprite, max_hp):
-		self.sprite = sprite
-		self.max_hp = max_hp
-
-class Monster(object):
-	def __init__(self, species, behavior, pos):
-		self.species = species
-		self.behavior = behavior
-		self.pos = pos
-		self.hp = self.species.max_hp
-	def is_alive(self):
-		return self.hp > 0
-	def __eq__(self, other):
-		return self.species == other.species \
-				and self.pos == other.pos \
-				and self.hp == other.hp
 
 class Direction(Enum):
 	""" NONE
@@ -98,8 +81,8 @@ class Game(object):
 			'water' : Terrain("~", True),
 			}
 	SPECIES = {
-			'player' : Species("@", 10),
-			'monster' : Species("M", 3),
+			'player' : monsters.Species("@", 10),
+			'monster' : monsters.Species("M", 3),
 			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None):
@@ -112,6 +95,7 @@ class Game(object):
 		self.autoexploring = False
 		self.movement_queue = []
 		self.monsters = []
+		self.events = []
 		if dummy:
 			return
 		self.build_new_strata()
@@ -220,12 +204,12 @@ class Game(object):
 		settler = settler(self.rng, builder)
 		settler.populate()
 		self.monsters[:] = [
-				Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, builder.start_pos),
+				monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, builder.start_pos),
 				]
 		for monster_data in settler.monsters:
 			species, monster_data = monster_data[0], monster_data[1:]
 			monster_data = (self.SPECIES[species],) + monster_data
-			self.monsters.append(Monster(*monster_data))
+			self.monsters.append(monsters.Monster(*monster_data))
 
 		Log.debug("Finalizing dungeon...")
 		self.exit_pos = builder.exit_pos
@@ -367,7 +351,7 @@ def load_game(game, version, data):
 
 	legacy_player = None
 	if version <= Version.MONSTERS:
-		legacy_player = Monster(game.SPECIES['player'], pcg.settlers.Behavior.PLAYER, Point(int(next(data)), int(next(data))))
+		legacy_player = monsters.Monster(game.SPECIES['player'], pcg.settlers.Behavior.PLAYER, Point(int(next(data)), int(next(data))))
 	exit_pos = Point(int(next(data)), int(next(data)))
 	remembered_exit = parse_bool(next(data))
 
@@ -402,7 +386,7 @@ def load_game(game, version, data):
 				else:
 					behavior = pcg.settlers.Behavior.ANGRY
 			pos = Point(int(next(data)), int(next(data)))
-			monster = Monster(species, behavior, pos)
+			monster = monsters.Monster(species, behavior, pos)
 			monster.hp = int(next(data))
 			game.monsters.append(monster)
 

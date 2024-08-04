@@ -337,6 +337,7 @@ lib/dotrogue/__main__.py caps=work
 lib/dotrogue/game.py caps=work
 lib/dotrogue/math.py caps=work
 lib/dotrogue/messages.py caps=work
+lib/dotrogue/monsters.py caps=work
 lib/dotrogue/utils.py caps=work
 lib/dotrogue/ui/__init__.py caps=work
 lib/dotrogue/ui/_base.py caps=work

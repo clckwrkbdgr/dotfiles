@@ -1,12 +1,5 @@
-from ..utils import Enum
 from . import _base as pcg
-
-class Behavior(Enum):
-	""" PLAYER
-	DUMMY
-	INERT
-	ANGRY
-	"""
+from ..monsters import Behavior
 
 class Settler(object):
 	def __init__(self, rng, builder):
