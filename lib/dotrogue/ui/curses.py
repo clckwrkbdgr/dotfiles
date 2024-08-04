@@ -44,6 +44,12 @@ class Curses(UI):
 					events.append('exit!')
 				else:
 					events.append('{0}!'.format(event.obj.name))
+			elif isinstance(event, messages.AttackEvent):
+				events.append('{0} x> {1}.'.format(event.actor.name, event.target.name))
+			elif isinstance(event, messages.HealthEvent):
+				events.append('{0}{1:+}hp.'.format(event.target.name, event.diff))
+			elif isinstance(event, messages.DeathEvent):
+				events.append('{0} dies.'.format(event.target.name))
 			else:
 				events.append('Unknown event {0}!'.format(repr(event)))
 		self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])

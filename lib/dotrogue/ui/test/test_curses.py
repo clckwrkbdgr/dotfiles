@@ -28,6 +28,10 @@ class MockCurses:
 	def __init__(self, chars=None):
 		self.calls = []
 		self.chars = [(ord(c) if isinstance(c, str) else c) for c in (chars or [])]
+	def get_calls(self):
+		result = self.calls
+		self.calls = []
+		return result
 	def getch(self):
 		return self.chars.pop(0)
 	def __getattr__(self, name):
@@ -71,6 +75,30 @@ class TestCurses(unittest.TestCase):
 			'# .................#',
 			' ###################',
 			]
+	DISPLAYED_LAYOUT_FIGHT = [
+			'#########        #  ',
+			'#......     #       ',
+			'#.....      #       ',
+			'#....##  ## #       ',
+			'#....#              ',
+			'#.M..#......        ',
+			'#.@..........      #',
+			'#...........        ',
+			'#...........        ',
+			'##################  ',
+			]
+	DISPLAYED_LAYOUT_KILLED_MONSTER = [
+			'#########        #  ',
+			'#......     #       ',
+			'#.....      #       ',
+			'#....##  ## #       ',
+			'#....#              ',
+			'#....#......        ',
+			'#.@..........      #',
+			'#...........        ',
+			'#...........        ',
+			'##################  ',
+			]
 	DISPLAYED_LAYOUT_FULL = [
 			'####################',
 			'#........#>##......#',
@@ -91,7 +119,7 @@ class TestCurses(unittest.TestCase):
 
 		ui.redraw(dungeon)
 		self.maxDiff = None
-		self.assertEqual(ui.window.calls, [
+		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
@@ -106,7 +134,7 @@ class TestCurses(unittest.TestCase):
 
 		ui.redraw(dungeon)
 		self.maxDiff = None
-		self.assertEqual(ui.window.calls, [
+		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
@@ -114,23 +142,22 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 
-		ui.window = MockCurses()
 		dungeon.movement_queue = []
 		dungeon.god.vision = True
 		dungeon.god.noclip = True
 
 		ui.redraw(dungeon)
 		self.maxDiff = None
-		self.assertEqual(ui.window.calls, [
+		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
 			('addstr', 24, 0, '[vis] [clip]                                                                    '),
 			('refresh',),
 			])
-	def should_display_events(self):
+	def should_display_discover_events(self):
 		ui = curses.Curses()
-		ui.window = MockCurses()
+		ui.window = MockCurses('.')
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 
 		# Monster is already spotted from the beginning,
@@ -143,7 +170,7 @@ class TestCurses(unittest.TestCase):
 
 		ui.redraw(dungeon)
 		self.maxDiff = None
-		self.assertEqual(ui.window.calls, [
+		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster! exit! Unknown event {0}!                                       '.format(repr('GIBBERISH'))),
@@ -151,15 +178,47 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 		
-		ui.window = MockCurses('.')
-		dungeon.perceive_event()
+		dungeon.clear_event()
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		ui.redraw(dungeon)
 		self.maxDiff = None
-		self.assertEqual(ui.window.calls, [
+		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
+			('addstr', 24, 0, '                                                                                '),
+			('refresh',),
+			])
+	def should_display_attack_events(self):
+		ui = curses.Curses()
+		ui.window = MockCurses()
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
+		dungeon.clear_event()
+
+		dungeon.jump_to(Point(2, 6))
+		dungeon.move(game.Direction.UP)
+
+		ui.redraw(dungeon)
+		self.maxDiff = None
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'player x> monster. monster-1hp.                                                 '),
+			('addstr', 24, 0, '                                                                                '),
+			('refresh',),
+			])
+
+		# Finish him.
+		dungeon.clear_event()
+		dungeon.move(game.Direction.UP)
+		dungeon.move(game.Direction.UP)
+
+		ui.redraw(dungeon)
+		self.maxDiff = None
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, self.DISPLAYED_LAYOUT_KILLED_MONSTER[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'player x> monster. monster-1hp. player x> monster. monster-1hp. monster dies.   '),
 			('addstr', 24, 0, '                                                                                '),
 			('refresh',),
 			])
@@ -169,7 +228,7 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses('x')
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder])
 
-		dungeon.perceive_event()
+		dungeon.clear_event()
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		curs_set.assert_has_calls([
 			mock.call(1),
@@ -177,7 +236,7 @@ class TestCurses(unittest.TestCase):
 
 		ui.redraw(dungeon)
 		self.maxDiff = None
-		self.assertEqual(ui.window.calls, [
+		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),

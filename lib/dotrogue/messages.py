@@ -29,3 +29,17 @@ class Event(object):
 class DiscoverEvent(Event):
 	def __init__(self, obj):
 		self.obj = obj
+
+class AttackEvent(Event):
+	def __init__(self, actor, target):
+		self.actor = actor
+		self.target = target
+
+class HealthEvent(Event):
+	def __init__(self, target, diff):
+		self.target = target
+		self.diff = diff
+
+class DeathEvent(Event):
+	def __init__(self, target):
+		self.target = target

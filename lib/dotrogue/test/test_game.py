@@ -14,6 +14,7 @@ from ..pcg import builders, settlers
 from .. import pcg
 from .. import game
 from .. import ui
+from .. import messages
 
 BUILTIN_OPEN = 'builtins.open' if sys.version_info[0] >= 3 else '__builtin__.open'
 
@@ -190,8 +191,9 @@ class TestEvents(AbstractTestDungeon):
 		self.assertEqual(dungeon.events, [])
 		dungeon.jump_to(Point(11, 2))
 		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, '>')
-		dungeon.perceive_event()
+		dungeon.clear_event()
 		dungeon.jump_to(Point(9, 6))
 		self.assertEqual(dungeon.events, [])
 		dungeon.jump_to(Point(11, 2))
@@ -208,7 +210,7 @@ class TestEvents(AbstractTestDungeon):
 		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
 		self.assertEqual(dungeon.events[1].obj, '>')
 
-		dungeon.perceive_event(dungeon.events[1])
+		dungeon.clear_event(dungeon.events[1])
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
 	def should_notify_when_see_monsters(self):
@@ -220,14 +222,15 @@ class TestEvents(AbstractTestDungeon):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_NowYouSeeMe])
 		# At start we see just the one monster.
 		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
-		dungeon.perceive_event()
+		dungeon.clear_event()
 
 		# Now we see both, but reporting only the new one.
 		dungeon.jump_to(Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[1])
-		dungeon.perceive_event()
+		dungeon.clear_event()
 
 		# Now we see just the original one - visibility did not change.
 		dungeon.jump_to(Point(9, 6))
@@ -237,7 +240,7 @@ class TestEvents(AbstractTestDungeon):
 		dungeon.jump_to(Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[1])
-		dungeon.perceive_event()
+		dungeon.clear_event()
 
 class TestVisibility(AbstractTestDungeon):
 	def should_get_visible_surroundings(self):
@@ -503,7 +506,7 @@ class TestMovement(AbstractTestDungeon):
 				+--+  
 				"""
 		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
-		dungeon.perceive_event() # Clear events.
+		dungeon.clear_event() # Clear events.
 		self.assertTrue(dungeon.start_autoexploring())
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
@@ -519,7 +522,7 @@ class TestMovement(AbstractTestDungeon):
 				+--+  
 				"""
 		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
-		dungeon.perceive_event() # Clear events.
+		dungeon.clear_event() # Clear events.
 		dungeon.walk_to(Point(5, 1))
 		self.assertTrue(dungeon.start_autoexploring())
 		self.assertTrue(dungeon.perform_automovement())
@@ -608,9 +611,17 @@ class TestFight(AbstractTestDungeon):
 				('monster', settlers.Behavior.DUMMY, Point(10, 6)),
 				]
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
-
+		dungeon.clear_event()
+		
 		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.find_monster(10, 6).hp, 2)
+		self.assertEqual(len(dungeon.events), 2)
+		self.assertEqual(type(dungeon.events[0]), messages.AttackEvent)
+		self.assertEqual(dungeon.events[0].actor, dungeon.get_player())
+		self.assertEqual(dungeon.events[0].target, dungeon.find_monster(10, 6))
+		self.assertEqual(type(dungeon.events[1]), messages.HealthEvent)
+		self.assertEqual(dungeon.events[1].target, dungeon.find_monster(10, 6))
+		self.assertEqual(dungeon.events[1].diff, -1)
 	def should_kill_monster(self):
 		class _CloseMonster(CustomSettler):
 			MONSTERS = [
@@ -619,7 +630,10 @@ class TestFight(AbstractTestDungeon):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
 
 		dungeon.find_monster(10, 6).hp = 1
+		monster = dungeon.find_monster(10, 6)
 		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
+		self.assertEqual(type(dungeon.events[-1]), messages.DeathEvent)
+		self.assertEqual(dungeon.events[-1].target, monster)
 		self.assertIsNone(dungeon.find_monster(10, 6))
 
 class TestAutoMode(AbstractTestDungeon):
@@ -633,7 +647,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Notices stairs and stops.
-		dungeon.perceive_event() # Clear events.
+		dungeon.clear_event() # Clear events.
 		self.assertFalse(dungeon.perform_automovement())
 
 		dungeon.walk_to(Point(11, 2))
@@ -663,7 +677,7 @@ class TestAutoMode(AbstractTestDungeon):
 				"""
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
-		dungeon.perceive_event() # Clear events.
+		dungeon.clear_event() # Clear events.
 
 		dungeon.walk_to(Point(4, 2))
 		self.assertTrue(dungeon.perform_automovement())
@@ -678,7 +692,7 @@ class TestAutoMode(AbstractTestDungeon):
 			self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Notices stairs and stops.
-		dungeon.perceive_event() # Clear events.
+		dungeon.clear_event() # Clear events.
 		self.assertFalse(dungeon.perform_automovement())
 
 		self.assertTrue(dungeon.start_autoexploring())

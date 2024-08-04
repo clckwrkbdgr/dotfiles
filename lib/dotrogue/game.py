@@ -115,7 +115,7 @@ class Game(object):
 				continue
 
 			action, action_data = ui.user_action(self)
-			self.perceive_event() # If we acted - we've seen all the events.
+			self.clear_event() # If we acted - we've seen all the events.
 			if action == Action.NONE:
 				pass
 			elif action == Action.EXIT:
@@ -200,7 +200,7 @@ class Game(object):
 		self.visible_monsters = current_visible_monsters
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 			self.remembered_exit = True
-	def perceive_event(self, event=None):
+	def clear_event(self, event=None):
 		if event is None:
 			self.events[:] = []
 		else:
@@ -271,8 +271,12 @@ class Game(object):
 		self.update_vision()
 		return True
 	def attack(self, actor, target):
-		target.hp -= 1
+		self.events.append(messages.AttackEvent(actor, target))
+		diff = -1
+		target.hp += diff
+		self.events.append(messages.HealthEvent(target, diff))
 		if target.hp <= 0:
+			self.events.append(messages.DeathEvent(target))
 			self.monsters.remove(target)
 	def find_monster(self, x, y):
 		for monster in self.monsters:
