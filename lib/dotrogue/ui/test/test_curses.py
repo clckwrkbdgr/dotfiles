@@ -179,7 +179,7 @@ class TestCurses(unittest.TestCase):
 			])
 		
 		dungeon.clear_event()
-		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.WAIT, None))
 		ui.redraw(dungeon)
 		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [
@@ -283,7 +283,7 @@ class TestCurses(unittest.TestCase):
 		ui = curses.Curses()
 		ui.window = MockCurses('.x.')
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
-		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.WAIT, None))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.WALK_TO, Point(9, 6)))
 		self.assertIsNone(ui.aim)

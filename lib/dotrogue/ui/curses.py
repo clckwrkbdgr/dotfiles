@@ -106,6 +106,8 @@ class Curses(UI):
 			return Action.SUICIDE, None
 		elif not self.aim and control == ord('>'):
 			return Action.DESCEND, None
+		elif control == ord('.'):
+			return Action.WAIT, None
 		elif chr(control) in 'hjklyubn':
 			Log.debug('Moving.')
 			if self.aim:

@@ -10,6 +10,7 @@ class Action(Enum):
 	GOD_TOGGLE_NOCLIP
 	DESCEND
 	MOVE
+	WAIT
 	"""
 
 class UI(object):

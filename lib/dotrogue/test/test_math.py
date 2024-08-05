@@ -2,6 +2,7 @@ import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
 from ..math import Point, Size, Rect, Matrix
+from ..math import distance
 from ..math import bresenham
 from ..math import find_path
 from ..math import FieldOfView
@@ -18,6 +19,14 @@ class TestPoint(unittest.TestCase):
 	def should_multiply_point_values(self):
 		a = Point(1, 2)
 		self.assertEqual(a * 2, Point(2, 4))
+	def should_calculate_distance_between_two_points(self):
+		self.assertEqual(distance(Point(0, 0), Point(0, 0)), 0)
+		self.assertEqual(distance(Point(0, 0), Point(1, 0)), 1)
+		self.assertEqual(distance(Point(0, 0), Point(1, 0)), 1)
+		self.assertEqual(distance(Point(0, 0), Point(1, 1)), 1)
+		self.assertEqual(distance(Point(0, 0), Point(2, 0)), 2)
+		self.assertEqual(distance(Point(0, 0), Point(2, 1)), 2)
+		self.assertEqual(distance(Point(0, 0), Point(2, 2)), 2)
 
 class TestRect(unittest.TestCase):
 	def should_detect_containing_points(self):

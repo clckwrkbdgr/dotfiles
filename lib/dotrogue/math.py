@@ -12,6 +12,9 @@ class Point(_Point):
 	def __sub__(self, other):
 		return Point(self.x - other.x, self.y - other.y)
 
+def distance(point_a, point_b):
+	return max(abs(point_a.x - point_b.x), abs(point_a.y - point_b.y))
+
 _Size = namedtuple('Size', 'width height')
 class Size(_Size):
 	def __iter__(self):

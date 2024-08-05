@@ -105,9 +105,9 @@ class Game(object):
 			return
 		self.build_new_strata()
 	def main_loop(self, ui):
-		playing = True
 		Log.debug('Starting playing...')
-		while playing:
+		player_turn = True
+		while self.get_player():
 			ui.redraw(self)
 
 			try:
@@ -123,10 +123,10 @@ class Game(object):
 			if action == Action.NONE:
 				pass
 			elif action == Action.EXIT:
-				playing = False
+				break
 			elif action == Action.SUICIDE:
-				self.get_player().hp = 0
-				playing = False
+				self.affect_health(self.get_player(), -self.get_player().hp)
+				player_turn = False
 			elif action == Action.WALK_TO:
 				self.walk_to(action_data)
 			elif action == Action.AUTOEXPLORE:
@@ -139,6 +139,21 @@ class Game(object):
 				self.descend()
 			elif action == Action.MOVE:
 				self.move(action_data)
+				player_turn = False
+			elif action == Action.WAIT:
+				player_turn = False
+
+			if not player_turn:
+				for monster in self.monsters:
+					if monster.behavior == monsters.Behavior.PLAYER:
+						continue
+					elif monster.behavior == monsters.Behavior.DUMMY:
+						pass
+					elif monster.behavior == monsters.Behavior.INERT:
+						if self.get_player():
+							if math.distance(monster.pos, self.get_player().pos) == 1:
+								self.attack(monster, self.get_player())
+				player_turn = True
 	def get_viewport(self):
 		return self.strata.size
 	def tostring(self, with_fov=False):
@@ -177,7 +192,7 @@ class Game(object):
 			return False
 		if self.strata.cell(p.x, p.y).terrain.dark:
 			player = self.get_player()
-			if max(abs(player.pos.x - p.x), abs(player.pos.y - p.y)) >= 1:
+			if math.distance(player.pos, p) >= 1:
 				return False
 		return True
 	def update_vision(self):
@@ -250,7 +265,7 @@ class Game(object):
 			return False
 		return True
 	def get_player(self):
-		return next(monster for monster in self.monsters if monster.behavior == pcg.settlers.Behavior.PLAYER)
+		return next((monster for monster in self.monsters if monster.behavior == pcg.settlers.Behavior.PLAYER), None)
 	def move(self, direction):
 		shift = self.SHIFT[direction]
 		Log.debug('Shift: {0}'.format(shift))
@@ -274,14 +289,15 @@ class Game(object):
 		self.get_player().pos = new_pos
 		self.update_vision()
 		return True
-	def attack(self, actor, target):
-		self.events.append(messages.AttackEvent(actor, target))
-		diff = -1
+	def affect_health(self, target, diff):
 		target.hp += diff
 		self.events.append(messages.HealthEvent(target, diff))
-		if target.hp <= 0:
+		if not target.is_alive():
 			self.events.append(messages.DeathEvent(target))
 			self.monsters.remove(target)
+	def attack(self, actor, target):
+		self.events.append(messages.AttackEvent(actor, target))
+		self.affect_health(target, -1)
 	def find_monster(self, x, y):
 		for monster in self.monsters:
 			if monster.pos.x == x and monster.pos.y == y:
@@ -466,7 +482,7 @@ def run():
 	from .ui import auto_ui
 	with auto_ui()() as ui:
 		game.main_loop(ui)
-	if game.get_player().is_alive():
+	if game.get_player() and game.get_player().is_alive():
 		savefile.save(game)
 	else:
 		savefile.unlink()

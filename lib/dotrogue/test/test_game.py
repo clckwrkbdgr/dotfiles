@@ -78,6 +78,8 @@ class MockUI(ui.UI):
 		return self.interrupts.pop(0)
 	def user_action(self, game): # pragma: no cover
 		self.events.append('user_action')
+		for event in game.events:
+			self.events.append(str(event))
 		return self.user_actions.pop(0)
 
 class AbstractTestDungeon(unittest.TestCase):
@@ -156,7 +158,10 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			] * 2 + ['redraw'] + [ # NONE AUTOEXPLORE
 			'redraw',
 			'user_action',
-			] * 2 + [ # exploring...
+			] + ['Discovered >'] + [ # exploring...
+			'redraw',
+			'user_action',
+			] + [ # exploring...
 			'redraw',
 			'user_interrupted',
 			] * 9 + ['redraw', 'user_action'] + [
@@ -168,6 +173,88 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			] * 3 + [
 			'__exit__',
 			])
+	def should_perform_monsters_turns_after_player_has_done_with_their_turn(self):
+		class _FightingGround(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(10, 6)),
+				('monster', settlers.Behavior.INERT, Point(9, 4)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_FightingGround])
+		mock_ui = MockUI(user_actions=[
+			(ui.Action.NONE, None),
+			(ui.Action.MOVE, game.Direction.UP), # Step in.
+			(ui.Action.NONE, None),
+			(ui.Action.MOVE, game.Direction.UP), # Attack.
+			(ui.Action.WAIT, None), # Just wait.
+			(ui.Action.EXIT, None),
+			], interrupts=[],
+		)
+		with mock_ui:
+			dungeon.main_loop(mock_ui)
+		self.maxDiff = None
+		self.assertEqual(mock_ui.events, [
+			'__enter__',
+			'redraw',
+			'user_action',
+			'Discovered monster @Point(x=10, y=6) 3/3hp',
+			'Discovered monster @Point(x=9, y=4) 3/3hp',
+			'redraw',
+			'user_action',
+			'redraw',
+			'user_action',
+			'monster @Point(x=9, y=4) 3/3hp attacks player @Point(x=9, y=5) 9/10hp',
+			'player @Point(x=9, y=5) 9/10hp -1 hp',
+			'redraw',
+			'user_action',
+			'redraw',
+			'user_action',
+			'player @Point(x=9, y=5) 8/10hp attacks monster @Point(x=9, y=4) 2/3hp',
+			'monster @Point(x=9, y=4) 2/3hp -1 hp',
+			'monster @Point(x=9, y=4) 2/3hp attacks player @Point(x=9, y=5) 8/10hp',
+			'player @Point(x=9, y=5) 8/10hp -1 hp',
+			'redraw',
+			'user_action',
+			'monster @Point(x=9, y=4) 2/3hp attacks player @Point(x=9, y=5) 7/10hp',
+			'player @Point(x=9, y=5) 7/10hp -1 hp',
+			'__exit__',
+			])
+		self.assertEqual(dungeon.get_player().hp, 7)
+		self.assertEqual(dungeon.monsters[2].hp, 2)
+	def should_die_after_monster_attack(self):
+		class _FightingGround(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(10, 6)),
+				('monster', settlers.Behavior.INERT, Point(9, 4)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_FightingGround])
+		mock_ui = MockUI(user_actions=[
+			(ui.Action.NONE, None),
+			(ui.Action.MOVE, game.Direction.UP), # Step in.
+			] + [
+			(ui.Action.WAIT, None), # Just wait while monster kills you.
+			] * 10, interrupts=[],
+		)
+		with mock_ui:
+			dungeon.main_loop(mock_ui)
+		self.maxDiff = None
+		self.assertEqual(mock_ui.events, [
+			'__enter__',
+			'redraw',
+			'user_action',
+			'Discovered monster @Point(x=10, y=6) 3/3hp',
+			'Discovered monster @Point(x=9, y=4) 3/3hp',
+			'redraw',
+			'user_action',
+			] + sum(([
+			'redraw',
+			'user_action',
+			'monster @Point(x=9, y=4) 3/3hp attacks player @Point(x=9, y=5) {0}/10hp'.format(9 - i),
+			'player @Point(x=9, y=5) {0}/10hp -1 hp'.format(9 - i),
+			] for i in range(9)), []) + [
+			'__exit__',
+			])
+		self.assertIsNone(dungeon.get_player())
+		self.assertEqual(dungeon.monsters[1].hp, 3)
 	def should_suicide_out_of_main_loop(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		mock_ui = MockUI(user_actions=[
@@ -176,7 +263,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		)
 		with mock_ui:
 			dungeon.main_loop(mock_ui)
-		self.assertFalse(dungeon.get_player().is_alive())
+		self.assertIsNone(dungeon.get_player())
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',

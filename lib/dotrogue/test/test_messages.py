@@ -87,3 +87,11 @@ class TestLogger(unittest.TestCase):
 		stream.assert_called_once_with('test.log', 'w')
 		handle = stream()
 		handle.write.assert_called_once_with('2020-12-31T12:34:56:error: foo bar\n')
+
+class TestEvents(unittest.TestCase):
+	def should_str_events(self):
+		self.assertEqual(str(messages.DiscoverEvent('@')), 'Discovered @')
+		self.assertEqual(str(messages.AttackEvent('@', 'M')), '@ attacks M')
+		self.assertEqual(str(messages.HealthEvent('@', -10)), '@ -10 hp')
+		self.assertEqual(str(messages.HealthEvent('@', +10)), '@ +10 hp')
+		self.assertEqual(str(messages.DeathEvent('@')), '@ dies')
