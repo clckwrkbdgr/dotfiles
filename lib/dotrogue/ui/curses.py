@@ -29,7 +29,6 @@ class Curses(UI):
 		curses.endwin()
 	def redraw(self, game):
 		Log.debug('Redrawing interface.')
-		Log.debug('Player at: {0}'.format(game.get_player().pos))
 		viewport = game.get_viewport()
 		for row in range(viewport.height):
 			for col in range(viewport.width):
@@ -55,6 +54,11 @@ class Curses(UI):
 		self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])
 
 		status = []
+		player = game.get_player()
+		if player:
+			status.append('hp: {0:>{1}}/{2}'.format(player.hp, len(str(player.species.max_hp)), player.species.max_hp))
+		else:
+			status.append('[DEAD] Press Any Key...')
 		if game.movement_queue:
 			status.append('[auto]')
 		if game.god.vision:
@@ -66,6 +70,9 @@ class Curses(UI):
 		if self.aim:
 			self.window.move(1+self.aim.y, self.aim.x)
 		self.window.refresh()
+
+		if not player:
+			self.window.getch()
 	def user_interrupted(self):
 		self.window.nodelay(1)
 		self.window.timeout(30)

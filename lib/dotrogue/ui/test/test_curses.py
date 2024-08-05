@@ -63,6 +63,18 @@ class TestCurses(unittest.TestCase):
 			'#.................. ',
 			' #################  ',
 			]
+	DISPLAYED_LAYOUT_DEAD = [
+			'    #####        #  ',
+			'     ....   #  ...  ',
+			'      ...  .# ..... ',
+			'     ##..##.#...... ',
+			'     #............. ',
+			'#.M..#............. ',
+			'#..................#',
+			'#.................. ',
+			'#.................. ',
+			' #################  ',
+			]
 	DISPLAYED_LAYOUT_EXIT = [
 			'  #########      ###',
 			'          >##    ..#',
@@ -123,7 +135,7 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
-			('addstr', 24, 0, '                                                                                '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
 			('refresh',),
 			])
 	def should_show_state_markers(self):
@@ -138,7 +150,7 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
-			('addstr', 24, 0, '[auto]                                                                          '),
+			('addstr', 24, 0, 'hp: 10/10 [auto]                                                                '),
 			('refresh',),
 			])
 
@@ -152,7 +164,7 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
-			('addstr', 24, 0, '[vis] [clip]                                                                    '),
+			('addstr', 24, 0, 'hp: 10/10 [vis] [clip]                                                          '),
 			('refresh',),
 			])
 	def should_display_discover_events(self):
@@ -174,7 +186,7 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster! exit! Unknown event {0}!                                       '.format(repr('GIBBERISH'))),
-			('addstr', 24, 0, '                                                                                '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
 			('refresh',),
 			])
 		
@@ -186,7 +198,7 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, '                                                                                '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
 			('refresh',),
 			])
 	def should_display_attack_events(self):
@@ -204,7 +216,7 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> monster. monster-1hp.                                                 '),
-			('addstr', 24, 0, '                                                                                '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
 			('refresh',),
 			])
 
@@ -219,7 +231,24 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_KILLED_MONSTER[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> monster. monster-1hp. player x> monster. monster-1hp. monster dies.   '),
-			('addstr', 24, 0, '                                                                                '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
+			('refresh',),
+			])
+	def should_wait_user_reaction_after_player_is_dead(self):
+		ui = curses.Curses()
+		ui.window = MockCurses(' ')
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon.clear_event()
+
+		dungeon.affect_health(dungeon.get_player(), -dungeon.get_player().hp)
+
+		ui.redraw(dungeon)
+		self.maxDiff = None
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, self.DISPLAYED_LAYOUT_DEAD[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'player-10hp. player dies.                                                       '),
+			('addstr', 24, 0, '[DEAD] Press Any Key...                                                         '),
 			('refresh',),
 			])
 	@mock.patch('curses.curs_set')
@@ -240,7 +269,7 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, '                                                                                '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
 			('move', 7, 9),
 			('refresh',),
 			])

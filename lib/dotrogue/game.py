@@ -107,8 +107,11 @@ class Game(object):
 	def main_loop(self, ui):
 		Log.debug('Starting playing...')
 		player_turn = True
-		while self.get_player():
+		while True:
 			ui.redraw(self)
+
+			if not self.get_player():
+				break
 
 			try:
 				if self.perform_automovement():

@@ -251,6 +251,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'monster @Point(x=9, y=4) 3/3hp attacks player @Point(x=9, y=5) {0}/10hp'.format(9 - i),
 			'player @Point(x=9, y=5) {0}/10hp -1 hp'.format(9 - i),
 			] for i in range(9)), []) + [
+			'redraw',
 			'__exit__',
 			])
 		self.assertIsNone(dungeon.get_player())
@@ -269,6 +270,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'__enter__',
 			'redraw',
 			'user_action',
+			'redraw',
 			'__exit__',
 			])
 
