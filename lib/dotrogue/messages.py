@@ -51,3 +51,17 @@ class DeathEvent(Event):
 		self.target = target
 	def __str__(self):
 		return '{0} dies'.format(str(self.target))
+
+class MoveEvent(Event):
+	def __init__(self, actor, dest):
+		self.actor = actor
+		self.dest = dest
+	def __str__(self):
+		return '{0} moves to {1}'.format(str(self.actor), self.dest)
+
+class BumpEvent(Event):
+	def __init__(self, actor, dest):
+		self.actor = actor
+		self.dest = dest
+	def __str__(self):
+		return '{0} bumps into {1}'.format(str(self.actor), self.dest)

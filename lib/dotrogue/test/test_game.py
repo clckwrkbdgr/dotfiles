@@ -149,10 +149,18 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
-			] + [ # MOVE MOVE DESCEND WALK_TO
+			] + [
 			'redraw',
 			'user_action',
-			] * 4 + [ # walking...
+			'redraw',
+			'user_action',
+			'player @Point(x=9, y=5) 10/10hp moves to Point(x=9, y=5)',
+			'redraw',
+			'user_action',
+			'player @Point(x=9, y=6) 10/10hp moves to Point(x=9, y=6)',
+			'redraw',
+			'user_action',
+			] + [ # walking...
 			'redraw',
 			'user_interrupted',
 			] * 2 + ['redraw'] + [ # NONE AUTOEXPLORE
@@ -202,6 +210,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
+			'player @Point(x=9, y=5) 9/10hp moves to Point(x=9, y=5)',
 			'monster @Point(x=9, y=4) 3/3hp attacks player @Point(x=9, y=5) 9/10hp',
 			'player @Point(x=9, y=5) 9/10hp -1 hp',
 			'redraw',
@@ -245,12 +254,17 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'Discovered monster @Point(x=9, y=4) 3/3hp',
 			'redraw',
 			'user_action',
+			'redraw',
+			'user_action',
+			'player @Point(x=9, y=5) 9/10hp moves to Point(x=9, y=5)',
+			'monster @Point(x=9, y=4) 3/3hp attacks player @Point(x=9, y=5) {0}/10hp'.format(9),
+			'player @Point(x=9, y=5) {0}/10hp -1 hp'.format(9),
 			] + sum(([
 			'redraw',
 			'user_action',
 			'monster @Point(x=9, y=4) 3/3hp attacks player @Point(x=9, y=5) {0}/10hp'.format(9 - i),
 			'player @Point(x=9, y=5) {0}/10hp -1 hp'.format(9 - i),
-			] for i in range(9)), []) + [
+			] for i in range(1, 9)), []) + [
 			'redraw',
 			'__exit__',
 			])
@@ -395,8 +409,8 @@ class TestVisibility(AbstractTestDungeon):
 				|.>|  
 				+--+  
 				"""))
-		dungeon.move(game.Direction.RIGHT)
-		dungeon.move(game.Direction.DOWN)
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
+		dungeon.move(dungeon.get_player(), game.Direction.DOWN)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				+--+  
 				|..|  
@@ -404,7 +418,7 @@ class TestVisibility(AbstractTestDungeon):
 				|.>|  
 				+--+  
 				"""))
-		dungeon.move(game.Direction.RIGHT)
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				+--   
 				|..|  
@@ -412,7 +426,7 @@ class TestVisibility(AbstractTestDungeon):
 				|.>|  
 				+--   
 				"""))
-		dungeon.move(game.Direction.RIGHT)
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				_     
 				_  | #
@@ -420,7 +434,7 @@ class TestVisibility(AbstractTestDungeon):
 				_ >|  
 				_     
 				""").replace('_', ' '))
-		dungeon.move(game.Direction.RIGHT)
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				_     
 				_    #
@@ -428,7 +442,7 @@ class TestVisibility(AbstractTestDungeon):
 				_ >   
 				_     
 				""").replace('_', ' '))
-		dungeon.move(game.Direction.UP)
+		dungeon.move(dungeon.get_player(), game.Direction.UP)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				_    #
 				_    @
@@ -436,7 +450,7 @@ class TestVisibility(AbstractTestDungeon):
 				_ >   
 				_     
 				""").replace('_', ' '))
-		dungeon.move(game.Direction.UP)
+		dungeon.move(dungeon.get_player(), game.Direction.UP)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				_    @
 				_    #
@@ -446,26 +460,41 @@ class TestVisibility(AbstractTestDungeon):
 				""").replace('_', ' '))
 
 class TestMovement(AbstractTestDungeon):
+	def should_convert_shift_to_direction(self):
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(0, 0)), None)
+
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(1, 0)), game.Direction.RIGHT)
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(-1, 0)), game.Direction.LEFT)
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(0, 1)), game.Direction.DOWN)
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(0, -1)), game.Direction.UP)
+
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(-1, 1)), game.Direction.DOWN_LEFT)
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(1, -1)), game.Direction.UP_RIGHT)
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(-1, -1)), game.Direction.UP_LEFT)
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(1, 1)), game.Direction.DOWN_RIGHT)
+
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(2, 0)), game.Direction.RIGHT)
+		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(2, 3)), game.Direction.DOWN_RIGHT)
 	def should_move_player_character(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		dungeon.move(game.Direction.UP), 
+		dungeon.move(dungeon.get_player(), game.Direction.UP), 
 		self.assertEqual(dungeon.get_player().pos, Point(9, 5))
-		dungeon.move(game.Direction.RIGHT), 
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
 		self.assertEqual(dungeon.get_player().pos, Point(10, 5))
-		dungeon.move(game.Direction.DOWN), 
+		dungeon.move(dungeon.get_player(), game.Direction.DOWN), 
 		self.assertEqual(dungeon.get_player().pos, Point(10, 6))
-		dungeon.move(game.Direction.LEFT), 
+		dungeon.move(dungeon.get_player(), game.Direction.LEFT), 
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		dungeon.move(game.Direction.UP_LEFT), 
+		dungeon.move(dungeon.get_player(), game.Direction.UP_LEFT), 
 		self.assertEqual(dungeon.get_player().pos, Point(8, 5))
-		dungeon.move(game.Direction.DOWN_LEFT), 
+		dungeon.move(dungeon.get_player(), game.Direction.DOWN_LEFT), 
 		self.assertEqual(dungeon.get_player().pos, Point(7, 6))
-		dungeon.move(game.Direction.DOWN_RIGHT), 
+		dungeon.move(dungeon.get_player(), game.Direction.DOWN_RIGHT), 
 		self.assertEqual(dungeon.get_player().pos, Point(8, 7))
-		dungeon.move(game.Direction.UP_RIGHT), 
+		dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT), 
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
 		self.assertEqual(dungeon.tostring(), textwrap.dedent(self._MockBuilder.MAP_DATA))
@@ -487,7 +516,7 @@ class TestMovement(AbstractTestDungeon):
 				#.................. 
 				 #################  
 				"""))
-		dungeon.move(game.Direction.RIGHT) 
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT) 
 		self.assertFalse(dungeon.remembered_exit)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				    #####      #### 
@@ -501,10 +530,10 @@ class TestMovement(AbstractTestDungeon):
 				#..................#
 				 ################## 
 				"""))
-		dungeon.move(game.Direction.UP_RIGHT) 
-		dungeon.move(game.Direction.UP) 
-		dungeon.move(game.Direction.UP) 
-		dungeon.move(game.Direction.UP) 
+		dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT) 
+		dungeon.move(dungeon.get_player(), game.Direction.UP) 
+		dungeon.move(dungeon.get_player(), game.Direction.UP) 
+		dungeon.move(dungeon.get_player(), game.Direction.UP) 
 		self.assertTrue(dungeon.remembered_exit)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				   ########    #####
@@ -529,9 +558,9 @@ class TestMovement(AbstractTestDungeon):
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 
-		dungeon.move(game.Direction.UP), 
+		dungeon.move(dungeon.get_player(), game.Direction.UP), 
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-		dungeon.move(game.Direction.LEFT), 
+		dungeon.move(dungeon.get_player(), game.Direction.LEFT), 
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 	def should_not_move_player_into_a_wall(self):
 		class _MockBuilder(builders.CustomMap):
@@ -544,9 +573,9 @@ class TestMovement(AbstractTestDungeon):
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
 
-		dungeon.move(game.Direction.UP), 
+		dungeon.move(dungeon.get_player(), game.Direction.UP), 
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
-		dungeon.move(game.Direction.LEFT), 
+		dungeon.move(dungeon.get_player(), game.Direction.LEFT), 
 		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 	def should_move_player_through_a_wall_in_noclip_mode(self):
 		class _MockBuilder(builders.CustomMap):
@@ -560,9 +589,9 @@ class TestMovement(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
 
 		dungeon.god.noclip = True
-		dungeon.move(game.Direction.RIGHT), 
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
 		self.assertEqual(dungeon.get_player().pos, Point(3, 1))
-		dungeon.move(game.Direction.RIGHT), 
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
 		self.assertEqual(dungeon.get_player().pos, Point(4, 1))
 	def should_move_player_diagonally_only_if_allowed(self):
 		class _MockBuilder(builders.CustomMap):
@@ -576,14 +605,14 @@ class TestMovement(AbstractTestDungeon):
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 
-		self.assertFalse(dungeon.move(game.Direction.RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertFalse(dungeon.move(game.Direction.DOWN_RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertFalse(dungeon.move(game.Direction.UP_RIGHT))
-		self.assertFalse(dungeon.move(game.Direction.UP_LEFT))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.DOWN))
+		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.DOWN_RIGHT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.DOWN))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT))
+		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.UP_LEFT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
 		self.assertEqual(dungeon.get_player().pos, Point(3, 3))
 	def should_not_allow_move_player_diagonally_in_autoexplore_mode(self):
 		class _MockBuilder(builders.CustomMap):
@@ -630,22 +659,22 @@ class TestMovement(AbstractTestDungeon):
 		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertFalse(dungeon.move(game.Direction.DOWN_RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertFalse(dungeon.move(game.Direction.UP_RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.RIGHT))
-		self.assertTrue(dungeon.move(game.Direction.UP))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.DOWN_RIGHT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.DOWN))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
+		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.UP))
 		self.assertEqual(dungeon.get_player().pos, Point(5, 1))
-		self.assertFalse(dungeon.move(game.Direction.DOWN_LEFT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
-		self.assertTrue(dungeon.move(game.Direction.LEFT))
-		self.assertTrue(dungeon.move(game.Direction.LEFT))
-		self.assertFalse(dungeon.move(game.Direction.DOWN_LEFT))
-		self.assertTrue(dungeon.move(game.Direction.LEFT))
-		self.assertTrue(dungeon.move(game.Direction.DOWN))
+		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.DOWN_LEFT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.DOWN))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.LEFT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.LEFT))
+		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.DOWN_LEFT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.LEFT))
+		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.DOWN))
 		self.assertEqual(dungeon.get_player().pos, Point(2, 3))
 	def should_descend_to_new_map(self):
 		class _MockBuilder(builders.CustomMap):
@@ -660,7 +689,7 @@ class TestMovement(AbstractTestDungeon):
 
 		dungeon.descend()
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
-		dungeon.move(game.Direction.RIGHT), 
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
 		dungeon.descend()
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
 		self.assertEqual(dungeon.tostring(), textwrap.dedent(_MockBuilder.MAP_DATA))
@@ -691,7 +720,7 @@ class TestFight(AbstractTestDungeon):
 				]
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
 
-		dungeon.move(game.Direction.RIGHT)
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(dungeon.find_monster(10, 6).hp, 2)
 	def should_attack_monster(self):
@@ -724,6 +753,79 @@ class TestFight(AbstractTestDungeon):
 		self.assertEqual(type(dungeon.events[-1]), messages.DeathEvent)
 		self.assertEqual(dungeon.events[-1].target, monster)
 		self.assertIsNone(dungeon.find_monster(10, 6))
+	def should_be_attacked_by_monster(self):
+		class _CloseMonster(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.INERT, Point(10, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
+		dungeon.clear_event()
+		
+		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		self.assertEqual(dungeon.get_player().hp, 9)
+		self.assertEqual(len(dungeon.events), 2)
+		self.assertEqual(type(dungeon.events[0]), messages.AttackEvent)
+		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
+		self.assertEqual(dungeon.events[0].target, dungeon.get_player())
+		self.assertEqual(type(dungeon.events[1]), messages.HealthEvent)
+		self.assertEqual(dungeon.events[1].target, dungeon.get_player())
+		self.assertEqual(dungeon.events[1].diff, -1)
+	def should_be_killed_by_monster(self):
+		class _CloseMonster(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.INERT, Point(10, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
+		dungeon.get_player().hp = 1
+		dungeon.clear_event()
+		
+		player = dungeon.get_player()
+		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		self.assertIsNone(dungeon.get_player())
+		self.assertEqual(len(dungeon.events), 3)
+		self.assertEqual(type(dungeon.events[0]), messages.AttackEvent)
+		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
+		self.assertEqual(dungeon.events[0].target, player)
+		self.assertEqual(type(dungeon.events[1]), messages.HealthEvent)
+		self.assertEqual(dungeon.events[1].target, player)
+		self.assertEqual(dungeon.events[1].diff, -1)
+		self.assertEqual(type(dungeon.events[-1]), messages.DeathEvent)
+		self.assertEqual(dungeon.events[-1].target, player)
+	def should_angry_move_to_attack_player(self):
+		class _CloseMonster(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.ANGRY, Point(11, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
+		dungeon.clear_event()
+
+		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		self.assertEqual(dungeon.monsters[-1].pos, Point(10, 6))
+		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(type(dungeon.events[0]), messages.MoveEvent)
+		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
+		self.assertEqual(dungeon.events[0].dest, Point(10, 6))
+		dungeon.clear_event()
+
+		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		self.assertEqual(len(dungeon.events), 2)
+		self.assertEqual(type(dungeon.events[0]), messages.AttackEvent)
+		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
+		self.assertEqual(dungeon.events[0].target, dungeon.get_player())
+		self.assertEqual(type(dungeon.events[1]), messages.HealthEvent)
+		self.assertEqual(dungeon.events[1].target, dungeon.get_player())
+		self.assertEqual(dungeon.events[1].diff, -1)
+	def should_not_angry_move_when_player_is_out_of_sight(self):
+		class _CloseMonster(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.ANGRY, Point(4, 4)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
+		dungeon.clear_event()
+
+		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		self.assertEqual(dungeon.monsters[-1].pos, Point(4, 4))
+		self.assertEqual(len(dungeon.events), 0)
 
 class TestAutoMode(AbstractTestDungeon):
 	def should_auto_walk_to_position(self):

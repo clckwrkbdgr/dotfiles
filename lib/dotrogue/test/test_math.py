@@ -5,7 +5,7 @@ from ..math import Point, Size, Rect, Matrix
 from ..math import distance
 from ..math import bresenham
 from ..math import find_path
-from ..math import FieldOfView
+from ..math import FieldOfView, in_line_of_sight
 
 class TestPoint(unittest.TestCase):
 	def should_add_two_point_values(self):
@@ -286,4 +286,32 @@ class TestMapAlgorithms(unittest.TestCase):
 				#                  #
 				#                  #
 				####################
+				"""))
+	def should_check_direct_line_of_sight(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.cells = list(textwrap.dedent("""\
+				####################
+				#                  #
+				#                  #
+				#            ###   #
+				#            #     #
+				#                  #
+				####################
+				""").replace('\n', ''))
+		source = Point(11, 2)
+		is_transparent=lambda p: matrix.valid(p) and matrix.cell(p.x, p.y) not in '#*'
+		for p in matrix.size:
+			if in_line_of_sight(source, p, is_transparent):
+				if matrix.cell(p.x, p.y) == '#':
+					matrix.set_cell(p.x, p.y, '*')
+				else:
+					matrix.set_cell(p.x, p.y, '.')
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				########*******#####
+				*..................*
+				*..................*
+				*............*##   #
+				*............*     #
+				*.............     #
+				####**********######
 				"""))

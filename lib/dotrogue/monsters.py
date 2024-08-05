@@ -8,10 +8,11 @@ class Behavior(Enum):
 	"""
 
 class Species(object):
-	def __init__(self, name, sprite, max_hp):
+	def __init__(self, name, sprite, max_hp, vision):
 		self.name = name
 		self.sprite = sprite
 		self.max_hp = max_hp
+		self.vision = vision
 	def __str__(self):
 		return "{0} {1}hp".format(self.name, self.max_hp)
 

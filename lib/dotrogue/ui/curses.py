@@ -49,6 +49,12 @@ class Curses(UI):
 				events.append('{0}{1:+}hp.'.format(event.target.name, event.diff))
 			elif isinstance(event, messages.DeathEvent):
 				events.append('{0} dies.'.format(event.target.name))
+			elif isinstance(event, messages.MoveEvent):
+				if event.actor != game.get_player():
+					events.append('{0}...'.format(event.actor.name))
+			elif isinstance(event, messages.BumpEvent):
+				if event.actor != game.get_player():
+					events.append('{0} bumps.'.format(event.actor.name))
 			else:
 				events.append('Unknown event {0}!'.format(repr(event)))
 		self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])

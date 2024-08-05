@@ -132,6 +132,12 @@ def find_path(matrix, start, is_passable, find_target):
 		already_used |= new_wave
 		waves.append(new_wave)
 
+def in_line_of_sight(start, target, is_transparent):
+	for pos in bresenham(start, target):
+		if not is_transparent(pos) and pos != target:
+			return False
+	return True
+
 class FieldOfView:
 	def __init__(self, radius):
 		self.sight = Matrix(Size(1 + radius * 2, 1 + radius * 2), 0)

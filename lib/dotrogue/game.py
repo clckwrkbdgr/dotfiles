@@ -82,12 +82,12 @@ class Game(object):
 			'water' : Terrain("~", True),
 			}
 	SPECIES = {
-			'player' : monsters.Species('player', "@", 10),
-			'monster' : monsters.Species('monster', "M", 3),
+			'player' : monsters.Species('player', "@", 10, vision=10),
+			'monster' : monsters.Species('monster', "M", 3, vision=10),
 
-			'plant' : monsters.Species('plant', "P", 1),
-			'slime' : monsters.Species('slime', "o", 5),
-			'rodent' : monsters.Species('rodent', "r", 3),
+			'plant' : monsters.Species('plant', "P", 1, vision=1),
+			'slime' : monsters.Species('slime', "o", 5, vision=3),
+			'rodent' : monsters.Species('rodent', "r", 3, vision=8),
 			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None):
@@ -106,57 +106,77 @@ class Game(object):
 		self.build_new_strata()
 	def main_loop(self, ui):
 		Log.debug('Starting playing...')
-		player_turn = True
+		self.player_turn = True
 		while True:
 			ui.redraw(self)
-
 			if not self.get_player():
 				break
-
-			try:
-				if self.perform_automovement():
-					if ui.user_interrupted():
-						self.stop_automovement()
-					continue
-			except Game.AutoMovementStopped:
-				continue
-
-			action, action_data = ui.user_action(self)
-			self.clear_event() # If we acted - we've seen all the events.
-			if action == Action.NONE:
-				pass
-			elif action == Action.EXIT:
+			if not self._perform_player_actions(ui):
 				break
-			elif action == Action.SUICIDE:
-				self.affect_health(self.get_player(), -self.get_player().hp)
-				player_turn = False
-			elif action == Action.WALK_TO:
-				self.walk_to(action_data)
-			elif action == Action.AUTOEXPLORE:
-				self.start_autoexploring()
-			elif action == Action.GOD_TOGGLE_VISION:
-				self.god.vision = not self.god.vision
-			elif action == Action.GOD_TOGGLE_NOCLIP:
-				self.god.noclip = not self.god.noclip
-			elif action == Action.DESCEND:
-				self.descend()
-			elif action == Action.MOVE:
-				self.move(action_data)
-				player_turn = False
-			elif action == Action.WAIT:
-				player_turn = False
-
-			if not player_turn:
+			if not self.player_turn:
 				for monster in self.monsters:
 					if monster.behavior == monsters.Behavior.PLAYER:
 						continue
-					elif monster.behavior == monsters.Behavior.DUMMY:
-						pass
-					elif monster.behavior == monsters.Behavior.INERT:
-						if self.get_player():
-							if math.distance(monster.pos, self.get_player().pos) == 1:
-								self.attack(monster, self.get_player())
-				player_turn = True
+					self._perform_monster_actions(monster)
+				self.player_turn = True
+	def _perform_player_actions(self, ui):
+		try:
+			if self.perform_automovement():
+				if ui.user_interrupted():
+					self.stop_automovement()
+				return True
+		except Game.AutoMovementStopped:
+			return True
+
+		action, action_data = ui.user_action(self)
+		self.clear_event() # If we acted - we've seen all the events.
+		if action == Action.NONE:
+			pass
+		elif action == Action.EXIT:
+			return False
+		elif action == Action.SUICIDE:
+			self.affect_health(self.get_player(), -self.get_player().hp)
+			self.player_turn = False
+		elif action == Action.WALK_TO:
+			self.walk_to(action_data)
+		elif action == Action.AUTOEXPLORE:
+			self.start_autoexploring()
+		elif action == Action.GOD_TOGGLE_VISION:
+			self.god.vision = not self.god.vision
+		elif action == Action.GOD_TOGGLE_NOCLIP:
+			self.god.noclip = not self.god.noclip
+		elif action == Action.DESCEND:
+			self.descend()
+		elif action == Action.MOVE:
+			self.move(self.get_player(), action_data)
+			self.player_turn = False
+		elif action == Action.WAIT:
+			self.player_turn = False
+		return True
+	def _perform_monster_actions(self, monster):
+		if monster.behavior == monsters.Behavior.DUMMY:
+			pass
+		elif monster.behavior == monsters.Behavior.INERT:
+			if self.get_player():
+				if math.distance(monster.pos, self.get_player().pos) == 1:
+					self.attack(monster, self.get_player())
+		elif monster.behavior == monsters.Behavior.ANGRY:
+			if self.get_player():
+				if math.distance(monster.pos, self.get_player().pos) == 1:
+					self.attack(monster, self.get_player())
+				elif math.distance(monster.pos, self.get_player().pos) <= monster.species.vision:
+					is_transparent = lambda p: self.is_transparent_to_monster(p, monster)
+					if math.in_line_of_sight(monster.pos, self.get_player().pos, is_transparent):
+						direction = self.get_direction(monster.pos, self.get_player().pos)
+						self.move(monster, direction)
+	@classmethod
+	def get_direction(cls, start, target):
+		shift = target - start
+		shift = Point(
+				shift.x // abs(shift.x) if shift.x else 0,
+				shift.y // abs(shift.y) if shift.y else 0,
+				)
+		return next((k for k,v in cls.SHIFT.items() if v == shift), None)
 	def get_viewport(self):
 		return self.strata.size
 	def tostring(self, with_fov=False):
@@ -189,13 +209,14 @@ class Game(object):
 			return cell.terrain.remembered
 		return None
 	def is_transparent(self, p):
+		return self.is_transparent_to_monster(p, self.get_player())
+	def is_transparent_to_monster(self, p, monster):
 		if not self.strata.valid(p):
 			return False
 		if not self.strata.cell(p.x, p.y).terrain.passable:
 			return False
 		if self.strata.cell(p.x, p.y).terrain.dark:
-			player = self.get_player()
-			if math.distance(player.pos, p) >= 1:
+			if math.distance(monster.pos, p) >= 1:
 				return False
 		return True
 	def update_vision(self):
@@ -269,10 +290,10 @@ class Game(object):
 		return True
 	def get_player(self):
 		return next((monster for monster in self.monsters if monster.behavior == pcg.settlers.Behavior.PLAYER), None)
-	def move(self, direction):
+	def move(self, actor, direction):
 		shift = self.SHIFT[direction]
 		Log.debug('Shift: {0}'.format(shift))
-		new_pos = self.get_player().pos + shift
+		new_pos = actor.pos + shift
 		if not self.strata.valid(new_pos):
 			return False
 		if self.god.noclip:
@@ -280,16 +301,19 @@ class Game(object):
 		else:
 			passable = self.strata.cell(new_pos.x, new_pos.y).terrain.passable
 		if not passable:
+			self.events.append(messages.BumpEvent(actor, new_pos))
 			return False
-		if not self.allow_movement_direction(self.get_player().pos, new_pos):
+		if not self.allow_movement_direction(actor.pos, new_pos):
+			self.events.append(messages.BumpEvent(actor, new_pos))
 			return False
 		monster = self.find_monster(new_pos.x, new_pos.y)
 		if monster:
 			Log.debug('Monster at dest pos {0}: '.format(new_pos, monster))
-			self.attack(self.get_player(), monster)
+			self.attack(actor, monster)
 			return True
-		Log.debug('Shift is valid, updating player pos: {0}'.format(self.get_player().pos))
-		self.get_player().pos = new_pos
+		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
+		self.events.append(messages.MoveEvent(actor, new_pos))
+		actor.pos = new_pos
 		self.update_vision()
 		return True
 	def affect_health(self, target, diff):
