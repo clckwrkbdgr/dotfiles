@@ -21,6 +21,31 @@ class TestSettler(unittest.TestCase):
 			])
 
 class TestSquatters(unittest.TestCase):
+	def should_check_availability_of_placement_position(self):
+		rng = RNG(0)
+		builder = builders.RogueDungeon(rng, Size(80, 25))
+		builder.build()
+		from ...game import Cell, Game # FIXME circular dependency
+		for pos in builder.strata.size:
+			builder.strata.set_cell(
+					pos.x, pos.y,
+					Cell(Game.TERRAIN[builder.strata.cell(pos.x, pos.y)]),
+					)
+
+		rng = RNG(0)
+		settler = settlers.Squatters(rng, builder)
+
+		self.assertTrue(settler.is_passable(Point(8, 2)))
+		self.assertFalse(settler.is_passable(Point(1, 1)))
+		self.assertFalse(settler.is_passable(Point(8, 1)))
+
+		settler.monster_cells = set([Point(7, 3)])
+		self.assertTrue(settler.is_free(Point(8, 2)))
+		self.assertFalse(settler.is_free(Point(1, 1)))
+		self.assertFalse(settler.is_free(Point(8, 1)))
+		self.assertFalse(settler.is_free(next(iter(settler.monster_cells))))
+		self.assertFalse(settler.is_free(builder.start_pos))
+		self.assertFalse(settler.is_free(builder.exit_pos))
 	def should_populate_dungeon_with_squatters(self):
 		rng = RNG(0)
 		builder = builders.RogueDungeon(rng, Size(80, 25))
@@ -44,4 +69,8 @@ class TestSquatters(unittest.TestCase):
 			('slime',  monsters.Behavior.INERT, Point(x=71, y=13)),
 			('slime',  monsters.Behavior.INERT, Point(x=36, y=7)),
 			('rodent', monsters.Behavior.ANGRY, Point(x=27, y=18)),
+			])
+		self.assertEqual(settler.items, [
+			('healing potion', Point(x=35, y=21)),
+			('healing potion', Point(x=63, y=7)),
 			])

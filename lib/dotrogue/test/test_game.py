@@ -57,8 +57,12 @@ class UnSettler(settlers.Settler):
 class CustomSettler(settlers.Settler):
 	MONSTERS = [
 			]
+	ITEMS = [
+			]
 	def _populate(self):
 		self.monsters += self.MONSTERS
+	def _place_items(self):
+		self.items += self.ITEMS
 
 class MockUI(ui.UI):
 	def __init__(self, user_actions, interrupts):
@@ -360,6 +364,25 @@ class TestVisibility(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_sprite(10, 1), '>')
 		dungeon.jump_to(Point(9, 6))
 		self.assertEqual(dungeon.get_sprite(10, 1), '>')
+	def should_get_visible_monsters_and_items(self):
+		class _MonstersOnTopOfItems(CustomSettler):
+			MONSTERS = [
+				('monster', settlers.Behavior.DUMMY, Point(1, 1)),
+				('monster', settlers.Behavior.DUMMY, Point(1, 6)),
+				]
+			ITEMS = [
+				('potion', Point(2, 6)),
+				('potion', Point(1, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_MonstersOnTopOfItems])
+		dungeon.jump_to(Point(2, 2))
+		self.assertEqual(dungeon.get_sprite(1, 1), 'M')
+		self.assertEqual(dungeon.get_sprite(1, 6), 'M')
+		self.assertEqual(dungeon.get_sprite(2, 6), '!')
+		dungeon.jump_to(Point(10, 1))
+		self.assertEqual(dungeon.get_sprite(1, 1), None)
+		self.assertEqual(dungeon.get_sprite(1, 6), None)
+		self.assertEqual(dungeon.get_sprite(2, 6), None)
 	def should_see_monsters_only_in_the_field_of_vision(self):
 		class _NowYouSeeMe(CustomSettler):
 			MONSTERS = [
@@ -977,8 +1000,16 @@ class TestSavefile(AbstractTestDungeon):
 		os_unlink.assert_not_called()
 
 class TestGameSerialization(AbstractTestDungeon):
+	class _MockSettler(CustomSettler):
+		MONSTERS = [
+				('monster', settlers.Behavior.ANGRY, Point(2, 5)),
+				]
+		ITEMS = [
+				('potion', Point(10, 6)),
+				]
+
 	def should_deserialize_game_before_terrain_types(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
 		dump = [
 			9, 6, 10, 1, 0, 20, 10,
 			'#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',0, '#',0,'#',1, '#',0,'#',0, '#',0,'#',0,
@@ -1004,7 +1035,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_monsters(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
 		dump = [
 			9, 6, 10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
@@ -1031,7 +1062,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_behavior(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
 		dump = [
 			10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
@@ -1064,8 +1095,44 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(monster.pos, restored_monster.pos)
 			self.assertEqual(monster.hp, restored_monster.hp)
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
+	def should_deserialize_game_before_items(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
+		dump = [
+			10, 1, 0, 20, 10,
+			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
+			'#',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '.',1, '#',0, '.',0, '#',0, '#',1, '.',0, '.',0, '.',1, '.',1, '.',1, '.',0, '#',0,
+			'#',0, '.',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '#',0, '.',0, '.',1, '#',1, '.',0, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
+			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '#',1, '.',1, '.',1, '#',1, '#',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
+			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
+			'#',1, '.',1, '.',1, '.',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
+			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',1,
+			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
+			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
+			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
+			2,
+				'player', 0, 9, 6, 10, 
+				'monster', 3, 2, 5, 3, 
+			]
+		dump = list(map(str, dump))
+		restored_dungeon = MockGame(dummy=True)
+		game.load_game(restored_dungeon, game.Version.ITEMS, iter(dump))
+		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
+		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
+		for pos in dungeon.strata.size:
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
+		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
+			self.assertEqual(monster.species, restored_monster.species)
+			self.assertEqual(monster.behavior, restored_monster.behavior)
+			self.assertEqual(monster.pos, restored_monster.pos)
+			self.assertEqual(monster.hp, restored_monster.hp)
+		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
+		self.assertEqual(len(restored_dungeon.items), 0)
 	def should_serialize_and_deserialize_game(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
 		dump = list(game.save_game(dungeon))
 		self.assertEqual(dump, [
 			10, 1, 0, 20, 10,
@@ -1082,10 +1149,12 @@ class TestGameSerialization(AbstractTestDungeon):
 			2,
 				'player', 0, 9, 6, 10, 
 				'monster', 3, 2, 5, 3, 
+			1,
+				'potion', 10, 6,
 			])
 		dump = list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
-		self.assertEqual(game.Version.CURRENT, 5)
+		self.assertEqual(game.Version.CURRENT, game.Version.ITEMS + 1)
 		game.load_game(restored_dungeon, game.Version.CURRENT, iter(dump))
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
@@ -1101,6 +1170,10 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(monster.pos, restored_monster.pos)
 			self.assertEqual(monster.hp, restored_monster.hp)
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
+		self.assertEqual(len(dungeon.items), len(restored_dungeon.items))
+		for item, restored_item in zip(dungeon.items, restored_dungeon.items):
+			self.assertEqual(item.item_type, restored_item.item_type)
+			self.assertEqual(item.pos, restored_item.pos)
 
 class TestMain(unittest.TestCase):
 	@mock.patch('dotrogue.game.Savefile')

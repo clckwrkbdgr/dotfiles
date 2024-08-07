@@ -8,7 +8,7 @@ from .math import Point, Matrix, Size
 from . import messages
 from .messages import Log
 from .ui import Action
-from . import monsters
+from . import monsters, items
 
 class Version(Enum):
 	""" INITIAL
@@ -16,6 +16,7 @@ class Version(Enum):
 	TERRAIN_TYPES
 	MONSTERS
 	MONSTER_BEHAVIOR
+	ITEMS
 	"""
 
 class Terrain(object):
@@ -89,6 +90,10 @@ class Game(object):
 			'slime' : monsters.Species('slime', "o", 5, vision=3),
 			'rodent' : monsters.Species('rodent', "r", 3, vision=8),
 			}
+	ITEMS = {
+			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
+			'healing potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
+			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None):
 		self.builders = builders or self.BUILDERS
@@ -99,6 +104,7 @@ class Game(object):
 		self.autoexploring = False
 		self.movement_queue = []
 		self.monsters = []
+		self.items = []
 		self.visible_monsters = []
 		self.events = []
 		if dummy:
@@ -198,6 +204,11 @@ class Game(object):
 			if monster.pos.x == x and monster.pos.y == y:
 				if self.field_of_view.is_visible(x, y) or self.god.vision:
 					return monster.species.sprite
+		item = self.find_item(x, y)
+		if item:
+			if item.pos.x == x and item.pos.y == y:
+				if self.field_of_view.is_visible(x, y) or self.god.vision:
+					return item.item_type.sprite
 		if self.exit_pos.x == x and self.exit_pos.y == y:
 			if self.god.vision or self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 				return '>'
@@ -271,6 +282,10 @@ class Game(object):
 			species, monster_data = monster_data[0], monster_data[1:]
 			monster_data = (self.SPECIES[species],) + monster_data
 			self.monsters.append(monsters.Monster(*monster_data))
+		for item_data in settler.items:
+			item_type, item_data = item_data[0], item_data[1:]
+			item_data = (self.ITEMS[item_type],) + item_data
+			self.items.append(items.Item(*item_data))
 
 		Log.debug("Finalizing dungeon...")
 		self.exit_pos = builder.exit_pos
@@ -329,6 +344,11 @@ class Game(object):
 		for monster in self.monsters:
 			if monster.pos.x == x and monster.pos.y == y:
 				return monster
+		return None
+	def find_item(self, x, y):
+		for item in self.items:
+			if item.pos.x == x and item.pos.y == y:
+				return item
 		return None
 	def jump_to(self, new_pos):
 		self.get_player().pos = new_pos
@@ -409,6 +429,11 @@ def save_game(game):
 		yield monster.pos.x
 		yield monster.pos.y
 		yield monster.hp
+	yield len(game.items)
+	for item in game.items:
+		yield next(name for name, item_type in game.ITEMS.items() if item_type is item.item_type)
+		yield item.pos.x
+		yield item.pos.y
 
 def load_game(game, version, data):
 	parse_str = lambda _value: _value if _value != 'None' else None
@@ -454,6 +479,14 @@ def load_game(game, version, data):
 			monster = monsters.Monster(species, behavior, pos)
 			monster.hp = int(next(data))
 			game.monsters.append(monster)
+	if version > Version.ITEMS:
+		count = int(next(data))
+		for _ in range(count):
+			item_type_name = next(data)
+			item_type = game.ITEMS[item_type_name]
+			pos = Point(int(next(data)), int(next(data)))
+			item = items.Item(item_type, pos)
+			game.items.append(item)
 
 	game.exit_pos = exit_pos
 	game.strata = strata
