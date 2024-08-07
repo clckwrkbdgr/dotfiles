@@ -204,14 +204,12 @@ class Game(object):
 	def get_sprite(self, x, y):
 		monster = self.find_monster(x, y)
 		if monster:
-			if monster.pos.x == x and monster.pos.y == y:
-				if self.field_of_view.is_visible(x, y) or self.god.vision:
-					return monster.species.sprite
+			if self.field_of_view.is_visible(x, y) or self.god.vision:
+				return monster.species.sprite
 		item = self.find_item(x, y)
 		if item:
-			if item.pos.x == x and item.pos.y == y:
-				if self.field_of_view.is_visible(x, y) or self.god.vision:
-					return item.item_type.sprite
+			if self.field_of_view.is_visible(x, y) or self.god.vision:
+				return item.item_type.sprite
 		if self.exit_pos.x == x and self.exit_pos.y == y:
 			if self.god.vision or self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 				return '>'
@@ -288,6 +286,7 @@ class Game(object):
 			species, monster_data = monster_data[0], monster_data[1:]
 			monster_data = (self.SPECIES[species],) + monster_data
 			self.monsters.append(monsters.Monster(*monster_data))
+		self.items[:] = []
 		for item_data in settler.items:
 			item_type, item_data = item_data[0], item_data[1:]
 			item_data = (self.ITEMS[item_type],) + item_data
