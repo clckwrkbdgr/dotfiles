@@ -55,6 +55,10 @@ class Curses(UI):
 			elif isinstance(event, messages.BumpEvent):
 				if event.actor != game.get_player():
 					events.append('{0} bumps.'.format(event.actor.name))
+			elif isinstance(event, messages.GrabItemEvent):
+				events.append('{0} ^^ {1}.'.format(event.actor.name, event.item.name))
+			elif isinstance(event, messages.ConsumeItemEvent):
+				events.append('{0} <~ {1}.'.format(event.actor.name, event.item.name))
 			else:
 				events.append('Unknown event {0}!'.format(repr(event)))
 		self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])
@@ -63,6 +67,9 @@ class Curses(UI):
 		player = game.get_player()
 		if player:
 			status.append('hp: {0:>{1}}/{2}'.format(player.hp, len(str(player.species.max_hp)), player.species.max_hp))
+			item = game.find_item(player.pos.x, player.pos.y)
+			if item:
+				status.append('here: {0}'.format(item.item_type.sprite))
 		else:
 			status.append('[DEAD] Press Any Key...')
 		if game.movement_queue:
@@ -121,6 +128,8 @@ class Curses(UI):
 			return Action.DESCEND, None
 		elif control == ord('.'):
 			return Action.WAIT, None
+		elif control == ord('g'):
+			return Action.GRAB, game.get_player().pos
 		elif chr(control) in 'hjklyubn':
 			Log.debug('Moving.')
 			if self.aim:

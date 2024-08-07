@@ -11,6 +11,7 @@ class Action(Enum):
 	DESCEND
 	MOVE
 	WAIT
+	GRAB
 	"""
 
 class UI(object):

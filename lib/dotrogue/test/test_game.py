@@ -291,6 +291,35 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'redraw',
 			'__exit__',
 			])
+	def should_grab_items(self):
+		class _PotionsLyingAround(CustomSettler):
+			ITEMS = [
+				('potion', Point(10, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_PotionsLyingAround])
+		mock_ui = MockUI(user_actions=[
+			(ui.Action.MOVE, game.Direction.RIGHT),
+			(ui.Action.GRAB, Point(10, 6)),
+			(ui.Action.EXIT, None),
+			], interrupts=[],
+		)
+		with mock_ui:
+			dungeon.main_loop(mock_ui)
+		self.maxDiff = None
+		self.assertEqual(mock_ui.events, [
+			'__enter__',
+			] + [
+			'redraw',
+			'user_action',
+			'redraw',
+			'user_action',
+			'player @Point(x=10, y=6) 10/10hp moves to Point(x=10, y=6)',
+			'redraw',
+			'user_action',
+			'player @Point(x=10, y=6) 10/10hp grabs potion @Point(x=10, y=6)',
+			'player @Point(x=10, y=6) 10/10hp consumes potion @Point(x=10, y=6)',
+			'__exit__',
+			])
 
 class TestEvents(AbstractTestDungeon):
 	def should_notify_when_found_exit(self):
@@ -734,6 +763,47 @@ class TestMovement(AbstractTestDungeon):
 				#       .......     
 				 #################  
 				"""))
+
+class TestActorEffects(AbstractTestDungeon):
+	def should_heal_thyself(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
+		dungeon.affect_health(dungeon.get_player(), -1)
+		self.assertEqual(dungeon.get_player().hp, 9)
+		dungeon.affect_health(dungeon.get_player(), -1)
+		self.assertEqual(dungeon.get_player().hp, 8)
+		dungeon.affect_health(dungeon.get_player(), +100)
+		self.assertEqual(dungeon.get_player().hp, 10)
+		dungeon.affect_health(dungeon.get_player(), -100)
+		self.assertIsNone(dungeon.get_player())
+
+class TestItemActions(AbstractTestDungeon):
+	class _PotionsLyingAround(CustomSettler):
+		ITEMS = [
+			('potion', Point(10, 6)),
+			('healing potion', Point(11, 6)),
+			]
+	def should_grab_item(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._PotionsLyingAround])
+		dungeon.affect_health(dungeon.get_player(), -9)
+		dungeon.clear_event()
+
+		dungeon.grab_item_at(dungeon.get_player(), Point(9, 6))
+		self.assertEqual(dungeon.events, [])
+
+		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
+		self.assertEqual(list(map(str, dungeon.events)), [
+			'player @Point(x=9, y=6) 1/10hp grabs potion @Point(x=10, y=6)',
+			'player @Point(x=9, y=6) 1/10hp consumes potion @Point(x=10, y=6)',
+			])
+
+		dungeon.clear_event()
+		dungeon.grab_item_at(dungeon.get_player(), Point(11, 6))
+		self.assertEqual(list(map(str, dungeon.events)), [
+			'player @Point(x=9, y=6) 6/10hp grabs healing potion @Point(x=11, y=6)',
+			'player @Point(x=9, y=6) 6/10hp consumes healing potion @Point(x=11, y=6)',
+			'player @Point(x=9, y=6) 6/10hp +5 hp',
+			])
+		self.assertEqual(dungeon.get_player().hp, 6)
 
 class TestFight(AbstractTestDungeon):
 	def should_move_to_attack_monster(self):

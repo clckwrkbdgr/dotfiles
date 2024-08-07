@@ -156,6 +156,9 @@ class Game(object):
 		elif action == Action.MOVE:
 			self.move(self.get_player(), action_data)
 			self.player_turn = False
+		elif action == Action.GRAB:
+			self.grab_item_at(self.get_player(), action_data)
+			self.player_turn = False
 		elif action == Action.WAIT:
 			self.player_turn = False
 		return True
@@ -332,6 +335,13 @@ class Game(object):
 		self.update_vision()
 		return True
 	def affect_health(self, target, diff):
+		new_hp = target.hp + diff
+		if new_hp < 0:
+			new_hp = 0
+			diff = new_hp - target.hp
+		elif new_hp >= target.species.max_hp:
+			new_hp = target.species.max_hp
+			diff = new_hp - target.hp
 		target.hp += diff
 		self.events.append(messages.HealthEvent(target, diff))
 		if not target.is_alive():
@@ -350,6 +360,17 @@ class Game(object):
 			if item.pos.x == x and item.pos.y == y:
 				return item
 		return None
+	def grab_item_at(self, actor, pos):
+		item = self.find_item(pos.x, pos.y)
+		if not item:
+			return
+		self.events.append(messages.GrabItemEvent(actor, item))
+		self.items.remove(item)
+		self.consume_item(actor, item)
+	def consume_item(self, monster, item):
+		self.events.append(messages.ConsumeItemEvent(monster, item))
+		if item.item_type.effect == items.Effect.HEALING:
+			self.affect_health(monster, +5)
 	def jump_to(self, new_pos):
 		self.get_player().pos = new_pos
 		self.update_vision()

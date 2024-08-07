@@ -65,3 +65,17 @@ class BumpEvent(Event):
 		self.dest = dest
 	def __str__(self):
 		return '{0} bumps into {1}'.format(str(self.actor), self.dest)
+
+class GrabItemEvent(Event):
+	def __init__(self, actor, item):
+		self.actor = actor
+		self.item = item
+	def __str__(self):
+		return '{0} grabs {1}'.format(self.actor, self.item)
+
+class ConsumeItemEvent(Event):
+	def __init__(self, actor, item):
+		self.actor = actor
+		self.item = item
+	def __str__(self):
+		return '{0} consumes {1}'.format(self.actor, self.item)

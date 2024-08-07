@@ -51,6 +51,17 @@ class TestCurses(unittest.TestCase):
 			#..................#
 			####################
 			"""
+	class _MonsterAndPotion(settlers.Settler):
+		MONSTERS = [
+				('monster', settlers.Behavior.INERT, Point(2, 5)),
+				]
+		ITEMS = [
+				('potion', Point(10, 6)),
+				]
+		def _populate(self):
+			self.monsters += self.MONSTERS
+		def _place_items(self):
+			self.items += self.ITEMS
 	DISPLAYED_LAYOUT = [
 			'    #####        #  ',
 			'     ....   #  ...  ',
@@ -411,3 +422,76 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.aim, Point(8, 5))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		self.assertEqual(ui.aim, Point(9, 6))
+	def should_grab_items(self):
+		self.maxDiff = None
+		ui = curses.Curses()
+		ui.window = MockCurses('glg')
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MonsterAndPotion])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.GRAB, Point(9, 6)))
+		ui.redraw(dungeon)
+		DISPLAYED_LAYOUT = [
+				'    #####        #  ',
+				'     ....   #  ...  ',
+				'      ...  .# ..... ',
+				'     ##..##.#...... ',
+				'     #............. ',
+				'#.M..#............. ',
+				'#........@!........#',
+				'#.................. ',
+				'#.................. ',
+				' #################  ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'monster!                                                                        '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.MOVE, game.Direction.RIGHT))
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
+		ui.redraw(dungeon)
+		DISPLAYED_LAYOUT = [
+				'    #####      #### ',
+				'     ...   ## ..... ',
+				'      ...  .#......#',
+				'     ##..##.#......#',
+				'     #.............#',
+				'#    #.............#',
+				'#.........@........#',
+				'#..................#',
+				'#..................#',
+				' ################## ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'monster!                                                                        '),
+			('addstr', 24, 0, 'hp: 10/10 here: !                                                               '),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.GRAB, Point(10, 6)))
+		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
+		ui.redraw(dungeon)
+		DISPLAYED_LAYOUT = [
+				'    #####      #### ',
+				'     ...   ## ..... ',
+				'      ...  .#......#',
+				'     ##..##.#......#',
+				'     #.............#',
+				'#    #.............#',
+				'#.........@........#',
+				'#..................#',
+				'#..................#',
+				' ################## ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'monster! player ^^ potion. player <~ potion.                                    '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
+			('refresh',),
+			])
