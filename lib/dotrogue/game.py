@@ -278,9 +278,12 @@ class Game(object):
 		Log.debug("Populating dungeon: {0}".format(settler))
 		settler = settler(self.rng, builder)
 		settler.populate()
-		self.monsters[:] = [
-				monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, builder.start_pos),
-				]
+		player = self.get_player()
+		if player:
+			player.pos = builder.start_pos
+		else:
+			player = monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, builder.start_pos)
+		self.monsters[:] = [player]
 		for monster_data in settler.monsters:
 			species, monster_data = monster_data[0], monster_data[1:]
 			monster_data = (self.SPECIES[species],) + monster_data
@@ -377,6 +380,7 @@ class Game(object):
 	def descend(self):
 		if self.get_player().pos != self.exit_pos:
 			return
+		self.events.append(messages.DescendEvent(self.get_player()))
 		self.build_new_strata()
 	def find_path(self, start, find_target):
 		path = math.find_path(

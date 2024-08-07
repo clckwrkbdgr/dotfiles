@@ -59,6 +59,12 @@ class MoveEvent(Event):
 	def __str__(self):
 		return '{0} moves to {1}'.format(str(self.actor), self.dest)
 
+class DescendEvent(Event):
+	def __init__(self, actor):
+		self.actor = actor
+	def __str__(self):
+		return '{0} descends'.format(self.actor)
+
 class BumpEvent(Event):
 	def __init__(self, actor, dest):
 		self.actor = actor

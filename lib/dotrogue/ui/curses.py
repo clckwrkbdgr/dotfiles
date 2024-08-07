@@ -52,6 +52,8 @@ class Curses(UI):
 			elif isinstance(event, messages.MoveEvent):
 				if event.actor != game.get_player():
 					events.append('{0}...'.format(event.actor.name))
+			elif isinstance(event, messages.DescendEvent):
+				events.append('{0} V...'.format(event.actor.name))
 			elif isinstance(event, messages.BumpEvent):
 				if event.actor != game.get_player():
 					events.append('{0} bumps.'.format(event.actor.name))

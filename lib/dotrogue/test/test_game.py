@@ -737,6 +737,7 @@ class TestMovement(AbstractTestDungeon):
 				######
 				"""
 		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[UnSettler])
+		dungeon.affect_health(dungeon.get_player(), -5)
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
 
 		dungeon.descend()
@@ -744,6 +745,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
 		dungeon.descend()
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().hp, 5)
 		self.assertEqual(dungeon.tostring(), textwrap.dedent(_MockBuilder.MAP_DATA))
 	def should_directly_jump_to_new_position(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])

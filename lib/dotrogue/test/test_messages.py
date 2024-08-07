@@ -96,4 +96,7 @@ class TestEvents(unittest.TestCase):
 		self.assertEqual(str(messages.HealthEvent('@', +10)), '@ +10 hp')
 		self.assertEqual(str(messages.DeathEvent('@')), '@ dies')
 		self.assertEqual(str(messages.MoveEvent('@', 'POS')), '@ moves to POS')
+		self.assertEqual(str(messages.DescendEvent('@')), '@ descends')
 		self.assertEqual(str(messages.BumpEvent('@', 'POS')), '@ bumps into POS')
+		self.assertEqual(str(messages.GrabItemEvent('@', '!')), '@ grabs !')
+		self.assertEqual(str(messages.ConsumeItemEvent('@', '!')), '@ consumes !')

@@ -74,6 +74,18 @@ class TestCurses(unittest.TestCase):
 			'#.................. ',
 			' #################  ',
 			]
+	NEXT_DUNGEON = [
+			'    #####        #  ',
+			'     ....   #  ...  ',
+			'      ...  .# ..... ',
+			'     ##..##.#...... ',
+			'     #............. ',
+			'#....#............. ',
+			'#........@.........#',
+			'#.................. ',
+			'#......M........... ',
+			' #################  ',
+			]
 	DISPLAYED_LAYOUT_DEAD = [
 			'    #####        #  ',
 			'     ....   #  ...  ',
@@ -386,7 +398,18 @@ class TestCurses(unittest.TestCase):
 		ui = curses.Curses()
 		ui.window = MockCurses('>')
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon.jump_to(Point(10, 1))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.DESCEND, None))
+		dungeon.descend()
+
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, self.NEXT_DUNGEON[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'monster! exit! player V... monster!                                             '),
+			('addstr', 24, 0, 'hp: 10/10                                                                       '),
+			('refresh',),
+			])
 	def should_move_character(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('hjklyubn')
