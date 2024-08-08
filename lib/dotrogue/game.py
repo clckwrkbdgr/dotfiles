@@ -106,6 +106,7 @@ class Game(object):
 		self.monsters = []
 		self.items = []
 		self.visible_monsters = []
+		self.visible_items = []
 		self.events = []
 		if dummy:
 			return
@@ -232,7 +233,10 @@ class Game(object):
 				return False
 		return True
 	def update_vision(self):
+		if not self.get_player():
+			return
 		current_visible_monsters = []
+		current_visible_items = []
 		for p in self.field_of_view.update(
 				self.get_player().pos,
 				is_transparent=self.is_transparent,
@@ -247,12 +251,19 @@ class Game(object):
 						self.events.append(messages.DiscoverEvent(monster))
 					current_visible_monsters.append(monster)
 
+			for item in self.items:
+				if p == item.pos:
+					if item not in self.visible_items:
+						self.events.append(messages.DiscoverEvent(item))
+					current_visible_items.append(item)
+
 			if cell.visited:
 				continue
 			if p == self.exit_pos:
 				self.events.append(messages.DiscoverEvent('>'))
 			cell.visited = True
 		self.visible_monsters = current_visible_monsters
+		self.visible_items = current_visible_items
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 			self.remembered_exit = True
 	def clear_event(self, event=None):
@@ -352,6 +363,7 @@ class Game(object):
 	def attack(self, actor, target):
 		self.events.append(messages.AttackEvent(actor, target))
 		self.affect_health(target, -1)
+		self.update_vision()
 	def find_monster(self, x, y):
 		for monster in self.monsters:
 			if monster.pos.x == x and monster.pos.y == y:
@@ -393,12 +405,18 @@ class Game(object):
 			path.pop(0)
 		return path
 	def walk_to(self, dest):
+		if self.visible_monsters:
+			self.events.append(messages.DiscoverEvent('monsters'))
+			return
 		path = self.find_path(self.get_player().pos,
 				find_target=lambda wave: dest if dest in wave else None,
 				)
 		if path:
 			self.movement_queue.extend(path)
 	def start_autoexploring(self):
+		if self.visible_monsters:
+			self.events.append(messages.DiscoverEvent('monsters'))
+			return False
 		path = self.find_path(self.get_player().pos,
 			find_target=lambda wave: next((target for target in sorted(wave)
 			if any(
@@ -524,12 +542,15 @@ class God:
 class Savefile:
 	FILENAME = os.path.expanduser('~/.rogue.sav')
 	@classmethod
+	def exists(cls):
+		return os.path.exists(cls.FILENAME)
+	@classmethod
 	def last_save_time(cls):
-		if not os.path.exists(cls.FILENAME):
+		if not cls.exists():
 			return 0
 		return os.stat(cls.FILENAME).st_mtime
 	def load(self):
-		if not os.path.exists(self.FILENAME):
+		if not self.exists():
 			return None
 		Log.debug('Loading savefile: {0}...'.format(self.FILENAME))
 		with open(self.FILENAME, 'r') as f:
@@ -549,7 +570,7 @@ class Savefile:
 			f.write(str(game.rng.value) + '\0')
 			f.write('\0'.join(map(str, dump)))
 	def unlink(self):
-		if not os.path.exists(self.FILENAME):
+		if not self.exists():
 			return
 		os.unlink(self.FILENAME)
 

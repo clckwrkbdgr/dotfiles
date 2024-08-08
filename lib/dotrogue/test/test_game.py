@@ -308,9 +308,9 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
-			] + [
 			'redraw',
 			'user_action',
+			'Discovered potion @Point(x=10, y=6)',
 			'redraw',
 			'user_action',
 			'player @Point(x=10, y=6) 10/10hp moves to Point(x=10, y=6)',
@@ -968,6 +968,24 @@ class TestAutoMode(AbstractTestDungeon):
 		dungeon.walk_to(Point(4, 2))
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
+	def should_not_allow_autowalking_if_monsters_are_nearby(self):
+		class _MockBuilder(builders.CustomMap):
+			MAP_DATA = """\
+				######
+				#.@..#
+				#...>#
+				######
+				"""
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[settlers.SingleMonster])
+		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		dungeon.clear_event() # Clear events.
+
+		dungeon.walk_to(Point(4, 2))
+		self.assertFalse(dungeon.perform_automovement())
+		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
+		self.assertEqual(dungeon.events[0].obj, 'monsters')
 	def should_autoexplore(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
@@ -1001,6 +1019,15 @@ class TestAutoMode(AbstractTestDungeon):
 				#    ..............#
 				####################
 				"""))
+	def should_not_allow_autoexploring_if_monsters_are_nearby(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon.clear_event() # Clear events.
+
+		self.assertFalse(dungeon.start_autoexploring())
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
+		self.assertEqual(len(dungeon.events), 1)
+		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
+		self.assertEqual(dungeon.events[0].obj, 'monsters')
 
 class TestSavefile(AbstractTestDungeon):
 	@mock.patch('os.stat')

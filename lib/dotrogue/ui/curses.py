@@ -41,8 +41,10 @@ class Curses(UI):
 			if isinstance(event, messages.DiscoverEvent):
 				if event.obj == '>':
 					events.append('exit!')
-				else:
+				elif hasattr(event.obj, 'name'):
 					events.append('{0}!'.format(event.obj.name))
+				else:
+					events.append('{0}!'.format(event.obj))
 			elif isinstance(event, messages.AttackEvent):
 				events.append('{0} x> {1}.'.format(event.actor.name, event.target.name))
 			elif isinstance(event, messages.HealthEvent):

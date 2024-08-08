@@ -195,6 +195,7 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses('.')
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
 
+		dungeon.start_autoexploring()
 		# Monster is already spotted from the beginning,
 		# now move into cave opening to detect exit.
 		dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT)
@@ -208,7 +209,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster! exit! Unknown event {0}!                                       '.format(repr('GIBBERISH'))),
+			('addstr', 0, 0, 'monster! monsters! exit! Unknown event {0}!                             '.format(repr('GIBBERISH'))),
 			('addstr', 24, 0, 'hp: 10/10                                                                       '),
 			('refresh',),
 			])
@@ -468,7 +469,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster!                                                                        '),
+			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10                                                                       '),
 			('refresh',),
 			])
@@ -491,7 +492,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster!                                                                        '),
+			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10 here: !                                                               '),
 			('refresh',),
 			])
@@ -514,7 +515,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster! player ^^ potion. player <~ potion.                                    '),
+			('addstr', 0, 0, 'potion! monster! player ^^ potion. player <~ potion.                            '),
 			('addstr', 24, 0, 'hp: 10/10                                                                       '),
 			('refresh',),
 			])

@@ -20,6 +20,8 @@ class Tester:
 	def need_tests(self, argv):
 		if 'test' in argv:
 			return True
+		if not game.Savefile.exists():
+			return False
 		last_save = game.Savefile.last_save_time()
 		result = False
 		for filename in self.iter_files():
