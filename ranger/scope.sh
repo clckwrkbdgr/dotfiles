@@ -63,6 +63,10 @@ esac
 
 case "$mimetype" in
 	# Syntax highlight for text files:
+	text/plain)
+		fold -w "$width" -s "$path" | head -n $maxln;
+		exit 0;
+		;;
 	text/* | */xml)
 		highlight --out-format=ansi "$path" | head -n $maxln
 		success && exit 5 || exit 2;;
