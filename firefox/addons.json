@@ -20,9 +20,9 @@
 			"homepageURL": "https://github.com/fregante/GhostText",
 			"id": "ghosttext@bfred.it",
 			"name": "GhostText",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4315014/ghosttext-24.7.6.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4334686/ghosttext-24.8.10.xpi",
 			"type": "extension",
-			"version": "24.7.6"
+			"version": "24.8.10"
 		},
 		{
 			"homepageURL": "https://www.soeren-hentzschel.at/firefox-webextensions/new-tab-override/",
