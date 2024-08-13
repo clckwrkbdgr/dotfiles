@@ -14,6 +14,12 @@ from .. import game
 from .. import ui
 from .. import messages
 
+class MockWriter:
+	def __init__(self):
+		self.dump = []
+	def write(self, item):
+		self.dump.append(item)
+
 class MockGame(game.Game):
 	TERRAIN = {
 		None : game.Terrain(' ', False),
@@ -1053,7 +1059,7 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon = MockGame(dummy=True)
 		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
-		game.load_game(restored_dungeon, reader)
+		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.get_player().pos, restored_dungeon.get_player().pos)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:
@@ -1081,7 +1087,7 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon = MockGame(dummy=True)
 		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
-		game.load_game(restored_dungeon, reader)
+		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.get_player().pos, restored_dungeon.get_player().pos)
 		self.assertEqual(restored_dungeon.get_player().hp, 10)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
@@ -1113,7 +1119,7 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon = MockGame(dummy=True)
 		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
-		game.load_game(restored_dungeon, reader)
+		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:
 			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
@@ -1149,7 +1155,7 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon = MockGame(dummy=True)
 		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
-		game.load_game(restored_dungeon, reader)
+		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:
@@ -1167,7 +1173,9 @@ class TestGameSerialization(AbstractTestDungeon):
 		self.assertEqual(len(restored_dungeon.items), 0)
 	def should_serialize_and_deserialize_game(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
-		dump = list(game.save_game(dungeon))
+		writer = MockWriter()
+		dungeon.save(writer)
+		dump = writer.dump
 		self.assertEqual(dump, [1406932606,
 			10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
@@ -1191,7 +1199,7 @@ class TestGameSerialization(AbstractTestDungeon):
 		self.assertEqual(game.Version.CURRENT, game.Version.ITEMS + 1)
 		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
-		game.load_game(restored_dungeon, reader)
+		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size:
@@ -1210,40 +1218,3 @@ class TestGameSerialization(AbstractTestDungeon):
 		for item, restored_item in zip(dungeon.items, restored_dungeon.items):
 			self.assertEqual(item.item_type, restored_item.item_type)
 			self.assertEqual(item.pos, restored_item.pos)
-
-class TestMain(unittest.TestCase):
-	@mock.patch('dotrogue.system.savefile.Savefile')
-	@mock.patch('dotrogue.ui.auto_ui')
-	@mock.patch('dotrogue.game.Game')
-	def should_run_new_game(self, mock_game, mock_ui, mock_savefile):
-		mock_savefile.return_value.load.return_value = None
-		game.run()
-		mock_savefile.assert_called_once_with()
-		mock_savefile.return_value.load.assert_called_once_with()
-		mock_game.return_value.update_vision.assert_not_called()
-		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
-	@mock.patch('dotrogue.game.load_game')
-	@mock.patch('dotrogue.system.savefile.Savefile')
-	@mock.patch('dotrogue.ui.auto_ui')
-	@mock.patch('dotrogue.game.Game')
-	def should_load_game(self, mock_game, mock_ui, mock_savefile, load_game):
-		from ..system import savefile
-		mock_savefile.return_value.load.return_value = savefile.Reader(iter([1]))
-		game.run()
-		mock_savefile.assert_called_once_with()
-		mock_savefile.return_value.load.assert_called_once_with()
-		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
-	@mock.patch('dotrogue.game.load_game')
-	@mock.patch('dotrogue.system.savefile.Savefile')
-	@mock.patch('dotrogue.ui.auto_ui')
-	@mock.patch('dotrogue.game.Game')
-	def should_abandon_game(self, mock_game, mock_ui, mock_savefile, load_game):
-		from ..system import savefile
-		mock_savefile.return_value.load.return_value = savefile.Reader(iter([1]))
-		mock_game.return_value.get_player.return_value.is_alive.return_value = False
-		game.run()
-		mock_savefile.assert_called_once_with()
-		mock_savefile.return_value.load.assert_called_once_with()
-		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
-		mock_savefile.return_value.save.assert_not_called()
-		mock_savefile.return_value.unlink.assert_called_once_with()

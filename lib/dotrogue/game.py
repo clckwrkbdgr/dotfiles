@@ -109,6 +109,11 @@ class Game(object):
 		if dummy:
 			return
 		self.build_new_strata()
+	def load(self, reader):
+		load_game(self, reader)
+	def save(self, writer):
+		for item in save_game(self):
+			writer.write(item)
 	def main_loop(self, ui):
 		Log.debug('Starting playing...')
 		self.player_turn = True
@@ -547,22 +552,3 @@ class God:
 	def __init__(self):
 		self.vision = False
 		self.noclip = False
-
-def run():
-	from .system.savefile import Savefile
-	savefile = Savefile()
-	reader = savefile.load()
-	if reader is not None:
-		game = Game(dummy=True)
-		load_game(game, reader)
-	else:
-		game = Game()
-	from .ui import auto_ui
-	with auto_ui()() as ui:
-		game.main_loop(ui)
-	if game.get_player() and game.get_player().is_alive():
-		with savefile.save(Version.CURRENT) as writer:
-			for item in save_game(game):
-				writer.write(item)
-	else:
-		savefile.unlink()

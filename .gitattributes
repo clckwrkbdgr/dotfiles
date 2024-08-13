@@ -340,6 +340,7 @@ lib/dotrogue/messages.py caps=work
 lib/dotrogue/monsters.py caps=work
 lib/dotrogue/test/test_monsters.py caps=work
 lib/dotrogue/test/main.py caps=work
+lib/dotrogue/test/test_main.py caps=work
 lib/dotrogue/test/test_test.py caps=work
 lib/dotrogue/items.py caps=work
 lib/dotrogue/test/test_items.py caps=work
