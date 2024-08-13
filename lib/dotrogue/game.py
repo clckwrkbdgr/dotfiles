@@ -1,5 +1,3 @@
-import os
-from collections import namedtuple
 from . import pcg
 from .pcg import RNG
 from . import math
@@ -539,44 +537,27 @@ class God:
 		self.vision = False
 		self.noclip = False
 
-class Savefile:
-	FILENAME = os.path.expanduser('~/.rogue.sav')
-	@classmethod
-	def exists(cls):
-		return os.path.exists(cls.FILENAME)
-	@classmethod
-	def last_save_time(cls):
-		if not cls.exists():
-			return 0
-		return os.stat(cls.FILENAME).st_mtime
-	def load(self):
-		if not self.exists():
-			return None
-		Log.debug('Loading savefile: {0}...'.format(self.FILENAME))
-		with open(self.FILENAME, 'r') as f:
-			data = f.read().split('\0')
-		data = iter(data)
-		version = int(next(data))
-		rng_seed = None
-		if version > Version.PERSISTENT_RNG:
-			rng_seed = int(next(data))
-		game = Game(rng_seed, dummy=True)
-		load_game(game, version, data)
-		return game
-	def save(self, game):
-		dump = save_game(game)
-		with open(self.FILENAME, 'w') as f:
-			f.write(str(Version.CURRENT) + '\0')
-			f.write(str(game.rng.value) + '\0')
-			f.write('\0'.join(map(str, dump)))
-	def unlink(self):
-		if not self.exists():
-			return
-		os.unlink(self.FILENAME)
+def load_savefile(data):
+	version = int(next(data))
+	rng_seed = None
+	if version > Version.PERSISTENT_RNG:
+		rng_seed = int(next(data))
+	game = Game(rng_seed, dummy=True)
+	load_game(game, version, data)
+	return game
+
+def save_savefile(game):
+	def _inner():
+		yield Version.CURRENT
+		yield game.rng.value
+		for item in save_game(game):
+			yield item
+	return _inner
 
 def run():
+	from .system.savefile import Savefile
 	savefile = Savefile()
-	game = savefile.load()
+	game = savefile.load(load_savefile)
 	if game is not None:
 		game.update_vision()
 		Log.debug('Loaded.')
@@ -588,6 +569,6 @@ def run():
 	with auto_ui()() as ui:
 		game.main_loop(ui)
 	if game.get_player() and game.get_player().is_alive():
-		savefile.save(game)
+		savefile.save(save_savefile)
 	else:
 		savefile.unlink()

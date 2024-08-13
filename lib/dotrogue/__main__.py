@@ -1,6 +1,7 @@
 import os, sys
 from .messages import Log
 from . import game
+from .system.savefile import Savefile
 from .test.main import Tester
 
 def cli():
@@ -8,7 +9,7 @@ def cli():
 	if debug:
 		Log.init('rogue.log')
 	tester = Tester(rootdir=os.path.dirname(os.path.dirname(__file__)))
-	if tester.need_tests(sys.argv, game.Savefile.last_save_time() if game.Savefile.exists() else -1):
+	if tester.need_tests(sys.argv, Savefile.last_save_time() if Savefile.exists() else -1):
 		tests = tester.get_tests(sys.argv)
 		rc = tester.run(tests, debug=debug)
 		if rc != 0 or 'test' in sys.argv:

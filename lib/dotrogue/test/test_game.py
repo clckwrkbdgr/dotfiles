@@ -1,5 +1,3 @@
-import os, sys
-import tempfile
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 try:
@@ -15,8 +13,6 @@ from .. import pcg
 from .. import game
 from .. import ui
 from .. import messages
-
-BUILTIN_OPEN = 'builtins.open' if sys.version_info[0] >= 3 else '__builtin__.open'
 
 class MockGame(game.Game):
 	TERRAIN = {
@@ -1029,75 +1025,6 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, 'monsters')
 
-class TestSavefile(AbstractTestDungeon):
-	@mock.patch('os.stat')
-	@mock.patch('os.path.exists', side_effect=[False, True])
-	@mock.patch('dotrogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_get_last_save_time(self, mock_filename, os_path_exists, os_stat):
-		os_stat.return_value.st_mtime = 123
-		self.assertEqual(game.Savefile.last_save_time(), 0)
-		self.assertEqual(game.Savefile.last_save_time(), 123)
-	@mock.patch('os.path.exists', side_effect=[False])
-	@mock.patch('dotrogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_not_load_game_from_non_existent_file(self, mock_filename, os_path_exists):
-		savefile = game.Savefile()
-		self.assertEqual(savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		result = savefile.load()
-		self.assertEqual(result, None)
-	@mock.patch('dotrogue.game.load_game')
-	@mock.patch('os.path.exists', side_effect=[True])
-	@mock.patch('dotrogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_load_game_from_file_if_exists(self, mock_filename, os_path_exists, load_game):
-		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		load_game.side_effect = lambda _game_object, version, data: setattr(_game_object, '_data', list(data))
-		stream = mock.mock_open(read_data='{0}\x00123\x00game data'.format(game.Version.CURRENT))
-		with mock.patch(BUILTIN_OPEN, stream):
-			savefile = game.Savefile()
-			game_object = savefile.load()
-			self.assertEqual(game_object.rng.seed, 123)
-			self.assertEqual(game_object._data, ["game data"])
-
-			load_game.assert_called_once_with(game_object, game.Version.CURRENT, mock.ANY)
-			stream.assert_called_once_with(game.Savefile.FILENAME, 'r')
-			handle = stream()
-			handle.read.assert_called_once()
-	@mock.patch('dotrogue.game.save_game')
-	@mock.patch('dotrogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_save_game_to_file(self, mock_filename, save_game):
-		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		save_game.side_effect = lambda game_object: (_ for _ in [game_object._data])
-		stream = mock.mock_open()
-		with mock.patch(BUILTIN_OPEN, stream):
-			savefile = game.Savefile()
-			game_object = game.Game(dummy=True)
-			game_object._data = "game data"
-			game_object.rng = RNG(123)
-			savefile.save(game_object)
-
-			stream.assert_called_once_with(game.Savefile.FILENAME, 'w')
-			handle = stream()
-			handle.write.assert_has_calls([
-				mock.call('{0}\x00'.format(game.Version.CURRENT)),
-				mock.call('123\x00'),
-				mock.call('game data'),
-				])
-	@mock.patch('os.unlink')
-	@mock.patch('os.path.exists', side_effect=[True])
-	@mock.patch('dotrogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_unlink_save_file_if_exists(self, mock_filename, os_path_exists, os_unlink):
-		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		savefile = game.Savefile()
-		savefile.unlink()
-		os_unlink.assert_called_once_with(game.Savefile.FILENAME)
-	@mock.patch('os.unlink')
-	@mock.patch('os.path.exists', side_effect=[False])
-	@mock.patch('dotrogue.game.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_not_unlink_save_file_if_does_not_exist(self, mock_filename, os_path_exists, os_unlink):
-		self.assertEqual(game.Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		savefile = game.Savefile()
-		savefile.unlink()
-		os_unlink.assert_not_called()
-
 class TestGameSerialization(AbstractTestDungeon):
 	class _MockSettler(CustomSettler):
 		MONSTERS = [
@@ -1107,6 +1034,27 @@ class TestGameSerialization(AbstractTestDungeon):
 				('potion', Point(10, 6)),
 				]
 
+	@mock.patch('dotrogue.game.load_game')
+	def should_load_savefile_data(self, load_game):
+		load_game.side_effect = lambda _game_object, version, data: setattr(_game_object, '_data', list(data))
+		data = [str(game.Version.CURRENT), '123', 'game data']
+		data = iter(data)
+		game_object = game.load_savefile(data)
+		self.assertEqual(game_object.rng.seed, 123)
+		self.assertEqual(game_object._data, ["game data"])
+		load_game.assert_called_once_with(game_object, game.Version.CURRENT, mock.ANY)
+	@mock.patch('dotrogue.game.save_game')
+	def should_save_savefile_data(self, save_game):
+		save_game.side_effect = lambda game_object: (_ for _ in [game_object._data])
+		game_object = game.Game(dummy=True)
+		game_object._data = "game data"
+		game_object.rng = RNG(123)
+		dump = list(game.save_savefile(game_object)())
+		self.assertEqual(dump, [
+			game.Version.CURRENT,
+			123,
+			"game data",
+			])
 	def should_deserialize_game_before_terrain_types(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
 		dump = [
@@ -1275,29 +1223,29 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(item.pos, restored_item.pos)
 
 class TestMain(unittest.TestCase):
-	@mock.patch('dotrogue.game.Savefile')
+	@mock.patch('dotrogue.system.savefile.Savefile')
 	@mock.patch('dotrogue.ui.auto_ui')
 	@mock.patch('dotrogue.game.Game')
 	def should_run_new_game(self, mock_game, mock_ui, mock_savefile):
 		mock_savefile.return_value.load.return_value = None
 		game.run()
 		mock_savefile.assert_called_once_with()
-		mock_savefile.return_value.load.assert_called_once_with()
+		mock_savefile.return_value.load.assert_called_once_with(game.load_savefile)
 		mock_game.return_value.update_vision.assert_not_called()
 		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
-		mock_savefile.return_value.save.assert_called_once_with(mock_game.return_value)
-	@mock.patch('dotrogue.game.Savefile')
+		mock_savefile.return_value.save.assert_called_once_with(game.save_savefile)
+	@mock.patch('dotrogue.system.savefile.Savefile')
 	@mock.patch('dotrogue.ui.auto_ui')
 	@mock.patch('dotrogue.game.Game')
 	def should_load_game(self, mock_game, mock_ui, mock_savefile):
 		mock_savefile.return_value.load.return_value = mock_game.return_value
 		game.run()
 		mock_savefile.assert_called_once_with()
-		mock_savefile.return_value.load.assert_called_once_with()
+		mock_savefile.return_value.load.assert_called_once_with(game.load_savefile)
 		mock_game.return_value.update_vision.assert_called_once_with()
 		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
-		mock_savefile.return_value.save.assert_called_once_with(mock_game.return_value)
-	@mock.patch('dotrogue.game.Savefile')
+		mock_savefile.return_value.save.assert_called_once_with(game.save_savefile)
+	@mock.patch('dotrogue.system.savefile.Savefile')
 	@mock.patch('dotrogue.ui.auto_ui')
 	@mock.patch('dotrogue.game.Game')
 	def should_abandon_game(self, mock_game, mock_ui, mock_savefile):
@@ -1305,7 +1253,7 @@ class TestMain(unittest.TestCase):
 		mock_game.return_value.get_player.return_value.is_alive.return_value = False
 		game.run()
 		mock_savefile.assert_called_once_with()
-		mock_savefile.return_value.load.assert_called_once_with()
+		mock_savefile.return_value.load.assert_called_once_with(game.load_savefile)
 		mock_game.return_value.update_vision.assert_called_once_with()
 		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
 		mock_savefile.return_value.save.assert_not_called()
