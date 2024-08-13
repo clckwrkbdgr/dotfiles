@@ -59,14 +59,15 @@ case "$extension" in
 		have lynx   && lynx   -dump "$path" | head -n $maxln | fmt -s -w $width && exit 4
 		have elinks && elinks -dump "$path" | head -n $maxln | fmt -s -w $width && exit 4
 		;; # fall back to highlight/cat if theres no lynx/elinks
+	# Syntax highlight for plain text files:
+	txt)
+		fold -w "$width" -s "$path" | head -n $maxln;
+		exit 0;
+		;;
 esac
 
 case "$mimetype" in
 	# Syntax highlight for text files:
-	text/plain)
-		fold -w "$width" -s "$path" | head -n $maxln;
-		exit 0;
-		;;
 	text/* | */xml)
 		highlight --out-format=ansi "$path" | head -n $maxln
 		success && exit 5 || exit 2;;
