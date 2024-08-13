@@ -452,6 +452,7 @@ class Game(object):
 		raise Game.AutoMovementStopped()
 
 def save_game(game):
+	yield game.rng.value
 	dump_str = lambda _value: _value if _value is None else _value
 	dump_bool = lambda _value: int(_value)
 	yield game.exit_pos.x
@@ -475,7 +476,12 @@ def save_game(game):
 		yield item.pos.x
 		yield item.pos.y
 
-def load_game(game, version, data):
+def load_game(game, reader):
+	if reader.version > Version.PERSISTENT_RNG:
+		game.rng = RNG(int(reader.read()))
+	version = reader.version
+	data = reader.stream
+
 	parse_str = lambda _value: _value if _value != 'None' else None
 	parse_bool = lambda _value: _value == '1'
 
@@ -532,43 +538,31 @@ def load_game(game, version, data):
 	game.strata = strata
 	game.remembered_exit = remembered_exit
 
+	game.update_vision()
+	Log.debug('Loaded.')
+	Log.debug(repr(game.strata))
+	Log.debug('Player: {0}'.format(game.get_player()))
+
 class God:
 	def __init__(self):
 		self.vision = False
 		self.noclip = False
 
-def load_savefile(data):
-	version = int(next(data))
-	rng_seed = None
-	if version > Version.PERSISTENT_RNG:
-		rng_seed = int(next(data))
-	game = Game(rng_seed, dummy=True)
-	load_game(game, version, data)
-	return game
-
-def save_savefile(game):
-	def _inner():
-		yield Version.CURRENT
-		yield game.rng.value
-		for item in save_game(game):
-			yield item
-	return _inner
-
 def run():
 	from .system.savefile import Savefile
 	savefile = Savefile()
-	game = savefile.load(load_savefile)
-	if game is not None:
-		game.update_vision()
-		Log.debug('Loaded.')
-		Log.debug(repr(game.strata))
-		Log.debug('Player: {0}'.format(game.get_player()))
+	reader = savefile.load()
+	if reader is not None:
+		game = Game(dummy=True)
+		load_game(game, reader)
 	else:
 		game = Game()
 	from .ui import auto_ui
 	with auto_ui()() as ui:
 		game.main_loop(ui)
 	if game.get_player() and game.get_player().is_alive():
-		savefile.save(save_savefile)
+		with savefile.save(Version.CURRENT) as writer:
+			for item in save_game(game):
+				writer.write(item)
 	else:
 		savefile.unlink()

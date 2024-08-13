@@ -22,10 +22,8 @@ class TestSavefile(unittest.TestCase):
 	def should_not_load_game_from_non_existent_file(self, mock_filename, os_path_exists):
 		savefile = Savefile()
 		self.assertEqual(savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		mock_loader_function = mock.MagicMock()
-		result = savefile.load(mock_loader_function)
-		mock_loader_function.assert_not_called()
-		self.assertEqual(result, None)
+		reader = savefile.load()
+		self.assertEqual(reader, None)
 	@mock.patch('os.path.exists', side_effect=[True])
 	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_load_game_from_file_if_exists(self, mock_filename, os_path_exists):
@@ -34,10 +32,9 @@ class TestSavefile(unittest.TestCase):
 		stream = mock.mock_open(read_data='{version}\x00123\x00game data'.format(version=VERSION))
 		with mock.patch(BUILTIN_OPEN, stream):
 			savefile = Savefile()
-			def _mock_loader_function(data):
-				self.assertEqual(next(data), str(VERSION))
-				return (int(next(data)), next(data))
-			game_object = savefile.load(_mock_loader_function)
+			reader = savefile.load()
+			self.assertEqual(reader.version, VERSION)
+			game_object = (int(reader.read()), reader.read())
 			self.assertEqual(game_object, (123, 'game data'))
 			stream.assert_called_once_with(Savefile.FILENAME, 'r')
 			handle = stream()
@@ -49,11 +46,9 @@ class TestSavefile(unittest.TestCase):
 		VERSION = 666
 		with mock.patch(BUILTIN_OPEN, stream):
 			savefile = Savefile()
-			def _mock_saver():
-				yield VERSION
-				yield 123
-				yield 'game data'
-			savefile.save(_mock_saver)
+			with savefile.save(VERSION) as writer:
+				writer.write(123)
+				writer.write('game data')
 
 			stream.assert_called_once_with(Savefile.FILENAME, 'w')
 			handle = stream()
