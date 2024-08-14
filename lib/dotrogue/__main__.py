@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, sys
 from .messages import Log
 from . import game
@@ -17,7 +18,7 @@ def run():
 		instance.main_loop(interface)
 	if instance.get_player() and instance.get_player().is_alive():
 		with sfile.save(game.Version.CURRENT) as writer:
-			instance.write(writer)
+			instance.save(writer)
 	else:
 		sfile.unlink()
 
@@ -26,7 +27,7 @@ def cli():
 	if debug:
 		Log.init('rogue.log')
 	tester = Tester(rootdir=os.path.dirname(os.path.dirname(__file__)))
-	if tester.need_tests(sys.argv, Savefile.last_save_time() if savefile.Savefile.exists() else -1):
+	if tester.need_tests(sys.argv, savefile.Savefile.last_save_time() if savefile.Savefile.exists() else -1, printer=print):
 		tests = tester.get_tests(sys.argv)
 		rc = tester.run(tests, debug=debug)
 		if rc != 0 or 'test' in sys.argv:

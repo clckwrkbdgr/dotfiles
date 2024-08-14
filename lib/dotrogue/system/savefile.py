@@ -38,8 +38,12 @@ class Savefile:
 		return Reader(data)
 	@contextlib.contextmanager
 	def save(self, version):
-		with open(self.FILENAME, 'w') as f:
-			yield Writer(f, version)
+		try:
+			with open(self.FILENAME, 'w') as f:
+				yield Writer(f, version)
+		except:
+			self.unlink()
+			raise
 	def unlink(self):
 		if not self.exists():
 			return

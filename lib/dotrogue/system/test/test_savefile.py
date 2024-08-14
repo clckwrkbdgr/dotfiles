@@ -62,6 +62,30 @@ class TestSavefile(unittest.TestCase):
 	@mock.patch('os.unlink')
 	@mock.patch('os.path.exists', side_effect=[True])
 	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_unlink_savefile_on_crash_during_saving(self, mock_filename, os_path_exists, os_unlink):
+		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+		stream = mock.mock_open()
+		VERSION = 666
+		with mock.patch(BUILTIN_OPEN, stream):
+			savefile = Savefile()
+			try:
+				with savefile.save(VERSION) as writer:
+					writer.write(123)
+					raise RuntimeError('crash!')
+			except RuntimeError as e:
+				self.assertEqual(str(e), 'crash!')
+
+			stream.assert_called_once_with(Savefile.FILENAME, 'w')
+			handle = stream()
+			handle.write.assert_has_calls([
+				mock.call('{0}'.format(666)),
+				mock.call('\x00'),
+				mock.call('123'),
+				])
+			os_unlink.assert_called_once_with(Savefile.FILENAME)
+	@mock.patch('os.unlink')
+	@mock.patch('os.path.exists', side_effect=[True])
+	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_unlink_save_file_if_exists(self, mock_filename, os_path_exists, os_unlink):
 		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 		savefile = Savefile()

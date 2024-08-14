@@ -19,6 +19,8 @@ class TestMain(unittest.TestCase):
 		mock_savefile.return_value.load.assert_called_once_with()
 		mock_game.return_value.update_vision.assert_not_called()
 		mock_game.return_value.main_loop.assert_called_once_with(mock_ui.return_value.return_value.__enter__.return_value)
+		mock_savefile.return_value.save.assert_called_once_with(mock.ANY)
+		mock_game.return_value.save.assert_called_once()
 	@mock.patch('dotrogue.game.load_game')
 	@mock.patch('dotrogue.system.savefile.Savefile')
 	@mock.patch('dotrogue.ui.auto_ui')

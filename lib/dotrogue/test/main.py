@@ -17,7 +17,7 @@ class Tester:
 				if filename.startswith('test') and filename.endswith('.py'):
 					self.all_tests.append(full_filename)
 				yield full_filename
-	def need_tests(self, argv, last_save):
+	def need_tests(self, argv, last_save, printer=None):
 		if 'test' in argv:
 			return True
 		if last_save <= 0:
@@ -25,7 +25,8 @@ class Tester:
 		result = False
 		for filename in self.iter_files():
 			if os.stat(filename).st_mtime > last_save:
-				Log.info('Source file {0} has been changed.'.format(filename))
+				if printer:
+					printer('Source file {0} has been changed.'.format(filename))
 				result = True
 		return result
 	def get_tests(self, argv):

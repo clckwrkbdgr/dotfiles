@@ -55,11 +55,10 @@ class TestTester(unittest.TestCase):
 			os.path.join('/rootdir/dotrogue/test', 'test_main.py'),
 			])
 		os_chdir.assert_called_once_with('/rootdir')
-	@mock.patch('dotrogue.messages.Log.info')
 	@mock.patch('os.stat')
 	@mock.patch('os.chdir')
 	@mock.patch('os.walk')
-	def should_detect_need_for_testing(self, os_walk, os_chdir, os_stat, Log_info):
+	def should_detect_need_for_testing(self, os_walk, os_chdir, os_stat):
 		os_walk.side_effect = [[
 				('/rootdir/dotrogue', ['subdir', 'test', '__pycache__'], ['main.py', 'main.pyc']),
 				('/rootdir/dotrogue/subdir', ['test', '__pycache__'], ['module.py', 'module.pyc']),
@@ -81,11 +80,14 @@ class TestTester(unittest.TestCase):
 				_OsStat(666), # /rootdir/dotrogue/test/test_main.py
 				]
 		tester = main.Tester('/rootdir')
-		self.assertFalse(tester.need_tests(['arg'], -1))
-		self.assertFalse(tester.need_tests(['arg'], 123))
-		self.assertTrue(tester.need_tests(['arg'], 124))
-		self.assertTrue(tester.need_tests(['test'], -1))
-		self.assertTrue(tester.need_tests(['test'], 125))
+		printer_log = []
+		def _print(value):
+			printer_log.append(value)
+		self.assertFalse(tester.need_tests(['arg'], -1, printer=_print))
+		self.assertFalse(tester.need_tests(['arg'], 123, printer=_print))
+		self.assertTrue(tester.need_tests(['arg'], 124, printer=_print))
+		self.assertTrue(tester.need_tests(['test'], -1, printer=_print))
+		self.assertTrue(tester.need_tests(['test'], 125, printer=_print))
 		os_stat.assert_has_calls([
 			mock.call(os.path.join('/rootdir/dotrogue', 'main.py')),
 			mock.call(os.path.join('/rootdir/dotrogue/subdir', 'module.py')),
@@ -97,9 +99,9 @@ class TestTester(unittest.TestCase):
 			mock.call(os.path.join('/rootdir/dotrogue/subdir/test', 'test_module.py')),
 			mock.call(os.path.join('/rootdir/dotrogue/test', 'test_main.py')),
 			])
-		Log_info.assert_has_calls([
-			mock.call('Source file ' + os.path.join('/rootdir/dotrogue/subdir', 'module.py') + ' has been changed.'),
-			mock.call('Source file ' + os.path.join('/rootdir/dotrogue/test', 'test_main.py') + ' has been changed.'),
+		self.assertEqual(printer_log, [
+			'Source file ' + os.path.join('/rootdir/dotrogue/subdir', 'module.py') + ' has been changed.',
+			'Source file ' + os.path.join('/rootdir/dotrogue/test', 'test_main.py') + ' has been changed.',
 			])
 	@mock.patch('subprocess.call')
 	def should_run_tests(self, subprocess_call):
