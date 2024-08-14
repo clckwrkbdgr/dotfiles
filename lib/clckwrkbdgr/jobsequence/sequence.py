@@ -139,7 +139,11 @@ class JobSequence:
 		if dry_run:
 			verbose = max(1, verbose)
 		logger = logging.getLogger('jobsequence')
-		clckwrkbdgr_logging.init(logger, verbose=verbose, debug=(verbose is not None and verbose > 1))
+		clckwrkbdgr_logging.init(
+				logger, verbose=verbose,
+				debug=(verbose is not None and verbose > 1),
+				timestamps=(verbose is not None and verbose > 2),
+				)
 		if not dry_run:
 			os.environ[self.verbose_var_name] = 'v' * verbose
 		else:
