@@ -2,7 +2,7 @@ import itertools
 import copy
 import textwrap
 from ..math import Matrix, Point, Size, Rect
-from ..messages import Log
+from ..system.logging import Log
 from . import _base as pcg
 
 class Builder(object):

@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os, sys
-from .messages import Log
+from .system.logging import Log
 from . import game
 from . import ui
 from .system import savefile

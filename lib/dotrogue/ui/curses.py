@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from ._base import UI, Action
 import curses
-from ..messages import Log
+from ..system.logging import Log
 from .. import messages
 from ..game import Direction
 from ..math import Point

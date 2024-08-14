@@ -1,5 +1,4 @@
 import os, sys, subprocess
-from ..messages import Log
 
 class Tester:
 	def __init__(self, rootdir):

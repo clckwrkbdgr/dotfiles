@@ -4,7 +4,7 @@ from . import math
 from .utils import Enum
 from .math import Point, Matrix, Size
 from . import messages
-from .messages import Log
+from .system.logging import Log
 from .ui import Action
 from . import monsters, items
 

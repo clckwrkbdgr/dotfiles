@@ -1,7 +1,7 @@
 from collections import namedtuple
 import copy
 import itertools
-from .messages import Log
+from .system.logging import Log
 
 _Point = namedtuple('Point', 'x y')
 class Point(_Point):

@@ -1,6 +1,6 @@
 import os
 import contextlib
-from ..messages import Log
+from .logging import Log
 
 class Reader:
 	def __init__(self, stream):
