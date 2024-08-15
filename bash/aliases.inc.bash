@@ -11,6 +11,7 @@ alias shuffle='find . -type f | sort -R | tail'
 alias s='search.sh'
 alias isodate='date +%Y-%m-%dT%H:%M:%S'
 alias ranger-ctime='ranger --cmd="set sort ctime" --cmd="set sort_reverse true"'
+alias .rogue='python ~/.config/.rogue/rogue.py'
 alias qiv='qiv -f -t -i'
 if [ `uname` != AIX ]; then
 	alias grep='grep --color=auto'
