@@ -1,10 +1,10 @@
 from __future__ import print_function
 import os, sys
-from .system.logging import Log
-from . import game
-from . import ui
-from .system import savefile
-from .test.main import Tester
+from src.system.logging import Log
+from src import game
+from src import ui
+from src.system import savefile
+from src.test.main import Tester
 
 def run():
 	sfile = savefile.Savefile()
@@ -26,7 +26,7 @@ def cli():
 	debug = '--debug' in sys.argv
 	if debug:
 		Log.init('rogue.log')
-	tester = Tester(rootdir=os.path.dirname(os.path.dirname(__file__)))
+	tester = Tester(rootdir=os.path.dirname(__file__))
 	if tester.need_tests(sys.argv, savefile.Savefile.last_save_time() if savefile.Savefile.exists() else -1, printer=print):
 		tests = tester.get_tests(sys.argv)
 		rc = tester.run(tests, debug=debug)

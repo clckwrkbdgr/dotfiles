@@ -1,7 +1,7 @@
 test:
-	python -m dotrogue test
+	python rogue.py test
 
 run:
-	screen python -m dotrogue
+	screen python rogue.py
 
 .PHONY: run test

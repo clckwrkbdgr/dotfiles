@@ -6,7 +6,7 @@ class Tester:
 		self.all_tests = []
 	def iter_files(self):
 		os.chdir(self.rootdir)
-		for rootdir, dirnames, filenames in os.walk('dotrogue'):
+		for rootdir, dirnames, filenames in os.walk('src'):
 			if '__pycache__' in rootdir:
 				continue
 			for filename in filenames:
@@ -29,14 +29,14 @@ class Tester:
 				result = True
 		return result
 	def get_tests(self, argv):
-		tests = [arg for arg in argv if arg.startswith('dotrogue.')]
+		tests = [arg for arg in argv if arg.startswith('src.')]
 		if not tests:
 			if not self.all_tests:
 				list(self.iter_files())
 			tests = self.all_tests
 		return tests
 	def run(self, tests, debug=False):
-		command = ['python', '-m', 'coverage', 'run', '--source', 'dotrogue', '-m', 'unittest']
+		command = ['python', '-m', 'coverage', 'run', '--source', 'src', '-m', 'unittest']
 		if debug:
 			command.append('--verbose')
 		rc = subprocess.call(command + tests)

@@ -12,20 +12,20 @@ from ..savefile import Savefile
 class TestSavefile(unittest.TestCase):
 	@mock.patch('os.stat')
 	@mock.patch('os.path.exists', side_effect=[False, True])
-	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_get_last_save_time(self, mock_filename, os_path_exists, os_stat):
 		os_stat.return_value.st_mtime = 123
 		self.assertEqual(Savefile.last_save_time(), 0)
 		self.assertEqual(Savefile.last_save_time(), 123)
 	@mock.patch('os.path.exists', side_effect=[False])
-	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_not_load_game_from_non_existent_file(self, mock_filename, os_path_exists):
 		savefile = Savefile()
 		self.assertEqual(savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 		reader = savefile.load()
 		self.assertEqual(reader, None)
 	@mock.patch('os.path.exists', side_effect=[True])
-	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_load_game_from_file_if_exists(self, mock_filename, os_path_exists):
 		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 		VERSION = 666
@@ -39,7 +39,7 @@ class TestSavefile(unittest.TestCase):
 			stream.assert_called_once_with(Savefile.FILENAME, 'r')
 			handle = stream()
 			handle.read.assert_called_once()
-	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_save_game_to_file(self, mock_filename):
 		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 		stream = mock.mock_open()
@@ -61,7 +61,7 @@ class TestSavefile(unittest.TestCase):
 				])
 	@mock.patch('os.unlink')
 	@mock.patch('os.path.exists', side_effect=[True])
-	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_unlink_savefile_on_crash_during_saving(self, mock_filename, os_path_exists, os_unlink):
 		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 		stream = mock.mock_open()
@@ -85,7 +85,7 @@ class TestSavefile(unittest.TestCase):
 			os_unlink.assert_called_once_with(Savefile.FILENAME)
 	@mock.patch('os.unlink')
 	@mock.patch('os.path.exists', side_effect=[True])
-	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_unlink_save_file_if_exists(self, mock_filename, os_path_exists, os_unlink):
 		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 		savefile = Savefile()
@@ -93,7 +93,7 @@ class TestSavefile(unittest.TestCase):
 		os_unlink.assert_called_once_with(Savefile.FILENAME)
 	@mock.patch('os.unlink')
 	@mock.patch('os.path.exists', side_effect=[False])
-	@mock.patch('dotrogue.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 	def should_not_unlink_save_file_if_does_not_exist(self, mock_filename, os_path_exists, os_unlink):
 		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
 		savefile = Savefile()
