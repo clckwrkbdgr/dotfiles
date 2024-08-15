@@ -8,10 +8,20 @@ mapfile -t changed_files < <( git diff-index --name-only --cached HEAD )
 python caps.py check "${changed_files[@]}"
 rc=$((rc+$?))
 
+if git diff --cached --name-only | grep -q '^lib/'; then
+
 if pushd lib >/dev/null; then
-	unittest -q
+	python -m compileall -q .
 	rc=$((rc+$?))
+
+	unittest -q -p py3 -p bash -p html # TODO option to exclude --platform py2
+	rc=$((rc+$?))
+	python -c "import clckwrkbdgr.buildqueue; clckwrkbdgr.buildqueue.run_command(['unittest', '-q', '-p', 'py2'], start_dir='$(pwd)')"
+	rc=$((rc+$?))
+
 	popd >/dev/null
+fi
+
 fi
 
 [ $rc -gt 0 ] && echo "[Pre-commit failed with RC=$rc]"
