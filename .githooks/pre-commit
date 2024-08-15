@@ -8,6 +8,13 @@ mapfile -t changed_files < <( git diff-index --name-only --cached HEAD )
 python caps.py check "${changed_files[@]}"
 rc=$((rc+$?))
 
+if git diff --cached --name-only | grep -q '^.rogue/'; then
+if pushd .rogue >/dev/null; then
+	unittest -q
+	popd >/dev/null
+fi
+fi
+
 if git diff --cached --name-only | grep -q '^lib/'; then
 
 if pushd lib >/dev/null; then
