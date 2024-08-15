@@ -11,6 +11,7 @@ rc=$((rc+$?))
 if git diff --cached --name-only | grep -q '^.rogue/'; then
 if pushd .rogue >/dev/null; then
 	unittest -q
+	rc=$((rc+$?))
 	popd >/dev/null
 fi
 fi
