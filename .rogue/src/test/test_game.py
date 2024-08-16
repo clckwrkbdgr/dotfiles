@@ -146,7 +146,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			], interrupts=[False] * 2 + [False] * 8 + [True] + [False] * 6,
 		)
 		with mock_ui:
-			dungeon.main_loop(mock_ui)
+			self.assertTrue(dungeon.main_loop(mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -199,7 +199,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			dungeon.main_loop(mock_ui)
+			self.assertTrue(dungeon.main_loop(mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -245,7 +245,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			] * 10, interrupts=[],
 		)
 		with mock_ui:
-			dungeon.main_loop(mock_ui)
+			self.assertFalse(dungeon.main_loop(mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -278,7 +278,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			dungeon.main_loop(mock_ui)
+			self.assertFalse(dungeon.main_loop(mock_ui))
 		self.assertIsNone(dungeon.get_player())
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
@@ -301,7 +301,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			dungeon.main_loop(mock_ui)
+			self.assertTrue(dungeon.main_loop(mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -1034,6 +1034,22 @@ class TestGameSerialization(AbstractTestDungeon):
 		ITEMS = [
 				('potion', Point(10, 6)),
 				]
+
+	def should_load_game_or_start_new_one(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
+		self.assertEqual(dungeon.monsters[0].pos, Point(9, 6))
+		dungeon.monsters[0].pos = Point(2, 2)
+		writer = MockWriter()
+		dungeon.save(writer)
+		dump = [str(game.Version.CURRENT)] + list(map(str, writer.dump))
+
+		from ..system import savefile
+		reader = savefile.Reader(iter(dump))
+		restored_dungeon = MockGame(load_from_reader=reader)
+		self.assertEqual(restored_dungeon.monsters[0].pos, Point(2, 2))
+
+		restored_dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler], load_from_reader=None)
+		self.assertEqual(restored_dungeon.monsters[0].pos, Point(9, 6))
 
 	def should_deserialize_game_before_terrain_types(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])

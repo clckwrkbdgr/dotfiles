@@ -93,7 +93,7 @@ class Game(object):
 			'healing potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
 			}
 
-	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None):
+	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None, load_from_reader=None):
 		self.builders = builders or self.BUILDERS
 		self.settlers = settlers or self.SETTLERS
 		self.rng = RNG(rng_seed)
@@ -108,7 +108,10 @@ class Game(object):
 		self.events = []
 		if dummy:
 			return
-		self.build_new_strata()
+		if load_from_reader:
+			self.load(load_from_reader)
+		else:
+			self.build_new_strata()
 	def load(self, reader):
 		load_game(self, reader)
 	def save(self, writer):
@@ -129,6 +132,7 @@ class Game(object):
 						continue
 					self._perform_monster_actions(monster)
 				self.player_turn = True
+		return self.get_player() and self.get_player().is_alive()
 	def _perform_player_actions(self, ui):
 		try:
 			if self.perform_automovement():

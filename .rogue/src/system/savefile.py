@@ -2,6 +2,23 @@ import os
 import contextlib
 from .logging import Log
 
+class AutoSavefile:
+	def __init__(self, savefile=None):
+		self.savefile = savefile or Savefile()
+		self.obj = None
+	def __enter__(self):
+		self.reader = self.savefile.load()
+		return self
+	def save(self, obj, version):
+		self.obj = obj
+		self.version = version
+	def __exit__(self, *_t):
+		if self.obj:
+			with self.savefile.save(self.version) as writer:
+				self.obj.save(writer)
+		else:
+			self.savefile.unlink()
+
 class Reader:
 	def __init__(self, stream):
 		self.stream = stream

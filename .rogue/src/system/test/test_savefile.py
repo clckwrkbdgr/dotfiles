@@ -7,7 +7,29 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 import os, sys, tempfile
 BUILTIN_OPEN = 'builtins.open' if sys.version_info[0] >= 3 else '__builtin__.open'
-from ..savefile import Savefile
+from ..savefile import Savefile, AutoSavefile
+
+class TestAutoSavefile(unittest.TestCase):
+	def should_save_autosavefile_if_ok(self):
+		mock_savefile = mock.MagicMock()
+		mock_savefile.load.return_value = 'mock_reader'
+		mock_savefile.save.return_value.__enter__.return_value = 'mock_writer'
+		with AutoSavefile(mock_savefile) as savefile:
+			obj = mock.MagicMock()
+			self.assertEqual(savefile.reader, 'mock_reader')
+			savefile.save(obj, 'version')
+		obj.save.assert_called_with('mock_writer')
+		mock_savefile.save.assert_called_with('version')
+	def should_not_save_autosavefile_if_not_ok(self):
+		mock_savefile = mock.MagicMock()
+		mock_savefile.load.return_value = 'mock_reader'
+		mock_savefile.save.return_value.__enter__.return_value = 'mock_writer'
+		with AutoSavefile(mock_savefile) as savefile:
+			obj = mock.MagicMock()
+			self.assertEqual(savefile.reader, 'mock_reader')
+		obj.save.assert_not_called()
+		mock_savefile.save.assert_not_called()
+		mock_savefile.unlink.assert_called_with()
 
 class TestSavefile(unittest.TestCase):
 	@mock.patch('os.stat')
