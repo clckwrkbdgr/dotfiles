@@ -204,6 +204,7 @@ pip/pip.conf caps=work
 pqivrc caps=home
 checkio/config.ini caps=work
 crontab caps=work
+cataclysm-dda/* caps=home
 dir_colors caps=work
 docs/howto.md caps=work
 docs/profile.md caps=work

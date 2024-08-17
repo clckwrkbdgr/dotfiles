@@ -182,3 +182,5 @@ configstore/update-notifier-npm.json
 # Blender
 blender/*/config/bookmarks.txt
 blender/*/config/recent-files.txt
+# Cataclysm DDA (to local)
+cataclysm-dda/lastworld.json
