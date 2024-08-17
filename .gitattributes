@@ -39,6 +39,7 @@ WindowsTerminal/settings.json filter=windows_terminal_settings
 mapeditor.org/tiled.conf filter=mapeditor_tiled_conf
 qvge/Qt?Visual?Graph?Editor.conf filter=qvge_conf
 gnome-games/aisleriot filter=aisleriot
+omega/omega.toml filter=omega_config
 
 xfce4/** caps=home
 xinitrc caps=home
