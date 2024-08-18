@@ -1,0 +1,3 @@
+delete module/name ''
+delete module/type ''
+delete module/path ''

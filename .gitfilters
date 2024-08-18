@@ -155,3 +155,7 @@
 [filter "omega_config"]
 	smudge = filterconf -f ini restore
 	clean = sed "1i'[default_toml_section_TODO]'" | filterconf -f ini script .gitfilters.d/omega_config | sed "/^.default_toml_section_TODO\\]$/d"
+
+[filter "openkb_config"]
+	smudge = filterconf -f ini restore
+	clean = filterconf -f ini script .gitfilters.d/openkb_config
