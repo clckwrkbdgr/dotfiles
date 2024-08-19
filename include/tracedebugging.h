@@ -679,6 +679,9 @@ BADGER_PROFILE_INIT_FPRINTF(FILE * outfile,
    char * time_profile;
    char * message;
    struct BADGER_PROFILE_STAMP stamp;
+   unsigned long long value;
+   unsigned long long full_secs;
+   unsigned long long full_msecs;
    if(outfile == NULL)
    {
       memset(&stamp, 0, sizeof(stamp));
@@ -693,9 +696,9 @@ BADGER_PROFILE_INIT_FPRINTF(FILE * outfile,
    BADGER_FPUTS(outfile, header);
    free((void*)header);
 
-   unsigned long long value = BADGER_ULTRA_TIME_TO_ULLONG(stamp.start);
-   unsigned long long full_secs = value / 1000000;
-   unsigned long long full_msecs = value % 1000000;
+   value = BADGER_ULTRA_TIME_TO_ULLONG(stamp.start);
+   full_secs = value / 1000000;
+   full_msecs = value % 1000000;
    time_profile = BADGER_SNPRINTF(
          "[profile started at %llu.%6llu] ",
          full_secs, full_msecs
