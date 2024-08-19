@@ -18,10 +18,10 @@ def cli():
 			sys.exit(rc)
 	Log.debug('started')
 	with src.system.savefile.AutoSavefile() as savefile:
-		game = src.game.Game(from_reader=savefile.reader)
+		game = src.game.Game(load_from_reader=savefile.reader)
 		with src.ui.auto_ui()() as ui:
 			if game.main_loop(ui):
-				savefile.save(game, game.Version.CURRENT)
+				savefile.save(game, src.game.Version.CURRENT)
 	Log.debug('exited')
 
 if __name__ == '__main__':
