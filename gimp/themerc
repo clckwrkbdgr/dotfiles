@@ -4,7 +4,15 @@
 # It is NOT supposed to be edited manually. Edit your personal
 # gtkrc file instead (/home/umi/.config/gimp/gtkrc).
 
+style "gimp-spin-scale-style"
+{
+  GimpSpinScale::compact = 1
+}
+
+class "GimpSpinScale" style "gimp-spin-scale-style"
+
 include "/usr/share/gimp/2.0/themes/Dark/gtkrc"
+include "/etc/gimp/2.0/gtkrc"
 include "/home/umi/.config/gimp/gtkrc"
 
 # end of themerc

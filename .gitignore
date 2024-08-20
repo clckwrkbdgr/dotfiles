@@ -159,6 +159,7 @@ gimp/sessionrc
 gimp/menurc
 gimp/action-history
 gimp/contextrc
+gimp/filters/*.settings
 # Gimp cache.
 gimp/devicerc
 gimp/internal-data/
