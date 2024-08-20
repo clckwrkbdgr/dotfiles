@@ -184,3 +184,5 @@ blender/*/config/bookmarks.txt
 blender/*/config/recent-files.txt
 # Cataclysm DDA (to local)
 cataclysm-dda/lastworld.json
+# Cataclysm DDA (state)
+cataclysm-dda/debug.log
