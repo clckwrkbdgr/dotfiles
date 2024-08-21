@@ -7,6 +7,7 @@ from ..game import Direction
 from ..math import Point
 
 class Curses(UI):
+	""" TUI using curses lib. """
 	def __init__(self):
 		self.window = None
 		self.aim = None
@@ -28,6 +29,7 @@ class Curses(UI):
 		curses.nocbreak()
 		curses.endwin()
 	def redraw(self, game):
+		""" Redraws game completely. """
 		Log.debug('Redrawing interface.')
 		viewport = game.get_viewport()
 		for row in range(viewport.height):
@@ -91,6 +93,7 @@ class Curses(UI):
 		if not player:
 			self.window.getch()
 	def user_interrupted(self):
+		""" Checks for key presses in nodelay mode. """
 		self.window.nodelay(1)
 		self.window.timeout(30)
 		control = self.window.getch()

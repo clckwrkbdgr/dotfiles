@@ -1,10 +1,13 @@
 import os, sys, subprocess
 
 class Tester:
+	""" Custom testing suite. """
 	def __init__(self, rootdir):
+		""" Creates testing suite over given root directory. """
 		self.rootdir = rootdir
 		self.all_tests = []
 	def iter_files(self):
+		""" Yields all source files and remembers tests (test*.py). """
 		os.chdir(self.rootdir)
 		for rootdir, dirnames, filenames in os.walk('src'):
 			if '__pycache__' in rootdir:
@@ -17,6 +20,11 @@ class Tester:
 					self.all_tests.append(full_filename)
 				yield full_filename
 	def need_tests(self, argv, last_save, printer=None):
+		""" Returns True if decided that testing is needed:
+		- either 'test' is present in CLI args;
+		- or save file is outdated comparing to changes in source code.
+		If printer callable is given, uses it to notify about changes files.
+		"""
 		if 'test' in argv:
 			return True
 		if last_save <= 0:
@@ -29,6 +37,9 @@ class Tester:
 				result = True
 		return result
 	def get_tests(self, argv):
+		""" Returns list of tests to be tested: either taken from arguments,
+		or all found test files otherwise.
+		"""
 		tests = [arg for arg in argv if arg.startswith('src.')]
 		if not tests:
 			if not self.all_tests:
@@ -36,6 +47,7 @@ class Tester:
 			tests = self.all_tests
 		return tests
 	def run(self, tests, debug=False):
+		""" Runs actual tests. """
 		command = ['python', '-m', 'coverage', 'run', '--source', 'src', '-m', 'unittest']
 		if debug:
 			command.append('--verbose')

@@ -1,4 +1,5 @@
 def with_metaclass(metaclass):
+	""" Class decorator to add metaclass for Py2/Py3. """
 	def decorator(cls):
 		body = vars(cls).copy()
 		# clean out class body
@@ -8,6 +9,7 @@ def with_metaclass(metaclass):
 	return decorator
 
 class EnumType(type):
+	""" Metaclass for Enum classes. """
 	def __getattr__(cls, name):
 		if name == '_values':
 			cls._values = [line.strip().upper() for line in cls.__doc__.splitlines() if line.strip()]

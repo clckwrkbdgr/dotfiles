@@ -13,6 +13,7 @@ class Point(_Point):
 		return Point(self.x - other.x, self.y - other.y)
 
 def distance(point_a, point_b):
+	""" Amount of cells between two points. """
 	return max(abs(point_a.x - point_b.x), abs(point_a.y - point_b.y))
 
 _Size = namedtuple('Size', 'width height')
@@ -28,6 +29,7 @@ class Rect(_Rect):
 class Matrix:
 	__slots__ = ['cells', 'size']
 	def __init__(self, size, default_value=None):
+		""" Creates and inits map with default value. """
 		self.size = size
 		self.clear(default_value)
 	def __repr__(self):
@@ -35,6 +37,9 @@ class Matrix:
 		result += self.tostring(indent='\t') + '\t])'
 		return result
 	def tostring(self, cell_str=None, indent=''):
+		""" Returns string representation.
+		If cell_str callable is given, uses it instead of str() to produce string representation for each cell.
+		"""
 		cell_str = cell_str or str
 		result = ''
 		for index, c in enumerate(self.cells):
@@ -47,6 +52,7 @@ class Matrix:
 		result += '\n'
 		return result
 	def valid(self, pos):
+		""" True if pos lies within map bounds. """
 		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
 	def set_cell(self, x, y, value):
 		self.cells[x + y * self.size.width] = value
@@ -55,6 +61,9 @@ class Matrix:
 	def clear(self, value):
 		self.cells = [copy.copy(value) for _ in range(self.size.width * self.size.height)]
 	def get_neighbours(self, x, y, with_diagonal=False):
+		""" Yields neighbouring point objects for given position.
+		If with_diagonal, considers also corner neighbours.
+		"""
 		neighbours = [
 				Point(x + 1, y    ),
 				Point(x    , y + 1),
@@ -74,6 +83,9 @@ class Matrix:
 			yield p
 
 def bresenham(start, stop):
+	""" Bresenham's algorithm.
+	Yields points between start and stop (including).
+	"""
 	dx = abs(stop.x - start.x)
 	sx = 1 if start.x < stop.x else -1
 	dy = -abs(stop.y - start.y)
@@ -133,17 +145,26 @@ def find_path(matrix, start, is_passable, find_target):
 		waves.append(new_wave)
 
 def in_line_of_sight(start, target, is_transparent):
+	""" Returns True if target is in direct line of sight (bresenham)
+	and every cell on the way is_transparent (callable, should return bool for Point).
+	"""
 	for pos in bresenham(start, target):
 		if not is_transparent(pos) and pos != target:
 			return False
 	return True
 
 class FieldOfView:
+	""" Updatable field of view for grid maps.
+	"""
 	def __init__(self, radius):
+		""" Creates field of view with size of 2R + 1.
+		Does not perform initial update.
+		"""
 		self.sight = Matrix(Size(1 + radius * 2, 1 + radius * 2), 0)
 		self.center = Point(0, 0)
 		self.half_size = Size(self.sight.size.width // 2, self.sight.size.height // 2)
 	def is_visible(self, x, y):
+		""" Returns True if cell at world coords is visible after last update(). """
 		fov_pos = Point(self.half_size.width + x - self.center.x,
 				  self.half_size.height + y - self.center.y,
 				  )
@@ -151,6 +172,10 @@ class FieldOfView:
 			return False
 		return self.sight.cell(fov_pos.x, fov_pos.y)
 	def update(self, new_center, is_transparent):
+		""" Updates FOV for given new center point.
+		Uses is_transparent(Point):bool to determine if cells is transparent for sight.
+		After that, function is_visible() can be used to check for each cell.
+		"""
 		self.center = new_center
 		Log.debug('Recalculating Field Of View.')
 		self.sight.clear(0)

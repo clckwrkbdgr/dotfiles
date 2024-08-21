@@ -8,6 +8,7 @@ class Behavior(Enum):
 	"""
 
 class Species(object):
+	""" Basic fixed stats shared by monsters of the same species. """
 	def __init__(self, name, sprite, max_hp, vision):
 		self.name = name
 		self.sprite = sprite
@@ -17,6 +18,7 @@ class Species(object):
 		return "{0} {1}hp".format(self.name, self.max_hp)
 
 class Monster(object):
+	""" Base for every living being (including player). """
 	def __init__(self, species, behavior, pos):
 		self.species = species
 		self.behavior = behavior

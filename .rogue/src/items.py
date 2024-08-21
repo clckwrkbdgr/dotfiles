@@ -6,6 +6,7 @@ class Effect(Enum):
 	"""
 
 class ItemType(object):
+	""" Basic fixed stats shared by items of the same kind. """
 	def __init__(self, name, sprite, effect):
 		self.name = name
 		self.sprite = sprite
@@ -14,6 +15,7 @@ class ItemType(object):
 		return '{0}'.format(self.name)
 
 class Item(object):
+	""" Any item that can be picked, carried, stored and used. """
 	def __init__(self, item_type, pos):
 		self.item_type = item_type
 		self.pos = pos

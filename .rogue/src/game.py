@@ -18,7 +18,14 @@ class Version(Enum):
 	"""
 
 class Terrain(object):
+	""" Basic fixed stats shared by terrain cells of the same kind. """
 	def __init__(self, sprite, passable=True, remembered=None, allow_diagonal=True, dark=False):
+		""" Basic stats for terrain:
+		- passable: allow free movement.
+		- remembered: sprite for "remembered" state, where it is not seen directly, but was visited before.
+		- allow_diagonal: allows diagonal movement to and from this cell. Otherwise only orthogonal movement is allowed.
+		- dark: if True, no light is present and it is not considered transparent if further than 1 cell from the center.
+		"""
 		self.sprite = sprite
 		self.passable = passable
 		self.remembered = remembered
@@ -26,6 +33,7 @@ class Terrain(object):
 		self.dark = dark
 
 class Cell(object):
+	""" Basic element for each terrain map. """
 	def __init__(self, terrain, visited=False):
 		self.terrain = terrain
 		self.visited = visited
@@ -43,7 +51,19 @@ class Direction(Enum):
 	"""
 
 class Game(object):
-	class AutoMovementStopped(BaseException): pass
+	""" Main game object.
+
+	Override definitions for content:
+	- BUILDERS: list of Builder classes to build maps.
+	- SETTLERS: list of Settler classes to populate them.
+	- TERRAIN: dict, registry of Terrain classes by their IDs used in Builders.
+	- SPECIES: dict, registry of Species classes by their IDs used in Settlers.
+	- ITEMS: dict, registry of Item classes by their IDs used in Settlers.
+	"""
+
+	class AutoMovementStopped(BaseException):
+		""" Raised when current automovement mode was stopped. """
+		pass
 
 	BUILDERS = None
 	SETTLERS = None
@@ -63,6 +83,13 @@ class Game(object):
 			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None, load_from_reader=None):
+		""" Creates game instance and optionally generate new world.
+		Custom rng_seed may be used for PCG.
+		If dummy = True, does not automatically generate or load game, just create empty object.
+		Optional builders/settlers may be passed to override default class variables.
+		If load_from_reader is given, it should be a Reader class, from which game is loaded.
+		Otherwise new game is generated.
+		"""
 		self.builders = builders or self.BUILDERS
 		self.settlers = settlers or self.SETTLERS
 		self.rng = RNG(rng_seed)
@@ -82,11 +109,17 @@ class Game(object):
 		else:
 			self.build_new_strata()
 	def load(self, reader):
+		""" Loads game from reader. """
 		load_game(self, reader)
 	def save(self, writer):
+		""" Saves game using writer. """
 		for item in save_game(self):
 			writer.write(item)
 	def main_loop(self, ui):
+		""" Main entry point for the game.
+		Performs main event/action loop, redraws UI.
+		Exits when user decided to exit or when player is dead.
+		"""
 		Log.debug('Starting playing...')
 		self.player_turn = True
 		while True:
@@ -103,6 +136,7 @@ class Game(object):
 				self.player_turn = True
 		return self.get_player() and self.get_player().is_alive()
 	def _perform_player_actions(self, ui):
+		""" Controller for player character (via UI). """
 		try:
 			if self.perform_automovement():
 				if ui.user_interrupted():
@@ -140,6 +174,7 @@ class Game(object):
 			self.player_turn = False
 		return True
 	def _perform_monster_actions(self, monster):
+		""" Controller for monster actions (depends on behavior). """
 		if monster.behavior == monsters.Behavior.DUMMY:
 			pass
 		elif monster.behavior == monsters.Behavior.INERT:
@@ -157,6 +192,7 @@ class Game(object):
 						self.move(monster, direction)
 	@classmethod
 	def get_direction(cls, start, target):
+		""" Returns vector from start to target as a Direction value. """
 		shift = target - start
 		shift = Point(
 				shift.x // abs(shift.x) if shift.x else 0,
@@ -164,8 +200,12 @@ class Game(object):
 				)
 		return next((k for k,v in cls.SHIFT.items() if v == shift), None)
 	def get_viewport(self):
+		""" Returns current viewport size (for UI purposes). """
 		return self.strata.size
 	def tostring(self, with_fov=False):
+		""" Creates string representation of the current viewport.
+		If with_fov=True, considers transparency/lighting, otherwise everything is visible.
+		"""
 		size = self.get_viewport()
 		result = ""
 		if not with_fov:
@@ -179,6 +219,7 @@ class Game(object):
 			self.god.vision = old_god_vision
 		return result
 	def get_sprite(self, x, y):
+		""" Returns top sprite at the given position. """
 		monster = self.find_monster(x, y)
 		if monster:
 			if self.field_of_view.is_visible(x, y) or self.god.vision:
@@ -198,8 +239,10 @@ class Game(object):
 			return cell.terrain.remembered
 		return None
 	def is_transparent(self, p):
+		""" True if cell at position p is transparent/visible to the player. """
 		return self.is_transparent_to_monster(p, self.get_player())
 	def is_transparent_to_monster(self, p, monster):
+		""" True if cell at position p is transparent/visible to a monster. """
 		if not self.strata.valid(p):
 			return False
 		if not self.strata.cell(p.x, p.y).terrain.passable:
@@ -209,6 +252,10 @@ class Game(object):
 				return False
 		return True
 	def update_vision(self):
+		""" Recalculates visibility/FOV for the player.
+		May produce Discover events, if some objects come into vision.
+		Remembers already seen objects.
+		"""
 		if not self.get_player():
 			return
 		current_visible_monsters = []
@@ -243,11 +290,16 @@ class Game(object):
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 			self.remembered_exit = True
 	def clear_event(self, event=None):
+		""" Makes specific event seen, or all of them. """
 		if event is None:
 			self.events[:] = []
 		else:
 			self.events.remove(event)
 	def build_new_strata(self):
+		""" Constructs and populates new random level.
+		Transfers player from previous level.
+		Updates vision afterwards.
+		"""
 		builder = self.rng.choice(self.builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))
 		Log.debug('With RNG: {0}...'.format(self.rng.value))
@@ -286,6 +338,7 @@ class Game(object):
 		self.update_vision()
 		Log.debug("Dungeon is ready.")
 	def allow_movement_direction(self, from_point, to_point):
+		""" Returns True, if current map allows direct movement from point to point. """
 		shift = to_point - from_point
 		is_diagonal = abs(shift.x) + abs(shift.y) == 2
 		if not is_diagonal:
@@ -296,8 +349,14 @@ class Game(object):
 			return False
 		return True
 	def get_player(self):
+		""" Returns player character if exists, or None. """
 		return next((monster for monster in self.monsters if monster.behavior == pcg.settlers.Behavior.PLAYER), None)
 	def move(self, actor, direction):
+		""" Moves monster into given direction (if possible).
+		If there is a monster, performs attack().
+		May produce all sorts of other events.
+		Returns True, is action succeeds, otherwise False.
+		"""
 		shift = self.SHIFT[direction]
 		Log.debug('Shift: {0}'.format(shift))
 		new_pos = actor.pos + shift
@@ -324,6 +383,10 @@ class Game(object):
 		self.update_vision()
 		return True
 	def affect_health(self, target, diff):
+		""" Changes health of given target.
+		Removes monsters from the main list, if health is zero.
+		Raises events for health change and death.
+		"""
 		new_hp = target.hp + diff
 		if new_hp < 0:
 			new_hp = 0
@@ -337,20 +400,28 @@ class Game(object):
 			self.events.append(messages.DeathEvent(target))
 			self.monsters.remove(target)
 	def attack(self, actor, target):
+		""" Attacks target monster.
+		Raises attack event.
+		"""
 		self.events.append(messages.AttackEvent(actor, target))
 		self.affect_health(target, -1)
 		self.update_vision()
 	def find_monster(self, x, y):
+		""" Return first monster at given cell. """
 		for monster in self.monsters:
 			if monster.pos.x == x and monster.pos.y == y:
 				return monster
 		return None
 	def find_item(self, x, y):
+		""" Return first item at given cell. """
 		for item in self.items:
 			if item.pos.x == x and item.pos.y == y:
 				return item
 		return None
 	def grab_item_at(self, actor, pos):
+		""" Grabs topmost item at given cell.
+		Produces events.
+		"""
 		item = self.find_item(pos.x, pos.y)
 		if not item:
 			return
@@ -358,18 +429,30 @@ class Game(object):
 		self.items.remove(item)
 		self.consume_item(actor, item)
 	def consume_item(self, monster, item):
+		""" Consumes item.
+		Applies corresponding effects, if item has any.
+		Produces events.
+		"""
 		self.events.append(messages.ConsumeItemEvent(monster, item))
 		if item.item_type.effect == items.Effect.HEALING:
 			self.affect_health(monster, +5)
 	def jump_to(self, new_pos):
+		""" Teleports player to new pos. """
 		self.get_player().pos = new_pos
 		self.update_vision()
 	def descend(self):
+		""" Descends onto new level, when standing on exit pos.
+		Generates new level.
+		Otherwise does nothing.
+		"""
 		if self.get_player().pos != self.exit_pos:
 			return
 		self.events.append(messages.DescendEvent(self.get_player()))
 		self.build_new_strata()
 	def find_path(self, start, find_target):
+		""" Find free path from start and until find_target() returns suitable target.
+		Otherwise return None.
+		"""
 		path = math.find_path(
 				self.strata, start,
 				is_passable=lambda p, from_point: self.strata.cell(p.x, p.y).terrain.passable and self.strata.cell(p.x, p.y).visited and self.allow_movement_direction(from_point, p),
@@ -381,6 +464,9 @@ class Game(object):
 			path.pop(0)
 		return path
 	def walk_to(self, dest):
+		""" Starts auto-walking towards dest, if possible.
+		Does not start when monsters are around and produces event.
+		"""
 		if self.visible_monsters:
 			self.events.append(messages.DiscoverEvent('monsters'))
 			return
@@ -390,6 +476,9 @@ class Game(object):
 		if path:
 			self.movement_queue.extend(path)
 	def start_autoexploring(self):
+		""" Starts auto-exploring, if there are unknown places.
+		Does not start when monsters are around and produces event.
+		"""
 		if self.visible_monsters:
 			self.events.append(messages.DiscoverEvent('monsters'))
 			return False
@@ -407,6 +496,9 @@ class Game(object):
 		self.autoexploring = True
 		return True
 	def perform_automovement(self):
+		""" Performs next step from auto-movement queue, if any.
+		Stops on events.
+		"""
 		if not self.movement_queue:
 			return False
 		if self.events:
@@ -425,11 +517,13 @@ class Game(object):
 			raise Game.AutoMovementStopped()
 		return True
 	def stop_automovement(self):
+		""" Stops and resets auto-movement. """
 		self.movement_queue[:] = []
 		self.autoexploring = False
 		raise Game.AutoMovementStopped()
 
 def save_game(game):
+	""" Saves game into writer object. """
 	yield game.rng.value
 	dump_str = lambda _value: _value if _value is None else _value
 	dump_bool = lambda _value: int(_value)
@@ -455,6 +549,7 @@ def save_game(game):
 		yield item.pos.y
 
 def load_game(game, reader):
+	""" Load game from Reader object. """
 	if reader.version > Version.PERSISTENT_RNG:
 		game.rng = RNG(int(reader.read()))
 	version = reader.version
@@ -522,6 +617,10 @@ def load_game(game, reader):
 	Log.debug('Player: {0}'.format(game.get_player()))
 
 class God:
+	""" God mode options.
+	- vision: see through everything, ignore FOV/transparency.
+	- noclip: walk through everything, ignoring obstacles.
+	"""
 	def __init__(self):
 		self.vision = False
 		self.noclip = False
