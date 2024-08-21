@@ -7,10 +7,17 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 from .. import curses, _base
 from ...pcg import builders, settlers
-from ... import game
+from ... import game, monsters, items
 from ...math import Point
 
 class MockGame(game.Game):
+	SPECIES = {
+			'player' : monsters.Species('player', "@", 10, vision=10),
+			'monster' : monsters.Species('monster', "M", 3, vision=10),
+			}
+	ITEMS = {
+			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
+			}
 	TERRAIN = {
 		None : game.Terrain(' ', False),
 		'#' : game.Terrain("#", False, remembered='#'),

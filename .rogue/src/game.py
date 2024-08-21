@@ -45,17 +45,12 @@ class Direction(Enum):
 class Game(object):
 	class AutoMovementStopped(BaseException): pass
 
-	BUILDERS = [
-			pcg.builders.BSPDungeon,
-			pcg.builders.CityBuilder,
-			pcg.builders.Sewers,
-			pcg.builders.RogueDungeon,
-			pcg.builders.CaveBuilder,
-			pcg.builders.MazeBuilder,
-			]
-	SETTLERS = [
-			pcg.settlers.Squatters,
-			]
+	BUILDERS = None
+	SETTLERS = None
+	TERRAIN = None
+	SPECIES = None
+	ITEMS = None
+
 	SHIFT = {
 			Direction.LEFT : Point(-1,  0),
 			Direction.DOWN : Point( 0, +1),
@@ -65,32 +60,6 @@ class Game(object):
 			Direction.UP_RIGHT : Point(+1, -1),
 			Direction.DOWN_LEFT : Point(-1, +1),
 			Direction.DOWN_RIGHT : Point(+1, +1),
-			}
-	TERRAIN = {
-			None : Terrain(' ', False),
-			'corner' : Terrain("+", False, remembered='+'),
-			'door' : Terrain("+", True, remembered='+'),
-			'rogue_door' : Terrain("+", True, remembered='+', allow_diagonal=False, dark=True),
-			'floor' : Terrain(".", True),
-			'tunnel_floor' : Terrain(".", True, allow_diagonal=False),
-			'passage' : Terrain("#", True, remembered='#'),
-			'rogue_passage' : Terrain("#", True, remembered='#', allow_diagonal=False, dark=True),
-			'wall' : Terrain('#', False, remembered='#'),
-			'wall_h' : Terrain("-", False, remembered='-'),
-			'wall_v' : Terrain("|", False, remembered='|'),
-			'water' : Terrain("~", True),
-			}
-	SPECIES = {
-			'player' : monsters.Species('player', "@", 10, vision=10),
-			'monster' : monsters.Species('monster', "M", 3, vision=10),
-
-			'plant' : monsters.Species('plant', "P", 1, vision=1),
-			'slime' : monsters.Species('slime', "o", 5, vision=3),
-			'rodent' : monsters.Species('rodent', "r", 3, vision=8),
-			}
-	ITEMS = {
-			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
-			'healing potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
 			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None, load_from_reader=None):

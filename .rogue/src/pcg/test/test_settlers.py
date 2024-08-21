@@ -21,16 +21,28 @@ class TestSettler(unittest.TestCase):
 			])
 
 class TestSquatters(unittest.TestCase):
+	def _make_terrain(self, builder):
+		from ...game import Cell, Game, Terrain # FIXME circular dependency
+		class MockRogueDungeon(Game):
+			TERRAIN = {
+				None : Terrain(' ', False),
+				'corner' : Terrain("+", False, remembered='+'),
+				'rogue_door' : Terrain("+", True, remembered='+', allow_diagonal=False, dark=True),
+				'floor' : Terrain(".", True),
+				'rogue_passage' : Terrain("#", True, remembered='#', allow_diagonal=False, dark=True),
+				'wall_h' : Terrain("-", False, remembered='-'),
+				'wall_v' : Terrain("|", False, remembered='|'),
+				}
+		for pos in builder.strata.size:
+			builder.strata.set_cell(
+					pos.x, pos.y,
+					Cell(MockRogueDungeon.TERRAIN[builder.strata.cell(pos.x, pos.y)]),
+					)
 	def should_check_availability_of_placement_position(self):
 		rng = RNG(0)
 		builder = builders.RogueDungeon(rng, Size(80, 25))
 		builder.build()
-		from ...game import Cell, Game # FIXME circular dependency
-		for pos in builder.strata.size:
-			builder.strata.set_cell(
-					pos.x, pos.y,
-					Cell(Game.TERRAIN[builder.strata.cell(pos.x, pos.y)]),
-					)
+		self._make_terrain(builder)
 
 		rng = RNG(0)
 		settler = settlers.Squatters(rng, builder)
@@ -50,12 +62,7 @@ class TestSquatters(unittest.TestCase):
 		rng = RNG(0)
 		builder = builders.RogueDungeon(rng, Size(80, 25))
 		builder.build()
-		from ...game import Cell, Game # FIXME circular dependency
-		for pos in builder.strata.size:
-			builder.strata.set_cell(
-					pos.x, pos.y,
-					Cell(Game.TERRAIN[builder.strata.cell(pos.x, pos.y)]),
-					)
+		self._make_terrain(builder)
 
 		rng = RNG(0)
 		settler = settlers.Squatters(rng, builder)

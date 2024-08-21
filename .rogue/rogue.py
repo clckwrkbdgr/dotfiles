@@ -1,10 +1,50 @@
 from __future__ import print_function
 import os, sys
 from src.system.logging import Log
-import src.game
+import src.game, src.items, src.monsters
 import src.ui
+import src.pcg
 import src.system.savefile
 from src.test.main import Tester
+
+class Game(src.game.Game):
+	BUILDERS = [
+			src.pcg.builders.BSPDungeon,
+			src.pcg.builders.CityBuilder,
+			src.pcg.builders.Sewers,
+			src.pcg.builders.RogueDungeon,
+			src.pcg.builders.CaveBuilder,
+			src.pcg.builders.MazeBuilder,
+			]
+	SETTLERS = [
+			src.pcg.settlers.Squatters,
+			]
+	TERRAIN = {
+			None : src.game.Terrain(' ', False),
+			'corner' : src.game.Terrain("+", False, remembered='+'),
+			'door' : src.game.Terrain("+", True, remembered='+'),
+			'rogue_door' : src.game.Terrain("+", True, remembered='+', allow_diagonal=False, dark=True),
+			'floor' : src.game.Terrain(".", True),
+			'tunnel_floor' : src.game.Terrain(".", True, allow_diagonal=False),
+			'passage' : src.game.Terrain("#", True, remembered='#'),
+			'rogue_passage' : src.game.Terrain("#", True, remembered='#', allow_diagonal=False, dark=True),
+			'wall' : src.game.Terrain('#', False, remembered='#'),
+			'wall_h' : src.game.Terrain("-", False, remembered='-'),
+			'wall_v' : src.game.Terrain("|", False, remembered='|'),
+			'water' : src.game.Terrain("~", True),
+			}
+	SPECIES = {
+			'player' : src.monsters.Species('player', "@", 10, vision=10),
+			'monster' : src.monsters.Species('monster', "M", 3, vision=10),
+
+			'plant' : src.monsters.Species('plant', "P", 1, vision=1),
+			'slime' : src.monsters.Species('slime', "o", 5, vision=3),
+			'rodent' : src.monsters.Species('rodent', "r", 3, vision=8),
+			}
+	ITEMS = {
+			'potion' : src.items.ItemType('potion', '!', src.items.Effect.NONE),
+			'healing potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
+			}
 
 def cli():
 	debug = '--debug' in sys.argv
@@ -18,7 +58,7 @@ def cli():
 			sys.exit(rc)
 	Log.debug('started')
 	with src.system.savefile.AutoSavefile() as savefile:
-		game = src.game.Game(load_from_reader=savefile.reader)
+		game = Game(load_from_reader=savefile.reader)
 		with src.ui.auto_ui()() as ui:
 			if game.main_loop(ui):
 				savefile.save(game, src.game.Version.CURRENT)

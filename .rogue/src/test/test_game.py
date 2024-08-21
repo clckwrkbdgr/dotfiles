@@ -4,6 +4,7 @@ import textwrap
 from ..math import Point, Size
 from ..pcg._base import RNG
 from ..pcg import builders, settlers
+from .. import monsters, items
 from .. import pcg
 from .. import game
 from .. import ui
@@ -16,6 +17,14 @@ class MockWriter:
 		self.dump.append(item)
 
 class MockGame(game.Game):
+	SPECIES = {
+			'player' : monsters.Species('player', "@", 10, vision=10),
+			'monster' : monsters.Species('monster', "M", 3, vision=10),
+			}
+	ITEMS = {
+			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
+			'healing potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
+			}
 	TERRAIN = {
 		None : game.Terrain(' ', False),
 		'#' : game.Terrain("#", False, remembered='#'),
@@ -23,7 +32,7 @@ class MockGame(game.Game):
 		'~' : game.Terrain(".", True, allow_diagonal=False),
 		}
 
-class MockRogueDungeon(game.Game):
+class MockRogueDungeon(MockGame):
 	TERRAIN = {
 		None : game.Terrain(' ', False),
 		' ' : game.Terrain(' ', False),
@@ -35,7 +44,7 @@ class MockRogueDungeon(game.Game):
 		'^' : game.Terrain("^", True, remembered='^', allow_diagonal=False, dark=True),
 		}
 
-class MockDarkRogueDungeon(game.Game):
+class MockDarkRogueDungeon(MockGame):
 	TERRAIN = {
 		None : game.Terrain(' ', False),
 		' ' : game.Terrain(' ', False),
@@ -99,37 +108,6 @@ class AbstractTestDungeon(unittest.TestCase):
 			"""
 
 class TestMainDungeonLoop(AbstractTestDungeon):
-	def should_create_new_dungeon(self):
-		dungeon = game.Game(rng_seed=123, settlers=[settlers.SingleMonster])
-		self.assertEqual(dungeon.get_player().pos, Point(17, 21))
-		self.assertEqual(dungeon.exit_pos, Point(34, 21))
-		self.maxDiff = None
-		expected = textwrap.dedent("""\
-				################################################################################
-				#..............................................................................#
-				#..............................................................................#
-				#..............................................................................#
-				#...#######...#######...#############...####################...#############...#
-				#...#######...#######...#############...####################...#############...#
-				#...#######...#######...#############...####################...#############...#
-				#...#######...#######...#############...####################...#############...#
-				#...#######...#######...#############...####################...#############...#
-				#...#######...#######...#############...####################...#############...#
-				#...#######...#######...#############..........................#############...#
-				#.......................#############..........................#############...#
-				#.......................#############..........................#############...#
-				#.......................................####################...#############...#
-				#...#######...#######...................####################...#############...#
-				#...#######...#######...................####################...#############...#
-				#...#######...#######...#############...####################...#############...#
-				#...#######...#######...#############...####################...#############...#
-				#..M#######...#######...#############...####################...#############...#
-				#..............................................................................#
-				#..............................................................................#
-				#................@................>............................................#
-				################################################################################
-				""")
-		self.assertEqual(dungeon.tostring(), expected)
 	def should_run_main_loop(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 		mock_ui = MockUI(user_actions=[
