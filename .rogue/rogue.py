@@ -7,14 +7,14 @@ import src.pcg
 import src.system.savefile
 from src.test.main import Tester
 
-class DungeonSquatters(src.pcg.settlers.Squatters):
+class DungeonSquatters(src.pcg.settlers.WeightedSquatters):
 	MONSTERS = [
-			('plant', src.monsters.Behavior.DUMMY),
-			('slime', src.monsters.Behavior.INERT),
-			('rodent', src.monsters.Behavior.ANGRY),
+			(1, 'plant', src.monsters.Behavior.DUMMY),
+			(3, 'slime', src.monsters.Behavior.INERT),
+			(10, 'rodent', src.monsters.Behavior.ANGRY),
 			]
 	ITEMS = [
-			('healing potion',),
+			(1, 'healing potion',),
 			]
 
 class Game(src.game.Game):

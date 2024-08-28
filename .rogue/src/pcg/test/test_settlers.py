@@ -90,3 +90,35 @@ class TestSquatters(unittest.TestCase):
 			('healing potion', Point(x=35, y=21)),
 			('healing potion', Point(x=63, y=7)),
 			])
+	def should_populate_dungeon_with_weighted_squatters(self):
+		rng = RNG(0)
+		builder = builders.RogueDungeon(rng, Size(80, 25))
+		builder.build()
+		self._make_terrain(builder)
+
+		rng = RNG(0)
+		class _MockSquatters(settlers.WeightedSquatters):
+			MONSTERS = [
+					(1, 'plant', monsters.Behavior.DUMMY),
+					(5, 'slime', monsters.Behavior.INERT),
+					(10, 'rodent', monsters.Behavior.ANGRY),
+					]
+			ITEMS = [
+					(1, 'healing potion',),
+					]
+		settler = _MockSquatters(rng, builder)
+		settler.populate()
+		self.maxDiff = None
+		self.assertEqual(settler.monsters, [
+			('slime',  monsters.Behavior.INERT, Point(x=29, y=20)),
+			('rodent', monsters.Behavior.ANGRY, Point(x=64, y=11)),
+			('plant',  monsters.Behavior.DUMMY, Point(x=59, y=4)),
+			('rodent', monsters.Behavior.ANGRY, Point(x=44, y=12)),
+			('rodent', monsters.Behavior.ANGRY, Point(x=71, y=13)),
+			('rodent', monsters.Behavior.ANGRY, Point(x=36, y=7)),
+			('rodent', monsters.Behavior.ANGRY, Point(x=27, y=18)),
+			])
+		self.assertEqual(settler.items, [
+			('healing potion', Point(x=35, y=21)),
+			('healing potion', Point(x=17, y=11)),
+			])

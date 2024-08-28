@@ -96,3 +96,10 @@ class Squatters(Settler):
 		for _ in range(total_items):
 			pos = pcg.pos(self.rng, self.builder.strata.size, self.is_free)
 			self.items.append(self._choice(self.ITEMS) + (pos,))
+
+class WeightedSquatters(Squatters):
+	""" Like Squatters, except distributing items/monsters based on their weights.
+	Lists MONSTERS and ITEMS should have additional first element - relative weight (int or float) for each item/monster.
+	"""
+	def _choice(self, entries):
+		return pcg.weighted_choices(self.rng, [(data[0], data[1:]) for data in entries])[0]

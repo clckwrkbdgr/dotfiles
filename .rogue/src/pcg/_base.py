@@ -29,7 +29,23 @@ class RNG:
 			min_value, max_value = 0, min_value
 		return int(self.get() * (max_value - min_value)) + min_value
 	def choice(self, seq):
+		""" Evenly distributed choice. """
 		return seq[self.range(len(seq))]
+	def choices(self, population, weights, k=1):
+		""" Weighted choice from population,
+		based on corresponding list of weights.
+		"""
+		n = len(population)
+		cumulative_weights = []
+		it = iter(weights)
+		cumulative_weights.append(next(it))
+		for value in it: # py2 itertools has no accumulate()
+			cumulative_weights.append(cumulative_weights[-1] + value)
+		assert len(cumulative_weights) == n
+		total = cumulative_weights[-1] + 0.0   # convert to float
+		import itertools, bisect
+		return [population[bisect.bisect(cumulative_weights, self.get() * total, 0, n - 1)]
+				for i in itertools.repeat(None, k)]
 
 def pos(rng, size, check=None, counter=1000):
 	""" Generates random Point withing given Size.
@@ -44,3 +60,10 @@ def pos(rng, size, check=None, counter=1000):
 				break
 			counter -= 1
 	return result
+
+def weighted_choices(rng, weights_and_items, amount=1):
+	""" Makes random weighted choice based on list of tuples: (<weight>, <item>), ...
+	Returns list of items.
+	"""
+	args = zip(*(map(reversed, weights_and_items)))
+	return rng.choices(*args, k=amount)
