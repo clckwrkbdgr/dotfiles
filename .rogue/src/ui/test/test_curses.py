@@ -25,6 +25,9 @@ class MockGame(game.Game):
 		'~' : game.Terrain(".", True, allow_diagonal=False),
 		}
 
+class SingleMockMonster(settlers.SingleMonster):
+	MONSTER = ('monster', monsters.Behavior.ANGRY)
+
 class MockCurses:
 	class SubCall:
 		def __init__(self, name, parent):
@@ -157,7 +160,7 @@ class TestCurses(unittest.TestCase):
 	def should_draw_game(self):
 		ui = curses.Curses()
 		ui.window = MockCurses()
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 
 		ui.redraw(dungeon)
 		self.maxDiff = None
@@ -171,7 +174,7 @@ class TestCurses(unittest.TestCase):
 	def should_show_state_markers(self):
 		ui = curses.Curses()
 		ui.window = MockCurses()
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		dungeon.movement_queue = ['mock']
 
 		ui.redraw(dungeon)
@@ -200,7 +203,7 @@ class TestCurses(unittest.TestCase):
 	def should_display_discover_events(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('.')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 
 		dungeon.start_autoexploring()
 		# Monster is already spotted from the beginning,
@@ -235,7 +238,7 @@ class TestCurses(unittest.TestCase):
 	def should_display_attack_events(self):
 		ui = curses.Curses()
 		ui.window = MockCurses()
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		dungeon.clear_event()
 
 		dungeon.jump_to(Point(2, 6))
@@ -268,7 +271,7 @@ class TestCurses(unittest.TestCase):
 	def should_display_movement_events(self):
 		ui = curses.Curses()
 		ui.window = MockCurses()
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		dungeon.clear_event()
 		dungeon.god.vision = True
 
@@ -303,7 +306,7 @@ class TestCurses(unittest.TestCase):
 	def should_wait_user_reaction_after_player_is_dead(self):
 		ui = curses.Curses()
 		ui.window = MockCurses(' ')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		dungeon.clear_event()
 
 		dungeon.affect_health(dungeon.get_player(), -dungeon.get_player().hp)
@@ -320,7 +323,7 @@ class TestCurses(unittest.TestCase):
 	def should_show_keybindings_help(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('? ')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		dungeon.clear_event()
 
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
@@ -345,7 +348,7 @@ class TestCurses(unittest.TestCase):
 	def should_display_aim(self, curs_set):
 		ui = curses.Curses()
 		ui.window = MockCurses('x')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 
 		dungeon.clear_event()
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
@@ -366,7 +369,7 @@ class TestCurses(unittest.TestCase):
 	def should_check_for_user_interrupt(self):
 		ui = curses.Curses()
 		ui.window = MockCurses([-1, -1, ' '])
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 
 		self.assertFalse(ui.user_interrupted())
 		self.assertFalse(ui.user_interrupted())
@@ -374,13 +377,13 @@ class TestCurses(unittest.TestCase):
 	def should_exit(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('q')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.EXIT, None))
 	@mock.patch('curses.curs_set')
 	def should_enable_aim(self, curs_set):
 		ui = curses.Curses()
 		ui.window = MockCurses('x')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		self.assertEqual(ui.aim, dungeon.get_player().pos)
 		curs_set.assert_has_calls([
@@ -390,7 +393,7 @@ class TestCurses(unittest.TestCase):
 	def should_cancel_aim(self, curs_set):
 		ui = curses.Curses()
 		ui.window = MockCurses('x')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		ui.aim = dungeon.get_player().pos
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		self.assertIsNone(ui.aim)
@@ -401,7 +404,7 @@ class TestCurses(unittest.TestCase):
 	def should_select_aim(self, curs_set):
 		ui = curses.Curses()
 		ui.window = MockCurses('.x.')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.WAIT, None))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.WALK_TO, Point(9, 6)))
@@ -412,24 +415,24 @@ class TestCurses(unittest.TestCase):
 	def should_autoexplore(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('o')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.AUTOEXPLORE, None))
 	def should_toggle_god_settings(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('~Q~v~c')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.GOD_TOGGLE_VISION, None))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.GOD_TOGGLE_NOCLIP, None))
 	def should_suicide(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('Q')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.SUICIDE, None))
 	def should_descend(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('>')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		dungeon.jump_to(Point(10, 1))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.DESCEND, None))
 		dungeon.descend()
@@ -445,7 +448,7 @@ class TestCurses(unittest.TestCase):
 	def should_move_character(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('hjklyubn')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.MOVE, game.Direction.LEFT))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.MOVE, game.Direction.DOWN))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.MOVE, game.Direction.UP))
@@ -458,7 +461,7 @@ class TestCurses(unittest.TestCase):
 	def should_move_aim(self, curs_set):
 		ui = curses.Curses()
 		ui.window = MockCurses('xhjklyubn')
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		self.assertEqual(ui.aim, Point(9, 6))
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))

@@ -7,6 +7,16 @@ import src.pcg
 import src.system.savefile
 from src.test.main import Tester
 
+class DungeonSquatters(src.pcg.settlers.Squatters):
+	MONSTERS = [
+			('plant', src.monsters.Behavior.DUMMY),
+			('slime', src.monsters.Behavior.INERT),
+			('rodent', src.monsters.Behavior.ANGRY),
+			]
+	ITEMS = [
+			('healing potion',),
+			]
+
 class Game(src.game.Game):
 	BUILDERS = [
 			src.pcg.builders.BSPDungeon,
@@ -17,7 +27,7 @@ class Game(src.game.Game):
 			src.pcg.builders.MazeBuilder,
 			]
 	SETTLERS = [
-			src.pcg.settlers.Squatters,
+			DungeonSquatters,
 			]
 	TERRAIN = {
 			None : src.game.Terrain(' ', False),

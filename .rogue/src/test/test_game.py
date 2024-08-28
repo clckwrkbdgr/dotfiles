@@ -70,6 +70,9 @@ class CustomSettler(settlers.Settler):
 	def _place_items(self):
 		self.items += self.ITEMS
 
+class SingleMockMonster(settlers.SingleMonster):
+	MONSTER = ('monster', monsters.Behavior.ANGRY)
+
 class MockUI(ui.UI):
 	def __init__(self, user_actions, interrupts):
 		self.events = []
@@ -951,7 +954,7 @@ class TestAutoMode(AbstractTestDungeon):
 				#...>#
 				######
 				"""
-		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[SingleMockMonster])
 		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
 		dungeon.clear_event() # Clear events.
 
@@ -995,7 +998,7 @@ class TestAutoMode(AbstractTestDungeon):
 				####################
 				"""))
 	def should_not_allow_autoexploring_if_monsters_are_nearby(self):
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[settlers.SingleMonster])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 		dungeon.clear_event() # Clear events.
 
 		self.assertFalse(dungeon.start_autoexploring())

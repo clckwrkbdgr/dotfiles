@@ -35,16 +35,34 @@ class Settler(object):
 		pass
 
 class SingleMonster(Settler):
-	""" Single monster. """
+	""" Single monster.
+
+	Data should be defined in class field MONSTER as tuple:
+	MONSTER = ('monster_type_id', <args...>)
+	"""
+	MONSTER = None
+
 	def _populate(self):
 		""" Places monster at first passable terrain. """
 		passable = lambda pos: self.builder.strata.cell(pos.x, pos.y).terrain.passable
 		pos = pcg.pos(self.rng, self.builder.strata.size, lambda pos: passable(pos) and pos not in [self.builder.start_pos, self.builder.exit_pos])
-		self.monsters.append(('monster', Behavior.ANGRY, pos))
+		self.monsters.append(self.MONSTER + (pos,))
 
 class Squatters(Settler):
 	""" Set of squatters, randomly distributed throughout the map.
+
+	Data should be defined in class fields MONSTERS and ITEMS as lists of tuples:
+	MONSTERS = ('monster_type_id', <args...>)
+	ITEMS = ('item_type_id', <args...>)
+
+	Distribution is controlled by corresponding CELLS_PER_* fields, which should
+	set amount of _free_ (i.e. passable) cells that support one monster/item.
 	"""
+	CELLS_PER_MONSTER = 60 # One monster for every 60 cells.
+	MONSTERS = []
+	CELLS_PER_ITEM = 180 # One item for every 180 cells.
+	ITEMS = []
+
 	def is_passable(self, pos):
 		""" True if terrain is passable. """
 		return self.builder.strata.cell(pos.x, pos.y).terrain.passable
@@ -59,28 +77,22 @@ class Squatters(Settler):
 		if pos in self.monster_cells:
 			return False
 		return True
+	def _choice(self, entries):
+		return self.rng.choice(entries) if len(entries) != 1 else entries[0]
 	def _populate(self):
-		""" Places random population of three different types of monsters:
-		dummy plants, inert slime monsters and angry rodents.
+		""" Places random population of different types of monsters.
 		"""
 		total_passable_cells = sum(1 for pos in self.builder.strata.size if self.is_passable(pos))
-		ratio = 1 / 60. # One monster for 60 cells.
-		total_monsters = int(total_passable_cells * ratio)
+		total_monsters = int(total_passable_cells / float(self.CELLS_PER_MONSTER))
 		self.monster_cells = set()
-		dwellers = [
-				('plant', Behavior.DUMMY),
-				('slime', Behavior.INERT),
-				('rodent', Behavior.ANGRY),
-				]
 		for _ in range(total_monsters):
 			pos = pcg.pos(self.rng, self.builder.strata.size, self.is_free)
 			self.monster_cells.add(pos)
-			self.monsters.append(self.rng.choice(dwellers) + (pos,))
+			self.monsters.append(self._choice(self.MONSTERS) + (pos,))
 	def _place_items(self):
-		""" Drops healing potions in random locations. """
+		""" Drops items in random locations. """
 		total_passable_cells = sum(1 for pos in self.builder.strata.size if self.is_passable(pos))
-		ratio = 1 / 180. # One healing potion for 180 cells, or one for 3 monsters.
-		total_items = int(total_passable_cells * ratio)
+		total_items = int(total_passable_cells / float(self.CELLS_PER_ITEM))
 		for _ in range(total_items):
 			pos = pcg.pos(self.rng, self.builder.strata.size, self.is_free)
-			self.items.append(('healing potion', pos))
+			self.items.append(self._choice(self.ITEMS) + (pos,))

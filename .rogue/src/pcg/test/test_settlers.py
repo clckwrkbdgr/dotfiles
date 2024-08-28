@@ -65,7 +65,16 @@ class TestSquatters(unittest.TestCase):
 		self._make_terrain(builder)
 
 		rng = RNG(0)
-		settler = settlers.Squatters(rng, builder)
+		class _MockSquatters(settlers.Squatters):
+			MONSTERS = [
+					('plant', monsters.Behavior.DUMMY),
+					('slime', monsters.Behavior.INERT),
+					('rodent', monsters.Behavior.ANGRY),
+					]
+			ITEMS = [
+					('healing potion',),
+					]
+		settler = _MockSquatters(rng, builder)
 		settler.populate()
 		self.maxDiff = None
 		self.assertEqual(settler.monsters, [
