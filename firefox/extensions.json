@@ -181,12 +181,12 @@
 			"signedState": 2,
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4333280/noscript-11.4.34.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4343311/noscript-11.4.35.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{a4224489-1408-4951-a90f-510526edd38e}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "11.4.34",
+			"version": "11.4.35",
 			"visible": true
 		},
 		{
