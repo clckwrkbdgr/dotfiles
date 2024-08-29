@@ -9,11 +9,16 @@ class Behavior(Enum):
 
 class Species(object):
 	""" Basic fixed stats shared by monsters of the same species. """
-	def __init__(self, name, sprite, max_hp, vision):
+	def __init__(self, name, sprite, max_hp, vision, drops=None):
+		""" Vision - radius of field of vision (detection range).
+		Drops - weighted distribution list of items: [(<weight>, <args...>), ...]
+		Args can be None - to support probability that nothing is dropped.
+		"""
 		self.name = name
 		self.sprite = sprite
 		self.max_hp = max_hp
 		self.vision = vision
+		self.drops = drops
 	def __str__(self):
 		return "{0} {1}hp".format(self.name, self.max_hp)
 
@@ -31,6 +36,14 @@ class Monster(object):
 	@property
 	def name(self):
 		return self.species.name
+	def drop_loot(self, rng):
+		from . import pcg
+		if not self.species.drops:
+			return []
+		return [result for result
+				in pcg.weighted_choices(rng, [(data[0], data[1:]) for data in self.species.drops])
+				if result[0] is not None
+				]
 	def __eq__(self, other):
 		if not isinstance(other, Monster):
 			return False

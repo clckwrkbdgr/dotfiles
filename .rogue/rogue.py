@@ -47,9 +47,18 @@ class Game(src.game.Game):
 			'player' : src.monsters.Species('player', "@", 10, vision=10),
 			'monster' : src.monsters.Species('monster', "M", 3, vision=10),
 
-			'plant' : src.monsters.Species('plant', "P", 1, vision=1),
-			'slime' : src.monsters.Species('slime', "o", 5, vision=3),
-			'rodent' : src.monsters.Species('rodent', "r", 3, vision=8),
+			'plant' : src.monsters.Species('plant', "P", 1, vision=1, drops=[
+				(1, None),
+				(5, 'healing potion'),
+				]),
+			'slime' : src.monsters.Species('slime', "o", 5, vision=3, drops=[
+				(1, None),
+				(1, 'healing potion'),
+				]),
+			'rodent' : src.monsters.Species('rodent', "r", 3, vision=8, drops=[
+				(5, None),
+				(1, 'healing potion'),
+				]),
 			}
 	ITEMS = {
 			'potion' : src.items.ItemType('potion', '!', src.items.Effect.NONE),

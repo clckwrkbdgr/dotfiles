@@ -20,10 +20,14 @@ class MockGame(game.Game):
 	SPECIES = {
 			'player' : monsters.Species('player', "@", 10, vision=10),
 			'monster' : monsters.Species('monster', "M", 3, vision=10),
+			'thief' : monsters.Species('thief', "T", 10, vision=10, drops=[
+				(1, 'money'),
+				]),
 			}
 	ITEMS = {
 			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
 			'healing potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
+			'money' : items.ItemType('money', '$', items.Effect.NONE),
 			}
 	TERRAIN = {
 		None : game.Terrain(' ', False),
@@ -826,6 +830,22 @@ class TestFight(AbstractTestDungeon):
 		self.assertEqual(type(dungeon.events[-1]), messages.DeathEvent)
 		self.assertEqual(dungeon.events[-1].target, monster)
 		self.assertIsNone(dungeon.find_monster(10, 6))
+	def should_drop_loot_from_monster(self):
+		class _CloseMonster(CustomSettler):
+			MONSTERS = [
+				('thief', settlers.Behavior.DUMMY, Point(10, 6)),
+				]
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
+
+		dungeon.find_monster(10, 6).hp = 1
+		monster = dungeon.find_monster(10, 6)
+		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
+
+		item = dungeon.find_item(10, 6)
+		self.assertEqual(item.item_type.name, 'money')
+		self.assertEqual(type(dungeon.events[-1]), messages.DropItemEvent)
+		self.assertEqual(dungeon.events[-1].actor, monster)
+		self.assertEqual(dungeon.events[-1].item, item)
 	def should_be_attacked_by_monster(self):
 		class _CloseMonster(CustomSettler):
 			MONSTERS = [

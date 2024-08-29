@@ -63,6 +63,14 @@ class GrabItemEvent(Event):
 	def __str__(self):
 		return '{0} grabs {1}'.format(self.actor, self.item)
 
+class DropItemEvent(Event):
+	""" Drops something on the floor. """
+	def __init__(self, actor, item):
+		self.actor = actor
+		self.item = item
+	def __str__(self):
+		return '{0} drops {1}'.format(self.actor, self.item)
+
 class ConsumeItemEvent(Event):
 	""" Consumes consumable item. """
 	def __init__(self, actor, item):

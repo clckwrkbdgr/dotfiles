@@ -398,6 +398,14 @@ class Game(object):
 		self.events.append(messages.HealthEvent(target, diff))
 		if not target.is_alive():
 			self.events.append(messages.DeathEvent(target))
+			drops = target.drop_loot(self.rng)
+			for item_data in drops:
+				item_type, item_data = item_data[0], item_data[1:]
+				item_data = (self.ITEMS[item_type],) + item_data + (target.pos,)
+				item = items.Item(*item_data)
+				self.items.append(item)
+				self.visible_items.append(item)
+				self.events.append(messages.DropItemEvent(target, item))
 			self.monsters.remove(target)
 	def attack(self, actor, target):
 		""" Attacks target monster.

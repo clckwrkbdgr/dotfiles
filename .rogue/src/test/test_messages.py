@@ -14,3 +14,4 @@ class TestEvents(unittest.TestCase):
 		self.assertEqual(str(messages.BumpEvent('@', 'POS')), '@ bumps into POS')
 		self.assertEqual(str(messages.GrabItemEvent('@', '!')), '@ grabs !')
 		self.assertEqual(str(messages.ConsumeItemEvent('@', '!')), '@ consumes !')
+		self.assertEqual(str(messages.DropItemEvent('@', '!')), '@ drops !')
