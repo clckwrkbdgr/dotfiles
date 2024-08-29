@@ -8,19 +8,58 @@ from .. import messages
 from ..game import Game, Direction
 from ..math import Point
 
-KEYBINDINGS = {}
-MULTIKEYBINDINGS = {}
-Keybinding = namedtuple('Keybinding', 'key scancode callback param')
-
-def bind_key(key, param=None):
-	def _actual(f):
-		if len(key) > 1:
-			scancodes = tuple(ord(subkey) for subkey in key)
-			MULTIKEYBINDINGS[scancodes] = Keybinding(key, scancodes, f, param)
-		else:
-			KEYBINDINGS[ord(key)] = Keybinding(key, ord(key), f, param)
-		return f
-	return _actual
+class Keys:
+	""" Keybingings registry. """
+	Keybinding = namedtuple('Keybinding', 'key scancode callback param')
+	KEYBINDINGS = {}
+	MULTIKEYBINDINGS = {}
+	@classmethod
+	def bind(cls, key, param=None):
+		""" Serves as decorator and binds key (or several keys) to action callback.
+		Optional param may be passed to callback.
+		If param is callable, it is called with argument of actual key name (useful in case of multikeys) and its result is used as an actual param instead.
+		"""
+		def _actual(f):
+			if len(key) > 1:
+				scancodes = tuple(ord(subkey) for subkey in key)
+				cls.MULTIKEYBINDINGS[scancodes] = cls.Keybinding(key, scancodes, f, param)
+			else:
+				cls.KEYBINDINGS[ord(key)] = cls.Keybinding(key, ord(key), f, param)
+			return f
+		return _actual
+	@classmethod
+	def get(cls, scancode, bind_self=None):
+		""" Returns callback for given scancode.
+		If param is defined for the key, processes it automatically
+		and returns closure with param bound as the last argument:
+		keybinding.callback(..., param) -> callback(...)
+		If bind_self is given, considers callback a method
+		and binds it to the given instance.
+		"""
+		binding = cls.KEYBINDINGS.get(scancode)
+		if not binding:
+			binding = next((
+				_binding for keys, _binding in cls.MULTIKEYBINDINGS.items()
+				if scancode in keys
+				), None)
+		if not binding:
+			return None
+		callback = binding.callback
+		if bind_self:
+			callback = callback.__get__(bind_self, type(bind_self))
+		param = binding.param
+		if not param:
+			return callback
+		if callable(param):
+			param = param(binding.key[binding.scancode.index(scancode)])
+		def _bound_param(*args):
+			args = args + (param,)
+			return callback(*args)
+		return _bound_param
+	@classmethod
+	def list_all(cls):
+		""" Returns sorted list of all keybindings (multikeys first). """
+		return sorted(cls.MULTIKEYBINDINGS.items()) + sorted(cls.KEYBINDINGS.items())
 
 DIRECTION = {
 	'h' : Direction.LEFT,
@@ -131,41 +170,29 @@ class Curses(UI):
 		Log.debug('Performing user actions.')
 		control = self.window.getch()
 		Log.debug('Control: {0} ({1}).'.format(control, repr(chr(control))))
-		binding = KEYBINDINGS.get(control)
-		if not binding:
-			binding = next((
-				_binding for keys, _binding in MULTIKEYBINDINGS.items()
-				if control in keys
-				), None)
-		if binding:
-			callback = binding.callback.__get__(self, Curses)
-			if binding.param:
-				param = binding.param
-				if callable(param):
-					param = param(binding.key[binding.scancode.index(control)])
-				result = callback(game, param)
-			else:
-				result = callback(game)
+		callback = Keys.get(control, bind_self=self)
+		if callback:
+			result = callback(game)
 			if result is not None:
 				return result
 		return Action.NONE, None
 
-	@bind_key('?')
+	@Keys.bind('?')
 	def help(self, game):
 		""" Show this help. """
 		self.window.clear()
-		for row, (_, binding) in enumerate(sorted(MULTIKEYBINDINGS.items()) + sorted(KEYBINDINGS.items())):
+		for row, (_, binding) in enumerate(Keys.list_all()):
 			name = binding.callback.__doc__.strip()
 			self.window.addstr(row, 0, '{0} - {1}'.format(binding.key, name))
 		self.window.addstr(row + 1, 0, '[Press Any Key...]')
 		self.window.refresh()
 		self.window.getch()
-	@bind_key('q')
+	@Keys.bind('q')
 	def quit(self, game):
 		""" Save and quit. """
 		Log.debug('Exiting the game.')
 		return Action.EXIT, None
-	@bind_key('x')
+	@Keys.bind('x')
 	def examine(self, game):
 		""" Examine surroundings (cursor mode). """
 		if self.aim:
@@ -174,7 +201,7 @@ class Curses(UI):
 		else:
 			self.aim = game.get_player().pos
 			curses.curs_set(1)
-	@bind_key('.')
+	@Keys.bind('.')
 	def autowalk(self, game):
 		""" Wait. """
 		if self.aim:
@@ -184,11 +211,11 @@ class Curses(UI):
 			return Action.WALK_TO, dest
 		else:
 			return Action.WAIT, None
-	@bind_key('o')
+	@Keys.bind('o')
 	def autoexplore(self, game):
 		""" Autoexplore. """
 		return Action.AUTOEXPLORE, None
-	@bind_key('~')
+	@Keys.bind('~')
 	def god_mode(self, game):
 		""" God mode options. """
 		control = self.window.getch()
@@ -196,21 +223,21 @@ class Curses(UI):
 			return Action.GOD_TOGGLE_VISION, None
 		elif control == ord('c'):
 			return Action.GOD_TOGGLE_NOCLIP, None
-	@bind_key('Q')
+	@Keys.bind('Q')
 	def suicide(self, game):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
 		return Action.SUICIDE, None
-	@bind_key('>')
+	@Keys.bind('>')
 	def descend(self, game):
 		""" Descend. """
 		if not self.aim:
 			return Action.DESCEND, None
-	@bind_key('g')
+	@Keys.bind('g')
 	def grab(self, game):
 		""" Grab item. """
 		return Action.GRAB, game.get_player().pos
-	@bind_key('hjklyubn', param=lambda key: DIRECTION[key])
+	@Keys.bind('hjklyubn', param=lambda key: DIRECTION[key])
 	def move(self, game, direction):
 		""" Move. """
 		Log.debug('Moving.')

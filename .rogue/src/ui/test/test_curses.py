@@ -374,6 +374,11 @@ class TestCurses(unittest.TestCase):
 		self.assertFalse(ui.user_interrupted())
 		self.assertFalse(ui.user_interrupted())
 		self.assertTrue(ui.user_interrupted())
+	def should_ignore_unknown_keys(self):
+		ui = curses.Curses()
+		ui.window = MockCurses('Z')
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 	def should_exit(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('q')
