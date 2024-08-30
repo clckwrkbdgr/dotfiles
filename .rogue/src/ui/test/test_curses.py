@@ -7,16 +7,21 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 from .. import curses, _base
 from ...pcg import builders, settlers
-from ... import game, monsters, items
+from ... import game, monsters, items, messages
 from ...math import Point
+from ... import utils
 
 class MockGame(game.Game):
 	SPECIES = {
 			'player' : monsters.Species('player', "@", 10, vision=10),
 			'monster' : monsters.Species('monster', "M", 3, vision=10),
+			'thief' : monsters.Species('thief', "M", 3, vision=10, drops=[
+				(1, 'money'),
+				]),
 			}
 	ITEMS = {
 			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
+			'money' : items.ItemType('money', '$', items.Effect.NONE),
 			}
 	TERRAIN = {
 		None : game.Terrain(' ', False),
@@ -27,6 +32,9 @@ class MockGame(game.Game):
 
 class SingleMockMonster(settlers.SingleMonster):
 	MONSTER = ('monster', monsters.Behavior.ANGRY)
+
+class SingleMockThief(settlers.SingleMonster):
+	MONSTER = ('thief', monsters.Behavior.ANGRY)
 
 class MockCurses:
 	class SubCall:
@@ -156,6 +164,11 @@ class TestCurses(unittest.TestCase):
 			'#..................#',
 			'####################',
 			]
+
+	def should_handle_all_events(self):
+		handled_events = curses.Events.list_all_events()
+		known_events = sorted(utils.all_subclasses(messages.Event), key=lambda cls: cls.__name__)
+		self.assertEqual(known_events, handled_events)
 
 	def should_draw_game(self):
 		ui = curses.Curses()
@@ -555,6 +568,52 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion. player <~ potion.                            '),
+			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('refresh',),
+			])
+	def should_drop_loot_from_monsters(self):
+		ui = curses.Curses()
+		ui.window = MockCurses()
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockThief])
+		dungeon.clear_event()
+
+		dungeon.jump_to(Point(2, 6))
+		dungeon.move(dungeon.get_player(), game.Direction.UP)
+
+		ui.redraw(dungeon)
+		self.maxDiff = None
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'player x> thief. thief-1hp.                                                     '),
+			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('refresh',),
+			])
+
+		# Finish him.
+		dungeon.clear_event()
+		dungeon.move(dungeon.get_player(), game.Direction.UP)
+		dungeon.clear_event()
+		dungeon.move(dungeon.get_player(), game.Direction.UP)
+
+		ui.redraw(dungeon)
+		self.maxDiff = None
+		DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP = [
+				'#########        #  ',
+				'#......     #       ',
+				'#.....      #       ',
+				'#....##  ## #       ',
+				'#....#              ',
+				'#.$..#......        ',
+				'#.@..........      #',
+				'#...........        ',
+				'#...........        ',
+				'##################  ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'player x> thief. thief-1hp. thief dies. thief VV money.                         '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])

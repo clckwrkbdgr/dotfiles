@@ -12,3 +12,13 @@ class TestMetaUtils(unittest.TestCase):
 		self.assertEqual(MyEnum.FIRST, 0)
 		self.assertEqual(MyEnum.SECOND, 1)
 		self.assertEqual(MyEnum.CURRENT, 2)
+	def should_list_all_subclasses(self):
+		class _MyParentClass(object): pass
+		class _MyDirectChild(_MyParentClass): pass
+		class _MyDirectChildParent(_MyParentClass): pass
+		class _MyNonDirectChild(_MyParentClass): pass
+		self.assertEqual(sorted(utils.all_subclasses(_MyParentClass), key=lambda cls: cls.__name__), [
+			_MyDirectChild,
+			_MyDirectChildParent,
+			_MyNonDirectChild,
+			])

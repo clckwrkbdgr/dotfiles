@@ -29,3 +29,7 @@ class Enum(object):
 	All names are converted to all caps. Values start with 0. Meta value CURRENT returns the next available value (e.g. 2 in this case).
 	"""
 	pass
+
+def all_subclasses(cls):
+	""" Returns list of all subclasses (including not direct ones) of given new-style class. """
+	return cls.__subclasses__() + [g for s in cls.__subclasses__() for g in all_subclasses(s)]

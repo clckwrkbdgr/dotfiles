@@ -61,6 +61,32 @@ class Keys:
 		""" Returns sorted list of all keybindings (multikeys first). """
 		return sorted(cls.MULTIKEYBINDINGS.items()) + sorted(cls.KEYBINDINGS.items())
 
+class Events:
+	""" Registry of convertors of events to string representation for messages line. """
+	_registry = {}
+	@classmethod
+	def on(cls, event_type):
+		""" Registers callback for given event type. """
+		def _actual(f):
+			cls._registry[event_type] = f
+			return f
+		return _actual
+	@classmethod
+	def get(cls, event, bind_self=None):
+		""" Returns callback for given event.
+		If bind_self is given, considers callback a method
+		and binds it to the given instance.
+		"""
+		callback = cls._registry.get(type(event))
+		if not callback:
+			return None
+		if bind_self:
+			callback = callback.__get__(bind_self, type(bind_self))
+		return callback
+	@classmethod
+	def list_all_events(cls):
+		return sorted(cls._registry.keys(), key=lambda cls: cls.__name__)
+
 DIRECTION = {
 	'h' : Direction.LEFT,
 	'j' : Direction.DOWN,
@@ -106,33 +132,14 @@ class Curses(UI):
 
 		events = []
 		for event in game.events:
-			if isinstance(event, messages.DiscoverEvent):
-				if event.obj == '>':
-					events.append('exit!')
-				elif hasattr(event.obj, 'name'):
-					events.append('{0}!'.format(event.obj.name))
-				else:
-					events.append('{0}!'.format(event.obj))
-			elif isinstance(event, messages.AttackEvent):
-				events.append('{0} x> {1}.'.format(event.actor.name, event.target.name))
-			elif isinstance(event, messages.HealthEvent):
-				events.append('{0}{1:+}hp.'.format(event.target.name, event.diff))
-			elif isinstance(event, messages.DeathEvent):
-				events.append('{0} dies.'.format(event.target.name))
-			elif isinstance(event, messages.MoveEvent):
-				if event.actor != game.get_player():
-					events.append('{0}...'.format(event.actor.name))
-			elif isinstance(event, messages.DescendEvent):
-				events.append('{0} V...'.format(event.actor.name))
-			elif isinstance(event, messages.BumpEvent):
-				if event.actor != game.get_player():
-					events.append('{0} bumps.'.format(event.actor.name))
-			elif isinstance(event, messages.GrabItemEvent):
-				events.append('{0} ^^ {1}.'.format(event.actor.name, event.item.name))
-			elif isinstance(event, messages.ConsumeItemEvent):
-				events.append('{0} <~ {1}.'.format(event.actor.name, event.item.name))
-			else:
+			callback = Events.get(event, bind_self=self)
+			if not callback:
 				events.append('Unknown event {0}!'.format(repr(event)))
+				continue
+			result = callback(game, event)
+			if not result:
+				continue
+			events.append(result)
 		self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])
 
 		status = []
@@ -158,6 +165,43 @@ class Curses(UI):
 
 		if not player:
 			self.window.getch()
+	@Events.on(messages.DiscoverEvent)
+	def on_discovering(self, game, event):
+		if event.obj == '>':
+			return 'exit!'
+		elif hasattr(event.obj, 'name'):
+			return '{0}!'.format(event.obj.name)
+		else:
+			return '{0}!'.format(event.obj)
+	@Events.on(messages.AttackEvent)
+	def on_attack(self, game, event):
+		return '{0} x> {1}.'.format(event.actor.name, event.target.name)
+	@Events.on(messages.HealthEvent)
+	def on_health_change(self, game, event):
+		return '{0}{1:+}hp.'.format(event.target.name, event.diff)
+	@Events.on(messages.DeathEvent)
+	def on_death(self, game, event):
+		return '{0} dies.'.format(event.target.name)
+	@Events.on(messages.MoveEvent)
+	def on_movement(self, game, event):
+		if event.actor != game.get_player():
+			return '{0}...'.format(event.actor.name)
+	@Events.on(messages.DescendEvent)
+	def on_descending(self, game, event):
+		return '{0} V...'.format(event.actor.name)
+	@Events.on(messages.BumpEvent)
+	def on_bumping(self, game, event):
+		if event.actor != game.get_player():
+			return '{0} bumps.'.format(event.actor.name)
+	@Events.on(messages.GrabItemEvent)
+	def on_grabbing(self, game, event):
+		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
+	@Events.on(messages.DropItemEvent)
+	def on_grabbing(self, game, event):
+		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
+	@Events.on(messages.ConsumeItemEvent)
+	def on_consuming(self, game, event):
+		return '{0} <~ {1}.'.format(event.actor.name, event.item.name)
 	def user_interrupted(self):
 		""" Checks for key presses in nodelay mode. """
 		self.window.nodelay(1)
