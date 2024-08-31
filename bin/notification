@@ -119,7 +119,8 @@ cli() {
 	fi
 
 	notification_lock=$XDG_RUNTIME_DIR/clckwrkbdgr_notification.lock
-	lockfile -1 -r 10 -l 10 -s 2 "$notification_lock"
+	# Wait 1 sec for 30 times, if lockfile exists for 100 sec, kill it and retry after 20 sec.
+	lockfile -1 -r 30 -l 100 -s 20 "$notification_lock"
 	finally  "rm -rf '$notification_lock'"
 
 	if [ -z "$quiet" ]; then
