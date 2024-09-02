@@ -14,8 +14,8 @@ say_mbrola() {
 
 say_rhvoice() {
 	text_to_speech_lock=$XDG_RUNTIME_DIR/clckwrkbdgr_text_to_speech.lock
-	# Wait 1 sec for 30 times, if lockfile exists for 100 sec, kill it and retry after 10 sec.
-	lockfile -1 -r 30 -l 100 -s 10 "$text_to_speech_lock"
+	# Wait 3 times for 1 sec before locking; if lockfile already exists for 100 sec, kill it immediately and retry after 1 sec.
+	lockfile -1 -r 3 -l 100 -s 1 "$text_to_speech_lock"
 
 	IFS='\n'
 	while read line; do
