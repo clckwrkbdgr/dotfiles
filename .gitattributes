@@ -41,6 +41,7 @@ qvge/Qt?Visual?Graph?Editor.conf filter=qvge_conf
 gnome-games/aisleriot filter=aisleriot
 omega/omega.toml filter=omega_config
 openkb/openkb.ini filter=openkb_config
+sotw/swyrm.ini filter=pretty_flat_ini
 
 xfce4/** caps=home
 xinitrc caps=home
@@ -388,6 +389,7 @@ mc/mc.ext caps=work
 mc/panels.ini caps=work
 omega/omega.toml caps=home
 openkb/openkb.ini caps=home
+sotw/swyrm.ini caps=home
 patch/when-1.1.36-xdg.patch caps=work
 patch/bottle.py-0.12.25-resourcewarning-on-video.patch caps=work
 patch/bottle.py-0.12.25-resourcewarning-on-video.2.patch caps=work

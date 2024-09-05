@@ -24,6 +24,10 @@
 	smudge = cat
 	clean = "filterconf -f xml pretty"
 
+[filter "pretty_flat_ini"]
+	smudge = cat
+	clean = "filterconf -f flat_ini pretty"
+
 [filter "sqlite_text_dump"]
 	smudge = "filterconf -f sqlite restore"
 	clean = "filterconf -f sqlite enviro"
