@@ -15,4 +15,5 @@ fi
 if [ "$(cat "$symlink_content")" == "$filename" ]; then
 	exit 0
 fi
+rm -f "$filename"
 ln -sf "$(cat "$symlink_content")" "$filename"
