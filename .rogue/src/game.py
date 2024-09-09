@@ -37,6 +37,25 @@ class Cell(object):
 	def __init__(self, terrain, visited=False):
 		self.terrain = terrain
 		self.visited = visited
+	@classmethod
+	def load(cls, reader):
+		TERRAIN = reader.get_meta_info('TERRAIN')
+		if reader.version > Version.TERRAIN_TYPES:
+			obj = cls(TERRAIN[reader.read_str()])
+			obj.visited = reader.read_bool()
+		else:
+			cell_type = reader.read_str(), reader.read_bool(), reader.read_str()
+			for terrain in TERRAIN:
+				if TERRAIN[terrain].sprite == cell_type[0] \
+					and TERRAIN[terrain].passable == cell_type[1] \
+					and TERRAIN[terrain].remembered == cell_type[2]:
+					break
+			obj = cls(TERRAIN[terrain])
+			obj.visited = reader.read_bool()
+		return obj
+	def save(self, writer):
+		writer.write(self.terrain.name)
+		writer.write(self.visited)
 
 class Direction(Enum):
 	""" NONE
@@ -92,6 +111,8 @@ class Game(object):
 		"""
 		self.builders = builders or self.BUILDERS
 		self.settlers = settlers or self.SETTLERS
+		for k, v in self.TERRAIN.items():
+			self.TERRAIN[k].name = k # TODO Temp.; Class Terrain should have .name
 		self.rng = RNG(rng_seed)
 		self.god = God()
 		self.field_of_view = math.FieldOfView(10)
@@ -110,11 +131,39 @@ class Game(object):
 			self.build_new_strata()
 	def load(self, reader):
 		""" Loads game from reader. """
-		load_game(self, reader)
+		if reader.version > Version.PERSISTENT_RNG:
+			self.rng = RNG(reader.read_int())
+
+		legacy_player = None
+		if reader.version <= Version.MONSTERS:
+			legacy_player = monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, reader.read_point())
+		self.exit_pos = reader.read_point()
+		self.remembered_exit = reader.read_bool()
+
+		reader.set_meta_info('ITEMS', self.ITEMS)
+		reader.set_meta_info('SPECIES', self.SPECIES)
+		reader.set_meta_info('TERRAIN', self.TERRAIN)
+		reader.set_meta_info('Version.MONSTER_BEHAVIOR', Version.MONSTER_BEHAVIOR) # TODO global defs module should be created and used everywhere instead.
+		self.strata = reader.read_matrix(Cell)
+		if legacy_player:
+			self.monsters.append(legacy_player)
+		if reader.version > Version.MONSTERS:
+			self.monsters.extend(reader.read_list(monsters.Monster))
+		if reader.version > Version.ITEMS:
+			self.items.extend(reader.read_list(items.Item))
+
+		self.update_vision()
+		Log.debug('Loaded.')
+		Log.debug(repr(self.strata))
+		Log.debug('Player: {0}'.format(self.get_player()))
 	def save(self, writer):
 		""" Saves game using writer. """
-		for item in save_game(self):
-			writer.write(item)
+		writer.write(self.rng.value)
+		writer.write(self.exit_pos)
+		writer.write(self.remembered_exit)
+		writer.write(self.strata)
+		writer.write(self.monsters)
+		writer.write(self.items)
 	def main_loop(self, ui):
 		""" Main entry point for the game.
 		Performs main event/action loop, redraws UI.
@@ -529,100 +578,6 @@ class Game(object):
 		self.movement_queue[:] = []
 		self.autoexploring = False
 		raise Game.AutoMovementStopped()
-
-def save_game(game):
-	""" Saves game into writer object. """
-	yield game.rng.value
-	dump_str = lambda _value: _value if _value is None else _value
-	dump_bool = lambda _value: int(_value)
-	yield game.exit_pos.x
-	yield game.exit_pos.y
-	yield dump_bool(game.remembered_exit)
-	yield game.strata.size.width
-	yield game.strata.size.height
-	for cell in game.strata.cells:
-		yield next(name for name, terrain in game.TERRAIN.items() if terrain is cell.terrain)
-		yield dump_bool(cell.visited)
-	yield len(game.monsters)
-	for monster in game.monsters:
-		yield next(name for name, species in game.SPECIES.items() if species is monster.species)
-		yield monster.behavior
-		yield monster.pos.x
-		yield monster.pos.y
-		yield monster.hp
-	yield len(game.items)
-	for item in game.items:
-		yield next(name for name, item_type in game.ITEMS.items() if item_type is item.item_type)
-		yield item.pos.x
-		yield item.pos.y
-
-def load_game(game, reader):
-	""" Load game from Reader object. """
-	if reader.version > Version.PERSISTENT_RNG:
-		game.rng = RNG(int(reader.read()))
-	version = reader.version
-	data = reader.stream
-
-	parse_str = lambda _value: _value if _value != 'None' else None
-	parse_bool = lambda _value: _value == '1'
-
-	legacy_player = None
-	if version <= Version.MONSTERS:
-		legacy_player = monsters.Monster(game.SPECIES['player'], pcg.settlers.Behavior.PLAYER, Point(int(next(data)), int(next(data))))
-	exit_pos = Point(int(next(data)), int(next(data)))
-	remembered_exit = parse_bool(next(data))
-
-	strata_size = Size(int(next(data)), int(next(data)))
-	strata = Matrix(strata_size, None)
-	if version > Version.TERRAIN_TYPES:
-		for _ in range(strata_size.width * strata_size.height):
-			strata.cells[_] = Cell(game.TERRAIN[parse_str(next(data))])
-			strata.cells[_].visited = parse_bool(next(data))
-	else:
-		for _ in range(strata_size.width * strata_size.height):
-			cell_type = parse_str(next(data)), parse_bool(next(data)), parse_str(next(data))
-			for terrain in game.TERRAIN:
-				if game.TERRAIN[terrain].sprite == cell_type[0] \
-					and game.TERRAIN[terrain].passable == cell_type[1] \
-					and game.TERRAIN[terrain].remembered == cell_type[2]:
-					break
-			strata.cells[_] = Cell(game.TERRAIN[terrain])
-			strata.cells[_].visited = parse_bool(next(data))
-	if legacy_player:
-		game.monsters.append(legacy_player)
-	if version > Version.MONSTERS:
-		count = int(next(data))
-		for _ in range(count):
-			species_name = next(data)
-			species = game.SPECIES[species_name]
-			if version > Version.MONSTER_BEHAVIOR:
-				behavior = int(next(data))
-			else:
-				if species_name == 'player':
-					behavior = pcg.settlers.Behavior.PLAYER
-				else:
-					behavior = pcg.settlers.Behavior.ANGRY
-			pos = Point(int(next(data)), int(next(data)))
-			monster = monsters.Monster(species, behavior, pos)
-			monster.hp = int(next(data))
-			game.monsters.append(monster)
-	if version > Version.ITEMS:
-		count = int(next(data))
-		for _ in range(count):
-			item_type_name = next(data)
-			item_type = game.ITEMS[item_type_name]
-			pos = Point(int(next(data)), int(next(data)))
-			item = items.Item(item_type, pos)
-			game.items.append(item)
-
-	game.exit_pos = exit_pos
-	game.strata = strata
-	game.remembered_exit = remembered_exit
-
-	game.update_vision()
-	Log.debug('Loaded.')
-	Log.debug(repr(game.strata))
-	Log.debug('Player: {0}'.format(game.get_player()))
 
 class God:
 	""" God mode options.

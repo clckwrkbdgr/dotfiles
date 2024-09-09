@@ -31,6 +31,26 @@ class Monster(object):
 		self.hp = self.species.max_hp
 	def __str__(self):
 		return "{0} @{1} {2}/{3}hp".format(self.species.name, self.pos, self.hp, self.species.max_hp)
+	@classmethod
+	def load(cls, reader):
+		species_name = reader.read()
+		species = reader.get_meta_info('SPECIES')[species_name]
+		if reader.version > reader.get_meta_info('Version.MONSTER_BEHAVIOR'):
+			behavior = reader.read_int()
+		else:
+			if species_name == 'player':
+				behavior = Behavior.PLAYER
+			else:
+				behavior = Behavior.ANGRY
+		pos = reader.read_point()
+		monster = cls(species, behavior, pos)
+		monster.hp = reader.read_int()
+		return monster
+	def save(self, writer):
+		writer.write(self.species.name)
+		writer.write(self.behavior)
+		writer.write(self.pos)
+		writer.write(self.hp)
 	def is_alive(self):
 		return self.hp > 0
 	@property

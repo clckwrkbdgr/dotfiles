@@ -6,8 +6,25 @@ except ImportError: # pragma: no cover
 	import mock
 mock.patch.TEST_PREFIX = 'should'
 import os, sys, tempfile
+try:
+	from cStringIO import StringIO
+except: # pragma: no cover
+	from io import StringIO
 BUILTIN_OPEN = 'builtins.open' if sys.version_info[0] >= 3 else '__builtin__.open'
+from ..savefile import Reader, Writer
 from ..savefile import Savefile, AutoSavefile
+from ...math import Point, Size, Matrix
+
+class MockSerializableObject:
+	def __init__(self, value, data):
+		self.value = value
+		self.data = data
+	@classmethod
+	def load(cls, reader):
+		return cls(reader.read_int(), reader.read_str())
+	def save(self, writer):
+		writer.write(self.value)
+		writer.write(self.data)
 
 class TestAutoSavefile(unittest.TestCase):
 	def should_save_autosavefile_if_ok(self):
@@ -30,6 +47,133 @@ class TestAutoSavefile(unittest.TestCase):
 		obj.save.assert_not_called()
 		mock_savefile.save.assert_not_called()
 		mock_savefile.unlink.assert_called_with()
+
+class TestReader(unittest.TestCase):
+	def should_read_version(self):
+		stream = StringIO('666\x00123')
+		reader = Reader(stream)
+		self.assertEqual(reader.version, 666)
+		self.assertEqual(reader.read(), '123')
+	def should_read_raw_value(self):
+		stream = StringIO('666\x00123\x00game data')
+		reader = Reader(stream)
+		self.assertEqual(reader.read(), '123')
+		self.assertEqual(reader.read(), 'game data')
+	def should_read_custom_serializable_objects(self):
+		stream = StringIO('666\x00123\x00game data')
+		reader = Reader(stream)
+		obj = reader.read(MockSerializableObject)
+		self.assertTrue(isinstance(obj, MockSerializableObject))
+		self.assertEqual(obj.value, 123)
+		self.assertEqual(obj.data, 'game data')
+	def should_read_int(self):
+		stream = StringIO('666\x00123\x00game data')
+		reader = Reader(stream)
+		self.assertEqual(reader.read_int(), 123)
+		self.assertEqual(reader.read(), 'game data')
+	def should_read_strings(self):
+		stream = StringIO('666\x00None\x00game data')
+		reader = Reader(stream)
+		self.assertEqual(reader.read_str(), None)
+		self.assertEqual(reader.read_str(), 'game data')
+	def should_read_booleans(self):
+		stream = StringIO('666\x001\x000')
+		reader = Reader(stream)
+		self.assertEqual(reader.read_bool(), True)
+		self.assertEqual(reader.read_bool(), False)
+	def should_read_points(self):
+		stream = StringIO('666\x00100\x00500')
+		reader = Reader(stream)
+		self.assertEqual(reader.read_point(), Point(100, 500))
+	def should_read_sizes(self):
+		stream = StringIO('666\x00100\x00500')
+		reader = Reader(stream)
+		self.assertEqual(reader.read_size(), Size(100, 500))
+	def should_read_lists(self):
+		stream = StringIO('666\x002\x00100\x00500')
+		reader = Reader(stream)
+		self.assertEqual(reader.read_list(), ['100', '500'])
+	def should_read_lists_of_custom_objects(self):
+		stream = StringIO('666\x002\x00100\x00foo\x00500\x00bar')
+		reader = Reader(stream)
+		result = reader.read_list(MockSerializableObject)
+		self.assertEqual(len(result), 2)
+		self.assertEqual(result[0].value, 100)
+		self.assertEqual(result[0].data, 'foo')
+		self.assertEqual(result[1].value, 500)
+		self.assertEqual(result[1].data, 'bar')
+	def should_read_matrices(self):
+		stream = StringIO('666\x003\x002\x000\x000;0\x0010\x001;0\x0020\x002;0\x001\x000;1\x0011\x001;1\x0021\x002;1')
+		reader = Reader(stream)
+		matrix = reader.read_matrix(MockSerializableObject)
+		self.assertEqual(matrix.size, Size(3, 2))
+		self.assertEqual(matrix.cell(0, 0).value, 00)
+		self.assertEqual(matrix.cell(0, 0).data, '0;0')
+		self.assertEqual(matrix.cell(0, 1).value,  1)
+		self.assertEqual(matrix.cell(0, 1).data, '0;1')
+		self.assertEqual(matrix.cell(1, 0).value, 10)
+		self.assertEqual(matrix.cell(1, 0).data, '1;0')
+		self.assertEqual(matrix.cell(1, 1).value, 11)
+		self.assertEqual(matrix.cell(1, 1).data, '1;1')
+		self.assertEqual(matrix.cell(2, 0).value, 20)
+		self.assertEqual(matrix.cell(2, 0).data, '2;0')
+		self.assertEqual(matrix.cell(2, 1).value, 21)
+		self.assertEqual(matrix.cell(2, 1).data, '2;1')
+
+class TestWriter(unittest.TestCase):
+	def should_write_raw_values(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		writer.write(123)
+		writer.write('game data')
+		self.assertEqual(stream.getvalue(), '666\x00123\x00game data')
+	def should_write_serializable_objects(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		obj = MockSerializableObject(123, 'game data')
+		writer.write(obj)
+		self.assertEqual(stream.getvalue(), '666\x00123\x00game data')
+	def should_write_bool_values(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		writer.write(True)
+		writer.write(False)
+		self.assertEqual(stream.getvalue(), '666\x001\x000')
+	def should_write_points(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		writer.write(Point(100, 500))
+		self.assertEqual(stream.getvalue(), '666\x00100\x00500')
+	def should_write_sizes(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		writer.write(Size(100, 500))
+		self.assertEqual(stream.getvalue(), '666\x00100\x00500')
+	def should_write_lists(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		writer.write(['100', '500'])
+		self.assertEqual(stream.getvalue(), '666\x002\x00100\x00500')
+	def should_write_lists_of_custom_objects(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		writer.write([
+			MockSerializableObject(100, 'foo'),
+			MockSerializableObject(500, 'bar'),
+			])
+		self.assertEqual(stream.getvalue(), '666\x002\x00100\x00foo\x00500\x00bar')
+	def should_write_matrices(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		matrix = Matrix(Size(3, 2), None)
+		matrix.set_cell(0, 0, MockSerializableObject(00, '0;0'))
+		matrix.set_cell(0, 1, MockSerializableObject( 1, '0;1'))
+		matrix.set_cell(1, 0, MockSerializableObject(10, '1;0'))
+		matrix.set_cell(1, 1, MockSerializableObject(11, '1;1'))
+		matrix.set_cell(2, 0, MockSerializableObject(20, '2;0'))
+		matrix.set_cell(2, 1, MockSerializableObject(21, '2;1'))
+		writer.write(matrix)
+		self.assertEqual(stream.getvalue(), '666\x003\x002\x000\x000;0\x0010\x001;0\x0020\x002;0\x001\x000;1\x0011\x001;1\x0021\x002;1')
 
 class TestSavefile(unittest.TestCase):
 	@mock.patch('os.stat')

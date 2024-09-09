@@ -1,6 +1,10 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
+try:
+	from cStringIO import StringIO
+except: # pragma: no cover
+	from io import StringIO
 from ..math import Point, Size
 from ..pcg._base import RNG
 from ..pcg import builders, settlers
@@ -9,11 +13,14 @@ from .. import pcg
 from .. import game
 from .. import ui
 from .. import messages
+from ..system import savefile
 
-class MockWriter:
+class MockWriterStream:
 	def __init__(self):
 		self.dump = []
 	def write(self, item):
+		if item == '\0':
+			return
 		self.dump.append(item)
 
 class MockGame(game.Game):
@@ -1027,6 +1034,27 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, 'monsters')
 
+class TestTerrainSavefile(unittest.TestCase):
+	def setUp(self):
+		self.TERRAIN = {
+				'name' : game.Terrain('.'),
+				}
+		self.TERRAIN['name'].name = 'name'
+	def should_load_terrain(self):
+		stream = StringIO('666\x00name\x001')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('TERRAIN', self.TERRAIN)
+		cell = reader.read(game.Cell)
+		self.assertEqual(cell.terrain, self.TERRAIN['name'])
+		self.assertEqual(cell.visited, True)
+	def should_save_terrain(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, 666)
+		cell = game.Cell(self.TERRAIN['name'])
+		cell.visited = True
+		writer.write(cell)
+		self.assertEqual(stream.getvalue(), '666\x00name\x001')
+
 class TestGameSerialization(AbstractTestDungeon):
 	class _MockSettler(CustomSettler):
 		MONSTERS = [
@@ -1040,11 +1068,10 @@ class TestGameSerialization(AbstractTestDungeon):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
 		self.assertEqual(dungeon.monsters[0].pos, Point(9, 6))
 		dungeon.monsters[0].pos = Point(2, 2)
-		writer = MockWriter()
+		writer = savefile.Writer(MockWriterStream(), game.Version.CURRENT)
 		dungeon.save(writer)
-		dump = [str(game.Version.CURRENT)] + list(map(str, writer.dump))
+		dump = writer.f.dump
 
-		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon = MockGame(load_from_reader=reader)
 		self.assertEqual(restored_dungeon.monsters[0].pos, Point(2, 2))
@@ -1069,7 +1096,6 @@ class TestGameSerialization(AbstractTestDungeon):
 			]
 		dump = [str(game.Version.TERRAIN_TYPES), str(dungeon.rng.seed)] + list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
-		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.get_player().pos, restored_dungeon.get_player().pos)
@@ -1097,7 +1123,6 @@ class TestGameSerialization(AbstractTestDungeon):
 			]
 		dump = [str(game.Version.MONSTERS), str(dungeon.rng.seed)] + list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
-		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.get_player().pos, restored_dungeon.get_player().pos)
@@ -1129,7 +1154,6 @@ class TestGameSerialization(AbstractTestDungeon):
 			]
 		dump = [str(game.Version.MONSTER_BEHAVIOR), str(dungeon.rng.seed)] + list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
-		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
@@ -1165,7 +1189,6 @@ class TestGameSerialization(AbstractTestDungeon):
 			]
 		dump = [str(game.Version.ITEMS), str(dungeon.rng.seed)] + list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
-		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
@@ -1185,10 +1208,10 @@ class TestGameSerialization(AbstractTestDungeon):
 		self.assertEqual(len(restored_dungeon.items), 0)
 	def should_serialize_and_deserialize_game(self):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
-		writer = MockWriter()
+		writer = savefile.Writer(MockWriterStream(), game.Version.CURRENT)
 		dungeon.save(writer)
-		dump = writer.dump
-		self.assertEqual(dump, [1406932606,
+		dump = writer.f.dump[1:]
+		self.assertEqual(dump, list(map(str, [1406932606,
 			10, 1, 0, 20, 10,
 			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
 			'#',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '.',1, '#',0, '.',0, '#',0, '#',1, '.',0, '.',0, '.',1, '.',1, '.',1, '.',0, '#',0,
@@ -1205,11 +1228,10 @@ class TestGameSerialization(AbstractTestDungeon):
 				'monster', 3, 2, 5, 3, 
 			1,
 				'potion', 10, 6,
-			])
+			])))
 		dump = [str(game.Version.CURRENT)] + list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
 		self.assertEqual(game.Version.CURRENT, game.Version.ITEMS + 1)
-		from ..system import savefile
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)

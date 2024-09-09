@@ -1,8 +1,14 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
+try:
+	from cStringIO import StringIO
+except: # pragma: no cover
+	from io import StringIO
 from ..math import Point
 from .. import monsters
 from ..pcg import RNG
+from ..system import savefile
+from ..game import Version # TODO global defs module
 
 class TestSpecies(unittest.TestCase):
 	def should_str_species(self):
@@ -44,3 +50,27 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(monster.drop_loot(rng), [('money',)])
 		self.assertEqual(monster.drop_loot(rng), [])
 		self.assertEqual(monster.drop_loot(rng), [])
+
+class TestSavefile(unittest.TestCase):
+	def setUp(self):
+		self.SPECIES = {
+				'name' : monsters.Species('name', 'M', 100, vision=10),
+				'player' : monsters.Species('name', '@', 100, vision=10),
+				}
+	def should_load_monster(self):
+		stream = StringIO('666\x00name\x003\x001\x001\x003')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('SPECIES', self.SPECIES)
+		reader.set_meta_info('Version.MONSTER_BEHAVIOR', Version.MONSTER_BEHAVIOR) # TODO global defs module should be created and used everywhere instead.
+		monster = reader.read(monsters.Monster)
+		self.assertEqual(monster.species, self.SPECIES['name'])
+		self.assertEqual(monster.behavior, monsters.Behavior.ANGRY)
+		self.assertEqual(monster.pos, Point(1, 1))
+		self.assertEqual(monster.hp, 3)
+	def should_save_monster(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, 666)
+		monster = monsters.Monster(self.SPECIES['name'], monsters.Behavior.ANGRY, Point(1, 1))
+		monster.hp = 3
+		writer.write(monster)
+		self.assertEqual(stream.getvalue(), '666\x00name\x003\x001\x001\x003')

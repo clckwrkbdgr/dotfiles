@@ -24,3 +24,12 @@ class Item(object):
 		return self.item_type.name
 	def __str__(self):
 		return '{0} @{1}'.format(self.name, self.pos)
+	@classmethod
+	def load(cls, reader):
+		item_type_name = reader.read()
+		item_type = reader.get_meta_info('ITEMS')[item_type_name]
+		pos = reader.read_point()
+		return cls(item_type, pos)
+	def save(self, writer):
+		writer.write(self.item_type.name)
+		writer.write(self.pos)
