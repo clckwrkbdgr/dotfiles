@@ -1041,7 +1041,7 @@ class TestTerrainSavefile(unittest.TestCase):
 				}
 		self.TERRAIN['name'].name = 'name'
 	def should_load_terrain(self):
-		stream = StringIO('666\x00name\x001')
+		stream = StringIO(str(game.Version.CURRENT) + '\x00name\x001')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('TERRAIN', self.TERRAIN)
 		cell = reader.read(game.Cell)
@@ -1049,11 +1049,11 @@ class TestTerrainSavefile(unittest.TestCase):
 		self.assertEqual(cell.visited, True)
 	def should_save_terrain(self):
 		stream = StringIO()
-		writer = savefile.Writer(stream, 666)
+		writer = savefile.Writer(stream, game.Version.CURRENT)
 		cell = game.Cell(self.TERRAIN['name'])
 		cell.visited = True
 		writer.write(cell)
-		self.assertEqual(stream.getvalue(), '666\x00name\x001')
+		self.assertEqual(stream.getvalue(), str(game.Version.CURRENT) + '\x00name\x001')
 
 class TestGameSerialization(AbstractTestDungeon):
 	class _MockSettler(CustomSettler):

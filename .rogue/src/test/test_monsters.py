@@ -107,9 +107,9 @@ class TestSavefile(unittest.TestCase):
 		self.assertEqual(monster.inventory[0].pos, monster.pos)
 	def should_save_monster(self):
 		stream = StringIO()
-		writer = savefile.Writer(stream, 666)
+		writer = savefile.Writer(stream, Version.CURRENT)
 		monster = monsters.Monster(self.SPECIES['name'], monsters.Behavior.ANGRY, Point(1, 1))
 		monster.fill_inventory_from_drops(RNG(0), self.ITEMS)
 		monster.hp = 3
 		writer.write(monster)
-		self.assertEqual(stream.getvalue(), '666\x00name\x003\x001\x001\x003\x001\x00money\x001\x001')
+		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00name\x003\x001\x001\x003\x001\x00money\x001\x001')
