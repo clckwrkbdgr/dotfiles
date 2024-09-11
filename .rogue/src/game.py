@@ -221,6 +221,9 @@ class Game(object):
 		elif action == Action.GRAB:
 			self.grab_item_at(self.get_player(), action_data)
 			self.player_turn = False
+		elif action == Action.CONSUME:
+			self.consume_item(self.get_player(), action_data)
+			self.player_turn = False
 		elif action == Action.WAIT:
 			self.player_turn = False
 		return True
@@ -478,7 +481,7 @@ class Game(object):
 				return item
 		return None
 	def grab_item_at(self, actor, pos):
-		""" Grabs topmost item at given cell.
+		""" Grabs topmost item at given cell and puts to the inventory.
 		Produces events.
 		"""
 		item = self.find_item(pos.x, pos.y)
@@ -486,12 +489,14 @@ class Game(object):
 			return
 		self.events.append(messages.GrabItemEvent(actor, item))
 		self.items.remove(item)
-		self.consume_item(actor, item)
+		actor.inventory.append(item)
 	def consume_item(self, monster, item):
-		""" Consumes item.
+		""" Consumes item from inventory (item is removed).
 		Applies corresponding effects, if item has any.
 		Produces events.
 		"""
+		assert item in monster.inventory
+		monster.inventory.remove(item)
 		self.events.append(messages.ConsumeItemEvent(monster, item))
 		if item.item_type.effect == items.Effect.HEALING:
 			self.affect_health(monster, +5)

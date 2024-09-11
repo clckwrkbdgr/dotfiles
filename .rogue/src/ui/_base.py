@@ -12,6 +12,7 @@ class Action(Enum):
 	MOVE
 	WAIT
 	GRAB
+	CONSUME
 	"""
 
 class UI(object):

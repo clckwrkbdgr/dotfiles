@@ -103,6 +103,7 @@ class Curses(UI):
 	def __init__(self):
 		self.window = None
 		self.aim = None
+		self.messages = []
 	def __enter__(self): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
 		self.window = curses.initscr()
 		curses.noecho()
@@ -140,6 +141,8 @@ class Curses(UI):
 			if not result:
 				continue
 			events.append(result)
+		events.extend(self.messages)
+		self.messages[:] = []
 		self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])
 
 		status = []
@@ -149,6 +152,12 @@ class Curses(UI):
 			item = game.find_item(player.pos.x, player.pos.y)
 			if item:
 				status.append('here: {0}'.format(item.item_type.sprite))
+			if player.inventory:
+				if len(player.inventory) <= 2:
+					content = ''.join(item.item_type.sprite for item in player.inventory)
+				else:
+					content = len(player.inventory)
+				status.append('inv: {0:>2}'.format(content))
 		else:
 			status.append('[DEAD] Press Any Key...')
 		if game.movement_queue:
@@ -281,6 +290,13 @@ class Curses(UI):
 	def grab(self, game):
 		""" Grab item. """
 		return Action.GRAB, game.get_player().pos
+	@Keys.bind('e')
+	def consume(self, game):
+		""" Consume item. """
+		if not game.get_player().inventory:
+			self.messages.append('Empty.')
+			return Action.NONE, None
+		return Action.CONSUME, game.get_player().inventory[0]
 	@Keys.bind('hjklyubn', param=lambda key: DIRECTION[key])
 	def move(self, game, direction):
 		""" Move. """
