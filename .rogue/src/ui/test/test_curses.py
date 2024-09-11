@@ -340,6 +340,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.clear_event()
 
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
 
 		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [
@@ -360,6 +361,9 @@ class TestCurses(unittest.TestCase):
 			])] + [
 			('refresh',),
 			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
 	@mock.patch('curses.curs_set')
 	def should_display_aim(self, curs_set):
 		ui = curses.Curses()
@@ -442,9 +446,28 @@ class TestCurses(unittest.TestCase):
 		ui = curses.Curses()
 		ui.window = MockCurses('~Q~v~c')
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
+		ui.redraw(dungeon)
+		main_display = ui.window.get_calls()
+		godmode_display = main_display + [('addstr', 0, 0, 'Select God option (cv)'), ('refresh',)]
+		self.maxDiff = None
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), godmode_display)
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), main_display)
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.GOD_TOGGLE_VISION, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), main_display)
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.GOD_TOGGLE_NOCLIP, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), main_display)
 	def should_suicide(self):
 		ui = curses.Curses()
 		ui.window = MockCurses('Q')

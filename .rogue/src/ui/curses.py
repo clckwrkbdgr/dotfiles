@@ -8,13 +8,13 @@ from .. import messages
 from ..game import Game, Direction
 from ..math import Point
 
-class Keys:
+class Keymapping:
 	""" Keybingings registry. """
 	Keybinding = namedtuple('Keybinding', 'key scancode callback param')
-	KEYBINDINGS = {}
-	MULTIKEYBINDINGS = {}
-	@classmethod
-	def bind(cls, key, param=None):
+	def __init__(self):
+		self.keybindings = {}
+		self.multikeybindings = {}
+	def bind(self, key, param=None):
 		""" Serves as decorator and binds key (or several keys) to action callback.
 		Optional param may be passed to callback.
 		If param is callable, it is called with argument of actual key name (useful in case of multikeys) and its result is used as an actual param instead.
@@ -22,13 +22,12 @@ class Keys:
 		def _actual(f):
 			if len(key) > 1:
 				scancodes = tuple(ord(subkey) for subkey in key)
-				cls.MULTIKEYBINDINGS[scancodes] = cls.Keybinding(key, scancodes, f, param)
+				self.multikeybindings[scancodes] = self.Keybinding(key, scancodes, f, param)
 			else:
-				cls.KEYBINDINGS[ord(key)] = cls.Keybinding(key, ord(key), f, param)
+				self.keybindings[ord(key)] = self.Keybinding(key, ord(key), f, param)
 			return f
 		return _actual
-	@classmethod
-	def get(cls, scancode, bind_self=None):
+	def get(self, scancode, bind_self=None):
 		""" Returns callback for given scancode.
 		If param is defined for the key, processes it automatically
 		and returns closure with param bound as the last argument:
@@ -36,10 +35,10 @@ class Keys:
 		If bind_self is given, considers callback a method
 		and binds it to the given instance.
 		"""
-		binding = cls.KEYBINDINGS.get(scancode)
+		binding = self.keybindings.get(scancode)
 		if not binding:
 			binding = next((
-				_binding for keys, _binding in cls.MULTIKEYBINDINGS.items()
+				_binding for keys, _binding in self.multikeybindings.items()
 				if scancode in keys
 				), None)
 		if not binding:
@@ -56,10 +55,9 @@ class Keys:
 			args = args + (param,)
 			return callback(*args)
 		return _bound_param
-	@classmethod
-	def list_all(cls):
+	def list_all(self):
 		""" Returns sorted list of all keybindings (multikeys first). """
-		return sorted(cls.MULTIKEYBINDINGS.items()) + sorted(cls.KEYBINDINGS.items())
+		return sorted(self.multikeybindings.items()) + sorted(self.keybindings.items())
 
 class Events:
 	""" Registry of convertors of events to string representation for messages line. """
@@ -98,12 +96,57 @@ DIRECTION = {
 	'n' : Direction.DOWN_RIGHT,
 	}
 
+class SubMode:
+	""" Base class for sub mode for the main game (menus, dialogs, some
+	other additional screens).
+	Set .done=True when done and ready to quit sub-mode.
+	"""
+	TRANSPARENT = False # If True, first draw the main game, then this mode on top of it.
+	KEYMAPPING = None # Keymapping object for this mode.
+	def __init__(self, window):
+		self.window = window
+		self.done = False
+	def redraw(self, game): # pragma: no cover
+		""" Redefine to draw mode-related features on screen.
+		May not affect the whole screen, see class field TRANSPARENT.
+		"""
+		raise NotImplementedError()
+	def on_any_key(self): # pragma: no cover
+		""" Redefine to process "any other key" action (not defined in the main
+		keymapping). E.g. can set .done=True for one-time screens (Press Any Key).
+		"""
+		pass
+	def user_action(self, game):
+		""" Performs sub-mode actions.
+		Note that every sub-mode action will still go to the game,
+		so it has to explicitly return Action.NONE in case of some internal
+		sub-mode operations that do not affect the game.
+		If keymapping is not set, every action will close the mode.
+		See also: on_any_key()
+		"""
+		Log.debug('Performing user actions.')
+		control = self.window.getch()
+		Log.debug('Control: {0} ({1}).'.format(control, repr(chr(control))))
+		if self.KEYMAPPING:
+			callback = self.KEYMAPPING.get(control, bind_self=self)
+			if callback:
+				result = callback(game)
+				if result is not None:
+					return result
+		else:
+			self.done = True
+		self.on_any_key()
+		return Action.NONE, None
+
+Keys = Keymapping()
+
 class Curses(UI):
 	""" TUI using curses lib. """
 	def __init__(self):
 		self.window = None
 		self.aim = None
 		self.messages = []
+		self.mode = None
 	def __enter__(self): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
 		self.window = curses.initscr()
 		curses.noecho()
@@ -122,6 +165,14 @@ class Curses(UI):
 		curses.nocbreak()
 		curses.endwin()
 	def redraw(self, game):
+		""" Redraws current mode. """
+		if self.mode is None or self.mode.TRANSPARENT:
+			self.redraw_main(game)
+		else:
+			self.window.clear()
+		if self.mode:
+			self.mode.redraw(game)
+	def redraw_main(self, game):
 		""" Redraws game completely. """
 		Log.debug('Redrawing interface.')
 		viewport = game.get_viewport()
@@ -173,6 +224,7 @@ class Curses(UI):
 		self.window.refresh()
 
 		if not player:
+			# Pause so that user can catch current state after character's death.
 			self.window.getch()
 	@Events.on(messages.DiscoverEvent)
 	def on_discovering(self, game, event):
@@ -220,7 +272,15 @@ class Curses(UI):
 		self.window.timeout(-1)
 		return control != -1
 	def user_action(self, game):
+		""" Performs user action in current mode.
+		May start or quit sub-modes as a result.
+		"""
 		Log.debug('Performing user actions.')
+		if self.mode:
+			action, param = self.mode.user_action(game)
+			if self.mode.done:
+				self.mode = None
+			return action, param
 		control = self.window.getch()
 		Log.debug('Control: {0} ({1}).'.format(control, repr(chr(control))))
 		callback = Keys.get(control, bind_self=self)
@@ -233,13 +293,7 @@ class Curses(UI):
 	@Keys.bind('?')
 	def help(self, game):
 		""" Show this help. """
-		self.window.clear()
-		for row, (_, binding) in enumerate(Keys.list_all()):
-			name = binding.callback.__doc__.strip()
-			self.window.addstr(row, 0, '{0} - {1}'.format(binding.key, name))
-		self.window.addstr(row + 1, 0, '[Press Any Key...]')
-		self.window.refresh()
-		self.window.getch()
+		self.mode = HelpScreen(self.window)
 	@Keys.bind('q')
 	def quit(self, game):
 		""" Save and quit. """
@@ -271,11 +325,7 @@ class Curses(UI):
 	@Keys.bind('~')
 	def god_mode(self, game):
 		""" God mode options. """
-		control = self.window.getch()
-		if control == ord('v'):
-			return Action.GOD_TOGGLE_VISION, None
-		elif control == ord('c'):
-			return Action.GOD_TOGGLE_NOCLIP, None
+		self.mode = GodModeMenu(self.window)
 	@Keys.bind('Q')
 	def suicide(self, game):
 		""" Suicide (quit without saving). """
@@ -308,3 +358,34 @@ class Curses(UI):
 				self.aim = new_pos
 		else:
 			return Action.MOVE, direction
+
+class HelpScreen(SubMode):
+	""" Main help screen with controls cheatsheet. """
+	def redraw(self, game):
+		for row, (_, binding) in enumerate(Keys.list_all()):
+			name = binding.callback.__doc__.strip()
+			self.window.addstr(row, 0, '{0} - {1}'.format(binding.key, name))
+		self.window.addstr(row + 1, 0, '[Press Any Key...]')
+		self.window.refresh()
+
+GodModeKeys = Keymapping()
+class GodModeMenu(SubMode):
+	""" God mode options. """
+	TRANSPARENT = True
+	KEYMAPPING = GodModeKeys
+	def redraw(self, game):
+		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
+		self.window.addstr(0, 0, 'Select God option ({0})'.format(keys))
+		self.window.refresh()
+	def on_any_key(self):
+		self.done = True
+	@GodModeKeys.bind('v')
+	def vision(self, game):
+		""" See all. """
+		self.done = True
+		return Action.GOD_TOGGLE_VISION, None
+	@GodModeKeys.bind('c')
+	def noclip(self, game):
+		""" Walk through walls. """
+		self.done = True
+		return Action.GOD_TOGGLE_NOCLIP, None
