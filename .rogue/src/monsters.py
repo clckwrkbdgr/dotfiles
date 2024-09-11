@@ -1,4 +1,5 @@
 from .utils import Enum
+from . import items
 
 class Behavior(Enum):
 	""" PLAYER
@@ -29,6 +30,7 @@ class Monster(object):
 		self.behavior = behavior
 		self.pos = pos
 		self.hp = self.species.max_hp
+		self.inventory = []
 	def __str__(self):
 		return "{0} @{1} {2}/{3}hp".format(self.species.name, self.pos, self.hp, self.species.max_hp)
 	@classmethod
@@ -45,18 +47,25 @@ class Monster(object):
 		pos = reader.read_point()
 		monster = cls(species, behavior, pos)
 		monster.hp = reader.read_int()
+		if reader.version > reader.get_meta_info('Version.INVENTORY'):
+			monster.inventory.extend(reader.read_list(items.Item))
+		else:
+			item_types = reader.get_meta_info('ITEMS')
+			from .pcg import RNG
+			monster.fill_inventory_from_drops(RNG(0), item_types)
 		return monster
 	def save(self, writer):
 		writer.write(self.species.name)
 		writer.write(self.behavior)
 		writer.write(self.pos)
 		writer.write(self.hp)
+		writer.write(self.inventory)
 	def is_alive(self):
 		return self.hp > 0
 	@property
 	def name(self):
 		return self.species.name
-	def drop_loot(self, rng):
+	def _generate_drops(self, rng):
 		from . import pcg
 		if not self.species.drops:
 			return []
@@ -64,6 +73,16 @@ class Monster(object):
 				in pcg.weighted_choices(rng, [(data[0], data[1:]) for data in self.species.drops])
 				if result[0] is not None
 				]
+	def fill_inventory_from_drops(self, rng, item_types):
+		for item_data in self._generate_drops(rng):
+			item_type, item_data = item_data[0], item_data[1:]
+			item_data = (item_types[item_type],) + item_data + (self.pos,)
+			item = items.Item(*item_data)
+			self.inventory.append(item)
+	def drop_loot(self):
+		for item in self.inventory:
+			item.pos = self.pos
+		return self.inventory
 	def __eq__(self, other):
 		if not isinstance(other, Monster):
 			return False

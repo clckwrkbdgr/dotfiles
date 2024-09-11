@@ -15,6 +15,7 @@ class Version(Enum):
 	MONSTERS
 	MONSTER_BEHAVIOR
 	ITEMS
+	INVENTORY
 	"""
 
 class Terrain(object):
@@ -144,6 +145,7 @@ class Game(object):
 		reader.set_meta_info('SPECIES', self.SPECIES)
 		reader.set_meta_info('TERRAIN', self.TERRAIN)
 		reader.set_meta_info('Version.MONSTER_BEHAVIOR', Version.MONSTER_BEHAVIOR) # TODO global defs module should be created and used everywhere instead.
+		reader.set_meta_info('Version.INVENTORY', Version.INVENTORY) # TODO global defs module should be created and used everywhere instead.
 		self.strata = reader.read_matrix(Cell)
 		if legacy_player:
 			self.monsters.append(legacy_player)
@@ -369,11 +371,14 @@ class Game(object):
 			player.pos = builder.start_pos
 		else:
 			player = monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, builder.start_pos)
+			player.fill_inventory_from_drops(self.rng, self.ITEMS)
 		self.monsters[:] = [player]
 		for monster_data in settler.monsters:
 			species, monster_data = monster_data[0], monster_data[1:]
 			monster_data = (self.SPECIES[species],) + monster_data
-			self.monsters.append(monsters.Monster(*monster_data))
+			monster = monsters.Monster(*monster_data)
+			monster.fill_inventory_from_drops(self.rng, self.ITEMS)
+			self.monsters.append(monster)
 		self.items[:] = []
 		for item_data in settler.items:
 			item_type, item_data = item_data[0], item_data[1:]
@@ -447,11 +452,8 @@ class Game(object):
 		self.events.append(messages.HealthEvent(target, diff))
 		if not target.is_alive():
 			self.events.append(messages.DeathEvent(target))
-			drops = target.drop_loot(self.rng)
-			for item_data in drops:
-				item_type, item_data = item_data[0], item_data[1:]
-				item_data = (self.ITEMS[item_type],) + item_data + (target.pos,)
-				item = items.Item(*item_data)
+			drops = target.drop_loot()
+			for item in drops:
 				self.items.append(item)
 				self.visible_items.append(item)
 				self.events.append(messages.DropItemEvent(target, item))
