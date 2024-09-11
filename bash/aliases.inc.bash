@@ -17,6 +17,7 @@ if [ `uname` != AIX ]; then
 	alias grep='grep --color=auto'
 fi
 which vimdiff >/dev/null 2>&1 || alias vimdiff='vim -d'
+alias zathura='zathura --mode=fullscreen'
 
 function cdfind() {
 	D="$(dirname "$(find . -name "$@" | tee /dev/stderr | head -1)")"

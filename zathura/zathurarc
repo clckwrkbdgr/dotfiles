@@ -1,5 +1,10 @@
 set default-bg "#111111"
 
+set recolor "true"
 set recolor-darkcolor "#CCCCCC"
 set recolor-lightcolor "#111111"
 set recolor-reverse-video true
+
+unmap f
+map f toggle_fullscreen
+map [fullscreen] f toggle_fullscreen
