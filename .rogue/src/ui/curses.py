@@ -99,7 +99,7 @@ DIRECTION = {
 	'n' : Direction.DOWN_RIGHT,
 	}
 
-class SubMode:
+class SubMode(object):
 	""" Base class for sub mode for the main game (menus, dialogs, some
 	other additional screens).
 	Set .done=True when done and ready to quit sub-mode.
@@ -346,12 +346,12 @@ class Curses(UI):
 	@Keys.bind('e')
 	def consume(self, game):
 		""" Consume item. """
+		self.mode = ConsumeSelection(self.window)
 		if not game.get_player().inventory:
 			self.messages.append('Empty.')
 			return Action.NONE, None
-		return Action.CONSUME, game.get_player().inventory[0]
 	@Keys.bind('i')
-	def consume(self, game):
+	def show_inventory(self, game):
 		""" Show inventory. """
 		self.mode = Inventory(self.window)
 	@Keys.bind('hjklyubn', param=lambda key: DIRECTION[key])
@@ -399,15 +399,24 @@ class GodModeMenu(SubMode):
 
 InventoryKeys = Keymapping()
 class Inventory(SubMode):
-	""" Inventory menu. """
+	""" Inventory menu.
+	Supports prompting message.
+	Initial prompt can be set via INITIAL_PROMPT.
+	"""
 	KEYMAPPING = InventoryKeys
+	INITIAL_PROMPT = None
+	def __init__(self, *args, **kwargs):
+		super(Inventory, self).__init__(*args, **kwargs)
+		self.prompt = self.INITIAL_PROMPT
 	def redraw(self, game):
 		inventory = game.get_player().inventory
+		if self.prompt:
+			self.window.addstr(0, 0, self.prompt)
 		if not inventory:
-			self.window.addstr(0, 0, '(Empty)')
+			self.window.addstr(1, 0, '(Empty)')
 		else:
 			for row, item in enumerate(inventory):
-				self.window.addstr(row, 0, '{0} - {1}'.format(
+				self.window.addstr(row + 1, 0, '{0} - {1}'.format(
 					chr(ord('a') + row),
 					item.item_type.name,
 					))
@@ -415,5 +424,25 @@ class Inventory(SubMode):
 	@InventoryKeys.bind(Keymapping.ESC)
 	def close(self, game):
 		""" Close by Escape. """
+		self.done = True
+		return Action.NONE, None
+
+ConsumeSelectionKeys = Keymapping()
+class ConsumeSelection(Inventory):
+	""" Select item to consume from inventory. """
+	KEYMAPPING = ConsumeSelectionKeys
+	INITIAL_PROMPT = "Select item to consume:"
+	@ConsumeSelectionKeys.bind('abcdefghijlkmnopqrstuvwxyz', param=lambda key:key)
+	def select(self, game, param):
+		""" Select item and close inventory. """
+		index = ord(param) - ord('a')
+		if index >= len(game.get_player().inventory):
+			self.prompt = "No such item ({0})".format(param)
+			return Action.NONE, None
+		self.done = True
+		return Action.CONSUME, game.get_player().inventory[index]
+	@ConsumeSelectionKeys.bind(Keymapping.ESC)
+	def cancel(self, game):
+		""" Cancel selection. """
 		self.done = True
 		return Action.NONE, None

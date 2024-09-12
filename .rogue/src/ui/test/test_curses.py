@@ -647,7 +647,7 @@ class TestCurses(unittest.TestCase):
 	def should_consume_items(self):
 		self.maxDiff = None
 		ui = curses.Curses()
-		ui.window = MockCurses('lege')
+		ui.window = MockCurses('le' + curses.Keymapping.ESC + 'geja')
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MonsterAndPotion])
 
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.MOVE, game.Direction.RIGHT))
@@ -670,6 +670,15 @@ class TestCurses(unittest.TestCase):
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10 here: !                                                            [?]'),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'Select item to consume:',),
+			('addstr', 1, 0, '(Empty)',),
 			('refresh',),
 			])
 
@@ -715,6 +724,24 @@ class TestCurses(unittest.TestCase):
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion.                                              '),
 			('addstr', 24, 0, 'hp: 10/10 inv:  !                                                            [?]'),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'Select item to consume:',),
+			('addstr', 1, 0, 'a - potion',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'No such item (j)',),
+			('addstr', 1, 0, 'a - potion',),
 			('refresh',),
 			])
 
@@ -798,7 +825,7 @@ class TestCurses(unittest.TestCase):
 		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
-			('addstr', 0, 0, '(Empty)',),
+			('addstr', 1, 0, '(Empty)',),
 			('refresh',),
 			])
 
@@ -806,7 +833,7 @@ class TestCurses(unittest.TestCase):
 		ui.redraw(dungeon)
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
-			('addstr', 0, 0, '(Empty)',),
+			('addstr', 1, 0, '(Empty)',),
 			('refresh',),
 			])
 
@@ -839,6 +866,6 @@ class TestCurses(unittest.TestCase):
 		ui.redraw(dungeon)
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
-			('addstr', 0, 0, 'a - potion',),
+			('addstr', 1, 0, 'a - potion',),
 			('refresh',),
 			])
