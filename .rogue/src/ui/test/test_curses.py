@@ -351,6 +351,7 @@ class TestCurses(unittest.TestCase):
 			'> - Descend.',
 			'? - Show this help.',
 			'Q - Suicide (quit without saving).',
+			'd - Drop item.',
 			'e - Consume item.',
 			'g - Grab item.',
 			'i - Show inventory.',
@@ -644,6 +645,108 @@ class TestCurses(unittest.TestCase):
 			('addstr', 24, 0, 'hp: 10/10 inv: 13                                                            [?]'),
 			('refresh',),
 			])
+	def should_drop_items(self):
+		self.maxDiff = None
+		ui = curses.Curses()
+		ui.window = MockCurses('d' + curses.Keymapping.ESC + 'lgdja')
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MonsterAndPotion])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'Select item to drop:',),
+			('addstr', 1, 0, '(Empty)',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		DISPLAYED_LAYOUT = [
+				'    #####        #  ',
+				'     ....   #  ...  ',
+				'      ...  .# ..... ',
+				'     ##..##.#...... ',
+				'     #............. ',
+				'#.M..#............. ',
+				'#........@!........#',
+				'#.................. ',
+				'#.................. ',
+				' #################  ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'potion! monster!                                                                '),
+			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.MOVE, game.Direction.RIGHT))
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.GRAB, Point(10, 6)))
+		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
+		ui.redraw(dungeon)
+		DISPLAYED_LAYOUT = [
+				'    #####      #### ',
+				'     ...   ## ..... ',
+				'      ...  .#......#',
+				'     ##..##.#......#',
+				'     #.............#',
+				'#    #.............#',
+				'#.........@........#',
+				'#..................#',
+				'#..................#',
+				' ################## ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'potion! monster! player ^^ potion.                                              '),
+			('addstr', 24, 0, 'hp: 10/10 inv:  !                                                            [?]'),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'Select item to drop:',),
+			('addstr', 1, 0, 'a - potion',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'No such item (j)',),
+			('addstr', 1, 0, 'a - potion',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.DROP, dungeon.get_player().inventory[0]))
+		dungeon.drop_item(dungeon.get_player(), dungeon.get_player().inventory[0])
+		ui.redraw(dungeon)
+		DISPLAYED_LAYOUT = [
+				'    #####      #### ',
+				'     ...   ## ..... ',
+				'      ...  .#......#',
+				'     ##..##.#......#',
+				'     #.............#',
+				'#    #.............#',
+				'#.........@........#',
+				'#..................#',
+				'#..................#',
+				' ################## ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'potion! monster! player ^^ potion. player VV potion.                            '),
+			('addstr', 24, 0, 'hp: 10/10 here: !                                                            [?]'),
+			('refresh',),
+			])
 	def should_consume_items(self):
 		self.maxDiff = None
 		ui = curses.Curses()
@@ -699,7 +802,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'potion! monster! Empty.                                                         '),
+			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10 here: !                                                            [?]'),
 			('refresh',),
 			])

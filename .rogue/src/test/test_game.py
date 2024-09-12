@@ -330,6 +330,26 @@ class TestItems(AbstractTestDungeon):
 			'player @Point(x=9, y=6) 10/10hp consumes potion @Point(x=0, y=0)',
 			'__exit__',
 			])
+	def should_drop_items(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
+		mock_ui = MockUI(user_actions=[
+			(ui.Action.DROP, dungeon.get_player().inventory[0]),
+			(ui.Action.EXIT, None),
+			], interrupts=[],
+		)
+		with mock_ui:
+			self.assertTrue(dungeon.main_loop(mock_ui))
+		self.maxDiff = None
+		self.assertEqual(mock_ui.events, [
+			'__enter__',
+			'redraw',
+			'user_action',
+			'redraw',
+			'user_action',
+			'player @Point(x=9, y=6) 10/10hp drops potion @Point(x=9, y=6)',
+			'__exit__',
+			])
 
 class TestEvents(AbstractTestDungeon):
 	def should_notify_when_found_exit(self):

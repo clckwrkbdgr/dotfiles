@@ -261,7 +261,7 @@ class Curses(UI):
 	def on_grabbing(self, game, event):
 		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(messages.DropItemEvent)
-	def on_grabbing(self, game, event):
+	def on_dropping(self, game, event):
 		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(messages.ConsumeItemEvent)
 	def on_consuming(self, game, event):
@@ -343,13 +343,14 @@ class Curses(UI):
 	def grab(self, game):
 		""" Grab item. """
 		return Action.GRAB, game.get_player().pos
+	@Keys.bind('d')
+	def drop(self, game):
+		""" Drop item. """
+		self.mode = DropSelection(self.window)
 	@Keys.bind('e')
 	def consume(self, game):
 		""" Consume item. """
 		self.mode = ConsumeSelection(self.window)
-		if not game.get_player().inventory:
-			self.messages.append('Empty.')
-			return Action.NONE, None
 	@Keys.bind('i')
 	def show_inventory(self, game):
 		""" Show inventory. """
@@ -442,6 +443,26 @@ class ConsumeSelection(Inventory):
 		self.done = True
 		return Action.CONSUME, game.get_player().inventory[index]
 	@ConsumeSelectionKeys.bind(Keymapping.ESC)
+	def cancel(self, game):
+		""" Cancel selection. """
+		self.done = True
+		return Action.NONE, None
+
+DropSelectionKeys = Keymapping()
+class DropSelection(Inventory):
+	""" Select item to drop from inventory. """
+	KEYMAPPING = DropSelectionKeys
+	INITIAL_PROMPT = "Select item to drop:"
+	@DropSelectionKeys.bind('abcdefghijlkmnopqrstuvwxyz', param=lambda key:key)
+	def select(self, game, param):
+		""" Select item and close inventory. """
+		index = ord(param) - ord('a')
+		if index >= len(game.get_player().inventory):
+			self.prompt = "No such item ({0})".format(param)
+			return Action.NONE, None
+		self.done = True
+		return Action.DROP, game.get_player().inventory[index]
+	@DropSelectionKeys.bind(Keymapping.ESC)
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True

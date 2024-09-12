@@ -13,6 +13,7 @@ class Action(Enum):
 	WAIT
 	GRAB
 	CONSUME
+	DROP
 	"""
 
 class UI(object):

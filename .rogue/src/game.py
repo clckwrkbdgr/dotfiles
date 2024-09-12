@@ -224,6 +224,9 @@ class Game(object):
 		elif action == Action.CONSUME:
 			self.consume_item(self.get_player(), action_data)
 			self.player_turn = False
+		elif action == Action.DROP:
+			self.drop_item(self.get_player(), action_data)
+			self.player_turn = False
 		elif action == Action.WAIT:
 			self.player_turn = False
 		return True
@@ -457,9 +460,7 @@ class Game(object):
 			self.events.append(messages.DeathEvent(target))
 			drops = target.drop_loot()
 			for item in drops:
-				self.items.append(item)
-				self.visible_items.append(item)
-				self.events.append(messages.DropItemEvent(target, item))
+				self.drop_item(target, item)
 			self.monsters.remove(target)
 	def attack(self, actor, target):
 		""" Attacks target monster.
@@ -500,6 +501,16 @@ class Game(object):
 		self.events.append(messages.ConsumeItemEvent(monster, item))
 		if item.item_type.effect == items.Effect.HEALING:
 			self.affect_health(monster, +5)
+	def drop_item(self, monster, item):
+		""" Drops item from inventory (item is removed).
+		Produces events.
+		"""
+		assert item in monster.inventory
+		item.pos = monster.pos
+		monster.inventory.remove(item)
+		self.items.append(item)
+		self.visible_items.append(item)
+		self.events.append(messages.DropItemEvent(monster, item))
 	def jump_to(self, new_pos):
 		""" Teleports player to new pos. """
 		self.get_player().pos = new_pos
