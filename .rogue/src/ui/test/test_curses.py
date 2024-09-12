@@ -353,6 +353,7 @@ class TestCurses(unittest.TestCase):
 			'Q - Suicide (quit without saving).',
 			'e - Consume item.',
 			'g - Grab item.',
+			'i - Show inventory.',
 			'o - Autoexplore.',
 			'q - Save and quit.',
 			'x - Examine surroundings (cursor mode).',
@@ -783,5 +784,61 @@ class TestCurses(unittest.TestCase):
 			] + [
 			('addstr', 0, 0, 'player x> thief. thief-1hp. thief dies. thief VV money.                         '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('refresh',),
+			])
+	def should_show_inventory(self):
+		ui = curses.Curses()
+		ui.window = MockCurses('ia' + curses.Keymapping.ESC + 'i')
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MonsterAndPotion])
+		dungeon.clear_event()
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+
+		self.maxDiff = None
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, '(Empty)',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, '(Empty)',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		DISPLAYED_LAYOUT = [
+				'    #####        #  ',
+				'     ....   #  ...  ',
+				'      ...  .# ..... ',
+				'     ##..##.#...... ',
+				'     #............. ',
+				'#.M..#............. ',
+				'#........@!........#',
+				'#.................. ',
+				'#.................. ',
+				' #################  ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, '                                                                                '),
+			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('refresh',),
+			])
+
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
+		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'a - potion',),
 			('refresh',),
 			])

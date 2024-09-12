@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from ._base import UI, Action
 import functools
 from collections import namedtuple
-import curses
+import curses, curses.ascii
 from ..system.logging import Log
 from .. import messages
 from ..game import Game, Direction
@@ -11,6 +11,9 @@ from ..math import Point
 class Keymapping:
 	""" Keybingings registry. """
 	Keybinding = namedtuple('Keybinding', 'key scancode callback param')
+
+	ESC = chr(curses.ascii.ESC)
+
 	def __init__(self):
 		self.keybindings = {}
 		self.multikeybindings = {}
@@ -347,6 +350,10 @@ class Curses(UI):
 			self.messages.append('Empty.')
 			return Action.NONE, None
 		return Action.CONSUME, game.get_player().inventory[0]
+	@Keys.bind('i')
+	def consume(self, game):
+		""" Show inventory. """
+		self.mode = Inventory(self.window)
 	@Keys.bind('hjklyubn', param=lambda key: DIRECTION[key])
 	def move(self, game, direction):
 		""" Move. """
@@ -389,3 +396,24 @@ class GodModeMenu(SubMode):
 		""" Walk through walls. """
 		self.done = True
 		return Action.GOD_TOGGLE_NOCLIP, None
+
+InventoryKeys = Keymapping()
+class Inventory(SubMode):
+	""" Inventory menu. """
+	KEYMAPPING = InventoryKeys
+	def redraw(self, game):
+		inventory = game.get_player().inventory
+		if not inventory:
+			self.window.addstr(0, 0, '(Empty)')
+		else:
+			for row, item in enumerate(inventory):
+				self.window.addstr(row, 0, '{0} - {1}'.format(
+					chr(ord('a') + row),
+					item.item_type.name,
+					))
+		self.window.refresh()
+	@InventoryKeys.bind(Keymapping.ESC)
+	def close(self, game):
+		""" Close by Escape. """
+		self.done = True
+		return Action.NONE, None
