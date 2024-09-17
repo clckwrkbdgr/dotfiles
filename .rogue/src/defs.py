@@ -1,0 +1,11 @@
+from .utils import Enum
+
+class Version(Enum):
+	""" INITIAL
+	PERSISTENT_RNG
+	TERRAIN_TYPES
+	MONSTERS
+	MONSTER_BEHAVIOR
+	ITEMS
+	INVENTORY
+	"""

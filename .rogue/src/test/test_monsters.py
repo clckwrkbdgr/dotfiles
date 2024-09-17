@@ -9,7 +9,7 @@ from .. import monsters
 from .. import items
 from ..pcg import RNG
 from ..system import savefile
-from ..game import Version # TODO global defs module
+from ..defs import Version
 
 class TestSpecies(unittest.TestCase):
 	def should_str_species(self):
@@ -80,8 +80,6 @@ class TestSavefile(unittest.TestCase):
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('SPECIES', self.SPECIES)
 		reader.set_meta_info('ITEMS', self.ITEMS)
-		reader.set_meta_info('Version.MONSTER_BEHAVIOR', Version.MONSTER_BEHAVIOR) # TODO global defs module should be created and used everywhere instead.
-		reader.set_meta_info('Version.INVENTORY', Version.INVENTORY) # TODO global defs module should be created and used everywhere instead.
 		monster = reader.read(monsters.Monster)
 		self.assertEqual(monster.species, self.SPECIES['name'])
 		self.assertEqual(monster.behavior, monsters.Behavior.ANGRY)
@@ -95,8 +93,6 @@ class TestSavefile(unittest.TestCase):
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('SPECIES', self.SPECIES)
 		reader.set_meta_info('ITEMS', self.ITEMS)
-		reader.set_meta_info('Version.MONSTER_BEHAVIOR', Version.MONSTER_BEHAVIOR) # TODO global defs module should be created and used everywhere instead.
-		reader.set_meta_info('Version.INVENTORY', Version.INVENTORY) # TODO global defs module should be created and used everywhere instead.
 		monster = reader.read(monsters.Monster)
 		self.assertEqual(monster.species, self.SPECIES['name'])
 		self.assertEqual(monster.behavior, monsters.Behavior.ANGRY)

@@ -1,3 +1,4 @@
+from .defs import *
 from .utils import Enum
 from . import items
 
@@ -37,7 +38,7 @@ class Monster(object):
 	def load(cls, reader):
 		species_name = reader.read()
 		species = reader.get_meta_info('SPECIES')[species_name]
-		if reader.version > reader.get_meta_info('Version.MONSTER_BEHAVIOR'):
+		if reader.version > Version.MONSTER_BEHAVIOR:
 			behavior = reader.read_int()
 		else:
 			if species_name == 'player':
@@ -47,7 +48,7 @@ class Monster(object):
 		pos = reader.read_point()
 		monster = cls(species, behavior, pos)
 		monster.hp = reader.read_int()
-		if reader.version > reader.get_meta_info('Version.INVENTORY'):
+		if reader.version > Version.INVENTORY:
 			monster.inventory.extend(reader.read_list(items.Item))
 		else:
 			item_types = reader.get_meta_info('ITEMS')

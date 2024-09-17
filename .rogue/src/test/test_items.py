@@ -7,7 +7,7 @@ except: # pragma: no cover
 from ..math import Point
 from .. import items
 from ..system import savefile
-from ..game import Version # TODO global defs module
+from ..defs import Version
 
 class TestItemTypes(unittest.TestCase):
 	def should_str_item_type(self):

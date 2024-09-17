@@ -1,22 +1,12 @@
+from .defs import *
 from . import pcg
 from .pcg import RNG
 from . import math
-from .utils import Enum
 from .math import Point, Matrix, Size
 from . import messages
 from .system.logging import Log
 from .ui import Action
 from . import monsters, items
-
-class Version(Enum):
-	""" INITIAL
-	PERSISTENT_RNG
-	TERRAIN_TYPES
-	MONSTERS
-	MONSTER_BEHAVIOR
-	ITEMS
-	INVENTORY
-	"""
 
 class Terrain(object):
 	""" Basic fixed stats shared by terrain cells of the same kind. """
@@ -144,8 +134,6 @@ class Game(object):
 		reader.set_meta_info('ITEMS', self.ITEMS)
 		reader.set_meta_info('SPECIES', self.SPECIES)
 		reader.set_meta_info('TERRAIN', self.TERRAIN)
-		reader.set_meta_info('Version.MONSTER_BEHAVIOR', Version.MONSTER_BEHAVIOR) # TODO global defs module should be created and used everywhere instead.
-		reader.set_meta_info('Version.INVENTORY', Version.INVENTORY) # TODO global defs module should be created and used everywhere instead.
 		self.strata = reader.read_matrix(Cell)
 		if legacy_player:
 			self.monsters.append(legacy_player)
