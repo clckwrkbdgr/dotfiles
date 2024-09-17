@@ -27,3 +27,7 @@ x-scheme-handler\https=userapp-Firefox-AMP0IY.desktop
 
 [Default Applications]
 x-scheme-handler/magnet=transmission-gtk.desktop
+x-scheme-handler/tonsite=org.telegram.desktop._3e485da34fc040f9218e3891ecde1e6c.desktop
+
+[Added Associations]
+x-scheme-handler/tonsite=org.telegram.desktop._3e485da34fc040f9218e3891ecde1e6c.desktop;
