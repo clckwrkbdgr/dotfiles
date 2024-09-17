@@ -1,7 +1,7 @@
 from __future__ import print_function
 import os, sys
 from src.system.logging import Log
-import src.game, src.items, src.monsters
+import src.game, src.items, src.monsters, src.terrain
 import src.ui
 import src.pcg
 import src.system.savefile
@@ -30,18 +30,18 @@ class Game(src.game.Game):
 			DungeonSquatters,
 			]
 	TERRAIN = {
-			None : src.game.Terrain(' ', False),
-			'corner' : src.game.Terrain("+", False, remembered='+'),
-			'door' : src.game.Terrain("+", True, remembered='+'),
-			'rogue_door' : src.game.Terrain("+", True, remembered='+', allow_diagonal=False, dark=True),
-			'floor' : src.game.Terrain(".", True),
-			'tunnel_floor' : src.game.Terrain(".", True, allow_diagonal=False),
-			'passage' : src.game.Terrain("#", True, remembered='#'),
-			'rogue_passage' : src.game.Terrain("#", True, remembered='#', allow_diagonal=False, dark=True),
-			'wall' : src.game.Terrain('#', False, remembered='#'),
-			'wall_h' : src.game.Terrain("-", False, remembered='-'),
-			'wall_v' : src.game.Terrain("|", False, remembered='|'),
-			'water' : src.game.Terrain("~", True),
+			None : src.terrain.Terrain('void', ' ', False),
+			'corner' : src.terrain.Terrain('corner', "+", False, remembered='+'),
+			'door' : src.terrain.Terrain('door', "+", True, remembered='+'),
+			'rogue_door' : src.terrain.Terrain('rogue_door', "+", True, remembered='+', allow_diagonal=False, dark=True),
+			'floor' : src.terrain.Terrain('floor', ".", True),
+			'tunnel_floor' : src.terrain.Terrain('tunnel_floor', ".", True, allow_diagonal=False),
+			'passage' : src.terrain.Terrain('passage', "#", True, remembered='#'),
+			'rogue_passage' : src.terrain.Terrain('rogue_passage', "#", True, remembered='#', allow_diagonal=False, dark=True),
+			'wall' : src.terrain.Terrain('wall', '#', False, remembered='#'),
+			'wall_h' : src.terrain.Terrain('wall_h', "-", False, remembered='-'),
+			'wall_v' : src.terrain.Terrain('wall_v', "|", False, remembered='|'),
+			'water' : src.terrain.Terrain('water', "~", True),
 			}
 	SPECIES = {
 			'player' : src.monsters.Species('player', "@", 10, vision=10),

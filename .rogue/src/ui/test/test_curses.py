@@ -7,7 +7,7 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 from .. import curses, _base
 from ...pcg import builders, settlers
-from ... import game, monsters, items, messages
+from ... import game, monsters, items, messages, terrain
 from ...math import Point
 from ... import utils
 
@@ -24,10 +24,10 @@ class MockGame(game.Game):
 			'money' : items.ItemType('money', '$', items.Effect.NONE),
 			}
 	TERRAIN = {
-		None : game.Terrain(' ', False),
-		'#' : game.Terrain("#", False, remembered='#'),
-		'.' : game.Terrain(".", True),
-		'~' : game.Terrain(".", True, allow_diagonal=False),
+		None : terrain.Terrain(' ', ' ', False),
+		'#' : terrain.Terrain('#', "#", False, remembered='#'),
+		'.' : terrain.Terrain('.', ".", True),
+		'~' : terrain.Terrain('~', ".", True, allow_diagonal=False),
 		}
 
 class SingleMockMonster(settlers.SingleMonster):

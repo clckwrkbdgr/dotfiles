@@ -8,7 +8,7 @@ except: # pragma: no cover
 from ..math import Point, Size
 from ..pcg._base import RNG
 from ..pcg import builders, settlers
-from .. import monsters, items
+from .. import monsters, items, terrain
 from .. import pcg
 from .. import game
 from .. import ui
@@ -37,34 +37,34 @@ class MockGame(game.Game):
 			'money' : items.ItemType('money', '$', items.Effect.NONE),
 			}
 	TERRAIN = {
-		None : game.Terrain(' ', False),
-		'#' : game.Terrain("#", False, remembered='#'),
-		'.' : game.Terrain(".", True),
-		'~' : game.Terrain(".", True, allow_diagonal=False),
+		None : terrain.Terrain(' ', ' ', False),
+		'#' : terrain.Terrain('#', "#", False, remembered='#'),
+		'.' : terrain.Terrain('.', ".", True),
+		'~' : terrain.Terrain('~', ".", True, allow_diagonal=False),
 		}
 
 class MockRogueDungeon(MockGame):
 	TERRAIN = {
-		None : game.Terrain(' ', False),
-		' ' : game.Terrain(' ', False),
-		'#' : game.Terrain("#", True, remembered='#', allow_diagonal=False, dark=True),
-		'.' : game.Terrain(".", True),
-		'+' : game.Terrain("+", False, remembered='+'),
-		'-' : game.Terrain("-", False, remembered='-'),
-		'|' : game.Terrain("|", False, remembered='|'),
-		'^' : game.Terrain("^", True, remembered='^', allow_diagonal=False, dark=True),
+		None : terrain.Terrain(' ', ' ', False),
+		' ' : terrain.Terrain(' ', ' ', False),
+		'#' : terrain.Terrain('#', "#", True, remembered='#', allow_diagonal=False, dark=True),
+		'.' : terrain.Terrain('.', ".", True),
+		'+' : terrain.Terrain('+', "+", False, remembered='+'),
+		'-' : terrain.Terrain('-', "-", False, remembered='-'),
+		'|' : terrain.Terrain('|', "|", False, remembered='|'),
+		'^' : terrain.Terrain('^', "^", True, remembered='^', allow_diagonal=False, dark=True),
 		}
 
 class MockDarkRogueDungeon(MockGame):
 	TERRAIN = {
-		None : game.Terrain(' ', False),
-		' ' : game.Terrain(' ', False),
-		'#' : game.Terrain("#", True, allow_diagonal=False, dark=True),
-		'.' : game.Terrain(".", True),
-		'+' : game.Terrain("+", False),
-		'-' : game.Terrain("-", False),
-		'|' : game.Terrain("|", False),
-		'^' : game.Terrain("^", True, allow_diagonal=False, dark=True),
+		None : terrain.Terrain(' ', ' ', False),
+		' ' : terrain.Terrain(' ', ' ', False),
+		'#' : terrain.Terrain('#', "#", True, allow_diagonal=False, dark=True),
+		'.' : terrain.Terrain('.', ".", True),
+		'+' : terrain.Terrain('+', "+", False),
+		'-' : terrain.Terrain('-', "-", False),
+		'|' : terrain.Terrain('|', "|", False),
+		'^' : terrain.Terrain('^', "^", True, allow_diagonal=False, dark=True),
 		}
 
 class UnSettler(settlers.Settler):
@@ -1091,27 +1091,6 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, 'monsters')
-
-class TestTerrainSavefile(unittest.TestCase):
-	def setUp(self):
-		self.TERRAIN = {
-				'name' : game.Terrain('.'),
-				}
-		self.TERRAIN['name'].name = 'name'
-	def should_load_terrain(self):
-		stream = StringIO(str(game.Version.CURRENT) + '\x00name\x001')
-		reader = savefile.Reader(stream)
-		reader.set_meta_info('TERRAIN', self.TERRAIN)
-		cell = reader.read(game.Cell)
-		self.assertEqual(cell.terrain, self.TERRAIN['name'])
-		self.assertEqual(cell.visited, True)
-	def should_save_terrain(self):
-		stream = StringIO()
-		writer = savefile.Writer(stream, game.Version.CURRENT)
-		cell = game.Cell(self.TERRAIN['name'])
-		cell.visited = True
-		writer.write(cell)
-		self.assertEqual(stream.getvalue(), str(game.Version.CURRENT) + '\x00name\x001')
 
 class TestGameSerialization(AbstractTestDungeon):
 	class _MockSettler(CustomSettler):

@@ -22,16 +22,17 @@ class TestSettler(unittest.TestCase):
 
 class TestSquatters(unittest.TestCase):
 	def _make_terrain(self, builder):
-		from ...game import Cell, Game, Terrain # FIXME circular dependency
+		from ...game import Game # FIXME circular dependency
+		from ...terrain import Cell, Terrain # FIXME circular dependency
 		class MockRogueDungeon(Game):
 			TERRAIN = {
-				None : Terrain(' ', False),
-				'corner' : Terrain("+", False, remembered='+'),
-				'rogue_door' : Terrain("+", True, remembered='+', allow_diagonal=False, dark=True),
-				'floor' : Terrain(".", True),
-				'rogue_passage' : Terrain("#", True, remembered='#', allow_diagonal=False, dark=True),
-				'wall_h' : Terrain("-", False, remembered='-'),
-				'wall_v' : Terrain("|", False, remembered='|'),
+				None : Terrain(' ', ' ', False),
+				'corner' : Terrain('corner', "+", False, remembered='+'),
+				'rogue_door' : Terrain('rogue_door', "+", True, remembered='+', allow_diagonal=False, dark=True),
+				'floor' : Terrain('floor', ".", True),
+				'rogue_passage' : Terrain('rogue_passage', "#", True, remembered='#', allow_diagonal=False, dark=True),
+				'wall_h' : Terrain('wall_h', "-", False, remembered='-'),
+				'wall_v' : Terrain('wall_v', "|", False, remembered='|'),
 				}
 		for pos in builder.strata.size:
 			builder.strata.set_cell(
