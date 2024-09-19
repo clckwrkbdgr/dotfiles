@@ -36,6 +36,7 @@ class MockGame(game.Game):
 			'healing potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
 			'money' : items.ItemType('money', '$', items.Effect.NONE),
 			'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
+			'ranged' : items.ItemType('ranged', ')', items.Effect.NONE),
 			}
 	TERRAIN = {
 		None : terrain.Terrain(' ', ' ', False),
@@ -898,22 +899,41 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._PotionsLyingAround])
 		dungeon.clear_event()
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon'], Point(0, 0)))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['ranged'], Point(0, 0)))
 
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
 			'player @Point(x=9, y=6) 10/10hp equips weapon @Point(x=0, y=0)',
 			])
 		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'weapon')
-		self.assertEqual(len(dungeon.get_player().inventory), 0)
+		self.assertEqual(len(dungeon.get_player().inventory), 1)
+		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'ranged')
+
+		dungeon.clear_event()
+		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
+		self.assertEqual(list(map(str, dungeon.events)), [
+			'player @Point(x=9, y=6) 10/10hp unequips weapon @Point(x=0, y=0)',
+			'player @Point(x=9, y=6) 10/10hp equips ranged @Point(x=0, y=0)',
+			])
+		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'ranged')
+		self.assertEqual(len(dungeon.get_player().inventory), 1)
+		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'weapon')
 
 		dungeon.clear_event()
 		dungeon.unwield_item(dungeon.get_player())
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @Point(x=9, y=6) 10/10hp unequips weapon @Point(x=0, y=0)',
+			'player @Point(x=9, y=6) 10/10hp unequips ranged @Point(x=0, y=0)',
 			])
 		self.assertIsNone(dungeon.get_player().wielding)
-		self.assertEqual(len(dungeon.get_player().inventory), 1)
+		self.assertEqual(len(dungeon.get_player().inventory), 2)
 		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'weapon')
+		self.assertEqual(dungeon.get_player().inventory[1].item_type.name, 'ranged')
+
+		dungeon.clear_event()
+		dungeon.unwield_item(dungeon.get_player())
+		self.assertEqual(len(dungeon.events), 0)
+		self.assertIsNone(dungeon.get_player().wielding)
+		self.assertEqual(len(dungeon.get_player().inventory), 2)
 
 class TestFight(AbstractTestDungeon):
 	def should_move_to_attack_monster(self):

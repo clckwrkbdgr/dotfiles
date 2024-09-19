@@ -468,6 +468,8 @@ class Game(object):
 		Produces events.
 		"""
 		assert item in monster.inventory
+		if monster.wielding:
+			self.unwield_item(monster)
 		monster.inventory.remove(item)
 		monster.wielding = item
 		self.events.append(messages.EquipItemEvent(monster, item))
@@ -475,6 +477,8 @@ class Game(object):
 		""" Monster unequips item and puts back to the inventory.
 		Produces events.
 		"""
+		if not monster.wielding:
+			return
 		item = monster.wielding
 		monster.inventory.append(item)
 		monster.wielding = None
