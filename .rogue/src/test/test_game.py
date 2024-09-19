@@ -1261,14 +1261,14 @@ class TestGameSerialization(AbstractTestDungeon):
 			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
 			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
 			2,
-				'player', 0, 9, 6, 10, 0,
-				'monster', 3, 2, 5, 3, 0,
+				'player', 0, 9, 6, 10, 0, 0,
+				'monster', 3, 2, 5, 3, 0, 0,
 			1,
 				'potion', 10, 6,
 			])))
 		dump = [str(game.Version.CURRENT)] + list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
-		self.assertEqual(game.Version.CURRENT, game.Version.INVENTORY + 1)
+		self.assertEqual(game.Version.CURRENT, game.Version.WIELDING + 1)
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)

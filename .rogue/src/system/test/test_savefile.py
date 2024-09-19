@@ -119,6 +119,18 @@ class TestReader(unittest.TestCase):
 		self.assertEqual(matrix.cell(2, 0).data, '2;0')
 		self.assertEqual(matrix.cell(2, 1).value, 21)
 		self.assertEqual(matrix.cell(2, 1).data, '2;1')
+	def should_read_optional_objects(self):
+		stream = StringIO('666\x001\x00123\x00game data')
+		reader = Reader(stream)
+		obj = reader.read(MockSerializableObject, optional=True)
+		self.assertTrue(isinstance(obj, MockSerializableObject))
+		self.assertEqual(obj.value, 123)
+		self.assertEqual(obj.data, 'game data')
+
+		stream = StringIO('666\x000')
+		reader = Reader(stream)
+		obj = reader.read(MockSerializableObject, optional=True)
+		self.assertIsNone(obj)
 
 class TestWriter(unittest.TestCase):
 	def should_write_raw_values(self):
@@ -174,6 +186,17 @@ class TestWriter(unittest.TestCase):
 		matrix.set_cell(2, 1, MockSerializableObject(21, '2;1'))
 		writer.write(matrix)
 		self.assertEqual(stream.getvalue(), '666\x003\x002\x000\x000;0\x0010\x001;0\x0020\x002;0\x001\x000;1\x0011\x001;1\x0021\x002;1')
+	def should_write_optional_objects(self):
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		obj = MockSerializableObject(123, 'game data')
+		writer.write(obj, optional=True)
+		self.assertEqual(stream.getvalue(), '666\x001\x00123\x00game data')
+
+		stream = StringIO()
+		writer = Writer(stream, 666)
+		writer.write(None, optional=True)
+		self.assertEqual(stream.getvalue(), '666\x000')
 
 class TestSavefile(unittest.TestCase):
 	@mock.patch('os.stat')

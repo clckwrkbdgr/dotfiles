@@ -56,14 +56,21 @@ class Reader:
 		(see read()).
 		"""
 		return self.meta_info[name]
-	def read(self, custom_type=None):
+	def read(self, custom_type=None, optional=False):
 		""" Reads current value from stream (RAW).
 		If custom_type is specified and it has class method .load(<reader>),
 		it is used instead.
 		Custom loaders should create and return fully-prepared objects.
 		If any external data is needed for deserialization, it can be
 		registered via set_meta_info().
+
+		If optional is True, first reads option flag (bool).
+		If flag is False, skips reading item and returns None.
+		Otherwise reads full item.
 		"""
+		if optional:
+			if not self.read_bool():
+				return None
 		if custom_type and hasattr(custom_type, 'load'):
 			return custom_type.load(self)
 		return next(self.stream)
@@ -117,11 +124,18 @@ class Writer:
 		self.version = version
 		self.f = f
 		self.f.write(str(version))
-	def write(self, item):
+	def write(self, item, optional=False):
 		""" Writes string representation of item to the file.
 		Several built-in types are recognized as special serialization.
 		Additional, if item has method save(<writer>), it is used instead.
+
+		If optional is True, detects if item is None and writes flag False.
+		Otherwise, is item is not None, writes flag True and the serializes item.
 		"""
+		if optional:
+			if item is None:
+				return self.write_bool(False)
+			self.write_bool(True)
 		if hasattr(item, 'save'):
 			return item.save(self)
 		if isinstance(item, bool):

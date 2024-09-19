@@ -8,4 +8,5 @@ class Version(Enum):
 	MONSTER_BEHAVIOR
 	ITEMS
 	INVENTORY
+	WIELDING
 	"""

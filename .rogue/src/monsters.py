@@ -32,6 +32,7 @@ class Monster(object):
 		self.pos = pos
 		self.hp = self.species.max_hp
 		self.inventory = []
+		self.wielding = None
 	def __str__(self):
 		return "{0} @{1} {2}/{3}hp".format(self.species.name, self.pos, self.hp, self.species.max_hp)
 	@classmethod
@@ -54,6 +55,8 @@ class Monster(object):
 			item_types = reader.get_meta_info('ITEMS')
 			from .pcg import RNG
 			monster.fill_inventory_from_drops(RNG(0), item_types)
+		if reader.version > Version.WIELDING:
+			monster.wielding = reader.read(items.Item, optional=True)
 		return monster
 	def save(self, writer):
 		writer.write(self.species.name)
@@ -61,6 +64,7 @@ class Monster(object):
 		writer.write(self.pos)
 		writer.write(self.hp)
 		writer.write(self.inventory)
+		writer.write(self.wielding, optional=True)
 	def is_alive(self):
 		return self.hp > 0
 	@property

@@ -74,9 +74,10 @@ class TestSavefile(unittest.TestCase):
 		self.ITEMS = {
 				'money' : items.ItemType('money', '$', items.Effect.NONE),
 				'potion' : items.ItemType('potion', '!', items.Effect.HEALING),
+				'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
 				}
 	def should_load_monster(self):
-		stream = StringIO(str(Version.CURRENT) + '\x00name\x003\x001\x001\x003\x001\x00money\x001\x001')
+		stream = StringIO(str(Version.CURRENT) + '\x00name\x003\x001\x001\x003\x001\x00money\x001\x001\x001\x00weapon\x000\x000')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('SPECIES', self.SPECIES)
 		reader.set_meta_info('ITEMS', self.ITEMS)
@@ -88,6 +89,8 @@ class TestSavefile(unittest.TestCase):
 		self.assertEqual(len(monster.inventory), 1)
 		self.assertEqual(monster.inventory[0].item_type.name, 'money')
 		self.assertEqual(monster.inventory[0].pos, monster.pos)
+		self.assertEqual(monster.wielding.item_type.name, 'weapon')
+		self.assertEqual(monster.wielding.pos, Point(0, 0))
 	def should_load_monster_without_inventory(self):
 		stream = StringIO(str(Version.INVENTORY) + '\x00name\x003\x001\x001\x003')
 		reader = savefile.Reader(stream)
@@ -101,11 +104,25 @@ class TestSavefile(unittest.TestCase):
 		self.assertEqual(len(monster.inventory), 1)
 		self.assertEqual(monster.inventory[0].item_type.name, 'money')
 		self.assertEqual(monster.inventory[0].pos, monster.pos)
+	def should_load_monster_without_wielding_equipment(self):
+		stream = StringIO(str(Version.WIELDING) + '\x00name\x003\x001\x001\x003\x000')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('SPECIES', self.SPECIES)
+		reader.set_meta_info('ITEMS', self.ITEMS)
+		monster = reader.read(monsters.Monster)
+		self.assertEqual(monster.species, self.SPECIES['name'])
+		self.assertEqual(monster.behavior, monsters.Behavior.ANGRY)
+		self.assertEqual(monster.pos, Point(1, 1))
+		self.assertEqual(monster.hp, 3)
+		self.assertEqual(len(monster.inventory), 0)
+		self.assertIsNone(monster.wielding)
+
 	def should_save_monster(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, Version.CURRENT)
 		monster = monsters.Monster(self.SPECIES['name'], monsters.Behavior.ANGRY, Point(1, 1))
+		monster.wielding = items.Item(self.ITEMS['weapon'], Point(0, 0))
 		monster.fill_inventory_from_drops(RNG(0), self.ITEMS)
 		monster.hp = 3
 		writer.write(monster)
-		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00name\x003\x001\x001\x003\x001\x00money\x001\x001')
+		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00name\x003\x001\x001\x003\x001\x00money\x001\x001\x001\x00weapon\x000\x000')
