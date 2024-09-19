@@ -15,3 +15,5 @@ class TestEvents(unittest.TestCase):
 		self.assertEqual(str(messages.GrabItemEvent('@', '!')), '@ grabs !')
 		self.assertEqual(str(messages.ConsumeItemEvent('@', '!')), '@ consumes !')
 		self.assertEqual(str(messages.DropItemEvent('@', '!')), '@ drops !')
+		self.assertEqual(str(messages.EquipItemEvent('@', '(')), '@ equips (')
+		self.assertEqual(str(messages.UnequipItemEvent('@', '(')), '@ unequips (')

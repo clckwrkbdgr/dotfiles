@@ -173,6 +173,12 @@ class Game(object):
 		elif action == Action.DROP:
 			self.drop_item(self.get_player(), action_data)
 			self.player_turn = False
+		elif action == Action.WIELD:
+			self.wield_item(self.get_player(), action_data)
+			self.player_turn = False
+		elif action == Action.UNWIELD:
+			self.unwield_item(self.get_player())
+			self.player_turn = False
 		elif action == Action.WAIT:
 			self.player_turn = False
 		return True
@@ -457,6 +463,22 @@ class Game(object):
 		self.items.append(item)
 		self.visible_items.append(item)
 		self.events.append(messages.DropItemEvent(monster, item))
+	def wield_item(self, monster, item):
+		""" Monster equips item from inventory.
+		Produces events.
+		"""
+		assert item in monster.inventory
+		monster.inventory.remove(item)
+		monster.wielding = item
+		self.events.append(messages.EquipItemEvent(monster, item))
+	def unwield_item(self, monster):
+		""" Monster unequips item and puts back to the inventory.
+		Produces events.
+		"""
+		item = monster.wielding
+		monster.inventory.append(item)
+		monster.wielding = None
+		self.events.append(messages.UnequipItemEvent(monster, item))
 	def jump_to(self, new_pos):
 		""" Teleports player to new pos. """
 		self.get_player().pos = new_pos

@@ -78,3 +78,19 @@ class ConsumeItemEvent(Event):
 		self.item = item
 	def __str__(self):
 		return '{0} consumes {1}'.format(self.actor, self.item)
+
+class EquipItemEvent(Event):
+	""" Equips item. """
+	def __init__(self, actor, item):
+		self.actor = actor
+		self.item = item
+	def __str__(self):
+		return '{0} equips {1}'.format(self.actor, self.item)
+
+class UnequipItemEvent(Event):
+	""" Unequips item. """
+	def __init__(self, actor, item):
+		self.actor = actor
+		self.item = item
+	def __str__(self):
+		return '{0} unequips {1}'.format(self.actor, self.item)

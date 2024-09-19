@@ -14,6 +14,8 @@ class Action(Enum):
 	GRAB
 	CONSUME
 	DROP
+	WIELD
+	UNWIELD
 	"""
 
 class UI(object):

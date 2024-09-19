@@ -266,6 +266,12 @@ class Curses(UI):
 	@Events.on(messages.ConsumeItemEvent)
 	def on_consuming(self, game, event):
 		return '{0} <~ {1}.'.format(event.actor.name, event.item.name)
+	@Events.on(messages.EquipItemEvent)
+	def on_equipping(self, game, event):
+		return '{0} <+ {1}.'.format(event.actor.name, event.item.name)
+	@Events.on(messages.UnequipItemEvent)
+	def on_unequipping(self, game, event):
+		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 	def user_interrupted(self):
 		""" Checks for key presses in nodelay mode. """
 		self.window.nodelay(1)
@@ -280,7 +286,11 @@ class Curses(UI):
 		"""
 		Log.debug('Performing user actions.')
 		if self.mode:
-			action, param = self.mode.user_action(game)
+			result = self.mode.user_action(game)
+			if isinstance(result, SubMode):
+				self.mode = result
+				return Action.NONE, None
+			action, param = result
 			if self.mode.done:
 				self.mode = None
 			return action, param
@@ -355,6 +365,10 @@ class Curses(UI):
 	def show_inventory(self, game):
 		""" Show inventory. """
 		self.mode = Inventory(self.window)
+	@Keys.bind('E')
+	def show_equipment(self, game):
+		""" Show equipment. """
+		self.mode = Equipment(self.window)
 	@Keys.bind('hjklyubn', param=lambda key: DIRECTION[key])
 	def move(self, game, direction):
 		""" Move. """
@@ -428,6 +442,30 @@ class Inventory(SubMode):
 		self.done = True
 		return Action.NONE, None
 
+EquipmentKeys = Keymapping()
+class Equipment(SubMode):
+	""" Equipment menu.
+	"""
+	KEYMAPPING = EquipmentKeys
+	def redraw(self, game):
+		wielding = game.get_player().wielding
+		if wielding:
+			wielding = wielding.item_type.name
+		self.window.addstr(0, 0, 'wielding [a] - {0}'.format(wielding))
+		self.window.refresh()
+	@EquipmentKeys.bind('a')
+	def wield(self, game):
+		""" Wield or unwield item. """
+		if game.get_player().wielding:
+			self.done = True
+			return Action.UNWIELD, None
+		return WieldSelection(self.window)
+	@EquipmentKeys.bind(Keymapping.ESC)
+	def close(self, game):
+		""" Close by Escape. """
+		self.done = True
+		return Action.NONE, None
+
 ConsumeSelectionKeys = Keymapping()
 class ConsumeSelection(Inventory):
 	""" Select item to consume from inventory. """
@@ -463,6 +501,26 @@ class DropSelection(Inventory):
 		self.done = True
 		return Action.DROP, game.get_player().inventory[index]
 	@DropSelectionKeys.bind(Keymapping.ESC)
+	def cancel(self, game):
+		""" Cancel selection. """
+		self.done = True
+		return Action.NONE, None
+
+WieldSelectionKeys = Keymapping()
+class WieldSelection(Inventory):
+	""" Select item to wield from inventory. """
+	KEYMAPPING = WieldSelectionKeys
+	INITIAL_PROMPT = "Select item to wield:"
+	@WieldSelectionKeys.bind('abcdefghijlkmnopqrstuvwxyz', param=lambda key:key)
+	def select(self, game, param):
+		""" Select item and close inventory. """
+		index = ord(param) - ord('a')
+		if index >= len(game.get_player().inventory):
+			self.prompt = "No such item ({0})".format(param)
+			return Action.NONE, None
+		self.done = True
+		return Action.WIELD, game.get_player().inventory[index]
+	@WieldSelectionKeys.bind(Keymapping.ESC)
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True

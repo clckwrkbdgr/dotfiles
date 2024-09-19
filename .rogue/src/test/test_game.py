@@ -35,6 +35,7 @@ class MockGame(game.Game):
 			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
 			'healing potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
 			'money' : items.ItemType('money', '$', items.Effect.NONE),
+			'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
 			}
 	TERRAIN = {
 		None : terrain.Terrain(' ', ' ', False),
@@ -348,6 +349,46 @@ class TestItems(AbstractTestDungeon):
 			'redraw',
 			'user_action',
 			'player @Point(x=9, y=6) 10/10hp drops potion @Point(x=9, y=6)',
+			'__exit__',
+			])
+	def should_equip_items(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon'], Point(0, 0)))
+		mock_ui = MockUI(user_actions=[
+			(ui.Action.WIELD, dungeon.get_player().inventory[0]),
+			(ui.Action.EXIT, None),
+			], interrupts=[],
+		)
+		with mock_ui:
+			self.assertTrue(dungeon.main_loop(mock_ui))
+		self.maxDiff = None
+		self.assertEqual(mock_ui.events, [
+			'__enter__',
+			'redraw',
+			'user_action',
+			'redraw',
+			'user_action',
+			'player @Point(x=9, y=6) 10/10hp equips weapon @Point(x=0, y=0)',
+			'__exit__',
+			])
+	def should_unequip_items(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
+		dungeon.get_player().wielding = items.Item(dungeon.ITEMS['weapon'], Point(0, 0))
+		mock_ui = MockUI(user_actions=[
+			(ui.Action.UNWIELD, None),
+			(ui.Action.EXIT, None),
+			], interrupts=[],
+		)
+		with mock_ui:
+			self.assertTrue(dungeon.main_loop(mock_ui))
+		self.maxDiff = None
+		self.assertEqual(mock_ui.events, [
+			'__enter__',
+			'redraw',
+			'user_action',
+			'redraw',
+			'user_action',
+			'player @Point(x=9, y=6) 10/10hp unequips weapon @Point(x=0, y=0)',
 			'__exit__',
 			])
 
@@ -853,6 +894,26 @@ class TestItemActions(AbstractTestDungeon):
 			])
 		self.assertEqual(dungeon.get_player().hp, 6)
 		self.assertEqual(len(dungeon.get_player().inventory), 0)
+	def should_equip_item(self):
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._PotionsLyingAround])
+		dungeon.clear_event()
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon'], Point(0, 0)))
+
+		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
+		self.assertEqual(list(map(str, dungeon.events)), [
+			'player @Point(x=9, y=6) 10/10hp equips weapon @Point(x=0, y=0)',
+			])
+		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'weapon')
+		self.assertEqual(len(dungeon.get_player().inventory), 0)
+
+		dungeon.clear_event()
+		dungeon.unwield_item(dungeon.get_player())
+		self.assertEqual(list(map(str, dungeon.events)), [
+			'player @Point(x=9, y=6) 10/10hp unequips weapon @Point(x=0, y=0)',
+			])
+		self.assertIsNone(dungeon.get_player().wielding)
+		self.assertEqual(len(dungeon.get_player().inventory), 1)
+		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'weapon')
 
 class TestFight(AbstractTestDungeon):
 	def should_move_to_attack_monster(self):

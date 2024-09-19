@@ -22,6 +22,7 @@ class MockGame(game.Game):
 	ITEMS = {
 			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
 			'money' : items.ItemType('money', '$', items.Effect.NONE),
+			'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
 			}
 	TERRAIN = {
 		None : terrain.Terrain(' ', ' ', False),
@@ -350,6 +351,7 @@ class TestCurses(unittest.TestCase):
 			'. - Wait.',
 			'> - Descend.',
 			'? - Show this help.',
+			'E - Show equipment.',
 			'Q - Suicide (quit without saving).',
 			'd - Drop item.',
 			'e - Consume item.',
@@ -970,5 +972,124 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 1, 0, 'a - potion',),
+			('refresh',),
+			])
+	def should_equip_items(self):
+		self.maxDiff = None
+		ui = curses.Curses()
+		ui.window = MockCurses('E' + curses.Keymapping.ESC + 'Ea' + curses.Keymapping.ESC + 'EabaEa')
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MonsterAndPotion])
+		dungeon.get_player().inventory.append(items.Item(MockGame.ITEMS['weapon'], Point(0, 0)))
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'wielding [a] - None',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		DISPLAYED_LAYOUT = [
+				'    #####        #  ',
+				'     ....   #  ...  ',
+				'      ...  .# ..... ',
+				'     ##..##.#...... ',
+				'     #............. ',
+				'#.M..#............. ',
+				'#........@!........#',
+				'#.................. ',
+				'#.................. ',
+				' #################  ',
+				]
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'potion! monster!                                                                '),
+			('addstr', 24, 0, 'hp: 10/10 inv:  (                                                            [?]'),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'wielding [a] - None',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'Select item to wield:',),
+			('addstr', 1, 0, 'a - weapon',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'potion! monster!                                                                '),
+			('addstr', 24, 0, 'hp: 10/10 inv:  (                                                            [?]'),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'wielding [a] - None',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'Select item to wield:',),
+			('addstr', 1, 0, 'a - weapon',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'No such item (b)',),
+			('addstr', 1, 0, 'a - weapon',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.WIELD, dungeon.get_player().inventory[0]))
+		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'potion! monster! player <+ weapon.                                              '),
+			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'wielding [a] - weapon',),
+			('refresh',),
+			])
+
+		self.assertEqual(ui.user_action(dungeon), (_base.Action.UNWIELD, None))
+		dungeon.unwield_item(dungeon.get_player())
+		ui.redraw(dungeon)
+		self.assertEqual(ui.window.get_calls(), [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'potion! monster! player <+ weapon. player +> weapon.                            '),
+			('addstr', 24, 0, 'hp: 10/10 inv:  (                                                            [?]'),
 			('refresh',),
 			])
