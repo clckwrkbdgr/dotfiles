@@ -5,6 +5,8 @@ from .system.logging import Log
 
 _Point = namedtuple('Point', 'x y')
 class Point(_Point):
+	def __str__(self):
+		return '{0};{1}'.format(*self)
 	def __add__(self, other):
 		return Point(self.x + other.x, self.y + other.y)
 	def __mul__(self, factor):
