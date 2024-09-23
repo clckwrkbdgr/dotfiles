@@ -351,6 +351,7 @@ lib/desktop.bash caps=work
 lib/jobsequence.bash caps=work
 lib/miniclick.bash caps=work
 lib/path.bash caps=work
+lib/progress.bash caps=work
 lib/prompt.bash caps=work
 lib/setup.cfg caps=work
 lib/sound.bash caps=work
