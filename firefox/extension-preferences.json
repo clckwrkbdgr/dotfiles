@@ -69,7 +69,8 @@
     "ghosttext@bfred.it": {
         "origins": [
             "http://localhost/*",
-            "http://localhost:4001/*"
+            "http://localhost:4001/*",
+            "*://*/*"
         ],
         "permissions": []
     },

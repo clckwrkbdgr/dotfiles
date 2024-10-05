@@ -1,6 +1,7 @@
 {
 	"addons": [
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/mutelinks/",
 			"homepageURL": null,
 			"id": "@mutelinks",
 			"name": "MuteLinks",
@@ -9,6 +10,7 @@
 			"version": "0.2.3resigned1"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/",
 			"homepageURL": "https://tampermonkey.net",
 			"id": "firefox@tampermonkey.net",
 			"name": "Tampermonkey",
@@ -17,6 +19,7 @@
 			"version": "5.1.1"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/ghosttext/",
 			"homepageURL": "https://github.com/fregante/GhostText",
 			"id": "ghosttext@bfred.it",
 			"name": "GhostText",
@@ -25,6 +28,7 @@
 			"version": "24.8.10"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/new-tab-override/",
 			"homepageURL": "https://www.soeren-hentzschel.at/firefox-webextensions/new-tab-override/",
 			"id": "newtaboverride@agenedia.com",
 			"name": "New Tab Override",
@@ -33,6 +37,7 @@
 			"version": "16.0.1"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/",
 			"homepageURL": "https://github.com/gorhill/uBlock#ublock-origin",
 			"id": "uBlock0@raymondhill.net",
 			"name": "uBlock Origin",
@@ -41,6 +46,7 @@
 			"version": "1.60.0"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/noscript/",
 			"homepageURL": "https://noscript.net",
 			"id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
 			"name": "NoScript Security Suite",
@@ -49,6 +55,7 @@
 			"version": "11.4.40"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/styl-us/",
 			"homepageURL": "https://add0n.com/stylus.html",
 			"id": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}",
 			"name": "Stylus",
@@ -57,6 +64,7 @@
 			"version": "1.5.51"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/request-blocker-we/",
 			"homepageURL": null,
 			"id": "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}",
 			"name": "Request Blocker",
@@ -65,6 +73,7 @@
 			"version": "0.6.2"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/ourstickys-sticky-notes/",
 			"homepageURL": null,
 			"id": "{980500da-0b6d-4de9-ad90-93d17605276c}",
 			"name": "OurStickys - Sticky Notes on every page",
@@ -73,6 +82,7 @@
 			"version": "0.1.99"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/vimium-ff/",
 			"homepageURL": "https://github.com/philc/vimium",
 			"id": "{d7742d87-e61d-4b78-b8a1-b469842139fa}",
 			"name": "Vimium",
@@ -81,6 +91,7 @@
 			"version": "2.1.2"
 		},
 		{
+			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/i-m-not-robot-captcha-clicker/",
 			"homepageURL": null,
 			"id": "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}",
 			"name": "I'm not robot captcha clicker",

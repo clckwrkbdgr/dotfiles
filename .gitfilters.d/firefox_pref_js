@@ -150,6 +150,8 @@ delete 'devtools.debugger.start-panel-size' ''
 delete 'devtools.webconsole.persistlog' ''
 delete 'browser.shell.didSkipDefaultBrowserCheckOnFirstRun' ''
 delete 'browser.bookmarks.defaultLocation' ''
+delete 'extensions.formautofill.creditCards.reauth.optout' ''
+delete 'signon.management.page.os-auth.optout' ''
 
 #sed 's/"extensions.systemAddonSet", "{.*");/"extensions.systemAddonSet", "{\\"schema\\":1,\\"addons\\":{}}");/' | \
 #sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \

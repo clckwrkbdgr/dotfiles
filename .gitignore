@@ -70,6 +70,11 @@ firefox/startupCache/
 firefox/urlclassifier*.sqlite
 firefox/gmp-gmpopenh264/*/*.so
 firefox/gmp-gmpopenh264/*/*.info
+firefox/AlternateServices.bin
+firefox/SiteSecurityServiceState.bin
+firefox/activity-stream.weather_feed.json
+firefox/bounce-tracking-protection.sqlite
+firefox/extension-store-menus/data.safe.bin
 # Firefox state
 firefox/compatibility.ini
 firefox/crashes/store.json.mozlz4

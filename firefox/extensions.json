@@ -16,7 +16,15 @@
 			"manifestVersion": 2,
 			"optionsBrowserStyle": false,
 			"optionsType": 5,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				0
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4271092/mutelinks-0.2.3resigned1.xpi",
@@ -43,7 +51,15 @@
 			"manifestVersion": 2,
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				0
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4282688/tampermonkey-5.1.1.xpi",
@@ -67,18 +83,29 @@
 			"id": "ghosttext@bfred.it",
 			"loader": null,
 			"location": "app-profile",
-			"manifestVersion": 2,
-			"optionsBrowserStyle": true,
+			"manifestVersion": 3,
+			"optionsBrowserStyle": false,
 			"optionsType": 5,
+			"requestedPermissions": {
+				"origins": [
+					"http://localhost/",
+					"http://localhost:4001/*"
+				],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				1
+			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4299538/ghosttext-24.6.7.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4334686/ghosttext-24.8.10.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{4915360e-6908-4ad5-af60-caf15bb31d7b}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "24.6.7",
+			"version": "24.8.10",
 			"visible": true
 		},
 		{
@@ -97,7 +124,15 @@
 			"manifestVersion": 2,
 			"optionsBrowserStyle": true,
 			"optionsType": null,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				1
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://gv.erinome.net/godville/godville-ui-plus-firefox-we-latest.xpi",
@@ -124,7 +159,17 @@
 			"manifestVersion": 3,
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
+			"requestedPermissions": {
+				"origins": [
+					"https://www.soeren-hentzschel.at/*"
+				],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				0
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4303770/new_tab_override-16.0.1.xpi",
@@ -151,7 +196,15 @@
 			"manifestVersion": 2,
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				1
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4359936/ublock_origin-1.60.0.xpi",
@@ -178,7 +231,15 @@
 			"manifestVersion": 2,
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				1
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4357325/noscript-11.4.40.xpi",
@@ -205,7 +266,15 @@
 			"manifestVersion": 2,
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				1
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4338993/styl_us-1.5.51.xpi",
@@ -232,7 +301,15 @@
 			"manifestVersion": 2,
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				0
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4193619/request_blocker_we-0.6.2.xpi",
@@ -259,7 +336,15 @@
 			"manifestVersion": 2,
 			"optionsBrowserStyle": true,
 			"optionsType": null,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				0
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3486391/ourstickys_sticky_notes-0.1.99.xpi",
@@ -286,7 +371,19 @@
 			"manifestVersion": 3,
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
+			"requestedPermissions": {
+				"origins": [
+					"<all_urls>",
+					"file:///",
+					"file:///*/"
+				],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				0
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4259790/vimium_ff-2.1.2.xpi",
@@ -311,9 +408,17 @@
 			"loader": null,
 			"location": "app-profile",
 			"manifestVersion": 2,
-			"optionsBrowserStyle": true,
-			"optionsType": null,
+			"optionsBrowserStyle": false,
+			"optionsType": 3,
+			"requestedPermissions": {
+				"origins": [],
+				"permissions": []
+			},
 			"signedState": 2,
+			"signedTypes": [
+				2,
+				0
+			],
 			"skinnable": false,
 			"softDisabled": false,
 			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3897119/i_m_not_robot_captcha_clicker-1.3.1.xpi",
@@ -325,5 +430,5 @@
 			"visible": true
 		}
 	],
-	"schemaVersion": 35
+	"schemaVersion": 36
 }

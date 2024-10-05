@@ -134,6 +134,7 @@
                 "path": "ghosttext@bfred.it.xpi",
                 "rootURI": "jar:file://$HOME/.config/firefox/extensions/ghosttext@bfred.it.xpi!/",
                 "runInSafeMode": false,
+                "startupData": {},
                 "version": "0.0"
             },
             "godville-ui-plus@erinome.net": {
@@ -260,7 +261,7 @@
             },
             "screenshots@mozilla.org": {
                 "dependencies": [],
-                "enabled": true,
+                "enabled": false,
                 "lastModifiedTime": 0,
                 "loader": null,
                 "path": "screenshots@mozilla.org.xpi",
