@@ -163,3 +163,7 @@
 [filter "openkb_config"]
 	smudge = filterconf -f ini restore
 	clean = filterconf -f ini script .gitfilters.d/openkb_config
+
+[filter "sort_xfce_keybindings"]
+	smudge = cat
+	clean = filterconf -f xml script .gitfilters.d/sort_xfce_keybindings
