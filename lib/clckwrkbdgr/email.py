@@ -42,6 +42,8 @@ class Message(object):
 	def get_header(self, header_name):
 		header = self.data[header_name]
 		result = ''
+		if header is None:
+			return result
 		for part, encoding in email.header.decode_header(header):
 			result += self._decode_string(part, encoding)
 		return result

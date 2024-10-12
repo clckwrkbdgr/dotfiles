@@ -101,6 +101,11 @@ class TestEmail(unittest.TestCase):
 		payloads = msg.get_payloads()
 		self.assertEqual(payloads[2].filename, 'attach.666.jpg')
 		self.assertEqual(msg.cids, {'666':'attach.666.jpg'})
+	def should_not_crash_on_missing_headers(self):
+		msg = E.Message(self._create(
+			).as_string())
+		del msg.data['To']
+		self.assertEqual(msg.get_header('To'), '')
 
 class TestParserIssues(unittest.TestCase):
 	def should_try_to_autoguess_unknown_8bit_encoding(self):
