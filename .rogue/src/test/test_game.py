@@ -16,7 +16,6 @@ from .. import messages
 from ..system import savefile
 from . import mock_dungeon
 from .mock_dungeon import MockGame
-from .mock_dungeon import MockRogueDungeon
 
 class MockWriterStream:
 	def __init__(self):
@@ -957,7 +956,7 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon = MockGame(load_from_reader=reader)
 		self.assertEqual(restored_dungeon.monsters[0].pos, Point(2, 2))
 
-		restored_dungeon = mock_dungeon.build('mock settler restored')
+		restored_dungeon = mock_dungeon.build('mock settler restored', load_from_reader=None)
 		self.assertEqual(restored_dungeon.monsters[0].pos, Point(9, 6))
 
 	def should_deserialize_game_before_terrain_types(self):

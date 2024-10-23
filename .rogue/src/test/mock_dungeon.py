@@ -27,18 +27,13 @@ class MockGame(game.Game):
 	TERRAIN = {
 		None : terrain.Terrain(' ', ' ', False),
 		'name' : terrain.Terrain('name', '.'),
+		' ' : terrain.Terrain(' ', ' ', False),
 		'#' : terrain.Terrain('#', "#", False, remembered='#'),
 		'.' : terrain.Terrain('.', ".", True),
 		'~' : terrain.Terrain('~', ".", True, allow_diagonal=False),
-		}
-
-class MockRogueDungeon(MockGame):
-	TERRAIN = {
-		None : terrain.Terrain(' ', ' ', False),
-		' ' : terrain.Terrain(' ', ' ', False),
-		'#' : terrain.Terrain('#', "#", True, remembered='#', allow_diagonal=False, dark=True),
+		# Rogue dungeon:
+		'*' : terrain.Terrain('#', "#", True, remembered='#', allow_diagonal=False, dark=True),
 		'%' : terrain.Terrain('#', "#", True, allow_diagonal=False, dark=True),
-		'.' : terrain.Terrain('.', ".", True),
 		'+' : terrain.Terrain('+', "+", False, remembered='+'),
 		'-' : terrain.Terrain('-', "-", False, remembered='-'),
 		'|' : terrain.Terrain('|', "|", False, remembered='|'),
@@ -127,9 +122,9 @@ class _MockMiniDarkRogueBuilder(builders.CustomMap):
 
 class _MockMiniRogueBuilder(builders.CustomMap):
 	MAP_DATA = """\
-		+--+ #
-		|@.| #
-		|..^##
+		+--+ *
+		|@.| *
+		|..^**
 		|.>|  
 		+--+  
 		"""
@@ -137,8 +132,8 @@ class _MockMiniRogueBuilder(builders.CustomMap):
 class _MockMiniRogue2Builder(builders.CustomMap):
 	MAP_DATA = """\
 		+--+  
-		|.@| #
-		|..^##
+		|.@| *
+		|..^**
 		|.>|  
 		+--+  
 		"""
@@ -233,59 +228,33 @@ class _FightingGround(CustomSettler):
 		('monster', settlers.Behavior.INERT, Point(9, 4)),
 		]
 
-def build(dungeon_id):
-	import sys
-	self = sys.modules[__name__]
-	if dungeon_id == 'now you see me':
-		return MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[_NowYouSeeMe])
-	if dungeon_id == 'mini dark rogue':
-		return MockRogueDungeon(rng_seed=0, builders=[_MockMiniDarkRogueBuilder], settlers=[UnSettler])
-	if dungeon_id == 'lonely':
-		return MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
-	if dungeon_id == 'monsters on top':
-		return MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_MonstersOnTopOfItems])
-	if dungeon_id == 'mini lonely':
-		return MockGame(rng_seed=0, builders=[_MockMiniBuilder], settlers=[UnSettler])
-	if dungeon_id == 'mini 2 lonely':
-		return MockGame(rng_seed=0, builders=[_MockMini2Builder], settlers=[UnSettler])
-	if dungeon_id == 'mini 3 lonely':
-		dungeon = MockGame(rng_seed=0, builders=[_MockMini3Builder], settlers=[UnSettler])
-	if dungeon_id == 'mini 4 lonely':
-		dungeon = MockGame(rng_seed=0, builders=[_MockMini4Builder], settlers=[UnSettler])
-	if dungeon_id == 'mini 5 lonely':
-		dungeon = MockGame(rng_seed=0, builders=[_MockMini5Builder], settlers=[UnSettler])
-	if dungeon_id == 'mini 6 monster':
-		dungeon = MockGame(rng_seed=0, builders=[_MockMini6Builder], settlers=[SingleMockMonster])
-	if dungeon_id == 'mini 6 lonely':
-		dungeon = MockGame(rng_seed=0, builders=[_MockMini6Builder], settlers=[UnSettler])
-	if dungeon_id == 'mini rogue 2 lonely':
-		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockMiniRogue2Builder], settlers=[UnSettler])
-	if dungeon_id == 'mini rogue lonely':
-		dungeon = MockRogueDungeon(rng_seed=0, builders=[_MockMiniRogueBuilder], settlers=[UnSettler])
-	if dungeon_id == 'potions lying around':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._PotionsLyingAround])
-	if dungeon_id == 'close monster':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseMonster])
-	if dungeon_id == 'close thief':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseThief])
-	if dungeon_id == 'close inert monster':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseInertMonster])
-	if dungeon_id == 'close angry monster':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseAngryMonster])
-	if dungeon_id == 'close angry monster 2':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_CloseAngryMonster2])
-	if dungeon_id == 'single mock monster':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
-	if dungeon_id == 'single mock thief':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockThief])
-	if dungeon_id == 'mock settler':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
-	if dungeon_id == 'mock settler restored':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler], load_from_reader=None)
-	if dungeon_id == 'fighting around':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_FightingGround])
-	if dungeon_id == 'potions lying around 2':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[_PotionsLyingAround2])
-	if dungeon_id == 'monster and potion':
-		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MonsterAndPotion])
-	return dungeon
+def build(dungeon_id, load_from_reader=None):
+	_DATA = {
+			'now you see me': ([_MockBuilder], [_NowYouSeeMe]),
+			'mini dark rogue': ([_MockMiniDarkRogueBuilder], [UnSettler]),
+			'lonely': ([_MockBuilder], [UnSettler]),
+			'monsters on top': ([_MockBuilder], [_MonstersOnTopOfItems]),
+			'mini lonely': ([_MockMiniBuilder], [UnSettler]),
+			'mini 2 lonely': ([_MockMini2Builder], [UnSettler]),
+			'mini 3 lonely': ([_MockMini3Builder], [UnSettler]),
+			'mini 4 lonely': ([_MockMini4Builder], [UnSettler]),
+			'mini 5 lonely': ([_MockMini5Builder], [UnSettler]),
+			'mini 6 monster': ([_MockMini6Builder], [SingleMockMonster]),
+			'mini 6 lonely': ([_MockMini6Builder], [UnSettler]),
+			'mini rogue 2 lonely': ([_MockMiniRogue2Builder], [UnSettler]),
+			'mini rogue lonely': ([_MockMiniRogueBuilder], [UnSettler]),
+			'potions lying around': ([_MockBuilder], [_PotionsLyingAround]),
+			'close monster': ([_MockBuilder], [_CloseMonster]),
+			'close thief': ([_MockBuilder], [_CloseThief]),
+			'close inert monster': ([_MockBuilder], [_CloseInertMonster]),
+			'close angry monster': ([_MockBuilder], [_CloseAngryMonster]),
+			'close angry monster 2': ([_MockBuilder], [_CloseAngryMonster2]),
+			'single mock monster': ([_MockBuilder], [SingleMockMonster]),
+			'single mock thief': ([_MockBuilder], [SingleMockThief]),
+			'mock settler': ([_MockBuilder], [_MockSettler]),
+			'mock settler restored': ([_MockBuilder], [_MockSettler]),
+			'fighting around': ([_MockBuilder], [_FightingGround]),
+			'potions lying around 2': ([_MockBuilder], [_PotionsLyingAround2]),
+			'monster and potion': ([_MockBuilder], [_MonsterAndPotion]),
+			}
+	return MockGame(rng_seed=0, builders=_DATA[dungeon_id][0], settlers=_DATA[dungeon_id][1], load_from_reader=load_from_reader)
