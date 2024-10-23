@@ -153,5 +153,5 @@ delete 'browser.bookmarks.defaultLocation' ''
 delete 'extensions.formautofill.creditCards.reauth.optout' ''
 delete 'signon.management.page.os-auth.optout' ''
 
-#sed 's/"extensions.systemAddonSet", "{.*");/"extensions.systemAddonSet", "{\\"schema\\":1,\\"addons\\":{}}");/' | \
+replace 'extensions.systemAddonSet' '{.*}' --with '{"schema":1,"addons":{}}' --pattern-type=regex
 #sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \

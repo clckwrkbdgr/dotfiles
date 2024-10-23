@@ -1,6 +1,7 @@
 delete addons "'userDisabled':\s*True" --pattern-type=regex
 delete addons "'location':\s*'app-builtin'" --pattern-type=regex
 delete addons "'location':\s*'app-system-defaults'" --pattern-type=regex
+delete addons "'location':\s*'app-system-addons'" --pattern-type=regex
 
 delete addons/* 'locales'
 delete addons/* 'defaultLocale'
