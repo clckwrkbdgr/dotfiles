@@ -11,7 +11,7 @@ from ... import game, monsters, items, messages, terrain
 from ...math import Point
 from ... import utils
 from ...test import mock_dungeon
-from ...test.mock_dungeon import MockCursesGame as MockGame
+from ...test.mock_dungeon import MockGame
 
 class MockCurses:
 	class SubCall:
@@ -88,6 +88,18 @@ class TestCurses(unittest.TestCase):
 			'#....##  ## #       ',
 			'#....#              ',
 			'#.M..#......        ',
+			'#.@..........      #',
+			'#...........        ',
+			'#...........        ',
+			'##################  ',
+			]
+	DISPLAYED_LAYOUT_FIGHT_THIEF = [
+			'#########        #  ',
+			'#......     #       ',
+			'#.....      #       ',
+			'#....##  ## #       ',
+			'#....#              ',
+			'#.T..#......        ',
 			'#.@..........      #',
 			'#...........        ',
 			'#...........        ',
@@ -836,7 +848,7 @@ class TestCurses(unittest.TestCase):
 		ui.redraw(dungeon)
 		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT[y-1][x]) for y in range(1, 11) for x in range(20)
+			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT_THIEF[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> thief. thief-1hp.                                                     '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),

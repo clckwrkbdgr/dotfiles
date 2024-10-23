@@ -3,42 +3,30 @@ from ..pcg import settlers, builders
 from .. import terrain, items, monsters
 from .. import game
 
-class MockGame0(game.Game):
-	TERRAIN = {
-			'name' : terrain.Terrain('name', '.'),
-			}
-	ITEMS = {
-			'name' : items.ItemType('name', '!', items.Effect.NONE),
-			'money' : items.ItemType('money', '$', items.Effect.NONE),
-			'potion' : items.ItemType('potion', '!', items.Effect.HEALING),
-			'rags' : items.ItemType('rags', '[', items.Effect.NONE),
-			'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
-			}
+class MockGame(game.Game):
 	SPECIES = {
 			'name' : monsters.Species('name', 'M', 100, vision=10, drops=[
 				(1, 'money'),
 				(2, 'potion'),
 				]),
-			'player' : monsters.Species('name', '@', 100, vision=10),
-			}
-
-class MockGame(game.Game):
-	SPECIES = {
 			'player' : monsters.Species('player', "@", 10, vision=10),
 			'monster' : monsters.Species('monster', "M", 3, vision=10),
-			'thief' : monsters.Species('thief', "T", 10, vision=10, drops=[
+			'thief' : monsters.Species('thief', "T", 3, vision=10, drops=[
 				(1, 'money'),
 				]),
 			}
 	ITEMS = {
+			'name' : items.ItemType('name', '!', items.Effect.NONE),
 			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
 			'healing potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
 			'money' : items.ItemType('money', '$', items.Effect.NONE),
 			'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
 			'ranged' : items.ItemType('ranged', ')', items.Effect.NONE),
+			'rags' : items.ItemType('rags', '[', items.Effect.NONE),
 			}
 	TERRAIN = {
 		None : terrain.Terrain(' ', ' ', False),
+		'name' : terrain.Terrain('name', '.'),
 		'#' : terrain.Terrain('#', "#", False, remembered='#'),
 		'.' : terrain.Terrain('.', ".", True),
 		'~' : terrain.Terrain('~', ".", True, allow_diagonal=False),
@@ -49,45 +37,13 @@ class MockRogueDungeon(MockGame):
 		None : terrain.Terrain(' ', ' ', False),
 		' ' : terrain.Terrain(' ', ' ', False),
 		'#' : terrain.Terrain('#', "#", True, remembered='#', allow_diagonal=False, dark=True),
+		'%' : terrain.Terrain('#', "#", True, allow_diagonal=False, dark=True),
 		'.' : terrain.Terrain('.', ".", True),
 		'+' : terrain.Terrain('+', "+", False, remembered='+'),
 		'-' : terrain.Terrain('-', "-", False, remembered='-'),
 		'|' : terrain.Terrain('|', "|", False, remembered='|'),
 		'^' : terrain.Terrain('^', "^", True, remembered='^', allow_diagonal=False, dark=True),
 		}
-
-class MockDarkRogueDungeon(MockGame):
-	TERRAIN = {
-		None : terrain.Terrain(' ', ' ', False),
-		' ' : terrain.Terrain(' ', ' ', False),
-		'#' : terrain.Terrain('#', "#", True, allow_diagonal=False, dark=True),
-		'.' : terrain.Terrain('.', ".", True),
-		'+' : terrain.Terrain('+', "+", False),
-		'-' : terrain.Terrain('-', "-", False),
-		'|' : terrain.Terrain('|', "|", False),
-		'^' : terrain.Terrain('^', "^", True, allow_diagonal=False, dark=True),
-		}
-
-class MockCursesGame(game.Game):
-	SPECIES = {
-			'player' : monsters.Species('player', "@", 10, vision=10),
-			'monster' : monsters.Species('monster', "M", 3, vision=10),
-			'thief' : monsters.Species('thief', "M", 3, vision=10, drops=[
-				(1, 'money'),
-				]),
-			}
-	ITEMS = {
-			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
-			'money' : items.ItemType('money', '$', items.Effect.NONE),
-			'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
-			}
-	TERRAIN = {
-		None : terrain.Terrain(' ', ' ', False),
-		'#' : terrain.Terrain('#', "#", False, remembered='#'),
-		'.' : terrain.Terrain('.', ".", True),
-		'~' : terrain.Terrain('~', ".", True, allow_diagonal=False),
-		}
-
 
 class UnSettler(settlers.Settler):
 	def _populate(self):
@@ -159,6 +115,15 @@ class _MonsterAndPotion(settlers.Settler):
 		self.monsters += self.MONSTERS
 	def _place_items(self):
 		self.items += self.ITEMS
+
+class _MockMiniDarkRogueBuilder(builders.CustomMap):
+	MAP_DATA = """\
+		+--+ %
+		|@.| %
+		|..^%%
+		|.>|  
+		+--+  
+		"""
 
 class _MockMiniRogueBuilder(builders.CustomMap):
 	MAP_DATA = """\
@@ -274,7 +239,7 @@ def build(dungeon_id):
 	if dungeon_id == 'now you see me':
 		return MockGame(rng_seed=0, builders=[_MockBuilder], settlers=[_NowYouSeeMe])
 	if dungeon_id == 'mini dark rogue':
-		return MockDarkRogueDungeon(rng_seed=0, builders=[_MockMiniRogueBuilder], settlers=[UnSettler])
+		return MockRogueDungeon(rng_seed=0, builders=[_MockMiniDarkRogueBuilder], settlers=[UnSettler])
 	if dungeon_id == 'lonely':
 		return MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[UnSettler])
 	if dungeon_id == 'monsters on top':
@@ -312,7 +277,7 @@ def build(dungeon_id):
 	if dungeon_id == 'single mock monster':
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockMonster])
 	if dungeon_id == 'single mock thief':
-		dungeon = MockCursesGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockThief])
+		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[SingleMockThief])
 	if dungeon_id == 'mock settler':
 		dungeon = MockGame(rng_seed=0, builders=[self._MockBuilder], settlers=[self._MockSettler])
 	if dungeon_id == 'mock settler restored':

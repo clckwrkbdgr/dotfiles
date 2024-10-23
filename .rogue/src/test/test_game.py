@@ -16,7 +16,7 @@ from .. import messages
 from ..system import savefile
 from . import mock_dungeon
 from .mock_dungeon import MockGame
-from .mock_dungeon import MockRogueDungeon, MockDarkRogueDungeon
+from .mock_dungeon import MockRogueDungeon
 
 class MockWriterStream:
 	def __init__(self):
@@ -426,43 +426,43 @@ class TestVisibility(AbstractTestDungeon):
 				"""))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
-				+--   
+				+--+  
 				|..|  
 				|..@# 
 				|.>|  
-				+--   
+				+--+  
 				"""))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
-				_     
-				_  | #
-				_  ^@#
-				_ >|  
-				_     
+				+--+  
+				|  | #
+				|  ^@#
+				| >|  
+				+--+  
 				""").replace('_', ' '))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
-				_     
-				_    #
-				_   #@
-				_ >   
-				_     
+				+--+  
+				|  | #
+				|  ^#@
+				| >|  
+				+--+  
 				""").replace('_', ' '))
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
-				_    #
-				_    @
-				_   ##
-				_ >   
-				_     
+				+--+ #
+				|  | @
+				|  ^##
+				| >|  
+				+--+  
 				""").replace('_', ' '))
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
-				_    @
-				_    #
-				_     
-				_ >   
-				_     
+				+--+ @
+				|  | #
+				|  ^  
+				| >|  
+				+--+  
 				""").replace('_', ' '))
 
 class TestMovement(AbstractTestDungeon):
