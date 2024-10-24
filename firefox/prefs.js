@@ -203,6 +203,7 @@ user_pref("datareporting.healthreport.service.firstRun", true);
 user_pref("datareporting.policy.dataSubmissionPolicyAcceptedVersion", 2);
 user_pref("datareporting.policy.dataSubmissionPolicyNotifiedTime", "1465497966360");
 user_pref("datareporting.policy.firstRunTime", "1390118993252");
+user_pref("devtools.aboutdebugging.collapsibilities.processes", false);
 user_pref("devtools.debugger.auto-pretty-print", true);
 user_pref("devtools.editor.expandtab", false);
 user_pref("devtools.editor.tabsize", 4);
