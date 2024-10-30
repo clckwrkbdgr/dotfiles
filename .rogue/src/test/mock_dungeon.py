@@ -44,42 +44,27 @@ class UnSettler(settlers.Settler):
 	def _populate(self):
 		pass
 
-class CustomSettler(settlers.Settler):
-	MONSTERS = [
-			]
-	ITEMS = [
-			]
-	def _populate(self):
-		self.monsters += self.MONSTERS
-	def _place_items(self):
-		self.items += self.ITEMS
-
 class SingleMockMonster(settlers.SingleMonster):
 	MONSTER = ('monster', monsters.Behavior.ANGRY)
 
 class SingleMockThief(settlers.SingleMonster):
 	MONSTER = ('thief', monsters.Behavior.ANGRY)
 
-class _PotionsLyingAround(CustomSettler):
+class _PotionsLyingAround(settlers.CustomSettler):
 	ITEMS = [
 		('potion', Point(10, 6)),
 		('healing potion', Point(11, 6)),
 		]
 
-class _PotionsLyingAround2(CustomSettler):
-	ITEMS = [
-		('potion', Point(10, 6)),
-		]
-
-class _MockSettler(CustomSettler):
+class _MockSettler(settlers.CustomSettler):
 	MONSTERS = [
-			('monster', settlers.Behavior.ANGRY, Point(2, 5)),
+			('monster', settlers.Behavior.DUMMY, Point(2, 5)),
 			]
 	ITEMS = [
 			('potion', Point(10, 6)),
 			]
 
-class _NowYouSeeMe(CustomSettler):
+class _NowYouSeeMe(settlers.CustomSettler):
 	MONSTERS = [
 		('monster', settlers.Behavior.DUMMY, Point(1, 1)),
 		('monster', settlers.Behavior.DUMMY, Point(1, 6)),
@@ -98,18 +83,6 @@ class _MockBuilder(builders.CustomMap):
 		#..................#
 		####################
 		"""
-
-class _MonsterAndPotion(settlers.Settler):
-	MONSTERS = [
-			('monster', settlers.Behavior.INERT, Point(2, 5)),
-			]
-	ITEMS = [
-			('potion', Point(10, 6)),
-			]
-	def _populate(self):
-		self.monsters += self.MONSTERS
-	def _place_items(self):
-		self.items += self.ITEMS
 
 class _MockMiniDarkRogueBuilder(builders.CustomMap):
 	MAP_DATA = """\
@@ -187,7 +160,7 @@ class _MockMini6Builder(builders.CustomMap):
 		######
 		"""
 
-class _MonstersOnTopOfItems(CustomSettler):
+class _MonstersOnTopOfItems(settlers.CustomSettler):
 	MONSTERS = [
 		('monster', settlers.Behavior.DUMMY, Point(1, 1)),
 		('monster', settlers.Behavior.DUMMY, Point(1, 6)),
@@ -197,32 +170,32 @@ class _MonstersOnTopOfItems(CustomSettler):
 		('potion', Point(1, 6)),
 		]
 
-class _CloseMonster(CustomSettler):
+class _CloseMonster(settlers.CustomSettler):
 	MONSTERS = [
 		('monster', settlers.Behavior.DUMMY, Point(10, 6)),
 		]
 
-class _CloseThief(CustomSettler):
+class _CloseThief(settlers.CustomSettler):
 	MONSTERS = [
 		('thief', settlers.Behavior.DUMMY, Point(10, 6)),
 		]
 
-class _CloseInertMonster(CustomSettler):
+class _CloseInertMonster(settlers.CustomSettler):
 	MONSTERS = [
 		('monster', settlers.Behavior.INERT, Point(10, 6)),
 		]
 
-class _CloseAngryMonster(CustomSettler):
+class _CloseAngryMonster(settlers.CustomSettler):
 	MONSTERS = [
 		('monster', settlers.Behavior.ANGRY, Point(11, 6)),
 		]
 
-class _CloseAngryMonster2(CustomSettler):
+class _CloseAngryMonster2(settlers.CustomSettler):
 	MONSTERS = [
 		('monster', settlers.Behavior.ANGRY, Point(4, 4)),
 		]
 
-class _FightingGround(CustomSettler):
+class _FightingGround(settlers.CustomSettler):
 	MONSTERS = [
 		('monster', settlers.Behavior.DUMMY, Point(10, 6)),
 		('monster', settlers.Behavior.INERT, Point(9, 4)),
@@ -254,7 +227,7 @@ def build(dungeon_id, load_from_reader=None):
 			'mock settler': ([_MockBuilder], [_MockSettler]),
 			'mock settler restored': ([_MockBuilder], [_MockSettler]),
 			'fighting around': ([_MockBuilder], [_FightingGround]),
-			'potions lying around 2': ([_MockBuilder], [_PotionsLyingAround2]),
-			'monster and potion': ([_MockBuilder], [_MonsterAndPotion]),
+			'potions lying around 2': ([_MockBuilder], [_PotionsLyingAround]),
+			'monster and potion': ([_MockBuilder], [_MockSettler]),
 			}
 	return MockGame(rng_seed=0, builders=_DATA[dungeon_id][0], settlers=_DATA[dungeon_id][1], load_from_reader=load_from_reader)

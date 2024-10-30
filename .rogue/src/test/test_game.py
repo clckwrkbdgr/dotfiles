@@ -217,6 +217,7 @@ class TestItems(AbstractTestDungeon):
 			'redraw',
 			'user_action',
 			'Discovered potion @10;6',
+			'Discovered healing potion @11;6',
 			'redraw',
 			'user_action',
 			'player @10;6 10/10hp moves to 10;6',
@@ -1065,7 +1066,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
 			2,
 				'player', 0, 9, 6, 10, 
-				'monster', 3, 2, 5, 3, 
+				'monster', 1, 2, 5, 3, 
 			]
 		dump = [str(game.Version.ITEMS), str(dungeon.rng.seed)] + list(map(str, dump))
 		restored_dungeon = MockGame(dummy=True)
@@ -1105,7 +1106,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
 			2,
 				'player', 0, 9, 6, 10, 0, 0,
-				'monster', 3, 2, 5, 3, 0, 0,
+				'monster', 1, 2, 5, 3, 0, 0,
 			1,
 				'potion', 10, 6,
 			])))

@@ -34,6 +34,20 @@ class Settler(object):
 		"""
 		pass
 
+class CustomSettler(Settler):
+	""" Fills map with predetermined monsters and items.
+	Data should be provided as list of raw parameters:
+	(<item/monster data>, <pos>)
+	"""
+	MONSTERS = [
+			]
+	ITEMS = [
+			]
+	def _populate(self):
+		self.monsters += self.MONSTERS
+	def _place_items(self):
+		self.items += self.ITEMS
+
 class SingleMonster(Settler):
 	""" Single monster.
 

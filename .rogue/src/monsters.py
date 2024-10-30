@@ -45,7 +45,7 @@ class Monster(object):
 			if species_name == 'player':
 				behavior = Behavior.PLAYER
 			else:
-				behavior = Behavior.ANGRY
+				behavior = Behavior.DUMMY
 		pos = reader.read_point()
 		monster = cls(species, behavior, pos)
 		monster.hp = reader.read_int()
