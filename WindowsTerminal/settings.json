@@ -4,6 +4,7 @@
     "actions": [
         {
             "command": "scrollDownPage",
+            "id": "User.scrollDownPage",
             "keys": "ctrl+pgdn"
         },
         {
@@ -14,22 +15,26 @@
             "command": {
                 "action": "newTab"
             },
+            "id": "User.newTab.5DEADB41",
             "keys": "ctrl+t"
         },
         {
             "command": {
                 "action": "nextTab"
             },
+            "id": "User.nextTab.0",
             "keys": "ctrl+tab"
         },
         {
             "command": "scrollUpPage",
+            "id": "User.scrollUpPage",
             "keys": "ctrl+pgup"
         },
         {
             "command": {
                 "action": "prevTab"
             },
+            "id": "User.prevTab.0",
             "keys": "ctrl+shift+tab"
         }
     ],
@@ -61,7 +66,7 @@
                 "cursorShape": "filledBox",
                 "font": {
                     "face": "Consolas",
-                    "size": 11.0
+                    "size": 11
                 },
                 "guid": "{2bd2bba2-0106-42b1-becc-cb5ac4a38304}",
                 "historySize": 9001,
@@ -80,7 +85,7 @@
                 "cursorShape": "filledBox",
                 "font": {
                     "face": "Consolas",
-                    "size": 11.0
+                    "size": 11
                 },
                 "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
                 "historySize": 9001,
@@ -102,7 +107,7 @@
                 "cursorShape": "filledBox",
                 "font": {
                     "face": "Consolas",
-                    "size": 11.0
+                    "size": 11
                 },
                 "guid": "{a421a36a-dbce-4c78-852a-e89a6ad71a75}",
                 "hidden": false,
@@ -146,42 +151,5 @@
     "snapToGridOnResize": true,
     "tabSwitcherMode": "disabled",
     "theme": "system",
-    "themes": [
-        {
-            "name": "legacyDark",
-            "tab": {
-                "background": null,
-                "showCloseButton": "always",
-                "unfocusedBackground": null
-            },
-            "window": {
-                "applicationTheme": "dark",
-                "useMica": false
-            }
-        },
-        {
-            "name": "legacyLight",
-            "tab": {
-                "background": null,
-                "showCloseButton": "always",
-                "unfocusedBackground": null
-            },
-            "window": {
-                "applicationTheme": "light",
-                "useMica": false
-            }
-        },
-        {
-            "name": "legacySystem",
-            "tab": {
-                "background": null,
-                "showCloseButton": "always",
-                "unfocusedBackground": null
-            },
-            "window": {
-                "applicationTheme": "system",
-                "useMica": false
-            }
-        }
-    ]
+    "themes": []
 }
