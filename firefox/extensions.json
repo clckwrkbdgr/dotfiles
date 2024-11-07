@@ -62,12 +62,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4367975/tampermonkey-5.3.1.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4379021/tampermonkey-5.3.2.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{ef09a717-2421-4fcb-9fa0-35cfdb5f6c36}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "5.3.1",
+			"version": "5.3.2",
 			"visible": true
 		},
 		{
@@ -242,12 +242,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4377088/noscript-11.5.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4379558/noscript-11.5.2.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{a4224489-1408-4951-a90f-510526edd38e}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "11.5.0",
+			"version": "11.5.2",
 			"visible": true
 		},
 		{

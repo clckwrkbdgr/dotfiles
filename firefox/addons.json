@@ -14,9 +14,9 @@
 			"homepageURL": "https://tampermonkey.net",
 			"id": "firefox@tampermonkey.net",
 			"name": "Tampermonkey",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4367975/tampermonkey-5.3.1.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4379021/tampermonkey-5.3.2.xpi",
 			"type": "extension",
-			"version": "5.3.1"
+			"version": "5.3.2"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/ghosttext/",
@@ -50,9 +50,9 @@
 			"homepageURL": "https://noscript.net",
 			"id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
 			"name": "NoScript Security Suite",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4377088/noscript-11.5.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4379558/noscript-11.5.2.xpi",
 			"type": "extension",
-			"version": "11.5.0"
+			"version": "11.5.2"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/styl-us/",
