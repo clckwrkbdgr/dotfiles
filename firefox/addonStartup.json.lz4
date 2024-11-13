@@ -282,7 +282,7 @@
             },
             "webcompat@mozilla.org": {
                 "dependencies": [],
-                "enabled": false,
+                "enabled": true,
                 "lastModifiedTime": 0,
                 "loader": null,
                 "path": "webcompat@mozilla.org.xpi",

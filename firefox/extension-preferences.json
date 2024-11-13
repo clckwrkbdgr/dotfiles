@@ -129,7 +129,6 @@
     "webcompat@mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:privateBrowsingAllowed",
             "internal:svgContextPropertiesAllowed"
         ]
     },
