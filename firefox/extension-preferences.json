@@ -129,7 +129,8 @@
     "webcompat@mozilla.org": {
         "origins": [],
         "permissions": [
-            "internal:svgContextPropertiesAllowed"
+            "internal:svgContextPropertiesAllowed",
+            "internal:privateBrowsingAllowed"
         ]
     },
     "wikipedia@search.mozilla.org": {
