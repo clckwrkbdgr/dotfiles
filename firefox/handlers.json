@@ -185,6 +185,12 @@
         "application/x-java-archive": {
             "action": 1
         },
+        "application/x-lzma": {
+            "action": 1,
+            "extensions": [
+                "lzma"
+            ]
+        },
         "application/x-lzma-compressed": {
             "action": 1,
             "extensions": [
