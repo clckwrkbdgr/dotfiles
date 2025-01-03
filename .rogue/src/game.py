@@ -211,18 +211,20 @@ class Game(object):
 	def get_viewport(self):
 		""" Returns current viewport size (for UI purposes). """
 		return self.strata.size
-	def tostring(self, with_fov=False):
+	def tostring(self, with_fov=False, strcell=None):
 		""" Creates string representation of the current viewport.
 		If with_fov=True, considers transparency/lighting, otherwise everything is visible.
+		If strcell is given, it is lambda that takes pair (x, y) and returns single-char representation of that cell. By default get_sprite(x, y) is used.
 		"""
 		size = self.get_viewport()
+		strcell = strcell or self.get_sprite
 		result = ""
 		if not with_fov:
 			old_god_vision = self.god.vision
 			self.god.vision = True
 		for y in range(size.height):
 			for x in range(size.width):
-				result += self.get_sprite(x, y) or ' '
+				result += strcell(x, y) or ' '
 			result += "\n"
 		if not with_fov:
 			self.god.vision = old_god_vision
