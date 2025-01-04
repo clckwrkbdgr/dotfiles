@@ -242,12 +242,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4379558/noscript-11.5.2.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4411102/noscript-12.1.1.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{a4224489-1408-4951-a90f-510526edd38e}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "11.5.2",
+			"version": "12.1.1",
 			"visible": true
 		},
 		{
