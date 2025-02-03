@@ -95,51 +95,10 @@ class _MockMiniRogueBuilder(builders.CustomMap):
 
 class _MockMiniBuilder(builders.CustomMap):
 	MAP_DATA = """\
-		@...#
-		....#
-		...>#
+		@#..#
+		~#..#
+		~~.>#
 		#####
-		"""
-
-class _MockMini2Builder(builders.CustomMap):
-	MAP_DATA = """\
-		#####
-		#.@.#
-		#..>#
-		#####
-		"""
-
-class _MockMini3Builder(builders.CustomMap):
-	MAP_DATA = """\
-		######
-		#.@#.#
-		#...>#
-		######
-		"""
-
-class _MockMini4Builder(builders.CustomMap):
-	MAP_DATA = """\
-		######
-		#@#~>#
-		#~#~##
-		#~~~~#
-		######
-		"""
-
-class _MockMini5Builder(builders.CustomMap):
-	MAP_DATA = """\
-		######
-		#.@>.#
-		#....#
-		######
-		"""
-
-class _MockMini6Builder(builders.CustomMap):
-	MAP_DATA = """\
-		######
-		#.@..#
-		#...>#
-		######
 		"""
 
 class _MonstersOnTopOfItems(settlers.CustomSettler):
@@ -190,12 +149,12 @@ def build(dungeon_id, load_from_reader=None):
 			'lonely': ([_MockBuilder], [UnSettler]),
 			'monsters on top': ([_MockBuilder], [_MonstersOnTopOfItems]),
 			'mini lonely': ([_MockMiniBuilder], [UnSettler]),
-			'mini 2 lonely': ([_MockMini2Builder], [UnSettler]),
-			'mini 3 lonely': ([_MockMini3Builder], [UnSettler]),
-			'mini 4 lonely': ([_MockMini4Builder], [UnSettler]),
-			'mini 5 lonely': ([_MockMini5Builder], [UnSettler]),
-			'mini 6 monster': ([_MockMini6Builder], [SingleMockMonster]),
-			'mini 6 lonely': ([_MockMini6Builder], [UnSettler]),
+			'mini 2 lonely': ([_MockMiniBuilder], [UnSettler]),
+			'mini 3 lonely': ([_MockMiniBuilder], [UnSettler]),
+			'mini 4 lonely': ([_MockMiniBuilder], [UnSettler]),
+			'mini 5 lonely': ([_MockMiniBuilder], [UnSettler]),
+			'mini 6 monster': ([_MockBuilder], [_NowYouSeeMe]),
+			'mini 6 lonely': ([_MockMiniBuilder], [UnSettler]),
 			'mini rogue 2 lonely': ([_MockMiniRogueBuilder], [UnSettler]),
 			'mini rogue lonely': ([_MockMiniRogueBuilder], [UnSettler]),
 			'potions lying around': ([_MockBuilder], [_PotionsLyingAround]),

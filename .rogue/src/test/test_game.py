@@ -566,24 +566,24 @@ class TestMovement(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 	def should_not_move_player_into_a_wall(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 2 lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 
-		dungeon.move(dungeon.get_player(), game.Direction.UP), 
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
-		dungeon.move(dungeon.get_player(), game.Direction.LEFT), 
-		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
+		dungeon.move(dungeon.get_player(), game.Direction.DOWN), 
+		self.assertEqual(dungeon.get_player().pos, Point(0, 1))
 	def should_move_player_through_a_wall_in_noclip_mode(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 3 lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 
 		dungeon.god.noclip = True
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
-		self.assertEqual(dungeon.get_player().pos, Point(3, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(1, 0))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
-		self.assertEqual(dungeon.get_player().pos, Point(4, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(2, 0))
 	def should_move_player_diagonally_only_if_allowed(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 4 lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 
 		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
 		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.DOWN))
@@ -593,7 +593,7 @@ class TestMovement(AbstractTestDungeon):
 		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT))
 		self.assertFalse(dungeon.move(dungeon.get_player(), game.Direction.UP_LEFT))
 		self.assertTrue(dungeon.move(dungeon.get_player(), game.Direction.RIGHT))
-		self.assertEqual(dungeon.get_player().pos, Point(3, 3))
+		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
 	def should_not_allow_move_player_diagonally_in_autoexplore_mode(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
 		dungeon.clear_event() # Clear events.
@@ -635,15 +635,19 @@ class TestMovement(AbstractTestDungeon):
 	def should_descend_to_new_map(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 5 lonely')
 		dungeon.affect_health(dungeon.get_player(), -5)
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 
 		dungeon.descend()
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
+		dungeon.move(dungeon.get_player(), game.Direction.DOWN), 
+		dungeon.move(dungeon.get_player(), game.Direction.DOWN), 
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
+		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT), 
 		dungeon.descend()
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		self.assertEqual(dungeon.get_player().hp, 5)
-		self.assertEqual(dungeon.tostring(), textwrap.dedent(mock_dungeon._MockMini5Builder.MAP_DATA))
+		self.assertEqual(dungeon.tostring(), textwrap.dedent(mock_dungeon._MockMiniBuilder.MAP_DATA).replace('~', '.'))
 	def should_directly_jump_to_new_position(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
@@ -887,20 +891,20 @@ class TestAutoMode(AbstractTestDungeon):
 				"""))
 	def should_not_stop_immediately_in_auto_mode_if_exit_is_already_visible(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 6 lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		dungeon.clear_event() # Clear events.
 
-		dungeon.walk_to(Point(4, 2))
+		dungeon.walk_to(Point(1, 2))
 		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
+		self.assertEqual(dungeon.get_player().pos, Point(0, 1))
 	def should_not_allow_autowalking_if_monsters_are_nearby(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 6 monster')
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		dungeon.clear_event() # Clear events.
 
-		dungeon.walk_to(Point(4, 2))
+		dungeon.walk_to(Point(12, 8))
 		self.assertFalse(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(2, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, 'monsters')
