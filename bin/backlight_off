@@ -7,7 +7,7 @@ while xinput query-state "$XINPUT_DEVICE_NAME" | fgrep -q '=down'; do
 	if [ "$fuse" -le 0 ]; then
 		xinput query-state "$XINPUT_DEVICE_NAME" | fgrep '=down' | sed 's/^[ \t]*key\[\([0-9]*\)\]=down/\1/' | while read keycode; do
 			echo "Key $keycode is still pressed, cannot backlight." >&2
-			xmodmap -pk | grep "^ $keycode " >&2
+			xmodmap -pk | egrep "^\s*$keycode\s*" >&2
 		done
 		break
 	fi
