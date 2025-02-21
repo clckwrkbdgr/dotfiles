@@ -264,8 +264,8 @@
 			"loader": null,
 			"location": "app-profile",
 			"manifestVersion": 2,
-			"optionsBrowserStyle": false,
-			"optionsType": 3,
+			"optionsBrowserStyle": true,
+			"optionsType": null,
 			"requestedPermissions": {
 				"origins": [],
 				"permissions": []
@@ -277,12 +277,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4338993/styl_us-1.5.51.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4433683/styl_us-2.3.12.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{9473608a-d068-45af-90a5-ff851165b8a9}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.5.51",
+			"version": "2.3.12",
 			"visible": true
 		},
 		{
