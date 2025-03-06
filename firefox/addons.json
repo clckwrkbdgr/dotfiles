@@ -32,9 +32,9 @@
 			"homepageURL": "https://www.soeren-hentzschel.at/firefox-webextensions/new-tab-override/",
 			"id": "newtaboverride@agenedia.com",
 			"name": "New Tab Override",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4303770/new_tab_override-16.0.1.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4442226/new_tab_override-17.0.0.xpi",
 			"type": "extension",
-			"version": "16.0.1"
+			"version": "17.0.0"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/",

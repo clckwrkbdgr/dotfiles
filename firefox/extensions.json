@@ -168,16 +168,16 @@
 			"signedState": 2,
 			"signedTypes": [
 				2,
-				0
+				1
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4303770/new_tab_override-16.0.1.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4442226/new_tab_override-17.0.0.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{b99ecef3-6239-4db5-a030-ef8c89657283}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "16.0.1",
+			"version": "17.0.0",
 			"visible": true
 		},
 		{
