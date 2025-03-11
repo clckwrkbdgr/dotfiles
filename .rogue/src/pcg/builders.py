@@ -2,7 +2,8 @@ import itertools
 import copy
 import textwrap
 from ..math import Matrix, Point, Size, Rect
-from ..system.logging import Log
+import logging
+Log = logging.getLogger('rogue')
 from . import _base as pcg
 
 class Builder(object):

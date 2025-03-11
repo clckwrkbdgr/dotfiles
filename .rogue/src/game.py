@@ -4,7 +4,8 @@ from .pcg import RNG
 from . import math
 from .math import Point, Matrix, Size
 from . import messages
-from .system.logging import Log
+import logging
+Log = logging.getLogger('rogue')
 from .ui import Action
 from . import monsters, items, terrain
 

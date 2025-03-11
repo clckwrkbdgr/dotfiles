@@ -1,7 +1,8 @@
 from collections import namedtuple
 import copy
 import itertools
-from .system.logging import Log
+import logging
+Log = logging.getLogger('rogue')
 
 _Point = namedtuple('Point', 'x y')
 class Point(_Point):

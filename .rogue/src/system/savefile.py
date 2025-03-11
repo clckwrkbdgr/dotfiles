@@ -1,6 +1,7 @@
 import os
 import contextlib
-from .logging import Log
+import logging
+Log = logging.getLogger('rogue')
 from ..math import Point, Size, Matrix
 
 class AutoSavefile:

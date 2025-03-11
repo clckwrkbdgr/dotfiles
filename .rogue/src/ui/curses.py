@@ -3,7 +3,8 @@ from ._base import UI, Action
 import functools
 from collections import namedtuple
 import curses, curses.ascii
-from ..system.logging import Log
+import logging
+Log = logging.getLogger('rogue')
 from .. import messages
 from ..game import Game, Direction
 from ..math import Point
