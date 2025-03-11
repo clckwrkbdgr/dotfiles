@@ -1,5 +1,5 @@
-from ... import unittest
-from ...math import Point, Size, Rect, Matrix
+from clckwrkbdgr import unittest
+from clckwrkbdgr.math import Point, Size, Rect, Matrix
 from ..game import Game
 from ..dungeon import Dungeon
 

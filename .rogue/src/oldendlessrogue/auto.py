@@ -1,8 +1,8 @@
 import random
 import logging
 trace = logging.getLogger('rogue')
-from ..math import algorithm
-from ..math import Point, Size, Rect, get_neighbours, sign
+from clckwrkbdgr.math import algorithm
+from clckwrkbdgr.math import Point, Size, Rect, get_neighbours, sign
 
 class DungeonWave(algorithm.Wave):
 	def __init__(self, matrix, region):

@@ -1,5 +1,5 @@
 import contextlib
-from ..fs import SerializedEntity
+from clckwrkbdgr.fs import SerializedEntity
 
 @contextlib.contextmanager
 def stored_entity(path, name, default_constructor):

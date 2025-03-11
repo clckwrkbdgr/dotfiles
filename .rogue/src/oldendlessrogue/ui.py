@@ -1,7 +1,7 @@
 import curses
 import logging
 trace = logging.getLogger('rogue')
-from ..math import Point
+from clckwrkbdgr.math import Point
 
 class Curses: # pragma: no cover -- TODO unit tests for curses or manual testing utility.
 	CONTROLS = {(ord(k) if isinstance(k, str) else k):v for k,v in {

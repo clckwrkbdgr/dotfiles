@@ -1,5 +1,5 @@
-from ... import logging
-from ... import unittest
+from clckwrkbdgr import logging
+from clckwrkbdgr import unittest
 from ..dungeon import Dungeon
 from .. import auto
 

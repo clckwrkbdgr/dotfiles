@@ -1,8 +1,8 @@
 import sys
 import logging
 trace = logging.getLogger('rogue')
-from .. import xdg
-from .. import logging
+from clckwrkbdgr import xdg
+from clckwrkbdgr import logging
 from .dungeon import Dungeon
 from .ui import Curses
 from .game import Game

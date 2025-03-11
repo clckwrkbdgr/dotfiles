@@ -1,5 +1,5 @@
-from ... import unittest
-from ... import fs
+from clckwrkbdgr import unittest
+from clckwrkbdgr import fs
 from .. import util
 
 class MockEntity(object):

@@ -1,6 +1,6 @@
 import logging
 trace = logging.getLogger('rogue')
-from ..math import Point
+from clckwrkbdgr.math import Point
 from .auto import Autoexplorer
 
 class Game:

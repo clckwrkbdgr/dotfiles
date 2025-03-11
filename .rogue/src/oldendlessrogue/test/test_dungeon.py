@@ -1,5 +1,5 @@
-from ...math import Point, Size, Matrix
-from ... import unittest
+from clckwrkbdgr.math import Point, Size, Matrix
+from clckwrkbdgr import unittest
 from ..dungeon import Dungeon, Strata
 
 class MockDungeon(Dungeon):
