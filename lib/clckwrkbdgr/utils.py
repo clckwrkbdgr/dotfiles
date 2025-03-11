@@ -313,3 +313,17 @@ def ignore_warnings(): # pragma: no cover -- TODO very specific functionality.
 	with warnings.catch_warnings():
 		warnings.simplefilter("ignore")
 		yield
+
+def with_metaclass(metaclass):
+	""" Class decorator to add metaclass for Py2/Py3. """
+	def decorator(cls):
+		body = vars(cls).copy()
+		# clean out class body
+		body.pop('__dict__', None)
+		body.pop('__weakref__', None)
+		return metaclass(cls.__name__, cls.__bases__, body)
+	return decorator
+
+def all_subclasses(cls):
+	""" Returns list of all subclasses (including not direct ones) of given new-style class. """
+	return cls.__subclasses__() + [g for s in cls.__subclasses__() for g in all_subclasses(s)]

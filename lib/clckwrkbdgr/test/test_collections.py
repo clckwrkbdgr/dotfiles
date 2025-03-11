@@ -2,7 +2,7 @@ from clckwrkbdgr import unittest
 import pickle
 from clckwrkbdgr.collections import AutoRegistry
 from clckwrkbdgr.collections import dotdict
-from clckwrkbdgr.collections import Enum
+from clckwrkbdgr.collections import Enum, DocstringEnum
 
 class TestDotDict(unittest.TestCase):
 	def should_access_dotdict_fields_via_dot(self):
@@ -105,3 +105,12 @@ class TestEnumeration(unittest.TestCase):
 		self.assertEqual(MyOtherEnum.SECOND, 2)
 		self.assertEqual(MyOtherEnum._top(), 2)
 		self.assertEqual(MyOtherEnum._all(), {'FIRST':1, 'SECOND':2})
+	def should_create_enumeration(self):
+		class MyEnum(DocstringEnum):
+			"""
+			first
+			Second
+			"""
+		self.assertEqual(MyEnum.FIRST, 0)
+		self.assertEqual(MyEnum.SECOND, 1)
+		self.assertEqual(MyEnum.CURRENT, 2)

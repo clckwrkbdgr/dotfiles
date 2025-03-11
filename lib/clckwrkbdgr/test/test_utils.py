@@ -54,6 +54,26 @@ class TestUtils(unittest.TestCase):
 		self.assertFalse(utils.is_integer('0'))
 		self.assertFalse(utils.is_integer(1.1))
 
+class TestMetaUtils(unittest.TestCase):
+	def should_use_metaclasses(self):
+		class _MyMetaClass(type):
+			@property
+			def value(self):
+				return "foobar"
+		@utils.with_metaclass(_MyMetaClass)
+		class _MyClass(object):
+			pass
+		self.assertEqual(_MyClass.value, "foobar")
+	def should_list_all_subclasses(self):
+		class _MyParentClass(object): pass
+		class _MyDirectChild(_MyParentClass): pass
+		class _MyDirectChildParent(_MyParentClass): pass
+		class _MyNonDirectChild(_MyParentClass): pass
+		self.assertEqual(sorted(utils.all_subclasses(_MyParentClass), key=lambda cls: cls.__name__), [
+			_MyDirectChild,
+			_MyDirectChildParent,
+			_MyNonDirectChild,
+			])
 class TestExitCode(unittest.TestCase):
 	def should_convert_None_to_0(self):
 		self.assertEqual(utils.convert_to_exit_code(None), 0)

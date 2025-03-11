@@ -99,3 +99,25 @@ class Enum(object):
 	def _top(cls):
 		""" Returns the last (topmost) generated value. """
 		return max(cls._all().values())
+
+class DocstringEnumType(type):
+	""" Metaclass for DocstringEnum classes. """
+	def __getattr__(cls, name):
+		if name == '_values':
+			cls._values = [line.strip().upper() for line in cls.__doc__.splitlines() if line.strip()]
+			return cls._values
+		return cls._values.index(name)
+	@property
+	def CURRENT(self):
+		return len(self._values)
+
+@clckwrkbdgr.utils.with_metaclass(DocstringEnumType)
+class DocstringEnum(object):
+	""" Enum values should be described in a docstring, one for line, e.g.:
+
+	first
+	Second
+
+	All names are converted to all caps. Values start with 0. Meta value CURRENT returns the next available value (e.g. 2 in this case).
+	"""
+	pass

@@ -1,5 +1,5 @@
 from .defs import *
-from .utils import Enum
+from clckwrkbdgr.collections import DocstringEnum as Enum
 from . import items
 
 class Behavior(Enum):

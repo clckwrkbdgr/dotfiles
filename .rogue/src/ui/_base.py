@@ -1,4 +1,4 @@
-from ..utils import Enum
+from clckwrkbdgr.collections import DocstringEnum as Enum
 
 class Action(Enum):
 	""" NONE
