@@ -58,7 +58,7 @@ class SingleMonster(Settler):
 
 	def _populate(self):
 		""" Places monster at first passable terrain. """
-		passable = lambda pos: self.builder.strata.cell(pos.x, pos.y).terrain.passable
+		passable = lambda pos: self.builder.strata.cell(pos).terrain.passable
 		pos = pcg.pos(self.rng, self.builder.strata.size, lambda pos: passable(pos) and pos not in [self.builder.start_pos, self.builder.exit_pos])
 		self.monsters.append(self.MONSTER + (pos,))
 
@@ -79,7 +79,7 @@ class Squatters(Settler):
 
 	def is_passable(self, pos):
 		""" True if terrain is passable. """
-		return self.builder.strata.cell(pos.x, pos.y).terrain.passable
+		return self.builder.strata.cell(pos).terrain.passable
 	def is_free(self, pos):
 		""" True if not occupied by any other object/monster. """
 		if not self.is_passable(pos):
@@ -96,7 +96,7 @@ class Squatters(Settler):
 	def _populate(self):
 		""" Places random population of different types of monsters.
 		"""
-		total_passable_cells = sum(1 for pos in self.builder.strata.size if self.is_passable(pos))
+		total_passable_cells = sum(1 for pos in self.builder.strata.size.iter_points() if self.is_passable(pos))
 		total_monsters = int(total_passable_cells / float(self.CELLS_PER_MONSTER))
 		self.monster_cells = set()
 		for _ in range(total_monsters):
@@ -105,7 +105,7 @@ class Squatters(Settler):
 			self.monsters.append(self._choice(self.MONSTERS) + (pos,))
 	def _place_items(self):
 		""" Drops items in random locations. """
-		total_passable_cells = sum(1 for pos in self.builder.strata.size if self.is_passable(pos))
+		total_passable_cells = sum(1 for pos in self.builder.strata.size.iter_points() if self.is_passable(pos))
 		total_items = int(total_passable_cells / float(self.CELLS_PER_ITEM))
 		for _ in range(total_items):
 			pos = pcg.pos(self.rng, self.builder.strata.size, self.is_free)

@@ -34,10 +34,10 @@ class TestSquatters(unittest.TestCase):
 				'wall_h' : Terrain('wall_h', "-", False, remembered='-'),
 				'wall_v' : Terrain('wall_v', "|", False, remembered='|'),
 				}
-		for pos in builder.strata.size:
+		for pos in builder.strata.size.iter_points():
 			builder.strata.set_cell(
-					pos.x, pos.y,
-					Cell(MockRogueDungeon.TERRAIN[builder.strata.cell(pos.x, pos.y)]),
+					pos,
+					Cell(MockRogueDungeon.TERRAIN[builder.strata.cell(pos)]),
 					)
 	def should_check_availability_of_placement_position(self):
 		rng = RNG(0)
@@ -79,17 +79,17 @@ class TestSquatters(unittest.TestCase):
 		settler.populate()
 		self.maxDiff = None
 		self.assertEqual(settler.monsters, [
-			('plant',  monsters.Behavior.DUMMY, Point(x=29, y=20)),
-			('slime',  monsters.Behavior.INERT, Point(x=64, y=11)),
-			('plant',  monsters.Behavior.DUMMY, Point(x=59, y=4)),
-			('slime',  monsters.Behavior.INERT, Point(x=44, y=12)),
-			('slime',  monsters.Behavior.INERT, Point(x=71, y=13)),
-			('slime',  monsters.Behavior.INERT, Point(x=36, y=7)),
-			('rodent', monsters.Behavior.ANGRY, Point(x=27, y=18)),
+			('plant',  monsters.Behavior.DUMMY, Point(29, 20)),
+			('slime',  monsters.Behavior.INERT, Point(64, 11)),
+			('plant',  monsters.Behavior.DUMMY, Point(59, 4)),
+			('slime',  monsters.Behavior.INERT, Point(44, 12)),
+			('slime',  monsters.Behavior.INERT, Point(71, 13)),
+			('slime',  monsters.Behavior.INERT, Point(36, 7)),
+			('rodent', monsters.Behavior.ANGRY, Point(27, 18)),
 			])
 		self.assertEqual(settler.items, [
-			('healing potion', Point(x=35, y=21)),
-			('healing potion', Point(x=63, y=7)),
+			('healing potion', Point(35, 21)),
+			('healing potion', Point(63, 7)),
 			])
 	def should_populate_dungeon_with_weighted_squatters(self):
 		rng = RNG(0)
@@ -111,15 +111,15 @@ class TestSquatters(unittest.TestCase):
 		settler.populate()
 		self.maxDiff = None
 		self.assertEqual(settler.monsters, [
-			('slime',  monsters.Behavior.INERT, Point(x=29, y=20)),
-			('rodent', monsters.Behavior.ANGRY, Point(x=64, y=11)),
-			('plant',  monsters.Behavior.DUMMY, Point(x=59, y=4)),
-			('rodent', monsters.Behavior.ANGRY, Point(x=44, y=12)),
-			('rodent', monsters.Behavior.ANGRY, Point(x=71, y=13)),
-			('rodent', monsters.Behavior.ANGRY, Point(x=36, y=7)),
-			('rodent', monsters.Behavior.ANGRY, Point(x=27, y=18)),
+			('slime',  monsters.Behavior.INERT, Point(29, 20)),
+			('rodent', monsters.Behavior.ANGRY, Point(64, 11)),
+			('plant',  monsters.Behavior.DUMMY, Point(59, 4)),
+			('rodent', monsters.Behavior.ANGRY, Point(44, 12)),
+			('rodent', monsters.Behavior.ANGRY, Point(71, 13)),
+			('rodent', monsters.Behavior.ANGRY, Point(36, 7)),
+			('rodent', monsters.Behavior.ANGRY, Point(27, 18)),
 			])
 		self.assertEqual(settler.items, [
-			('healing potion', Point(x=35, y=21)),
-			('healing potion', Point(x=17, y=11)),
+			('healing potion', Point(35, 21)),
+			('healing potion', Point(17, 11)),
 			])

@@ -5,6 +5,7 @@ from ..math import Matrix, Point, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
 from . import _base as pcg
+import clckwrkbdgr.math
 
 class Builder(object):
 	""" Base class to build terrain matrix
@@ -62,12 +63,12 @@ class CustomMap(Builder):
 			for y in range(self.size.height):
 				if self._map_data[y][x] == '@':
 					self.start_pos = Point(x, y)
-					self.strata.set_cell(x, y, self.ENTER_TERRAIN)
+					self.strata.set_cell((x, y), self.ENTER_TERRAIN)
 				elif self._map_data[y][x] == '>':
 					self.exit_pos = Point(x, y)
-					self.strata.set_cell(x, y, self.EXIT_TERRAIN)
+					self.strata.set_cell((x, y), self.EXIT_TERRAIN)
 				else:
-					self.strata.set_cell(x, y, self._map_data[y][x])
+					self.strata.set_cell((x, y), self._map_data[y][x])
 
 class RogueDungeon(Builder):
 	""" Original Rogue dungeon.
@@ -87,7 +88,7 @@ class RogueDungeon(Builder):
 			max_room_size = Size(min_room_size.width, max_room_size.height)
 		if max_room_size.height < min_room_size.height:
 			max_room_size = Size(max_room_size.width, min_room_size.height)
-		for cell in grid.size:
+		for cell in grid.size.iter_points():
 			room_size = Size(
 					self.rng.range(min_room_size.width, max_room_size.width + 1),
 					self.rng.range(min_room_size.height, max_room_size.height + 1),
@@ -98,9 +99,9 @@ class RogueDungeon(Builder):
 					random_non_negative(cell_size.width - room_size.width - 1),
 					random_non_negative(cell_size.height - room_size.height - 1),
 					)
-			grid.set_cell(cell.x, cell.y, Rect(topleft, room_size))
+			grid.set_cell(cell, Rect(topleft, room_size))
 
-		maze = {k:set() for k in grid.size}
+		maze = {k:set() for k in grid.size.iter_points()}
 		for column in range(grid.size.width):
 			for row in range(grid.size.height):
 				if column < grid.size.width - 1:
@@ -149,8 +150,8 @@ class RogueDungeon(Builder):
 				direction = 'H'
 			else:
 				direction = 'V'
-			start_room = grid.cell(start_room.x, start_room.y)
-			stop_room = grid.cell(stop_room.x, stop_room.y)
+			start_room = grid.cell(start_room)
+			stop_room = grid.cell(stop_room)
 
 			bending_point = 1
 			if direction == 'H':
@@ -184,21 +185,21 @@ class RogueDungeon(Builder):
 				bending_point,
 				))
 
-		for room in grid.size:
-			room = grid.cell(room.x, room.y)
-			self.strata.set_cell(room.topleft.x, room.topleft.y, 'corner')
-			self.strata.set_cell(room.topleft.x, room.topleft.y+room.size.height, 'corner')
-			self.strata.set_cell(room.topleft.x+room.size.width, room.topleft.y, 'corner')
-			self.strata.set_cell(room.topleft.x+room.size.width, room.topleft.y+room.size.height, 'corner')
+		for room in grid.size.iter_points():
+			room = grid.cell(room)
+			self.strata.set_cell((room.topleft.x, room.topleft.y), 'corner')
+			self.strata.set_cell((room.topleft.x, room.topleft.y+room.size.height), 'corner')
+			self.strata.set_cell((room.topleft.x+room.size.width, room.topleft.y), 'corner')
+			self.strata.set_cell((room.topleft.x+room.size.width, room.topleft.y+room.size.height), 'corner')
 			for x in range(room.topleft.x+1, room.topleft.x+room.size.width):
-				self.strata.set_cell(x, room.topleft.y, 'wall_h')
-				self.strata.set_cell(x, room.topleft.y+room.size.height, 'wall_h')
+				self.strata.set_cell((x, room.topleft.y), 'wall_h')
+				self.strata.set_cell((x, room.topleft.y+room.size.height), 'wall_h')
 			for y in range(room.topleft.y+1, room.topleft.y+room.size.height):
-				self.strata.set_cell(room.topleft.x, y, 'wall_v')
-				self.strata.set_cell(room.topleft.x+room.size.width, y, 'wall_v')
+				self.strata.set_cell((room.topleft.x, y), 'wall_v')
+				self.strata.set_cell((room.topleft.x+room.size.width, y), 'wall_v')
 			for y in range(room.topleft.y+1, room.topleft.y+room.size.height):
 				for x in range(room.topleft.x+1, room.topleft.x+room.size.width):
-					self.strata.set_cell(x, y, 'floor')
+					self.strata.set_cell((x, y), 'floor')
 
 		for start, stop, direction, bending_point in tunnels:
 			iter_points = []
@@ -227,20 +228,20 @@ class RogueDungeon(Builder):
 								iter_points.append( Point(x, y))
 						lead = stop.x
 			for cell in iter_points:
-				self.strata.set_cell(cell.x, cell.y, 'rogue_passage')
-			self.strata.set_cell(start.x, start.y, 'rogue_door')
-			self.strata.set_cell(stop.x, stop.y, 'rogue_door')
+				self.strata.set_cell(cell, 'rogue_passage')
+			self.strata.set_cell(start, 'rogue_door')
+			self.strata.set_cell(stop, 'rogue_door')
 
-		enter_room_key = self.rng.choice(list(grid.size))
-		enter_room = grid.cell(enter_room_key.x, enter_room_key.y)
+		enter_room_key = self.rng.choice(list(grid.size.iter_points()))
+		enter_room = grid.cell(enter_room_key)
 		self.start_pos = Point(
 					self.rng.range(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
 					self.rng.range(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
 					)
 
 		for _ in range(9):
-			exit_room_key = self.rng.choice(list(grid.size))
-			exit_room = grid.cell(exit_room_key.x, exit_room_key.y)
+			exit_room_key = self.rng.choice(list(grid.size.iter_points()))
+			exit_room = grid.cell(exit_room_key)
 			self.exit_pos = Point(
 					self.rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
 					self.rng.range(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
@@ -324,7 +325,7 @@ class BinarySpacePartition(object):
 				return
 		else:
 			door = self.door_generator(userspace)
-		assert userspace.contains(door), "Door {0} not in room user space {1}".format(door, userspace)
+		assert userspace.contains(door, with_border=True), "Door {0} not in room user space {1}".format(door, userspace)
 		yield (topleft, bottomright, horizontal, door)
 		if horizontal:
 			the_divide, door_pos = door
@@ -356,16 +357,16 @@ class BSPBuilder(object):
 		"""
 		for x in range(topleft.x, bottomright.x + 1):
 			for y in range(topleft.y, bottomright.y + 1):
-				self.field.set_cell(x, y, self.free())
+				self.field.set_cell((x, y), self.free())
 		if is_horizontal:
 			the_divide = door_pos.x
 			for y in range(topleft.y, bottomright.y + 1):
-				self.field.set_cell(the_divide, y, self.obstacle())
+				self.field.set_cell((the_divide, y), self.obstacle())
 		else:
 			the_divide = door_pos.y
 			for x in range(topleft.x, bottomright.x + 1):
-				self.field.set_cell(x, the_divide, self.obstacle())
-		self.field.set_cell(door_pos.x, door_pos.y, self.door())
+				self.field.set_cell((x, the_divide), self.obstacle())
+		self.field.set_cell(door_pos, self.door())
 
 class BSPBuildingBuilder(BSPBuilder):
 	""" Like BSPBuilder, but produces solid "buildings" made of "obstacle" terrain
@@ -379,20 +380,20 @@ class BSPBuildingBuilder(BSPBuilder):
 		"""
 		for x in range(topleft.x + 3, bottomright.x + 1 - 3):
 			for y in range(topleft.y + 3, bottomright.y + 1 - 3):
-				self.field.set_cell(x, y, self.obstacle())
+				self.field.set_cell((x, y), self.obstacle())
 		if is_horizontal:
 			the_divide = door_pos.x
 			for y in range(topleft.y, bottomright.y + 1):
-				self.field.set_cell(the_divide - 1, y, self.free())
-				self.field.set_cell(the_divide, y, self.free())
-				self.field.set_cell(the_divide + 1, y, self.free())
+				self.field.set_cell((the_divide - 1, y), self.free())
+				self.field.set_cell((the_divide, y), self.free())
+				self.field.set_cell((the_divide + 1, y), self.free())
 		else:
 			the_divide = door_pos.y
 			for x in range(topleft.x, bottomright.x + 1):
-				self.field.set_cell(x, the_divide - 1, self.free())
-				self.field.set_cell(x, the_divide, self.free())
-				self.field.set_cell(x, the_divide + 1, self.free())
-		self.field.set_cell(door_pos.x, door_pos.y, self.door())
+				self.field.set_cell((x, the_divide - 1), self.free())
+				self.field.set_cell((x, the_divide), self.free())
+				self.field.set_cell((x, the_divide + 1), self.free())
+		self.field.set_cell(door_pos, self.door())
 
 class BSPDungeon(Builder):
 	""" Builds closed set of rooms/galleries/quarters
@@ -401,11 +402,11 @@ class BSPDungeon(Builder):
 	def _build(self):
 		Log.debug("Building surrounding walls.")
 		for x in range(self.size.width):
-			self.strata.set_cell(x, 0, 'wall')
-			self.strata.set_cell(x, self.size.height - 1, 'wall')
+			self.strata.set_cell((x, 0), 'wall')
+			self.strata.set_cell((x, self.size.height - 1), 'wall')
 		for y in range(self.size.height):
-			self.strata.set_cell(0, y, 'wall')
-			self.strata.set_cell(self.size.width - 1, y, 'wall')
+			self.strata.set_cell((0, y), 'wall')
+			self.strata.set_cell((self.size.width - 1, y), 'wall')
 
 		Log.debug("Running BSP...")
 		bsp = BinarySpacePartition(self.rng)
@@ -418,7 +419,7 @@ class BSPDungeon(Builder):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
 
-		floor_only = lambda pos: self.strata.cell(pos.x, pos.y) == 'floor'
+		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
 		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
@@ -431,14 +432,14 @@ class CityBuilder(Builder):
 	def _build(self):
 		Log.debug("Building surrounding walls.")
 		for x in range(self.size.width):
-			self.strata.set_cell(x, 0, 'wall')
-			self.strata.set_cell(x, self.size.height - 1, 'wall')
+			self.strata.set_cell((x, 0), 'wall')
+			self.strata.set_cell((x, self.size.height - 1), 'wall')
 		for y in range(self.size.height):
-			self.strata.set_cell(0, y, 'wall')
-			self.strata.set_cell(self.size.width - 1, y, 'wall')
+			self.strata.set_cell((0, y), 'wall')
+			self.strata.set_cell((self.size.width - 1, y), 'wall')
 		for x in range(1, self.size.width - 1):
 			for y in range(1, self.size.height - 1):
-				self.strata.set_cell(x, y, 'floor')
+				self.strata.set_cell((x, y), 'floor')
 
 		Log.debug("Running BSP...")
 		bsp = BinarySpacePartition(self.rng, min_width=8, min_height=7)
@@ -452,7 +453,7 @@ class CityBuilder(Builder):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
 
-		floor_only = lambda pos: self.strata.cell(pos.x, pos.y) == 'floor'
+		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
 		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
@@ -478,7 +479,7 @@ class CaveBuilder(Builder):
 		self.strata = Matrix(self.size, 0)
 		for x in range(1, self.strata.size.width - 1):
 			for y in range(1, self.strata.size.height - 1):
-				self.strata.set_cell(x, y, 0 if self.rng.get() < 0.50 else 1)
+				self.strata.set_cell((x, y), 0 if self.rng.get() < 0.50 else 1)
 		Log.debug("Initial state:\n{0}".format(repr(self.strata)))
 
 		new_layer = Matrix(self.strata.size)
@@ -488,12 +489,12 @@ class CaveBuilder(Builder):
 				for y in range(1, self.strata.size.height - 1):
 					wall_count = 0
 					for n in self.NEIGHS:
-						if self.strata.cell(x + n[0], y + n[1]) == 0:
+						if self.strata.cell((x + n[0], y + n[1])) == 0:
 							wall_count += 1
 							if wall_count >= 5:
 								break
 					if wall_count >= 5:
-						new_layer.set_cell(x, y, 0)
+						new_layer.set_cell((x, y), 0)
 						continue
 					if step < drop_wall_2_at:
 						wall_2_count = 0
@@ -501,18 +502,18 @@ class CaveBuilder(Builder):
 							n = Point(x + n[0], y + n[1])
 							if not self.strata.valid(n):
 								continue
-							if self.strata.cell(n.x, n.y) == 0:
+							if self.strata.cell(n) == 0:
 								wall_2_count += 1
 								if wall_2_count > 2:
 									break
 						if wall_2_count <= 2:
-							new_layer.set_cell(x, y, 0)
+							new_layer.set_cell((x, y), 0)
 							continue
-					new_layer.set_cell(x, y, 1)
+					new_layer.set_cell((x, y), 1)
 			self.strata, new_layer = new_layer, self.strata
 			Log.debug("Step {1}:\n{0}".format(repr(self.strata), step))
 		
-		cavern = next(pos for pos in self.strata.size if self.strata.cell(pos.x, pos.y) == 1)
+		cavern = next(pos for pos in self.strata.size.iter_points() if self.strata.cell(pos) == 1)
 		caverns = []
 		while cavern:
 			area = []
@@ -523,7 +524,7 @@ class CaveBuilder(Builder):
 				Log.debug('Last wave: {0}'.format(len(last_wave)))
 				wave = set()
 				for point in last_wave:
-					wave |= {x for x in self.strata.get_neighbours(point.x, point.y) if self.strata.cell(x.x, x.y) == 1}
+					wave |= {x for x in clckwrkbdgr.math.get_neighbours(self.strata, point) if self.strata.cell(x) == 1}
 				for point in wave - already_affected:
 					area.append(point)
 				last_wave = wave - already_affected
@@ -532,27 +533,27 @@ class CaveBuilder(Builder):
 			count = 0
 			for point in area:
 				count += 1
-				self.strata.set_cell(point.x, point.y, 2 + len(caverns))
+				self.strata.set_cell(point, 2 + len(caverns))
 			caverns.append(count)
 			Log.debug("Filling cavern #{1}:\n{0}".format(repr(self.strata), len(caverns)))
-			cavern = next((pos for pos in self.strata.size if self.strata.cell(pos.x, pos.y) == 1), None)
+			cavern = next((pos for pos in self.strata.size.iter_points() if self.strata.cell(pos) == 1), None)
 		max_cavern = 2 + caverns.index(max(caverns))
-		for pos in self.strata.size:
-			if self.strata.cell(pos.x, pos.y) in [0, max_cavern]:
+		for pos in self.strata.size.iter_points():
+			if self.strata.cell(pos) in [0, max_cavern]:
 				continue
-			self.strata.set_cell(pos.x, pos.y, 0)
+			self.strata.set_cell(pos, 0)
 		Log.debug("Finalized cave:\n{0}".format(repr(self.strata)))
 
-		floor_only = lambda pos: self.strata.cell(pos.x, pos.y) > 1
+		floor_only = lambda pos: self.strata.cell(pos) > 1
 		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
 		self.exit_pos = pcg.pos(self.rng, self.size, lambda pos: floor_only(pos) and pos != self.start_pos)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
-		for pos in self.strata.size:
-			if self.strata.cell(pos.x, pos.y):
-				self.strata.set_cell(pos.x, pos.y, 'floor')
+		for pos in self.strata.size.iter_points():
+			if self.strata.cell(pos):
+				self.strata.set_cell(pos, 'floor')
 			else:
-				self.strata.set_cell(pos.x, pos.y, 'wall')
+				self.strata.set_cell(pos, 'wall')
 
 class MazeBuilder(Builder):
 	""" A maze labyrinth on a grid.
@@ -599,21 +600,21 @@ class MazeBuilder(Builder):
 					self.rng.range(((layout_size.height + 1) // 2)) * 2,
 					)
 				Log.debug((current, layout_size))
-				if current.x > 1 and not layout.cell(current.x - 2, current.y):
+				if current.x > 1 and not layout.cell((current.x - 2, current.y)):
 					potential_exits += 1
-				if current.y > 1 and not layout.cell(current.x, current.y - 2):
+				if current.y > 1 and not layout.cell((current.x, current.y - 2)):
 					potential_exits += 1
-				if current.x <= layout_size.width - 2 and not layout.cell(current.x + 2, current.y):
+				if current.x <= layout_size.width - 2 and not layout.cell((current.x + 2, current.y)):
 					potential_exits += 1
-				if current.y <= layout_size.height - 2 and not layout.cell(current.x, current.y + 2):
+				if current.y <= layout_size.height - 2 and not layout.cell((current.x, current.y + 2)):
 					potential_exits += 1
 			# first one is free!
 			if intDone == 0:
-				layout.set_cell(current.x, current.y, True)
-			if not layout.cell(current.x, current.y):
+				layout.set_cell(current, True)
+			if not layout.cell(current):
 				continue
-			layout.set_cell(current.x, current.y, 123)
-			layout.set_cell(current.x, current.y, True)
+			layout.set_cell(current, 123)
+			layout.set_cell(current, True)
 			# always randomisation directions to start
 			cDir = self.RandomDirections()
 			blnBlocked = False
@@ -630,12 +631,12 @@ class MazeBuilder(Builder):
 							current.y + (cDir[intDir].y * 2),
 							)
 					# check if the tile can be used
-					if not layout.valid(new_cell) or layout.cell(new_cell.x, new_cell.y):
+					if not layout.valid(new_cell) or layout.cell(new_cell):
 						continue
 					# create a path
-					layout.set_cell(new_cell.x, new_cell.y, True)
+					layout.set_cell(new_cell, True)
 					# and the square inbetween
-					layout.set_cell(current.x + cDir[intDir].x, current.y + cDir[intDir].y, True)
+					layout.set_cell((current.x + cDir[intDir].x, current.y + cDir[intDir].y), True)
 					# this is now the current square
 					current = new_cell
 					blnBlocked = False
@@ -649,19 +650,19 @@ class MazeBuilder(Builder):
 		and considering CELL_SIZE.
 		"""
 		self.strata = Matrix(self.size, 'wall')
-		for pos in layout.size:
-			if layout.cell(pos.x, pos.y):
+		for pos in layout.size.iter_points():
+			if layout.cell(pos):
 				for x in range(self.CELL_SIZE.width):
 					for y in range(self.CELL_SIZE.height):
-						self.strata.set_cell(
+						self.strata.set_cell((
 								1 + pos.x * self.CELL_SIZE.width + x,
 								1 + pos.y * self.CELL_SIZE.height + y,
-								floor_terrain,
+								), floor_terrain,
 								)
 	def _place_points(self):
 		""" Places other points of interests (start, exit).
 		"""
-		floor_only = lambda pos: self.strata.cell(pos.x, pos.y) in ['floor', 'tunnel_floor']
+		floor_only = lambda pos: self.strata.cell(pos) in ['floor', 'tunnel_floor']
 		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
@@ -686,10 +687,10 @@ class Sewers(MazeBuilder):
 		# Fill water streams.
 		for x in range(self.size.width):
 			for y in range(self.size.height):
-				if self.strata.cell(x, y) == 'wall':
+				if self.strata.cell((x, y)) == 'wall':
 					continue
-				for n in self.strata.get_neighbours(x, y, with_diagonal=True):
-					if self.strata.cell(n.x, n.y) == 'wall':
+				for n in clckwrkbdgr.math.get_neighbours(self.strata, (x, y), with_diagonal=True):
+					if self.strata.cell(n) == 'wall':
 						break
 				else:
-					self.strata.set_cell(x, y, 'water')
+					self.strata.set_cell((x, y), 'water')

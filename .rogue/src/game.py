@@ -8,6 +8,7 @@ import logging
 Log = logging.getLogger('rogue')
 from .ui import Action
 from . import monsters, items, terrain
+import clckwrkbdgr.math
 
 class Direction(Enum):
 	""" NONE
@@ -244,7 +245,7 @@ class Game(object):
 			if self.god.vision or self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 				return '>'
 
-		cell = self.strata.cell(x, y)
+		cell = self.strata.cell((x, y))
 		if self.field_of_view.is_visible(x, y) or self.god.vision:
 			return cell.terrain.sprite
 		elif cell.visited and cell.terrain.remembered:
@@ -257,9 +258,9 @@ class Game(object):
 		""" True if cell at position p is transparent/visible to a monster. """
 		if not self.strata.valid(p):
 			return False
-		if not self.strata.cell(p.x, p.y).terrain.passable:
+		if not self.strata.cell(p).terrain.passable:
 			return False
-		if self.strata.cell(p.x, p.y).terrain.dark:
+		if self.strata.cell(p).terrain.dark:
 			if math.distance(monster.pos, p) >= 1:
 				return False
 		return True
@@ -276,7 +277,7 @@ class Game(object):
 				self.get_player().pos,
 				is_transparent=self.is_transparent,
 				):
-			cell = self.strata.cell(p.x, p.y)
+			cell = self.strata.cell(p)
 
 			for monster in self.monsters:
 				if monster.behavior == monsters.Behavior.PLAYER:
@@ -317,10 +318,10 @@ class Game(object):
 		Log.debug('With RNG: {0}...'.format(self.rng.value))
 		builder = builder(self.rng, Size(80, 23))
 		builder.build()
-		for pos in builder.strata.size:
+		for pos in builder.strata.size.iter_points():
 			builder.strata.set_cell(
-					pos.x, pos.y,
-					terrain.Cell(self.TERRAIN[builder.strata.cell(pos.x, pos.y)]),
+					pos,
+					terrain.Cell(self.TERRAIN[builder.strata.cell(pos)]),
 					)
 
 		settler = self.rng.choice(self.settlers)
@@ -358,9 +359,9 @@ class Game(object):
 		is_diagonal = abs(shift.x) + abs(shift.y) == 2
 		if not is_diagonal:
 			return True
-		if not self.strata.cell(from_point.x, from_point.y).terrain.allow_diagonal:
+		if not self.strata.cell(from_point).terrain.allow_diagonal:
 			return False
-		if not self.strata.cell(to_point.x, to_point.y).terrain.allow_diagonal:
+		if not self.strata.cell(to_point).terrain.allow_diagonal:
 			return False
 		return True
 	def get_player(self):
@@ -380,7 +381,7 @@ class Game(object):
 		if self.god.noclip:
 			passable = True
 		else:
-			passable = self.strata.cell(new_pos.x, new_pos.y).terrain.passable
+			passable = self.strata.cell(new_pos).terrain.passable
 		if not passable:
 			self.events.append(messages.BumpEvent(actor, new_pos))
 			return False
@@ -505,7 +506,7 @@ class Game(object):
 		"""
 		path = math.find_path(
 				self.strata, start,
-				is_passable=lambda p, from_point: self.strata.cell(p.x, p.y).terrain.passable and self.strata.cell(p.x, p.y).visited and self.allow_movement_direction(from_point, p),
+				is_passable=lambda p, from_point: self.strata.cell(p).terrain.passable and self.strata.cell(p).visited and self.allow_movement_direction(from_point, p),
 				find_target=find_target,
 				)
 		if not path:
@@ -535,8 +536,8 @@ class Game(object):
 		path = self.find_path(self.get_player().pos,
 			find_target=lambda wave: next((target for target in sorted(wave)
 			if any(
-				not self.strata.cell(p.x, p.y).visited
-				for p in self.strata.get_neighbours(target.x, target.y, with_diagonal=True)
+				not self.strata.cell(p).visited
+				for p in clckwrkbdgr.math.get_neighbours(self.strata, target, with_diagonal=True)
 				)
 			), None),
 			)

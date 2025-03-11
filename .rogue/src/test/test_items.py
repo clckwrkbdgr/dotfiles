@@ -18,7 +18,7 @@ class TestItems(unittest.TestCase):
 	def should_str_item(self):
 		item_type = items.ItemType('name', '!', items.Effect.NONE)
 		item = items.Item(item_type, Point(1, 1))
-		self.assertEqual(str(item), 'name @1;1')
+		self.assertEqual(str(item), 'name @[1, 1]')
 
 class TestSavefile(unittest.TestCase):
 	def should_load_item(self):

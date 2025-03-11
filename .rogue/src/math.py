@@ -4,86 +4,8 @@ import itertools
 import logging
 Log = logging.getLogger('rogue')
 
-_Point = namedtuple('Point', 'x y')
-class Point(_Point):
-	def __str__(self):
-		return '{0};{1}'.format(*self)
-	def __add__(self, other):
-		return Point(self.x + other.x, self.y + other.y)
-	def __mul__(self, factor):
-		return Point(self.x * factor, self.y * factor)
-	def __sub__(self, other):
-		return Point(self.x - other.x, self.y - other.y)
-
-def distance(point_a, point_b):
-	""" Amount of cells between two points. """
-	return max(abs(point_a.x - point_b.x), abs(point_a.y - point_b.y))
-
-_Size = namedtuple('Size', 'width height')
-class Size(_Size):
-	def __iter__(self):
-		return itertools.chain.from_iterable((Point(x, y) for x in range(self.width)) for y in range(self.height))
-
-_Rect = namedtuple('Rect', 'topleft size')
-class Rect(_Rect):
-	def contains(self, pos):
-		return self.topleft.x <= pos.x < (self.topleft.x + self.size.width) and self.topleft.y <= pos.y < (self.topleft.y + self.size.height)
-
-class Matrix:
-	__slots__ = ['cells', 'size']
-	def __init__(self, size, default_value=None):
-		""" Creates and inits map with default value. """
-		self.size = size
-		self.clear(default_value)
-	def __repr__(self):
-		result = 'Matrix({0}, [\n'.format(self.size)
-		result += self.tostring(indent='\t') + '\t])'
-		return result
-	def tostring(self, cell_str=None, indent=''):
-		""" Returns string representation.
-		If cell_str callable is given, uses it instead of str() to produce string representation for each cell.
-		"""
-		cell_str = cell_str or str
-		result = ''
-		for index, c in enumerate(self.cells):
-			if index % self.size.width == 0:
-				if index:
-					result += '\n'
-				if indent:
-					result += indent
-			result += cell_str(c)
-		result += '\n'
-		return result
-	def valid(self, pos):
-		""" True if pos lies within map bounds. """
-		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
-	def set_cell(self, x, y, value):
-		self.cells[x + y * self.size.width] = value
-	def cell(self, x, y):
-		return self.cells[x + y * self.size.width]
-	def clear(self, value):
-		self.cells = [copy.copy(value) for _ in range(self.size.width * self.size.height)]
-	def get_neighbours(self, x, y, with_diagonal=False):
-		""" Yields neighbouring point objects for given position.
-		If with_diagonal, considers also corner neighbours.
-		"""
-		neighbours = [
-				Point(x + 1, y    ),
-				Point(x    , y + 1),
-				Point(x - 1, y    ),
-				Point(x    , y - 1),
-				]
-		if with_diagonal:
-			neighbours += [
-					Point(x + 1, y + 1),
-					Point(x - 1, y + 1),
-					Point(x + 1, y - 1),
-					Point(x - 1, y - 1),
-					]
-		for p in neighbours:
-			if not self.valid(p):
-				continue
-			yield p
+import clckwrkbdgr.math
+from clckwrkbdgr.math import Point, Size, Rect, distance, Matrix
 
 def bresenham(start, stop):
 	""" Bresenham's algorithm.
@@ -123,8 +45,8 @@ def find_path(matrix, start, is_passable, find_target):
 	def _is_linked(_node_from, _node_to):
 		return abs(_node_from.x - _node_to.x) <= 1 and abs(_node_from.y - _node_to.y) <= 1
 	def _get_links(_node):
-		return [p for p in matrix.get_neighbours(
-			_node.x, _node.y,
+		return [p for p in clckwrkbdgr.math.get_neighbours(matrix,
+			_node,
 			with_diagonal=True,
 			)
 			 if is_passable(p, _node)
@@ -173,7 +95,7 @@ class FieldOfView:
 				  )
 		if not self.sight.valid(fov_pos):
 			return False
-		return self.sight.cell(fov_pos.x, fov_pos.y)
+		return self.sight.cell(fov_pos)
 	def update(self, new_center, is_transparent):
 		""" Updates FOV for given new center point.
 		Uses is_transparent(Point):bool to determine if cells is transparent for sight.
@@ -182,7 +104,7 @@ class FieldOfView:
 		self.center = new_center
 		Log.debug('Recalculating Field Of View.')
 		self.sight.clear(0)
-		for pos in self.sight.size:
+		for pos in self.sight.size.iter_points():
 			Log.debug('FOV pos: {0}'.format(pos))
 			rel_pos = Point(
 					self.half_size.width - pos.x,
@@ -200,9 +122,10 @@ class FieldOfView:
 						self.half_size.height + inner_line_pos.y,
 						)
 				Log.debug('Setting as visible: {0}'.format(fov_pos))
-				if not self.sight.cell(fov_pos.x, fov_pos.y):
-					yield real_world_pos
-					self.sight.set_cell(fov_pos.x, fov_pos.y, True)
+				if not self.sight.cell(fov_pos):
+					if real_world_pos.x >= 0 and real_world_pos.y >= 0:
+						yield real_world_pos
+					self.sight.set_cell(fov_pos, True)
 				if not is_transparent(real_world_pos):
 					Log.debug('Not passable, stop: {0}'.format(real_world_pos))
 					break

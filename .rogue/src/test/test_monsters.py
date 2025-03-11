@@ -20,7 +20,7 @@ class TestMonsters(unittest.TestCase):
 	def should_str_monster(self):
 		species = monsters.Species('name', '@', 100, vision=10)
 		monster = monsters.Monster(species, monsters.Behavior.ANGRY, Point(1, 1))
-		self.assertEqual(str(monster), 'name @1;1 100/100hp')
+		self.assertEqual(str(monster), 'name @[1, 1] 100/100hp')
 	def should_not_drop_items(self):
 		rng = RNG(0)
 		species = monsters.Species('name', '@', 100, vision=10, drops=None)

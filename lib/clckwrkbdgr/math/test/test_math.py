@@ -6,7 +6,7 @@ except ImportError: # pragma: no cover
 	jsonpickle = None
 import textwrap
 import clckwrkbdgr.math
-from clckwrkbdgr.math import Point, Size, Rect, Matrix
+from clckwrkbdgr.math import Point, distance, Size, Rect, Matrix
 
 class MyVector(clckwrkbdgr.math.Vector):
 	@property
@@ -73,6 +73,12 @@ class TestVector(unittest.TestCase):
 		self.assertEqual(MyVector(2, 4) / 2, MyVector(1, 2))
 		self.assertEqual(MyVector(5, 6) // 3, MyVector(1, 2))
 
+class TestSize(unittest.TestCase):
+	def should_iterate_over_point_within_size(self):
+		size = Size(2, 2)
+		indexes = ' '.join(''.join(map(str, index)) for index in size.iter_points())
+		self.assertEqual(indexes, '00 10 01 11')
+
 class TestPoint(unittest.TestCase):
 	def should_yield_all_surrounding_neighbours(self):
 		actual = set(Point(1, 2).neighbours())
@@ -82,6 +88,14 @@ class TestPoint(unittest.TestCase):
 			(0, 3), (1, 3), (2, 3),
 			]))
 		self.assertEqual(actual, expected)
+	def should_calculate_distance_between_two_points(self):
+		self.assertEqual(distance(Point(0, 0), Point(0, 0)), 0)
+		self.assertEqual(distance(Point(0, 0), Point(1, 0)), 1)
+		self.assertEqual(distance(Point(0, 0), Point(1, 0)), 1)
+		self.assertEqual(distance(Point(0, 0), Point(1, 1)), 1)
+		self.assertEqual(distance(Point(0, 0), Point(2, 0)), 2)
+		self.assertEqual(distance(Point(0, 0), Point(2, 1)), 2)
+		self.assertEqual(distance(Point(0, 0), Point(2, 2)), 2)
 
 class TestRect(unittest.TestCase):
 	def should_construct_rect(self):

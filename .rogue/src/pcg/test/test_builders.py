@@ -29,17 +29,17 @@ def str_terrain(name):
 class MockBuilder(builders.Builder):
 	def _build(self):
 		for x in range(self.size.width):
-			self.strata.set_cell(x, 0, 'wall')
-			self.strata.set_cell(x, self.size.height - 1, 'wall')
+			self.strata.set_cell((x, 0), 'wall')
+			self.strata.set_cell((x, self.size.height - 1), 'wall')
 		for y in range(self.size.height):
-			self.strata.set_cell(0, y, 'wall')
-			self.strata.set_cell(self.size.width - 1, y, 'wall')
+			self.strata.set_cell((0, y), 'wall')
+			self.strata.set_cell((self.size.width - 1, y), 'wall')
 		for x in range(1, self.size.width - 1):
 			for y in range(1, self.size.height - 1):
-				self.strata.set_cell(x, y, 'floor')
-		floor_only = lambda pos: self.strata.cell(pos.x, pos.y) == 'floor'
+				self.strata.set_cell((x, y), 'floor')
+		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
 		obstacle_pos = pcg.pos(self.rng, self.size, floor_only)
-		self.strata.set_cell(obstacle_pos.x, obstacle_pos.y, 'wall')
+		self.strata.set_cell(obstacle_pos, 'wall')
 		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
 		self.exit_pos = pcg.pos(self.rng, self.size, floor_only)
 

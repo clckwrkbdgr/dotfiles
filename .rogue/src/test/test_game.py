@@ -79,10 +79,10 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @9;5 10/10hp moves to 9;5',
+			'player @[9, 5] 10/10hp moves to [9, 5]',
 			'redraw',
 			'user_action',
-			'player @9;6 10/10hp moves to 9;6',
+			'player @[9, 6] 10/10hp moves to [9, 6]',
 			'redraw',
 			'user_action',
 			] + [ # walking...
@@ -124,27 +124,27 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'__enter__',
 			'redraw',
 			'user_action',
-			'Discovered monster @10;6 3/3hp',
-			'Discovered monster @9;4 3/3hp',
+			'Discovered monster @[10, 6] 3/3hp',
+			'Discovered monster @[9, 4] 3/3hp',
 			'redraw',
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @9;5 9/10hp moves to 9;5',
-			'monster @9;4 3/3hp attacks player @9;5 9/10hp',
-			'player @9;5 9/10hp -1 hp',
+			'player @[9, 5] 9/10hp moves to [9, 5]',
+			'monster @[9, 4] 3/3hp attacks player @[9, 5] 9/10hp',
+			'player @[9, 5] 9/10hp -1 hp',
 			'redraw',
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @9;5 8/10hp attacks monster @9;4 2/3hp',
-			'monster @9;4 2/3hp -1 hp',
-			'monster @9;4 2/3hp attacks player @9;5 8/10hp',
-			'player @9;5 8/10hp -1 hp',
+			'player @[9, 5] 8/10hp attacks monster @[9, 4] 2/3hp',
+			'monster @[9, 4] 2/3hp -1 hp',
+			'monster @[9, 4] 2/3hp attacks player @[9, 5] 8/10hp',
+			'player @[9, 5] 8/10hp -1 hp',
 			'redraw',
 			'user_action',
-			'monster @9;4 2/3hp attacks player @9;5 7/10hp',
-			'player @9;5 7/10hp -1 hp',
+			'monster @[9, 4] 2/3hp attacks player @[9, 5] 7/10hp',
+			'player @[9, 5] 7/10hp -1 hp',
 			'__exit__',
 			])
 		self.assertEqual(dungeon.get_player().hp, 7)
@@ -165,20 +165,20 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'__enter__',
 			'redraw',
 			'user_action',
-			'Discovered monster @10;6 3/3hp',
-			'Discovered monster @9;4 3/3hp',
+			'Discovered monster @[10, 6] 3/3hp',
+			'Discovered monster @[9, 4] 3/3hp',
 			'redraw',
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @9;5 9/10hp moves to 9;5',
-			'monster @9;4 3/3hp attacks player @9;5 {0}/10hp'.format(9),
-			'player @9;5 {0}/10hp -1 hp'.format(9),
+			'player @[9, 5] 9/10hp moves to [9, 5]',
+			'monster @[9, 4] 3/3hp attacks player @[9, 5] {0}/10hp'.format(9),
+			'player @[9, 5] {0}/10hp -1 hp'.format(9),
 			] + sum(([
 			'redraw',
 			'user_action',
-			'monster @9;4 3/3hp attacks player @9;5 {0}/10hp'.format(9 - i),
-			'player @9;5 {0}/10hp -1 hp'.format(9 - i),
+			'monster @[9, 4] 3/3hp attacks player @[9, 5] {0}/10hp'.format(9 - i),
+			'player @[9, 5] {0}/10hp -1 hp'.format(9 - i),
 			] for i in range(1, 9)), []) + [
 			'redraw',
 			'__exit__',
@@ -219,14 +219,14 @@ class TestItems(AbstractTestDungeon):
 			'__enter__',
 			'redraw',
 			'user_action',
-			'Discovered potion @10;6',
-			'Discovered healing potion @11;6',
+			'Discovered potion @[10, 6]',
+			'Discovered healing potion @[11, 6]',
 			'redraw',
 			'user_action',
-			'player @10;6 10/10hp moves to 10;6',
+			'player @[10, 6] 10/10hp moves to [10, 6]',
 			'redraw',
 			'user_action',
-			'player @10;6 10/10hp grabs potion @10;6',
+			'player @[10, 6] 10/10hp grabs potion @[10, 6]',
 			'__exit__',
 			])
 	def should_consume_items(self):
@@ -246,7 +246,7 @@ class TestItems(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @9;6 10/10hp consumes potion @0;0',
+			'player @[9, 6] 10/10hp consumes potion @[0, 0]',
 			'__exit__',
 			])
 	def should_drop_items(self):
@@ -266,7 +266,7 @@ class TestItems(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @9;6 10/10hp drops potion @9;6',
+			'player @[9, 6] 10/10hp drops potion @[9, 6]',
 			'__exit__',
 			])
 	def should_equip_items(self):
@@ -286,7 +286,7 @@ class TestItems(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @9;6 10/10hp equips weapon @0;0',
+			'player @[9, 6] 10/10hp equips weapon @[0, 0]',
 			'__exit__',
 			])
 	def should_unequip_items(self):
@@ -306,7 +306,7 @@ class TestItems(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @9;6 10/10hp unequips weapon @0;0',
+			'player @[9, 6] 10/10hp unequips weapon @[0, 0]',
 			'__exit__',
 			])
 
@@ -689,13 +689,13 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @9;6 10/10hp grabs potion @10;6',
+			'player @[9, 6] 10/10hp grabs potion @[10, 6]',
 			])
 
 		dungeon.clear_event()
 		dungeon.grab_item_at(dungeon.get_player(), Point(11, 6))
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @9;6 10/10hp grabs healing potion @11;6',
+			'player @[9, 6] 10/10hp grabs healing potion @[11, 6]',
 			])
 	def should_consume_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
@@ -706,7 +706,7 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @9;6 1/10hp consumes potion @0;0',
+			'player @[9, 6] 1/10hp consumes potion @[0, 0]',
 			])
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
 		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'healing potion')
@@ -714,8 +714,8 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon.clear_event()
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @9;6 6/10hp consumes healing potion @0;0',
-			'player @9;6 6/10hp +5 hp',
+			'player @[9, 6] 6/10hp consumes healing potion @[0, 0]',
+			'player @[9, 6] 6/10hp +5 hp',
 			])
 		self.assertEqual(dungeon.get_player().hp, 6)
 		self.assertEqual(len(dungeon.get_player().inventory), 0)
@@ -727,7 +727,7 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @9;6 10/10hp equips weapon @0;0',
+			'player @[9, 6] 10/10hp equips weapon @[0, 0]',
 			])
 		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'weapon')
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -736,8 +736,8 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon.clear_event()
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @9;6 10/10hp unequips weapon @0;0',
-			'player @9;6 10/10hp equips ranged @0;0',
+			'player @[9, 6] 10/10hp unequips weapon @[0, 0]',
+			'player @[9, 6] 10/10hp equips ranged @[0, 0]',
 			])
 		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'ranged')
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -746,7 +746,7 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon.clear_event()
 		dungeon.unwield_item(dungeon.get_player())
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @9;6 10/10hp unequips ranged @0;0',
+			'player @[9, 6] 10/10hp unequips ranged @[0, 0]',
 			])
 		self.assertIsNone(dungeon.get_player().wielding)
 		self.assertEqual(len(dungeon.get_player().inventory), 2)
@@ -988,11 +988,11 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.get_player().pos, restored_dungeon.get_player().pos)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
-		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		for pos in dungeon.strata.size.iter_points():
+			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_monsters(self):
 		dungeon = self.dungeon = mock_dungeon.build('mock settler')
@@ -1016,11 +1016,11 @@ class TestGameSerialization(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, restored_dungeon.get_player().pos)
 		self.assertEqual(restored_dungeon.get_player().hp, 10)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
-		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		for pos in dungeon.strata.size.iter_points():
+			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_behavior(self):
 		dungeon = self.dungeon = mock_dungeon.build('mock settler')
@@ -1045,11 +1045,11 @@ class TestGameSerialization(AbstractTestDungeon):
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
-		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		for pos in dungeon.strata.size.iter_points():
+			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
 			self.assertEqual(monster.species, restored_monster.species)
@@ -1081,11 +1081,11 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
-		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		for pos in dungeon.strata.size.iter_points():
+			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
 			self.assertEqual(monster.species, restored_monster.species)
@@ -1124,11 +1124,11 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon.load(reader)
 		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
-		for pos in dungeon.strata.size:
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.sprite, restored_dungeon.strata.cell(pos.x, pos.y).terrain.sprite, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.passable, restored_dungeon.strata.cell(pos.x, pos.y).terrain.passable, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).terrain.remembered, restored_dungeon.strata.cell(pos.x, pos.y).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos.x, pos.y).visited, restored_dungeon.strata.cell(pos.x, pos.y).visited, str(pos))
+		for pos in dungeon.strata.size.iter_points():
+			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
+			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
 			self.assertEqual(monster.species, restored_monster.species)

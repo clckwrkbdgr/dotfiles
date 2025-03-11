@@ -112,7 +112,7 @@ class Reader:
 		size = self.read_size()
 		result = Matrix(size, None)
 		for _ in range(size.width * size.height):
-			result.cells[_] = self.read(element_type)
+			result.data[_] = self.read(element_type)
 		return result
 
 class Writer:
@@ -173,7 +173,7 @@ class Writer:
 	def write_matrix(self, matrix):
 		""" Writes size of the matrix and then each item consequently. """
 		self.write(matrix.size)
-		for cell in matrix.cells:
+		for cell in matrix.data:
 			self.write(cell)
 
 class Savefile:

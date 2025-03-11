@@ -93,6 +93,10 @@ class Point(Vector): # pragma: no cover
 			for y in [-1, 0, 1]:
 				yield Point(self.x + x, self.y + y)
 
+def distance(point_a, point_b):
+	""" Amount of cells between two points. """
+	return max(abs(point_a.x - point_b.x), abs(point_a.y - point_b.y))
+
 class Size(Vector): # pragma: no cover
 	""" Convenience type definition for 2D vector
 	with access to first two elements under aliases .with and .height
@@ -114,6 +118,11 @@ class Size(Vector): # pragma: no cover
 	def x(self): return self.width
 	@property
 	def y(self): return self.height
+	def iter_points(self):
+		""" Iterates over all available positions withing rect of this size.
+		See Matrix.keys().
+		"""
+		return iter(Point(x, y) for y, x in itertools.product(range(self.height), range(self.width)))
 
 class Rect(object):
 	""" Represents rectangle. """
@@ -245,7 +254,7 @@ class Matrix(object):
 		self.data[pos.x + pos.y * self.dims.width] = value
 	def keys(self):
 		""" Iterates over all available positions. """
-		return iter(Point(x, y) for y, x in itertools.product(range(self.dims.height), range(self.dims.width)))
+		return self.dims.iter_points()
 	def values(self):
 		""" Iterates over all available values. """
 		return iter(self.data)
