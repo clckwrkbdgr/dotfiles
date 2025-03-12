@@ -1,7 +1,7 @@
 import random
 from collections import namedtuple
 import curses
-from clckwrkbdgr.math import Point, Size, Matrix
+from clckwrkbdgr.math import Point, Rect, Size, Matrix
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -88,10 +88,20 @@ def main(window):
 
 	curses.curs_set(0)
 	init_colors()
+	viewport = Rect((0, 0), (61, 23))
+	center = Point(*(viewport.size // 2))
 	while True:
+		window.clear()
 		for pos in field:
-			window.addstr(pos.y, pos.x, field.cell(pos).sprite, COLORS[field.cell(pos).color])
-		window.addstr(player.y, player.x, '@', COLORS['bold_white'])
+			screen_pos = Point(
+					pos.x - player.x + center.x,
+					pos.y - player.y + center.y,
+					)
+			if not viewport.contains(screen_pos, with_border=True):
+				continue
+			window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite, COLORS[field.cell(pos).color])
+			window.addstr(0, viewport.width, "{0}".format(center))
+		window.addstr(center.y, center.x, '@', COLORS['bold_white'])
 
 		control = window.getch()
 		if control == ord('q'):
