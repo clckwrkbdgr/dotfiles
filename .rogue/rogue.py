@@ -71,11 +71,11 @@ def generate_thundra():
 	return field
 
 def generate_marsh():
-	field = Matrix((16, 16), Sprite('.', 'green'))
+	field = Matrix((16, 16), Sprite('~', 'cyan'))
 	for _ in range(100):
 		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('~', 'green'))
 	for _ in range(random.randrange(100)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('~', 'cyan'))
+		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('.', 'green'))
 	for _ in range(random.randrange(5)):
 		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('T', 'green'))
 	for _ in range(random.randrange(10)):
@@ -92,6 +92,8 @@ def main(window):
 	init_colors()
 	viewport = Rect((0, 0), (61, 23))
 	center = Point(*(viewport.size // 2))
+	player = Point(80, 30)
+	world_shift = Point(0, 0)
 	while True:
 		window.clear()
 		for field_index in world:
@@ -107,29 +109,50 @@ def main(window):
 					Point(field_rect.left, field_rect.bottom),
 					Point(field_rect.right, field_rect.bottom),
 					]
-			screen_control_points = [pos - player + center for pos in control_points]
+			screen_control_points = [(world_shift + pos) - player + center for pos in control_points]
 			if not any(viewport.contains(screen_pos, with_border=True) for screen_pos in screen_control_points):
 				continue
 			for pos in field:
-				screen_pos = pos + field_rect.topleft - player + center
+				screen_pos = world_shift + pos + field_rect.topleft - player + center
 				if not viewport.contains(screen_pos, with_border=True):
 					continue
 				window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite, COLORS[field.cell(pos).color])
 		window.addstr(center.y, center.x, '@', COLORS['bold_white'])
 
 		hud_pos = viewport.right + 1
-		window.addstr(0, hud_pos, "C: {0};{1}".format(player.x, player.y))
+		window.addstr(0, hud_pos, "@{0};{1}".format(player.x, player.y))
 
 		control = window.getch()
 		if control == ord('q'):
 			break
 		elif chr(control) in MOVEMENT:
 			new_pos = player + MOVEMENT[chr(control)]
-			world_boundaries = Rect(Point(0, 0), Size(
+			world_boundaries = Rect(world_shift, Size(
 				world.size.width * world.cell((0, 0)).size.width,
 				world.size.height * world.cell((0, 0)).size.height,
 				))
-			if world_boundaries.contains(new_pos, with_border=True):
-				player = new_pos
+			world_expansion = Point(0, 0)
+			if new_pos.x - center.x <= world_boundaries.left:
+				world_expansion.x -= 1
+			elif world_boundaries.right <= new_pos.x + center.x:
+				world_expansion.x += 1
+			if new_pos.y - center.y <= world_boundaries.top:
+				world_expansion.y -= 1
+			elif world_boundaries.bottom <= new_pos.y + center.y:
+				world_expansion.y += 1
+			if world_expansion:
+				new_world = Matrix(world.size, None)
+				for pos in new_world:
+					old_pos = pos + world_expansion
+					if world.valid(old_pos):
+						new_world.set_cell(pos, world.cell(old_pos))
+					else:
+						new_world.set_cell(pos, generate_field())
+				world = new_world
+				world_shift += Point(
+						world_expansion.x * world.cell((0, 0)).width,
+						world_expansion.y * world.cell((0, 0)).height,
+						)
+			player = new_pos
 
 curses.wrapper(main)
