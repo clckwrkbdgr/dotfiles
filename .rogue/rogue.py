@@ -84,7 +84,9 @@ def generate_marsh():
 
 def main(window):
 	player = Point(0, 0)
-	field = generate_field()
+	world = Matrix((16, 16), None)
+	for pos in world:
+		world.set_cell(pos, generate_field())
 
 	curses.curs_set(0)
 	init_colors()
@@ -92,37 +94,42 @@ def main(window):
 	center = Point(*(viewport.size // 2))
 	while True:
 		window.clear()
-		for pos in field:
-			screen_pos = Point(
-					pos.x - player.x + center.x,
-					pos.y - player.y + center.y,
-					)
-			if not viewport.contains(screen_pos, with_border=True):
+		for field_index in world:
+			field = world.cell(field_index)
+			field_size = field.size
+			field_rect = Rect(Point(
+						field_index.x * field_size.width,
+						field_index.y * field_size.height,
+						), field_size)
+			control_points = [
+					Point(field_rect.left, field_rect.top),
+					Point(field_rect.right, field_rect.top),
+					Point(field_rect.left, field_rect.bottom),
+					Point(field_rect.right, field_rect.bottom),
+					]
+			screen_control_points = [pos - player + center for pos in control_points]
+			if not any(viewport.contains(screen_pos, with_border=True) for screen_pos in screen_control_points):
 				continue
-			window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite, COLORS[field.cell(pos).color])
-			window.addstr(0, viewport.width, "{0}".format(center))
+			for pos in field:
+				screen_pos = pos + field_rect.topleft - player + center
+				if not viewport.contains(screen_pos, with_border=True):
+					continue
+				window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite, COLORS[field.cell(pos).color])
 		window.addstr(center.y, center.x, '@', COLORS['bold_white'])
+
+		hud_pos = viewport.right + 1
+		window.addstr(0, hud_pos, "C: {0};{1}".format(player.x, player.y))
 
 		control = window.getch()
 		if control == ord('q'):
 			break
 		elif chr(control) in MOVEMENT:
 			new_pos = player + MOVEMENT[chr(control)]
-			if field.valid(new_pos):
+			world_boundaries = Rect(Point(0, 0), Size(
+				world.size.width * world.cell((0, 0)).size.width,
+				world.size.height * world.cell((0, 0)).size.height,
+				))
+			if world_boundaries.contains(new_pos, with_border=True):
 				player = new_pos
-			else:
-				field = generate_field()
-				if new_pos.x < 0:
-					player.x = new_pos.x + field.size.width
-				elif new_pos.x >= field.size.width:
-					player.x = new_pos.x - field.size.width
-				else:
-					player.x = new_pos.x
-				if new_pos.y < 0:
-					player.y = new_pos.y + field.size.height
-				elif new_pos.y >= field.size.height:
-					player.y = new_pos.y - field.size.height
-				else:
-					player.y = new_pos.y
 
 curses.wrapper(main)
