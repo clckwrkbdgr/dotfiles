@@ -1,4 +1,5 @@
 import random
+import string
 from collections import namedtuple
 import curses
 from clckwrkbdgr.math import Point, Rect, Size, Matrix
@@ -89,13 +90,43 @@ def generate_marsh():
 	return field
 
 def main(window):
+	curses.curs_set(0)
+	init_colors()
+
 	player = Monster(Point(0, 0), Sprite('@', 'bold_white'), 10)
 	world = Matrix((16, 16), None) # TODO not a world, just a local zone. need a 256x256 overworld of fixed zones, and the overworld itself may expand instead of sub-zones.
+	monsters = []
 	for pos in world:
 		world.set_cell(pos, generate_field())
 
-	curses.curs_set(0)
-	init_colors()
+		world_size = Size(
+				world.size.width * world.cell((0, 0)).size.width,
+				world.size.height * world.cell((0, 0)).size.height,
+				)
+		monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
+		for _ in range(monster_count):
+			monster_pos = Point(
+					random.randrange(world_size.width),
+					random.randrange(world_size.height),
+					)
+			while any(other.pos == monster_pos for other in monsters):
+				monster_pos = Point(
+						random.randrange(world_size.width),
+						random.randrange(world_size.height),
+						)
+			colors = set(COLORS.keys()) - {'black'}
+			normal_colors = [color for color in colors if not color.startswith('bold_')]
+			bold_colors = [color for color in colors if color.startswith('bold_')]
+			strength = random.randrange(4)
+			monsters.append(Monster(
+				monster_pos,
+				Sprite(
+					random.choice(string.ascii_lowercase if strength < 2 else string.ascii_uppercase),
+					random.choice(normal_colors if strength % 2 == 0 else bold_colors),
+					),
+				1 + random.randrange(4 + 10 * strength),
+				))
+
 	viewport = Rect((0, 0), (61, 23))
 	center = Point(*(viewport.size // 2))
 	player.pos = Point(
@@ -126,6 +157,11 @@ def main(window):
 				if not viewport.contains(screen_pos, with_border=True):
 					continue
 				window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite, COLORS[field.cell(pos).color])
+		for monster in monsters:
+			screen_pos = monster.pos - player.pos + center
+			if not viewport.contains(screen_pos, with_border=True):
+				continue
+			window.addstr(screen_pos.y, screen_pos.x, monster.sprite.sprite, COLORS[monster.sprite.color])
 		window.addstr(center.y, center.x, player.sprite.sprite, COLORS[player.sprite.color])
 
 		hud_pos = viewport.right + 1
