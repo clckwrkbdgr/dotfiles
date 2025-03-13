@@ -1,4 +1,5 @@
 import random
+import math
 import string
 from collections import namedtuple
 import curses
@@ -41,6 +42,7 @@ class Monster:
 		self.pos = pos
 		self.sprite = sprite
 		self.hp = self.max_hp = max_hp
+		self.regeneration = 0
 
 def generate_field():
 	return random.choice([
@@ -181,12 +183,18 @@ def main(window):
 				message_line += '[...]'
 			window.addstr(24, 0, " " * 80)
 			window.addstr(24, 0, message_line)
-			if messages:
+			if messages or player.hp <= 0:
 				window.getch()
 
+		if player.hp <= 0:
+			break
+
+		step_taken = False
 		control = window.getch()
 		if control == ord('q'):
 			break
+		elif control == ord('.'):
+			step_taken = True
 		elif chr(control) in MOVEMENT:
 			new_pos = player.pos + MOVEMENT[chr(control)]
 			monster = next((monster for monster in monsters if new_pos == monster.pos), None)
@@ -224,6 +232,21 @@ def main(window):
 							world_expansion.y * world.cell((0, 0)).height,
 							)
 				player.pos = new_pos
-		passed_time += 1
+			step_taken = True
+		if step_taken:
+			if player.hp < player.max_hp:
+				player.regeneration += 1
+				while player.regeneration >= 10:
+					player.regeneration -= 10
+					player.hp += 1
+					if player.hp >= player.max_hp:
+						player.hp = player.max_hp
+			passed_time += 1
+			for monster in monsters:
+				if max(abs(monster.pos.x - player.pos.x), abs(monster.pos.y - player.pos.y)) <= 1:
+					player.hp -= 1
+					messages.append('Monster hits you.')
+					if player.hp <= 0:
+						messages.append('You died.')
 
 curses.wrapper(main)
