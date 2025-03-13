@@ -99,6 +99,46 @@ def generate_marsh():
 		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('&', 'yellow'))
 	return field
 
+def add_building(field, field_shift):
+	building = Rect(
+			Point(2 + random.randrange(3), 2 + random.randrange(3)),
+			Size(6 + random.randrange(3), 6 + random.randrange(3)),
+			)
+	for x in range(building.width):
+		for y in range(building.height):
+			field.set_cell((building.left + x, building.top + y), Sprite('.', 'white'))
+	for x in range(building.width):
+		field.set_cell((building.left + x, building.top), Sprite('#', 'white'))
+		field.set_cell((building.left + x, building.bottom), Sprite('#', 'white'))
+	for y in range(building.height):
+		field.set_cell((building.left, building.top + y), Sprite('#', 'white'))
+		field.set_cell((building.right, building.top + y), Sprite('#', 'white'))
+	if random.randrange(2) == 0:
+		door = building.top + 1 + random.randrange(building.height - 2)
+		if random.randrange(2) == 0:
+			field.set_cell((building.left, door), Sprite('.', 'white'))
+		else:
+			field.set_cell((building.right, door), Sprite('.', 'white'))
+	else:
+		door = building.left + 1 + random.randrange(building.width - 2)
+		if random.randrange(2) == 0:
+			field.set_cell((door, building.top), Sprite('.', 'white'))
+		else:
+			field.set_cell((door, building.bottom), Sprite('.', 'white'))
+	dweller_pos = field_shift + building.topleft + Point(1, 1) + Point(
+			random.randrange(building.width - 2),
+			random.randrange(building.height - 2),
+			)
+	colors = list(set(COLORS.keys()) - {'black', 'bold_white'})
+	monster_color = random.choice(colors)
+	dweller = Monster(
+		dweller_pos,
+		Sprite('@', monster_color),
+		10,
+		behaviour='npc',
+		)
+	return dweller
+
 def main(window):
 	curses.curs_set(0)
 	init_colors()
@@ -114,16 +154,24 @@ def main(window):
 				world.size.width * world.cell((0, 0)).size.width,
 				world.size.height * world.cell((0, 0)).size.height,
 				)
+		shift = Point(
+				pos.x * world.cell((0, 0)).size.width,
+				pos.y * world.cell((0, 0)).size.height,
+				)
+		if random.randrange(50) == 0:
+			dweller = add_building(world.cell(pos), shift)
+			monsters.append(dweller)
+			continue
 		monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
 		for _ in range(monster_count):
-			monster_pos = Point(
-					random.randrange(world_size.width),
-					random.randrange(world_size.height),
+			monster_pos = shift + Point(
+					random.randrange(world.cell(pos).size.width),
+					random.randrange(world.cell(pos).size.height),
 					)
 			while any(other.pos == monster_pos for other in monsters):
-				monster_pos = Point(
-						random.randrange(world_size.width),
-						random.randrange(world_size.height),
+				monster_pos = shift + Point(
+						random.randrange(world.cell(pos).size.width),
+						random.randrange(world.cell(pos).size.height),
 						)
 			colors = set(COLORS.keys()) - {'black'}
 			normal_colors = [color for color in colors if not color.startswith('bold_')]
@@ -277,16 +325,19 @@ def main(window):
 			new_pos = player.pos + MOVEMENT[chr(control)]
 			monster = next((monster for monster in monsters if new_pos == monster.pos), None)
 			if monster:
-				monster.hp -= 1
-				messages.append('You hit monster.')
-				if monster.hp <= 0:
-					monsters.remove(monster)
-					messages.append('Monster is dead.')
-					for item in monster.inventory:
-						item.pos = monster.pos
-						monster.inventory.remove(item)
-						items.append(item)
-						messages.append('Monster dropped {0}.'.format(item.name))
+				if monster.behaviour == 'npc':
+					messages.append('You bump into dweller.')
+				else:
+					monster.hp -= 1
+					messages.append('You hit monster.')
+					if monster.hp <= 0:
+						monsters.remove(monster)
+						messages.append('Monster is dead.')
+						for item in monster.inventory:
+							item.pos = monster.pos
+							monster.inventory.remove(item)
+							items.append(item)
+							messages.append('Monster dropped {0}.'.format(item.name))
 			else:
 				world_boundaries = Rect(world_shift, Size(
 					world.size.width * world.cell((0, 0)).size.width,
@@ -326,6 +377,8 @@ def main(window):
 						player.hp = player.max_hp
 			passed_time += 1
 			for monster in monsters:
+				if monster.behaviour == 'npc':
+					continue
 				if max(abs(monster.pos.x - player.pos.x), abs(monster.pos.y - player.pos.y)) <= 1:
 					player.hp -= 1
 					messages.append('Monster hits you.')
