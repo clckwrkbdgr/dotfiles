@@ -3,7 +3,7 @@ import math
 import string
 from collections import namedtuple
 import curses
-from clckwrkbdgr.math import Point, Rect, Size, Matrix
+from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -38,11 +38,12 @@ def init_colors():
 		})
 
 class Monster:
-	def __init__(self, pos, sprite, max_hp):
+	def __init__(self, pos, sprite, max_hp, behaviour=None):
 		self.pos = pos
 		self.sprite = sprite
 		self.hp = self.max_hp = max_hp
 		self.regeneration = 0
+		self.behaviour = behaviour
 
 def generate_field():
 	return random.choice([
@@ -119,14 +120,16 @@ def main(window):
 			colors = set(COLORS.keys()) - {'black'}
 			normal_colors = [color for color in colors if not color.startswith('bold_')]
 			bold_colors = [color for color in colors if color.startswith('bold_')]
-			strength = random.randrange(4)
+			strong = random.randrange(2)
+			aggressive = random.randrange(2)
 			monsters.append(Monster(
 				monster_pos,
 				Sprite(
-					random.choice(string.ascii_lowercase if strength < 2 else string.ascii_uppercase),
-					random.choice(normal_colors if strength % 2 == 0 else bold_colors),
+					random.choice(string.ascii_uppercase if strong else string.ascii_lowercase),
+					random.choice(normal_colors if aggressive else bold_colors),
 					),
-				1 + random.randrange(4 + 10 * strength),
+				1 + 10 * strong + random.randrange(4),
+				behaviour='aggressive' if aggressive else None,
 				))
 
 	viewport = Rect((0, 0), (61, 23))
@@ -178,6 +181,9 @@ def main(window):
 			if len(message) >= 80 - 5:
 				message, tail = message[:80-5], message[80-5:]
 				messages.insert(0, tail)
+			else:
+				while messages and len(message) + 1 + len(messages[0]) < 80 - 5:
+					message += ' ' + messages.pop(0)
 			message_line = message
 			if messages:
 				message_line += '[...]'
@@ -248,5 +254,15 @@ def main(window):
 					messages.append('Monster hits you.')
 					if player.hp <= 0:
 						messages.append('You died.')
+				elif monster.behaviour == 'aggressive' and math.hypot(monster.pos.x - player.pos.x, monster.pos.y - player.pos.y) <= 10:
+					shift = Point(
+							sign(player.pos.x - monster.pos.x),
+							sign(player.pos.y - monster.pos.y),
+							)
+					new_pos = monster.pos + shift
+					if any(other.pos == new_pos for other in monsters):
+						messages.append('Monster bump into monster.')
+					else:
+						monster.pos = new_pos
 
 curses.wrapper(main)
