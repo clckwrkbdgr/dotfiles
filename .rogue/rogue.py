@@ -134,6 +134,8 @@ def main(window):
 			80 + random.randrange(world.size.width * world.cell((0, 0)).size.width - 80 * 2),
 			)
 	world_shift = Point(0, 0)
+	messages = []
+	passed_time = 0
 	while True:
 		window.clear()
 		for field_index in world:
@@ -166,39 +168,62 @@ def main(window):
 
 		hud_pos = viewport.right + 1
 		window.addstr(0, hud_pos, "@{0};{1}".format(player.pos.x, player.pos.y))
-		window.addstr(1, hud_pos, "hp:{0}/{1}".format(player.hp, player.max_hp))
+		window.addstr(1, hud_pos, "T:{0}".format(passed_time))
+		window.addstr(2, hud_pos, "hp:{0}/{1}".format(player.hp, player.max_hp))
+
+		while messages:
+			message = messages.pop(0)
+			if len(message) >= 80 - 5:
+				message, tail = message[:80-5], message[80-5:]
+				messages.insert(0, tail)
+			message_line = message
+			if messages:
+				message_line += '[...]'
+			window.addstr(24, 0, " " * 80)
+			window.addstr(24, 0, message_line)
+			if messages:
+				window.getch()
 
 		control = window.getch()
 		if control == ord('q'):
 			break
 		elif chr(control) in MOVEMENT:
 			new_pos = player.pos + MOVEMENT[chr(control)]
-			world_boundaries = Rect(world_shift, Size(
-				world.size.width * world.cell((0, 0)).size.width,
-				world.size.height * world.cell((0, 0)).size.height,
-				))
-			world_expansion = Point(0, 0)
-			if new_pos.x - center.x <= world_boundaries.left:
-				world_expansion.x -= 1
-			elif world_boundaries.right <= new_pos.x + center.x:
-				world_expansion.x += 1
-			if new_pos.y - center.y <= world_boundaries.top:
-				world_expansion.y -= 1
-			elif world_boundaries.bottom <= new_pos.y + center.y:
-				world_expansion.y += 1
-			if world_expansion:
-				new_world = Matrix(world.size, None)
-				for pos in new_world:
-					old_pos = pos + world_expansion
-					if world.valid(old_pos):
-						new_world.set_cell(pos, world.cell(old_pos))
-					else:
-						new_world.set_cell(pos, generate_field())
-				world = new_world
-				world_shift += Point(
-						world_expansion.x * world.cell((0, 0)).width,
-						world_expansion.y * world.cell((0, 0)).height,
-						)
-			player.pos = new_pos
+			monster = next((monster for monster in monsters if new_pos == monster.pos), None)
+			if monster:
+				monster.hp -= 1
+				messages.append('You hit monster.')
+				if monster.hp <= 0:
+					monsters.remove(monster)
+					messages.append('Monster is dead.')
+			else:
+				world_boundaries = Rect(world_shift, Size(
+					world.size.width * world.cell((0, 0)).size.width,
+					world.size.height * world.cell((0, 0)).size.height,
+					))
+				world_expansion = Point(0, 0)
+				if new_pos.x - center.x <= world_boundaries.left:
+					world_expansion.x -= 1
+				elif world_boundaries.right <= new_pos.x + center.x:
+					world_expansion.x += 1
+				if new_pos.y - center.y <= world_boundaries.top:
+					world_expansion.y -= 1
+				elif world_boundaries.bottom <= new_pos.y + center.y:
+					world_expansion.y += 1
+				if world_expansion:
+					new_world = Matrix(world.size, None)
+					for pos in new_world:
+						old_pos = pos + world_expansion
+						if world.valid(old_pos):
+							new_world.set_cell(pos, world.cell(old_pos))
+						else:
+							new_world.set_cell(pos, generate_field())
+					world = new_world
+					world_shift += Point(
+							world_expansion.x * world.cell((0, 0)).width,
+							world_expansion.y * world.cell((0, 0)).height,
+							)
+				player.pos = new_pos
+		passed_time += 1
 
 curses.wrapper(main)
