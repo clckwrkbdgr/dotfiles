@@ -35,6 +35,12 @@ def init_colors():
 		'bold_' + name : pair | curses.A_BOLD for name, pair in basic_colors.items()
 		})
 
+class Monster:
+	def __init__(self, pos, sprite, max_hp):
+		self.pos = pos
+		self.sprite = sprite
+		self.hp = self.max_hp = max_hp
+
 def generate_field():
 	return random.choice([
 		generate_forest,
@@ -47,7 +53,7 @@ def generate_forest():
 	field = Matrix((16, 16), Sprite('.', 'green'))
 	forest_density = random.randrange(10) * 10
 	for _ in range(forest_density):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('T', 'bold_green'))
+		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('&', 'bold_green'))
 	for _ in range(10):
 		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('"', 'bold_green'))
 	for _ in range(10):
@@ -77,14 +83,14 @@ def generate_marsh():
 	for _ in range(random.randrange(100)):
 		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('.', 'green'))
 	for _ in range(random.randrange(5)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('T', 'green'))
+		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('&', 'green'))
 	for _ in range(random.randrange(10)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('T', 'yellow'))
+		field.set_cell(Point(random.randrange(16), random.randrange(16)), Sprite('&', 'yellow'))
 	return field
 
 def main(window):
-	player = Point(0, 0)
-	world = Matrix((16, 16), None)
+	player = Monster(Point(0, 0), Sprite('@', 'bold_white'), 10)
+	world = Matrix((16, 16), None) # TODO not a world, just a local zone. need a 256x256 overworld of fixed zones, and the overworld itself may expand instead of sub-zones.
 	for pos in world:
 		world.set_cell(pos, generate_field())
 
@@ -92,7 +98,10 @@ def main(window):
 	init_colors()
 	viewport = Rect((0, 0), (61, 23))
 	center = Point(*(viewport.size // 2))
-	player = Point(80, 30)
+	player.pos = Point(
+			80 + random.randrange(world.size.width * world.cell((0, 0)).size.width - 80 * 2),
+			80 + random.randrange(world.size.width * world.cell((0, 0)).size.width - 80 * 2),
+			)
 	world_shift = Point(0, 0)
 	while True:
 		window.clear()
@@ -109,24 +118,25 @@ def main(window):
 					Point(field_rect.left, field_rect.bottom),
 					Point(field_rect.right, field_rect.bottom),
 					]
-			screen_control_points = [(world_shift + pos) - player + center for pos in control_points]
+			screen_control_points = [(world_shift + pos) - player.pos + center for pos in control_points]
 			if not any(viewport.contains(screen_pos, with_border=True) for screen_pos in screen_control_points):
 				continue
 			for pos in field:
-				screen_pos = world_shift + pos + field_rect.topleft - player + center
+				screen_pos = world_shift + pos + field_rect.topleft - player.pos + center
 				if not viewport.contains(screen_pos, with_border=True):
 					continue
 				window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite, COLORS[field.cell(pos).color])
-		window.addstr(center.y, center.x, '@', COLORS['bold_white'])
+		window.addstr(center.y, center.x, player.sprite.sprite, COLORS[player.sprite.color])
 
 		hud_pos = viewport.right + 1
-		window.addstr(0, hud_pos, "@{0};{1}".format(player.x, player.y))
+		window.addstr(0, hud_pos, "@{0};{1}".format(player.pos.x, player.pos.y))
+		window.addstr(1, hud_pos, "hp:{0}/{1}".format(player.hp, player.max_hp))
 
 		control = window.getch()
 		if control == ord('q'):
 			break
 		elif chr(control) in MOVEMENT:
-			new_pos = player + MOVEMENT[chr(control)]
+			new_pos = player.pos + MOVEMENT[chr(control)]
 			world_boundaries = Rect(world_shift, Size(
 				world.size.width * world.cell((0, 0)).size.width,
 				world.size.height * world.cell((0, 0)).size.height,
@@ -153,6 +163,6 @@ def main(window):
 						world_expansion.x * world.cell((0, 0)).width,
 						world_expansion.y * world.cell((0, 0)).height,
 						)
-			player = new_pos
+			player.pos = new_pos
 
 curses.wrapper(main)
