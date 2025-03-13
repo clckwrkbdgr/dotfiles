@@ -2,7 +2,7 @@ import random
 import math
 import string
 from collections import namedtuple
-import curses
+import curses, curses.ascii
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
 
 MOVEMENT = {
@@ -44,6 +44,13 @@ class Monster:
 		self.hp = self.max_hp = max_hp
 		self.regeneration = 0
 		self.behaviour = behaviour
+		self.inventory = []
+
+class Item:
+	def __init__(self, pos, sprite, name):
+		self.pos = pos
+		self.sprite = sprite
+		self.name = name
 
 def generate_field():
 	return random.choice([
@@ -99,6 +106,7 @@ def main(window):
 	player = Monster(Point(0, 0), Sprite('@', 'bold_white'), 10)
 	world = Matrix((16, 16), None) # TODO not a world, just a local zone. need a 256x256 overworld of fixed zones, and the overworld itself may expand instead of sub-zones.
 	monsters = []
+	items = []
 	for pos in world:
 		world.set_cell(pos, generate_field())
 
@@ -122,15 +130,22 @@ def main(window):
 			bold_colors = [color for color in colors if color.startswith('bold_')]
 			strong = random.randrange(2)
 			aggressive = random.randrange(2)
-			monsters.append(Monster(
+			monster_color = random.choice(bold_colors if aggressive else normal_colors)
+			monster = Monster(
 				monster_pos,
 				Sprite(
 					random.choice(string.ascii_uppercase if strong else string.ascii_lowercase),
-					random.choice(normal_colors if aggressive else bold_colors),
+					monster_color,
 					),
 				1 + 10 * strong + random.randrange(4),
 				behaviour='aggressive' if aggressive else None,
-				))
+				)
+			if random.randrange(2):
+				monster.inventory.append(Item(
+					None, Sprite('*', monster_color),
+					'{0} skin'.format(monster_color.replace('_', ' ')),
+					))
+			monsters.append(monster)
 
 	viewport = Rect((0, 0), (61, 23))
 	center = Point(*(viewport.size // 2))
@@ -164,6 +179,11 @@ def main(window):
 				if not viewport.contains(screen_pos, with_border=True):
 					continue
 				window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite, COLORS[field.cell(pos).color])
+		for item in items:
+			screen_pos = item.pos - player.pos + center
+			if not viewport.contains(screen_pos, with_border=True):
+				continue
+			window.addstr(screen_pos.y, screen_pos.x, item.sprite.sprite, COLORS[item.sprite.color])
 		for monster in monsters:
 			screen_pos = monster.pos - player.pos + center
 			if not viewport.contains(screen_pos, with_border=True):
@@ -175,6 +195,10 @@ def main(window):
 		window.addstr(0, hud_pos, "@{0};{1}".format(player.pos.x, player.pos.y))
 		window.addstr(1, hud_pos, "T:{0}".format(passed_time))
 		window.addstr(2, hud_pos, "hp:{0}/{1}".format(player.hp, player.max_hp))
+		window.addstr(3, hud_pos, "inv:{0}".format(len(player.inventory)))
+		item_here = next((item for item in items if player.pos == item.pos), None)
+		if item_here:
+			window.addstr(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
 		while messages:
 			message = messages.pop(0)
@@ -197,10 +221,58 @@ def main(window):
 
 		step_taken = False
 		control = window.getch()
-		if control == ord('q'):
+		if control == ord('Q'):
 			break
 		elif control == ord('.'):
 			step_taken = True
+		elif control == ord('g'):
+			item = next((item for item in items if player.pos == item.pos), None)
+			if not item:
+				messages.append('Nothing to pick up here.')
+			elif len(player.inventory) >= 26:
+				messages.append('Inventory is full.')
+			else:
+				player.inventory.append(item)
+				items.remove(item)
+				messages.append('Picked up {0}.'.format(item.name))
+				step_taken = True
+		elif control == ord('i'):
+			window.clear()
+			while True:
+				for index, (shortcut, item) in enumerate(zip(string.ascii_lowercase, player.inventory)):
+					column = index // 20
+					index = index % 20
+					window.addstr(index + 1, column * 40 + 0, item.sprite.sprite, COLORS[item.sprite.color])
+					window.addstr(index + 1, column * 40 + 2, '- {0}'.format(item.name))
+				control = window.getch()
+				if control == curses.ascii.ESC:
+					break
+		elif control == ord('d'):
+			if not player.inventory:
+				messages.append('Nothing to drop.')
+			else:
+				window.clear()
+				caption = "Select item to drop (a-z/ESC):"
+				while True:
+					window.addstr(0, 0, caption)
+					for index, (shortcut, item) in enumerate(zip(string.ascii_lowercase, player.inventory)):
+						column = index // 20
+						index = index % 20
+						window.addstr(index + 1, column * 40 + 0, item.sprite.sprite, COLORS[item.sprite.color])
+						window.addstr(index + 1, column * 40 + 2, '- {0}'.format(item.name))
+					control = window.getch()
+					if control == curses.ascii.ESC:
+						break
+					selected = control - ord('a')
+					if selected < 0 or len(player.inventory) <= selected:
+						caption = 'No such item: {0}'.format(chr(control))
+					else:
+						item = player.inventory.pop(selected)
+						item.pos = player.pos
+						items.append(item)
+						messages.append('You drop {0}.'.format(item.name))
+						step_taken = True
+						break
 		elif chr(control) in MOVEMENT:
 			new_pos = player.pos + MOVEMENT[chr(control)]
 			monster = next((monster for monster in monsters if new_pos == monster.pos), None)
@@ -210,6 +282,11 @@ def main(window):
 				if monster.hp <= 0:
 					monsters.remove(monster)
 					messages.append('Monster is dead.')
+					for item in monster.inventory:
+						item.pos = monster.pos
+						monster.inventory.remove(item)
+						items.append(item)
+						messages.append('Monster dropped {0}.'.format(item.name))
 			else:
 				world_boundaries = Rect(world_shift, Size(
 					world.size.width * world.cell((0, 0)).size.width,
@@ -253,7 +330,7 @@ def main(window):
 					player.hp -= 1
 					messages.append('Monster hits you.')
 					if player.hp <= 0:
-						messages.append('You died.')
+						messages.append('You died!!!')
 				elif monster.behaviour == 'aggressive' and math.hypot(monster.pos.x - player.pos.x, monster.pos.y - player.pos.y) <= 10:
 					shift = Point(
 							sign(player.pos.x - monster.pos.x),
