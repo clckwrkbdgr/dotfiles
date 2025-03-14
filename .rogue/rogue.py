@@ -3,7 +3,9 @@ import math
 import string
 from collections import namedtuple
 import curses, curses.ascii
+import jsonpickle
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
+from clckwrkbdgr import xdg
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -215,7 +217,13 @@ def main(window):
 	init_colors()
 
 	game = Game()
-	game.generate()
+	savefile = xdg.save_data_path('dotrogue')/'rogue.sav'
+	if savefile.exists():
+		data = savefile.read_text()
+		savedata = jsonpickle.decode(data, keys=True)
+		game = savedata['entity']
+	else:
+		game.generate()
 
 	viewport = Rect((0, 0), (61, 23))
 	center = Point(*(viewport.size // 2))
@@ -512,5 +520,12 @@ def main(window):
 						messages.append('Monster bump into monster.')
 					elif dest_cell.passable:
 						monster.pos = new_pos
+	if game.player.hp > 0:
+		savedata = {'entity': game}
+		data = jsonpickle.encode(savedata, keys=True)
+		savefile.write_bytes(data.encode('utf-8', 'replace'))
+	else:
+		if savefile.exists():
+			savefile.unlink()
 
 curses.wrapper(main)
