@@ -42,6 +42,11 @@ class Terrain:
 		self.sprite = sprite
 		self.passable = passable
 
+class Questgiver:
+	def __init__(self):
+		self.quest = None
+		self.prepared_quest = None
+
 class Monster:
 	def __init__(self, pos, sprite, max_hp, behaviour=None):
 		self.pos = pos
@@ -140,7 +145,7 @@ def add_building(field, field_shift):
 		dweller_pos,
 		Sprite('@', monster_color),
 		10,
-		behaviour='npc',
+		behaviour=Questgiver(),
 		)
 	return dweller
 
@@ -274,7 +279,7 @@ def main(window):
 
 		step_taken = False
 		control = window.getch()
-		if control == ord('Q'):
+		if control == ord('S'):
 			break
 		elif control == ord('.'):
 			step_taken = True
@@ -289,6 +294,92 @@ def main(window):
 				items.remove(item)
 				messages.append('Picked up {0}.'.format(item.name))
 				step_taken = True
+		elif control == ord('C'):
+			npcs = [
+					monster for monster in monsters
+					if max(abs(monster.pos.x - player.pos.x), abs(monster.pos.y - player.pos.y)) <= 1
+					and isinstance(monster.behaviour, Questgiver)
+					]
+			questing = [
+					npc for npc in monsters
+					if isinstance(npc.behaviour, Questgiver)
+					and npc.behaviour.quest
+					]
+			if not npcs:
+				messages.append('No one to chat with.')
+			elif len(questing) > 20:
+				messages.append("Too much quests already.")
+			else:
+				if len(npcs) > 1:
+					window.addstr(24, 0, " " * 80)
+					window.addstr(24, 0, "Too crowded. Chat in which direction?")
+					control = window.getch()
+					if chr(control) in MOVEMENT:
+						dest = player.pos + MOVEMENT[chr(control)]
+						npcs = [npc for npc in npcs if npc.pos == dest]
+					else:
+						npcs = []
+				if npcs:
+					npc = npcs[0]
+					if npc.behaviour.quest:
+						required_amount, required_name, bounty = npc.behaviour.quest
+						have_required_items = [
+								item for item in player.inventory
+								if item.name == required_name
+								][:required_amount]
+						if len(have_required_items) >= required_amount:
+							window.addstr(24, 0, " " * 80)
+							window.addstr(24, 0, '"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.behaviour.quest)))
+							control = window.getch()
+							if chr(control) in 'yY':
+								messages.append('"Thanks. Here you go."')
+								for item in have_required_items:
+									player.inventory.remove(item)
+								if player.hp == player.max_hp:
+									player.hp += bounty
+								player.max_hp += bounty
+								npc.behaviour.quest = None
+							else:
+								messages.append('"OK, come back later if you want it."')
+						else:
+							messages.append('"Come back with {0} {1}."'.format(*(npc.behaviour.quest)))
+					else:
+						if not npc.behaviour.prepared_quest:
+							amount = 1 + random.randrange(3)
+							bounty = max(1, amount // 2 + 1)
+							color = random.choice(list(set(COLORS.keys()) - {'black'})).replace('_', ' ') + ' skin'
+							npc.behaviour.prepared_quest = (amount, color, bounty)
+						window.addstr(24, 0, " " * 80)
+						window.addstr(24, 0, '"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
+						control = window.getch()
+						if chr(control) in 'yY':
+							npc.behaviour.quest = npc.behaviour.prepared_quest
+							npc.behaviour.prepared_quest = None
+						else:
+							messages.append('"OK, come back later if you want it."')
+				else:
+					messages.append('No one to chat with in that direction.')
+		elif control == ord('q'):
+			window.clear()
+			questing = [
+					npc for npc in monsters
+					if isinstance(npc.behaviour, Questgiver)
+					and npc.behaviour.quest
+					]
+			if questing:
+				window.addstr(0, 0, "No current quests.")
+			else:
+				window.addstr(0, 0, "Current quests:")
+			while True:
+				for index, npc in enumerate(questing):
+					window.addstr(index + 1, 0, "@ {2}: Bring {0} {1}.".format(
+						npc.behaviour.quest[0],
+						npc.behaviour.quest[1],
+						npc.pos,
+						))
+				control = window.getch()
+				if control == curses.ascii.ESC:
+					break
 		elif control == ord('i'):
 			window.clear()
 			while True:
@@ -337,7 +428,7 @@ def main(window):
 							new_pos.y % world.cell((0, 0)).height,
 							))
 			if monster:
-				if monster.behaviour == 'npc':
+				if isinstance(monster.behaviour, Questgiver):
 					messages.append('You bump into dweller.')
 				else:
 					monster.hp -= 1
@@ -389,7 +480,7 @@ def main(window):
 						player.hp = player.max_hp
 			passed_time += 1
 			for monster in monsters:
-				if monster.behaviour == 'npc':
+				if isinstance(monster.behaviour, Questgiver):
 					continue
 				if max(abs(monster.pos.x - player.pos.x), abs(monster.pos.y - player.pos.y)) <= 1:
 					player.hp -= 1
