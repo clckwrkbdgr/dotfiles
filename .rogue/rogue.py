@@ -93,10 +93,19 @@ class Zone:
 	@property
 	def full_height(self):
 		self.fields.height * self.field_size.height
+	def all_monsters(self, raw=False):
+		for field_index in self.fields:
+			for monster in self.fields.cell(field_index).monsters:
+				coord = Coord(field_index, monster.pos)
+				if not raw:
+					coord = coord.get_global(self)
+				yield coord, monster
 
 class Field:
 	def __init__(self, size, default_tile):
 		self.tiles = Matrix(size, default_tile)
+		self.items = []
+		self.monsters = []
 
 def generate_field():
 	return random.choice([
@@ -145,7 +154,7 @@ def generate_marsh():
 		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'yellow')))
 	return field
 
-def add_building(field, field_shift):
+def add_building(field):
 	building = Rect(
 			Point(2 + random.randrange(3), 2 + random.randrange(3)),
 			Size(6 + random.randrange(3), 6 + random.randrange(3)),
@@ -171,7 +180,7 @@ def add_building(field, field_shift):
 			field.tiles.set_cell((door, building.top), Terrain(Sprite('.', 'white')))
 		else:
 			field.tiles.set_cell((door, building.bottom), Terrain(Sprite('.', 'white')))
-	dweller_pos = field_shift + building.topleft + Point(1, 1) + Point(
+	dweller_pos = building.topleft + Point(1, 1) + Point(
 			random.randrange(building.width - 2),
 			random.randrange(building.height - 2),
 			)
@@ -183,14 +192,12 @@ def add_building(field, field_shift):
 		10,
 		behaviour=Questgiver(),
 		)
-	return dweller
+	field.monsters.append(dweller)
 
 class Game:
 	def __init__(self):
 		self.player = Monster(Coord(), Sprite('@', 'bold_white'), 10)
 		self.world = Zone((16, 16), None) # TODO not a world, just a local zone. need a 256x256 overworld of fixed zones, and the overworld itself may expand instead of sub-zones.
-		self.monsters = []
-		self.items = []
 		self.passed_time = 0
 	def generate(self):
 		for pos in self.world.fields:
@@ -205,17 +212,16 @@ class Game:
 					pos.y * self.world.field_size.height,
 					)
 			if random.randrange(50) == 0:
-				dweller = add_building(self.world.fields.cell(pos), shift)
-				self.monsters.append(dweller)
+				add_building(self.world.fields.cell(pos))
 				continue
 			monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
 			for _ in range(monster_count):
-				monster_pos = shift + Point(
+				monster_pos = Point(
 						random.randrange(self.world.fields.cell(pos).tiles.size.width),
 						random.randrange(self.world.fields.cell(pos).tiles.size.height),
 						)
-				while any(other.pos == monster_pos for other in self.monsters):
-					monster_pos = shift + Point(
+				while any(other.pos == monster_pos for other in self.world.fields.cell(pos).monsters):
+					monster_pos = Point(
 							random.randrange(self.world.fields.cell(pos).tiles.size.width),
 							random.randrange(self.world.fields.cell(pos).tiles.size.height),
 							)
@@ -239,7 +245,7 @@ class Game:
 						None, Sprite('*', monster_color),
 						'{0} skin'.format(monster_color.replace('_', ' ')),
 						))
-				self.monsters.append(monster)
+				self.world.fields.cell(pos).monsters.append(monster)
 		self.player.pos.world = Point(
 				random.randrange(self.world.fields.size.width),
 				random.randrange(self.world.fields.size.height),
@@ -288,16 +294,18 @@ def main(window):
 				if not viewport.contains(screen_pos, with_border=True):
 					continue
 				window.addstr(screen_pos.y, screen_pos.x, field.tiles.cell(pos).sprite.sprite, COLORS[field.tiles.cell(pos).sprite.color])
-		for item in game.items:
-			screen_pos = item.pos - game.player.pos.get_global(game.world) + center
-			if not viewport.contains(screen_pos, with_border=True):
-				continue
-			window.addstr(screen_pos.y, screen_pos.x, item.sprite.sprite, COLORS[item.sprite.color])
-		for monster in game.monsters:
-			screen_pos = monster.pos - game.player.pos.get_global(game.world) + center
-			if not viewport.contains(screen_pos, with_border=True):
-				continue
-			window.addstr(screen_pos.y, screen_pos.x, monster.sprite.sprite, COLORS[monster.sprite.color])
+			for item in field.items:
+				item_pos = Coord(field_index, item.pos).get_global(game.world)
+				screen_pos = item_pos - game.player.pos.get_global(game.world) + center
+				if not viewport.contains(screen_pos, with_border=True):
+					continue
+				window.addstr(screen_pos.y, screen_pos.x, item.sprite.sprite, COLORS[item.sprite.color])
+			for monster in field.monsters:
+				monster_pos = Coord(field_index, monster.pos).get_global(game.world)
+				screen_pos = monster_pos - game.player.pos.get_global(game.world) + center
+				if not viewport.contains(screen_pos, with_border=True):
+					continue
+				window.addstr(screen_pos.y, screen_pos.x, monster.sprite.sprite, COLORS[monster.sprite.color])
 		window.addstr(center.y, center.x, game.player.sprite.sprite, COLORS[game.player.sprite.color])
 
 		hud_pos = viewport.right + 1
@@ -305,7 +313,11 @@ def main(window):
 		window.addstr(1, hud_pos, "T:{0}".format(game.passed_time))
 		window.addstr(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
 		window.addstr(3, hud_pos, "inv:{0}".format(len(game.player.inventory)))
-		item_here = next((item for item in game.items if game.player.pos.get_global(game.world) == item.pos), None)
+		item_here = next((
+			item for item in
+			game.world.fields.cell(game.player.pos.world).items
+			if game.player.pos.field == item.pos
+			), None)
 		if item_here:
 			window.addstr(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
@@ -335,25 +347,29 @@ def main(window):
 		elif control == ord('.'):
 			step_taken = True
 		elif control == ord('g'):
-			item = next((item for item in game.items if game.player.pos.get_global(game.world) == item.pos), None)
+			item = next((
+				item for item in
+				game.world.fields.cell(game.player.pos.world).items
+				if game.player.pos.field == item.pos
+				), None)
 			if not item:
 				messages.append('Nothing to pick up here.')
 			elif len(game.player.inventory) >= 26:
 				messages.append('Inventory is full.')
 			else:
 				game.player.inventory.append(item)
-				game.items.remove(item)
+				game.world.fields.cell(game.player.pos.world).items.remove(item)
 				messages.append('Picked up {0}.'.format(item.name))
 				step_taken = True
 		elif control == ord('C'):
 			player_pos = game.player.pos.get_global(game.world)
 			npcs = [
-					monster for monster in game.monsters
-					if max(abs(monster.pos.x - player_pos.x), abs(monster.pos.y - player_pos.y)) <= 1
+					monster for monster_pos, monster in game.world.all_monsters()
+					if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1
 					and isinstance(monster.behaviour, Questgiver)
 					]
 			questing = [
-					npc for npc in game.monsters
+					npc for _, npc in game.world.all_monsters()
 					if isinstance(npc.behaviour, Questgiver)
 					and npc.behaviour.quest
 					]
@@ -414,7 +430,7 @@ def main(window):
 		elif control == ord('q'):
 			window.clear()
 			questing = [
-					npc for npc in game.monsters
+					(coord, npc) for coord, npc in game.world.all_monsters(raw=True)
 					if isinstance(npc.behaviour, Questgiver)
 					and npc.behaviour.quest
 					]
@@ -423,11 +439,11 @@ def main(window):
 			else:
 				window.addstr(0, 0, "Current quests:")
 			while True:
-				for index, npc in enumerate(questing):
+				for index, (coord, npc) in enumerate(questing):
 					window.addstr(index + 1, 0, "@ {2}: Bring {0} {1}.".format(
 						npc.behaviour.quest[0],
 						npc.behaviour.quest[1],
-						npc.pos,
+						coord,
 						))
 				control = window.getch()
 				if control == curses.ascii.ESC:
@@ -464,14 +480,14 @@ def main(window):
 						caption = 'No such item: {0}'.format(chr(control))
 					else:
 						item = game.player.inventory.pop(selected)
-						item.pos = game.player.pos.get_global(game.world)
-						game.items.append(item)
+						item.pos = game.player.pos.field
+						game.world.fields.cell(game.player.pos.world).items.append(item)
 						messages.append('You drop {0}.'.format(item.name))
 						step_taken = True
 						break
 		elif chr(control) in MOVEMENT:
 			new_pos = game.player.pos.get_global(game.world) + MOVEMENT[chr(control)]
-			monster = next((monster for monster in game.monsters if new_pos == monster.pos), None)
+			monster = next((monster for monster_pos, monster in game.world.all_monsters() if new_pos == monster_pos), None)
 			dest_pos = Coord(
 					Point(
 						new_pos.x // game.world.field_size.width,
@@ -493,12 +509,12 @@ def main(window):
 					monster.hp -= 1
 					messages.append('You hit monster.')
 					if monster.hp <= 0:
-						game.monsters.remove(monster)
+						game.world.fields.cell(dest_pos.world).monsters.remove(monster)
 						messages.append('Monster is dead.')
 						for item in monster.inventory:
 							item.pos = monster.pos
 							monster.inventory.remove(item)
-							game.items.append(item)
+							game.world.fields.cell(dest_pos.world).items.append(item)
 							messages.append('Monster dropped {0}.'.format(item.name))
 			elif dest_cell is None:
 				messages.append('Will not fall into the void.')
@@ -514,33 +530,40 @@ def main(window):
 					if game.player.hp >= game.player.max_hp:
 						game.player.hp = game.player.max_hp
 			game.passed_time += 1
-			for monster in game.monsters:
+			for monster_coord, monster in game.world.all_monsters(raw=True):
 				if isinstance(monster.behaviour, Questgiver):
 					continue
+				monster_pos = monster_coord.get_global(game.world)
 				player_pos = game.player.pos.get_global(game.world)
-				if max(abs(monster.pos.x - player_pos.x), abs(monster.pos.y - player_pos.y)) <= 1:
+				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
 					game.player.hp -= 1
 					messages.append('Monster hits you.')
 					if game.player.hp <= 0:
 						messages.append('You died!!!')
-				elif monster.behaviour == 'aggressive' and math.hypot(monster.pos.x - player_pos.x, monster.pos.y - player_pos.y) <= 10:
+				elif monster.behaviour == 'aggressive' and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= 10:
 					shift = Point(
-							sign(player_pos.x - monster.pos.x),
-							sign(player_pos.y - monster.pos.y),
+							sign(player_pos.x - monster_pos.x),
+							sign(player_pos.y - monster_pos.y),
 							)
-					new_pos = monster.pos + shift
-					dest_pos = new_pos
-					dest_cell = game.world.fields.cell(Point(
-								dest_pos.x // game.world.field_size.width,
-								dest_pos.y // game.world.field_size.height,
-								)).tiles.cell(Point(
-									dest_pos.x % game.world.field_size.width,
-									dest_pos.y % game.world.field_size.height,
-									))
-					if any(other.pos == new_pos for other in game.monsters):
+					new_pos = monster_pos + shift
+					dest_pos = Coord(
+							Point(
+								new_pos.x // game.world.field_size.width,
+								new_pos.y // game.world.field_size.height,
+								),
+							Point(
+								new_pos.x % game.world.field_size.width,
+								new_pos.y % game.world.field_size.height,
+								),
+							)
+					dest_cell = game.world.fields.cell(dest_pos.world).tiles.cell(dest_pos.field)
+					if any(other.pos == dest_pos.field for other in game.world.fields.cell(dest_pos.world).monsters):
 						messages.append('Monster bump into monster.')
 					elif dest_cell.passable:
-						monster.pos = new_pos
+						if monster_coord.world != dest_pos.world:
+							game.world.fields.cell(monster_coord.world).monsters.remove(monster)
+							game.world.fields.cell(dest_pos.world).monsters.append(monster)
+						monster.pos = dest_pos.field
 	if game.player.hp > 0:
 		savedata = {'entity': game}
 		data = jsonpickle.encode(savedata, keys=True)
