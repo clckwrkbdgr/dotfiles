@@ -1,3 +1,4 @@
+import functools
 import random
 import math
 import string
@@ -45,8 +46,8 @@ class Coord:
 		self.field = field_pos or Point(0, 0)
 	def get_global(self, world):
 		return Point(
-				self.world.x * world.cell((0, 0)).width,
-				self.world.y * world.cell((0, 0)).height,
+				self.world.x * world.field_size.width,
+				self.world.y * world.field_size.height,
 				) + self.field
 	def __str__(self):
 		return '{0:X}.{1:X};{2:X}.{3:X}'.format(
@@ -79,6 +80,24 @@ class Item:
 		self.sprite = sprite
 		self.name = name
 
+class Zone:
+	def __init__(self, size, default_tile):
+		self.fields = Matrix(size, default_tile)
+	@property
+	@functools.lru_cache()
+	def field_size(self):
+		return self.fields.cell((0, 0)).tiles.size
+	@property
+	def full_width(self):
+		self.fields.width * self.field_size.width
+	@property
+	def full_height(self):
+		self.fields.height * self.field_size.height
+
+class Field:
+	def __init__(self, size, default_tile):
+		self.tiles = Matrix(size, default_tile)
+
 def generate_field():
 	return random.choice([
 		generate_forest,
@@ -88,42 +107,42 @@ def generate_field():
 		])()
 
 def generate_forest():
-	field = Matrix((16, 16), Terrain(Sprite('.', 'green')))
+	field = Field((16, 16), Terrain(Sprite('.', 'green')))
 	forest_density = random.randrange(10) * 10
 	for _ in range(forest_density):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'bold_green')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'bold_green')))
 	for _ in range(10):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'bold_green')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'bold_green')))
 	for _ in range(10):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
 	return field
 
 def generate_desert():
-	field = Matrix((16, 16), Terrain(Sprite('.', 'bold_yellow')))
+	field = Field((16, 16), Terrain(Sprite('.', 'bold_yellow')))
 	for _ in range(random.randrange(3)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('^', 'yellow'), passable=False))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('^', 'yellow'), passable=False))
 	for _ in range(10):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
 	return field
 
 def generate_thundra():
-	field = Matrix((16, 16), Terrain(Sprite('.', 'bold_white')))
+	field = Field((16, 16), Terrain(Sprite('.', 'bold_white')))
 	for _ in range(3 + random.randrange(3)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'cyan')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'cyan')))
 	for _ in range(3 + random.randrange(7)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'white')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'white')))
 	return field
 
 def generate_marsh():
-	field = Matrix((16, 16), Terrain(Sprite('~', 'cyan')))
+	field = Field((16, 16), Terrain(Sprite('~', 'cyan')))
 	for _ in range(100):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('~', 'green')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('~', 'green')))
 	for _ in range(random.randrange(100)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'green')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'green')))
 	for _ in range(random.randrange(5)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'green')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'green')))
 	for _ in range(random.randrange(10)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'yellow')))
+		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'yellow')))
 	return field
 
 def add_building(field, field_shift):
@@ -133,25 +152,25 @@ def add_building(field, field_shift):
 			)
 	for x in range(building.width):
 		for y in range(building.height):
-			field.set_cell((building.left + x, building.top + y), Terrain(Sprite('.', 'white')))
+			field.tiles.set_cell((building.left + x, building.top + y), Terrain(Sprite('.', 'white')))
 	for x in range(building.width):
-		field.set_cell((building.left + x, building.top), Terrain(Sprite('#', 'white'), passable=False))
-		field.set_cell((building.left + x, building.bottom), Terrain(Sprite('#', 'white'), passable=False))
+		field.tiles.set_cell((building.left + x, building.top), Terrain(Sprite('#', 'white'), passable=False))
+		field.tiles.set_cell((building.left + x, building.bottom), Terrain(Sprite('#', 'white'), passable=False))
 	for y in range(building.height):
-		field.set_cell((building.left, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
-		field.set_cell((building.right, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
+		field.tiles.set_cell((building.left, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
+		field.tiles.set_cell((building.right, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
 	if random.randrange(2) == 0:
 		door = building.top + 1 + random.randrange(building.height - 2)
 		if random.randrange(2) == 0:
-			field.set_cell((building.left, door), Terrain(Sprite('.', 'white')))
+			field.tiles.set_cell((building.left, door), Terrain(Sprite('.', 'white')))
 		else:
-			field.set_cell((building.right, door), Terrain(Sprite('.', 'white')))
+			field.tiles.set_cell((building.right, door), Terrain(Sprite('.', 'white')))
 	else:
 		door = building.left + 1 + random.randrange(building.width - 2)
 		if random.randrange(2) == 0:
-			field.set_cell((door, building.top), Terrain(Sprite('.', 'white')))
+			field.tiles.set_cell((door, building.top), Terrain(Sprite('.', 'white')))
 		else:
-			field.set_cell((door, building.bottom), Terrain(Sprite('.', 'white')))
+			field.tiles.set_cell((door, building.bottom), Terrain(Sprite('.', 'white')))
 	dweller_pos = field_shift + building.topleft + Point(1, 1) + Point(
 			random.randrange(building.width - 2),
 			random.randrange(building.height - 2),
@@ -169,36 +188,36 @@ def add_building(field, field_shift):
 class Game:
 	def __init__(self):
 		self.player = Monster(Coord(), Sprite('@', 'bold_white'), 10)
-		self.world = Matrix((16, 16), None) # TODO not a world, just a local zone. need a 256x256 overworld of fixed zones, and the overworld itself may expand instead of sub-zones.
+		self.world = Zone((16, 16), None) # TODO not a world, just a local zone. need a 256x256 overworld of fixed zones, and the overworld itself may expand instead of sub-zones.
 		self.monsters = []
 		self.items = []
 		self.passed_time = 0
 	def generate(self):
-		for pos in self.world:
-			self.world.set_cell(pos, generate_field())
+		for pos in self.world.fields:
+			self.world.fields.set_cell(pos, generate_field())
 
 			world_size = Size(
-					self.world.size.width * self.world.cell((0, 0)).size.width,
-					self.world.size.height * self.world.cell((0, 0)).size.height,
+					self.world.full_width,
+					self.world.full_height,
 					)
 			shift = Point(
-					pos.x * self.world.cell((0, 0)).size.width,
-					pos.y * self.world.cell((0, 0)).size.height,
+					pos.x * self.world.field_size.width,
+					pos.y * self.world.field_size.height,
 					)
 			if random.randrange(50) == 0:
-				dweller = add_building(self.world.cell(pos), shift)
+				dweller = add_building(self.world.fields.cell(pos), shift)
 				self.monsters.append(dweller)
 				continue
 			monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
 			for _ in range(monster_count):
 				monster_pos = shift + Point(
-						random.randrange(self.world.cell(pos).size.width),
-						random.randrange(self.world.cell(pos).size.height),
+						random.randrange(self.world.fields.cell(pos).tiles.size.width),
+						random.randrange(self.world.fields.cell(pos).tiles.size.height),
 						)
 				while any(other.pos == monster_pos for other in self.monsters):
 					monster_pos = shift + Point(
-							random.randrange(self.world.cell(pos).size.width),
-							random.randrange(self.world.cell(pos).size.height),
+							random.randrange(self.world.fields.cell(pos).tiles.size.width),
+							random.randrange(self.world.fields.cell(pos).tiles.size.height),
 							)
 				colors = set(COLORS.keys()) - {'black'}
 				normal_colors = [color for color in colors if not color.startswith('bold_')]
@@ -222,12 +241,12 @@ class Game:
 						))
 				self.monsters.append(monster)
 		self.player.pos.world = Point(
-				random.randrange(self.world.size.width),
-				random.randrange(self.world.size.height),
+				random.randrange(self.world.fields.size.width),
+				random.randrange(self.world.fields.size.height),
 				)
 		self.player.pos.field = Point(
-				random.randrange(self.world.cell((0, 0)).size.width),
-				random.randrange(self.world.cell((0, 0)).size.width),
+				random.randrange(self.world.field_size.width),
+				random.randrange(self.world.field_size.width),
 				)
 
 def main(window):
@@ -248,9 +267,9 @@ def main(window):
 	messages = []
 	while True:
 		window.clear()
-		for field_index in game.world:
-			field = game.world.cell(field_index)
-			field_size = field.size
+		for field_index in game.world.fields:
+			field = game.world.fields.cell(field_index)
+			field_size = field.tiles.size
 			field_rect = Rect(Point(
 						field_index.x * field_size.width,
 						field_index.y * field_size.height,
@@ -264,11 +283,11 @@ def main(window):
 			screen_control_points = [(pos) - game.player.pos.get_global(game.world) + center for pos in control_points]
 			if not any(viewport.contains(screen_pos, with_border=True) for screen_pos in screen_control_points):
 				continue
-			for pos in field:
+			for pos in field.tiles:
 				screen_pos = pos + field_rect.topleft - game.player.pos.get_global(game.world) + center
 				if not viewport.contains(screen_pos, with_border=True):
 					continue
-				window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite.sprite, COLORS[field.cell(pos).sprite.color])
+				window.addstr(screen_pos.y, screen_pos.x, field.tiles.cell(pos).sprite.sprite, COLORS[field.tiles.cell(pos).sprite.color])
 		for item in game.items:
 			screen_pos = item.pos - game.player.pos.get_global(game.world) + center
 			if not viewport.contains(screen_pos, with_border=True):
@@ -455,18 +474,18 @@ def main(window):
 			monster = next((monster for monster in game.monsters if new_pos == monster.pos), None)
 			dest_pos = Coord(
 					Point(
-						new_pos.x // game.world.cell((0, 0)).width,
-						new_pos.y // game.world.cell((0, 0)).height,
+						new_pos.x // game.world.field_size.width,
+						new_pos.y // game.world.field_size.height,
 						),
 					Point(
-						new_pos.x % game.world.cell((0, 0)).width,
-						new_pos.y % game.world.cell((0, 0)).height,
+						new_pos.x % game.world.field_size.width,
+						new_pos.y % game.world.field_size.height,
 						)
 					)
 			dest_cell = None
-			if game.world.valid(dest_pos.world):
-				if game.world.cell(dest_pos.world).valid(dest_pos.field):
-					dest_cell = game.world.cell(dest_pos.world).cell(dest_pos.field)
+			if game.world.fields.valid(dest_pos.world):
+				if game.world.fields.cell(dest_pos.world).tiles.valid(dest_pos.field):
+					dest_cell = game.world.fields.cell(dest_pos.world).tiles.cell(dest_pos.field)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
 					messages.append('You bump into dweller.')
@@ -511,12 +530,12 @@ def main(window):
 							)
 					new_pos = monster.pos + shift
 					dest_pos = new_pos
-					dest_cell = game.world.cell(Point(
-								dest_pos.x // game.world.cell((0, 0)).width,
-								dest_pos.y // game.world.cell((0, 0)).height,
-								)).cell(Point(
-									dest_pos.x % game.world.cell((0, 0)).width,
-									dest_pos.y % game.world.cell((0, 0)).height,
+					dest_cell = game.world.fields.cell(Point(
+								dest_pos.x // game.world.field_size.width,
+								dest_pos.y // game.world.field_size.height,
+								)).tiles.cell(Point(
+									dest_pos.x % game.world.field_size.width,
+									dest_pos.y % game.world.field_size.height,
 									))
 					if any(other.pos == new_pos for other in game.monsters):
 						messages.append('Monster bump into monster.')
