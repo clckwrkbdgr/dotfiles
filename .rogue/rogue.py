@@ -157,7 +157,6 @@ class Game:
 		self.world = Matrix((16, 16), None) # TODO not a world, just a local zone. need a 256x256 overworld of fixed zones, and the overworld itself may expand instead of sub-zones.
 		self.monsters = []
 		self.items = []
-		self.world_shift = Point(0, 0)
 		self.passed_time = 0
 	def generate(self):
 		for pos in self.world:
@@ -243,11 +242,11 @@ def main(window):
 					Point(field_rect.left, field_rect.bottom),
 					Point(field_rect.right, field_rect.bottom),
 					]
-			screen_control_points = [(game.world_shift + pos) - game.player.pos + center for pos in control_points]
+			screen_control_points = [(pos) - game.player.pos + center for pos in control_points]
 			if not any(viewport.contains(screen_pos, with_border=True) for screen_pos in screen_control_points):
 				continue
 			for pos in field:
-				screen_pos = game.world_shift + pos + field_rect.topleft - game.player.pos + center
+				screen_pos = pos + field_rect.topleft - game.player.pos + center
 				if not viewport.contains(screen_pos, with_border=True):
 					continue
 				window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite.sprite, COLORS[field.cell(pos).sprite.color])
@@ -434,14 +433,18 @@ def main(window):
 		elif chr(control) in MOVEMENT:
 			new_pos = game.player.pos + MOVEMENT[chr(control)]
 			monster = next((monster for monster in game.monsters if new_pos == monster.pos), None)
-			dest_pos = new_pos - game.world_shift
-			dest_cell = game.world.cell(Point(
+			dest_pos = new_pos
+			try:
+				dest_cell = game.world.cell(Point(
 						dest_pos.x // game.world.cell((0, 0)).width,
 						dest_pos.y // game.world.cell((0, 0)).height,
 						)).cell(Point(
 							dest_pos.x % game.world.cell((0, 0)).width,
 							dest_pos.y % game.world.cell((0, 0)).height,
 							))
+			except: # TODO proper boundaries check.
+				dest_cell = None
+				pass
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
 					messages.append('You bump into dweller.')
@@ -456,33 +459,9 @@ def main(window):
 							monster.inventory.remove(item)
 							game.items.append(item)
 							messages.append('Monster dropped {0}.'.format(item.name))
+			elif dest_cell is None:
+				messages.append('Will not fall into the void.')
 			elif dest_cell.passable:
-				world_boundaries = Rect(game.world_shift, Size(
-					game.world.size.width * game.world.cell((0, 0)).size.width,
-					game.world.size.height * game.world.cell((0, 0)).size.height,
-					))
-				world_expansion = Point(0, 0)
-				if new_pos.x - center.x <= world_boundaries.left:
-					world_expansion.x -= 1
-				elif world_boundaries.right <= new_pos.x + center.x:
-					world_expansion.x += 1
-				if new_pos.y - center.y <= world_boundaries.top:
-					world_expansion.y -= 1
-				elif world_boundaries.bottom <= new_pos.y + center.y:
-					world_expansion.y += 1
-				if world_expansion:
-					new_world = Matrix(game.world.size, None)
-					for pos in new_world:
-						old_pos = pos + world_expansion
-						if game.world.valid(old_pos):
-							new_world.set_cell(pos, game.world.cell(old_pos))
-						else:
-							new_world.set_cell(pos, generate_field())
-					game.world = new_world
-					game.world_shift += Point(
-							world_expansion.x * game.world.cell((0, 0)).width,
-							world_expansion.y * game.world.cell((0, 0)).height,
-							)
 				game.player.pos = new_pos
 			step_taken = True
 		if step_taken:
@@ -508,7 +487,7 @@ def main(window):
 							sign(game.player.pos.y - monster.pos.y),
 							)
 					new_pos = monster.pos + shift
-					dest_pos = new_pos - game.world_shift
+					dest_pos = new_pos
 					dest_cell = game.world.cell(Point(
 								dest_pos.x // game.world.cell((0, 0)).width,
 								dest_pos.y // game.world.cell((0, 0)).height,
