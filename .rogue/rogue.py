@@ -39,6 +39,21 @@ def init_colors():
 		'bold_' + name : pair | curses.A_BOLD for name, pair in basic_colors.items()
 		})
 
+class Coord:
+	def __init__(self, world_pos=None, field_pos=None):
+		self.world = world_pos or Point(0, 0)
+		self.field = field_pos or Point(0, 0)
+	def get_global(self, world):
+		return Point(
+				self.world.x * world.cell((0, 0)).width,
+				self.world.y * world.cell((0, 0)).height,
+				) + self.field
+	def __str__(self):
+		return '{0:X}.{1:X};{2:X}.{3:X}'.format(
+				self.world.x, self.field.x,
+				self.world.y, self.field.y,
+				)
+
 class Terrain:
 	def __init__(self, sprite, passable=True):
 		self.sprite = sprite
@@ -153,7 +168,7 @@ def add_building(field, field_shift):
 
 class Game:
 	def __init__(self):
-		self.player = Monster(Point(0, 0), Sprite('@', 'bold_white'), 10)
+		self.player = Monster(Coord(), Sprite('@', 'bold_white'), 10)
 		self.world = Matrix((16, 16), None) # TODO not a world, just a local zone. need a 256x256 overworld of fixed zones, and the overworld itself may expand instead of sub-zones.
 		self.monsters = []
 		self.items = []
@@ -206,9 +221,13 @@ class Game:
 						'{0} skin'.format(monster_color.replace('_', ' ')),
 						))
 				self.monsters.append(monster)
-		self.player.pos = Point(
-				80 + random.randrange(self.world.size.width * self.world.cell((0, 0)).size.width - 80 * 2),
-				80 + random.randrange(self.world.size.width * self.world.cell((0, 0)).size.width - 80 * 2),
+		self.player.pos.world = Point(
+				random.randrange(self.world.size.width),
+				random.randrange(self.world.size.height),
+				)
+		self.player.pos.field = Point(
+				random.randrange(self.world.cell((0, 0)).size.width),
+				random.randrange(self.world.cell((0, 0)).size.width),
 				)
 
 def main(window):
@@ -242,32 +261,32 @@ def main(window):
 					Point(field_rect.left, field_rect.bottom),
 					Point(field_rect.right, field_rect.bottom),
 					]
-			screen_control_points = [(pos) - game.player.pos + center for pos in control_points]
+			screen_control_points = [(pos) - game.player.pos.get_global(game.world) + center for pos in control_points]
 			if not any(viewport.contains(screen_pos, with_border=True) for screen_pos in screen_control_points):
 				continue
 			for pos in field:
-				screen_pos = pos + field_rect.topleft - game.player.pos + center
+				screen_pos = pos + field_rect.topleft - game.player.pos.get_global(game.world) + center
 				if not viewport.contains(screen_pos, with_border=True):
 					continue
 				window.addstr(screen_pos.y, screen_pos.x, field.cell(pos).sprite.sprite, COLORS[field.cell(pos).sprite.color])
 		for item in game.items:
-			screen_pos = item.pos - game.player.pos + center
+			screen_pos = item.pos - game.player.pos.get_global(game.world) + center
 			if not viewport.contains(screen_pos, with_border=True):
 				continue
 			window.addstr(screen_pos.y, screen_pos.x, item.sprite.sprite, COLORS[item.sprite.color])
 		for monster in game.monsters:
-			screen_pos = monster.pos - game.player.pos + center
+			screen_pos = monster.pos - game.player.pos.get_global(game.world) + center
 			if not viewport.contains(screen_pos, with_border=True):
 				continue
 			window.addstr(screen_pos.y, screen_pos.x, monster.sprite.sprite, COLORS[monster.sprite.color])
 		window.addstr(center.y, center.x, game.player.sprite.sprite, COLORS[game.player.sprite.color])
 
 		hud_pos = viewport.right + 1
-		window.addstr(0, hud_pos, "@{0};{1}".format(game.player.pos.x, game.player.pos.y))
+		window.addstr(0, hud_pos, "@{0}".format(game.player.pos))
 		window.addstr(1, hud_pos, "T:{0}".format(game.passed_time))
 		window.addstr(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
 		window.addstr(3, hud_pos, "inv:{0}".format(len(game.player.inventory)))
-		item_here = next((item for item in game.items if game.player.pos == item.pos), None)
+		item_here = next((item for item in game.items if game.player.pos.get_global(game.world) == item.pos), None)
 		if item_here:
 			window.addstr(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
@@ -297,7 +316,7 @@ def main(window):
 		elif control == ord('.'):
 			step_taken = True
 		elif control == ord('g'):
-			item = next((item for item in game.items if game.player.pos == item.pos), None)
+			item = next((item for item in game.items if game.player.pos.get_global(game.world) == item.pos), None)
 			if not item:
 				messages.append('Nothing to pick up here.')
 			elif len(game.player.inventory) >= 26:
@@ -308,9 +327,10 @@ def main(window):
 				messages.append('Picked up {0}.'.format(item.name))
 				step_taken = True
 		elif control == ord('C'):
+			player_pos = game.player.pos.get_global(game.world)
 			npcs = [
 					monster for monster in game.monsters
-					if max(abs(monster.pos.x - game.player.pos.x), abs(monster.pos.y - game.player.pos.y)) <= 1
+					if max(abs(monster.pos.x - player_pos.x), abs(monster.pos.y - player_pos.y)) <= 1
 					and isinstance(monster.behaviour, Questgiver)
 					]
 			questing = [
@@ -328,7 +348,7 @@ def main(window):
 					window.addstr(24, 0, "Too crowded. Chat in which direction?")
 					control = window.getch()
 					if chr(control) in MOVEMENT:
-						dest = game.player.pos + MOVEMENT[chr(control)]
+						dest = game.player.pos.get_global(game.world) + MOVEMENT[chr(control)]
 						npcs = [npc for npc in npcs if npc.pos == dest]
 					else:
 						npcs = []
@@ -425,26 +445,28 @@ def main(window):
 						caption = 'No such item: {0}'.format(chr(control))
 					else:
 						item = game.player.inventory.pop(selected)
-						item.pos = game.player.pos
+						item.pos = game.player.pos.get_global(game.world)
 						game.items.append(item)
 						messages.append('You drop {0}.'.format(item.name))
 						step_taken = True
 						break
 		elif chr(control) in MOVEMENT:
-			new_pos = game.player.pos + MOVEMENT[chr(control)]
+			new_pos = game.player.pos.get_global(game.world) + MOVEMENT[chr(control)]
 			monster = next((monster for monster in game.monsters if new_pos == monster.pos), None)
-			dest_pos = new_pos
-			try:
-				dest_cell = game.world.cell(Point(
-						dest_pos.x // game.world.cell((0, 0)).width,
-						dest_pos.y // game.world.cell((0, 0)).height,
-						)).cell(Point(
-							dest_pos.x % game.world.cell((0, 0)).width,
-							dest_pos.y % game.world.cell((0, 0)).height,
-							))
-			except: # TODO proper boundaries check.
-				dest_cell = None
-				pass
+			dest_pos = Coord(
+					Point(
+						new_pos.x // game.world.cell((0, 0)).width,
+						new_pos.y // game.world.cell((0, 0)).height,
+						),
+					Point(
+						new_pos.x % game.world.cell((0, 0)).width,
+						new_pos.y % game.world.cell((0, 0)).height,
+						)
+					)
+			dest_cell = None
+			if game.world.valid(dest_pos.world):
+				if game.world.cell(dest_pos.world).valid(dest_pos.field):
+					dest_cell = game.world.cell(dest_pos.world).cell(dest_pos.field)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
 					messages.append('You bump into dweller.')
@@ -462,7 +484,7 @@ def main(window):
 			elif dest_cell is None:
 				messages.append('Will not fall into the void.')
 			elif dest_cell.passable:
-				game.player.pos = new_pos
+				game.player.pos = dest_pos
 			step_taken = True
 		if step_taken:
 			if game.player.hp < game.player.max_hp:
@@ -476,15 +498,16 @@ def main(window):
 			for monster in game.monsters:
 				if isinstance(monster.behaviour, Questgiver):
 					continue
-				if max(abs(monster.pos.x - game.player.pos.x), abs(monster.pos.y - game.player.pos.y)) <= 1:
+				player_pos = game.player.pos.get_global(game.world)
+				if max(abs(monster.pos.x - player_pos.x), abs(monster.pos.y - player_pos.y)) <= 1:
 					game.player.hp -= 1
 					messages.append('Monster hits you.')
 					if game.player.hp <= 0:
 						messages.append('You died!!!')
-				elif monster.behaviour == 'aggressive' and math.hypot(monster.pos.x - game.player.pos.x, monster.pos.y - game.player.pos.y) <= 10:
+				elif monster.behaviour == 'aggressive' and math.hypot(monster.pos.x - player_pos.x, monster.pos.y - player_pos.y) <= 10:
 					shift = Point(
-							sign(game.player.pos.x - monster.pos.x),
-							sign(game.player.pos.y - monster.pos.y),
+							sign(player_pos.x - monster.pos.x),
+							sign(player_pos.y - monster.pos.y),
 							)
 					new_pos = monster.pos + shift
 					dest_pos = new_pos
