@@ -253,6 +253,40 @@ class Game:
 				)
 		self.player.pos.world = zone_pos
 		self.generate_zone(zone_pos)
+	def autoexpand(self, coord, margin):
+		pos = coord.get_global(self.world)
+		within_zone = Point(
+				pos.x % (self.world.zone_size.width * self.world.field_size.width),
+				pos.y % (self.world.zone_size.height * self.world.field_size.height),
+				)
+		close_to_zone_boundaries = False
+		expansion = Point(0, 0)
+		if within_zone.x - 40 < 0:
+			close_to_zone_boundaries = True
+			expansion.x = -1
+		if within_zone.x + 40 >= self.world.zones.cell(coord.world).full_width:
+			close_to_zone_boundaries = True
+			expansion.x = +1
+		if within_zone.y - 40 < 0:
+			close_to_zone_boundaries = True
+			expansion.y = -1
+		if within_zone.y + 40 >= self.world.zones.cell(coord.world).full_height:
+			close_to_zone_boundaries = True
+			expansion.y = +1
+		if not close_to_zone_boundaries:
+			return
+		if expansion.x:
+			new_pos = coord.world + Point(expansion.x, 0)
+			if self.world.zones.valid(new_pos) and self.world.zones.cell(new_pos) is None:
+				self.generate_zone(new_pos)
+		if expansion.y:
+			new_pos = coord.world + Point(0, expansion.y)
+			if self.world.zones.valid(new_pos) and self.world.zones.cell(new_pos) is None:
+				self.generate_zone(new_pos)
+		if expansion.x * expansion.y:
+			new_pos = coord.world + expansion
+			if self.world.zones.valid(new_pos) and self.world.zones.cell(new_pos) is None:
+				self.generate_zone(new_pos)
 	def generate_zone(self, zone_pos):
 		zone = Zone((16, 16), None)
 		self.world.add_zone(zone_pos, zone)
@@ -552,7 +586,7 @@ def main(window):
 			monster = next((monster for monster_pos, monster in game.world.all_monsters() if new_pos == monster_pos), None)
 			dest_pos = Coord.from_global(new_pos, game.world)
 			dest_cell = None
-			if game.world.zones.valid(dest_pos.world) and game.world.zones.cell(dest_pos.world): # TODO autoexpand zones on closing to zone boundaries
+			if game.world.zones.valid(dest_pos.world):
 				if game.world.zones.cell(dest_pos.world).fields.valid(dest_pos.zone):
 					if game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).tiles.valid(dest_pos.field):
 						dest_cell = game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).tiles.cell(dest_pos.field)
@@ -574,6 +608,7 @@ def main(window):
 				messages.append('Will not fall into the void.')
 			elif dest_cell.passable:
 				game.player.pos = dest_pos
+				game.autoexpand(game.player.pos, Size(40, 40))
 			step_taken = True
 		if step_taken:
 			if game.player.hp < game.player.max_hp:
