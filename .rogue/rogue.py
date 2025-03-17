@@ -109,15 +109,15 @@ class Questgiver:
 		self.prepared_quest = None
 	def save(self, stream):
 		if self.quest:
-			stream.write(self.quest.amount)
-			stream.write(self.quest.color)
-			stream.write(self.quest.bounty)
+			stream.write(self.quest[0])
+			stream.write(self.quest[1])
+			stream.write(self.quest[2])
 		else:
 			stream.write('')
 		if self.prepared_quest:
-			stream.write(self.prepared_quest.amount)
-			stream.write(self.prepared_quest.color)
-			stream.write(self.prepared_quest.bounty)
+			stream.write(self.prepared_quest[0])
+			stream.write(self.prepared_quest[1])
+			stream.write(self.prepared_quest[2])
 		else:
 			stream.write('')
 	def load(self, stream):
