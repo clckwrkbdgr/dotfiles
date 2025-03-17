@@ -4,7 +4,6 @@ import math
 import string
 from collections import namedtuple
 import curses, curses.ascii
-import jsonpickle
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
 from clckwrkbdgr import xdg
 
@@ -45,6 +44,20 @@ class Coord:
 		self.world = world_pos or Point(0, 0)
 		self.zone = zone_pos or Point(0, 0)
 		self.field = field_pos or Point(0, 0)
+	def save(self, stream):
+		stream.write(self.world.x)
+		stream.write(self.world.y)
+		stream.write(self.zone.x)
+		stream.write(self.zone.y)
+		stream.write(self.field.x)
+		stream.write(self.field.y)
+	def load(self, stream):
+		self.world.x = stream.read(int)
+		self.world.y = stream.read(int)
+		self.zone.x = stream.read(int)
+		self.zone.y = stream.read(int)
+		self.field.x = stream.read(int)
+		self.field.y = stream.read(int)
 	def get_global(self, world):
 		return Point(
 				self.world.x * world.zone_size.width * world.field_size.width,
@@ -82,11 +95,42 @@ class Terrain:
 	def __init__(self, sprite, passable=True):
 		self.sprite = sprite
 		self.passable = passable
+	def save(self, stream):
+		stream.write(self.sprite.sprite)
+		stream.write(self.sprite.color)
+		stream.write(int(self.passable))
+	def load(self, stream):
+		self.sprite = Sprite(stream.read(), stream.read())
+		self.passable = stream.read(bool)
 
 class Questgiver:
 	def __init__(self):
 		self.quest = None
 		self.prepared_quest = None
+	def save(self, stream):
+		if self.quest:
+			stream.write(self.quest.amount)
+			stream.write(self.quest.color)
+			stream.write(self.quest.bounty)
+		else:
+			stream.write('')
+		if self.prepared_quest:
+			stream.write(self.prepared_quest.amount)
+			stream.write(self.prepared_quest.color)
+			stream.write(self.prepared_quest.bounty)
+		else:
+			stream.write('')
+	def load(self, stream):
+		self.quest = stream.read()
+		if self.quest:
+			self.quest = (int(self.quest), stream.read(), stream.read(int))
+		else:
+			self.quest = None
+		self.prepared_quest = stream.read()
+		if self.prepared_quest:
+			self.prepared_quest = (int(self.prepared_quest), stream.read(), stream.read(int))
+		else:
+			self.prepared_quest = None
 
 class Monster:
 	def __init__(self, pos, sprite, max_hp, behaviour=None):
@@ -96,17 +140,107 @@ class Monster:
 		self.regeneration = 0
 		self.behaviour = behaviour
 		self.inventory = []
+	def save(self, stream):
+		if isinstance(self.pos, Coord):
+			stream.write('|'.join((
+				','.join(map(str, self.pos.world)),
+				','.join(map(str, self.pos.zone)),
+				','.join(map(str, self.pos.field)),
+				)))
+		else:
+			stream.write(','.join(map(str, self.pos)))
+		stream.write(self.sprite.sprite)
+		stream.write(self.sprite.color)
+		stream.write(self.hp)
+		stream.write(self.max_hp)
+		stream.write(self.regeneration)
+
+		if self.behaviour is None:
+			stream.write('')
+		elif isinstance(self.behaviour, Questgiver):
+			stream.write('quest')
+			self.behaviour.save(stream)
+		else:
+			stream.write(self.behaviour)
+
+		stream.write(len(self.inventory))
+		for item in self.inventory:
+			item.save(stream)
+	def load(self, stream):
+		pos = stream.read()
+		if '|' in pos:
+			parts = pos.split('|')
+			parts = tuple(tuple(map(int, part.split(','))) for part in parts)
+			self.pos = Coord(Point(*(parts[0])), Point(*(parts[1])), Point(*(parts[2])))
+		else:
+			self.pos.x, self.pos.y = map(int, pos.split(','))
+		self.sprite = Sprite(stream.read(), stream.read())
+		self.hp = stream.read(int)
+		self.max_hp = stream.read(int)
+		self.regeneration = stream.read(int)
+
+		self.behaviour = stream.read()
+		if self.behaviour == 'aggressive':
+			pass
+		elif self.behaviour == 'quest':
+			self.behaviour = Questgiver()
+			self.behaviour.load(stream)
+		else:
+			assert not self.behaviour, self.behaviour
+			self.behaviour = None
+
+		items = stream.read(int)
+		for _ in range(items):
+			item = Item(Point(0, 0), None, None)
+			item.load(stream)
+			self.inventory.append(item)
 
 class Item:
 	def __init__(self, pos, sprite, name):
 		self.pos = pos
 		self.sprite = sprite
 		self.name = name
+	def save(self, stream):
+		if self.pos:
+			stream.write(self.pos.x)
+			stream.write(self.pos.y)
+		else:
+			stream.write(0)
+			stream.write(0)
+		stream.write(self.sprite.sprite)
+		stream.write(self.sprite.color)
+		stream.write(self.name)
+	def load(self, stream):
+		self.pos.x = stream.read(int)
+		self.pos.y = stream.read(int)
+		self.sprite = Sprite(stream.read(), stream.read())
+		self.name = stream.read()
 
 class Overworld:
 	def __init__(self, size):
 		self.zones = Matrix(size, None)
 		self._valid_zone = None
+	def save(self, stream):
+		stream.write(self.zones.width)
+		stream.write(self.zones.height)
+		for zone_index in self.zones:
+			zone = self.zones.cell(zone_index)
+			if zone:
+				stream.write('.')
+				zone.save(stream)
+			else:
+				stream.write('')
+	def load(self, stream):
+		size = Size(stream.read(int), stream.read(int))
+		self.zones = Matrix(size, None)
+		for zone_index in self.zones:
+			zone = stream.read()
+			if not zone:
+				continue
+			zone = Zone(Size(1, 1), None)
+			zone.load(stream)
+			self.zones.set_cell(zone_index, zone)
+			self._valid_zone = zone_index
 	def add_zone(self, zone_pos, zone):
 		self.zones.set_cell(zone_pos, zone)
 		self._valid_zone = zone_pos
@@ -137,6 +271,19 @@ class Overworld:
 class Zone:
 	def __init__(self, size, default_tile):
 		self.fields = Matrix(size, default_tile)
+	def save(self, stream):
+		stream.write(self.fields.width)
+		stream.write(self.fields.height)
+		for field_index in self.fields:
+			field = self.fields.cell(field_index)
+			field.save(stream)
+	def load(self, stream):
+		size = Size(stream.read(int), stream.read(int))
+		self.fields = Matrix(size, None)
+		for field_index in self.fields:
+			field = Field(Size(1, 1), None)
+			field.load(stream)
+			self.fields.set_cell(field_index, field)
 	@property
 	@functools.lru_cache()
 	def field_size(self):
@@ -153,6 +300,39 @@ class Field:
 		self.tiles = Matrix(size, default_tile)
 		self.items = []
 		self.monsters = []
+	def save(self, stream):
+		stream.write(self.tiles.width)
+		stream.write(self.tiles.height)
+		for tile_index in self.tiles:
+			tile = self.tiles.cell(tile_index)
+			tile.save(stream)
+
+		stream.write(len(self.items))
+		for item in self.items:
+			item.save(stream)
+
+		stream.write(len(self.monsters))
+		for monster in self.monsters:
+			monster.save(stream)
+	def load(self, stream):
+		size = Size(stream.read(int), stream.read(int))
+		self.tiles = Matrix(size, None)
+		for tile_index in self.tiles:
+			tile = Terrain(Size(), None)
+			tile.load(stream)
+			self.tiles.set_cell(tile_index, tile)
+
+		items = stream.read(int)
+		for _ in range(items):
+			item = Item(Point(0, 0), None, None)
+			item.load(stream)
+			self.items.append(item)
+
+		monsters = stream.read(int)
+		for _ in range(monsters):
+			monster = Monster(Point(0, 0), None, None)
+			monster.load(stream)
+			self.monsters.append(monster)
 
 def generate_field():
 	return random.choice([
@@ -246,6 +426,14 @@ class Game:
 		self.player = Monster(Coord(), Sprite('@', 'bold_white'), 10)
 		self.world = Overworld((256, 256))
 		self.passed_time = 0
+	def save(self, stream):
+		self.player.save(stream)
+		self.world.save(stream)
+		stream.write(self.passed_time)
+	def load(self, stream):
+		self.player.load(stream)
+		self.world.load(stream)
+		self.passed_time = stream.read(int)
 	def generate(self):
 		zone_pos = Point(
 				random.randrange(self.world.zones.size.width),
@@ -341,16 +529,71 @@ class Game:
 				random.randrange(zone.field_size.width),
 				)
 
+class Savefile:
+	def __init__(self, filename, version):
+		self.filename = filename
+		self.version = version
+	def exists(self):
+		return self.filename.exists()
+	def delete(self):
+		if self.filename.exists():
+			self.filename.unlink()
+
+class SavefileReader:
+	CHUNK_SIZE = 4096
+	def __init__(self, savefile):
+		self.savefile = savefile
+		self.f = None
+		self.buffer = ''
+	def __enter__(self):
+		self.f = open(self.savefile.filename, 'r')
+		version = self.read(int)
+		assert version == self.savefile.version, (version, self.savefile.version)
+		return self
+	def read(self, data_type=None):
+		if not self.buffer:
+			self.buffer = self.f.read(self.CHUNK_SIZE)
+			assert self.buffer
+		data = None
+		while True:
+			try:
+				data, self.buffer = self.buffer.split('\0', 1)
+				break
+			except ValueError:
+				new_chunk = self.f.read(self.CHUNK_SIZE)
+				if not new_chunk:
+					data = self.buffer
+					break
+				self.buffer += new_chunk
+		if data_type:
+			data = data_type(data)
+		return data
+	def __exit__(self, *_):
+		self.f.close()
+
+class SavefileWriter:
+	def __init__(self, savefile):
+		self.savefile = savefile
+		self.f = None
+	def __enter__(self):
+		self.f = open(self.savefile.filename, 'w')
+		self.f.write(str(self.savefile.version))
+		return self
+	def write(self, data):
+		self.f.write('\0')
+		self.f.write(str(data))
+	def __exit__(self, *_):
+		self.f.close()
+
 def main(window):
 	curses.curs_set(0)
 	init_colors()
 
 	game = Game()
-	savefile = xdg.save_data_path('dotrogue')/'rogue.sav'
+	savefile = Savefile(xdg.save_data_path('dotrogue')/'rogue.sav', 2)
 	if savefile.exists():
-		data = savefile.read_text()
-		savedata = jsonpickle.decode(data, keys=True)
-		game = savedata['entity']
+		with SavefileReader(savefile) as reader:
+			game.load(reader)
 	else:
 		game.generate()
 
@@ -645,11 +888,9 @@ def main(window):
 							game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).monsters.append(monster)
 						monster.pos = dest_pos.field
 	if game.player.hp > 0:
-		savedata = {'entity': game}
-		data = jsonpickle.encode(savedata, keys=True)
-		savefile.write_bytes(data.encode('utf-8', 'replace'))
+		with SavefileWriter(savefile) as writer:
+			game.save(writer)
 	else:
-		if savefile.exists():
-			savefile.unlink()
+		savefile.delete()
 
 curses.wrapper(main)
