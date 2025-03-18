@@ -256,8 +256,8 @@ class Overworld:
 	@property
 	def full_height(self):
 		return self.zones.height * self.zone_size.height
-	def all_monsters(self, raw=False):
-		for zone_index in self.zones:
+	def all_monsters(self, raw=False, zone_range=None):
+		for zone_index in (zone_range or self.zones):
 			zone = self.zones.cell(zone_index)
 			if zone is None:
 				continue
@@ -585,6 +585,11 @@ class SavefileWriter:
 	def __exit__(self, *_):
 		self.f.close()
 
+def iter_rect(topleft, bottomright):
+	for x in range(topleft.x, bottomright.x + 1):
+		for y in range(topleft.y, bottomright.y + 1):
+			yield Point(x, y)
+
 def main(window):
 	curses.curs_set(0)
 	init_colors()
@@ -599,6 +604,7 @@ def main(window):
 
 	viewport = Rect((0, 0), (61, 23))
 	center = Point(*(viewport.size // 2))
+	centered_viewport = Rect((-center.x, -center.y), viewport.size)
 	messages = []
 	while True:
 		window.clear()
@@ -606,8 +612,12 @@ def main(window):
 				game.world.zone_size.width * game.world.field_size.width,
 				game.world.zone_size.height * game.world.field_size.height,
 				)
-		player_relative_pos = game.player.pos.get_global(game.world) - center
-		for zone_index in game.world.zones:
+		player_pos = game.player.pos.get_global(game.world)
+		player_relative_pos = player_pos - center
+		viewport_topleft = Coord.from_global(player_pos + centered_viewport.topleft, game.world)
+		viewport_bottomright = Coord.from_global(player_pos + centered_viewport.bottomright, game.world)
+
+		for zone_index in iter_rect(viewport_topleft.world, viewport_bottomright.world):
 			zone = game.world.zones.cell(zone_index)
 			if zone is None:
 				continue
@@ -867,8 +877,15 @@ def main(window):
 					game.player.hp += 1
 					if game.player.hp >= game.player.max_hp:
 						game.player.hp = game.player.max_hp
+
 			game.passed_time += 1
-			for monster_coord, monster in game.world.all_monsters(raw=True):
+
+			monster_action_length = 10
+			monster_action_range = Point(monster_action_length, monster_action_length)
+			monster_zone_topleft = Coord.from_global(player_pos - monster_action_range, game.world)
+			monster_zone_bottomright = Coord.from_global(player_pos + monster_action_range, game.world)
+			monster_zone_range = iter_rect(monster_zone_topleft.world, monster_zone_bottomright.world)
+			for monster_coord, monster in game.world.all_monsters(raw=True, zone_range=monster_zone_range):
 				if isinstance(monster.behaviour, Questgiver):
 					continue
 				monster_pos = monster_coord.get_global(game.world)
@@ -877,7 +894,7 @@ def main(window):
 					messages.append('Monster hits you.')
 					if game.player.hp <= 0:
 						messages.append('You died!!!')
-				elif monster.behaviour == 'aggressive' and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= 10:
+				elif monster.behaviour == 'aggressive' and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
 					shift = Point(
 							sign(player_pos.x - monster_pos.x),
 							sign(player_pos.y - monster_pos.y),
