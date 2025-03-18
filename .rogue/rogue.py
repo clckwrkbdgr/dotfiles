@@ -590,7 +590,7 @@ def main(window):
 	init_colors()
 
 	game = Game()
-	savefile = Savefile(xdg.save_data_path('dotrogue')/'rogue.sav', 2)
+	savefile = Savefile(xdg.save_data_path('dotrogue')/'rogue.sav', 3)
 	if savefile.exists():
 		with SavefileReader(savefile) as reader:
 			game.load(reader)
@@ -602,14 +602,18 @@ def main(window):
 	messages = []
 	while True:
 		window.clear()
+		full_zone_size = Size(
+				game.world.zone_size.width * game.world.field_size.width,
+				game.world.zone_size.height * game.world.field_size.height,
+				)
+		player_relative_pos = game.player.pos.get_global(game.world) - center
 		for zone_index in game.world.zones:
 			zone = game.world.zones.cell(zone_index)
 			if zone is None:
 				continue
-			zone_size = zone.fields.size
 			zone_shift = Point(
-						zone_index.x * zone_size.width * zone.field_size.width,
-						zone_index.y * zone_size.height * zone.field_size.height,
+						zone_index.x * full_zone_size.width,
+						zone_index.y * full_zone_size.height,
 						)
 			for field_index in zone.fields:
 				field = zone.fields.cell(field_index)
@@ -624,23 +628,22 @@ def main(window):
 						Point(field_rect.left, field_rect.bottom),
 						Point(field_rect.right, field_rect.bottom),
 						]
-				screen_control_points = [(pos) - game.player.pos.get_global(game.world) + center for pos in control_points]
-				if not any(viewport.contains(screen_pos, with_border=True) for screen_pos in screen_control_points):
+				if not any(viewport.contains(pos - player_relative_pos, with_border=True) for pos in control_points):
 					continue
+				field_topleft = field_rect.topleft - player_relative_pos
 				for pos in field.tiles:
-					screen_pos = pos + field_rect.topleft - game.player.pos.get_global(game.world) + center
+					screen_pos = pos + field_topleft
 					if not viewport.contains(screen_pos, with_border=True):
 						continue
-					window.addstr(screen_pos.y, screen_pos.x, field.tiles.cell(pos).sprite.sprite, COLORS[field.tiles.cell(pos).sprite.color])
+					tile_sprite = field.tiles.cell(pos).sprite
+					window.addstr(screen_pos.y, screen_pos.x, tile_sprite.sprite, COLORS[tile_sprite.color])
 				for item in field.items:
-					item_pos = Coord(zone_index, field_index, item.pos).get_global(game.world)
-					screen_pos = item_pos - game.player.pos.get_global(game.world) + center
+					screen_pos = item.pos + field_topleft
 					if not viewport.contains(screen_pos, with_border=True):
 						continue
 					window.addstr(screen_pos.y, screen_pos.x, item.sprite.sprite, COLORS[item.sprite.color])
 				for monster in field.monsters:
-					monster_pos = Coord(zone_index, field_index, monster.pos).get_global(game.world)
-					screen_pos = monster_pos - game.player.pos.get_global(game.world) + center
+					screen_pos = monster.pos + field_topleft
 					if not viewport.contains(screen_pos, with_border=True):
 						continue
 					window.addstr(screen_pos.y, screen_pos.x, monster.sprite.sprite, COLORS[monster.sprite.color])
@@ -651,9 +654,9 @@ def main(window):
 		window.addstr(1, hud_pos, "T:{0}".format(game.passed_time))
 		window.addstr(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
 		window.addstr(3, hud_pos, "inv:{0}".format(len(game.player.inventory)))
+		player_zone_items = game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items
 		item_here = next((
-			item for item in
-			game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items
+			item for item in player_zone_items
 			if game.player.pos.field == item.pos
 			), None)
 		if item_here:
