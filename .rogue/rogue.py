@@ -681,8 +681,9 @@ def main(window):
 		if game.player.hp <= 0:
 			break
 
-		step_taken = False
 		control = window.getch()
+		step_taken = False
+		player_pos = game.player.pos.get_global(game.world)
 		if control == ord('S'):
 			break
 		elif control == ord('.'):
@@ -703,7 +704,6 @@ def main(window):
 				messages.append('Picked up {0}.'.format(item.name))
 				step_taken = True
 		elif control == ord('C'):
-			player_pos = game.player.pos.get_global(game.world)
 			npcs = [
 					monster for monster_pos, monster
 					in game.world.all_monsters()
@@ -725,7 +725,7 @@ def main(window):
 					window.addstr(24, 0, "Too crowded. Chat in which direction?")
 					control = window.getch()
 					if chr(control) in MOVEMENT:
-						dest = game.player.pos.get_global(game.world) + MOVEMENT[chr(control)]
+						dest = player_pos + MOVEMENT[chr(control)]
 						npcs = [npc for npc in npcs if npc.pos == dest]
 					else:
 						npcs = []
@@ -828,14 +828,16 @@ def main(window):
 						step_taken = True
 						break
 		elif chr(control) in MOVEMENT:
-			new_pos = game.player.pos.get_global(game.world) + MOVEMENT[chr(control)]
-			monster = next((monster for monster_pos, monster in game.world.all_monsters() if new_pos == monster_pos), None)
+			new_pos = player_pos + MOVEMENT[chr(control)]
 			dest_pos = Coord.from_global(new_pos, game.world)
+			dest_field = None
 			dest_cell = None
 			if game.world.zones.valid(dest_pos.world):
 				if game.world.zones.cell(dest_pos.world).fields.valid(dest_pos.zone):
-					if game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).tiles.valid(dest_pos.field):
-						dest_cell = game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).tiles.cell(dest_pos.field)
+					dest_field = game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone)
+					if dest_field.tiles.valid(dest_pos.field):
+						dest_cell = dest_field.tiles.cell(dest_pos.field)
+			monster = next((monster for monster in dest_field.monsters if dest_pos.field == monster.pos), None)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
 					messages.append('You bump into dweller.')
@@ -843,12 +845,12 @@ def main(window):
 					monster.hp -= 1
 					messages.append('You hit monster.')
 					if monster.hp <= 0:
-						game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).monsters.remove(monster)
+						dest_field.monsters.remove(monster)
 						messages.append('Monster is dead.')
 						for item in monster.inventory:
 							item.pos = monster.pos
 							monster.inventory.remove(item)
-							game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).items.append(item)
+							dest_field.items.append(item)
 							messages.append('Monster dropped {0}.'.format(item.name))
 			elif dest_cell is None:
 				messages.append('Will not fall into the void.')
@@ -857,6 +859,7 @@ def main(window):
 				game.autoexpand(game.player.pos, Size(40, 40))
 			step_taken = True
 		if step_taken:
+			player_pos = game.player.pos.get_global(game.world)
 			if game.player.hp < game.player.max_hp:
 				game.player.regeneration += 1
 				while game.player.regeneration >= 10:
@@ -869,7 +872,6 @@ def main(window):
 				if isinstance(monster.behaviour, Questgiver):
 					continue
 				monster_pos = monster_coord.get_global(game.world)
-				player_pos = game.player.pos.get_global(game.world)
 				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
 					game.player.hp -= 1
 					messages.append('Monster hits you.')
@@ -882,13 +884,14 @@ def main(window):
 							)
 					new_pos = monster_pos + shift
 					dest_pos = Coord.from_global(new_pos, game.world)
-					dest_cell = game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).tiles.cell(dest_pos.field)
-					if any(other.pos == dest_pos.field for other in game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).monsters):
+					dest_field = game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone)
+					dest_cell = dest_field.tiles.cell(dest_pos.field)
+					if any(other.pos == dest_pos.field for other in dest_field.monsters):
 						messages.append('Monster bump into monster.')
 					elif dest_cell.passable:
 						if monster_coord.world != dest_pos.world or monster_coord.zone != dest_pos.zone:
 							game.world.zones.cell(monster_coord.world).fields.cell(monster_coord.zone).monsters.remove(monster)
-							game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone).monsters.append(monster)
+							dest_field.monsters.append(monster)
 						monster.pos = dest_pos.field
 	if game.player.hp > 0:
 		with SavefileWriter(savefile) as writer:
