@@ -101,7 +101,7 @@ class Terrain:
 		stream.write(int(self.passable))
 	def load(self, stream):
 		self.sprite = Sprite(stream.read(), stream.read())
-		self.passable = stream.read(bool)
+		self.passable = bool(stream.read(int))
 
 class Questgiver:
 	def __init__(self):
