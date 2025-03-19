@@ -207,12 +207,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4412673/ublock_origin-1.62.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4456610/ublock_origin-1.63.0.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{c1f4c119-9cc0-4da2-b91a-7cba61f68243}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.62.0",
+			"version": "1.63.0",
 			"visible": true
 		},
 		{
