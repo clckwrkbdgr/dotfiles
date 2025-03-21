@@ -590,6 +590,27 @@ def iter_rect(topleft, bottomright):
 		for y in range(topleft.y, bottomright.y + 1):
 			yield Point(x, y)
 
+def display_inventory(window, inventory, caption=None, select=False):
+	window.clear()
+	while True:
+		if caption:
+			window.addstr(0, 0, caption)
+		for index, (shortcut, item) in enumerate(zip(string.ascii_lowercase, inventory)):
+			column = index // 20
+			index = index % 20
+			window.addstr(index + 1, column * 40 + 0, item.sprite.sprite, COLORS[item.sprite.color])
+			window.addstr(index + 1, column * 40 + 2, '- {0}'.format(item.name))
+		control = window.getch()
+		if control == curses.ascii.ESC:
+			break
+		if select:
+			selected = control - ord('a')
+			if selected < 0 or len(inventory) <= selected:
+				caption = 'No such item: {0}'.format(chr(control))
+			else:
+				return selected
+	return None
+
 def main(window):
 	curses.curs_set(0)
 	init_colors()
@@ -801,42 +822,21 @@ def main(window):
 				if control == curses.ascii.ESC:
 					break
 		elif control == ord('i'):
-			window.clear()
-			while True:
-				for index, (shortcut, item) in enumerate(zip(string.ascii_lowercase, game.player.inventory)):
-					column = index // 20
-					index = index % 20
-					window.addstr(index + 1, column * 40 + 0, item.sprite.sprite, COLORS[item.sprite.color])
-					window.addstr(index + 1, column * 40 + 2, '- {0}'.format(item.name))
-				control = window.getch()
-				if control == curses.ascii.ESC:
-					break
+			display_inventory(window, game.player.inventory)
 		elif control == ord('d'):
 			if not game.player.inventory:
 				messages.append('Nothing to drop.')
 			else:
-				window.clear()
-				caption = "Select item to drop (a-z/ESC):"
-				while True:
-					window.addstr(0, 0, caption)
-					for index, (shortcut, item) in enumerate(zip(string.ascii_lowercase, game.player.inventory)):
-						column = index // 20
-						index = index % 20
-						window.addstr(index + 1, column * 40 + 0, item.sprite.sprite, COLORS[item.sprite.color])
-						window.addstr(index + 1, column * 40 + 2, '- {0}'.format(item.name))
-					control = window.getch()
-					if control == curses.ascii.ESC:
-						break
-					selected = control - ord('a')
-					if selected < 0 or len(game.player.inventory) <= selected:
-						caption = 'No such item: {0}'.format(chr(control))
-					else:
-						item = game.player.inventory.pop(selected)
-						item.pos = game.player.pos.field
-						game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.append(item)
-						messages.append('You drop {0}.'.format(item.name))
-						step_taken = True
-						break
+				selected = display_inventory(window, game.player.inventory,
+							 caption="Select item to drop (a-z/ESC):",
+							 select=True
+							 )
+				if selected:
+					item = game.player.inventory.pop(selected)
+					item.pos = game.player.pos.field
+					game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.append(item)
+					messages.append('You drop {0}.'.format(item.name))
+					step_taken = True
 		elif chr(control) in MOVEMENT:
 			new_pos = player_pos + MOVEMENT[chr(control)]
 			dest_pos = Coord.from_global(new_pos, game.world)
