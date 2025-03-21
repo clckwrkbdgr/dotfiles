@@ -595,11 +595,23 @@ def display_inventory(window, inventory, caption=None, select=False):
 	while True:
 		if caption:
 			window.addstr(0, 0, caption)
-		for index, (shortcut, item) in enumerate(zip(string.ascii_lowercase, inventory)):
+		accumulated = []
+		for shortcut, item in zip(string.ascii_lowercase, inventory):
+			for other in accumulated:
+				if other[1].name == item.name:
+					other[2] += 1
+					break
+			else:
+				accumulated.append([shortcut, item, 1])
+		for index, (shortcut, item, amount) in enumerate(accumulated):
 			column = index // 20
 			index = index % 20
-			window.addstr(index + 1, column * 40 + 0, item.sprite.sprite, COLORS[item.sprite.color])
-			window.addstr(index + 1, column * 40 + 2, '- {0}'.format(item.name))
+			window.addstr(index + 1, column * 40 + 0, '[{0}] '.format(shortcut))
+			window.addstr(index + 1, column * 40 + 4, item.sprite.sprite, COLORS[item.sprite.color])
+			if amount > 1:
+				window.addstr(index + 1, column * 40 + 6, '- {0} (x{1})'.format(item.name, amount))
+			else:
+				window.addstr(index + 1, column * 40 + 6, '- {0}'.format(item.name))
 		control = window.getch()
 		if control == curses.ascii.ESC:
 			break
