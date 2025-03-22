@@ -207,12 +207,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4456610/ublock_origin-1.63.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4458450/ublock_origin-1.63.2.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{c1f4c119-9cc0-4da2-b91a-7cba61f68243}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.63.0",
+			"version": "1.63.2",
 			"visible": true
 		},
 		{
@@ -277,12 +277,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4439124/styl_us-2.3.13.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4451438/styl_us-2.3.14.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{9473608a-d068-45af-90a5-ff851165b8a9}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "2.3.13",
+			"version": "2.3.14",
 			"visible": true
 		},
 		{
