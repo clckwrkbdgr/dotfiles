@@ -640,7 +640,6 @@ def main(window):
 	centered_viewport = Rect((-center.x, -center.y), viewport.size)
 	messages = []
 	while True:
-		window.clear()
 		full_zone_size = Size(
 				game.world.zone_size.width * game.world.field_size.width,
 				game.world.zone_size.height * game.world.field_size.height,
@@ -693,6 +692,8 @@ def main(window):
 		window.addstr(center.y, center.x, game.player.sprite.sprite, COLORS[game.player.sprite.color])
 
 		hud_pos = viewport.right + 1
+		for row in range(5):
+			window.addstr(row, hud_pos, " " * (80 - hud_pos))
 		window.addstr(0, hud_pos, "@{0}".format(game.player.pos))
 		window.addstr(1, hud_pos, "T:{0}".format(game.passed_time))
 		window.addstr(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
@@ -705,6 +706,7 @@ def main(window):
 		if item_here:
 			window.addstr(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
+		window.addstr(24, 0, " " * 80)
 		while messages:
 			message = messages.pop(0)
 			if len(message) >= 80 - 5:
