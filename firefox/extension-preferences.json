@@ -87,6 +87,12 @@
             "internal:svgContextPropertiesAllowed"
         ]
     },
+    "hotfix-intermediate-2018@mozilla.com": {
+        "origins": [],
+        "permissions": [
+            "internal:svgContextPropertiesAllowed"
+        ]
+    },
     "newtaboverride@agenedia.com": {
         "origins": [],
         "permissions": [

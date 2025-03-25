@@ -365,6 +365,7 @@ user_pref("extensions.liberator.saved.layout.scrollbar.side", 2);
 user_pref("extensions.pictureinpicture.enable_picture_in_picture_overrides", true);
 user_pref("extensions.pocket.enabled", false);
 user_pref("extensions.shownSelectionUI", true);
+user_pref("extensions.signatureCheckpoint", 1);
 user_pref("extensions.sqlitemanager.openMode", 2);
 user_pref("extensions.sqlitemanager.openWithLastDb", false);
 user_pref("extensions.sqlitemanager.searchToggler", false);
