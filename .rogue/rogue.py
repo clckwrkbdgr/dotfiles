@@ -1,9 +1,13 @@
+import sys
 import functools
 import random
 import math
 import string
+import logging
 from collections import namedtuple
 import curses, curses.ascii
+import clckwrkbdgr.logging
+Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
 from clckwrkbdgr import xdg
 
@@ -440,7 +444,15 @@ class Game:
 				random.randrange(self.world.zones.size.height),
 				)
 		self.player.pos.world = zone_pos
-		self.generate_zone(zone_pos)
+		zone = self.generate_zone(zone_pos)
+		self.player.pos.zone = Point(
+				random.randrange(zone.fields.size.width),
+				random.randrange(zone.fields.size.height),
+				)
+		self.player.pos.field = Point(
+				random.randrange(zone.field_size.width),
+				random.randrange(zone.field_size.width),
+				)
 	def autoexpand(self, coord, margin):
 		pos = coord.get_global(self.world)
 		within_zone = Point(
@@ -520,14 +532,7 @@ class Game:
 						'{0} skin'.format(monster_color.replace('_', ' ')),
 						))
 				zone.fields.cell(pos).monsters.append(monster)
-		self.player.pos.zone = Point(
-				random.randrange(zone.fields.size.width),
-				random.randrange(zone.fields.size.height),
-				)
-		self.player.pos.field = Point(
-				random.randrange(zone.field_size.width),
-				random.randrange(zone.field_size.width),
-				)
+		return zone
 
 class Savefile:
 	def __init__(self, filename, version):
@@ -624,6 +629,12 @@ def display_inventory(window, inventory, caption=None, select=False):
 	return None
 
 def main(window):
+	debug = '--debug' in sys.argv
+	if debug:
+		clckwrkbdgr.logging.init(
+			'rogue', debug=True, filename='rogue.log', stream=None,
+			)
+
 	curses.curs_set(0)
 	init_colors()
 
