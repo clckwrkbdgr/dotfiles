@@ -278,6 +278,7 @@ lib/clckwrkbdgr/text.py caps=work
 lib/clckwrkbdgr/events.py caps=work
 lib/clckwrkbdgr/email.py caps=work
 lib/clckwrkbdgr/test/test_email.py caps=work
+lib/clckwrkbdgr/pcg/** caps=work
 lib/clckwrkbdgr/pkg/__init__.py caps=work
 lib/clckwrkbdgr/pkg/_base.py caps=work
 lib/clckwrkbdgr/pkg/test/__init__.py caps=work
