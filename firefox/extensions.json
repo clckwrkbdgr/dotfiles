@@ -140,7 +140,7 @@
 			"syncGUID": "{a16e5fd6-ec26-4c0e-9c0b-9ad73f67b7cb}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.1.38.0",
+			"version": "1.1.38.1",
 			"visible": true
 		},
 		{
@@ -382,16 +382,16 @@
 			"signedState": 2,
 			"signedTypes": [
 				2,
-				0
+				1
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4259790/vimium_ff-2.1.2.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4458679/vimium_ff-2.2.1.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{6df8a213-bf81-4a04-9774-dfe80ef46b35}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "2.1.2",
+			"version": "2.2.1",
 			"visible": true
 		},
 		{
