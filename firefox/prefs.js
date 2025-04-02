@@ -224,6 +224,7 @@ user_pref("dom.max_chrome_script_run_time", 40);
 user_pref("dom.max_script_run_time", 40);
 user_pref("dom.mozApps.used", true);
 user_pref("dom.popup_allowed_events", "change click dblclick mouseup reset submit keypress");
+user_pref("dom.security.https_first", true);
 user_pref("experiments.activeExperiment", false);
 user_pref("extensions.@vkmad.group_download_dir", "/x/VK_MUSIC/vk_album");
 user_pref("extensions.@vkmad.show_dialog", false);
