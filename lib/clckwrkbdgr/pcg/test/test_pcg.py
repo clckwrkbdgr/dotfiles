@@ -26,3 +26,16 @@ class TestRNG(unittest.TestCase):
 		self.assertEqual(rng.choice('abcde'), 'd')
 		rng = pcg.RNG(12345)
 		self.assertEqual(rng.choice([6,5,4,3,2]), 3)
+	def should_select_random_item_based_on_weights(self):
+		rng = pcg.RNG(12345)
+		self.assertEqual(rng.choices('abcde', [1,2,3,4,5]), ['d'])
+		rng = pcg.RNG(12345)
+		self.assertEqual(rng.choices('abcde', [1,2,3,4,5], k=10), ['d', 'c', 'e', 'b', 'd', 'd', 'd', 'c', 'c', 'c'])
+
+class TestPrimitives(unittest.TestCase):
+	def should_select_random_item_based_on_weights(self):
+		rng = pcg.RNG(12345)
+		self.assertEqual(pcg.weighted_choices(rng,
+			[(1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e')], amount=10),
+						 ['d', 'c', 'e', 'b', 'd', 'd', 'd', 'c', 'c', 'c'],
+						 )

@@ -4,24 +4,8 @@ try:
 except AttributeError: # pragma: no cover -- py2
 	import argparse
 	SimpleNamespace = argparse.Namespace
-import random
-try:
-	random.choices
-except AttributeError: # pragma: no cover -- py3.5
-	def random_choices(population, weights, k=1):
-		n = len(population)
-		cum_weights = []
-		it = iter(weights)
-		cum_weights.append(next(it))
-		for value in it: # py2 itertools has no accumulate()
-			cum_weights.append(cum_weights[-1] + value)
-		assert len(cum_weights) == n
-		total = cum_weights[-1] + 0.0   # convert to float
-		import itertools, bisect
-		return [population[bisect.bisect(cum_weights, random.random() * total, 0, n - 1)]
-				for i in itertools.repeat(None, k)]
-	random.choices = random_choices
 
+from clckwrkbdgr import pcg
 from clckwrkbdgr import utils
 from clckwrkbdgr.math import Point, Size, Matrix
 import clckwrkbdgr.math.graph
@@ -57,8 +41,7 @@ class Generator: # pragma: no cover -- TODO relies on built-in module `random`. 
 		""" Makes random weighted choice based on list of tuples: (<weight>, <item>), ...
 		Returns list of items.
 		"""
-		args = zip(*(map(reversed, weights_and_items)))
-		return random.choices(*args, k=amount)
+		return pcg.weighted_choices(random, weights_and_items, k=amount)
 
 	def distribute(self, distribution, min_amount, max_amount=None):
 		""" Places objects generated from weighted distribution.
