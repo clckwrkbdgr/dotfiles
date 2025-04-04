@@ -4,7 +4,7 @@ import textwrap
 from .. import builders
 from ...math import Point, Size
 from clckwrkbdgr.pcg import RNG
-from .. import _base as pcg
+from clckwrkbdgr import pcg
 
 STR_TERRAIN = {
 		None : ' ',
@@ -38,10 +38,13 @@ class MockBuilder(builders.Builder):
 			for y in range(1, self.size.height - 1):
 				self.strata.set_cell((x, y), 'floor')
 		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
-		obstacle_pos = pcg.pos(self.rng, self.size, floor_only)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		obstacle_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
 		self.strata.set_cell(obstacle_pos, 'wall')
-		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
-		self.exit_pos = pcg.pos(self.rng, self.size, floor_only)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
 
 class TestBuilder(unittest.TestCase):
 	def should_generate_dungeon(self):

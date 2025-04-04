@@ -4,7 +4,7 @@ import textwrap
 from ..math import Matrix, Point, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
-from . import _base as pcg
+from clckwrkbdgr import pcg
 import clckwrkbdgr.math
 
 class Builder(object):
@@ -420,10 +420,12 @@ class BSPDungeon(Builder):
 			builder.fill(*splitter)
 
 		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
-		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
-		self.exit_pos = pcg.pos(self.rng, self.size, lambda pos: floor_only(pos) and pos != self.start_pos)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
 class CityBuilder(Builder):
@@ -453,11 +455,13 @@ class CityBuilder(Builder):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
 
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
 		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
-		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
-		self.exit_pos = pcg.pos(self.rng, self.size, lambda pos: floor_only(pos) and pos != self.start_pos)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
 class CaveBuilder(Builder):
@@ -545,8 +549,10 @@ class CaveBuilder(Builder):
 		Log.debug("Finalized cave:\n{0}".format(repr(self.strata)))
 
 		floor_only = lambda pos: self.strata.cell(pos) > 1
-		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
-		self.exit_pos = pcg.pos(self.rng, self.size, lambda pos: floor_only(pos) and pos != self.start_pos)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
 		for pos in self.strata.size.iter_points():
@@ -663,10 +669,12 @@ class MazeBuilder(Builder):
 		""" Places other points of interests (start, exit).
 		"""
 		floor_only = lambda pos: self.strata.cell(pos) in ['floor', 'tunnel_floor']
-		self.start_pos = pcg.pos(self.rng, self.size, floor_only)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
-		self.exit_pos = pcg.pos(self.rng, self.size, lambda pos: floor_only(pos) and pos != self.start_pos)
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 	def _build(self):
 		layout = self._make_maze()

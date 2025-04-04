@@ -1,4 +1,4 @@
-from . import _base as pcg
+from clckwrkbdgr import pcg
 from ..monsters import Behavior
 
 class Settler(object):
@@ -59,7 +59,8 @@ class SingleMonster(Settler):
 	def _populate(self):
 		""" Places monster at first passable terrain. """
 		passable = lambda pos: self.builder.strata.cell(pos).terrain.passable
-		pos = pcg.pos(self.rng, self.builder.strata.size, lambda pos: passable(pos) and pos not in [self.builder.start_pos, self.builder.exit_pos])
+		pcg.point(self.rng, self.builder.strata.size) # FIXME work around legacy bug which scrapped the first result
+		pos = pcg.TryCheck(pcg.point).check(lambda pos: passable(pos) and pos not in [self.builder.start_pos, self.builder.exit_pos])(self.rng, self.builder.strata.size)
 		self.monsters.append(self.MONSTER + (pos,))
 
 class Squatters(Settler):
@@ -100,7 +101,8 @@ class Squatters(Settler):
 		total_monsters = int(total_passable_cells / float(self.CELLS_PER_MONSTER))
 		self.monster_cells = set()
 		for _ in range(total_monsters):
-			pos = pcg.pos(self.rng, self.builder.strata.size, self.is_free)
+			pcg.point(self.rng, self.builder.strata.size) # FIXME work around legacy bug which scrapped the first result
+			pos = pcg.TryCheck(pcg.point).check(self.is_free)(self.rng, self.builder.strata.size)
 			self.monster_cells.add(pos)
 			self.monsters.append(self._choice(self.MONSTERS) + (pos,))
 	def _place_items(self):
@@ -108,7 +110,8 @@ class Squatters(Settler):
 		total_passable_cells = sum(1 for pos in self.builder.strata.size.iter_points() if self.is_passable(pos))
 		total_items = int(total_passable_cells / float(self.CELLS_PER_ITEM))
 		for _ in range(total_items):
-			pos = pcg.pos(self.rng, self.builder.strata.size, self.is_free)
+			pcg.point(self.rng, self.builder.strata.size) # FIXME work around legacy bug which scrapped the first result
+			pos = pcg.TryCheck(pcg.point).check(self.is_free)(self.rng, self.builder.strata.size)
 			self.items.append(self._choice(self.ITEMS) + (pos,))
 
 class WeightedSquatters(Squatters):

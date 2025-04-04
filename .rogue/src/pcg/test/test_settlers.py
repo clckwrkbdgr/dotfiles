@@ -5,7 +5,6 @@ from .. import settlers, builders
 from ... import monsters
 from ...math import Point, Size
 from clckwrkbdgr.pcg import RNG
-from .. import _base as pcg
 
 class MockSettler(settlers.Settler):
 	def _populate(self):
