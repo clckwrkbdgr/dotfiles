@@ -53,7 +53,7 @@ class Monster(object):
 			monster.inventory.extend(reader.read_list(items.Item))
 		else:
 			item_types = reader.get_meta_info('ITEMS')
-			from .pcg import RNG
+			from clckwrkbdgr.pcg import RNG
 			monster.fill_inventory_from_drops(RNG(0), item_types)
 		if reader.version > Version.WIELDING:
 			monster.wielding = reader.read(items.Item, optional=True)
@@ -71,7 +71,7 @@ class Monster(object):
 	def name(self):
 		return self.species.name
 	def _generate_drops(self, rng):
-		from . import pcg
+		from clckwrkbdgr import pcg
 		if not self.species.drops:
 			return []
 		return [result for result

@@ -7,7 +7,7 @@ except: # pragma: no cover
 from ..math import Point
 from .. import monsters
 from .. import items
-from ..pcg import RNG
+from clckwrkbdgr.pcg import RNG
 from ..system import savefile
 from ..defs import Version
 from . import mock_dungeon

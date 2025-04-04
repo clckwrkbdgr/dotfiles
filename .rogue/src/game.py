@@ -1,6 +1,6 @@
 from .defs import *
 from . import pcg
-from .pcg import RNG
+from clckwrkbdgr.pcg import RNG
 from . import math
 from .math import Point, Matrix, Size
 from . import messages

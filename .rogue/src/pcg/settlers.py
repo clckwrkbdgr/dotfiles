@@ -116,4 +116,5 @@ class WeightedSquatters(Squatters):
 	Lists MONSTERS and ITEMS should have additional first element - relative weight (int or float) for each item/monster.
 	"""
 	def _choice(self, entries):
+		from clckwrkbdgr import pcg
 		return pcg.weighted_choices(self.rng, [(data[0], data[1:]) for data in entries])[0]

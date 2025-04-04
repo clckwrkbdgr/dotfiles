@@ -3,7 +3,7 @@ unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
 from .. import builders
 from ...math import Point, Size
-from .._base import RNG
+from clckwrkbdgr.pcg import RNG
 from .. import _base as pcg
 
 STR_TERRAIN = {

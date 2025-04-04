@@ -19,24 +19,11 @@ class Generator: # pragma: no cover -- TODO relies on built-in module `random`. 
 		return random.choice(sequence)
 
 	def pos_in_rect(self, rect, with_boundaries=False):
-		shrink = 0 if with_boundaries else 1
-		return Point(
-				random.randrange(rect.left + shrink, rect.right + 1 - shrink),
-				random.randrange(rect.top + shrink, rect.bottom + 1 - shrink),
-				)
+		return pcg.point_in_rect(rect, with_boundaries)
 	def size(self, min_size, max_size):
-		""" Boundaries are included. """
-		min_size, max_size = map(Size, (min_size, max_size))
-		return Size(
-				random.randrange(min_size.width, max_size.width + 1),
-				random.randrange(min_size.height, max_size.height + 1),
-				)
+		return pcg.size(rect, min_size, max_size)
 	def point(self, x_max_range, y_max_range):
-		""" Boundaries are NOT included. """
-		return Point(
-				random.randrange(x_max_range) if x_max_range > 0 else 0,
-				random.randrange(y_max_range) if y_max_range > 0 else 0,
-				)
+		return pcg.point(Size(x_max_range, y_max_range))
 	def weighted_choices(self, weights_and_items, amount=1):
 		""" Makes random weighted choice based on list of tuples: (<weight>, <item>), ...
 		Returns list of items.

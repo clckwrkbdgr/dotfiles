@@ -4,7 +4,7 @@ import textwrap
 from .. import settlers, builders
 from ... import monsters
 from ...math import Point, Size
-from .._base import RNG
+from clckwrkbdgr.pcg import RNG
 from .. import _base as pcg
 
 class MockSettler(settlers.Settler):
