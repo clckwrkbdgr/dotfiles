@@ -4,23 +4,9 @@ trace = logging.getLogger('rogue')
 from clckwrkbdgr.math import algorithm
 from clckwrkbdgr.math import Point, Size, Rect, get_neighbours, sign
 
-class DungeonWave(algorithm.Wave):
-	def __init__(self, matrix, region):
-		self.matrix = matrix
-		self.region = region
-	def is_linked(self, node_from, node_to):
-		distance = abs(node_from - node_to)
-		return distance.x <= 1 and distance.y <= 1
-	def reorder_links(self, previous_node, links):
-		return sorted(links, key=lambda p: sum(abs(previous_node - p)))
-	def get_links(self, node):
-		return [p for p in get_neighbours(
-			self.matrix, node,
-			with_diagonal=True,
-			check=lambda c: c == '.'
-			)
-			 if self.region.contains(p, with_border=True)
-			 ]
+class MyWave(algorithm.MatrixWave):
+	def is_passable(self, p, _):
+		return self.matrix.cell(p) == '.'
 
 class Autoexplorer:
 	def __init__(self):
@@ -85,7 +71,7 @@ class Autoexplorer:
 			self.previous_direction = Point(0, 0)
 			trace.debug('Autoexplorer target: good, picking {0}'.format(target))
 			break
-		wave = DungeonWave(dungeon.terrain, Rect(
+		wave = MyWave(dungeon.terrain, Rect(
 			topleft=dungeon.rogue - Point(10, 10),
 			size=Size(21, 21),
 			))

@@ -22,6 +22,22 @@ class Direction(Enum):
 	DOWN_RIGHT
 	"""
 
+class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
+	@staticmethod
+	def allow_movement_direction(strata, from_point, to_point):
+		""" Returns True, if current map allows direct movement from point to point. """
+		shift = to_point - from_point
+		is_diagonal = abs(shift.x) + abs(shift.y) == 2
+		if not is_diagonal:
+			return True
+		if not strata.cell(from_point).terrain.allow_diagonal:
+			return False
+		if not strata.cell(to_point).terrain.allow_diagonal:
+			return False
+		return True
+	def is_passable(self, p, from_point):
+		return self.matrix.cell(p).terrain.passable and self.matrix.cell(p).visited and self.allow_movement_direction(self.matrix, from_point, p)
+
 class Game(object):
 	""" Main game object.
 
@@ -353,17 +369,6 @@ class Game(object):
 		self.remembered_exit = False
 		self.update_vision()
 		Log.debug("Dungeon is ready.")
-	def allow_movement_direction(self, from_point, to_point):
-		""" Returns True, if current map allows direct movement from point to point. """
-		shift = to_point - from_point
-		is_diagonal = abs(shift.x) + abs(shift.y) == 2
-		if not is_diagonal:
-			return True
-		if not self.strata.cell(from_point).terrain.allow_diagonal:
-			return False
-		if not self.strata.cell(to_point).terrain.allow_diagonal:
-			return False
-		return True
 	def get_player(self):
 		""" Returns player character if exists, or None. """
 		return next((monster for monster in self.monsters if monster.behavior == pcg.settlers.Behavior.PLAYER), None)
@@ -385,7 +390,7 @@ class Game(object):
 		if not passable:
 			self.events.append(messages.BumpEvent(actor, new_pos))
 			return False
-		if not self.allow_movement_direction(actor.pos, new_pos):
+		if not Pathfinder.allow_movement_direction(self.strata, actor.pos, new_pos):
 			self.events.append(messages.BumpEvent(actor, new_pos))
 			return False
 		monster = self.find_monster(new_pos.x, new_pos.y)
@@ -504,11 +509,8 @@ class Game(object):
 		""" Find free path from start and until find_target() returns suitable target.
 		Otherwise return None.
 		"""
-		path = math.find_path(
-				self.strata, start,
-				is_passable=lambda p, from_point: self.strata.cell(p).terrain.passable and self.strata.cell(p).visited and self.allow_movement_direction(from_point, p),
-				find_target=find_target,
-				)
+		wave = Pathfinder(self.strata)
+		path = wave.run(start, find_target)
 		if not path:
 			return None
 		if path[0] == self.get_player().pos: # We're already standing there.
