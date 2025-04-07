@@ -153,6 +153,23 @@ class SerializedEntity: # pragma: no cover -- TODO requires functional tests.
 		return self
 	def __exit__(self, *args, **kwargs):
 		self.save()
+	@classmethod
+	@contextlib.contextmanager
+	def store(cls, path, name, default_constructor):
+		""" Context manager for serialized entity store in a file.
+		Tries to load entity with given name from the specified path,
+		otherwise creates new entity with provided callable default_constructor.
+		On exit saves entity to the file.
+		"""
+		savefile = cls(path, 0, entity_name=name, unlink=False, readable=True)
+		savefile.load()
+		if savefile.entity:
+			entity = savefile.entity
+		else:
+			entity = default_constructor()
+			savefile.reset(entity)
+		yield entity
+		savefile.save()
 
 class LineReader:
 	def __init__(self, filename):
