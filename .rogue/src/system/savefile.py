@@ -2,7 +2,7 @@ import os
 import contextlib
 import logging
 Log = logging.getLogger('rogue')
-from ..math import Point, Size, Matrix
+from clckwrkbdgr.math import Point, Size, Matrix
 
 class AutoSavefile:
 	""" Context manager to automatically load/save object from savefile.

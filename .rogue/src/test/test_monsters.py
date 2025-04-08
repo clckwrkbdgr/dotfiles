@@ -4,7 +4,7 @@ try:
 	from cStringIO import StringIO
 except: # pragma: no cover
 	from io import StringIO
-from ..math import Point
+from clckwrkbdgr.math import Point
 from .. import monsters
 from .. import items
 from clckwrkbdgr.pcg import RNG

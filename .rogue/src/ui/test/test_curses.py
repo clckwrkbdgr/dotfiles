@@ -8,7 +8,7 @@ mock.patch.TEST_PREFIX = 'should'
 from .. import curses, _base
 from ...pcg import builders, settlers
 from ... import game, monsters, items, messages, terrain
-from ...math import Point
+from clckwrkbdgr.math import Point
 from clckwrkbdgr import utils
 from ...test import mock_dungeon
 from ...test.mock_dungeon import MockGame

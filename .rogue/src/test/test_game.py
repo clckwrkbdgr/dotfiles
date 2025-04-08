@@ -5,7 +5,7 @@ try:
 	from cStringIO import StringIO
 except: # pragma: no cover
 	from io import StringIO
-from ..math import Point, Size
+from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from ..pcg import builders, settlers
 from .. import monsters, items, terrain

@@ -1,4 +1,4 @@
-from ._base import Point
+from ._base import Point, Size, Matrix
 from ._base import get_neighbours
 
 class Wave(object):
@@ -124,3 +124,56 @@ def bresenham(start, stop):
 				break
 			error = error + dx
 			y += sy
+
+class FieldOfView:
+	""" Updatable field of view for grid maps.
+	"""
+	def __init__(self, radius):
+		""" Creates field of view with size of 2R + 1.
+		Does not perform initial update.
+		"""
+		self.sight = Matrix(Size(1 + radius * 2, 1 + radius * 2), 0)
+		self.center = Point(0, 0)
+		self.half_size = Size(self.sight.size.width // 2, self.sight.size.height // 2)
+	def is_visible(self, x, y):
+		""" Returns True if cell at world coords is visible after last update(). """
+		fov_pos = Point(self.half_size.width + x - self.center.x,
+				  self.half_size.height + y - self.center.y,
+				  )
+		if not self.sight.valid(fov_pos):
+			return False
+		return self.sight.cell(fov_pos)
+	@staticmethod
+	def in_line_of_sight(start, target, is_transparent):
+		""" Returns True if target is in direct line of sight (bresenham)
+		and every cell on the way is_transparent (callable, should return bool for Point).
+		"""
+		for pos in bresenham(start, target):
+			if not is_transparent(pos) and pos != target:
+				return False
+		return True
+	def update(self, new_center, is_transparent):
+		""" Updates FOV for given new center point.
+		Uses is_transparent(Point):bool to determine if cells is transparent for sight.
+		After that, function is_visible() can be used to check for each cell.
+		"""
+		self.center = new_center
+		self.sight.clear(0)
+		for pos in self.sight.size.iter_points():
+			rel_pos = Point(
+					self.half_size.width - pos.x,
+					self.half_size.height - pos.y,
+					)
+			if (float(rel_pos.x) / self.half_size.width) ** 2 + (float(rel_pos.y) / self.half_size.height) ** 2 > 1:
+				continue
+			for inner_line_pos in bresenham(Point(0, 0), rel_pos):
+				real_world_pos = self.center + inner_line_pos
+				fov_pos = Point(self.half_size.width + inner_line_pos.x,
+						self.half_size.height + inner_line_pos.y,
+						)
+				if not self.sight.cell(fov_pos):
+					if real_world_pos.x >= 0 and real_world_pos.y >= 0:
+						yield real_world_pos
+					self.sight.set_cell(fov_pos, True)
+				if not is_transparent(real_world_pos):
+					break

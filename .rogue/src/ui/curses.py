@@ -7,7 +7,7 @@ import logging
 Log = logging.getLogger('rogue')
 from .. import messages
 from ..game import Game, Direction
-from ..math import Point
+from clckwrkbdgr.math import Point
 
 class Keymapping:
 	""" Keybingings registry. """

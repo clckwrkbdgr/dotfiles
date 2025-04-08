@@ -13,7 +13,7 @@ except: # pragma: no cover
 BUILTIN_OPEN = 'builtins.open' if sys.version_info[0] >= 3 else '__builtin__.open'
 from ..savefile import Reader, Writer
 from ..savefile import Savefile, AutoSavefile
-from ...math import Point, Size, Matrix
+from clckwrkbdgr.math import Point, Size, Matrix
 
 class MockSerializableObject:
 	def __init__(self, value, data):

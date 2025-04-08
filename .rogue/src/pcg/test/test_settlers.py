@@ -3,7 +3,7 @@ unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
 from .. import settlers, builders
 from ... import monsters
-from ...math import Point, Size
+from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 
 class MockSettler(settlers.Settler):

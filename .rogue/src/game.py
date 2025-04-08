@@ -1,8 +1,7 @@
 from .defs import *
 from . import pcg
 from clckwrkbdgr.pcg import RNG
-from . import math
-from .math import Point, Matrix, Size
+from clckwrkbdgr.math import Point, Matrix, Size
 from . import messages
 import logging
 Log = logging.getLogger('rogue')
@@ -82,7 +81,7 @@ class Game(object):
 		self.settlers = settlers or self.SETTLERS
 		self.rng = RNG(rng_seed)
 		self.god = God()
-		self.field_of_view = math.FieldOfView(10)
+		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
 		self.autoexploring = False
 		self.movement_queue = []
 		self.monsters = []
@@ -206,15 +205,15 @@ class Game(object):
 			pass
 		elif monster.behavior == monsters.Behavior.INERT:
 			if self.get_player():
-				if math.distance(monster.pos, self.get_player().pos) == 1:
+				if clckwrkbdgr.math.distance(monster.pos, self.get_player().pos) == 1:
 					self.attack(monster, self.get_player())
 		elif monster.behavior == monsters.Behavior.ANGRY:
 			if self.get_player():
-				if math.distance(monster.pos, self.get_player().pos) == 1:
+				if clckwrkbdgr.math.distance(monster.pos, self.get_player().pos) == 1:
 					self.attack(monster, self.get_player())
-				elif math.distance(monster.pos, self.get_player().pos) <= monster.species.vision:
+				elif clckwrkbdgr.math.distance(monster.pos, self.get_player().pos) <= monster.species.vision:
 					is_transparent = lambda p: self.is_transparent_to_monster(p, monster)
-					if math.in_line_of_sight(monster.pos, self.get_player().pos, is_transparent):
+					if clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(monster.pos, self.get_player().pos, is_transparent):
 						direction = self.get_direction(monster.pos, self.get_player().pos)
 						self.move(monster, direction)
 	@classmethod
@@ -277,7 +276,7 @@ class Game(object):
 		if not self.strata.cell(p).terrain.passable:
 			return False
 		if self.strata.cell(p).terrain.dark:
-			if math.distance(monster.pos, p) >= 1:
+			if clckwrkbdgr.math.distance(monster.pos, p) >= 1:
 				return False
 		return True
 	def update_vision(self):

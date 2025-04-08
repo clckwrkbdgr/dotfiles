@@ -2,7 +2,7 @@ from clckwrkbdgr import unittest
 import textwrap
 import clckwrkbdgr.math
 from clckwrkbdgr.math import algorithm, Matrix, Point, Size
-from clckwrkbdgr.math.algorithm import bresenham
+from clckwrkbdgr.math.algorithm import bresenham, FieldOfView
 
 class TestMatrix(unittest.TestCase):
 	def should_flood_fill_area(self):
@@ -211,3 +211,89 @@ class TestGeometry(unittest.TestCase):
 		self.assertEqual(list(bresenham(Point(0, 0), Point(0, 9))), [Point(*x) for x in [
 			(0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9),
 			]])
+
+class TestMapAlgorithms(unittest.TestCase):
+	def should_calculate_field_of_view(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.data = list(textwrap.dedent("""\
+				####################
+				#                  #
+				#                  #
+				#            #     #
+				#                  #
+				#                  #
+				####################
+				""").replace('\n', ''))
+		fov = FieldOfView(3)
+		for p in fov.update(Point(11, 2), is_transparent=lambda p: matrix.valid(p) and matrix.cell(p) != '#'):
+			if matrix.cell(p) == '#':
+				matrix.set_cell(p, '%')
+			else:
+				matrix.set_cell(p, '.')
+		self.assertTrue(fov.is_visible(11, 2))
+		self.assertTrue(fov.is_visible(12, 2))
+		self.assertTrue(fov.is_visible(12, 2))
+		self.assertFalse(fov.is_visible(14, 3))
+		self.assertTrue(fov.is_visible(14, 2))
+		self.assertFalse(fov.is_visible(15, 2))
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				#########%%%%%######
+				#        .....     #
+				#       .......    #
+				#        ....%     #
+				#        .....     #
+				#          .       #
+				####################
+				"""))
+	def should_calculate_field_of_view_in_absolute_darkness(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.data = list(textwrap.dedent("""\
+				####################
+				#                  #
+				#                  #
+				#            #     #
+				#                  #
+				#                  #
+				####################
+				""").replace('\n', ''))
+		fov = FieldOfView(3)
+		source = Point(11, 2)
+		for p in fov.update(Point(11, 2), is_transparent=lambda p: max(abs(source.x - p.x), abs(source.y - p.y)) < 1):
+			matrix.set_cell(p, '.')
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				####################
+				#         ...      #
+				#         ...      #
+				#         ...#     #
+				#                  #
+				#                  #
+				####################
+				"""))
+	def should_check_direct_line_of_sight(self):
+		matrix = Matrix(Size(20, 7), '.')
+		matrix.data = list(textwrap.dedent("""\
+				####################
+				#                  #
+				#                  #
+				#            ###   #
+				#            #     #
+				#                  #
+				####################
+				""").replace('\n', ''))
+		source = Point(11, 2)
+		is_transparent=lambda p: matrix.valid(p) and matrix.cell(p) not in '#*'
+		for p in matrix.size.iter_points():
+			if FieldOfView.in_line_of_sight(source, p, is_transparent):
+				if matrix.cell(p) == '#':
+					matrix.set_cell(p, '*')
+				else:
+					matrix.set_cell(p, '.')
+		self.assertEqual(matrix.tostring(), textwrap.dedent("""\
+				########*******#####
+				*..................*
+				*..................*
+				*............*##   #
+				*............*     #
+				*.............     #
+				####**********######
+				"""))

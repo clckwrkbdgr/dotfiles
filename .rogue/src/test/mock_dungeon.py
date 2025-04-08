@@ -1,4 +1,4 @@
-from ..math import Point
+from clckwrkbdgr.math import Point
 from ..pcg import settlers, builders
 from .. import terrain, items, monsters
 from .. import game

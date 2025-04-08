@@ -1,7 +1,7 @@
 import itertools
 import copy
 import textwrap
-from ..math import Matrix, Point, Size, Rect
+from clckwrkbdgr.math import Matrix, Point, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
 from clckwrkbdgr import pcg

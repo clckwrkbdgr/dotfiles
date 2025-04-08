@@ -2,7 +2,7 @@ import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
 from .. import builders
-from ...math import Point, Size
+from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr import pcg
 
