@@ -1,10 +1,11 @@
 from __future__ import print_function
 import os, sys
-from src.system.logging import Log
+import logging
+Log = logging.getLogger('rogue')
 import src.game, src.items, src.monsters, src.terrain
 import src.ui
 import src.pcg
-import src.system.savefile
+import clckwrkbdgr.serialize.stream
 from src.test.main import Tester
 
 class DungeonSquatters(src.pcg.settlers.WeightedSquatters):
@@ -70,13 +71,14 @@ def cli():
 	if debug:
 		Log.init('rogue.log')
 	tester = Tester(rootdir=os.path.dirname(__file__))
-	if tester.need_tests(sys.argv, src.system.savefile.Savefile.last_save_time() if src.system.savefile.Savefile.exists() else -1, printer=print):
+	savefile = clckwrkbdgr.serialize.stream.Savefile(os.path.expanduser('~/.rogue.sav'))
+	if tester.need_tests(sys.argv, savefile.last_save_time() if savefile.exists() else -1, printer=print):
 		tests = tester.get_tests(sys.argv)
 		rc = tester.run(tests, debug=debug)
 		if rc != 0 or 'test' in sys.argv:
 			sys.exit(rc)
 	Log.debug('started')
-	with src.system.savefile.AutoSavefile() as savefile:
+	with clckwrkbdgr.serialize.stream.AutoSavefile(savefile) as savefile:
 		game = Game(load_from_reader=savefile.reader)
 		with src.ui.auto_ui()() as ui:
 			if game.main_loop(ui):
