@@ -5,8 +5,8 @@ Log = logging.getLogger('rogue')
 import src.game, src.items, src.monsters, src.terrain
 import src.ui
 import src.pcg
+import clckwrkbdgr.fs
 import clckwrkbdgr.serialize.stream
-from src.test.main import Tester
 
 class DungeonSquatters(src.pcg.settlers.WeightedSquatters):
 	MONSTERS = [
@@ -70,11 +70,23 @@ def cli():
 	debug = '--debug' in sys.argv
 	if debug:
 		Log.init('rogue.log')
-	tester = Tester(rootdir=os.path.dirname(__file__))
 	savefile = clckwrkbdgr.serialize.stream.Savefile(os.path.expanduser('~/.rogue.sav'))
-	if tester.need_tests(sys.argv, savefile.last_save_time() if savefile.exists() else -1, printer=print):
-		tests = tester.get_tests(sys.argv)
-		rc = tester.run(tests, debug=debug)
+	def _need_tests():
+		if 'test' in sys.argv:
+			return True
+		if not savefile.exists():
+			return False
+		_last_save = savefile.last_save_time()
+		for path in clckwrkbdgr.fs.find(
+				'src', exclude_dir_names=['__pycache__'],
+				exclude_extensions=['pyc'],
+				):
+			if path.stat().st_mtime > _last_save:
+				return True
+		return False
+	if _need_tests():
+		import subprocess, platform
+		rc = subprocess.call(['unittest', '-p', 'py3'] + [arg for arg in sys.argv if arg.startswith('src.')], shell=(platform.system() == 'Windows'))
 		if rc != 0 or 'test' in sys.argv:
 			sys.exit(rc)
 	Log.debug('started')
