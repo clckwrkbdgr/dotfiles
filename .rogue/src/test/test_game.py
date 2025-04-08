@@ -13,7 +13,7 @@ from .. import pcg
 from .. import game
 from .. import ui
 from .. import messages
-from ..system import savefile
+import clckwrkbdgr.serialize.stream as savefile
 from . import mock_dungeon
 from .mock_dungeon import MockGame
 

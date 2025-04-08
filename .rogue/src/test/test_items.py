@@ -6,7 +6,7 @@ except: # pragma: no cover
 	from io import StringIO
 from clckwrkbdgr.math import Point
 from .. import items
-from ..system import savefile
+import clckwrkbdgr.serialize.stream as savefile
 from ..defs import Version
 from . import mock_dungeon
 

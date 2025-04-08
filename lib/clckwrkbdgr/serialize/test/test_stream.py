@@ -1,18 +1,13 @@
-import unittest
-unittest.defaultTestLoader.testMethodPrefix = 'should'
-try:
-	import unittest.mock as mock
-except ImportError: # pragma: no cover
-	import mock
-mock.patch.TEST_PREFIX = 'should'
+from clckwrkbdgr import unittest
+from clckwrkbdgr.unittest import mock
 import os, sys, tempfile
 try:
 	from cStringIO import StringIO
 except: # pragma: no cover
 	from io import StringIO
 BUILTIN_OPEN = 'builtins.open' if sys.version_info[0] >= 3 else '__builtin__.open'
-from ..savefile import Reader, Writer
-from ..savefile import Savefile, AutoSavefile
+from ..stream import Reader, Writer
+from ..stream import Savefile, AutoSavefile
 from clckwrkbdgr.math import Point, Size, Matrix
 
 class MockSerializableObject:
@@ -201,45 +196,40 @@ class TestWriter(unittest.TestCase):
 class TestSavefile(unittest.TestCase):
 	@mock.patch('os.stat')
 	@mock.patch('os.path.exists', side_effect=[False, True])
-	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_get_last_save_time(self, mock_filename, os_path_exists, os_stat):
+	def should_get_last_save_time(self, os_path_exists, os_stat):
+		savefile = Savefile(os.path.join(tempfile.gettempdir(), "clckwrkbdgr_serialize_stream_unittest.sav"))
 		os_stat.return_value.st_mtime = 123
-		self.assertEqual(Savefile.last_save_time(), 0)
-		self.assertEqual(Savefile.last_save_time(), 123)
+		self.assertEqual(savefile.last_save_time(), 0)
+		self.assertEqual(savefile.last_save_time(), 123)
 	@mock.patch('os.path.exists', side_effect=[False])
-	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_not_load_game_from_non_existent_file(self, mock_filename, os_path_exists):
-		savefile = Savefile()
-		self.assertEqual(savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_not_load_game_from_non_existent_file(self, os_path_exists):
+		savefile = Savefile(os.path.join(tempfile.gettempdir(), "clckwrkbdgr_serialize_stream_unittest.sav"))
+		self.assertEqual(savefile.filename, os.path.join(tempfile.gettempdir(), "clckwrkbdgr_serialize_stream_unittest.sav"))
 		reader = savefile.load()
 		self.assertEqual(reader, None)
 	@mock.patch('os.path.exists', side_effect=[True])
-	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_load_game_from_file_if_exists(self, mock_filename, os_path_exists):
-		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_load_game_from_file_if_exists(self, os_path_exists):
 		VERSION = 666
 		stream = mock.mock_open(read_data='{version}\x00123\x00game data'.format(version=VERSION))
 		with mock.patch(BUILTIN_OPEN, stream):
-			savefile = Savefile()
+			savefile = Savefile(os.path.join(tempfile.gettempdir(), "clckwrkbdgr_serialize_stream_unittest.sav"))
 			reader = savefile.load()
 			self.assertEqual(reader.version, VERSION)
 			game_object = (int(reader.read()), reader.read())
 			self.assertEqual(game_object, (123, 'game data'))
-			stream.assert_called_once_with(Savefile.FILENAME, 'r')
+			stream.assert_called_once_with(savefile.filename, 'r')
 			handle = stream()
 			handle.read.assert_called_once()
-	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_save_game_to_file(self, mock_filename):
-		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_save_game_to_file(self):
 		stream = mock.mock_open()
 		VERSION = 666
 		with mock.patch(BUILTIN_OPEN, stream):
-			savefile = Savefile()
+			savefile = Savefile(os.path.join(tempfile.gettempdir(), "clckwrkbdgr_serialize_stream_unittest.sav"))
 			with savefile.save(VERSION) as writer:
 				writer.write(123)
 				writer.write('game data')
 
-			stream.assert_called_once_with(Savefile.FILENAME, 'w')
+			stream.assert_called_once_with(savefile.filename, 'w')
 			handle = stream()
 			handle.write.assert_has_calls([
 				mock.call('{0}'.format(666)),
@@ -250,13 +240,11 @@ class TestSavefile(unittest.TestCase):
 				])
 	@mock.patch('os.unlink')
 	@mock.patch('os.path.exists', side_effect=[True])
-	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_unlink_savefile_on_crash_during_saving(self, mock_filename, os_path_exists, os_unlink):
-		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
+	def should_unlink_savefile_on_crash_during_saving(self, os_path_exists, os_unlink):
 		stream = mock.mock_open()
 		VERSION = 666
 		with mock.patch(BUILTIN_OPEN, stream):
-			savefile = Savefile()
+			savefile = Savefile(os.path.join(tempfile.gettempdir(), "clckwrkbdgr_serialize_stream_unittest.sav"))
 			try:
 				with savefile.save(VERSION) as writer:
 					writer.write(123)
@@ -264,27 +252,23 @@ class TestSavefile(unittest.TestCase):
 			except RuntimeError as e:
 				self.assertEqual(str(e), 'crash!')
 
-			stream.assert_called_once_with(Savefile.FILENAME, 'w')
+			stream.assert_called_once_with(savefile.filename, 'w')
 			handle = stream()
 			handle.write.assert_has_calls([
 				mock.call('{0}'.format(666)),
 				mock.call('\x00'),
 				mock.call('123'),
 				])
-			os_unlink.assert_called_once_with(Savefile.FILENAME)
+			os_unlink.assert_called_once_with(savefile.filename)
 	@mock.patch('os.unlink')
 	@mock.patch('os.path.exists', side_effect=[True])
-	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_unlink_save_file_if_exists(self, mock_filename, os_path_exists, os_unlink):
-		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		savefile = Savefile()
+	def should_unlink_save_file_if_exists(self, os_path_exists, os_unlink):
+		savefile = Savefile(os.path.join(tempfile.gettempdir(), "clckwrkbdgr_serialize_stream_unittest.sav"))
 		savefile.unlink()
-		os_unlink.assert_called_once_with(Savefile.FILENAME)
+		os_unlink.assert_called_once_with(savefile.filename)
 	@mock.patch('os.unlink')
 	@mock.patch('os.path.exists', side_effect=[False])
-	@mock.patch('src.system.savefile.Savefile.FILENAME', new_callable=mock.PropertyMock, return_value=os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-	def should_not_unlink_save_file_if_does_not_exist(self, mock_filename, os_path_exists, os_unlink):
-		self.assertEqual(Savefile.FILENAME, os.path.join(tempfile.gettempdir(), "dotrogue_unittest.sav"))
-		savefile = Savefile()
+	def should_not_unlink_save_file_if_does_not_exist(self, os_path_exists, os_unlink):
+		savefile = Savefile(os.path.join(tempfile.gettempdir(), "clckwrkbdgr_serialize_stream_unittest.sav"))
 		savefile.unlink()
 		os_unlink.assert_not_called()

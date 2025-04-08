@@ -8,7 +8,7 @@ from clckwrkbdgr.math import Point
 from .. import monsters
 from .. import items
 from clckwrkbdgr.pcg import RNG
-from ..system import savefile
+import clckwrkbdgr.serialize.stream as savefile
 from ..defs import Version
 from . import mock_dungeon
 

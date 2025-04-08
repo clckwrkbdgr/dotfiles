@@ -288,6 +288,7 @@ lib/clckwrkbdgr/projects/python.py caps=work
 lib/clckwrkbdgr/projects/docs.py caps=work
 lib/clckwrkbdgr/projects/test/__init__.py caps=work
 lib/clckwrkbdgr/projects/test/test_projects.py caps=work
+lib/clckwrkbdgr/serialize/** caps=work
 lib/clckwrkbdgr/sql.py caps=work
 lib/clckwrkbdgr/test/test_sql.py caps=work
 lib/clckwrkbdgr/oldrogue/** caps=work

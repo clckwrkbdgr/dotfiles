@@ -1,7 +1,5 @@
 import os
 import contextlib
-import logging
-Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Size, Matrix
 
 class AutoSavefile:
@@ -45,14 +43,14 @@ class Reader:
 		if hasattr(f, 'read'):
 			data = f.read().split('\0')
 			self.stream = iter(data)
-		else: # For legacy unit tests that use already split data.
+		else: # pragma: no cover -- For legacy unit tests that use already split data.
 			self.stream = f
 		self.version = self.read_int()
 		self.meta_info = {}
-	def set_meta_info(self, name, value):
+	def set_meta_info(self, name, value): # pragma: no cover -- TODO
 		""" Registers meta info for custom readers (see read()). """
 		self.meta_info[name] = value
-	def get_meta_info(self, name):
+	def get_meta_info(self, name): # pragma: no cover -- TODO
 		""" Should be used from within custom reader to get associated meta info
 		(see read()).
 		"""
@@ -184,25 +182,23 @@ class Savefile:
 
 	See load()/save()
 	"""
-	FILENAME = os.path.expanduser('~/.rogue.sav')
-	@classmethod
-	def exists(cls):
+	def __init__(self, filename):
+		self.filename = str(filename)
+	def exists(self):
 		""" Should return True if file exists. """
-		return os.path.exists(cls.FILENAME)
-	@classmethod
-	def last_save_time(cls):
+		return os.path.exists(self.filename)
+	def last_save_time(self):
 		""" Should return mtime of the existing file, or 0 if files does not exist. """
-		if not cls.exists():
+		if not self.exists():
 			return 0
-		return os.stat(cls.FILENAME).st_mtime
+		return os.stat(self.filename).st_mtime
 	def load(self):
 		""" Loads data from file and returns Reader object.
 		Returns None if file does not exist.
 		"""
 		if not self.exists():
 			return None
-		Log.debug('Loading savefile: {0}...'.format(self.FILENAME))
-		with open(self.FILENAME, 'r') as f:
+		with open(self.filename, 'r') as f:
 			return Reader(f)
 	@contextlib.contextmanager
 	def save(self, version):
@@ -211,7 +207,7 @@ class Savefile:
 		Automatically closes file upon exiting context.
 		"""
 		try:
-			with open(self.FILENAME, 'w') as f:
+			with open(self.filename, 'w') as f:
 				yield Writer(f, version)
 		except:
 			self.unlink()
@@ -220,4 +216,4 @@ class Savefile:
 		""" Removes save file if exists. """
 		if not self.exists():
 			return
-		os.unlink(self.FILENAME)
+		os.unlink(self.filename)
