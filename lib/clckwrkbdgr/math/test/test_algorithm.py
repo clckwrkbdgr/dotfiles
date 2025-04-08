@@ -88,6 +88,8 @@ class TestMatrixWave(unittest.TestCase):
 	class _CustomNonDiagonalWave(algorithm.MatrixWave):
 		def is_diagonal(self, p, _from):
 			return abs(p.x - _from.x) + abs(p.y - _from.y) == 2
+		def reorder_links(self, previous_node, links):
+			return sorted(links)
 		def is_passable(self, p, _from):
 			return self.matrix.cell(p) == '.' and not self.is_diagonal(p, _from)
 
@@ -138,8 +140,8 @@ class TestMatrixWave(unittest.TestCase):
 				#***#....#***#######
 				#.#*####.#*#*****..#
 				#.#*...#***#.###*..#
-				#.#**..#*###.###**.#
-				#.#.*****#.........#
+				#.#*...#*###.###**.#
+				#.#******#.........#
 				####################
 				"""))
 	def should_not_find_path_in_matrix_if_exit_is_closed(self):
