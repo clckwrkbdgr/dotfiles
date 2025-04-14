@@ -10,6 +10,9 @@ import clckwrkbdgr.logging
 Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
 from clckwrkbdgr import xdg
+import clckwrkbdgr.serialize.stream
+
+SAVEFILE_VERSION = 3
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -534,62 +537,6 @@ class Game:
 				zone.fields.cell(pos).monsters.append(monster)
 		return zone
 
-class Savefile:
-	def __init__(self, filename, version):
-		self.filename = filename
-		self.version = version
-	def exists(self):
-		return self.filename.exists()
-	def delete(self):
-		if self.filename.exists():
-			self.filename.unlink()
-
-class SavefileReader:
-	CHUNK_SIZE = 4096
-	def __init__(self, savefile):
-		self.savefile = savefile
-		self.f = None
-		self.buffer = ''
-	def __enter__(self):
-		self.f = open(self.savefile.filename, 'r')
-		version = self.read(int)
-		assert version == self.savefile.version, (version, self.savefile.version)
-		return self
-	def read(self, data_type=None):
-		if not self.buffer:
-			self.buffer = self.f.read(self.CHUNK_SIZE)
-			assert self.buffer
-		data = None
-		while True:
-			try:
-				data, self.buffer = self.buffer.split('\0', 1)
-				break
-			except ValueError:
-				new_chunk = self.f.read(self.CHUNK_SIZE)
-				if not new_chunk:
-					data = self.buffer
-					break
-				self.buffer += new_chunk
-		if data_type:
-			data = data_type(data)
-		return data
-	def __exit__(self, *_):
-		self.f.close()
-
-class SavefileWriter:
-	def __init__(self, savefile):
-		self.savefile = savefile
-		self.f = None
-	def __enter__(self):
-		self.f = open(self.savefile.filename, 'w')
-		self.f.write(str(self.savefile.version))
-		return self
-	def write(self, data):
-		self.f.write('\0')
-		self.f.write(str(data))
-	def __exit__(self, *_):
-		self.f.close()
-
 def iter_rect(topleft, bottomright):
 	for x in range(topleft.x, bottomright.x + 1):
 		for y in range(topleft.y, bottomright.y + 1):
@@ -639,12 +586,13 @@ def main(window):
 	init_colors()
 
 	game = Game()
-	savefile = Savefile(xdg.save_data_path('dotrogue')/'rogue.sav', 3)
-	if savefile.exists():
-		with SavefileReader(savefile) as reader:
+	savefile = clckwrkbdgr.serialize.stream.Savefile(xdg.save_data_path('dotrogue')/'rogue.sav')
+	with savefile.get_reader() as reader:
+		if reader:
+			assert reader.version == SAVEFILE_VERSION, (reader.version, SAVEFILE_VERSION)
 			game.load(reader)
-	else:
-		game.generate()
+		else:
+			game.generate()
 
 	viewport = Rect((0, 0), (61, 23))
 	center = Point(*(viewport.size // 2))
@@ -936,7 +884,7 @@ def main(window):
 							dest_field.monsters.append(monster)
 						monster.pos = dest_pos.field
 	if game.player.hp > 0:
-		with SavefileWriter(savefile) as writer:
+		with savefile.save(SAVEFILE_VERSION) as writer:
 			game.save(writer)
 	else:
 		savefile.delete()

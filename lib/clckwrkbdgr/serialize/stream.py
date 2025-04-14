@@ -1,6 +1,7 @@
 import os
 import contextlib
 from clckwrkbdgr.math import Point, Size, Matrix
+import vintage
 
 class AutoSavefile:
 	""" Context manager to automatically load/save object from savefile.
@@ -32,19 +33,17 @@ class AutoSavefile:
 		else:
 			self.savefile.unlink()
 
-class Reader:
+class StreamReader:
 	""" Provides read access to savefile (file-like object).
 	Savefile version is available as field .version
 	"""
+	CHUNK_SIZE = 4096
 	def __init__(self, f):
 		""" Initializes reader over file and reads version.
 		If f is an iterator, it should be over list of string values.
 		"""
-		if hasattr(f, 'read'):
-			data = f.read().split('\0')
-			self.stream = iter(data)
-		else: # pragma: no cover -- For legacy unit tests that use already split data.
-			self.stream = f
+		self._buffer = ''
+		self.stream = f
 		self.version = self.read_int()
 		self.meta_info = {}
 	def set_meta_info(self, name, value): # pragma: no cover -- TODO
@@ -55,10 +54,28 @@ class Reader:
 		(see read()).
 		"""
 		return self.meta_info[name]
+	def read_raw(self):
+		""" Reads raw data unit. """
+		if not self._buffer:
+			self._buffer = self.stream.read(self.CHUNK_SIZE)
+			assert self._buffer
+		data = None
+		while True:
+			try:
+				data, self._buffer = self._buffer.split('\0', 1)
+				break
+			except ValueError:
+				new_chunk = self.stream.read(self.CHUNK_SIZE)
+				if not new_chunk:
+					data = self._buffer
+					break
+				self._buffer += new_chunk
+		return data
 	def read(self, custom_type=None, optional=False):
-		""" Reads current value from stream (RAW).
-		If custom_type is specified and it has class method .load(<reader>),
-		it is used instead.
+		""" Reads current value from stream.
+		If custom_type is specified:
+		- if it has class method .load(<reader>), it is used instead;
+		- otherwise value is cast to that type directly.
 		Custom loaders should create and return fully-prepared objects.
 		If any external data is needed for deserialization, it can be
 		registered via set_meta_info().
@@ -72,7 +89,10 @@ class Reader:
 				return None
 		if custom_type and hasattr(custom_type, 'load'):
 			return custom_type.load(self)
-		return next(self.stream)
+		value = self.read_raw()
+		if custom_type:
+			value = custom_type(value)
+		return value
 	def read_int(self):
 		""" Reads value as integer. """
 		return int(self.read())
@@ -112,6 +132,18 @@ class Reader:
 		for _ in range(size.width * size.height):
 			result.data[_] = self.read(element_type)
 		return result
+
+class Reader(StreamReader): # pragma: no cover -- deprecated
+	def __init__(self, f):
+		self._buffer = ''
+		if hasattr(f, 'read'):
+			self.stream = iter(f.read().split('\0'))
+		else:
+			self.stream = f
+		self.version = self.read_int()
+		self.meta_info = {}
+	def read_raw(self):
+		return next(self.stream)
 
 class Writer:
 	""" Provides read access to savefile (file-like object).
@@ -192,14 +224,26 @@ class Savefile:
 		if not self.exists():
 			return 0
 		return os.stat(self.filename).st_mtime
-	def load(self):
-		""" Loads data from file and returns Reader object.
+	@vintage.deprecated("Use Savefile.get_reader()")
+	def load(self): # pragma: no cover -- deprecated
+		""" Loads data from file and returns LegacyReader object.
 		Returns None if file does not exist.
 		"""
 		if not self.exists():
 			return None
 		with open(self.filename, 'r') as f:
 			return Reader(f)
+	@contextlib.contextmanager
+	def get_reader(self):
+		""" Should be used as context manager.
+		Yields Reader object, ready for streaming.
+		Yields None if file does not exist.
+		"""
+		if not self.exists():
+			yield None
+			return
+		with open(self.filename, 'r') as f:
+			yield StreamReader(f)
 	@contextlib.contextmanager
 	def save(self, version):
 		""" Should be used as context manager.
