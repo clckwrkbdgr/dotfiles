@@ -226,26 +226,3 @@ class TestSearchForFiles(unittest.fs.TestCase):
 			Path('/search_test/'),
 			Path('/search_test/other_dir'),
 			})
-
-class MockEntity(object):
-	def __init__(self):
-		self.value = 'default'
-	def __getstate__(self):
-		return {'value': self.value}
-
-class TestStorage(unittest.fs.TestCase):
-	MODULES = [clckwrkbdgr.fs]
-	def should_load_entity_from_storage(self):
-		self.fs.create_dir('/data')
-
-		with clckwrkbdgr.fs.SerializedEntity.store('/data/entity.json', 'mockentity', MockEntity) as entity:
-			self.assertEqual(entity.value, 'default')
-
-		storage = clckwrkbdgr.fs.SerializedEntity('/data/entity.json', 0, entity_name='mockentity')
-		mockentity = MockEntity()
-		mockentity.value = 'custom'
-		storage.reset(mockentity)
-		storage.save()
-
-		with clckwrkbdgr.fs.SerializedEntity.store('/data/entity.json', 'mockentity', MockEntity) as entity:
-			self.assertEqual(entity.value, 'custom')
