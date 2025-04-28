@@ -11,6 +11,7 @@ Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
 from clckwrkbdgr import xdg
 import clckwrkbdgr.serialize.stream
+import clckwrkbdgr.tui
 
 SAVEFILE_VERSION = 3
 
@@ -575,14 +576,14 @@ def display_inventory(window, inventory, caption=None, select=False):
 				return selected
 	return None
 
-def main(window):
+def main(ui):
 	debug = '--debug' in sys.argv
 	if debug:
 		clckwrkbdgr.logging.init(
 			'rogue', debug=True, filename='rogue.log', stream=None,
 			)
 
-	curses.curs_set(0)
+	window = ui.window
 	init_colors()
 
 	game = Game()
@@ -889,4 +890,5 @@ def main(window):
 	else:
 		savefile.delete()
 
-curses.wrapper(main)
+with clckwrkbdgr.tui.Curses() as ui:
+	main(ui)

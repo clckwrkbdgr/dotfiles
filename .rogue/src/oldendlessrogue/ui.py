@@ -2,6 +2,7 @@ import curses
 import logging
 trace = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point
+import clckwrkbdgr.tui
 
 class Curses: # pragma: no cover -- TODO unit tests for curses or manual testing utility.
 	CONTROLS = {(ord(k) if isinstance(k, str) else k):v for k,v in {
@@ -25,11 +26,9 @@ class Curses: # pragma: no cover -- TODO unit tests for curses or manual testing
 		self.stdscr = None
 		self.nodelay = False
 	def run(self):
-		curses.wrapper(self._run)
-	def _run(self, stdscr):
-		curses.curs_set(0)
-		self.stdscr = stdscr
-		return self.game.run(self)
+		with clckwrkbdgr.tui.Curses() as ui:
+			self.stdscr = ui.window
+			return self.game.run(self)
 
 	def draw_tile(self, x, y, sprite):
 		self.stdscr.addstr(y, x, sprite)

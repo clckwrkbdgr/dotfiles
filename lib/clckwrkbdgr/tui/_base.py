@@ -38,6 +38,27 @@ class Key(object):
 			return 'space'
 		return chr(self.value)
 
+class Curses(object):
+	def __init__(self): # pragma: no cover -- TODO
+		self.window = None
+	def __enter__(self): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
+		self.window = curses.initscr()
+		curses.noecho()
+		curses.cbreak()
+		self.window.keypad(1)
+		try:
+			curses.start_color()
+		except:
+			pass
+		# Custom actions, not from curses.wrapper
+		curses.curs_set(0)
+		return self
+	def __exit__(self, *_targs): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
+		self.window.keypad(0)
+		curses.echo()
+		curses.nocbreak()
+		curses.endwin()
+
 class ExceptionScreen(object):
 	""" Context manager that captures exceptions and displays traceback in window overlay,
 	prompting to press a key to either exit immediately (quit_key, raises sys.exit) or proceed (any other).

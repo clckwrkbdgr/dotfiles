@@ -8,6 +8,7 @@ Log = logging.getLogger('rogue')
 from .. import messages
 from ..game import Game, Direction
 from clckwrkbdgr.math import Point
+import clckwrkbdgr.tui
 
 class Keymapping:
 	""" Keybingings registry. """
@@ -144,30 +145,13 @@ class SubMode(object):
 
 Keys = Keymapping()
 
-class Curses(UI):
+class Curses(UI, clckwrkbdgr.tui.Curses):
 	""" TUI using curses lib. """
 	def __init__(self):
-		self.window = None
+		super(clckwrkbdgr.tui.Curses, self).__init__()
 		self.aim = None
 		self.messages = []
 		self.mode = None
-	def __enter__(self): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
-		self.window = curses.initscr()
-		curses.noecho()
-		curses.cbreak()
-		self.window.keypad(1)
-		try:
-			curses.start_color()
-		except:
-			pass
-		# Custom actions.
-		curses.curs_set(0)
-		return self
-	def __exit__(self, *_targs): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
-		self.window.keypad(0)
-		curses.echo()
-		curses.nocbreak()
-		curses.endwin()
 	def redraw(self, game):
 		""" Redraws current mode. """
 		if self.mode is None or self.mode.TRANSPARENT:
