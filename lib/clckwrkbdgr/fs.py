@@ -7,6 +7,8 @@ try:
 except ImportError: # pragma: no cover
 	from pathlib import Path
 from clckwrkbdgr.serialize.entity import SerializedEntity
+from . import utils
+from . import logging
 
 try:
 	from ctypes.wintypes import MAX_PATH
@@ -214,3 +216,32 @@ def find(root,
 			if exclude_extensions and filename.suffix in exclude_extensions:
 				continue
 			yield filename
+
+import click
+
+@click.group()
+def cli(): # pragma: no cover
+	pass
+
+@cli.command('clean')
+@click.option('--debug', is_flag=True)
+@click.argument('pattern')
+@utils.exits_with_return_value
+def command_clean_files(pattern, debug=False): # pragma: no cover
+	""" Deletes text files in current directory that contain given pattern. """
+	Log = logging.init('fs', debug=debug, verbose=True)
+	for entry in Path().iterdir():
+		Log.debug('Entry: {0}'.format(entry))
+		if not entry.is_file():
+			Log.debug('  Not a file, skipping.')
+			continue
+		try:
+			data = entry.read_text()
+			if pattern in data:
+				Log.info('Removing: {0}'.format(entry))
+				entry.unlink()
+		except Exception as e:
+			Log.error('{0}: {1}'.format(entry, e))
+
+if __name__ == '__main__': # pragma: no cover
+	cli()
