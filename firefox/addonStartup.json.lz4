@@ -85,24 +85,6 @@
             }
         }
     },
-    "app-global": {
-        "addons": {
-            "langpack-ru@firefox-esr.mozilla.org": {
-                "dependencies": [],
-                "enabled": false,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "langpack-ru@firefox-esr.mozilla.org.xpi",
-                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/extensions/langpack-ru@firefox-esr.mozilla.org.xpi!/",
-                "runInSafeMode": false,
-                "startupData": {},
-                "type": "locale",
-                "version": "0.0"
-            }
-        },
-        "checkStartupModifications": true,
-        "path": "/usr/lib/firefox-esr/browser/extensions"
-    },
     "app-profile": {
         "addons": {
             "@mutelinks": {
