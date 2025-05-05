@@ -8,59 +8,9 @@ Log = logging.getLogger('rogue')
 from .. import messages
 from ..game import Game, Direction
 from clckwrkbdgr.math import Point
+from clckwrkbdgr import utils
 import clckwrkbdgr.tui
-
-class Keymapping:
-	""" Keybingings registry. """
-	Keybinding = namedtuple('Keybinding', 'key scancode callback param')
-
-	def __init__(self):
-		self.keybindings = {}
-		self.multikeybindings = {}
-	def bind(self, key, param=None):
-		""" Serves as decorator and binds key (or several keys) to action callback.
-		Optional param may be passed to callback.
-		If param is callable, it is called with argument of actual key name (useful in case of multikeys) and its result is used as an actual param instead.
-		"""
-		def _actual(f):
-			if len(key) > 1:
-				scancodes = tuple(ord(subkey) for subkey in key)
-				self.multikeybindings[scancodes] = self.Keybinding(key, scancodes, f, param)
-			else:
-				self.keybindings[ord(key)] = self.Keybinding(key, ord(key), f, param)
-			return f
-		return _actual
-	def get(self, scancode, bind_self=None):
-		""" Returns callback for given scancode.
-		If param is defined for the key, processes it automatically
-		and returns closure with param bound as the last argument:
-		keybinding.callback(..., param) -> callback(...)
-		If bind_self is given, considers callback a method
-		and binds it to the given instance.
-		"""
-		binding = self.keybindings.get(scancode)
-		if not binding:
-			binding = next((
-				_binding for keys, _binding in self.multikeybindings.items()
-				if scancode in keys
-				), None)
-		if not binding:
-			return None
-		callback = binding.callback
-		if bind_self:
-			callback = callback.__get__(bind_self, type(bind_self))
-		param = binding.param
-		if not param:
-			return callback
-		if callable(param):
-			param = param(binding.key[binding.scancode.index(scancode)])
-		def _bound_param(*args):
-			args = args + (param,)
-			return callback(*args)
-		return _bound_param
-	def list_all(self):
-		""" Returns sorted list of all keybindings (multikeys first). """
-		return sorted(self.multikeybindings.items()) + sorted(self.keybindings.items())
+from clckwrkbdgr.tui import Key, Keymapping
 
 class Events:
 	""" Registry of convertors of events to string representation for messages line. """
@@ -349,7 +299,7 @@ class Curses(UI, clckwrkbdgr.tui.Curses):
 	def show_equipment(self, game):
 		""" Show equipment. """
 		self.mode = Equipment(self)
-	@Keys.bind('hjklyubn', param=lambda key: DIRECTION[key])
+	@Keys.bind(list('hjklyubn'), param=lambda key: DIRECTION[str(key)])
 	def move(self, game, direction):
 		""" Move. """
 		Log.debug('Moving.')
@@ -365,8 +315,11 @@ class HelpScreen(SubMode):
 	""" Main help screen with controls cheatsheet. """
 	def redraw(self, game):
 		for row, (_, binding) in enumerate(Keys.list_all()):
-			name = binding.callback.__doc__.strip()
-			self.window.addstr(row, 0, '{0} - {1}'.format(binding.key, name))
+			if utils.is_collection(binding.key):
+				keys = ''.join(map(str, binding.key))
+			else:
+				keys = str(binding.key)
+			self.window.addstr(row, 0, '{0} - {1}'.format(keys, binding.help))
 		self.window.addstr(row + 1, 0, '[Press Any Key...]')
 		self.window.refresh()
 
@@ -416,7 +369,7 @@ class Inventory(SubMode):
 					item.item_type.name,
 					))
 		self.window.refresh()
-	@InventoryKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
+	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self, game):
 		""" Close by Escape. """
 		self.done = True
@@ -440,7 +393,7 @@ class Equipment(SubMode):
 			self.done = True
 			return Action.UNWIELD, None
 		return WieldSelection(self.ui)
-	@EquipmentKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
+	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self, game):
 		""" Close by Escape. """
 		self.done = True
@@ -451,7 +404,7 @@ class ConsumeSelection(Inventory):
 	""" Select item to consume from inventory. """
 	KEYMAPPING = ConsumeSelectionKeys
 	INITIAL_PROMPT = "Select item to consume:"
-	@ConsumeSelectionKeys.bind('abcdefghijlkmnopqrstuvwxyz', param=lambda key:key)
+	@ConsumeSelectionKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
 	def select(self, game, param):
 		""" Select item and close inventory. """
 		index = ord(param) - ord('a')
@@ -460,7 +413,7 @@ class ConsumeSelection(Inventory):
 			return Action.NONE, None
 		self.done = True
 		return Action.CONSUME, game.get_player().inventory[index]
-	@ConsumeSelectionKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
+	@ConsumeSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True
@@ -471,7 +424,7 @@ class DropSelection(Inventory):
 	""" Select item to drop from inventory. """
 	KEYMAPPING = DropSelectionKeys
 	INITIAL_PROMPT = "Select item to drop:"
-	@DropSelectionKeys.bind('abcdefghijlkmnopqrstuvwxyz', param=lambda key:key)
+	@DropSelectionKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
 	def select(self, game, param):
 		""" Select item and close inventory. """
 		index = ord(param) - ord('a')
@@ -480,7 +433,7 @@ class DropSelection(Inventory):
 			return Action.NONE, None
 		self.done = True
 		return Action.DROP, game.get_player().inventory[index]
-	@DropSelectionKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
+	@DropSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True
@@ -491,7 +444,7 @@ class WieldSelection(Inventory):
 	""" Select item to wield from inventory. """
 	KEYMAPPING = WieldSelectionKeys
 	INITIAL_PROMPT = "Select item to wield:"
-	@WieldSelectionKeys.bind('abcdefghijlkmnopqrstuvwxyz', param=lambda key:key)
+	@WieldSelectionKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
 	def select(self, game, param):
 		""" Select item and close inventory. """
 		index = ord(param) - ord('a')
@@ -500,7 +453,7 @@ class WieldSelection(Inventory):
 			return Action.NONE, None
 		self.done = True
 		return Action.WIELD, game.get_player().inventory[index]
-	@WieldSelectionKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
+	@WieldSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True

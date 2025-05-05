@@ -1,6 +1,8 @@
 from __future__ import division
 import sys
 import functools
+from .. import utils
+from collections import namedtuple
 try:
 	import curses
 	import curses.ascii
@@ -42,6 +44,77 @@ class Key(object):
 		if self.value == curses.ascii.ESC:
 			return 'escape'
 		return chr(self.value)
+
+class Keymapping: # pragma: no cover -- TODO
+	""" Keybingings registry.
+
+	Bind callables to keys:
+
+	keys = Keymapping()
+	@keys.bind('a')
+	def perform_a():
+		...
+	callback = keys.get('a')
+	callback()
+	"""
+	Keybinding = namedtuple('Keybinding', 'key callback param help')
+
+	def __init__(self):
+		self.keybindings = {}
+		self.multikeybindings = {}
+	def bind(self, key, param=None, help=None):
+		""" Serves as decorator and binds key (or several keys) to action callback.
+		Optional param may be passed to callback.
+		If param is callable, it is called with argument of actual key name (useful in case of multikeys) and its result is used as an actual param instead.
+		Option help description can be specified. If not, docstring for the callback is used as help (if present).
+		"""
+		_help_description = help
+		def _actual(f, help_description=_help_description):
+			if not help_description:
+				help_description = f.__doc__.strip()
+			if utils.is_collection(key):
+				keys = tuple(Key(subkey) for subkey in key)
+				actual_param = param
+				if callable(param):
+					def _resolved_param(_pressed_key, _keys=keys):
+						return param(_keys[_keys.index(Key(_pressed_key))])
+					actual_param = _resolved_param
+				self.multikeybindings[keys] = self.Keybinding(keys, f, actual_param, help_description)
+			else:
+				self.keybindings[Key(key)] = self.Keybinding(key, f, param, help_description)
+			return f
+		return _actual
+	def get(self, key, bind_self=None):
+		""" Returns callback for given key.
+		If param is defined for the key, processes it automatically
+		and returns closure with param bound as the last argument:
+		keybinding.callback(..., param) -> callback(...)
+		If bind_self is given, considers callback a method
+		and binds it to the given instance.
+		"""
+		binding = self.keybindings.get(key)
+		if not binding:
+			binding = next((
+				_binding for keys, _binding in self.multikeybindings.items()
+				if key in keys
+				), None)
+		if not binding:
+			return None
+		callback = binding.callback
+		if bind_self:
+			callback = callback.__get__(bind_self, type(bind_self))
+		param = binding.param
+		if not param:
+			return callback
+		if callable(param):
+			param = param(key)
+		def _bound_param(*args):
+			args = args + (param,)
+			return callback(*args)
+		return _bound_param
+	def list_all(self):
+		""" Returns sorted list of all keybindings (multikeys first). """
+		return sorted(self.multikeybindings.items()) + sorted(self.keybindings.items())
 
 class Curses(object):
 	def __init__(self): # pragma: no cover -- TODO
