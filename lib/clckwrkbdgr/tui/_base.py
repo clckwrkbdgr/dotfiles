@@ -3,6 +3,7 @@ import sys
 import functools
 try:
 	import curses
+	import curses.ascii
 except: # pragma: no cover
 	curses = None
 import six
@@ -36,11 +37,14 @@ class Key(object):
 		""" Returns human-readable name. """
 		if self.value == ord(' '):
 			return 'space'
+		if self.value == curses.ascii.ESC:
+			return 'escape'
 		return chr(self.value)
 
 class Curses(object):
 	def __init__(self): # pragma: no cover -- TODO
 		self.window = None
+		self._nodelay = False
 	def __enter__(self): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
 		self.window = curses.initscr()
 		curses.noecho()
@@ -58,6 +62,26 @@ class Curses(object):
 		curses.echo()
 		curses.nocbreak()
 		curses.endwin()
+	
+	def get_keypress(self, nodelay=False, timeout=100): # pragma: no cover -- TODO
+		""" Returns Key object for the pressed key.
+		Waits for keypress, unless nodelay is specified - in that case
+		returns key immediately (after specified timeout msec)
+		or None, if no keys are pressed.
+		"""
+		nodelay = bool(nodelay)
+		if self._nodelay != nodelay:
+			if nodelay:
+				self.window.nodelay(1)
+				self.window.timeout(timeout)
+			else:
+				self.window.nodelay(0)
+				self.window.timeout(-1)
+			self._nodelay = nodelay
+		ch = self.window.getch()
+		if ch == -1:
+			return None
+		return Key(ch)
 
 class ExceptionScreen(object):
 	""" Context manager that captures exceptions and displays traceback in window overlay,

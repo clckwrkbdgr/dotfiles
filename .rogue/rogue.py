@@ -543,7 +543,8 @@ def iter_rect(topleft, bottomright):
 		for y in range(topleft.y, bottomright.y + 1):
 			yield Point(x, y)
 
-def display_inventory(window, inventory, caption=None, select=False):
+def display_inventory(ui, inventory, caption=None, select=False):
+	window = ui.window
 	window.clear()
 	while True:
 		if caption:
@@ -565,13 +566,13 @@ def display_inventory(window, inventory, caption=None, select=False):
 				window.addstr(index + 1, column * 40 + 6, '- {0} (x{1})'.format(item.name, amount))
 			else:
 				window.addstr(index + 1, column * 40 + 6, '- {0}'.format(item.name))
-		control = window.getch()
-		if control == curses.ascii.ESC:
+		control = ui.get_keypress()
+		if control.name() == 'escape':
 			break
 		if select:
-			selected = control - ord('a')
+			selected = control.value - ord('a')
 			if selected < 0 or len(inventory) <= selected:
-				caption = 'No such item: {0}'.format(chr(control))
+				caption = 'No such item: {0}'.format(control)
 			else:
 				return selected
 	return None
@@ -681,12 +682,12 @@ def main(ui):
 			window.addstr(24, 0, " " * 80)
 			window.addstr(24, 0, message_line)
 			if messages or game.player.hp <= 0:
-				window.getch()
+				ui.get_keypress()
 
 		if game.player.hp <= 0:
 			break
 
-		control = window.getch()
+		control = ui.get_keypress()
 		step_taken = False
 		player_pos = game.player.pos.get_global(game.world)
 		if control == ord('S'):
@@ -728,9 +729,9 @@ def main(ui):
 				if len(npcs) > 1:
 					window.addstr(24, 0, " " * 80)
 					window.addstr(24, 0, "Too crowded. Chat in which direction?")
-					control = window.getch()
-					if chr(control) in MOVEMENT:
-						dest = player_pos + MOVEMENT[chr(control)]
+					control = ui.get_keypress()
+					if str(control) in MOVEMENT:
+						dest = player_pos + MOVEMENT[str(control)]
 						npcs = [npc for npc in npcs if npc.pos == dest]
 					else:
 						npcs = []
@@ -745,8 +746,8 @@ def main(ui):
 						if len(have_required_items) >= required_amount:
 							window.addstr(24, 0, " " * 80)
 							window.addstr(24, 0, '"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.behaviour.quest)))
-							control = window.getch()
-							if chr(control) in 'yY':
+							control = ui.get_keypress()
+							if str(control) in 'yY':
 								messages.append('"Thanks. Here you go."')
 								for item in have_required_items:
 									game.player.inventory.remove(item)
@@ -766,7 +767,7 @@ def main(ui):
 							npc.behaviour.prepared_quest = (amount, color, bounty)
 						window.addstr(24, 0, " " * 80)
 						window.addstr(24, 0, '"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
-						control = window.getch()
+						control = ui.get_keypress()
 						if chr(control) in 'yY':
 							npc.behaviour.quest = npc.behaviour.prepared_quest
 							npc.behaviour.prepared_quest = None
@@ -792,16 +793,16 @@ def main(ui):
 						npc.behaviour.quest[1],
 						coord,
 						))
-				control = window.getch()
-				if control == curses.ascii.ESC:
+				control = ui.get_keypress()
+				if control.name() == 'escape':
 					break
 		elif control == ord('i'):
-			display_inventory(window, game.player.inventory)
+			display_inventory(ui, game.player.inventory)
 		elif control == ord('d'):
 			if not game.player.inventory:
 				messages.append('Nothing to drop.')
 			else:
-				selected = display_inventory(window, game.player.inventory,
+				selected = display_inventory(ui, game.player.inventory,
 							 caption="Select item to drop (a-z/ESC):",
 							 select=True
 							 )
@@ -811,8 +812,8 @@ def main(ui):
 					game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.append(item)
 					messages.append('You drop {0}.'.format(item.name))
 					step_taken = True
-		elif chr(control) in MOVEMENT:
-			new_pos = player_pos + MOVEMENT[chr(control)]
+		elif str(control) in MOVEMENT:
+			new_pos = player_pos + MOVEMENT[str(control)]
 			dest_pos = Coord.from_global(new_pos, game.world)
 			dest_field = None
 			dest_cell = None

@@ -24,30 +24,21 @@ class Curses: # pragma: no cover -- TODO unit tests for curses or manual testing
 	def __init__(self, game):
 		self.game = game
 		self.stdscr = None
-		self.nodelay = False
 	def run(self):
 		with clckwrkbdgr.tui.Curses() as ui:
+			self.ui = ui
 			self.stdscr = ui.window
 			return self.game.run(self)
 
 	def draw_tile(self, x, y, sprite):
-		self.stdscr.addstr(y, x, sprite)
+		self.ui.window.addstr(y, x, sprite)
 	def print_line(self, index, line):
-		self.stdscr.addstr(index, 27, line)
+		self.ui.window.addstr(index, 27, line)
 	def sync(self):
-		self.stdscr.refresh()
+		self.ui.window.refresh()
 
 	def get_control(self, nodelay=False):
-		if self.nodelay != bool(nodelay):
-			if nodelay:
-				self.stdscr.nodelay(1)
-				self.stdscr.timeout(100)
-			else:
-				self.stdscr.timeout(-1)
-				self.stdscr.nodelay(0)
-			self.nodelay = bool(nodelay)
-
-		char = self.stdscr.getch()
+		char = self.ui.get_control(nodelay=nodelay)
 		trace.debug('Curses char: {0}'.format(repr(char)))
-		control = self.CONTROLS.get(char)
+		control = self.CONTROLS.get(char.value)
 		return control
