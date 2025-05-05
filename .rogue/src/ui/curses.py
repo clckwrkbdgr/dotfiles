@@ -14,8 +14,6 @@ class Keymapping:
 	""" Keybingings registry. """
 	Keybinding = namedtuple('Keybinding', 'key scancode callback param')
 
-	ESC = chr(curses.ascii.ESC)
-
 	def __init__(self):
 		self.keybindings = {}
 		self.multikeybindings = {}
@@ -418,7 +416,7 @@ class Inventory(SubMode):
 					item.item_type.name,
 					))
 		self.window.refresh()
-	@InventoryKeys.bind(Keymapping.ESC)
+	@InventoryKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
 	def close(self, game):
 		""" Close by Escape. """
 		self.done = True
@@ -442,7 +440,7 @@ class Equipment(SubMode):
 			self.done = True
 			return Action.UNWIELD, None
 		return WieldSelection(self.ui)
-	@EquipmentKeys.bind(Keymapping.ESC)
+	@EquipmentKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
 	def close(self, game):
 		""" Close by Escape. """
 		self.done = True
@@ -462,7 +460,7 @@ class ConsumeSelection(Inventory):
 			return Action.NONE, None
 		self.done = True
 		return Action.CONSUME, game.get_player().inventory[index]
-	@ConsumeSelectionKeys.bind(Keymapping.ESC)
+	@ConsumeSelectionKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True
@@ -482,7 +480,7 @@ class DropSelection(Inventory):
 			return Action.NONE, None
 		self.done = True
 		return Action.DROP, game.get_player().inventory[index]
-	@DropSelectionKeys.bind(Keymapping.ESC)
+	@DropSelectionKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True
@@ -502,7 +500,7 @@ class WieldSelection(Inventory):
 			return Action.NONE, None
 		self.done = True
 		return Action.WIELD, game.get_player().inventory[index]
-	@WieldSelectionKeys.bind(Keymapping.ESC)
+	@WieldSelectionKeys.bind(chr(clckwrkbdgr.tui.Key.ESCAPE))
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True

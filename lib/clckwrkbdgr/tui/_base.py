@@ -14,6 +14,8 @@ class Key(object):
 	Unifies operations (initialization, comparison) for numeric value (key's integer value), string value (key's char):
 	Key('A') == Key(65) == 'A' == 65
 	"""
+	ESCAPE = curses.ascii.ESC
+
 	def __init__(self, value):
 		if isinstance(value, Key):
 			self.value = value.value

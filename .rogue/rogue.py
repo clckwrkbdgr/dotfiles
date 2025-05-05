@@ -567,7 +567,7 @@ def display_inventory(ui, inventory, caption=None, select=False):
 			else:
 				window.addstr(index + 1, column * 40 + 6, '- {0}'.format(item.name))
 		control = ui.get_keypress()
-		if control.name() == 'escape':
+		if control == clckwrkbdgr.tui.Key.ESCAPE:
 			break
 		if select:
 			selected = control.value - ord('a')
@@ -794,7 +794,7 @@ def main(ui):
 						coord,
 						))
 				control = ui.get_keypress()
-				if control.name() == 'escape':
+				if control == clckwrkbdgr.tui.Key.ESCAPE:
 					break
 		elif control == ord('i'):
 			display_inventory(ui, game.player.inventory)

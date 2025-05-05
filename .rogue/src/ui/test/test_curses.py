@@ -12,6 +12,7 @@ from clckwrkbdgr.math import Point
 from clckwrkbdgr import utils
 from ...test import mock_dungeon
 from ...test.mock_dungeon import MockGame
+from clckwrkbdgr.tui import Key
 
 class MockCurses:
 	class SubCall:
@@ -614,7 +615,7 @@ class TestCurses(unittest.TestCase):
 	def should_drop_items(self):
 		self.maxDiff = None
 		ui = curses.Curses()
-		ui.window = MockCurses('d' + curses.Keymapping.ESC + 'lgdja')
+		ui.window = MockCurses('d' + chr(Key.ESCAPE) + 'lgdja')
 		dungeon = mock_dungeon.build('monster and potion')
 
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
@@ -716,7 +717,7 @@ class TestCurses(unittest.TestCase):
 	def should_consume_items(self):
 		self.maxDiff = None
 		ui = curses.Curses()
-		ui.window = MockCurses('le' + curses.Keymapping.ESC + 'geja')
+		ui.window = MockCurses('le' + chr(Key.ESCAPE) + 'geja')
 		dungeon = mock_dungeon.build('monster and potion')
 
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.MOVE, game.Direction.RIGHT))
@@ -884,7 +885,7 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_show_inventory(self):
 		ui = curses.Curses()
-		ui.window = MockCurses('ia' + curses.Keymapping.ESC + 'i')
+		ui.window = MockCurses('ia' + chr(Key.ESCAPE) + 'i')
 		dungeon = mock_dungeon.build('monster and potion')
 		dungeon.clear_event()
 
@@ -941,7 +942,7 @@ class TestCurses(unittest.TestCase):
 	def should_equip_items(self):
 		self.maxDiff = None
 		ui = curses.Curses()
-		ui.window = MockCurses('E' + curses.Keymapping.ESC + 'Ea' + curses.Keymapping.ESC + 'EabaEa')
+		ui.window = MockCurses('E' + chr(Key.ESCAPE) + 'Ea' + chr(Key.ESCAPE) + 'EabaEa')
 		dungeon = mock_dungeon.build('monster and potion')
 		dungeon.get_player().inventory.append(items.Item(MockGame.ITEMS['weapon'], Point(0, 0)))
 
