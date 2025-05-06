@@ -62,11 +62,26 @@ class Keymapping: # pragma: no cover -- TODO
 	def __init__(self):
 		self.keybindings = {}
 		self.multikeybindings = {}
+	def map(self, key, value, help=None):
+		""" Maps key (or several keys) to a value.
+		If value is callable, it is called with argument of actual key name (useful in case of multikeys) and its result is used as an actual value instead.
+		Optional help description can be specified.
+		"""
+		if utils.is_collection(key):
+			keys = tuple(Key(subkey) for subkey in key)
+			actual_value = value
+			if callable(value):
+				def _resolved_value(_pressed_key, _keys=keys):
+					return value(_keys[_keys.index(Key(_pressed_key))])
+				actual_value = _resolved_value
+			self.multikeybindings[keys] = self.Keybinding(keys, None, actual_value, help)
+		else:
+			self.keybindings[Key(key)] = self.Keybinding(key, None, value, help)
 	def bind(self, key, param=None, help=None):
 		""" Serves as decorator and binds key (or several keys) to action callback.
 		Optional param may be passed to callback.
 		If param is callable, it is called with argument of actual key name (useful in case of multikeys) and its result is used as an actual param instead.
-		Option help description can be specified. If not, docstring for the callback is used as help (if present).
+		Optional help description can be specified. If not, docstring for the callback is used as help (if present).
 		"""
 		_help_description = help
 		def _actual(f, help_description=_help_description):
@@ -85,7 +100,7 @@ class Keymapping: # pragma: no cover -- TODO
 			return f
 		return _actual
 	def get(self, key, bind_self=None):
-		""" Returns callback for given key.
+		""" Returns bound value or callback for given key.
 		If param is defined for the key, processes it automatically
 		and returns closure with param bound as the last argument:
 		keybinding.callback(..., param) -> callback(...)
@@ -100,6 +115,11 @@ class Keymapping: # pragma: no cover -- TODO
 				), None)
 		if not binding:
 			return None
+		if not binding.callback:
+			param = binding.param
+			if callable(param):
+				param = param(key)
+			return param
 		callback = binding.callback
 		if bind_self:
 			callback = callback.__get__(bind_self, type(bind_self))

@@ -543,6 +543,10 @@ def iter_rect(topleft, bottomright):
 		for y in range(topleft.y, bottomright.y + 1):
 			yield Point(x, y)
 
+InventoryKeys = clckwrkbdgr.tui.Keymapping()
+InventoryKeys.map(list('abcdefghijlkmnopqrstuvwxyz'), lambda key:str(key))
+InventoryKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
+
 def display_inventory(ui, inventory, caption=None, select=False):
 	window = ui.window
 	window.clear()
@@ -567,15 +571,35 @@ def display_inventory(ui, inventory, caption=None, select=False):
 			else:
 				window.addstr(index + 1, column * 40 + 6, '- {0}'.format(item.name))
 		control = ui.get_keypress()
-		if control == clckwrkbdgr.tui.Key.ESCAPE:
+		control = InventoryKeys.get(control)
+		if control == 'cancel':
 			break
 		if select:
-			selected = control.value - ord('a')
+			selected = ord(control) - ord('a')
 			if selected < 0 or len(inventory) <= selected:
 				caption = 'No such item: {0}'.format(control)
 			else:
 				return selected
 	return None
+
+DirectionKeys = clckwrkbdgr.tui.Keymapping()
+DirectionKeys.map(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
+
+DialogKeys = clckwrkbdgr.tui.Keymapping()
+DialogKeys.map(list('yY'), True)
+
+QuestLogKeys = clckwrkbdgr.tui.Keymapping()
+QuestLogKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
+
+Keys = clckwrkbdgr.tui.Keymapping()
+Keys.map('S', 'exit')
+Keys.map('.', 'wait')
+Keys.map('g', 'grab')
+Keys.map('i', 'inventory')
+Keys.map('d', 'drop')
+Keys.map('C', 'chat')
+Keys.map('q', 'questlog')
+Keys.map(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 
 def main(ui):
 	debug = '--debug' in sys.argv
@@ -688,13 +712,14 @@ def main(ui):
 			break
 
 		control = ui.get_keypress()
+		control = Keys.get(control)
 		step_taken = False
 		player_pos = game.player.pos.get_global(game.world)
-		if control == ord('S'):
+		if control == 'exit':
 			break
-		elif control == ord('.'):
+		elif control == 'wait':
 			step_taken = True
-		elif control == ord('g'):
+		elif control == 'grab':
 			item = next((
 				item for item in
 				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items
@@ -709,7 +734,7 @@ def main(ui):
 				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.remove(item)
 				messages.append('Picked up {0}.'.format(item.name))
 				step_taken = True
-		elif control == ord('C'):
+		elif control == 'chat':
 			npcs = [
 					monster for monster_pos, monster
 					in game.world.all_monsters()
@@ -730,8 +755,9 @@ def main(ui):
 					window.addstr(24, 0, " " * 80)
 					window.addstr(24, 0, "Too crowded. Chat in which direction?")
 					control = ui.get_keypress()
-					if str(control) in MOVEMENT:
-						dest = player_pos + MOVEMENT[str(control)]
+					control = DirectionKeys.get(control)
+					if control:
+						dest = player_pos + control
 						npcs = [npc for npc in npcs if npc.pos == dest]
 					else:
 						npcs = []
@@ -747,7 +773,8 @@ def main(ui):
 							window.addstr(24, 0, " " * 80)
 							window.addstr(24, 0, '"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.behaviour.quest)))
 							control = ui.get_keypress()
-							if str(control) in 'yY':
+							control = DialogKeys.get(control)
+							if control is True:
 								messages.append('"Thanks. Here you go."')
 								for item in have_required_items:
 									game.player.inventory.remove(item)
@@ -768,14 +795,15 @@ def main(ui):
 						window.addstr(24, 0, " " * 80)
 						window.addstr(24, 0, '"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
 						control = ui.get_keypress()
-						if chr(control) in 'yY':
+						control = DialogKeys.get(control)
+						if control is True:
 							npc.behaviour.quest = npc.behaviour.prepared_quest
 							npc.behaviour.prepared_quest = None
 						else:
 							messages.append('"OK, come back later if you want it."')
 				else:
 					messages.append('No one to chat with in that direction.')
-		elif control == ord('q'):
+		elif control == 'questlog':
 			window.clear()
 			questing = [
 					(coord, npc) for coord, npc in game.world.all_monsters(raw=True)
@@ -794,11 +822,12 @@ def main(ui):
 						coord,
 						))
 				control = ui.get_keypress()
-				if control == clckwrkbdgr.tui.Key.ESCAPE:
+				control = QuestLogKeys.get(control)
+				if control == 'cancel':
 					break
-		elif control == ord('i'):
+		elif control == 'inventory':
 			display_inventory(ui, game.player.inventory)
-		elif control == ord('d'):
+		elif control == 'drop':
 			if not game.player.inventory:
 				messages.append('Nothing to drop.')
 			else:
@@ -806,14 +835,14 @@ def main(ui):
 							 caption="Select item to drop (a-z/ESC):",
 							 select=True
 							 )
-				if selected:
+				if selected is not None:
 					item = game.player.inventory.pop(selected)
 					item.pos = game.player.pos.field
 					game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.append(item)
 					messages.append('You drop {0}.'.format(item.name))
 					step_taken = True
-		elif str(control) in MOVEMENT:
-			new_pos = player_pos + MOVEMENT[str(control)]
+		elif isinstance(control, Point):
+			new_pos = player_pos + control
 			dest_pos = Coord.from_global(new_pos, game.world)
 			dest_field = None
 			dest_cell = None

@@ -4,23 +4,20 @@ trace = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point
 import clckwrkbdgr.tui
 
+Keys = clckwrkbdgr.tui.Keymapping()
+Keys.map('q', SystemExit)
+Keys.map('o', 'autoexplore')
+Keys.map('h', Point(-1,  0))
+Keys.map('j', Point( 0, +1))
+Keys.map('k', Point( 0, -1))
+Keys.map('l', Point(+1,  0))
+Keys.map('y', Point(-1, -1))
+Keys.map('u', Point(+1, -1))
+Keys.map('b', Point(-1, +1))
+Keys.map('n', Point(+1, +1))
+Keys.map(clckwrkbdgr.tui.Key.ESCAPE, 'ESC')
+
 class Curses: # pragma: no cover -- TODO unit tests for curses or manual testing utility.
-	CONTROLS = {(ord(k) if isinstance(k, str) else k):v for k,v in {
-		'q' : SystemExit,
-		'o' : 'autoexplore',
-		'h' : Point(-1,  0),
-		'j' : Point( 0, +1),
-		'k' : Point( 0, -1),
-		'l' : Point(+1,  0),
-		'y' : Point(-1, -1),
-		'u' : Point(+1, -1),
-		'b' : Point(-1, +1),
-		'n' : Point(+1, +1),
-
-		-1 : 'autoexplore',
-		27 : 'ESC',
-		}.items()}
-
 	def __init__(self, game):
 		self.game = game
 		self.stdscr = None
@@ -38,7 +35,9 @@ class Curses: # pragma: no cover -- TODO unit tests for curses or manual testing
 		self.ui.window.refresh()
 
 	def get_control(self, nodelay=False):
-		char = self.ui.get_control(nodelay=nodelay)
+		char = self.ui.get_keypress(nodelay=nodelay)
+		if not char:
+			return 'autoexplore'
 		trace.debug('Curses char: {0}'.format(repr(char)))
-		control = self.CONTROLS.get(char.value)
+		control = Keys.get(char.value)
 		return control
