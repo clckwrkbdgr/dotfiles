@@ -79,15 +79,12 @@ class SubMode(object):
 		See also: on_any_key()
 		"""
 		Log.debug('Performing user actions.')
-		control = self.ui.get_keypress()
-		Log.debug('Control: {0}'.format(repr(control)))
 		if self.KEYMAPPING:
-			callback = self.KEYMAPPING.get(control.value, bind_self=self)
-			if callback:
-				result = callback(game)
-				if result is not None:
-					return result
+			control = self.ui.get_control(self.KEYMAPPING, bind_self=self, callback_args=(game,))
+			if control is not None:
+				return control
 		else:
+			self.ui.get_keypress()
 			self.done = True
 		self.on_any_key()
 		return Action.NONE, None
@@ -224,13 +221,9 @@ class Curses(UI, clckwrkbdgr.tui.Curses):
 			if self.mode.done:
 				self.mode = None
 			return action, param
-		control = self.get_keypress()
-		Log.debug('Control: {0}'.format(repr(control)))
-		callback = Keys.get(control.value, bind_self=self)
-		if callback:
-			result = callback(game)
-			if result is not None:
-				return result
+		control = self.get_control(Keys, bind_self=self, callback_args=(game,))
+		if control is not None:
+			return control
 		return Action.NONE, None
 
 	@Keys.bind('?')

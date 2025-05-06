@@ -177,6 +177,23 @@ class Curses(object):
 		if ch == -1:
 			return None
 		return Key(ch)
+	def get_control(self, keymapping, nodelay=False, timeout=100, bind_self=None, callback_args=None, callback_kwargs=None): # pragma: no cover -- TODO
+		""" Returns mapped object from keymapping for the pressed key
+		or None in case of unknown key (or no keypress in the nodelay mode).
+		See get_keypress and Keymapping.get for other details.
+		Callback will be detected and executed automatically.
+		If callback_args and/or callback_kwargs are given and callback is bound,
+		they will be passed as args/kwargs to the callback.
+		"""
+		key = self.get_keypress(nodelay=nodelay, timeout=timeout)
+		if key is None:
+			return None
+		control = keymapping.get(key, bind_self=bind_self)
+		if callable(control):
+			callback_args = callback_args or []
+			callback_kwargs = callback_kwargs or {}
+			control = control(*callback_args, **callback_kwargs)
+		return control
 
 class ExceptionScreen(object):
 	""" Context manager that captures exceptions and displays traceback in window overlay,

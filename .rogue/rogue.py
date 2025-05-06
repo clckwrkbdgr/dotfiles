@@ -570,8 +570,7 @@ def display_inventory(ui, inventory, caption=None, select=False):
 				window.addstr(index + 1, column * 40 + 6, '- {0} (x{1})'.format(item.name, amount))
 			else:
 				window.addstr(index + 1, column * 40 + 6, '- {0}'.format(item.name))
-		control = ui.get_keypress()
-		control = InventoryKeys.get(control)
+		control = ui.get_control(InventoryKeys)
 		if control == 'cancel':
 			break
 		if select:
@@ -711,8 +710,7 @@ def main(ui):
 		if game.player.hp <= 0:
 			break
 
-		control = ui.get_keypress()
-		control = Keys.get(control)
+		control = ui.get_control(Keys)
 		step_taken = False
 		player_pos = game.player.pos.get_global(game.world)
 		if control == 'exit':
@@ -754,8 +752,7 @@ def main(ui):
 				if len(npcs) > 1:
 					window.addstr(24, 0, " " * 80)
 					window.addstr(24, 0, "Too crowded. Chat in which direction?")
-					control = ui.get_keypress()
-					control = DirectionKeys.get(control)
+					control = ui.get_control(DirectionKeys)
 					if control:
 						dest = player_pos + control
 						npcs = [npc for npc in npcs if npc.pos == dest]
@@ -772,8 +769,7 @@ def main(ui):
 						if len(have_required_items) >= required_amount:
 							window.addstr(24, 0, " " * 80)
 							window.addstr(24, 0, '"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.behaviour.quest)))
-							control = ui.get_keypress()
-							control = DialogKeys.get(control)
+							control = ui.get_control(DialogKeys)
 							if control is True:
 								messages.append('"Thanks. Here you go."')
 								for item in have_required_items:
@@ -794,8 +790,7 @@ def main(ui):
 							npc.behaviour.prepared_quest = (amount, color, bounty)
 						window.addstr(24, 0, " " * 80)
 						window.addstr(24, 0, '"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
-						control = ui.get_keypress()
-						control = DialogKeys.get(control)
+						control = ui.get_control(DialogKeys)
 						if control is True:
 							npc.behaviour.quest = npc.behaviour.prepared_quest
 							npc.behaviour.prepared_quest = None
@@ -821,8 +816,7 @@ def main(ui):
 						npc.behaviour.quest[1],
 						coord,
 						))
-				control = ui.get_keypress()
-				control = QuestLogKeys.get(control)
+				control = ui.get_control(QuestLogKeys)
 				if control == 'cancel':
 					break
 		elif control == 'inventory':

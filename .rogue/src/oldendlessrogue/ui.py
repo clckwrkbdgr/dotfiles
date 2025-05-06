@@ -35,9 +35,4 @@ class Curses: # pragma: no cover -- TODO unit tests for curses or manual testing
 		self.ui.window.refresh()
 
 	def get_control(self, nodelay=False):
-		char = self.ui.get_keypress(nodelay=nodelay)
-		if not char:
-			return 'autoexplore'
-		trace.debug('Curses char: {0}'.format(repr(char)))
-		control = Keys.get(char.value)
-		return control
+		return self.ui.get_control(Keys, nodelay=nodelay)
