@@ -140,7 +140,7 @@
 			"syncGUID": "{a16e5fd6-ec26-4c0e-9c0b-9ad73f67b7cb}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.1.38.1",
+			"version": "1.1.38.2",
 			"visible": true
 		},
 		{
@@ -242,12 +242,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4411102/noscript-12.1.1.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4482368/noscript-12.6.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{a4224489-1408-4951-a90f-510526edd38e}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "12.1.1",
+			"version": "12.6",
 			"visible": true
 		},
 		{
