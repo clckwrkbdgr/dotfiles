@@ -141,6 +141,7 @@ class Curses(object):
 	def __init__(self): # pragma: no cover -- TODO
 		self.window = None
 		self._nodelay = False
+		self.colors = {}
 	def __enter__(self): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
 		self.window = curses.initscr()
 		curses.noecho()
@@ -159,18 +160,32 @@ class Curses(object):
 		curses.nocbreak()
 		curses.endwin()
 
+	def init_color(self, name, color, attrs=0, background=None): # pragma: no cover -- TODO
+		curses.init_pair(len(self.colors) + 1, color, background or curses.COLOR_BLACK)
+		self.colors[name] = curses.color_pair(len(self.colors) + 1) | attrs
+
 	@contextlib.contextmanager
 	def redraw(self, clean=False): # pragma: no cover -- TODO
+		""" Context manager for drawing mode.
+		If clean=True, clears output window beforehand.
+		Refreshes output automatically at the exit.
+		"""
 		try:
 			if clean:
-				self.window.clean()
+				self.window.clear()
 			yield self
 		finally:
 			self.window.refresh()
-	def print_char(self, x, y, sprite): # pragma: no cover -- TODO
-		self.window.addstr(y, x, sprite[0])
-	def print_line(self, row, col, line): # pragma: no cover -- TODO
-		self.window.addstr(row, col, line)
+	def print_char(self, x, y, sprite, color=None): # pragma: no cover -- TODO
+		""" Prints single character at the specified X+Y position.
+		Optional color name can be used.
+		"""
+		self.window.addstr(y, x, sprite[0], self.colors.get(color, 0))
+	def print_line(self, row, col, line, color=None): # pragma: no cover -- TODO
+		""" Prints line at the specified row+col position.
+		Optional color name can be used.
+		"""
+		self.window.addstr(row, col, line, self.colors.get(color, 0))
 	
 	def get_keypress(self, nodelay=False, timeout=100): # pragma: no cover -- TODO
 		""" Returns Key object for the pressed key.

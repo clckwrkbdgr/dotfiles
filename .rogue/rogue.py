@@ -5,7 +5,7 @@ import math
 import string
 import logging
 from collections import namedtuple
-import curses, curses.ascii
+import curses
 import clckwrkbdgr.logging
 Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
@@ -27,25 +27,24 @@ MOVEMENT = {
 		}
 
 Sprite = namedtuple('Sprite', 'sprite color')
-COLORS = {}
 
-def init_colors():
-	for i in range(8):
-		curses.init_pair(i + 1, i, curses.COLOR_BLACK)
-	basic_colors = {
-		'black' : curses.color_pair(curses.COLOR_BLACK + 1),
-		'red' : curses.color_pair(curses.COLOR_RED + 1),
-		'green' : curses.color_pair(curses.COLOR_GREEN + 1),
-		'blue' : curses.color_pair(curses.COLOR_BLUE + 1),
-		'yellow' : curses.color_pair(curses.COLOR_YELLOW + 1),
-		'cyan' : curses.color_pair(curses.COLOR_CYAN + 1),
-		'magenta' : curses.color_pair(curses.COLOR_MAGENTA + 1),
-		'white' : curses.color_pair(curses.COLOR_WHITE + 1),
-		}
-	COLORS.update(basic_colors)
-	COLORS.update({
-		'bold_' + name : pair | curses.A_BOLD for name, pair in basic_colors.items()
-		})
+def init_colors(ui):
+	ui.init_color('black', curses.COLOR_BLACK)
+	ui.init_color('red', curses.COLOR_RED)
+	ui.init_color('green', curses.COLOR_GREEN)
+	ui.init_color('blue', curses.COLOR_BLUE)
+	ui.init_color('yellow', curses.COLOR_YELLOW)
+	ui.init_color('cyan', curses.COLOR_CYAN)
+	ui.init_color('magenta', curses.COLOR_MAGENTA)
+	ui.init_color('white', curses.COLOR_WHITE)
+	ui.init_color('bold_black', curses.COLOR_BLACK, curses.A_BOLD)
+	ui.init_color('bold_red', curses.COLOR_RED, curses.A_BOLD)
+	ui.init_color('bold_green', curses.COLOR_GREEN, curses.A_BOLD)
+	ui.init_color('bold_blue', curses.COLOR_BLUE, curses.A_BOLD)
+	ui.init_color('bold_yellow', curses.COLOR_YELLOW, curses.A_BOLD)
+	ui.init_color('bold_cyan', curses.COLOR_CYAN, curses.A_BOLD)
+	ui.init_color('bold_magenta', curses.COLOR_MAGENTA, curses.A_BOLD)
+	ui.init_color('bold_white', curses.COLOR_WHITE, curses.A_BOLD)
 
 class Coord:
 	def __init__(self, world_pos=None, zone_pos=None, field_pos=None):
@@ -419,7 +418,7 @@ def add_building(field):
 			random.randrange(building.width - 2),
 			random.randrange(building.height - 2),
 			)
-	colors = list(set(COLORS.keys()) - {'black', 'bold_white'})
+	colors = list(set(ui.colors.keys()) - {'black', 'bold_white'})
 	monster_color = random.choice(colors)
 	dweller = Monster(
 		dweller_pos,
@@ -515,7 +514,7 @@ class Game:
 							random.randrange(zone.fields.cell(pos).tiles.size.width),
 							random.randrange(zone.fields.cell(pos).tiles.size.height),
 							)
-				colors = set(COLORS.keys()) - {'black'}
+				colors = set(ui.colors.keys()) - {'black'}
 				normal_colors = [color for color in colors if not color.startswith('bold_')]
 				bold_colors = [color for color in colors if color.startswith('bold_')]
 				strong = random.randrange(2)
@@ -548,28 +547,27 @@ InventoryKeys.map(list('abcdefghijlkmnopqrstuvwxyz'), lambda key:str(key))
 InventoryKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
 
 def display_inventory(ui, inventory, caption=None, select=False):
-	window = ui.window
-	window.clear()
 	while True:
-		if caption:
-			window.addstr(0, 0, caption)
-		accumulated = []
-		for shortcut, item in zip(string.ascii_lowercase, inventory):
-			for other in accumulated:
-				if other[1].name == item.name:
-					other[2] += 1
-					break
-			else:
-				accumulated.append([shortcut, item, 1])
-		for index, (shortcut, item, amount) in enumerate(accumulated):
-			column = index // 20
-			index = index % 20
-			window.addstr(index + 1, column * 40 + 0, '[{0}] '.format(shortcut))
-			window.addstr(index + 1, column * 40 + 4, item.sprite.sprite, COLORS[item.sprite.color])
-			if amount > 1:
-				window.addstr(index + 1, column * 40 + 6, '- {0} (x{1})'.format(item.name, amount))
-			else:
-				window.addstr(index + 1, column * 40 + 6, '- {0}'.format(item.name))
+		with ui.redraw(clean=True):
+			if caption:
+				ui.print_line(0, 0, caption)
+			accumulated = []
+			for shortcut, item in zip(string.ascii_lowercase, inventory):
+				for other in accumulated:
+					if other[1].name == item.name:
+						other[2] += 1
+						break
+				else:
+					accumulated.append([shortcut, item, 1])
+			for index, (shortcut, item, amount) in enumerate(accumulated):
+				column = index // 20
+				index = index % 20
+				ui.print_line(index + 1, column * 40 + 0, '[{0}] '.format(shortcut))
+				ui.print_line(index + 1, column * 40 + 4, item.sprite.sprite, item.sprite.color)
+				if amount > 1:
+					ui.print_line(index + 1, column * 40 + 6, '- {0} (x{1})'.format(item.name, amount))
+				else:
+					ui.print_line(index + 1, column * 40 + 6, '- {0}'.format(item.name))
 		control = ui.get_control(InventoryKeys)
 		if control == 'cancel':
 			break
@@ -607,8 +605,7 @@ def main(ui):
 			'rogue', debug=True, filename='rogue.log', stream=None,
 			)
 
-	window = ui.window
-	init_colors()
+	init_colors(ui)
 
 	game = Game()
 	savefile = clckwrkbdgr.serialize.stream.Savefile(xdg.save_data_path('dotrogue')/'rogue.sav')
@@ -662,35 +659,35 @@ def main(ui):
 					if not viewport.contains(screen_pos, with_border=True):
 						continue
 					tile_sprite = field.tiles.cell(pos).sprite
-					window.addstr(screen_pos.y, screen_pos.x, tile_sprite.sprite, COLORS[tile_sprite.color])
+					ui.print_char(screen_pos.x, screen_pos.y, tile_sprite.sprite, tile_sprite.color)
 				for item in field.items:
 					screen_pos = item.pos + field_topleft
 					if not viewport.contains(screen_pos, with_border=True):
 						continue
-					window.addstr(screen_pos.y, screen_pos.x, item.sprite.sprite, COLORS[item.sprite.color])
+					ui.print_char(screen_pos.x, screen_pos.y, item.sprite.sprite, item.sprite.color)
 				for monster in field.monsters:
 					screen_pos = monster.pos + field_topleft
 					if not viewport.contains(screen_pos, with_border=True):
 						continue
-					window.addstr(screen_pos.y, screen_pos.x, monster.sprite.sprite, COLORS[monster.sprite.color])
-		window.addstr(center.y, center.x, game.player.sprite.sprite, COLORS[game.player.sprite.color])
+					ui.print_char(screen_pos.x, screen_pos.y, monster.sprite.sprite, monster.sprite.color)
+		ui.print_char(center.x, center.y, game.player.sprite.sprite, game.player.sprite.color)
 
 		hud_pos = viewport.right + 1
 		for row in range(5):
-			window.addstr(row, hud_pos, " " * (80 - hud_pos))
-		window.addstr(0, hud_pos, "@{0}".format(game.player.pos))
-		window.addstr(1, hud_pos, "T:{0}".format(game.passed_time))
-		window.addstr(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
-		window.addstr(3, hud_pos, "inv:{0}".format(len(game.player.inventory)))
+			ui.print_line(row, hud_pos, " " * (80 - hud_pos))
+		ui.print_line(0, hud_pos, "@{0}".format(game.player.pos))
+		ui.print_line(1, hud_pos, "T:{0}".format(game.passed_time))
+		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
+		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.player.inventory)))
 		player_zone_items = game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items
 		item_here = next((
 			item for item in player_zone_items
 			if game.player.pos.field == item.pos
 			), None)
 		if item_here:
-			window.addstr(4, hud_pos, "here:{0}".format(item.sprite.sprite))
+			ui.print_line(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
-		window.addstr(24, 0, " " * 80)
+		ui.print_line(24, 0, " " * 80)
 		while messages:
 			message = messages.pop(0)
 			if len(message) >= 80 - 5:
@@ -702,8 +699,8 @@ def main(ui):
 			message_line = message
 			if messages:
 				message_line += '[...]'
-			window.addstr(24, 0, " " * 80)
-			window.addstr(24, 0, message_line)
+			ui.print_line(24, 0, " " * 80)
+			ui.print_line(24, 0, message_line)
 			if messages or game.player.hp <= 0:
 				ui.get_keypress()
 
@@ -750,8 +747,8 @@ def main(ui):
 				messages.append("Too much quests already.")
 			else:
 				if len(npcs) > 1:
-					window.addstr(24, 0, " " * 80)
-					window.addstr(24, 0, "Too crowded. Chat in which direction?")
+					ui.print_line(24, 0, " " * 80)
+					ui.print_line(24, 0, "Too crowded. Chat in which direction?")
 					control = ui.get_control(DirectionKeys)
 					if control:
 						dest = player_pos + control
@@ -767,8 +764,8 @@ def main(ui):
 								if item.name == required_name
 								][:required_amount]
 						if len(have_required_items) >= required_amount:
-							window.addstr(24, 0, " " * 80)
-							window.addstr(24, 0, '"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.behaviour.quest)))
+							ui.print_line(24, 0, " " * 80)
+							ui.print_line(24, 0, '"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.behaviour.quest)))
 							control = ui.get_control(DialogKeys)
 							if control is True:
 								messages.append('"Thanks. Here you go."')
@@ -786,10 +783,10 @@ def main(ui):
 						if not npc.behaviour.prepared_quest:
 							amount = 1 + random.randrange(3)
 							bounty = max(1, amount // 2 + 1)
-							color = random.choice(list(set(COLORS.keys()) - {'black'})).replace('_', ' ') + ' skin'
+							color = random.choice(list(set(ui.colors.keys()) - {'black'})).replace('_', ' ') + ' skin'
 							npc.behaviour.prepared_quest = (amount, color, bounty)
-						window.addstr(24, 0, " " * 80)
-						window.addstr(24, 0, '"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
+						ui.print_line(24, 0, " " * 80)
+						ui.print_line(24, 0, '"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
 						control = ui.get_control(DialogKeys)
 						if control is True:
 							npc.behaviour.quest = npc.behaviour.prepared_quest
@@ -799,23 +796,23 @@ def main(ui):
 				else:
 					messages.append('No one to chat with in that direction.')
 		elif control == 'questlog':
-			window.clear()
 			questing = [
 					(coord, npc) for coord, npc in game.world.all_monsters(raw=True)
 					if isinstance(npc.behaviour, Questgiver)
 					and npc.behaviour.quest
 					]
-			if not questing:
-				window.addstr(0, 0, "No current quests.")
-			else:
-				window.addstr(0, 0, "Current quests:")
 			while True:
-				for index, (coord, npc) in enumerate(questing):
-					window.addstr(index + 1, 0, "@ {2}: Bring {0} {1}.".format(
-						npc.behaviour.quest[0],
-						npc.behaviour.quest[1],
-						coord,
-						))
+				with ui.redraw(clean=True):
+					if not questing:
+						ui.print_line(0, 0, "No current quests.")
+					else:
+						ui.print_line(0, 0, "Current quests:")
+					for index, (coord, npc) in enumerate(questing):
+						ui.print_line(index + 1, 0, "@ {2}: Bring {0} {1}.".format(
+							npc.behaviour.quest[0],
+							npc.behaviour.quest[1],
+							coord,
+							))
 				control = ui.get_control(QuestLogKeys)
 				if control == 'cancel':
 					break
@@ -912,7 +909,7 @@ def main(ui):
 		with savefile.save(SAVEFILE_VERSION) as writer:
 			game.save(writer)
 	else:
-		savefile.delete()
+		savefile.unlink()
 
 with clckwrkbdgr.tui.Curses() as ui:
 	main(ui)
