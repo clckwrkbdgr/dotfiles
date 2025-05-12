@@ -16,4 +16,5 @@ if __name__ == '__main__':
 	with fs.SerializedEntity.store(xdg.save_data_path('dotrogue')/'rogue.sav', 'dungeon', Dungeon) as dungeon:
 		game = Game(dungeon)
 		gui = Curses(game)
-		gui.run()
+		with clckwrkbdgr.tui.Curses() as ui:
+			return game.run(ui)

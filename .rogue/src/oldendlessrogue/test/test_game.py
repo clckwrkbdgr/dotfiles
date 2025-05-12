@@ -1,3 +1,4 @@
+import contextlib
 from clckwrkbdgr import unittest
 from clckwrkbdgr.math import Point, Size, Rect, Matrix
 from ..game import Game
@@ -8,13 +9,14 @@ class MockUI:
 		self.controls = scheduled_controls
 		self.tiles = Matrix((25, 25), ' ')
 		self.lines = {}
-	def draw_tile(self, x, y, tile):
+	def print_char(self, x, y, tile):
 		self.tiles.set_cell((x, y), tile)
-	def print_line(self, index, line):
+	def print_line(self, index, _col, line):
 		self.lines[index] = line
-	def sync(self):
-		pass
-	def get_control(self, nodelay=False):
+	@contextlib.contextmanager
+	def redraw(self):
+		yield self
+	def get_control(self, _keymapping, nodelay=False):
 		return self.controls.pop(0)
 
 class MockExplorer:

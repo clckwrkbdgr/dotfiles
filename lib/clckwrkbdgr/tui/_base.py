@@ -1,6 +1,7 @@
 from __future__ import division
 import sys
 import functools
+import contextlib
 from .. import utils
 from collections import namedtuple
 try:
@@ -157,6 +158,19 @@ class Curses(object):
 		curses.echo()
 		curses.nocbreak()
 		curses.endwin()
+
+	@contextlib.contextmanager
+	def redraw(self, clean=False): # pragma: no cover -- TODO
+		try:
+			if clean:
+				self.window.clean()
+			yield self
+		finally:
+			self.window.refresh()
+	def print_char(self, x, y, sprite): # pragma: no cover -- TODO
+		self.window.addstr(y, x, sprite[0])
+	def print_line(self, row, col, line): # pragma: no cover -- TODO
+		self.window.addstr(row, col, line)
 	
 	def get_keypress(self, nodelay=False, timeout=100): # pragma: no cover -- TODO
 		""" Returns Key object for the pressed key.

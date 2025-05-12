@@ -1,7 +1,21 @@
 import logging
 trace = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point
+import clckwrkbdgr.tui
 from .auto import Autoexplorer
+
+Keys = clckwrkbdgr.tui.Keymapping()
+Keys.map('q', SystemExit)
+Keys.map('o', 'autoexplore')
+Keys.map('h', Point(-1,  0))
+Keys.map('j', Point( 0, +1))
+Keys.map('k', Point( 0, -1))
+Keys.map('l', Point(+1,  0))
+Keys.map('y', Point(-1, -1))
+Keys.map('u', Point(+1, -1))
+Keys.map('b', Point(-1, +1))
+Keys.map('n', Point(+1, +1))
+Keys.map(clckwrkbdgr.tui.Key.ESCAPE, 'ESC')
 
 class Game:
 	VIEW_CENTER = Point(12, 12)
@@ -12,23 +26,23 @@ class Game:
 		self.autoexplorer_class = autoexplorer or Autoexplorer
 	def run(self, ui):
 		while True:
-			self.view(ui)
+			with ui.redraw():
+				self.view(ui)
 			if not self.control(ui):
 				break
 	def view(self, ui):
 		for y in range(-self.VIEW_CENTER.y, 25 - self.VIEW_CENTER.y):
 			for x in range(-self.VIEW_CENTER.x, 25 - self.VIEW_CENTER.x):
-				ui.draw_tile(
+				ui.print_char(
 						self.VIEW_CENTER.x + x,
 						self.VIEW_CENTER.y + y,
 						self.dungeon.get_sprite((x, y)),
 						)
-		ui.print_line(0, 'Time: {0}'.format(self.dungeon.time))
-		ui.print_line(1, 'X:{x} Y:{y}  '.format(x=self.dungeon.rogue.x, y=self.dungeon.rogue.y))
-		ui.print_line(24, '[autoexploring, press ESC...]' if self.autoexplore else '                             ')
-		ui.sync()
+		ui.print_line(0, 27, 'Time: {0}'.format(self.dungeon.time))
+		ui.print_line(1, 27, 'X:{x} Y:{y}  '.format(x=self.dungeon.rogue.x, y=self.dungeon.rogue.y))
+		ui.print_line(24, 27, '[autoexploring, press ESC...]' if self.autoexplore else '                             ')
 	def control(self, ui):
-		control = ui.get_control(nodelay=self.autoexplore)
+		control = ui.get_control(Keys, nodelay=self.autoexplore)
 		trace.debug('Control: {0}'.format(repr(control)))
 		trace.debug('Autoexplore={0}'.format(self.autoexplore))
 		if control is None:

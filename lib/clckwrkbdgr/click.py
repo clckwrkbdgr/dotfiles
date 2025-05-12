@@ -24,7 +24,7 @@ class windows_noexpand_args: # pragma: no cover
 		self._orig = cli
 	def __call__(self, *args, **kwargs):
 		try:
-			if tuple(map(int, click.__version__.split('.'))) >= (8, 0, 1):
+			if True: #tuple(map(int, click.__version__.split('.'))) >= (8, 0, 1):
 				kwargs['windows_expand_args'] = False
 		except:
 			import traceback
