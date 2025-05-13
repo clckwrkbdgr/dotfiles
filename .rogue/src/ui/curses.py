@@ -58,7 +58,6 @@ class SubMode(object):
 	KEYMAPPING = None # Keymapping object for this mode.
 	def __init__(self, ui):
 		self.ui = ui
-		self.window = ui.window
 		self.done = False
 	def redraw(self, game): # pragma: no cover
 		""" Redefine to draw mode-related features on screen.
@@ -91,7 +90,7 @@ class SubMode(object):
 
 Keys = Keymapping()
 
-class Curses(UI, clckwrkbdgr.tui.Curses):
+class Curses(clckwrkbdgr.tui.Curses, UI):
 	""" TUI using curses lib. """
 	def __init__(self):
 		super(Curses, self).__init__()
@@ -101,11 +100,14 @@ class Curses(UI, clckwrkbdgr.tui.Curses):
 	def redraw(self, game):
 		""" Redraws current mode. """
 		if self.mode is None or self.mode.TRANSPARENT:
-			self.redraw_main(game)
-		else:
-			self.window.clear()
+			with super(Curses, self).redraw():
+				self.redraw_main(game)
+			if not game.get_player():
+				# Pause so that user can catch current state after character's death.
+				self.get_keypress()
 		if self.mode:
-			self.mode.redraw(game)
+			with super(Curses, self).redraw(clean=not self.mode.TRANSPARENT):
+				self.mode.redraw(game)
 	def redraw_main(self, game):
 		""" Redraws game completely. """
 		Log.debug('Redrawing interface.')
@@ -114,7 +116,7 @@ class Curses(UI, clckwrkbdgr.tui.Curses):
 			for col in range(viewport.width):
 				Log.debug('Cell {0},{1}'.format(col, row))
 				sprite = game.get_sprite(col, row)
-				self.window.addstr(1+row, col, sprite or ' ')
+				self.print_char(col, 1+row, sprite or ' ')
 
 		events = []
 		for event in game.events:
@@ -128,7 +130,7 @@ class Curses(UI, clckwrkbdgr.tui.Curses):
 			events.append(result)
 		events.extend(self.messages)
 		self.messages[:] = []
-		self.window.addstr(0, 0, (' '.join(events) + " " * 80)[:80])
+		self.print_line(0, 0, (' '.join(events) + " " * 80)[:80])
 
 		status = []
 		player = game.get_player()
@@ -151,15 +153,10 @@ class Curses(UI, clckwrkbdgr.tui.Curses):
 			status.append('[vis]')
 		if game.god.noclip:
 			status.append('[clip]')
-		self.window.addstr(24, 0, (' '.join(status) + " " * 77)[:77] + '[?]')
+		self.print_line(24, 0, (' '.join(status) + " " * 77)[:77] + '[?]')
 
 		if self.aim:
-			self.window.move(1+self.aim.y, self.aim.x)
-		self.window.refresh()
-
-		if not player:
-			# Pause so that user can catch current state after character's death.
-			self.get_keypress()
+			self.cursor().move(self.aim.x, 1+self.aim.y)
 	@Events.on(messages.DiscoverEvent)
 	def on_discovering(self, game, event):
 		if event.obj == '>':
@@ -240,17 +237,18 @@ class Curses(UI, clckwrkbdgr.tui.Curses):
 		""" Examine surroundings (cursor mode). """
 		if self.aim:
 			self.aim = None
+			self.cursor(False)
 			curses.curs_set(0)
 		else:
+			self.cursor(True)
 			self.aim = game.get_player().pos
-			curses.curs_set(1)
 	@Keys.bind('.')
 	def autowalk(self, game):
 		""" Wait. """
 		if self.aim:
 			dest = self.aim
 			self.aim = None
-			curses.curs_set(0)
+			self.cursor(False)
 			return Action.WALK_TO, dest
 		else:
 			return Action.WAIT, None
@@ -312,9 +310,8 @@ class HelpScreen(SubMode):
 				keys = ''.join(map(str, binding.key))
 			else:
 				keys = str(binding.key)
-			self.window.addstr(row, 0, '{0} - {1}'.format(keys, binding.help))
-		self.window.addstr(row + 1, 0, '[Press Any Key...]')
-		self.window.refresh()
+			self.ui.print_line(row, 0, '{0} - {1}'.format(keys, binding.help))
+		self.ui.print_line(row + 1, 0, '[Press Any Key...]')
 
 GodModeKeys = Keymapping()
 class GodModeMenu(SubMode):
@@ -323,8 +320,7 @@ class GodModeMenu(SubMode):
 	KEYMAPPING = GodModeKeys
 	def redraw(self, game):
 		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
-		self.window.addstr(0, 0, 'Select God option ({0})'.format(keys))
-		self.window.refresh()
+		self.ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
 	def on_any_key(self):
 		self.done = True
 	@GodModeKeys.bind('v')
@@ -352,16 +348,15 @@ class Inventory(SubMode):
 	def redraw(self, game):
 		inventory = game.get_player().inventory
 		if self.prompt:
-			self.window.addstr(0, 0, self.prompt)
+			self.ui.print_line(0, 0, self.prompt)
 		if not inventory:
-			self.window.addstr(1, 0, '(Empty)')
+			self.ui.print_line(1, 0, '(Empty)')
 		else:
 			for row, item in enumerate(inventory):
-				self.window.addstr(row + 1, 0, '{0} - {1}'.format(
+				self.ui.print_line(row + 1, 0, '{0} - {1}'.format(
 					chr(ord('a') + row),
 					item.item_type.name,
 					))
-		self.window.refresh()
 	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self, game):
 		""" Close by Escape. """
@@ -377,8 +372,7 @@ class Equipment(SubMode):
 		wielding = game.get_player().wielding
 		if wielding:
 			wielding = wielding.item_type.name
-		self.window.addstr(0, 0, 'wielding [a] - {0}'.format(wielding))
-		self.window.refresh()
+		self.ui.print_line(0, 0, 'wielding [a] - {0}'.format(wielding))
 	@EquipmentKeys.bind('a')
 	def wield(self, game):
 		""" Wield or unwield item. """

@@ -137,11 +137,18 @@ class Keymapping: # pragma: no cover -- TODO
 		""" Returns sorted list of all keybindings (multikeys first). """
 		return sorted(self.multikeybindings.items()) + sorted(self.keybindings.items())
 
+class Cursor(object): # pragma: no cover -- TODO
+	def __init__(self, engine):
+		self.engine = engine
+	def move(self, x, y):
+		self.engine.window.move(y, x)
+
 class Curses(object):
 	def __init__(self): # pragma: no cover -- TODO
 		self.window = None
 		self._nodelay = False
 		self.colors = {}
+		self._cursor = None
 	def __enter__(self): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
 		self.window = curses.initscr()
 		curses.noecho()
@@ -186,6 +193,19 @@ class Curses(object):
 		Optional color name can be used.
 		"""
 		self.window.addstr(row, col, line, self.colors.get(color, 0))
+
+	def cursor(self, on=True): # pragma: no cover -- TODO
+		""" Switches cursor on/off and returns Cursor object, if on.
+		"""
+		if on:
+			if self._cursor is None:
+				self._cursor = Cursor(self)
+				curses.curs_set(1)
+			return self._cursor
+		if self._cursor is not None:
+			self._cursor = None
+			curses.curs_set(0)
+		return None
 	
 	def get_keypress(self, nodelay=False, timeout=100): # pragma: no cover -- TODO
 		""" Returns Key object for the pressed key.

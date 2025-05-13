@@ -20,6 +20,8 @@ class MockCurses:
 			self.name = name
 			self.parent = parent
 		def __call__(self, *args, **kwargs):
+			if self.name == 'addstr' and len(args) == 4 and args[3] == 0:
+				args = args[:-1]
 			self.parent.calls.append((self.name,) + args + ((kwargs,) if kwargs else tuple()))
 	def __init__(self, chars=None):
 		self.calls = []
