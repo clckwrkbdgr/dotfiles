@@ -245,6 +245,7 @@ class Curses(object):
 		return control
 
 class Mode(object): # pragma: no cover -- TODO
+	TRANSPARENT = True
 	KEYMAPPING = None
 	def redraw(self, ui):
 		""" Reimplement to redraw current view.
@@ -269,9 +270,10 @@ class Mode(object): # pragma: no cover -- TODO
 	def run(cls, mode, ui):
 		""" Main mode loop.
 		Runs redraw/input until aborted.
+		If .TRANSPARENT is not True, cleans screen before redrawing.
 		"""
 		while True:
-			with ui.redraw():
+			with ui.redraw(clean=not mode.TRANSPARENT):
 				mode.redraw(ui)
 			if mode.KEYMAPPING:
 				control = ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay())

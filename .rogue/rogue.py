@@ -547,14 +547,20 @@ def iter_rect(topleft, bottomright):
 InventoryKeys = clckwrkbdgr.tui.Keymapping()
 InventoryKeys.map(list('abcdefghijlkmnopqrstuvwxyz'), lambda key:str(key))
 InventoryKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
-
-def display_inventory(ui, inventory, caption=None, select=False):
-	while True:
-		with ui.redraw(clean=True):
-			if caption:
-				ui.print_line(0, 0, caption)
+class InventoryMode(clckwrkbdgr.tui.Mode):
+	TRANSPARENT = False
+	KEYMAPPING = InventoryKeys
+	def __init__(self, inventory, caption=None, select=False):
+		self.inventory = inventory
+		self.caption = caption
+		self.select = select
+		self.choice = None
+	def redraw(self, ui):
+		if True:
+			if self.caption:
+				ui.print_line(0, 0, self.caption)
 			accumulated = []
-			for shortcut, item in zip(string.ascii_lowercase, inventory):
+			for shortcut, item in zip(string.ascii_lowercase, self.inventory):
 				for other in accumulated:
 					if other[1].name == item.name:
 						other[2] += 1
@@ -570,16 +576,17 @@ def display_inventory(ui, inventory, caption=None, select=False):
 					ui.print_line(index + 1, column * 40 + 6, '- {0} (x{1})'.format(item.name, amount))
 				else:
 					ui.print_line(index + 1, column * 40 + 6, '- {0}'.format(item.name))
-		control = ui.get_control(InventoryKeys)
+	def action(self, control):
 		if control == 'cancel':
-			break
-		if select:
+			return None
+		if self.select:
 			selected = ord(control) - ord('a')
-			if selected < 0 or len(inventory) <= selected:
-				caption = 'No such item: {0}'.format(control)
+			if selected < 0 or len(self.inventory) <= selected:
+				self.caption = 'No such item: {0}'.format(control)
 			else:
-				return selected
-	return None
+				self.choice = selected
+				return None
+		return True
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()
 DirectionKeys.map(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
@@ -619,19 +626,32 @@ def main(ui):
 		else:
 			game.generate()
 
-	viewport = Rect((0, 0), (61, 23))
-	center = Point(*(viewport.size // 2))
-	centered_viewport = Rect((-center.x, -center.y), viewport.size)
-	messages = []
-	while True:
+	main_game = MainGameMode(game)
+	clckwrkbdgr.tui.Mode.run(main_game, ui)
+	if game.player.hp > 0:
+		with savefile.save(SAVEFILE_VERSION) as writer:
+			game.save(writer)
+	else:
+		savefile.unlink()
+
+class MainGameMode(clckwrkbdgr.tui.Mode):
+	KEYMAPPING = Keys
+	def __init__(self, game):
+		self.game = game
+		self.viewport = Rect((0, 0), (61, 23))
+		self.center = Point(*(self.viewport.size // 2))
+		self.centered_viewport = Rect((-self.center.x, -self.center.y), self.viewport.size)
+		self.messages = []
+	def redraw(self, ui):
+		game = self.game
 		full_zone_size = Size(
 				game.world.zone_size.width * game.world.field_size.width,
 				game.world.zone_size.height * game.world.field_size.height,
 				)
 		player_pos = game.player.pos.get_global(game.world)
-		player_relative_pos = player_pos - center
-		viewport_topleft = Coord.from_global(player_pos + centered_viewport.topleft, game.world)
-		viewport_bottomright = Coord.from_global(player_pos + centered_viewport.bottomright, game.world)
+		player_relative_pos = player_pos - self.center
+		viewport_topleft = Coord.from_global(player_pos + self.centered_viewport.topleft, game.world)
+		viewport_bottomright = Coord.from_global(player_pos + self.centered_viewport.bottomright, game.world)
 
 		for zone_index in iter_rect(viewport_topleft.world, viewport_bottomright.world):
 			zone = game.world.zones.cell(zone_index)
@@ -654,28 +674,28 @@ def main(ui):
 						Point(field_rect.left, field_rect.bottom),
 						Point(field_rect.right, field_rect.bottom),
 						]
-				if not any(viewport.contains(pos - player_relative_pos, with_border=True) for pos in control_points):
+				if not any(self.viewport.contains(pos - player_relative_pos, with_border=True) for pos in control_points):
 					continue
 				field_topleft = field_rect.topleft - player_relative_pos
 				for pos in field.tiles:
 					screen_pos = pos + field_topleft
-					if not viewport.contains(screen_pos, with_border=True):
+					if not self.viewport.contains(screen_pos, with_border=True):
 						continue
 					tile_sprite = field.tiles.cell(pos).sprite
 					ui.print_char(screen_pos.x, screen_pos.y, tile_sprite.sprite, tile_sprite.color)
 				for item in field.items:
 					screen_pos = item.pos + field_topleft
-					if not viewport.contains(screen_pos, with_border=True):
+					if not self.viewport.contains(screen_pos, with_border=True):
 						continue
 					ui.print_char(screen_pos.x, screen_pos.y, item.sprite.sprite, item.sprite.color)
 				for monster in field.monsters:
 					screen_pos = monster.pos + field_topleft
-					if not viewport.contains(screen_pos, with_border=True):
+					if not self.viewport.contains(screen_pos, with_border=True):
 						continue
 					ui.print_char(screen_pos.x, screen_pos.y, monster.sprite.sprite, monster.sprite.color)
-		ui.print_char(center.x, center.y, game.player.sprite.sprite, game.player.sprite.color)
+		ui.print_char(self.center.x, self.center.y, game.player.sprite.sprite, game.player.sprite.color)
 
-		hud_pos = viewport.right + 1
+		hud_pos = self.viewport.right + 1
 		for row in range(5):
 			ui.print_line(row, hud_pos, " " * (80 - hud_pos))
 		ui.print_line(0, hud_pos, "@{0}".format(game.player.pos))
@@ -691,30 +711,29 @@ def main(ui):
 			ui.print_line(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
 		ui.print_line(24, 0, " " * 80)
-		while messages:
-			message = messages.pop(0)
+		while self.messages:
+			message = self.messages.pop(0)
 			if len(message) >= 80 - 5:
 				message, tail = message[:80-5], message[80-5:]
-				messages.insert(0, tail)
+				self.messages.insert(0, tail)
 			else:
-				while messages and len(message) + 1 + len(messages[0]) < 80 - 5:
-					message += ' ' + messages.pop(0)
+				while self.messages and len(message) + 1 + len(self.messages[0]) < 80 - 5:
+					message += ' ' + self.messages.pop(0)
 			message_line = message
-			if messages:
+			if self.messages:
 				message_line += '[...]'
 			ui.print_line(24, 0, " " * 80)
 			ui.print_line(24, 0, message_line)
-			if messages or game.player.hp <= 0:
+			if self.messages or game.player.hp <= 0:
 				ui.get_keypress()
-
+	def action(self, control):
+		game = self.game
 		if game.player.hp <= 0:
-			break
-
-		control = ui.get_control(Keys)
+			return None
 		step_taken = False
 		player_pos = game.player.pos.get_global(game.world)
 		if control == 'exit':
-			break
+			return None
 		elif control == 'wait':
 			step_taken = True
 		elif control == 'grab':
@@ -724,13 +743,13 @@ def main(ui):
 				if game.player.pos.field == item.pos
 				), None)
 			if not item:
-				messages.append('Nothing to pick up here.')
+				self.messages.append('Nothing to pick up here.')
 			elif len(game.player.inventory) >= 26:
-				messages.append('Inventory is full.')
+				self.messages.append('Inventory is full.')
 			else:
 				game.player.inventory.append(item)
 				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.remove(item)
-				messages.append('Picked up {0}.'.format(item.name))
+				self.messages.append('Picked up {0}.'.format(item.name))
 				step_taken = True
 		elif control == 'chat':
 			npcs = [
@@ -745,9 +764,9 @@ def main(ui):
 					and npc.behaviour.quest
 					]
 			if not npcs:
-				messages.append('No one to chat with.')
+				self.messages.append('No one to chat with.')
 			elif len(questing) > 20:
-				messages.append("Too much quests already.")
+				self.messages.append("Too much quests already.")
 			else:
 				if len(npcs) > 1:
 					ui.print_line(24, 0, " " * 80)
@@ -771,7 +790,7 @@ def main(ui):
 							ui.print_line(24, 0, '"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.behaviour.quest)))
 							control = ui.get_control(DialogKeys)
 							if control is True:
-								messages.append('"Thanks. Here you go."')
+								self.messages.append('"Thanks. Here you go."')
 								for item in have_required_items:
 									game.player.inventory.remove(item)
 								if game.player.hp == game.player.max_hp:
@@ -779,14 +798,14 @@ def main(ui):
 								game.player.max_hp += bounty
 								npc.behaviour.quest = None
 							else:
-								messages.append('"OK, come back later if you want it."')
+								self.messages.append('"OK, come back later if you want it."')
 						else:
-							messages.append('"Come back with {0} {1}."'.format(*(npc.behaviour.quest)))
+							self.messages.append('"Come back with {0} {1}."'.format(*(npc.behaviour.quest)))
 					else:
 						if not npc.behaviour.prepared_quest:
 							amount = 1 + random.randrange(3)
 							bounty = max(1, amount // 2 + 1)
-							colors = [name for name, color in self.COLORS.items() if color.monster]
+							colors = [name for name, color in game.COLORS.items() if color.monster]
 							color = random.choice(colors).replace('_', ' ') + ' skin'
 							npc.behaviour.prepared_quest = (amount, color, bounty)
 						ui.print_line(24, 0, " " * 80)
@@ -796,9 +815,9 @@ def main(ui):
 							npc.behaviour.quest = npc.behaviour.prepared_quest
 							npc.behaviour.prepared_quest = None
 						else:
-							messages.append('"OK, come back later if you want it."')
+							self.messages.append('"OK, come back later if you want it."')
 				else:
-					messages.append('No one to chat with in that direction.')
+					self.messages.append('No one to chat with in that direction.')
 		elif control == 'questlog':
 			questing = [
 					(coord, npc) for coord, npc in game.world.all_monsters(raw=True)
@@ -821,20 +840,22 @@ def main(ui):
 				if control == 'cancel':
 					break
 		elif control == 'inventory':
-			display_inventory(ui, game.player.inventory)
+			clckwrkbdgr.tui.Mode.run(InventoryMode(game.player.inventory), ui)
 		elif control == 'drop':
 			if not game.player.inventory:
-				messages.append('Nothing to drop.')
+				self.messages.append('Nothing to drop.')
 			else:
-				selected = display_inventory(ui, game.player.inventory,
-							 caption="Select item to drop (a-z/ESC):",
-							 select=True
-							 )
-				if selected is not None:
-					item = game.player.inventory.pop(selected)
+				menu = InventoryMode(
+						game.player.inventory,
+						caption="Select item to drop (a-z/ESC):",
+						select=True
+					)
+				clckwrkbdgr.tui.Mode.run(menu, ui)
+				if menu.choice is not None:
+					item = game.player.inventory.pop(menu.choice)
 					item.pos = game.player.pos.field
 					game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.append(item)
-					messages.append('You drop {0}.'.format(item.name))
+					self.messages.append('You drop {0}.'.format(item.name))
 					step_taken = True
 		elif isinstance(control, Point):
 			new_pos = player_pos + control
@@ -849,20 +870,20 @@ def main(ui):
 			monster = next((monster for monster in dest_field.monsters if dest_pos.field == monster.pos), None)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
-					messages.append('You bump into dweller.')
+					self.messages.append('You bump into dweller.')
 				else:
 					monster.hp -= 1
-					messages.append('You hit monster.')
+					self.messages.append('You hit monster.')
 					if monster.hp <= 0:
 						dest_field.monsters.remove(monster)
-						messages.append('Monster is dead.')
+						self.messages.append('Monster is dead.')
 						for item in monster.inventory:
 							item.pos = monster.pos
 							monster.inventory.remove(item)
 							dest_field.items.append(item)
-							messages.append('Monster dropped {0}.'.format(item.name))
+							self.messages.append('Monster dropped {0}.'.format(item.name))
 			elif dest_cell is None:
-				messages.append('Will not fall into the void.')
+				self.messages.append('Will not fall into the void.')
 			elif dest_cell.passable:
 				game.player.pos = dest_pos
 				game.autoexpand(game.player.pos, Size(40, 40))
@@ -890,9 +911,9 @@ def main(ui):
 				monster_pos = monster_coord.get_global(game.world)
 				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
 					game.player.hp -= 1
-					messages.append('Monster hits you.')
+					self.messages.append('Monster hits you.')
 					if game.player.hp <= 0:
-						messages.append('You died!!!')
+						self.messages.append('You died!!!')
 				elif monster.behaviour == 'aggressive' and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
 					shift = Point(
 							sign(player_pos.x - monster_pos.x),
@@ -903,17 +924,13 @@ def main(ui):
 					dest_field = game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone)
 					dest_cell = dest_field.tiles.cell(dest_pos.field)
 					if any(other.pos == dest_pos.field for other in dest_field.monsters):
-						messages.append('Monster bump into monster.')
+						self.messages.append('Monster bump into monster.')
 					elif dest_cell.passable:
 						if monster_coord.world != dest_pos.world or monster_coord.zone != dest_pos.zone:
 							game.world.zones.cell(monster_coord.world).fields.cell(monster_coord.zone).monsters.remove(monster)
 							dest_field.monsters.append(monster)
 						monster.pos = dest_pos.field
-	if game.player.hp > 0:
-		with savefile.save(SAVEFILE_VERSION) as writer:
-			game.save(writer)
-	else:
-		savefile.unlink()
+		return True
 
 with clckwrkbdgr.tui.Curses() as ui:
 	main(ui)

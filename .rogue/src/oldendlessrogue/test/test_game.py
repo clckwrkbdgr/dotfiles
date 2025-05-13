@@ -14,7 +14,7 @@ class MockUI:
 	def print_line(self, index, _col, line):
 		self.lines[index] = line
 	@contextlib.contextmanager
-	def redraw(self):
+	def redraw(self, clean=None):
 		yield self
 	def get_control(self, _keymapping, nodelay=False):
 		return self.controls.pop(0)
