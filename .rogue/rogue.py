@@ -769,11 +769,10 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				self.messages.append("Too much quests already.")
 			else:
 				if len(npcs) > 1:
-					ui.print_line(24, 0, " " * 80)
-					ui.print_line(24, 0, "Too crowded. Chat in which direction?")
-					control = ui.get_control(DirectionKeys)
-					if control:
-						dest = player_pos + control
+					dialog = DirectionDialogMode()
+					clckwrkbdgr.tui.Mode.run(dialog, ui)
+					if dialog.answer:
+						dest = player_pos + dialog.answer
 						npcs = [npc for npc in npcs if npc.pos == dest]
 					else:
 						npcs = []
@@ -786,10 +785,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 								if item.name == required_name
 								][:required_amount]
 						if len(have_required_items) >= required_amount:
-							ui.print_line(24, 0, " " * 80)
-							ui.print_line(24, 0, '"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.behaviour.quest)))
-							control = ui.get_control(DialogKeys)
-							if control is True:
+							dialog = TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(self.npc.behaviour.quest)))
+							clckwrkbdgr.tui.Mode.run(dialog, ui)
+							if dialog.answer is True:
 								self.messages.append('"Thanks. Here you go."')
 								for item in have_required_items:
 									game.player.inventory.remove(item)
@@ -808,10 +806,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 							colors = [name for name, color in game.COLORS.items() if color.monster]
 							color = random.choice(colors).replace('_', ' ') + ' skin'
 							npc.behaviour.prepared_quest = (amount, color, bounty)
-						ui.print_line(24, 0, " " * 80)
-						ui.print_line(24, 0, '"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
-						control = ui.get_control(DialogKeys)
-						if control is True:
+						dialog = TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
+						clckwrkbdgr.tui.Mode.run(dialog, ui)
+						if dialog.answer is True:
 							npc.behaviour.quest = npc.behaviour.prepared_quest
 							npc.behaviour.prepared_quest = None
 						else:
@@ -824,21 +821,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					if isinstance(npc.behaviour, Questgiver)
 					and npc.behaviour.quest
 					]
-			while True:
-				with ui.redraw(clean=True):
-					if not questing:
-						ui.print_line(0, 0, "No current quests.")
-					else:
-						ui.print_line(0, 0, "Current quests:")
-					for index, (coord, npc) in enumerate(questing):
-						ui.print_line(index + 1, 0, "@ {2}: Bring {0} {1}.".format(
-							npc.behaviour.quest[0],
-							npc.behaviour.quest[1],
-							coord,
-							))
-				control = ui.get_control(QuestLogKeys)
-				if control == 'cancel':
-					break
+			quest_log = QuestLog(questing)
+			clckwrkbdgr.tui.Mode.run(quest_log, ui)
 		elif control == 'inventory':
 			clckwrkbdgr.tui.Mode.run(InventoryMode(game.player.inventory), ui)
 		elif control == 'drop':
@@ -931,6 +915,48 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 							dest_field.monsters.append(monster)
 						monster.pos = dest_pos.field
 		return True
+
+class DirectionDialogMode(clckwrkbdgr.tui.Mode):
+	TRANSPARENT = True
+	KEYMAPPING = DirectionKeys
+	def __init__(self):
+		self.answer = None
+	def redraw(self, ui):
+		ui.print_line(24, 0, " " * 80)
+		ui.print_line(24, 0, "Too crowded. Chat in which direction?")
+	def action(self, control):
+		self.answer = control
+
+class TradeDialogMode(clckwrkbdgr.tui.Mode):
+	TRANSPARENT = True
+	KEYMAPPING = DialogKeys
+	def __init__(self, question):
+		self.answer = False
+		self.question = question
+	def redraw(self, ui):
+		ui.print_line(24, 0, " " * 80)
+		ui.print_line(24, 0, self.question)
+	def action(self, control):
+		self.answer = control
+
+class QuestLog(clckwrkbdgr.tui.Mode):
+	TRANSPARENT = False
+	KEYMAPPING = QuestLogKeys
+	def __init__(self, quests):
+		self.quests = quests
+	def redraw(self, ui):
+		if not self.quests:
+			ui.print_line(0, 0, "No current quests.")
+		else:
+			ui.print_line(0, 0, "Current quests:")
+		for index, (coord, npc) in enumerate(self.quests):
+			ui.print_line(index + 1, 0, "@ {2}: Bring {0} {1}.".format(
+				npc.behaviour.quest[0],
+				npc.behaviour.quest[1],
+				coord,
+				))
+	def action(self, control):
+		return control != 'cancel'
 
 with clckwrkbdgr.tui.Curses() as ui:
 	main(ui)
