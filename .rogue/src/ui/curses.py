@@ -56,10 +56,11 @@ class SubMode(object):
 	"""
 	TRANSPARENT = False # If True, first draw the main game, then this mode on top of it.
 	KEYMAPPING = None # Keymapping object for this mode.
-	def __init__(self, ui):
+	def __init__(self, game, ui):
+		self.game = game
 		self.ui = ui
 		self.done = False
-	def redraw(self, game): # pragma: no cover
+	def redraw(self, ui): # pragma: no cover
 		""" Redefine to draw mode-related features on screen.
 		May not affect the whole screen, see class field TRANSPARENT.
 		"""
@@ -92,13 +93,15 @@ Keys = Keymapping()
 
 class Curses(clckwrkbdgr.tui.Curses, UI):
 	""" TUI using curses lib. """
-	def __init__(self):
+	def __init__(self, game):
 		super(Curses, self).__init__()
+		self.game = game
 		self.aim = None
 		self.messages = []
 		self.mode = None
-	def redraw(self, game):
+	def redraw(self, ui):
 		""" Redraws current mode. """
+		game = self.game
 		if self.mode is None or self.mode.TRANSPARENT:
 			with super(Curses, self).redraw():
 				self.redraw_main(game)
@@ -226,7 +229,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Keys.bind('?')
 	def help(self, game):
 		""" Show this help. """
-		self.mode = HelpScreen(self)
+		self.mode = HelpScreen(game, self)
 	@Keys.bind('q')
 	def quit(self, game):
 		""" Save and quit. """
@@ -258,7 +261,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Keys.bind('~')
 	def god_mode(self, game):
 		""" God mode options. """
-		self.mode = GodModeMenu(self)
+		self.mode = GodModeMenu(game, self)
 	@Keys.bind('Q')
 	def suicide(self, game):
 		""" Suicide (quit without saving). """
@@ -276,19 +279,19 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Keys.bind('d')
 	def drop(self, game):
 		""" Drop item. """
-		self.mode = DropSelection(self)
+		self.mode = DropSelection(game, self)
 	@Keys.bind('e')
 	def consume(self, game):
 		""" Consume item. """
-		self.mode = ConsumeSelection(self)
+		self.mode = ConsumeSelection(game, self)
 	@Keys.bind('i')
 	def show_inventory(self, game):
 		""" Show inventory. """
-		self.mode = Inventory(self)
+		self.mode = Inventory(game, self)
 	@Keys.bind('E')
 	def show_equipment(self, game):
 		""" Show equipment. """
-		self.mode = Equipment(self)
+		self.mode = Equipment(game, self)
 	@Keys.bind(list('hjklyubn'), param=lambda key: DIRECTION[str(key)])
 	def move(self, game, direction):
 		""" Move. """
@@ -303,7 +306,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 
 class HelpScreen(SubMode):
 	""" Main help screen with controls cheatsheet. """
-	def redraw(self, game):
+	def redraw(self, ui):
 		for row, (_, binding) in enumerate(Keys.list_all()):
 			if utils.is_collection(binding.key):
 				keys = ''.join(map(str, binding.key))
@@ -317,7 +320,7 @@ class GodModeMenu(SubMode):
 	""" God mode options. """
 	TRANSPARENT = True
 	KEYMAPPING = GodModeKeys
-	def redraw(self, game):
+	def redraw(self, ui):
 		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
 		self.ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
 	def on_any_key(self):
@@ -344,7 +347,8 @@ class Inventory(SubMode):
 	def __init__(self, *args, **kwargs):
 		super(Inventory, self).__init__(*args, **kwargs)
 		self.prompt = self.INITIAL_PROMPT
-	def redraw(self, game):
+	def redraw(self, ui):
+		game = self.game
 		inventory = game.get_player().inventory
 		if self.prompt:
 			self.ui.print_line(0, 0, self.prompt)
@@ -367,7 +371,8 @@ class Equipment(SubMode):
 	""" Equipment menu.
 	"""
 	KEYMAPPING = EquipmentKeys
-	def redraw(self, game):
+	def redraw(self, ui):
+		game = self.game
 		wielding = game.get_player().wielding
 		if wielding:
 			wielding = wielding.item_type.name
@@ -378,7 +383,7 @@ class Equipment(SubMode):
 		if game.get_player().wielding:
 			self.done = True
 			return Action.UNWIELD, None
-		return WieldSelection(self.ui)
+		return WieldSelection(game, self.ui)
 	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self, game):
 		""" Close by Escape. """
