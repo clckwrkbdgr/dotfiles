@@ -3,8 +3,8 @@ import logging
 trace = logging.getLogger('rogue')
 from clckwrkbdgr import xdg, fs
 from clckwrkbdgr import logging
+import clckwrkbdgr.tui
 from .dungeon import Dungeon
-from .ui import Curses
 from .game import Game
 
 if __name__ == '__main__':
@@ -15,6 +15,5 @@ if __name__ == '__main__':
 			)
 	with fs.SerializedEntity.store(xdg.save_data_path('dotrogue')/'rogue.sav', 'dungeon', Dungeon) as dungeon:
 		game = Game(dungeon)
-		gui = Curses(game)
 		with clckwrkbdgr.tui.Curses() as ui:
-			return game.run(ui)
+			clckwrkbdgr.tui.Mode.run(game, ui)

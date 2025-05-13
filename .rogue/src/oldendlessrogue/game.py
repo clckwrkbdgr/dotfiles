@@ -17,20 +17,15 @@ Keys.map('b', Point(-1, +1))
 Keys.map('n', Point(+1, +1))
 Keys.map(clckwrkbdgr.tui.Key.ESCAPE, 'ESC')
 
-class Game:
+class Game(clckwrkbdgr.tui.Mode):
+	KEYMAPPING = Keys
 	VIEW_CENTER = Point(12, 12)
 
 	def __init__(self, dungeon, autoexplorer=None):
 		self.dungeon = dungeon
 		self.autoexplore = None
 		self.autoexplorer_class = autoexplorer or Autoexplorer
-	def run(self, ui):
-		while True:
-			with ui.redraw():
-				self.view(ui)
-			if not self.control(ui):
-				break
-	def view(self, ui):
+	def redraw(self, ui):
 		for y in range(-self.VIEW_CENTER.y, 25 - self.VIEW_CENTER.y):
 			for x in range(-self.VIEW_CENTER.x, 25 - self.VIEW_CENTER.x):
 				ui.print_char(
@@ -41,8 +36,9 @@ class Game:
 		ui.print_line(0, 27, 'Time: {0}'.format(self.dungeon.time))
 		ui.print_line(1, 27, 'X:{x} Y:{y}  '.format(x=self.dungeon.rogue.x, y=self.dungeon.rogue.y))
 		ui.print_line(24, 27, '[autoexploring, press ESC...]' if self.autoexplore else '                             ')
-	def control(self, ui):
-		control = ui.get_control(Keys, nodelay=self.autoexplore)
+	def nodelay(self):
+		return self.autoexplore
+	def action(self, control):
 		trace.debug('Control: {0}'.format(repr(control)))
 		trace.debug('Autoexplore={0}'.format(self.autoexplore))
 		if control is None:

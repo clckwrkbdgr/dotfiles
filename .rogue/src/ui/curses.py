@@ -238,7 +238,6 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		if self.aim:
 			self.aim = None
 			self.cursor(False)
-			curses.curs_set(0)
 		else:
 			self.cursor(True)
 			self.aim = game.get_player().pos

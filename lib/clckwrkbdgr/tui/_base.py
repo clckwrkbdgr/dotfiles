@@ -244,6 +244,42 @@ class Curses(object):
 			control = control(*callback_args, **callback_kwargs)
 		return control
 
+class Mode(object): # pragma: no cover -- TODO
+	KEYMAPPING = None
+	def redraw(self, ui):
+		""" Reimplement to redraw current view.
+		Clean/refresh is called automatically.
+		"""
+		raise NotImplementedError()
+	def action(self, control):
+		""" Reimplement to react to user input.
+		Recieves Key by default.
+		If .KEYMAPPING is defined, receives bound object (or None in case of unknown key).
+		Should return False or None to indicate that the current user mode loop
+		should be aborted.
+		"""
+		raise NotImplementedError()
+	def nodelay(self):
+		""" Reimplement to allow nodelay mode for user input.
+		By default every user input will be blocking.
+		"""
+		return False
+
+	@classmethod
+	def run(cls, mode, ui):
+		""" Main mode loop.
+		Runs redraw/input until aborted.
+		"""
+		while True:
+			with ui.redraw():
+				mode.redraw(ui)
+			if mode.KEYMAPPING:
+				control = ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay())
+			else:
+				control = ui.get_keypress(nodelay=mode.nodelay())
+			if not mode.action(control):
+				break
+
 class ExceptionScreen(object):
 	""" Context manager that captures exceptions and displays traceback in window overlay,
 	prompting to press a key to either exit immediately (quit_key, raises sys.exit) or proceed (any other).

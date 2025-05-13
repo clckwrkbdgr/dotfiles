@@ -391,6 +391,7 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses('x')
 		dungeon = mock_dungeon.build('single mock monster')
 		ui.aim = dungeon.get_player().pos
+		ui.cursor(True)
 		self.assertEqual(ui.user_action(dungeon), (_base.Action.NONE, None))
 		self.assertIsNone(ui.aim)
 		curs_set.assert_has_calls([

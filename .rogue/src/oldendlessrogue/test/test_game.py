@@ -70,12 +70,12 @@ class TestGame(unittest.TestCase):
 		ui = MockUI([SystemExit])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
-		game.run(ui)
+		game.run(game, ui)
 	def should_draw_game_and_print_info(self):
 		ui = MockUI([SystemExit])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
-		game.run(ui)
+		game.run(game, ui)
 
 		expected = Matrix((25, 25), '.')
 		expected.set_cell((12, 12), '@')
@@ -90,7 +90,7 @@ class TestGame(unittest.TestCase):
 		ui = MockUI([Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0), SystemExit])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
-		game.run(ui)
+		game.run(game, ui)
 
 		expected = Matrix((25, 25), '.')
 		expected.set_cell((12, 12), '@')
@@ -108,7 +108,7 @@ class TestGame(unittest.TestCase):
 		ui = MockUI([None, 'unknown', SystemExit])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
-		game.run(ui)
+		game.run(game, ui)
 	def should_control_dungeon_via_autoexplorer(self):
 		autoexplorer_controls = [
 			Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0),
@@ -116,7 +116,7 @@ class TestGame(unittest.TestCase):
 		ui = MockUI(['autoexplore'] + ['autoexplore'] * len(autoexplorer_controls) + ['ESC', SystemExit])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon, autoexplorer=lambda: MockExplorer(autoexplorer_controls))
-		game.run(ui)
+		game.run(game, ui)
 
 		expected = Matrix((25, 25), '.')
 		expected.set_cell((12, 12), '@')
