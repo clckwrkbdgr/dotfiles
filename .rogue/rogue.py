@@ -28,24 +28,6 @@ MOVEMENT = {
 
 Sprite = namedtuple('Sprite', 'sprite color')
 
-def init_colors(ui):
-	ui.init_color('black', curses.COLOR_BLACK)
-	ui.init_color('red', curses.COLOR_RED)
-	ui.init_color('green', curses.COLOR_GREEN)
-	ui.init_color('blue', curses.COLOR_BLUE)
-	ui.init_color('yellow', curses.COLOR_YELLOW)
-	ui.init_color('cyan', curses.COLOR_CYAN)
-	ui.init_color('magenta', curses.COLOR_MAGENTA)
-	ui.init_color('white', curses.COLOR_WHITE)
-	ui.init_color('bold_black', curses.COLOR_BLACK, curses.A_BOLD)
-	ui.init_color('bold_red', curses.COLOR_RED, curses.A_BOLD)
-	ui.init_color('bold_green', curses.COLOR_GREEN, curses.A_BOLD)
-	ui.init_color('bold_blue', curses.COLOR_BLUE, curses.A_BOLD)
-	ui.init_color('bold_yellow', curses.COLOR_YELLOW, curses.A_BOLD)
-	ui.init_color('bold_cyan', curses.COLOR_CYAN, curses.A_BOLD)
-	ui.init_color('bold_magenta', curses.COLOR_MAGENTA, curses.A_BOLD)
-	ui.init_color('bold_white', curses.COLOR_WHITE, curses.A_BOLD)
-
 class Coord:
 	def __init__(self, world_pos=None, zone_pos=None, field_pos=None):
 		self.world = world_pos or Point(0, 0)
@@ -388,7 +370,7 @@ def generate_marsh():
 		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'yellow')))
 	return field
 
-def add_building(field):
+def add_building(field, colors):
 	building = Rect(
 			Point(2 + random.randrange(3), 2 + random.randrange(3)),
 			Size(6 + random.randrange(3), 6 + random.randrange(3)),
@@ -418,7 +400,7 @@ def add_building(field):
 			random.randrange(building.width - 2),
 			random.randrange(building.height - 2),
 			)
-	colors = list(set(ui.colors.keys()) - {'black', 'bold_white'})
+	colors = [name for name, color in colors.items() if color.dweller]
 	monster_color = random.choice(colors)
 	dweller = Monster(
 		dweller_pos,
@@ -428,11 +410,31 @@ def add_building(field):
 		)
 	field.monsters.append(dweller)
 
+Color = namedtuple('Color', 'fg attr dweller monster')
 class Game:
+	COLORS = {
+			'black': Color(curses.COLOR_BLACK, 0, False, False),
+			'red': Color(curses.COLOR_RED, 0, True, True),
+			'green': Color(curses.COLOR_GREEN, 0, True, True),
+			'blue': Color(curses.COLOR_BLUE, 0, True, True),
+			'yellow': Color(curses.COLOR_YELLOW, 0, True, True),
+			'cyan': Color(curses.COLOR_CYAN, 0, True, True),
+			'magenta': Color(curses.COLOR_MAGENTA, 0, True, True),
+			'white': Color(curses.COLOR_WHITE, 0, True, True),
+			'bold_black': Color(curses.COLOR_BLACK, curses.A_BOLD, True, True),
+			'bold_red': Color(curses.COLOR_RED, curses.A_BOLD, True, True),
+			'bold_green': Color(curses.COLOR_GREEN, curses.A_BOLD, True, True),
+			'bold_blue': Color(curses.COLOR_BLUE, curses.A_BOLD, True, True),
+			'bold_yellow': Color(curses.COLOR_YELLOW, curses.A_BOLD, True, True),
+			'bold_cyan': Color(curses.COLOR_CYAN, curses.A_BOLD, True, True),
+			'bold_magenta': Color(curses.COLOR_MAGENTA, curses.A_BOLD, True, True),
+			'bold_white': Color(curses.COLOR_WHITE, curses.A_BOLD, False, True),
+			}
 	def __init__(self):
 		self.player = Monster(Coord(), Sprite('@', 'bold_white'), 10)
 		self.world = Overworld((256, 256))
 		self.passed_time = 0
+		self.colors = {}
 	def save(self, stream):
 		self.player.save(stream)
 		self.world.save(stream)
@@ -501,7 +503,7 @@ class Game:
 					pos.y * zone.field_size.height,
 					)
 			if random.randrange(50) == 0:
-				add_building(zone.fields.cell(pos))
+				add_building(zone.fields.cell(pos), self.COLORS)
 				continue
 			monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
 			for _ in range(monster_count):
@@ -514,7 +516,7 @@ class Game:
 							random.randrange(zone.fields.cell(pos).tiles.size.width),
 							random.randrange(zone.fields.cell(pos).tiles.size.height),
 							)
-				colors = set(ui.colors.keys()) - {'black'}
+				colors = [name for name, color in self.COLORS.items() if color.monster]
 				normal_colors = [color for color in colors if not color.startswith('bold_')]
 				bold_colors = [color for color in colors if color.startswith('bold_')]
 				strong = random.randrange(2)
@@ -605,7 +607,8 @@ def main(ui):
 			'rogue', debug=True, filename='rogue.log', stream=None,
 			)
 
-	init_colors(ui)
+	for name, color in Game.COLORS.items():
+		ui.init_color(name, color.fg, color.attr)
 
 	game = Game()
 	savefile = clckwrkbdgr.serialize.stream.Savefile(xdg.save_data_path('dotrogue')/'rogue.sav')
@@ -783,7 +786,8 @@ def main(ui):
 						if not npc.behaviour.prepared_quest:
 							amount = 1 + random.randrange(3)
 							bounty = max(1, amount // 2 + 1)
-							color = random.choice(list(set(ui.colors.keys()) - {'black'})).replace('_', ' ') + ' skin'
+							colors = [name for name, color in self.COLORS.items() if color.monster]
+							color = random.choice(colors).replace('_', ' ') + ' skin'
 							npc.behaviour.prepared_quest = (amount, color, bounty)
 						ui.print_line(24, 0, " " * 80)
 						ui.print_line(24, 0, '"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
