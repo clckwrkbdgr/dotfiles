@@ -272,17 +272,26 @@ class Mode(object): # pragma: no cover -- TODO
 
 	@classmethod
 	def run(cls, mode, ui):
-		""" Main mode loop.
-		Runs redraw/input until aborted.
-		If .TRANSPARENT is not True, cleans screen before redrawing.
+		loop = ModeLoop(ui)
+		return loop.start(mode)
+
+class ModeLoop(object): # pragma: no cover -- TODO
+	""" Main mode loop.
+	Runs redraw/input until aborted.
+	If .TRANSPARENT is not True, cleans screen before redrawing.
+	"""
+	def __init__(self, ui):
+		self.ui = ui
+	def start(self, mode):
+		""" Start loop from the given ("main") mode.
 		"""
 		while True:
-			with ui.redraw(clean=not mode.TRANSPARENT):
-				mode.redraw(ui)
+			with self.ui.redraw(clean=not mode.TRANSPARENT):
+				mode.redraw(self.ui)
 			if mode.KEYMAPPING:
-				control = ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay())
+				control = self.ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay())
 			else:
-				control = ui.get_keypress(nodelay=mode.nodelay())
+				control = self.ui.get_keypress(nodelay=mode.nodelay())
 			if not mode.action(control):
 				break
 

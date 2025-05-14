@@ -138,9 +138,17 @@ class Game(object):
 		self.player_turn = True
 		while True:
 			ui.redraw(self)
+
 			if not self.get_player():
 				break
-			if not self._perform_player_actions(ui):
+			try:
+				self.perform_automovement()
+			except Game.AutoMovementStopped:
+				pass
+
+			action, action_data = ui.user_action(self)
+
+			if not self._perform_player_actions(action, action_data):
 				break
 			if not self.player_turn:
 				for monster in self.monsters:
@@ -149,15 +157,8 @@ class Game(object):
 					self._perform_monster_actions(monster)
 				self.player_turn = True
 		return self.get_player() and self.get_player().is_alive()
-	def _perform_player_actions(self, ui):
+	def _perform_player_actions(self, action, action_data):
 		""" Controller for player character (via UI). """
-		try:
-			self.perform_automovement()
-		except Game.AutoMovementStopped:
-			return True
-
-		action, action_data = ui.user_action(self)
-
 		if not self.in_automovement():
 			self.clear_event() # If we acted - we've seen all the events.
 		if action == Action.AUTOSTOP:

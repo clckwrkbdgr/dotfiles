@@ -92,7 +92,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			] + [ # walking...
 			'redraw',
 			'user_interrupted',
-			] * 2 + ['redraw'] + [ # NONE AUTOEXPLORE
+			] * 2 + [ # NONE AUTOEXPLORE
 			'redraw',
 			'user_action',
 			] + ['Discovered >'] + [ # exploring...
@@ -104,7 +104,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			] * 9 + ['redraw', 'user_action'] + [
 			'redraw',
 			'user_interrupted',
-			] * 3 + ['redraw'] + [ # GOD_TOGGLE_* EXIT
+			] * 3 + [ # GOD_TOGGLE_* EXIT
 			'redraw',
 			'user_action',
 			] * 3 + [
