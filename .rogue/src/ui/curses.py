@@ -56,9 +56,8 @@ class SubMode(object):
 	"""
 	TRANSPARENT = False # If True, first draw the main game, then this mode on top of it.
 	KEYMAPPING = None # Keymapping object for this mode.
-	def __init__(self, game, ui):
+	def __init__(self, game):
 		self.game = game
-		self.ui = ui
 		self.done = False
 	def redraw(self, ui): # pragma: no cover
 		""" Redefine to draw mode-related features on screen.
@@ -70,7 +69,7 @@ class SubMode(object):
 		keymapping). E.g. can set .done=True for one-time screens (Press Any Key).
 		"""
 		pass
-	def user_action(self, game):
+	def user_action(self, ui):
 		""" Performs sub-mode actions.
 		Note that every sub-mode action will still go to the game,
 		so it has to explicitly return Action.NONE in case of some internal
@@ -80,11 +79,11 @@ class SubMode(object):
 		"""
 		Log.debug('Performing user actions.')
 		if self.KEYMAPPING:
-			control = self.ui.get_control(self.KEYMAPPING, bind_self=self, callback_args=(game,))
+			control = ui.get_control(self.KEYMAPPING, bind_self=self, callback_args=(self.game,))
 			if control is not None:
 				return control
 		else:
-			self.ui.get_keypress()
+			ui.get_keypress()
 			self.done = True
 		self.on_any_key()
 		return Action.NONE, None
@@ -104,15 +103,16 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		game = self.game
 		if self.mode is None or self.mode.TRANSPARENT:
 			with super(Curses, self).redraw():
-				self.redraw_main(game)
+				self.redraw_main(self)
 			if not game.get_player():
 				# Pause so that user can catch current state after character's death.
 				self.get_keypress()
 		if self.mode:
 			with super(Curses, self).redraw(clean=not self.mode.TRANSPARENT):
-				self.mode.redraw(game)
-	def redraw_main(self, game):
+				self.mode.redraw(self)
+	def redraw_main(self, ui):
 		""" Redraws game completely. """
+		game = self.game
 		Log.debug('Redrawing interface.')
 		viewport = game.get_viewport()
 		for row in range(viewport.height):
@@ -207,13 +207,13 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		""" Checks for key presses in nodelay mode. """
 		control = self.get_keypress(nodelay=True, timeout=30)
 		return control is not None
-	def user_action(self, game):
+	def user_action(self, ui):
 		""" Performs user action in current mode.
 		May start or quit sub-modes as a result.
 		"""
 		Log.debug('Performing user actions.')
 		if self.mode:
-			result = self.mode.user_action(game)
+			result = self.mode.user_action(ui)
 			if isinstance(result, SubMode):
 				self.mode = result
 				return Action.NONE, None
@@ -221,7 +221,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 			if self.mode.done:
 				self.mode = None
 			return action, param
-		control = self.get_control(Keys, bind_self=self, callback_args=(game,))
+		control = self.get_control(Keys, bind_self=self, callback_args=(self.game,))
 		if control is not None:
 			return control
 		return Action.NONE, None
@@ -229,7 +229,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Keys.bind('?')
 	def help(self, game):
 		""" Show this help. """
-		self.mode = HelpScreen(game, self)
+		self.mode = HelpScreen(game)
 	@Keys.bind('q')
 	def quit(self, game):
 		""" Save and quit. """
@@ -261,7 +261,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Keys.bind('~')
 	def god_mode(self, game):
 		""" God mode options. """
-		self.mode = GodModeMenu(game, self)
+		self.mode = GodModeMenu(game)
 	@Keys.bind('Q')
 	def suicide(self, game):
 		""" Suicide (quit without saving). """
@@ -279,19 +279,19 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Keys.bind('d')
 	def drop(self, game):
 		""" Drop item. """
-		self.mode = DropSelection(game, self)
+		self.mode = DropSelection(game)
 	@Keys.bind('e')
 	def consume(self, game):
 		""" Consume item. """
-		self.mode = ConsumeSelection(game, self)
+		self.mode = ConsumeSelection(game)
 	@Keys.bind('i')
 	def show_inventory(self, game):
 		""" Show inventory. """
-		self.mode = Inventory(game, self)
+		self.mode = Inventory(game)
 	@Keys.bind('E')
 	def show_equipment(self, game):
 		""" Show equipment. """
-		self.mode = Equipment(game, self)
+		self.mode = Equipment(game)
 	@Keys.bind(list('hjklyubn'), param=lambda key: DIRECTION[str(key)])
 	def move(self, game, direction):
 		""" Move. """
@@ -312,8 +312,8 @@ class HelpScreen(SubMode):
 				keys = ''.join(map(str, binding.key))
 			else:
 				keys = str(binding.key)
-			self.ui.print_line(row, 0, '{0} - {1}'.format(keys, binding.help))
-		self.ui.print_line(row + 1, 0, '[Press Any Key...]')
+			ui.print_line(row, 0, '{0} - {1}'.format(keys, binding.help))
+		ui.print_line(row + 1, 0, '[Press Any Key...]')
 
 GodModeKeys = Keymapping()
 class GodModeMenu(SubMode):
@@ -322,7 +322,7 @@ class GodModeMenu(SubMode):
 	KEYMAPPING = GodModeKeys
 	def redraw(self, ui):
 		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
-		self.ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
+		ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
 	def on_any_key(self):
 		self.done = True
 	@GodModeKeys.bind('v')
@@ -351,12 +351,12 @@ class Inventory(SubMode):
 		game = self.game
 		inventory = game.get_player().inventory
 		if self.prompt:
-			self.ui.print_line(0, 0, self.prompt)
+			ui.print_line(0, 0, self.prompt)
 		if not inventory:
-			self.ui.print_line(1, 0, '(Empty)')
+			ui.print_line(1, 0, '(Empty)')
 		else:
 			for row, item in enumerate(inventory):
-				self.ui.print_line(row + 1, 0, '{0} - {1}'.format(
+				ui.print_line(row + 1, 0, '{0} - {1}'.format(
 					chr(ord('a') + row),
 					item.item_type.name,
 					))
@@ -376,14 +376,14 @@ class Equipment(SubMode):
 		wielding = game.get_player().wielding
 		if wielding:
 			wielding = wielding.item_type.name
-		self.ui.print_line(0, 0, 'wielding [a] - {0}'.format(wielding))
+		ui.print_line(0, 0, 'wielding [a] - {0}'.format(wielding))
 	@EquipmentKeys.bind('a')
 	def wield(self, game):
 		""" Wield or unwield item. """
 		if game.get_player().wielding:
 			self.done = True
 			return Action.UNWIELD, None
-		return WieldSelection(game, self.ui)
+		return WieldSelection(game)
 	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self, game):
 		""" Close by Escape. """
