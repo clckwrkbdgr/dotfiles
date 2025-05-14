@@ -6,6 +6,7 @@ except ImportError: # pragma: no cover
 	import mock
 mock.patch.TEST_PREFIX = 'should'
 from .. import curses, _base
+from ..curses import MainGame
 from ...pcg import builders, settlers
 from ... import game, monsters, items, messages, terrain
 from clckwrkbdgr.math import Point
@@ -140,7 +141,8 @@ class TestCurses(unittest.TestCase):
 
 	def should_draw_game(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses()
 
 		ui.redraw(ui)
@@ -154,7 +156,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_show_state_markers(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses()
 		dungeon.movement_queue = ['mock']
 
@@ -183,7 +186,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_display_discover_events(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('.')
 
 		dungeon.start_autoexploring()
@@ -218,7 +222,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_display_attack_events(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses()
 		dungeon.clear_event()
 
@@ -251,7 +256,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_display_movement_events(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses()
 		dungeon.clear_event()
 		dungeon.god.vision = True
@@ -286,7 +292,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_wait_user_reaction_after_player_is_dead(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses(' ')
 		dungeon.clear_event()
 
@@ -304,7 +311,8 @@ class TestCurses(unittest.TestCase):
 	def should_show_keybindings_help(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		dungeon.clear_event()
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('? ')
 
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
@@ -338,7 +346,8 @@ class TestCurses(unittest.TestCase):
 	@mock.patch('curses.curs_set')
 	def should_display_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('x')
 
 		dungeon.clear_event()
@@ -359,7 +368,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_check_for_user_interrupt(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses([-1, -1, ' '])
 
 		self.assertFalse(ui.user_interrupted())
@@ -367,18 +377,21 @@ class TestCurses(unittest.TestCase):
 		self.assertTrue(ui.user_interrupted())
 	def should_ignore_unknown_keys(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('Z')
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
 	def should_exit(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('q')
 		self.assertEqual(ui.user_action(ui), (_base.Action.EXIT, None))
 	@mock.patch('curses.curs_set')
 	def should_enable_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('x')
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
 		self.assertEqual(ui.main_mode.aim, dungeon.get_player().pos)
@@ -388,7 +401,8 @@ class TestCurses(unittest.TestCase):
 	@mock.patch('curses.curs_set')
 	def should_cancel_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('x')
 		ui.main_mode.aim = dungeon.get_player().pos
 		ui.cursor(True)
@@ -400,7 +414,8 @@ class TestCurses(unittest.TestCase):
 	@mock.patch('curses.curs_set')
 	def should_select_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('.x.')
 		self.assertEqual(ui.user_action(ui), (_base.Action.WAIT, None))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
@@ -411,12 +426,14 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_autoexplore(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('o')
 		self.assertEqual(ui.user_action(ui), (_base.Action.AUTOEXPLORE, None))
 	def should_toggle_god_settings(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('~Q~v~c')
 		ui.redraw(ui)
 		main_display = ui.window.get_calls()
@@ -442,12 +459,14 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), main_display)
 	def should_suicide(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('Q')
 		self.assertEqual(ui.user_action(ui), (_base.Action.SUICIDE, None))
 	def should_descend(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('>')
 		dungeon.jump_to(Point(10, 1))
 		self.assertEqual(ui.user_action(ui), (_base.Action.DESCEND, None))
@@ -463,7 +482,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_move_character(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('hjklyubn')
 		self.assertEqual(ui.user_action(ui), (_base.Action.MOVE, game.Direction.LEFT))
 		self.assertEqual(ui.user_action(ui), (_base.Action.MOVE, game.Direction.DOWN))
@@ -476,7 +496,8 @@ class TestCurses(unittest.TestCase):
 	@mock.patch('curses.curs_set')
 	def should_move_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('xhjklyubn')
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
 		self.assertEqual(ui.main_mode.aim, Point(9, 6))
@@ -499,7 +520,8 @@ class TestCurses(unittest.TestCase):
 	def should_grab_items(self):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('glgD')
 
 		self.assertEqual(ui.user_action(ui), (_base.Action.GRAB, Point(9, 6)))
@@ -618,7 +640,8 @@ class TestCurses(unittest.TestCase):
 	def should_drop_items(self):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('d' + chr(Key.ESCAPE) + 'lgdja')
 
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
@@ -720,7 +743,8 @@ class TestCurses(unittest.TestCase):
 	def should_consume_items(self):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('le' + chr(Key.ESCAPE) + 'geja')
 
 		self.assertEqual(ui.user_action(ui), (_base.Action.MOVE, game.Direction.RIGHT))
@@ -842,7 +866,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_drop_loot_from_monsters(self):
 		dungeon = mock_dungeon.build('single mock thief')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses()
 		dungeon.clear_event()
 
@@ -888,7 +913,8 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_show_inventory(self):
 		dungeon = mock_dungeon.build('monster and potion')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('ia' + chr(Key.ESCAPE) + 'i')
 		dungeon.clear_event()
 
@@ -945,7 +971,8 @@ class TestCurses(unittest.TestCase):
 	def should_equip_items(self):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')
-		ui = curses.Curses(dungeon)
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('E' + chr(Key.ESCAPE) + 'Ea' + chr(Key.ESCAPE) + 'EabaEa')
 		dungeon.get_player().inventory.append(items.Item(MockGame.ITEMS['weapon'], Point(0, 0)))
 

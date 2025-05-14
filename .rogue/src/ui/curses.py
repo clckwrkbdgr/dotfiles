@@ -64,7 +64,7 @@ class SubMode(object):
 		May not affect the whole screen, see class field TRANSPARENT.
 		"""
 		raise NotImplementedError()
-	def on_any_key(self): # pragma: no cover
+	def on_any_key(self, ui): # pragma: no cover
 		""" Redefine to process "any other key" action (not defined in the main
 		keymapping). E.g. can set .done=True for one-time screens (Press Any Key).
 		"""
@@ -85,27 +85,22 @@ class SubMode(object):
 		else:
 			ui.get_keypress()
 			self.done = True
-		self.on_any_key()
+		self.on_any_key(ui)
 		return Action.NONE, None
 
 Keys = Keymapping()
 
 class Curses(clckwrkbdgr.tui.Curses, UI):
 	""" TUI using curses lib. """
-	def __init__(self, game):
+	def __init__(self, main_mode):
 		super(Curses, self).__init__()
-		self.main_mode = MainGame(game)
-		self.game = game
+		self.main_mode = main_mode
 		self.mode = None
 	def redraw(self, ui):
 		""" Redraws current mode. """
-		game = self.game
 		if self.mode is None or self.mode.TRANSPARENT:
 			with super(Curses, self).redraw():
 				self.main_mode.redraw(self)
-			if not game.get_player():
-				# Pause so that user can catch current state after character's death.
-				self.get_keypress()
 		if self.mode:
 			with super(Curses, self).redraw(clean=not self.mode.TRANSPARENT):
 				self.mode.redraw(self)
@@ -135,6 +130,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		return action, param
 
 class MainGame(SubMode):
+	KEYMAPPING = Keys
 	def __init__(self, *args, **kwargs):
 		super(MainGame, self).__init__(*args, **kwargs)
 		self.aim = None
@@ -234,12 +230,8 @@ class MainGame(SubMode):
 	def on_unequipping(self, game, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	def user_action(self, ui):
-		control = ui.get_control(Keys, bind_self=self, callback_args=(self.game,))
+	def on_any_key(self, ui):
 		ui.cursor(bool(self.aim))
-		if control is not None:
-			return control
-		return Action.NONE, None
 	@Keys.bind('?')
 	def help(self, game):
 		""" Show this help. """
@@ -334,7 +326,7 @@ class GodModeMenu(SubMode):
 	def redraw(self, ui):
 		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
 		ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
-	def on_any_key(self):
+	def on_any_key(self, ui):
 		self.done = True
 	@GodModeKeys.bind('v')
 	def vision(self, game):
