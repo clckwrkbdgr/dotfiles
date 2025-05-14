@@ -34,11 +34,6 @@ class UI(object):
 	def redraw(self, game): # pragma: no cover
 		""" Should update current display with changes (or redraw completely). """
 		raise NotImplementedError()
-	def user_interrupted(self): # pragma: no cover
-		""" Should return True if user interrupted current action.
-		Usually is needed if some automated game action is being performed.
-		"""
-		raise NotImplementedError()
 	def user_action(self, game): # pragma: no cover
 		""" Accepts user interaction from actual interface.
 

@@ -370,11 +370,12 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		main_mode = MainGame(dungeon)
 		ui = curses.Curses(main_mode)
-		ui.window = MockCurses([-1, -1, ' '])
+		ui.window = MockCurses([-1, -1, 'j'])
 
-		self.assertFalse(ui.user_interrupted())
-		self.assertFalse(ui.user_interrupted())
-		self.assertTrue(ui.user_interrupted())
+		dungeon.autoexploring = True
+		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
+		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
+		self.assertEqual(ui.user_action(ui), (_base.Action.AUTOSTOP, None))
 	def should_ignore_unknown_keys(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		main_mode = MainGame(dungeon)

@@ -156,13 +156,7 @@ class Game(object):
 		except Game.AutoMovementStopped:
 			return True
 
-		if self.in_automovement():
-			if ui.user_interrupted():
-				action, action_data = Action.AUTOSTOP, None
-			else:
-				action, action_data = Action.NONE, None
-		else:
-			action, action_data = ui.user_action(self)
+		action, action_data = ui.user_action(self)
 
 		if not self.in_automovement():
 			self.clear_event() # If we acted - we've seen all the events.

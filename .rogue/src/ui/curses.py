@@ -81,8 +81,11 @@ class SubMode(object):
 		"""
 		Log.debug('Performing user actions.')
 		if self.KEYMAPPING:
-			control = ui.get_control(self.KEYMAPPING, nodelay=self.nodelay(), bind_self=self, callback_args=(self.game,))
+			nodelay = self.nodelay()
+			control = ui.get_control(self.KEYMAPPING, nodelay=nodelay, bind_self=self, callback_args=(self.game,))
 			if control is not None:
+				if nodelay:
+					return Action.AUTOSTOP, None
 				return control
 		else:
 			ui.get_keypress()
@@ -104,10 +107,6 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		if self.mode:
 			with super(Curses, self).redraw(clean=not self.mode.TRANSPARENT):
 				self.mode.redraw(self)
-	def user_interrupted(self):
-		""" Checks for key presses in nodelay mode. """
-		control = self.get_keypress(nodelay=True, timeout=30)
-		return control is not None
 	def user_action(self, ui):
 		""" Performs user action in current mode.
 		May start or quit sub-modes as a result.
@@ -236,9 +235,9 @@ class MainGame(SubMode):
 	def on_any_key(self, ui):
 		ui.cursor(bool(self.aim))
 	@Keys.bind(None)
-	def interrupt(self, game): # pragma: no cover
+	def on_idle(self, game):
 		""" Show this help. """
-		return Action.AUTOSTOP, None
+		return None
 	@Keys.bind('?')
 	def help(self, game):
 		""" Show this help. """

@@ -38,14 +38,18 @@ class MockUI(ui.UI):
 		pass
 	def redraw(self, game): # pragma: no cover
 		self.events.append('redraw')
-	def user_interrupted(self): # pragma: no cover
-		self.events.append('user_interrupted')
-		return self.interrupts.pop(0)
 	def user_action(self, game): # pragma: no cover
+		if game.in_automovement():
+			self.events.append('user_interrupted')
+			if self.interrupts.pop(0):
+				return ui.Action.AUTOSTOP, None
+			else:
+				return ui.Action.NONE, None
+		control = self.user_actions.pop(0)
 		self.events.append('user_action')
 		for event in game.events:
 			self.events.append(str(event))
-		return self.user_actions.pop(0)
+		return control
 
 class AbstractTestDungeon(unittest.TestCase):
 	def _formatMessage(self, msg, standardMsg): # pragma: no cover
