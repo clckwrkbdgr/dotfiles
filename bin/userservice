@@ -19,11 +19,21 @@ class GroupWithNotRequiredBaseArgs(click.Group):
 		super().__init__(*args, **kwargs)
 	def parse_args(self, ctx, args, *other_args, **kwargs):
 		result = super().parse_args(ctx, args, *other_args, **kwargs)
-		if not ctx.protected_args:
-			for base_arg in self.base_args:
-				if base_arg in ctx.params and ctx.params[base_arg] in self.non_specific_commands:
-					ctx.protected_args.insert(0, ctx.params[base_arg])
-					ctx.params[base_arg] = None
+		import warnings
+		with warnings.catch_warnings():
+			warnings.filterwarnings("ignore", "'protected_args' is deprecated and will be removed in Click 9.0.*")
+			if hasattr(ctx, 'protected_args'):
+				if not ctx.protected_args:
+					for base_arg in self.base_args:
+						if base_arg in ctx.params and ctx.params[base_arg] in self.non_specific_commands:
+							ctx.protected_args.insert(0, ctx.params[base_arg])
+							ctx.params[base_arg] = None
+			else:
+				if not ctx.args:
+					for base_arg in self.base_args:
+						if base_arg in ctx.params and ctx.params[base_arg] in self.non_specific_commands:
+							ctx.args.insert(0, ctx.params[base_arg])
+							ctx.params[base_arg] = None
 		return result
 
 @click.group(cls=GroupWithNotRequiredBaseArgs, base_args=['service_id'], non_specific_commands=['list'])
