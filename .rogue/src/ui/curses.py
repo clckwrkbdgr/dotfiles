@@ -94,23 +94,53 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	""" TUI using curses lib. """
 	def __init__(self, game):
 		super(Curses, self).__init__()
+		self.main_mode = MainGame(game)
 		self.game = game
-		self.aim = None
-		self.messages = []
 		self.mode = None
 	def redraw(self, ui):
 		""" Redraws current mode. """
 		game = self.game
 		if self.mode is None or self.mode.TRANSPARENT:
 			with super(Curses, self).redraw():
-				self.redraw_main(self)
+				self.main_mode.redraw(self)
 			if not game.get_player():
 				# Pause so that user can catch current state after character's death.
 				self.get_keypress()
 		if self.mode:
 			with super(Curses, self).redraw(clean=not self.mode.TRANSPARENT):
 				self.mode.redraw(self)
-	def redraw_main(self, ui):
+	def user_interrupted(self):
+		""" Checks for key presses in nodelay mode. """
+		control = self.get_keypress(nodelay=True, timeout=30)
+		return control is not None
+	def user_action(self, ui):
+		""" Performs user action in current mode.
+		May start or quit sub-modes as a result.
+		"""
+		Log.debug('Performing user actions.')
+		if self.mode:
+			result = self.mode.user_action(ui)
+			if isinstance(result, SubMode):
+				self.mode = result
+				return Action.NONE, None
+			action, param = result
+			if self.mode.done:
+				self.mode = None
+			return action, param
+		result = self.main_mode.user_action(ui)
+		if isinstance(result, SubMode):
+			self.mode = result
+			return Action.NONE, None
+		action, param = result
+		return action, param
+
+class MainGame(SubMode):
+	def __init__(self, *args, **kwargs):
+		super(MainGame, self).__init__(*args, **kwargs)
+		self.aim = None
+		self.messages = []
+
+	def redraw(self, ui):
 		""" Redraws game completely. """
 		game = self.game
 		Log.debug('Redrawing interface.')
@@ -119,7 +149,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 			for col in range(viewport.width):
 				Log.debug('Cell {0},{1}'.format(col, row))
 				sprite = game.get_sprite(col, row)
-				self.print_char(col, 1+row, sprite or ' ')
+				ui.print_char(col, 1+row, sprite or ' ')
 
 		events = []
 		for event in game.events:
@@ -133,7 +163,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 			events.append(result)
 		events.extend(self.messages)
 		self.messages[:] = []
-		self.print_line(0, 0, (' '.join(events) + " " * 80)[:80])
+		ui.print_line(0, 0, (' '.join(events) + " " * 80)[:80])
 
 		status = []
 		player = game.get_player()
@@ -156,10 +186,10 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 			status.append('[vis]')
 		if game.god.noclip:
 			status.append('[clip]')
-		self.print_line(24, 0, (' '.join(status) + " " * 77)[:77] + '[?]')
+		ui.print_line(24, 0, (' '.join(status) + " " * 77)[:77] + '[?]')
 
 		if self.aim:
-			self.cursor().move(self.aim.x, 1+self.aim.y)
+			ui.cursor().move(self.aim.x, 1+self.aim.y)
 	@Events.on(messages.DiscoverEvent)
 	def on_discovering(self, game, event):
 		if event.obj == '>':
@@ -203,33 +233,17 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Events.on(messages.UnequipItemEvent)
 	def on_unequipping(self, game, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
-	def user_interrupted(self):
-		""" Checks for key presses in nodelay mode. """
-		control = self.get_keypress(nodelay=True, timeout=30)
-		return control is not None
+
 	def user_action(self, ui):
-		""" Performs user action in current mode.
-		May start or quit sub-modes as a result.
-		"""
-		Log.debug('Performing user actions.')
-		if self.mode:
-			result = self.mode.user_action(ui)
-			if isinstance(result, SubMode):
-				self.mode = result
-				return Action.NONE, None
-			action, param = result
-			if self.mode.done:
-				self.mode = None
-			return action, param
-		control = self.get_control(Keys, bind_self=self, callback_args=(self.game,))
+		control = ui.get_control(Keys, bind_self=self, callback_args=(self.game,))
+		ui.cursor(bool(self.aim))
 		if control is not None:
 			return control
 		return Action.NONE, None
-
 	@Keys.bind('?')
 	def help(self, game):
 		""" Show this help. """
-		self.mode = HelpScreen(game)
+		return HelpScreen(game)
 	@Keys.bind('q')
 	def quit(self, game):
 		""" Save and quit. """
@@ -240,9 +254,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		""" Examine surroundings (cursor mode). """
 		if self.aim:
 			self.aim = None
-			self.cursor(False)
 		else:
-			self.cursor(True)
 			self.aim = game.get_player().pos
 	@Keys.bind('.')
 	def autowalk(self, game):
@@ -250,7 +262,6 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		if self.aim:
 			dest = self.aim
 			self.aim = None
-			self.cursor(False)
 			return Action.WALK_TO, dest
 		else:
 			return Action.WAIT, None
@@ -261,7 +272,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Keys.bind('~')
 	def god_mode(self, game):
 		""" God mode options. """
-		self.mode = GodModeMenu(game)
+		return GodModeMenu(game)
 	@Keys.bind('Q')
 	def suicide(self, game):
 		""" Suicide (quit without saving). """
@@ -279,19 +290,19 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	@Keys.bind('d')
 	def drop(self, game):
 		""" Drop item. """
-		self.mode = DropSelection(game)
+		return DropSelection(game)
 	@Keys.bind('e')
 	def consume(self, game):
 		""" Consume item. """
-		self.mode = ConsumeSelection(game)
+		return ConsumeSelection(game)
 	@Keys.bind('i')
 	def show_inventory(self, game):
 		""" Show inventory. """
-		self.mode = Inventory(game)
+		return Inventory(game)
 	@Keys.bind('E')
 	def show_equipment(self, game):
 		""" Show equipment. """
-		self.mode = Equipment(game)
+		return Equipment(game)
 	@Keys.bind(list('hjklyubn'), param=lambda key: DIRECTION[str(key)])
 	def move(self, game, direction):
 		""" Move. """

@@ -381,7 +381,7 @@ class TestCurses(unittest.TestCase):
 		ui = curses.Curses(dungeon)
 		ui.window = MockCurses('x')
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, dungeon.get_player().pos)
+		self.assertEqual(ui.main_mode.aim, dungeon.get_player().pos)
 		curs_set.assert_has_calls([
 			mock.call(1),
 			])
@@ -390,10 +390,10 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui = curses.Curses(dungeon)
 		ui.window = MockCurses('x')
-		ui.aim = dungeon.get_player().pos
+		ui.main_mode.aim = dungeon.get_player().pos
 		ui.cursor(True)
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertIsNone(ui.aim)
+		self.assertIsNone(ui.main_mode.aim)
 		curs_set.assert_has_calls([
 			mock.call(0),
 			])
@@ -405,7 +405,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.user_action(ui), (_base.Action.WAIT, None))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
 		self.assertEqual(ui.user_action(ui), (_base.Action.WALK_TO, Point(9, 6)))
-		self.assertIsNone(ui.aim)
+		self.assertIsNone(ui.main_mode.aim)
 		curs_set.assert_has_calls([
 			mock.call(1),
 			])
@@ -479,23 +479,23 @@ class TestCurses(unittest.TestCase):
 		ui = curses.Curses(dungeon)
 		ui.window = MockCurses('xhjklyubn')
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(9, 6))
+		self.assertEqual(ui.main_mode.aim, Point(9, 6))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(8, 6))
+		self.assertEqual(ui.main_mode.aim, Point(8, 6))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(8, 7))
+		self.assertEqual(ui.main_mode.aim, Point(8, 7))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(8, 6))
+		self.assertEqual(ui.main_mode.aim, Point(8, 6))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(9, 6))
+		self.assertEqual(ui.main_mode.aim, Point(9, 6))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(8, 5))
+		self.assertEqual(ui.main_mode.aim, Point(8, 5))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(9, 4))
+		self.assertEqual(ui.main_mode.aim, Point(9, 4))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(8, 5))
+		self.assertEqual(ui.main_mode.aim, Point(8, 5))
 		self.assertEqual(ui.user_action(ui), (_base.Action.NONE, None))
-		self.assertEqual(ui.aim, Point(9, 6))
+		self.assertEqual(ui.main_mode.aim, Point(9, 6))
 	def should_grab_items(self):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')
