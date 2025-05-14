@@ -152,15 +152,25 @@ class Game(object):
 	def _perform_player_actions(self, ui):
 		""" Controller for player character (via UI). """
 		try:
-			if self.perform_automovement():
-				if ui.user_interrupted():
-					self.stop_automovement()
-				return True
+			self.perform_automovement()
 		except Game.AutoMovementStopped:
 			return True
 
-		action, action_data = ui.user_action(self)
-		self.clear_event() # If we acted - we've seen all the events.
+		if self.in_automovement():
+			if ui.user_interrupted():
+				action, action_data = Action.AUTOSTOP, None
+			else:
+				action, action_data = Action.NONE, None
+		else:
+			action, action_data = ui.user_action(self)
+
+		if not self.in_automovement():
+			self.clear_event() # If we acted - we've seen all the events.
+		if action == Action.AUTOSTOP:
+			try:
+				self.stop_automovement()
+			except Game.AutoMovementStopped:
+				pass
 		if action == Action.NONE:
 			pass
 		elif action == Action.EXIT:
@@ -547,6 +557,8 @@ class Game(object):
 		self.movement_queue.extend(path)
 		self.autoexploring = True
 		return True
+	def in_automovement(self):
+		return self.autoexploring or bool(self.movement_queue)
 	def perform_automovement(self):
 		""" Performs next step from auto-movement queue, if any.
 		Stops on events.

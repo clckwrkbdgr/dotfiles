@@ -83,6 +83,8 @@ class Keymapping: # pragma: no cover -- TODO
 		Optional param may be passed to callback.
 		If param is callable, it is called with argument of actual key name (useful in case of multikeys) and its result is used as an actual param instead.
 		Optional help description can be specified. If not, docstring for the callback is used as help (if present).
+		Key may be None (usually means "no user input detected in nodelay mode).
+		Such key will not be displayed in list_all() output.
 		"""
 		_help_description = help
 		def _actual(f, help_description=_help_description):
@@ -97,7 +99,8 @@ class Keymapping: # pragma: no cover -- TODO
 					actual_param = _resolved_param
 				self.multikeybindings[keys] = self.Keybinding(keys, f, actual_param, help_description)
 			else:
-				self.keybindings[Key(key)] = self.Keybinding(key, f, param, help_description)
+				_key = Key(key) if key is not None else None
+				self.keybindings[_key] = self.Keybinding(key, f, param, help_description)
 			return f
 		return _actual
 	def get(self, key, bind_self=None):
@@ -135,7 +138,8 @@ class Keymapping: # pragma: no cover -- TODO
 		return _bound_param
 	def list_all(self):
 		""" Returns sorted list of all keybindings (multikeys first). """
-		return sorted(self.multikeybindings.items()) + sorted(self.keybindings.items())
+		no_none = lambda item: item[0] is not None
+		return sorted(filter(no_none, self.multikeybindings.items())) + sorted(filter(no_none, self.keybindings.items()))
 
 class Cursor(object): # pragma: no cover -- TODO
 	def __init__(self, engine):
@@ -228,15 +232,15 @@ class Curses(object):
 		return Key(ch)
 	def get_control(self, keymapping, nodelay=False, timeout=100, bind_self=None, callback_args=None, callback_kwargs=None): # pragma: no cover -- TODO
 		""" Returns mapped object from keymapping for the pressed key
-		or None in case of unknown key (or no keypress in the nodelay mode).
+		or None in case of unknown key.
+		In nodelay mode tries to return keymapping for None,
+		or None value itself if no such keymapping found.
 		See get_keypress and Keymapping.get for other details.
 		Callback will be detected and executed automatically.
 		If callback_args and/or callback_kwargs are given and callback is bound,
 		they will be passed as args/kwargs to the callback.
 		"""
 		key = self.get_keypress(nodelay=nodelay, timeout=timeout)
-		if key is None:
-			return None
 		control = keymapping.get(key, bind_self=bind_self)
 		if callable(control):
 			callback_args = callback_args or []

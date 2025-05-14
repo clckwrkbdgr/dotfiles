@@ -16,6 +16,7 @@ class Action(Enum):
 	DROP
 	WIELD
 	UNWIELD
+	AUTOSTOP
 	"""
 
 class UI(object):

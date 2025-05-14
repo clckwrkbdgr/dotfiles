@@ -69,6 +69,8 @@ class SubMode(object):
 		keymapping). E.g. can set .done=True for one-time screens (Press Any Key).
 		"""
 		pass
+	def nodelay(self):
+		return False
 	def user_action(self, ui):
 		""" Performs sub-mode actions.
 		Note that every sub-mode action will still go to the game,
@@ -79,7 +81,7 @@ class SubMode(object):
 		"""
 		Log.debug('Performing user actions.')
 		if self.KEYMAPPING:
-			control = ui.get_control(self.KEYMAPPING, bind_self=self, callback_args=(self.game,))
+			control = ui.get_control(self.KEYMAPPING, nodelay=self.nodelay(), bind_self=self, callback_args=(self.game,))
 			if control is not None:
 				return control
 		else:
@@ -87,8 +89,6 @@ class SubMode(object):
 			self.done = True
 		self.on_any_key(ui)
 		return Action.NONE, None
-
-Keys = Keymapping()
 
 class Curses(clckwrkbdgr.tui.Curses, UI):
 	""" TUI using curses lib. """
@@ -129,6 +129,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		action, param = result
 		return action, param
 
+Keys = Keymapping()
 class MainGame(SubMode):
 	KEYMAPPING = Keys
 	def __init__(self, *args, **kwargs):
@@ -136,6 +137,8 @@ class MainGame(SubMode):
 		self.aim = None
 		self.messages = []
 
+	def nodelay(self):
+		return self.game.in_automovement()
 	def redraw(self, ui):
 		""" Redraws game completely. """
 		game = self.game
@@ -232,6 +235,10 @@ class MainGame(SubMode):
 
 	def on_any_key(self, ui):
 		ui.cursor(bool(self.aim))
+	@Keys.bind(None)
+	def interrupt(self, game): # pragma: no cover
+		""" Show this help. """
+		return Action.AUTOSTOP, None
 	@Keys.bind('?')
 	def help(self, game):
 		""" Show this help. """
