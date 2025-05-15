@@ -39,7 +39,7 @@ class MockUI(ui.UI):
 		pass
 	def redraw_all(self): # pragma: no cover
 		self.events.append('redraw')
-	def user_action(self): # pragma: no cover
+	def _user_action(self): # pragma: no cover
 		if self.game.in_automovement():
 			self.events.append('user_interrupted')
 			if self.interrupts.pop(0):
@@ -54,7 +54,7 @@ class MockUI(ui.UI):
 	def pre_action(self):
 		return self.game._pre_action()
 	def action(self):
-		action, action_data = self.user_action()
+		action, action_data = self._user_action()
 		return self.game._perform_actors_actions(action, action_data)
 
 class AbstractTestDungeon(unittest.TestCase):

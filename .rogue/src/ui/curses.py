@@ -104,7 +104,9 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	def redraw_all(self):
 		""" Redraws current mode. """
 		self.loop.redraw()
-	def user_action(self):
+	def pre_action(self):
+		return self.loop.modes[-1].pre_action()
+	def action(self):
 		""" Performs user action in current mode.
 		May start or quit sub-modes as a result.
 		"""
@@ -114,12 +116,10 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 			self.loop.modes.pop()
 		if isinstance(result, SubMode):
 			self.loop.modes.append(result)
-			return Action.NONE, None
-		return result
-	def pre_action(self):
-		return self.loop.modes[-1].pre_action()
-	def action(self):
-		action, action_data = self.user_action()
+			action, action_data = Action.NONE, None
+		else:
+			action, action_data = result
+		self.last_result = (action, action_data)
 		if len(self.loop.modes) > 1:
 			game = self.loop.modes[1].game
 		else:
