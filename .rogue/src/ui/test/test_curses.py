@@ -145,9 +145,9 @@ class TestCurses(unittest.TestCase):
 		ui = curses.Curses(main_mode)
 		ui.window = MockCurses()
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
@@ -161,9 +161,9 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses()
 		dungeon.movement_queue = ['mock']
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
@@ -175,9 +175,9 @@ class TestCurses(unittest.TestCase):
 		dungeon.god.vision = True
 		dungeon.god.noclip = True
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
@@ -199,9 +199,9 @@ class TestCurses(unittest.TestCase):
 
 		dungeon.events.append('GIBBERISH')
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster! monsters! exit! Unknown event {0}!                             '.format(repr('GIBBERISH'))),
@@ -211,9 +211,9 @@ class TestCurses(unittest.TestCase):
 		
 		dungeon.clear_event()
 		self.assertEqual(ui.user_action(), (_base.Action.WAIT, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
@@ -230,9 +230,9 @@ class TestCurses(unittest.TestCase):
 		dungeon.jump_to(Point(2, 6))
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> monster. monster-1hp.                                                 '),
@@ -245,9 +245,9 @@ class TestCurses(unittest.TestCase):
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_KILLED_MONSTER[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> monster. monster-1hp. player x> monster. monster-1hp. monster dies.   '),
@@ -269,7 +269,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.move(dungeon.monsters[-1], game.Direction.LEFT)
 		dungeon.move(dungeon.monsters[-1], game.Direction.LEFT)
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
 		DISPLAYED_LAYOUT_FULL = [
 				'####################',
@@ -283,7 +283,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				'####################',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster... monster bumps.                                                       '),
@@ -299,9 +299,9 @@ class TestCurses(unittest.TestCase):
 
 		dungeon.affect_health(dungeon.get_player(), -dungeon.get_player().hp)
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_DEAD[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player-10hp. player dies.                                                       '),
@@ -330,7 +330,7 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses('? ')
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 
 		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [
@@ -356,7 +356,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 	@mock.patch('curses.curs_set')
 	def should_display_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
@@ -370,9 +370,9 @@ class TestCurses(unittest.TestCase):
 			mock.call(1),
 			])
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
@@ -409,7 +409,7 @@ class TestCurses(unittest.TestCase):
 		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('x')
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, dungeon.get_player().pos)
+		self.assertEqual(ui.loop.modes[0].aim, dungeon.get_player().pos)
 		curs_set.assert_has_calls([
 			mock.call(1),
 			])
@@ -419,10 +419,10 @@ class TestCurses(unittest.TestCase):
 		main_mode = MainGame(dungeon)
 		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('x')
-		ui.main_mode.aim = dungeon.get_player().pos
+		ui.loop.modes[0].aim = dungeon.get_player().pos
 		ui.cursor(True)
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertIsNone(ui.main_mode.aim)
+		self.assertIsNone(ui.loop.modes[0].aim)
 		curs_set.assert_has_calls([
 			mock.call(0),
 			])
@@ -435,7 +435,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.user_action(), (_base.Action.WAIT, None))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
 		self.assertEqual(ui.user_action(), (_base.Action.WALK_TO, Point(9, 6)))
-		self.assertIsNone(ui.main_mode.aim)
+		self.assertIsNone(ui.loop.modes[0].aim)
 		curs_set.assert_has_calls([
 			mock.call(1),
 			])
@@ -450,27 +450,27 @@ class TestCurses(unittest.TestCase):
 		main_mode = MainGame(dungeon)
 		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('~Q~v~c')
-		ui.redraw()
+		ui.redraw_all()
 		main_display = ui.window.get_calls()
 		godmode_display = main_display + [('addstr', 0, 0, 'Select God option (cv)'), ('refresh',)]
 		self.maxDiff = None
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), main_display)
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertEqual(ui.user_action(), (_base.Action.GOD_TOGGLE_VISION, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), main_display)
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertEqual(ui.user_action(), (_base.Action.GOD_TOGGLE_NOCLIP, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), main_display)
 	def should_suicide(self):
 		dungeon = mock_dungeon.build('single mock monster')
@@ -487,8 +487,8 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.user_action(), (_base.Action.DESCEND, None))
 		dungeon.descend()
 
-		ui.redraw()
-		self.assertEqual(ui.window.get_calls(), [
+		ui.redraw_all()
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.NEXT_DUNGEON[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster! exit! player V... monster!                                             '),
@@ -515,23 +515,23 @@ class TestCurses(unittest.TestCase):
 		ui = curses.Curses(main_mode)
 		ui.window = MockCurses('xhjklyubn')
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(9, 6))
+		self.assertEqual(ui.loop.modes[0].aim, Point(9, 6))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(8, 6))
+		self.assertEqual(ui.loop.modes[0].aim, Point(8, 6))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(8, 7))
+		self.assertEqual(ui.loop.modes[0].aim, Point(8, 7))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(8, 6))
+		self.assertEqual(ui.loop.modes[0].aim, Point(8, 6))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(9, 6))
+		self.assertEqual(ui.loop.modes[0].aim, Point(9, 6))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(8, 5))
+		self.assertEqual(ui.loop.modes[0].aim, Point(8, 5))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(9, 4))
+		self.assertEqual(ui.loop.modes[0].aim, Point(9, 4))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(8, 5))
+		self.assertEqual(ui.loop.modes[0].aim, Point(8, 5))
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		self.assertEqual(ui.main_mode.aim, Point(9, 6))
+		self.assertEqual(ui.loop.modes[0].aim, Point(9, 6))
 	def should_grab_items(self):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')
@@ -540,7 +540,7 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses('glgD')
 
 		self.assertEqual(ui.user_action(), (_base.Action.GRAB, Point(9, 6)))
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####        #  ',
 				'     ....   #  ...  ',
@@ -553,7 +553,7 @@ class TestCurses(unittest.TestCase):
 				'#.................. ',
 				' #################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
@@ -563,7 +563,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertEqual(ui.user_action(), (_base.Action.MOVE, game.Direction.RIGHT))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -576,7 +576,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
@@ -586,7 +586,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertEqual(ui.user_action(), (_base.Action.GRAB, Point(10, 6)))
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -599,7 +599,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion.                                              '),
@@ -609,7 +609,7 @@ class TestCurses(unittest.TestCase):
 
 		dungeon.get_player().inventory.append(dungeon.get_player().inventory[0])
 		dungeon.get_player().inventory.append(dungeon.get_player().inventory[0])
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -622,7 +622,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion.                                              '),
@@ -632,7 +632,7 @@ class TestCurses(unittest.TestCase):
 
 		for _ in range(10):
 			dungeon.get_player().inventory.append(dungeon.get_player().inventory[0])
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -645,7 +645,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion.                                              '),
@@ -660,7 +660,7 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses('d' + chr(Key.ESCAPE) + 'lgdja')
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to drop:',),
@@ -669,7 +669,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####        #  ',
 				'     ....   #  ...  ',
@@ -682,7 +682,7 @@ class TestCurses(unittest.TestCase):
 				'#.................. ',
 				' #################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
@@ -694,7 +694,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(ui.user_action(), (_base.Action.GRAB, Point(10, 6)))
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -707,7 +707,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion.                                              '),
@@ -716,7 +716,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to drop:',),
@@ -725,7 +725,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'No such item (j)',),
@@ -735,7 +735,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertEqual(ui.user_action(), (_base.Action.DROP, dungeon.get_player().inventory[0]))
 		dungeon.drop_item(dungeon.get_player(), dungeon.get_player().inventory[0])
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -748,7 +748,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion. player VV potion.                            '),
@@ -764,7 +764,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertEqual(ui.user_action(), (_base.Action.MOVE, game.Direction.RIGHT))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -777,7 +777,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
@@ -786,7 +786,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to consume:',),
@@ -795,7 +795,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -808,7 +808,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
@@ -818,7 +818,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertEqual(ui.user_action(), (_base.Action.GRAB, Point(10, 6)))
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -831,7 +831,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion.                                              '),
@@ -840,7 +840,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to consume:',),
@@ -849,7 +849,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'No such item (j)',),
@@ -859,7 +859,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertEqual(ui.user_action(), (_base.Action.CONSUME, dungeon.get_player().inventory[0]))
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
 				'     ...   ## ..... ',
@@ -872,7 +872,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player ^^ potion. player <~ potion.                            '),
@@ -889,9 +889,9 @@ class TestCurses(unittest.TestCase):
 		dungeon.jump_to(Point(2, 6))
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT_THIEF[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> thief. thief-1hp.                                                     '),
@@ -905,7 +905,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.clear_event()
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 
-		ui.redraw()
+		ui.redraw_all()
 		self.maxDiff = None
 		DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP = [
 				'#########        #  ',
@@ -919,7 +919,7 @@ class TestCurses(unittest.TestCase):
 				'#...........        ',
 				'##################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> thief. thief-1hp. thief dies. thief VV money.                         '),
@@ -934,7 +934,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.clear_event()
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 
 		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [
@@ -944,7 +944,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 1, 0, '(Empty)',),
@@ -952,7 +952,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####        #  ',
 				'     ....   #  ...  ',
@@ -965,7 +965,7 @@ class TestCurses(unittest.TestCase):
 				'#.................. ',
 				' #################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
@@ -977,7 +977,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 1, 0, 'a - potion',),
@@ -992,7 +992,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.get_player().inventory.append(items.Item(MockGame.ITEMS['weapon'], Point(0, 0)))
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'wielding [a] - None',),
@@ -1000,7 +1000,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		DISPLAYED_LAYOUT = [
 				'    #####        #  ',
 				'     ....   #  ...  ',
@@ -1013,7 +1013,7 @@ class TestCurses(unittest.TestCase):
 				'#.................. ',
 				' #################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
@@ -1022,7 +1022,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'wielding [a] - None',),
@@ -1030,7 +1030,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to wield:',),
@@ -1039,8 +1039,8 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
-		self.assertEqual(ui.window.get_calls(), [
+		ui.redraw_all()
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
@@ -1049,7 +1049,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'wielding [a] - None',),
@@ -1057,7 +1057,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to wield:',),
@@ -1066,7 +1066,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'No such item (b)',),
@@ -1076,8 +1076,8 @@ class TestCurses(unittest.TestCase):
 
 		self.assertEqual(ui.user_action(), (_base.Action.WIELD, dungeon.get_player().inventory[0]))
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
-		ui.redraw()
-		self.assertEqual(ui.window.get_calls(), [
+		ui.redraw_all()
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player <+ weapon.                                              '),
@@ -1086,7 +1086,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertEqual(ui.user_action(), (_base.Action.NONE, None))
-		ui.redraw()
+		ui.redraw_all()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'wielding [a] - weapon',),
@@ -1095,8 +1095,8 @@ class TestCurses(unittest.TestCase):
 
 		self.assertEqual(ui.user_action(), (_base.Action.UNWIELD, None))
 		dungeon.unwield_item(dungeon.get_player())
-		ui.redraw()
-		self.assertEqual(ui.window.get_calls(), [
+		ui.redraw_all()
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster! player <+ weapon. player +> weapon.                            '),

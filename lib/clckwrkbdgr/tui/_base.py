@@ -282,27 +282,41 @@ class ModeLoop(object): # pragma: no cover -- TODO
 	"""
 	def __init__(self, ui):
 		self.ui = ui
-		self.mode = None
+		self.modes = []
 	def start(self, mode):
 		""" Start loop from the given ("main") mode.
 		"""
-		self.mode = mode
+		self.modes.append(mode)
 		while self.run_iteration():
 			pass
 	def run_iteration(self):
+		""" Single iteration: redraw + user action. """
 		self.redraw()
 		return self.action()
 	def redraw(self):
-		with self.ui.redraw(clean=not self.mode.TRANSPARENT):
-			self.mode.redraw(self.ui)
-	def action(self):
-		if self.mode.KEYMAPPING:
-			control = self.ui.get_control(self.mode.KEYMAPPING, nodelay=self.mode.nodelay())
+		""" Redraws all modes, starting from the first non-transparent mode from the end of the current stack. """
+		visible = []
+		for mode in reversed(self.modes):
+			visible.append(mode)
+			if not mode.TRANSPARENT:
+				break
+		for mode in reversed(visible):
+			with self.ui.redraw(clean=not mode.TRANSPARENT):
+				mode.redraw(self.ui)
+	def mode_action(self, mode):
+		""" Perform user action for a specific mode.
+		Returns False if mode is done and should be closed, otherwise True.
+		"""
+		if mode.KEYMAPPING:
+			control = self.ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay())
 		else:
-			control = self.ui.get_keypress(nodelay=self.mode.nodelay())
-		if not self.mode.action(control):
+			control = self.ui.get_keypress(nodelay=mode.nodelay())
+		if not mode.action(control):
 			return False
 		return True
+	def action(self):
+		""" Perform user actions for the current stack of modes. """
+		return self.mode_action(self.modes[-1])
 
 class ExceptionScreen(object):
 	""" Context manager that captures exceptions and displays traceback in window overlay,

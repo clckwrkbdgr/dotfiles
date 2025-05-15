@@ -37,7 +37,7 @@ class MockUI(ui.UI):
 	def __exit__(self, *targs): # pragma: no cover
 		self.events.append('__exit__')
 		pass
-	def redraw(self): # pragma: no cover
+	def redraw_all(self): # pragma: no cover
 		self.events.append('redraw')
 	def user_action(self): # pragma: no cover
 		if self.game.in_automovement():

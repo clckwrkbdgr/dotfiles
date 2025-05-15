@@ -97,48 +97,43 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	""" TUI using curses lib. """
 	def __init__(self, main_mode):
 		super(Curses, self).__init__()
-		self.main_mode = main_mode
-		self.mode = None
-	def redraw(self):
+		self.loop = clckwrkbdgr.tui.ModeLoop(self)
+		self.loop.modes.append(main_mode)
+	def redraw_all(self):
 		""" Redraws current mode. """
-		if self.mode is None or self.mode.TRANSPARENT:
-			with super(Curses, self).redraw():
-				self.main_mode.redraw(self)
-		if self.mode:
-			with super(Curses, self).redraw(clean=not self.mode.TRANSPARENT):
-				self.mode.redraw(self)
+		self.loop.redraw()
 	def user_action(self):
 		""" Performs user action in current mode.
 		May start or quit sub-modes as a result.
 		"""
 		Log.debug('Performing user actions.')
-		if self.mode:
-			result = self.mode.user_action(self)
+		if len(self.loop.modes) > 1:
+			result = self.loop.modes[1].user_action(self)
 			if isinstance(result, SubMode):
-				self.mode = result
+				self.loop.modes[1] = result
 				return Action.NONE, None
 			action, param = result
-			if self.mode.done:
-				self.mode = None
+			if self.loop.modes[1].done:
+				self.loop.modes.pop(1)
 			return action, param
-		result = self.main_mode.user_action(self)
+		result = self.loop.modes[0].user_action(self)
 		if isinstance(result, SubMode):
-			self.mode = result
+			self.loop.modes.append(result)
 			return Action.NONE, None
 		action, param = result
 		return action, param
 	def pre_action(self):
-		if self.mode:
-			game = self.mode.game
+		if len(self.loop.modes) > 1:
+			game = self.loop.modes[1].game
 		else:
-			game = self.main_mode.game
+			game = self.loop.modes[0].game
 		return game._pre_action()
 	def action(self):
 		action, action_data = self.user_action()
-		if self.mode:
-			game = self.mode.game
+		if len(self.loop.modes) > 1:
+			game = self.loop.modes[1].game
 		else:
-			game = self.main_mode.game
+			game = self.loop.modes[0].game
 		return game._perform_actors_actions(action, action_data)
 
 Keys = Keymapping()
