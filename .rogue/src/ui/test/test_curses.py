@@ -391,10 +391,13 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses([-1, -1, 'j'])
 
 		dungeon.autoexploring = True
+		self.assertTrue(ui.pre_action())
 		self.assertTrue(ui.action())
 		self.assertEqual(ui.last_result, (_base.Action.NONE, None))
+		self.assertTrue(ui.pre_action())
 		self.assertTrue(ui.action())
 		self.assertEqual(ui.last_result, (_base.Action.NONE, None))
+		self.assertTrue(ui.pre_action())
 		self.assertTrue(ui.action())
 		self.assertEqual(ui.last_result, (_base.Action.AUTOSTOP, None))
 	def should_ignore_unknown_keys(self):

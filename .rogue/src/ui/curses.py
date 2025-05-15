@@ -58,6 +58,7 @@ class SubMode(object):
 	KEYMAPPING = None # Keymapping object for this mode.
 	def __init__(self, game):
 		self.game = game
+		self.was_nodelay = False
 		self.done = False
 	def redraw(self, ui): # pragma: no cover
 		""" Redefine to draw mode-related features on screen.
@@ -72,28 +73,16 @@ class SubMode(object):
 	def nodelay(self):
 		return False
 	def pre_action(self):
+		self.was_nodelay = self.nodelay()
 		return self.game._pre_action()
-	def user_action(self, ui):
-		""" Performs sub-mode actions.
-		Note that every sub-mode action will still go to the game,
-		so it has to explicitly return Action.NONE in case of some internal
-		sub-mode operations that do not affect the game.
-		If keymapping is not set, every action will close the mode.
-		See also: on_any_key()
-		"""
-		Log.debug('Performing user actions.')
-		if self.KEYMAPPING:
-			nodelay = self.nodelay()
-			control = ui.get_control(self.KEYMAPPING, nodelay=nodelay, bind_self=self, callback_args=(self.game,))
-			if control is not None:
-				if nodelay:
-					return Action.AUTOSTOP, None
-				return control
-		else:
-			ui.get_keypress()
-			self.done = True
-		self.on_any_key(ui)
-		return Action.NONE, None
+	def action(self, control):
+		if control is None:
+			control = (Action.NONE, None)
+		action, action_data = control
+		self.last_result = (action, action_data)
+		if not self.game._perform_actors_actions(action, action_data):
+			return False
+		return True
 
 class Curses(clckwrkbdgr.tui.Curses, UI):
 	""" TUI using curses lib. """
@@ -109,22 +98,41 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	def action(self):
 		""" Performs user action in current mode.
 		May start or quit sub-modes as a result.
+		Note that every sub-mode action will still go to the game,
+		so it has to explicitly return Action.NONE in case of some internal
+		sub-mode operations that do not affect the game.
+		If keymapping is not set, every action will close the mode.
+		See also: on_any_key()
 		"""
 		Log.debug('Performing user actions.')
-		result = self.loop.modes[-1].user_action(self)
-		if self.loop.modes[-1].done:
-			self.loop.modes.pop()
+		mode = self.loop.modes[-1]
+
+		result = Action.NONE, None
+		if mode.KEYMAPPING:
+			control = self.get_control(mode.KEYMAPPING, nodelay=mode.nodelay(), bind_self=mode, callback_args=(mode.game,))
+			if control is not None:
+				if mode.was_nodelay:
+					result = Action.AUTOSTOP, None
+				else:
+					result = control
+		else:
+			self.get_keypress()
+			mode.done = True
+
+		new_mode = None
 		if isinstance(result, SubMode):
-			self.loop.modes.append(result)
-			action, action_data = Action.NONE, None
+			new_mode = result
+			result = mode.action(None)
 		else:
-			action, action_data = result
-		self.last_result = (action, action_data)
-		if len(self.loop.modes) > 1:
-			game = self.loop.modes[1].game
-		else:
-			game = self.loop.modes[0].game
-		return game._perform_actors_actions(action, action_data)
+			result = mode.action(result)
+		mode.on_any_key(self)
+
+		if mode.done:
+			self.loop.modes.pop()
+		if new_mode:
+			self.loop.modes.append(new_mode)
+		self.last_result = mode.last_result
+		return result
 
 Keys = Keymapping()
 class MainGame(SubMode):
