@@ -308,6 +308,20 @@ class TestCurses(unittest.TestCase):
 			('addstr', 24, 0, '[DEAD] Press Any Key...                                                      [?]'),
 			('refresh',),
 			])
+	def should_perform_dungeon_actions(self):
+		dungeon = mock_dungeon.build('single mock monster')
+		main_mode = MainGame(dungeon)
+		ui = curses.Curses(main_mode)
+		ui.window = MockCurses('h? q')
+		self.assertEqual(ui.pre_action(), True)
+		self.assertEqual(ui.action(), True)
+		self.assertEqual(dungeon.get_player().pos, Point(8, 6))
+		self.assertEqual(ui.pre_action(), True)
+		self.assertEqual(ui.action(), True)
+		self.assertEqual(ui.pre_action(), True)
+		self.assertEqual(ui.action(), True)
+		self.assertEqual(ui.pre_action(), True)
+		self.assertEqual(ui.action(), False)
 	def should_show_keybindings_help(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		dungeon.clear_event()

@@ -51,6 +51,11 @@ class MockUI(ui.UI):
 		for event in self.game.events:
 			self.events.append(str(event))
 		return control
+	def pre_action(self):
+		return self.game._pre_action()
+	def action(self):
+		action, action_data = self.user_action()
+		return self.game._perform_actors_actions(action, action_data)
 
 class AbstractTestDungeon(unittest.TestCase):
 	def _formatMessage(self, msg, standardMsg): # pragma: no cover

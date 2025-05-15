@@ -89,6 +89,7 @@ class Game(object):
 		self.visible_monsters = []
 		self.visible_items = []
 		self.events = []
+		self.player_turn = True
 		if dummy:
 			return
 		if load_from_reader:
@@ -135,28 +136,31 @@ class Game(object):
 		Exits when user decided to exit or when player is dead.
 		"""
 		Log.debug('Starting playing...')
-		self.player_turn = True
 		while True:
 			ui.redraw()
-
-			if not self.get_player():
+			if not ui.pre_action():
 				break
-			try:
-				self.perform_automovement()
-			except Game.AutoMovementStopped:
-				pass
-
-			action, action_data = ui.user_action()
-
-			if not self._perform_player_actions(action, action_data):
+			if not ui.action():
 				break
-			if not self.player_turn:
-				for monster in self.monsters:
-					if monster.behavior == monsters.Behavior.PLAYER:
-						continue
-					self._perform_monster_actions(monster)
-				self.player_turn = True
 		return self.get_player() and self.get_player().is_alive()
+	def _pre_action(self):
+		if not self.get_player():
+			return False
+		try:
+			self.perform_automovement()
+		except Game.AutoMovementStopped:
+			pass
+		return True
+	def _perform_actors_actions(self, action, action_data):
+		if not self._perform_player_actions(action, action_data):
+			return False
+		if not self.player_turn:
+			for monster in self.monsters:
+				if monster.behavior == monsters.Behavior.PLAYER:
+					continue
+				self._perform_monster_actions(monster)
+			self.player_turn = True
+		return True
 	def _perform_player_actions(self, action, action_data):
 		""" Controller for player character (via UI). """
 		if not self.in_automovement():

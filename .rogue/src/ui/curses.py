@@ -127,6 +127,19 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 			return Action.NONE, None
 		action, param = result
 		return action, param
+	def pre_action(self):
+		if self.mode:
+			game = self.mode.game
+		else:
+			game = self.main_mode.game
+		return game._pre_action()
+	def action(self):
+		action, action_data = self.user_action()
+		if self.mode:
+			game = self.mode.game
+		else:
+			game = self.main_mode.game
+		return game._perform_actors_actions(action, action_data)
 
 Keys = Keymapping()
 class MainGame(SubMode):
