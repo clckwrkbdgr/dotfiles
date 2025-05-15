@@ -137,7 +137,7 @@ class Game(object):
 		Log.debug('Starting playing...')
 		self.player_turn = True
 		while True:
-			ui.redraw(self)
+			ui.redraw()
 
 			if not self.get_player():
 				break
@@ -146,7 +146,7 @@ class Game(object):
 			except Game.AutoMovementStopped:
 				pass
 
-			action, action_data = ui.user_action(self)
+			action, action_data = ui.user_action()
 
 			if not self._perform_player_actions(action, action_data):
 				break

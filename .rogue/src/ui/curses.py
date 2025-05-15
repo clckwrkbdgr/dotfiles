@@ -99,7 +99,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		super(Curses, self).__init__()
 		self.main_mode = main_mode
 		self.mode = None
-	def redraw(self, ui):
+	def redraw(self):
 		""" Redraws current mode. """
 		if self.mode is None or self.mode.TRANSPARENT:
 			with super(Curses, self).redraw():
@@ -107,13 +107,13 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		if self.mode:
 			with super(Curses, self).redraw(clean=not self.mode.TRANSPARENT):
 				self.mode.redraw(self)
-	def user_action(self, ui):
+	def user_action(self):
 		""" Performs user action in current mode.
 		May start or quit sub-modes as a result.
 		"""
 		Log.debug('Performing user actions.')
 		if self.mode:
-			result = self.mode.user_action(ui)
+			result = self.mode.user_action(self)
 			if isinstance(result, SubMode):
 				self.mode = result
 				return Action.NONE, None
@@ -121,7 +121,7 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 			if self.mode.done:
 				self.mode = None
 			return action, param
-		result = self.main_mode.user_action(ui)
+		result = self.main_mode.user_action(self)
 		if isinstance(result, SubMode):
 			self.mode = result
 			return Action.NONE, None

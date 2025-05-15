@@ -31,10 +31,10 @@ class UI(object):
 	def __exit__(self, *targs): # pragma: no cover
 		""" Should perform finalization of UI engine. """
 		pass
-	def redraw(self, game): # pragma: no cover
+	def redraw(self): # pragma: no cover
 		""" Should update current display with changes (or redraw completely). """
 		raise NotImplementedError()
-	def user_action(self, game): # pragma: no cover
+	def user_action(self): # pragma: no cover
 		""" Accepts user interaction from actual interface.
 
 		Should return tuple (Action, <action payload (depends on action)>).

@@ -26,7 +26,8 @@ class MockWriterStream:
 		self.dump.append(item)
 
 class MockUI(ui.UI):
-	def __init__(self, user_actions, interrupts):
+	def __init__(self, game, user_actions, interrupts):
+		self.game = game
 		self.events = []
 		self.user_actions = list(user_actions)
 		self.interrupts = interrupts
@@ -36,10 +37,10 @@ class MockUI(ui.UI):
 	def __exit__(self, *targs): # pragma: no cover
 		self.events.append('__exit__')
 		pass
-	def redraw(self, game): # pragma: no cover
+	def redraw(self): # pragma: no cover
 		self.events.append('redraw')
-	def user_action(self, game): # pragma: no cover
-		if game.in_automovement():
+	def user_action(self): # pragma: no cover
+		if self.game.in_automovement():
 			self.events.append('user_interrupted')
 			if self.interrupts.pop(0):
 				return ui.Action.AUTOSTOP, None
@@ -47,7 +48,7 @@ class MockUI(ui.UI):
 				return ui.Action.NONE, None
 		control = self.user_actions.pop(0)
 		self.events.append('user_action')
-		for event in game.events:
+		for event in self.game.events:
 			self.events.append(str(event))
 		return control
 
@@ -60,7 +61,7 @@ class AbstractTestDungeon(unittest.TestCase):
 class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_run_main_loop(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.MOVE, game.Direction.UP),
 			(ui.Action.MOVE, game.Direction.DOWN),
 			(ui.Action.DESCEND, None),
@@ -112,7 +113,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			])
 	def should_perform_monsters_turns_after_player_has_done_with_their_turn(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.NONE, None),
 			(ui.Action.MOVE, game.Direction.UP), # Step in.
 			(ui.Action.NONE, None),
@@ -155,7 +156,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(dungeon.monsters[2].hp, 2)
 	def should_die_after_monster_attack(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.NONE, None),
 			(ui.Action.MOVE, game.Direction.UP), # Step in.
 			] + [
@@ -191,7 +192,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(dungeon.monsters[1].hp, 3)
 	def should_suicide_out_of_main_loop(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.SUICIDE, None),
 			], interrupts=[],
 		)
@@ -210,7 +211,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 class TestItems(AbstractTestDungeon):
 	def should_grab_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around 2')
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.MOVE, game.Direction.RIGHT),
 			(ui.Action.GRAB, Point(10, 6)),
 			(ui.Action.EXIT, None),
@@ -236,7 +237,7 @@ class TestItems(AbstractTestDungeon):
 	def should_consume_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.CONSUME, dungeon.get_player().inventory[0]),
 			(ui.Action.EXIT, None),
 			], interrupts=[],
@@ -256,7 +257,7 @@ class TestItems(AbstractTestDungeon):
 	def should_drop_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.DROP, dungeon.get_player().inventory[0]),
 			(ui.Action.EXIT, None),
 			], interrupts=[],
@@ -276,7 +277,7 @@ class TestItems(AbstractTestDungeon):
 	def should_equip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon'], Point(0, 0)))
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.WIELD, dungeon.get_player().inventory[0]),
 			(ui.Action.EXIT, None),
 			], interrupts=[],
@@ -296,7 +297,7 @@ class TestItems(AbstractTestDungeon):
 	def should_unequip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().wielding = items.Item(dungeon.ITEMS['weapon'], Point(0, 0))
-		mock_ui = MockUI(user_actions=[
+		mock_ui = MockUI(dungeon, user_actions=[
 			(ui.Action.UNWIELD, None),
 			(ui.Action.EXIT, None),
 			], interrupts=[],

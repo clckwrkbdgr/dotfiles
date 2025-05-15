@@ -277,23 +277,32 @@ class Mode(object): # pragma: no cover -- TODO
 
 class ModeLoop(object): # pragma: no cover -- TODO
 	""" Main mode loop.
-	Runs redraw/input until aborted.
+	Runs redraw/input until aborted by Mode.action().
 	If .TRANSPARENT is not True, cleans screen before redrawing.
 	"""
 	def __init__(self, ui):
 		self.ui = ui
+		self.mode = None
 	def start(self, mode):
 		""" Start loop from the given ("main") mode.
 		"""
-		while True:
-			with self.ui.redraw(clean=not mode.TRANSPARENT):
-				mode.redraw(self.ui)
-			if mode.KEYMAPPING:
-				control = self.ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay())
-			else:
-				control = self.ui.get_keypress(nodelay=mode.nodelay())
-			if not mode.action(control):
-				break
+		self.mode = mode
+		while self.run_iteration():
+			pass
+	def run_iteration(self):
+		self.redraw()
+		return self.action()
+	def redraw(self):
+		with self.ui.redraw(clean=not self.mode.TRANSPARENT):
+			self.mode.redraw(self.ui)
+	def action(self):
+		if self.mode.KEYMAPPING:
+			control = self.ui.get_control(self.mode.KEYMAPPING, nodelay=self.mode.nodelay())
+		else:
+			control = self.ui.get_keypress(nodelay=self.mode.nodelay())
+		if not self.mode.action(control):
+			return False
+		return True
 
 class ExceptionScreen(object):
 	""" Context manager that captures exceptions and displays traceback in window overlay,
