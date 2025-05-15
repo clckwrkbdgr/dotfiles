@@ -71,6 +71,8 @@ class SubMode(object):
 		pass
 	def nodelay(self):
 		return False
+	def pre_action(self):
+		return self.game._pre_action()
 	def user_action(self, ui):
 		""" Performs sub-mode actions.
 		Note that every sub-mode action will still go to the game,
@@ -107,27 +109,15 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		May start or quit sub-modes as a result.
 		"""
 		Log.debug('Performing user actions.')
-		if len(self.loop.modes) > 1:
-			result = self.loop.modes[1].user_action(self)
-			if isinstance(result, SubMode):
-				self.loop.modes[1] = result
-				return Action.NONE, None
-			action, param = result
-			if self.loop.modes[1].done:
-				self.loop.modes.pop(1)
-			return action, param
-		result = self.loop.modes[0].user_action(self)
+		result = self.loop.modes[-1].user_action(self)
+		if self.loop.modes[-1].done:
+			self.loop.modes.pop()
 		if isinstance(result, SubMode):
 			self.loop.modes.append(result)
 			return Action.NONE, None
-		action, param = result
-		return action, param
+		return result
 	def pre_action(self):
-		if len(self.loop.modes) > 1:
-			game = self.loop.modes[1].game
-		else:
-			game = self.loop.modes[0].game
-		return game._pre_action()
+		return self.loop.modes[-1].pre_action()
 	def action(self):
 		action, action_data = self.user_action()
 		if len(self.loop.modes) > 1:
@@ -397,8 +387,8 @@ class Equipment(SubMode):
 	@EquipmentKeys.bind('a')
 	def wield(self, game):
 		""" Wield or unwield item. """
+		self.done = True
 		if game.get_player().wielding:
-			self.done = True
 			return Action.UNWIELD, None
 		return WieldSelection(game)
 	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
