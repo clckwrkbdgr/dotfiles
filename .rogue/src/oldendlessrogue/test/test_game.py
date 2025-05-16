@@ -16,7 +16,7 @@ class MockUI:
 	@contextlib.contextmanager
 	def redraw(self, clean=None):
 		yield self
-	def get_control(self, _keymapping, nodelay=False):
+	def get_control(self, _keymapping, nodelay=False, bind_self=None, callback_args=None):
 		return self.controls.pop(0)
 
 class MockExplorer:

@@ -249,7 +249,7 @@ class Curses(object):
 		return control
 
 class Mode(object): # pragma: no cover -- TODO
-	TRANSPARENT = True
+	TRANSPARENT = False
 	KEYMAPPING = None
 	def redraw(self, ui):
 		""" Reimplement to redraw current view.
@@ -270,6 +270,12 @@ class Mode(object): # pragma: no cover -- TODO
 		should be aborted.
 		"""
 		raise NotImplementedError()
+	def get_bind_callback_args(self):
+		""" Reimplement in case keybinding callbacks require args.
+		Should return tuple.
+		See ModeLoop.mode_action() for details.
+		"""
+		return None
 	def nodelay(self):
 		""" Reimplement to allow nodelay mode for user input.
 		By default every user input will be blocking.
@@ -279,7 +285,7 @@ class Mode(object): # pragma: no cover -- TODO
 	@classmethod
 	def run(cls, mode, ui):
 		loop = ModeLoop(ui)
-		return loop.start(mode)
+		return loop.run(mode)
 
 class ModeLoop(object): # pragma: no cover -- TODO
 	""" Main mode loop.
@@ -289,7 +295,7 @@ class ModeLoop(object): # pragma: no cover -- TODO
 	def __init__(self, ui):
 		self.ui = ui
 		self.modes = []
-	def start(self, mode):
+	def run(self, mode):
 		""" Start loop from the given ("main") mode.
 		"""
 		self.modes.append(mode)
@@ -311,15 +317,27 @@ class ModeLoop(object): # pragma: no cover -- TODO
 				mode.redraw(self.ui)
 	def mode_action(self, mode):
 		""" Perform user action for a specific mode.
+		Any callbacks are bound to the mode (see also Mode.get_bind_callback_args).
 		Returns False if mode is done and should be closed, otherwise True.
 		"""
 		if mode.KEYMAPPING:
-			control = self.ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay())
+			control = self.ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay(), bind_self=mode, callback_args=mode.get_bind_callback_args())
 		else:
 			control = self.ui.get_keypress(nodelay=mode.nodelay())
-		if not mode.action(control):
-			return False
-		return True
+
+		new_mode = None
+		if isinstance(control, Mode):
+			new_mode = control
+			control = None
+
+		result = mode.action(control)
+
+		if not result:
+			self.modes.pop()
+		if new_mode:
+			self.modes.append(new_mode)
+
+		return result
 	def action(self):
 		""" Perform user actions for the current stack of modes. """
 		current_mode = self.modes[-1]

@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from ._base import UI, Action
+from ._base import Action
 import functools
 from collections import namedtuple
 import curses, curses.ascii
@@ -49,13 +49,11 @@ DIRECTION = {
 	'n' : Direction.DOWN_RIGHT,
 	}
 
-class SubMode(object):
+class SubMode(clckwrkbdgr.tui.Mode):
 	""" Base class for sub mode for the main game (menus, dialogs, some
 	other additional screens).
 	Set .done=True when done and ready to quit sub-mode.
 	"""
-	TRANSPARENT = False # If True, first draw the main game, then this mode on top of it.
-	KEYMAPPING = None # Keymapping object for this mode.
 	def __init__(self, game):
 		self.game = game
 		self.was_nodelay = False
@@ -70,12 +68,20 @@ class SubMode(object):
 		keymapping). E.g. can set .done=True for one-time screens (Press Any Key).
 		"""
 		pass
-	def nodelay(self):
-		return False
 	def pre_action(self):
 		self.was_nodelay = self.nodelay()
 		return self.game._pre_action()
+	def get_bind_callback_args(self):
+		return (self.game,)
 	def action(self, control):
+		""" Performs user action in current mode.
+		May start or quit sub-modes as a result.
+		Note that every sub-mode action will still go to the game,
+		so it has to explicitly return Action.NONE in case of some internal
+		sub-mode operations that do not affect the game.
+		If keymapping is not set, every action will close the mode.
+		See also: on_any_key()
+		"""
 		if not self.KEYMAPPING:
 			control = None
 			self.done = True
@@ -89,46 +95,6 @@ class SubMode(object):
 		if not self.game._perform_actors_actions(action, action_data):
 			return False
 		return not self.done
-
-class Curses(clckwrkbdgr.tui.Curses, UI):
-	""" TUI using curses lib. """
-	def __init__(self, main_mode):
-		super(Curses, self).__init__()
-		self.loop = clckwrkbdgr.tui.ModeLoop(self)
-		self.loop.modes.append(main_mode)
-	def redraw_all(self):
-		""" Redraws current mode. """
-		self.loop.redraw()
-	def action(self):
-		""" Performs user action in current mode.
-		May start or quit sub-modes as a result.
-		Note that every sub-mode action will still go to the game,
-		so it has to explicitly return Action.NONE in case of some internal
-		sub-mode operations that do not affect the game.
-		If keymapping is not set, every action will close the mode.
-		See also: on_any_key()
-		"""
-		Log.debug('Performing user actions.')
-		mode = self.loop.modes[-1]
-		if not mode.pre_action(): # pragma: no cover -- TODO
-			return False
-
-		if mode.KEYMAPPING:
-			control = self.get_control(mode.KEYMAPPING, nodelay=mode.nodelay(), bind_self=mode, callback_args=(mode.game,))
-		else:
-			control = self.get_keypress()
-
-		new_mode = None
-		if isinstance(control, SubMode):
-			new_mode = control
-			control = None
-		result = mode.action(control)
-
-		if not result:
-			self.loop.modes.pop()
-		if new_mode:
-			self.loop.modes.append(new_mode)
-		return result
 
 Keys = Keymapping()
 class MainGame(SubMode):
