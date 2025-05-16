@@ -597,16 +597,6 @@ DialogKeys.map(list('yY'), True)
 QuestLogKeys = clckwrkbdgr.tui.Keymapping()
 QuestLogKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
 
-Keys = clckwrkbdgr.tui.Keymapping()
-Keys.map('S', 'exit')
-Keys.map('.', 'wait')
-Keys.map('g', 'grab')
-Keys.map('i', 'inventory')
-Keys.map('d', 'drop')
-Keys.map('C', 'chat')
-Keys.map('q', 'questlog')
-Keys.map(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
-
 def main(ui):
 	debug = '--debug' in sys.argv
 	if debug:
@@ -627,13 +617,15 @@ def main(ui):
 			game.generate()
 
 	main_game = MainGameMode(game)
-	clckwrkbdgr.tui.Mode.run(main_game, ui)
+	loop = clckwrkbdgr.tui.ModeLoop(ui)
+	loop.run(main_game)
 	if game.player.hp > 0:
 		with savefile.save(SAVEFILE_VERSION) as writer:
 			game.save(writer)
 	else:
 		savefile.unlink()
 
+Keys = clckwrkbdgr.tui.Keymapping()
 class MainGameMode(clckwrkbdgr.tui.Mode):
 	KEYMAPPING = Keys
 	def __init__(self, game):
@@ -726,17 +718,22 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			ui.print_line(24, 0, message_line)
 			if self.messages or game.player.hp <= 0:
 				ui.get_keypress()
-	def action(self, control):
+	def pre_action(self):
+		if self.game.player.hp <= 0:
+			return False
+		self.step_taken = False
+		return True
+	@Keys.bind('S')
+	def exit_game(self):
+		return False
+	@Keys.bind('.')
+	def wait(self):
+		if True:
+			self.step_taken = True
+	@Keys.bind('g')
+	def grab_item(self):
 		game = self.game
-		if game.player.hp <= 0:
-			return None
-		step_taken = False
-		player_pos = game.player.pos.get_global(game.world)
-		if control == 'exit':
-			return None
-		elif control == 'wait':
-			step_taken = True
-		elif control == 'grab':
+		if True:
 			item = next((
 				item for item in
 				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items
@@ -750,8 +747,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				game.player.inventory.append(item)
 				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.remove(item)
 				self.messages.append('Picked up {0}.'.format(item.name))
-				step_taken = True
-		elif control == 'chat':
+				self.step_taken = True
+	@Keys.bind('C')
+	def char(self):
+		game = self.game
+		player_pos = game.player.pos.get_global(game.world)
+		if True:
 			npcs = [
 					monster for monster_pos, monster
 					in game.world.all_monsters()
@@ -815,7 +816,10 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 							self.messages.append('"OK, come back later if you want it."')
 				else:
 					self.messages.append('No one to chat with in that direction.')
-		elif control == 'questlog':
+	@Keys.bind('q')
+	def show_questlog(self):
+		game = self.game
+		if True:
 			questing = [
 					(coord, npc) for coord, npc in game.world.all_monsters(raw=True)
 					if isinstance(npc.behaviour, Questgiver)
@@ -823,9 +827,15 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					]
 			quest_log = QuestLog(questing)
 			clckwrkbdgr.tui.Mode.run(quest_log, ui)
-		elif control == 'inventory':
+	@Keys.bind('i')
+	def display_inventory(self):
+		game = self.game
+		if True:
 			clckwrkbdgr.tui.Mode.run(InventoryMode(game.player.inventory), ui)
-		elif control == 'drop':
+	@Keys.bind('d')
+	def drop_item(self):
+		game = self.game
+		if True:
 			if not game.player.inventory:
 				self.messages.append('Nothing to drop.')
 			else:
@@ -840,8 +850,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					item.pos = game.player.pos.field
 					game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.append(item)
 					self.messages.append('You drop {0}.'.format(item.name))
-					step_taken = True
-		elif isinstance(control, Point):
+					self.step_taken = True
+	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
+	def move_player(self, control):
+		game = self.game
+		player_pos = game.player.pos.get_global(game.world)
+		if True:
 			new_pos = player_pos + control
 			dest_pos = Coord.from_global(new_pos, game.world)
 			dest_field = None
@@ -871,8 +885,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			elif dest_cell.passable:
 				game.player.pos = dest_pos
 				game.autoexpand(game.player.pos, Size(40, 40))
-			step_taken = True
-		if step_taken:
+			self.step_taken = True
+	def action(self, control):
+		if control is False:
+			return False
+		game = self.game
+		if self.step_taken:
 			player_pos = game.player.pos.get_global(game.world)
 			if game.player.hp < game.player.max_hp:
 				game.player.regeneration += 1

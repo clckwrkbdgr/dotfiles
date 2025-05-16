@@ -89,7 +89,10 @@ class Keymapping: # pragma: no cover -- TODO
 		_help_description = help
 		def _actual(f, help_description=_help_description):
 			if not help_description:
-				help_description = f.__doc__.strip()
+				if f.__doc__:
+					help_description = f.__doc__.strip()
+				else:
+					help_description = f.__name__
 			if utils.is_collection(key):
 				keys = tuple(Key(subkey) for subkey in key)
 				actual_param = param
