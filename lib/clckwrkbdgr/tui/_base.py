@@ -256,6 +256,12 @@ class Mode(object): # pragma: no cover -- TODO
 		Clean/refresh is called automatically.
 		"""
 		raise NotImplementedError()
+	def pre_action(self):
+		""" Reimplement to perform some preparation to the user action,
+		like sanity checks etc.
+		Should return False if app is aborting and no user input is even needed.
+		"""
+		return True
 	def action(self, control):
 		""" Reimplement to react to user input.
 		Recieves Key by default.
@@ -316,7 +322,10 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		return True
 	def action(self):
 		""" Perform user actions for the current stack of modes. """
-		return self.mode_action(self.modes[-1])
+		current_mode = self.modes[-1]
+		if not current_mode.pre_action():
+			return False
+		return self.mode_action(current_mode)
 
 class ExceptionScreen(object):
 	""" Context manager that captures exceptions and displays traceback in window overlay,

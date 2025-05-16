@@ -65,7 +65,7 @@ class SubMode(object):
 		May not affect the whole screen, see class field TRANSPARENT.
 		"""
 		raise NotImplementedError()
-	def on_any_key(self, ui): # pragma: no cover
+	def on_any_key(self): # pragma: no cover
 		""" Redefine to process "any other key" action (not defined in the main
 		keymapping). E.g. can set .done=True for one-time screens (Press Any Key).
 		"""
@@ -76,13 +76,19 @@ class SubMode(object):
 		self.was_nodelay = self.nodelay()
 		return self.game._pre_action()
 	def action(self, control):
+		if not self.KEYMAPPING:
+			control = None
+			self.done = True
+		if control is not None and self.was_nodelay:
+			control = Action.AUTOSTOP, None
 		if control is None:
 			control = (Action.NONE, None)
 		action, action_data = control
-		self.last_result = (action, action_data)
+		self.game._last_control_action = (action, action_data)
+		self.on_any_key()
 		if not self.game._perform_actors_actions(action, action_data):
 			return False
-		return True
+		return not self.done
 
 class Curses(clckwrkbdgr.tui.Curses, UI):
 	""" TUI using curses lib. """
@@ -93,8 +99,6 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 	def redraw_all(self):
 		""" Redraws current mode. """
 		self.loop.redraw()
-	def pre_action(self):
-		return self.loop.modes[-1].pre_action()
 	def action(self):
 		""" Performs user action in current mode.
 		May start or quit sub-modes as a result.
@@ -106,32 +110,24 @@ class Curses(clckwrkbdgr.tui.Curses, UI):
 		"""
 		Log.debug('Performing user actions.')
 		mode = self.loop.modes[-1]
+		if not mode.pre_action(): # pragma: no cover -- TODO
+			return False
 
-		result = Action.NONE, None
 		if mode.KEYMAPPING:
 			control = self.get_control(mode.KEYMAPPING, nodelay=mode.nodelay(), bind_self=mode, callback_args=(mode.game,))
-			if control is not None:
-				if mode.was_nodelay:
-					result = Action.AUTOSTOP, None
-				else:
-					result = control
 		else:
-			self.get_keypress()
-			mode.done = True
+			control = self.get_keypress()
 
 		new_mode = None
-		if isinstance(result, SubMode):
-			new_mode = result
-			result = mode.action(None)
-		else:
-			result = mode.action(result)
-		mode.on_any_key(self)
+		if isinstance(control, SubMode):
+			new_mode = control
+			control = None
+		result = mode.action(control)
 
-		if mode.done:
+		if not result:
 			self.loop.modes.pop()
 		if new_mode:
 			self.loop.modes.append(new_mode)
-		self.last_result = mode.last_result
 		return result
 
 Keys = Keymapping()
@@ -147,6 +143,7 @@ class MainGame(SubMode):
 	def redraw(self, ui):
 		""" Redraws game completely. """
 		game = self.game
+		ui.cursor(bool(self.aim))
 		Log.debug('Redrawing interface.')
 		viewport = game.get_viewport()
 		for row in range(viewport.height):
@@ -238,8 +235,6 @@ class MainGame(SubMode):
 	def on_unequipping(self, game, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	def on_any_key(self, ui):
-		ui.cursor(bool(self.aim))
 	@Keys.bind(None)
 	def on_idle(self, game):
 		""" Show this help. """
@@ -338,7 +333,7 @@ class GodModeMenu(SubMode):
 	def redraw(self, ui):
 		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
 		ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
-	def on_any_key(self, ui):
+	def on_any_key(self):
 		self.done = True
 	@GodModeKeys.bind('v')
 	def vision(self, game):

@@ -138,8 +138,6 @@ class Game(object):
 		Log.debug('Starting playing...')
 		while True:
 			ui.redraw_all()
-			if not ui.pre_action():
-				break
 			if not ui.action():
 				break
 		return self.get_player() and self.get_player().is_alive()
