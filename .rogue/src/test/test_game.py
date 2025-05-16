@@ -55,9 +55,13 @@ class MockUI(clckwrkbdgr.tui.ModeLoop):
 		return control
 	def action(self):
 		if not self.game._pre_action():
+			self.modes = [] # Emulate ending loop.
 			return False
 		action, action_data = self._user_action()
-		return self.game._perform_actors_actions(action, action_data)
+		result = self.game._perform_actors_actions(action, action_data)
+		if not result:
+			self.modes = [] # Emulate ending loop.
+		return result
 
 class AbstractTestDungeon(unittest.TestCase):
 	def _formatMessage(self, msg, standardMsg): # pragma: no cover

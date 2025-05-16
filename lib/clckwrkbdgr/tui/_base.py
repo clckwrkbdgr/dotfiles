@@ -300,9 +300,10 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		self.modes = []
 	def run(self, mode):
 		""" Start loop from the given ("main") mode.
+		Runs until the last mode is exited.
 		"""
 		self.modes.append(mode)
-		while self.run_iteration():
+		while self.run_iteration() or self.modes:
 			pass
 	def run_iteration(self):
 		""" Single iteration: redraw + user action. """

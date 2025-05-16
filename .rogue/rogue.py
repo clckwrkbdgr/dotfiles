@@ -550,11 +550,10 @@ InventoryKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
 class InventoryMode(clckwrkbdgr.tui.Mode):
 	TRANSPARENT = False
 	KEYMAPPING = InventoryKeys
-	def __init__(self, inventory, caption=None, select=False):
+	def __init__(self, inventory, caption=None, on_select=None):
 		self.inventory = inventory
 		self.caption = caption
-		self.select = select
-		self.choice = None
+		self.on_select = on_select
 	def redraw(self, ui):
 		if True:
 			if self.caption:
@@ -579,17 +578,14 @@ class InventoryMode(clckwrkbdgr.tui.Mode):
 	def action(self, control):
 		if control == 'cancel':
 			return None
-		if self.select:
+		if self.on_select:
 			selected = ord(control) - ord('a')
 			if selected < 0 or len(self.inventory) <= selected:
 				self.caption = 'No such item: {0}'.format(control)
 			else:
-				self.choice = selected
+				self.on_select(selected)
 				return None
 		return True
-
-DirectionKeys = clckwrkbdgr.tui.Keymapping()
-DirectionKeys.map(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 
 DialogKeys = clckwrkbdgr.tui.Keymapping()
 DialogKeys.map(list('yY'), True)
@@ -725,7 +721,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		return True
 	@Keys.bind('S')
 	def exit_game(self):
-		return False
+		return 'quit'
 	@Keys.bind('.')
 	def wait(self):
 		if True:
@@ -770,15 +766,25 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				self.messages.append("Too much quests already.")
 			else:
 				if len(npcs) > 1:
-					dialog = DirectionDialogMode()
-					clckwrkbdgr.tui.Mode.run(dialog, ui)
-					if dialog.answer:
+					def _on_direction(direction):
 						dest = player_pos + dialog.answer
 						npcs = [npc for npc in npcs if npc.pos == dest]
-					else:
-						npcs = []
+						return self._chat_with_npcs(npcs)
+					return DirectionDialogMode(on_direction=_on_direction)
+				return self._chat_with_npcs(npcs)
+	def _chat_with_npcs(self, npcs):
+		if True:
+			if True:
 				if npcs:
 					npc = npcs[0]
+					return self._chat_with_npc(npc)
+				else:
+					self.messages.append('No one to chat with in that direction.')
+	def _chat_with_npc(self, npc):
+		game = self.game
+		if True:
+			if True:
+				if True:
 					if npc.behaviour.quest:
 						required_amount, required_name, bounty = npc.behaviour.quest
 						have_required_items = [
@@ -786,9 +792,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 								if item.name == required_name
 								][:required_amount]
 						if len(have_required_items) >= required_amount:
-							dialog = TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(self.npc.behaviour.quest)))
-							clckwrkbdgr.tui.Mode.run(dialog, ui)
-							if dialog.answer is True:
+							def _on_yes():
 								self.messages.append('"Thanks. Here you go."')
 								for item in have_required_items:
 									game.player.inventory.remove(item)
@@ -796,8 +800,10 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 									game.player.hp += bounty
 								game.player.max_hp += bounty
 								npc.behaviour.quest = None
-							else:
+							def _on_no():
 								self.messages.append('"OK, come back later if you want it."')
+							return TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(self.npc.behaviour.quest)),
+										on_yes=_on_yes, on_no=_on_no)
 						else:
 							self.messages.append('"Come back with {0} {1}."'.format(*(npc.behaviour.quest)))
 					else:
@@ -807,15 +813,13 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 							colors = [name for name, color in game.COLORS.items() if color.monster]
 							color = random.choice(colors).replace('_', ' ') + ' skin'
 							npc.behaviour.prepared_quest = (amount, color, bounty)
-						dialog = TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)))
-						clckwrkbdgr.tui.Mode.run(dialog, ui)
-						if dialog.answer is True:
+						def _on_yes():
 							npc.behaviour.quest = npc.behaviour.prepared_quest
 							npc.behaviour.prepared_quest = None
-						else:
+						def _on_no():
 							self.messages.append('"OK, come back later if you want it."')
-				else:
-					self.messages.append('No one to chat with in that direction.')
+						return TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)),
+										 on_yes=_on_yes, on_no=_on_no)
 	@Keys.bind('q')
 	def show_questlog(self):
 		game = self.game
@@ -826,12 +830,10 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					and npc.behaviour.quest
 					]
 			quest_log = QuestLog(questing)
-			clckwrkbdgr.tui.Mode.run(quest_log, ui)
+			return quest_log
 	@Keys.bind('i')
 	def display_inventory(self):
-		game = self.game
-		if True:
-			clckwrkbdgr.tui.Mode.run(InventoryMode(game.player.inventory), ui)
+		return InventoryMode(self.game.player.inventory)
 	@Keys.bind('d')
 	def drop_item(self):
 		game = self.game
@@ -839,18 +841,17 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			if not game.player.inventory:
 				self.messages.append('Nothing to drop.')
 			else:
-				menu = InventoryMode(
-						game.player.inventory,
-						caption="Select item to drop (a-z/ESC):",
-						select=True
-					)
-				clckwrkbdgr.tui.Mode.run(menu, ui)
-				if menu.choice is not None:
-					item = game.player.inventory.pop(menu.choice)
+				def _on_select_item(menu_choice):
+					item = game.player.inventory.pop(menu_choice)
 					item.pos = game.player.pos.field
 					game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.append(item)
 					self.messages.append('You drop {0}.'.format(item.name))
 					self.step_taken = True
+				return InventoryMode(
+						game.player.inventory,
+						caption="Select item to drop (a-z/ESC):",
+						on_select=_on_select_item
+					)
 	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 	def move_player(self, control):
 		game = self.game
@@ -887,7 +888,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				game.autoexpand(game.player.pos, Size(40, 40))
 			self.step_taken = True
 	def action(self, control):
-		if control is False:
+		if control == 'quit':
 			return False
 		game = self.game
 		if self.step_taken:
@@ -934,28 +935,40 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 						monster.pos = dest_pos.field
 		return True
 
+DirectionKeys = clckwrkbdgr.tui.Keymapping()
 class DirectionDialogMode(clckwrkbdgr.tui.Mode):
 	TRANSPARENT = True
 	KEYMAPPING = DirectionKeys
-	def __init__(self):
-		self.answer = None
+	def __init__(self, on_direction=None):
+		self.on_direction = on_direction
 	def redraw(self, ui):
 		ui.print_line(24, 0, " " * 80)
 		ui.print_line(24, 0, "Too crowded. Chat in which direction?")
+	@DirectionKeys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
+	def choose_direction(self, direction):
+		if self.on_direction:
+			return self.on_direction(direction)
+		return False
 	def action(self, control):
-		self.answer = control
+		return False
 
 class TradeDialogMode(clckwrkbdgr.tui.Mode):
 	TRANSPARENT = True
 	KEYMAPPING = DialogKeys
-	def __init__(self, question):
-		self.answer = False
+	def __init__(self, question, on_yes=None, on_no=None):
 		self.question = question
+		self.on_yes = on_yes
+		self.on_no = on_no
 	def redraw(self, ui):
 		ui.print_line(24, 0, " " * 80)
 		ui.print_line(24, 0, self.question)
 	def action(self, control):
-		self.answer = control
+		if control:
+			if on.yes:
+				on_yes()
+		else:
+			if on_no:
+				on_no()
 
 class QuestLog(clckwrkbdgr.tui.Mode):
 	TRANSPARENT = False
