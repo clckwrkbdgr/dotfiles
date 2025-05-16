@@ -7,6 +7,7 @@ except: # pragma: no cover
 	from io import StringIO
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
+import clckwrkbdgr.tui
 from ..pcg import builders, settlers
 from .. import monsters, items, terrain
 from .. import pcg
@@ -25,8 +26,9 @@ class MockWriterStream:
 			return
 		self.dump.append(item)
 
-class MockUI(ui.UI):
+class MockUI(clckwrkbdgr.tui.ModeLoop):
 	def __init__(self, game, user_actions, interrupts):
+		super(MockUI, self).__init__(ui=None)
 		self.game = game
 		self.events = []
 		self.user_actions = list(user_actions)
@@ -37,7 +39,7 @@ class MockUI(ui.UI):
 	def __exit__(self, *targs): # pragma: no cover
 		self.events.append('__exit__')
 		pass
-	def redraw_all(self): # pragma: no cover
+	def redraw(self): # pragma: no cover
 		self.events.append('redraw')
 	def _user_action(self): # pragma: no cover
 		if self.game.in_automovement():
@@ -62,6 +64,10 @@ class AbstractTestDungeon(unittest.TestCase):
 		if hasattr(self, 'dungeon'):
 			msg = (msg or '') + '\n' + self.dungeon.tostring()
 		return super()._formatMessage(msg, standardMsg)
+	def main_loop(self, dungeon, loop):
+		from ..ui.curses import MainGame
+		loop.run(MainGame(dungeon))
+		return dungeon.needs_saving()
 
 class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_run_main_loop(self):
@@ -80,7 +86,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			], interrupts=[False] * 2 + [False] * 8 + [True] + [False] * 6,
 		)
 		with mock_ui:
-			self.assertTrue(dungeon.main_loop(mock_ui))
+			self.assertTrue(self.main_loop(dungeon, mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -128,7 +134,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			self.assertTrue(dungeon.main_loop(mock_ui))
+			self.assertTrue(self.main_loop(dungeon, mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -169,7 +175,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			] * 10, interrupts=[],
 		)
 		with mock_ui:
-			self.assertFalse(dungeon.main_loop(mock_ui))
+			self.assertFalse(self.main_loop(dungeon, mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -202,7 +208,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			self.assertFalse(dungeon.main_loop(mock_ui))
+			self.assertFalse(self.main_loop(dungeon, mock_ui))
 		self.assertIsNone(dungeon.get_player())
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
@@ -223,7 +229,7 @@ class TestItems(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			self.assertTrue(dungeon.main_loop(mock_ui))
+			self.assertTrue(self.main_loop(dungeon, mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -248,7 +254,7 @@ class TestItems(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			self.assertTrue(dungeon.main_loop(mock_ui))
+			self.assertTrue(self.main_loop(dungeon, mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -268,7 +274,7 @@ class TestItems(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			self.assertTrue(dungeon.main_loop(mock_ui))
+			self.assertTrue(self.main_loop(dungeon, mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -288,7 +294,7 @@ class TestItems(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			self.assertTrue(dungeon.main_loop(mock_ui))
+			self.assertTrue(self.main_loop(dungeon, mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',
@@ -308,7 +314,7 @@ class TestItems(AbstractTestDungeon):
 			], interrupts=[],
 		)
 		with mock_ui:
-			self.assertTrue(dungeon.main_loop(mock_ui))
+			self.assertTrue(self.main_loop(dungeon, mock_ui))
 		self.maxDiff = None
 		self.assertEqual(mock_ui.events, [
 			'__enter__',

@@ -130,16 +130,7 @@ class Game(object):
 		writer.write(self.strata)
 		writer.write(self.monsters)
 		writer.write(self.items)
-	def main_loop(self, ui):
-		""" Main entry point for the game.
-		Performs main event/action loop, redraws UI.
-		Exits when user decided to exit or when player is dead.
-		"""
-		Log.debug('Starting playing...')
-		while True:
-			ui.redraw_all()
-			if not ui.action():
-				break
+	def needs_saving(self):
 		return self.get_player() and self.get_player().is_alive()
 	def _pre_action(self):
 		if not self.get_player():

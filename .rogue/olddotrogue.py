@@ -92,8 +92,11 @@ def cli():
 	Log.debug('started')
 	with clckwrkbdgr.serialize.stream.AutoSavefile(savefile) as savefile:
 		game = Game(load_from_reader=savefile.reader)
-		with src.ui.auto_ui()() as ui:
-			if game.main_loop(ui):
+		with clckwrkbdgr.tui.Curses() as ui:
+			loop = clckwrkbdgr.tui.ModeLoop(ui)
+			main_mode = src.ui.curses.MainMode(game)
+			loop.run(main_mode)
+			if game.needs_saving():
 				savefile.save(game, src.game.Version.CURRENT)
 	Log.debug('exited')
 
