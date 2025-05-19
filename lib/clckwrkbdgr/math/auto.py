@@ -3,7 +3,7 @@ trace = logging.getLogger(__name__)
 from clckwrkbdgr.math import algorithm
 from clckwrkbdgr.math import Point, Rect, sign, Direction
 
-class Autoexplorer:
+class Autoexplorer(object):
 	""" Simple randomized auto-exploring algorithm over Matrix-like objects.
 	Places target points roughly in the same (initially randomly picked) direction,
 	which may change slowly over time, emulating natural wandering.
