@@ -2,7 +2,26 @@ import logging
 trace = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point
 import clckwrkbdgr.tui
-from .auto import Autoexplorer
+from clckwrkbdgr.math.auto import Autoexplorer
+
+class DungeonExplorer(Autoexplorer): # pragma: no cover
+	def __init__(self, dungeon):
+		self.dungeon = dungeon
+		super(DungeonExplorer, self).__init__()
+	def get_current_pos(self):
+		return self.dungeon.rogue
+	def get_matrix(self):
+		return self.dungeon.terrain
+	def is_passable(self, cell):
+		return cell == '.'
+	def is_valid_target(self, target):
+		distance = target - self.get_current_pos()
+		diff = abs(distance)
+		if not (3 < diff.x < 10 or 3 < diff.y < 10):
+			return False
+		return True
+	def target_area_size(self):
+		return Size(21, 21)
 
 Keys = clckwrkbdgr.tui.Keymapping()
 Keys.map('q', SystemExit)
@@ -24,7 +43,7 @@ class Game(clckwrkbdgr.tui.Mode):
 	def __init__(self, dungeon, autoexplorer=None):
 		self.dungeon = dungeon
 		self.autoexplore = None
-		self.autoexplorer_class = autoexplorer or Autoexplorer
+		self.autoexplorer_class = autoexplorer or DungeonExplorer
 	def redraw(self, ui):
 		for y in range(-self.VIEW_CENTER.y, 25 - self.VIEW_CENTER.y):
 			for x in range(-self.VIEW_CENTER.x, 25 - self.VIEW_CENTER.x):
@@ -45,11 +64,11 @@ class Game(clckwrkbdgr.tui.Mode):
 			return True
 		if control == 'autoexplore':
 			if self.autoexplore:
-				control = self.autoexplore.process(self.dungeon)
+				control = self.autoexplore.next()
 				trace.debug('Autoexploring: {0}'.format(repr(control)))
 			else:
 				trace.debug('Starting self.autoexplore.')
-				self.autoexplore = self.autoexplorer_class()
+				self.autoexplore = self.autoexplorer_class(self.dungeon)
 				return True
 		elif control == 'ESC':
 			trace.debug('Stopping self.autoexplore.')

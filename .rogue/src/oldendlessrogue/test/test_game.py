@@ -22,7 +22,7 @@ class MockUI:
 class MockExplorer:
 	def __init__(self, controls):
 		self.controls = controls
-	def process(self, dungeon):
+	def next(self):
 		return self.controls.pop(0)
 
 class MockBuilder:
@@ -115,7 +115,7 @@ class TestGame(unittest.TestCase):
 			]
 		ui = MockUI(['autoexplore'] + ['autoexplore'] * len(autoexplorer_controls) + ['ESC', SystemExit])
 		dungeon = self._create_dungeon()
-		game = Game(dungeon, autoexplorer=lambda: MockExplorer(autoexplorer_controls))
+		game = Game(dungeon, autoexplorer=lambda _: MockExplorer(autoexplorer_controls))
 		game.run(game, ui)
 
 		expected = Matrix((25, 25), '.')
