@@ -489,21 +489,6 @@ class TestVisibility(AbstractTestDungeon):
 				""").replace('_', ' '))
 
 class TestMovement(AbstractTestDungeon):
-	def should_convert_shift_to_direction(self):
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(0, 0)), None)
-
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(1, 0)), game.Direction.RIGHT)
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(-1, 0)), game.Direction.LEFT)
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(0, 1)), game.Direction.DOWN)
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(0, -1)), game.Direction.UP)
-
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(-1, 1)), game.Direction.DOWN_LEFT)
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(1, -1)), game.Direction.UP_RIGHT)
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(-1, -1)), game.Direction.UP_LEFT)
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(1, 1)), game.Direction.DOWN_RIGHT)
-
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(2, 0)), game.Direction.RIGHT)
-		self.assertEqual(game.Game.get_direction(Point(0, 0), Point(2, 3)), game.Direction.DOWN_RIGHT)
 	def should_move_player_character(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))

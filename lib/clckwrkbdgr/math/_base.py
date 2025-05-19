@@ -96,6 +96,29 @@ def distance(point_a, point_b):
 	""" Amount of cells between two points. """
 	return max(abs(point_a.x - point_b.x), abs(point_a.y - point_b.y))
 
+class Direction:
+	""" Direction on a rectangular grid.
+	"""
+	NONE = Point(0,  0)
+	LEFT = Point(-1,  0)
+	DOWN = Point( 0, +1)
+	UP = Point( 0, -1)
+	RIGHT = Point(+1,  0)
+	UP_LEFT = Point(-1, -1)
+	UP_RIGHT = Point(+1, -1)
+	DOWN_LEFT = Point(-1, +1)
+	DOWN_RIGHT = Point(+1, +1)
+
+	@classmethod
+	def from_points(cls, start, target):
+		""" Returns vector from start to target as a Direction value. """
+		shift = target - start
+		shift = Point(
+				shift.x // abs(shift.x) if shift.x else 0,
+				shift.y // abs(shift.y) if shift.y else 0,
+				)
+		return shift
+
 class Size(Vector): # pragma: no cover
 	""" Convenience type definition for 2D vector
 	with access to first two elements under aliases .with and .height

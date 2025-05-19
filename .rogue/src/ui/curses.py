@@ -273,7 +273,7 @@ class MainGame(SubMode):
 		""" Move. """
 		Log.debug('Moving.')
 		if self.aim:
-			shift = Game.SHIFT[direction]
+			shift = direction
 			new_pos = self.aim + shift
 			if game.strata.valid(new_pos):
 				self.aim = new_pos

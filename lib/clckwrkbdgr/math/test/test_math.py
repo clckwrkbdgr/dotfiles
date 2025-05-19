@@ -6,7 +6,7 @@ except ImportError: # pragma: no cover
 	jsonpickle = None
 import textwrap
 import clckwrkbdgr.math
-from clckwrkbdgr.math import Point, distance, Size, Rect, Matrix
+from clckwrkbdgr.math import Point, Direction, distance, Size, Rect, Matrix
 
 class MyVector(clckwrkbdgr.math.Vector):
 	@property
@@ -96,6 +96,23 @@ class TestPoint(unittest.TestCase):
 		self.assertEqual(distance(Point(0, 0), Point(2, 0)), 2)
 		self.assertEqual(distance(Point(0, 0), Point(2, 1)), 2)
 		self.assertEqual(distance(Point(0, 0), Point(2, 2)), 2)
+
+class TestDirection(unittest.TestCase):
+	def should_convert_shift_to_direction(self):
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(0, 0)), Direction.NONE)
+
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(1, 0)), Direction.RIGHT)
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(-1, 0)), Direction.LEFT)
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(0, 1)), Direction.DOWN)
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(0, -1)), Direction.UP)
+
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(-1, 1)), Direction.DOWN_LEFT)
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(1, -1)), Direction.UP_RIGHT)
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(-1, -1)), Direction.UP_LEFT)
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(1, 1)), Direction.DOWN_RIGHT)
+
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(2, 0)), Direction.RIGHT)
+		self.assertEqual(Direction.from_points(Point(0, 0), Point(2, 3)), Direction.DOWN_RIGHT)
 
 class TestRect(unittest.TestCase):
 	def should_construct_rect(self):

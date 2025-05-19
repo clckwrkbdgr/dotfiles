@@ -1,25 +1,13 @@
 from .defs import *
 from . import pcg
 from clckwrkbdgr.pcg import RNG
-from clckwrkbdgr.math import Point, Matrix, Size
+from clckwrkbdgr.math import Point, Direction, Matrix, Size
 from . import messages
 import logging
 Log = logging.getLogger('rogue')
 from .ui import Action
 from . import monsters, items, terrain
 import clckwrkbdgr.math
-
-class Direction(Enum):
-	""" NONE
-	UP_LEFT
-	UP
-	UP_RIGHT
-	LEFT
-	RIGHT
-	DOWN_LEFT
-	DOWN
-	DOWN_RIGHT
-	"""
 
 class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	@staticmethod
@@ -57,17 +45,6 @@ class Game(object):
 	TERRAIN = None
 	SPECIES = None
 	ITEMS = None
-
-	SHIFT = {
-			Direction.LEFT : Point(-1,  0),
-			Direction.DOWN : Point( 0, +1),
-			Direction.UP : Point( 0, -1),
-			Direction.RIGHT : Point(+1,  0),
-			Direction.UP_LEFT : Point(-1, -1),
-			Direction.UP_RIGHT : Point(+1, -1),
-			Direction.DOWN_LEFT : Point(-1, +1),
-			Direction.DOWN_RIGHT : Point(+1, +1),
-			}
 
 	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None, load_from_reader=None):
 		""" Creates game instance and optionally generate new world.
@@ -212,17 +189,8 @@ class Game(object):
 				elif clckwrkbdgr.math.distance(monster.pos, self.get_player().pos) <= monster.species.vision:
 					is_transparent = lambda p: self.is_transparent_to_monster(p, monster)
 					if clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(monster.pos, self.get_player().pos, is_transparent):
-						direction = self.get_direction(monster.pos, self.get_player().pos)
+						direction = Direction.from_points(monster.pos, self.get_player().pos)
 						self.move(monster, direction)
-	@classmethod
-	def get_direction(cls, start, target):
-		""" Returns vector from start to target as a Direction value. """
-		shift = target - start
-		shift = Point(
-				shift.x // abs(shift.x) if shift.x else 0,
-				shift.y // abs(shift.y) if shift.y else 0,
-				)
-		return next((k for k,v in cls.SHIFT.items() if v == shift), None)
 	def get_viewport(self):
 		""" Returns current viewport size (for UI purposes). """
 		return self.strata.size
@@ -375,7 +343,7 @@ class Game(object):
 		May produce all sorts of other events.
 		Returns True, is action succeeds, otherwise False.
 		"""
-		shift = self.SHIFT[direction]
+		shift = direction
 		Log.debug('Shift: {0}'.format(shift))
 		new_pos = actor.pos + shift
 		if not self.strata.valid(new_pos):
