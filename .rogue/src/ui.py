@@ -1,13 +1,12 @@
 from __future__ import absolute_import
-from ._base import Action
+from .defs import Action
 import functools
 from collections import namedtuple
 import curses, curses.ascii
 import logging
 Log = logging.getLogger('rogue')
-from .. import messages
-from ..game import Game, Direction
-from clckwrkbdgr.math import Point
+from . import messages
+from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
 import clckwrkbdgr.tui
 from clckwrkbdgr.tui import Key, Keymapping

@@ -5,14 +5,14 @@ try:
 except ImportError: # pragma: no cover
 	import mock
 mock.patch.TEST_PREFIX = 'should'
-from .. import curses, _base
-from ..curses import MainGame
-from ...pcg import builders, settlers
-from ... import game, monsters, items, messages, terrain
-from clckwrkbdgr.math import Point
+from .. import ui
+from ..ui import MainGame
+from .. import items, messages
+from .. import defs as _base
+from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
-from ...test import mock_dungeon
-from ...test.mock_dungeon import MockGame
+from ..test import mock_dungeon
+from ..test.mock_dungeon import MockGame
 from clckwrkbdgr.tui import Key, ModeLoop, Curses
 
 class MockCurses:
@@ -142,7 +142,7 @@ class TestCurses(unittest.TestCase):
 		ui.window = MockCurses(key_sequence)
 		return ui, loop
 	def should_handle_all_events(self):
-		handled_events = curses.Events.list_all_events()
+		handled_events = ui.Events.list_all_events()
 		known_events = sorted(utils.all_subclasses(messages.Event), key=lambda cls: cls.__name__)
 		self.assertEqual(known_events, handled_events)
 
@@ -194,9 +194,9 @@ class TestCurses(unittest.TestCase):
 		dungeon.start_autoexploring()
 		# Monster is already spotted from the beginning,
 		# now move into cave opening to detect exit.
-		dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT)
-		dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT)
-		dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT)
+		dungeon.move(dungeon.get_player(), Direction.UP_RIGHT)
+		dungeon.move(dungeon.get_player(), Direction.UP_RIGHT)
+		dungeon.move(dungeon.get_player(), Direction.UP_RIGHT)
 
 		dungeon.events.append('GIBBERISH')
 
@@ -228,7 +228,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.clear_event()
 
 		dungeon.jump_to(Point(2, 6))
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -242,8 +242,8 @@ class TestCurses(unittest.TestCase):
 
 		# Finish him.
 		dungeon.clear_event()
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -260,12 +260,12 @@ class TestCurses(unittest.TestCase):
 		dungeon.clear_event()
 		dungeon.god.vision = True
 
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
 
-		dungeon.move(dungeon.monsters[-1], game.Direction.LEFT)
-		dungeon.move(dungeon.monsters[-1], game.Direction.LEFT)
+		dungeon.move(dungeon.monsters[-1], Direction.LEFT)
+		dungeon.move(dungeon.monsters[-1], Direction.LEFT)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -514,21 +514,21 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'hjklyubn')
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.LEFT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.LEFT))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.DOWN))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.DOWN))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.UP))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.UP))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.RIGHT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.RIGHT))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.UP_LEFT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.UP_LEFT))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.UP_RIGHT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.UP_RIGHT))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.DOWN_LEFT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.DOWN_LEFT))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.DOWN_RIGHT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.DOWN_RIGHT))
 	@mock.patch('curses.curs_set')
 	def should_move_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
@@ -589,7 +589,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.RIGHT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.RIGHT))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -719,7 +719,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.RIGHT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.RIGHT))
 		self.assertTrue(loop.action())
 		self.assertEqual(dungeon._last_control_action, (_base.Action.GRAB, Point(10, 6)))
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
@@ -793,7 +793,7 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon, 'le' + chr(Key.ESCAPE) + 'geja')
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, game.Direction.RIGHT))
+		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.RIGHT))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -921,7 +921,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.clear_event()
 
 		dungeon.jump_to(Point(2, 6))
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -935,9 +935,9 @@ class TestCurses(unittest.TestCase):
 
 		# Finish him.
 		dungeon.clear_event()
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
 		dungeon.clear_event()
-		dungeon.move(dungeon.get_player(), game.Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.UP)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -1008,7 +1008,7 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 
-		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
+		dungeon.move(dungeon.get_player(), Direction.RIGHT)
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 
 		self.assertTrue(loop.action())

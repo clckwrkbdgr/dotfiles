@@ -69,7 +69,7 @@ class AbstractTestDungeon(unittest.TestCase):
 			msg = (msg or '') + '\n' + self.dungeon.tostring()
 		return super()._formatMessage(msg, standardMsg)
 	def main_loop(self, dungeon, loop):
-		from ..ui.curses import MainGame
+		from ..ui import MainGame
 		loop.run(MainGame(dungeon))
 		return dungeon.needs_saving()
 
