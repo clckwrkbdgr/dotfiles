@@ -1,5 +1,5 @@
-from ._base import Point, Size, Matrix
-from ._base import get_neighbours
+from ._base import Point, Size
+from .grid import Matrix, get_neighbours
 
 class Wave(object):
 	""" Defines abstract wave algorithm on set of linkes nodes (like graph or matrix)
