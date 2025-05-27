@@ -30,6 +30,7 @@ class MockBuilder:
 		self.rogue_pos = rogue_pos or (0, 0)
 		self.walls = walls or []
 	def build_block(self, block):
+		block.clear('.')
 		if not self.walls:
 			return
 		walls = self.walls.pop(0)

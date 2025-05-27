@@ -2,6 +2,7 @@ from clckwrkbdgr import unittest
 import textwrap
 from .._base import Point
 from ..grid import Matrix, HexGrid, get_neighbours
+from ..grid import EndlessMatrix
 
 class TestMatrix(unittest.TestCase):
 	def should_create_matrix(self):
@@ -216,3 +217,136 @@ class TestAlgorithms(unittest.TestCase):
 		self.assertEqual(neighbours, [Point(0, 1)])
 		neighbours = list(get_neighbours(m, (0, 0), with_diagonal=True, check=lambda c: int(c) > 1))
 		self.assertEqual(neighbours, [Point(0, 1), Point(1, 1)])
+
+class TestEndlessMatrix(unittest.TestCase):
+	@staticmethod
+	def to_string(field):
+		result = []
+		for y in range(field.shift.y, field.shift.y + field.block_size.y * 3):
+			result.append('')
+			for x in range(field.shift.x, field.shift.x + field.block_size.x * 3):
+				result[-1] += field.cell((x, y))
+		return '\n'.join(result) + '\n'
+
+	def setUp(self):
+		_walls = [
+			[(0, 0)], [(1, 0)], [(2, 0)],
+			[(0, 1)], [(1, 1)], [(2, 1)],
+			[(0, 2)], [(1, 2)], [(2, 2)],
+
+			[(0, 0), (1, 0), (2, 0)],
+			[(0, 1), (1, 1), (2, 1)],
+			[(0, 2), (1, 2), (2, 2)],
+
+			[(0, 0), (0, 1), (0, 2)],
+			[(1, 0), (1, 1), (1, 2)],
+			[(2, 0), (2, 1), (2, 2)],
+
+			[(0, 0), (1, 0), (0, 1)],
+			[(0, 0), (1, 1), (2, 0)],
+			[(1, 0), (2, 0), (2, 1)],
+			[(0, 0), (1, 1), (0, 2)],
+			[(1, 0), (0, 1), (2, 1), (1, 2)],
+			[(2, 0), (1, 1), (2, 2)],
+			[(0, 2), (1, 2), (0, 1)],
+			[(0, 2), (1, 1), (2, 2)],
+			[(1, 2), (2, 2), (2, 1)],
+			]
+		def _builder(block):
+			block.clear('.')
+			walls = _walls.pop(0)
+			for wall in walls:
+				block.set_cell(wall, '#')
+		self.field = EndlessMatrix(block_size=(3, 3), builder=_builder)
+	def should_create_and_build_endless_field(self):
+		self.assertEqual(self.to_string(self.field), unittest.dedent("""\
+		#...#...#
+		.........
+		.........
+		.........
+		#...#...#
+		.........
+		.........
+		.........
+		#...#...#
+		"""))
+	def should_compare_endless_fields(self):
+		first = EndlessMatrix(block_size=(3, 3), builder=lambda block: block.clear('.'))
+		second = EndlessMatrix(block_size=(3, 3), builder=lambda block: block.clear('.'))
+		self.assertEqual(first, second)
+		second.recalibrate((10, 10))
+		self.assertNotEqual(first, second)
+	def should_check_if_cell_coords_are_valid(self):
+		self.assertTrue(self.field.valid((0, 0)))
+		self.assertTrue(self.field.valid((1, 1)))
+		self.assertFalse(self.field.valid((-10, -10)))
+	def should_return_empty_sprite_for_cells_outside(self):
+		self.assertEqual(self.field.cell((-10, -10)), None)
+	def should_recalibrate_layout_when_anchor_point_is_changed(self):
+		original = unittest.dedent("""\
+		#...#...#
+		.........
+		.........
+		.........
+		#...#...#
+		.........
+		.........
+		.........
+		#...#...#
+		""")
+		self.assertEqual(self.field.shift, Point(-3, -3))
+		self.assertEqual(self.to_string(self.field), original)
+		self.field.recalibrate((0, 0))
+		self.assertEqual(self.field.shift, Point(-3, -3))
+		self.assertEqual(self.to_string(self.field), original)
+		self.field.recalibrate((1, 0))
+		self.assertEqual(self.field.shift, Point(-3, -3))
+		self.assertEqual(self.to_string(self.field), original)
+		self.field.recalibrate((2, 0))
+		self.assertEqual(self.field.shift, Point(-3, -3))
+		self.assertEqual(self.to_string(self.field), original)
+
+		shifted_right = unittest.dedent("""\
+		.#...####
+		.........
+		.........
+		.........
+		.#...####
+		.........
+		.........
+		.........
+		.#...####
+		""")
+		self.field.recalibrate((3, 0))
+		self.assertEqual(self.field.shift, Point(0, -3))
+		self.assertEqual(self.to_string(self.field), shifted_right)
+
+		shifted_left = unittest.dedent("""\
+		#...#...#
+		#........
+		#........
+		.#.......
+		.#..#...#
+		.#.......
+		..#......
+		..#......
+		..#.#...#
+		""")
+		self.field.recalibrate((2, 0))
+		self.assertEqual(self.field.shift, Point(-3, -3))
+		self.assertEqual(self.to_string(self.field), shifted_left)
+
+		completely_new = unittest.dedent("""\
+		##.#.#.##
+		#...#...#
+		.........
+		#...#...#
+		.#.#.#.#.
+		#...#...#
+		.........
+		#...#...#
+		##.#.#.##
+		""")
+		self.field.recalibrate((20, 20))
+		self.assertEqual(self.field.shift, Point(15, 15))
+		self.assertEqual(self.to_string(self.field), completely_new)

@@ -257,3 +257,84 @@ def get_neighbours(matrix, pos, check=None, with_diagonal=False):
 		if check and not check(matrix.cell(p)):
 			continue
 		yield p
+
+class EndlessMatrix(object):
+	""" Sort of a "window" over an endless map.
+	The global map is divided into blocks of the same size, at every moment only 9 of them are accessible:
+	the central one (which holds current position of interest) and 3x3 belt of surrounding maps.
+	After position of interest is moved, method recalibrate(new_pos) should be called
+	to recalculate available blocks.
+	"""
+	def __init__(self, block_size, builder, default_value=None):
+		""" Create 3x3 blocks of given size and fill them using builder callable (accepts a Matrix object).
+		Default filling value can be supplied. It will also be used for recalibration.
+		At the start, anchor pos is considered to be at (0, 0) of the central block.
+		"""
+		self.builder = builder
+		self.block_size = Size(block_size)
+		self.shift = Point(0, 0) - self.block_size
+		self.blocks = Matrix((3, 3))
+		self.default_value = default_value
+		for row in range(self.blocks.height):
+			for col in range(self.blocks.width):
+				self.blocks.set_cell((col, row), Matrix(self.block_size, self.default_value))
+				self.builder(self.blocks.cell((col, row)))
+	def __getstate__(self): # pragma: no cover
+		return {
+				'block_size' : self.block_size,
+				'shift' : self.shift,
+				'blocks' : self.blocks,
+				'default_value' : self.default_value,
+				}
+	def __setstate__(self, state): # pragma: no cover
+		self.__dict__.update(state)
+	def __eq__(self, other):
+		return type(other) is type(self) \
+				and self.block_size == other.block_size \
+				and self.shift == other.shift \
+				and self.blocks == other.blocks
+	def valid(self, pos):
+		""" Returns True if global position is contained within any of the available 3x3 blocks. """
+		relative_pos = Point(pos) - self.shift
+		block_pos = Point(relative_pos.x // self.block_size.width, relative_pos.y // self.block_size.height)
+		if not self.blocks.valid(block_pos):
+			return False
+		block = self.blocks.cell(block_pos)
+		block_rel_pos = Point(relative_pos.x % self.block_size.width, relative_pos.y % self.block_size.height)
+		return block.valid(block_rel_pos)
+	def cell(self, pos):
+		""" Returns cell at the global position, if valid.
+		Otherwise returns None.
+		"""
+		relative_pos = Point(pos) - self.shift
+		block_pos = Point(relative_pos.x // self.block_size.width, relative_pos.y // self.block_size.height)
+		if not self.blocks.valid(block_pos):
+			return None
+		block = self.blocks.cell(block_pos)
+		block_rel_pos = Point(relative_pos.x % self.block_size.width, relative_pos.y % self.block_size.height)
+		return block.cell(block_rel_pos)
+	def recalibrate(self, anchor_pos):
+		""" Recalculates and shifts block configuration so the central one
+		will always contain anchor pos.
+		Rebuilds blocks with builder callable.
+		"""
+		relative_pos = Point(anchor_pos) - self.shift
+		block_pos = Point(relative_pos.x // self.block_size.width, relative_pos.y // self.block_size.height)
+		if block_pos == Point(1, 1):
+			return
+		block_shift = block_pos - Point(1, 1)
+		new_blocks = Matrix((3, 3))
+		for row in range(new_blocks.height):
+			for col in range(new_blocks.width):
+				pos = Point(col, row)
+				old_pos = pos + block_shift
+				if self.blocks.valid(old_pos):
+					new_blocks.set_cell(pos, self.blocks.cell(old_pos))
+				else:
+					new_blocks.set_cell(pos, Matrix(self.block_size, self.default_value))
+					self.builder(new_blocks.cell(pos))
+		self.blocks = new_blocks
+		self.shift += Point(
+				block_shift.x * self.block_size.width,
+				block_shift.y * self.block_size.height,
+				)

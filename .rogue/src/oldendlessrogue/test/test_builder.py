@@ -1,6 +1,6 @@
 from clckwrkbdgr.math import Point, Size, Matrix
 from clckwrkbdgr import unittest
-from ..dungeon import Strata
+from ..dungeon import EndlessMatrix as Strata
 from ..builders import *
 
 class MockBuilder:
@@ -16,7 +16,7 @@ class TestMainBuilder(unittest.TestCase):
 		builder.build_block(block)
 		self.assertEqual(block.tostring(), '.#.\n#..\n..#\n')
 	def should_place_rogue(self):
-		terrain = Strata(block_size=(3, 3), builder=MockBuilder())
+		terrain = Strata(block_size=(3, 3), builder=MockBuilder().build_block)
 		builder = Builders()
 		pos = builder.place_rogue(terrain)
 		self.assertEqual(pos, (1, 1))
