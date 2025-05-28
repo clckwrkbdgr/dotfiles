@@ -251,7 +251,7 @@ class Overworld:
 			if zone is None:
 				continue
 			for field_index in zone.fields:
-				for monster in zone.fields.cell(field_index).monsters:
+				for monster in zone.fields.cell(field_index).data.monsters:
 					coord = Coord(zone_index, field_index, monster.pos)
 					if not raw:
 						coord = coord.get_global(self)
@@ -270,7 +270,7 @@ class Zone:
 		size = Size(stream.read(int), stream.read(int))
 		self.fields = Matrix(size, None)
 		for field_index in self.fields:
-			field = Field(Size(1, 1), None)
+			field = Field(Size(1, 1), FieldData(), None)
 			field.load(stream)
 			self.fields.set_cell(field_index, field)
 	@property
@@ -285,24 +285,16 @@ class Zone:
 		return self.fields.height * self.field_size.height
 
 class Field:
-	def __init__(self, size, default_tile):
+	def __init__(self, size, data, default_tile=None):
 		self.tiles = Matrix(size, default_tile)
-		self.items = []
-		self.monsters = []
+		self.data = data
 	def save(self, stream):
 		stream.write(self.tiles.width)
 		stream.write(self.tiles.height)
 		for tile_index in self.tiles:
 			tile = self.tiles.cell(tile_index)
 			tile.save(stream)
-
-		stream.write(len(self.items))
-		for item in self.items:
-			item.save(stream)
-
-		stream.write(len(self.monsters))
-		for monster in self.monsters:
-			monster.save(stream)
+		stream.write(self.data)
 	def load(self, stream):
 		size = Size(stream.read(int), stream.read(int))
 		self.tiles = Matrix(size, None)
@@ -310,7 +302,23 @@ class Field:
 			tile = Terrain(Size(), None)
 			tile.load(stream)
 			self.tiles.set_cell(tile_index, tile)
+		self.data = stream.read(type(self.data))
 
+class FieldData:
+	def __init__(self):
+		self.items = []
+		self.monsters = []
+	def save(self, stream):
+		stream.write(len(self.items))
+		for item in self.items:
+			item.save(stream)
+
+		stream.write(len(self.monsters))
+		for monster in self.monsters:
+			monster.save(stream)
+	@classmethod
+	def load(cls, stream):
+		self = cls()
 		items = stream.read(int)
 		for _ in range(items):
 			item = Item(Point(0, 0), None, None)
@@ -322,6 +330,7 @@ class Field:
 			monster = Monster(Point(0, 0), None, None)
 			monster.load(stream)
 			self.monsters.append(monster)
+		return self
 
 def generate_field():
 	return random.choice([
@@ -332,7 +341,7 @@ def generate_field():
 		])()
 
 def generate_forest():
-	field = Field((16, 16), Terrain(Sprite('.', 'green')))
+	field = Field((16, 16), FieldData(), Terrain(Sprite('.', 'green')))
 	forest_density = random.randrange(10) * 10
 	for _ in range(forest_density):
 		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'bold_green')))
@@ -343,7 +352,7 @@ def generate_forest():
 	return field
 
 def generate_desert():
-	field = Field((16, 16), Terrain(Sprite('.', 'bold_yellow')))
+	field = Field((16, 16), FieldData(), Terrain(Sprite('.', 'bold_yellow')))
 	for _ in range(random.randrange(3)):
 		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('^', 'yellow'), passable=False))
 	for _ in range(10):
@@ -351,7 +360,7 @@ def generate_desert():
 	return field
 
 def generate_thundra():
-	field = Field((16, 16), Terrain(Sprite('.', 'bold_white')))
+	field = Field((16, 16), FieldData(), Terrain(Sprite('.', 'bold_white')))
 	for _ in range(3 + random.randrange(3)):
 		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'cyan')))
 	for _ in range(3 + random.randrange(7)):
@@ -359,7 +368,7 @@ def generate_thundra():
 	return field
 
 def generate_marsh():
-	field = Field((16, 16), Terrain(Sprite('~', 'cyan')))
+	field = Field((16, 16), FieldData(), Terrain(Sprite('~', 'cyan')))
 	for _ in range(100):
 		field.tiles.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('~', 'green')))
 	for _ in range(random.randrange(100)):
@@ -408,7 +417,7 @@ def add_building(field, colors):
 		10,
 		behaviour=Questgiver(),
 		)
-	field.monsters.append(dweller)
+	field.data.monsters.append(dweller)
 
 Color = namedtuple('Color', 'fg attr dweller monster')
 class Game:
@@ -511,7 +520,7 @@ class Game:
 						random.randrange(zone.fields.cell(pos).tiles.size.width),
 						random.randrange(zone.fields.cell(pos).tiles.size.height),
 						)
-				while any(other.pos == monster_pos for other in zone.fields.cell(pos).monsters):
+				while any(other.pos == monster_pos for other in zone.fields.cell(pos).data.monsters):
 					monster_pos = Point(
 							random.randrange(zone.fields.cell(pos).tiles.size.width),
 							random.randrange(zone.fields.cell(pos).tiles.size.height),
@@ -536,7 +545,7 @@ class Game:
 						None, Sprite('*', monster_color),
 						'{0} skin'.format(monster_color.replace('_', ' ')),
 						))
-				zone.fields.cell(pos).monsters.append(monster)
+				zone.fields.cell(pos).data.monsters.append(monster)
 		return zone
 
 def iter_rect(topleft, bottomright):
@@ -671,12 +680,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 						continue
 					tile_sprite = field.tiles.cell(pos).sprite
 					ui.print_char(screen_pos.x, screen_pos.y, tile_sprite.sprite, tile_sprite.color)
-				for item in field.items:
+				for item in field.data.items:
 					screen_pos = item.pos + field_topleft
 					if not self.viewport.contains(screen_pos, with_border=True):
 						continue
 					ui.print_char(screen_pos.x, screen_pos.y, item.sprite.sprite, item.sprite.color)
-				for monster in field.monsters:
+				for monster in field.data.monsters:
 					screen_pos = monster.pos + field_topleft
 					if not self.viewport.contains(screen_pos, with_border=True):
 						continue
@@ -690,7 +699,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		ui.print_line(1, hud_pos, "T:{0}".format(game.passed_time))
 		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
 		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.player.inventory)))
-		player_zone_items = game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items
+		player_zone_items = game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).data.items
 		item_here = next((
 			item for item in player_zone_items
 			if game.player.pos.field == item.pos
@@ -732,7 +741,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		if True:
 			item = next((
 				item for item in
-				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items
+				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).data.items
 				if game.player.pos.field == item.pos
 				), None)
 			if not item:
@@ -741,7 +750,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				self.messages.append('Inventory is full.')
 			else:
 				game.player.inventory.append(item)
-				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.remove(item)
+				game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).data.items.remove(item)
 				self.messages.append('Picked up {0}.'.format(item.name))
 				self.step_taken = True
 	@Keys.bind('C')
@@ -844,7 +853,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				def _on_select_item(menu_choice):
 					item = game.player.inventory.pop(menu_choice)
 					item.pos = game.player.pos.field
-					game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).items.append(item)
+					game.world.zones.cell(game.player.pos.world).fields.cell(game.player.pos.zone).data.items.append(item)
 					self.messages.append('You drop {0}.'.format(item.name))
 					self.step_taken = True
 				return InventoryMode(
@@ -866,7 +875,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					dest_field = game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone)
 					if dest_field.tiles.valid(dest_pos.field):
 						dest_cell = dest_field.tiles.cell(dest_pos.field)
-			monster = next((monster for monster in dest_field.monsters if dest_pos.field == monster.pos), None)
+			monster = next((monster for monster in dest_field.data.monsters if dest_pos.field == monster.pos), None)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
 					self.messages.append('You bump into dweller.')
@@ -874,12 +883,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					monster.hp -= 1
 					self.messages.append('You hit monster.')
 					if monster.hp <= 0:
-						dest_field.monsters.remove(monster)
+						dest_field.data.monsters.remove(monster)
 						self.messages.append('Monster is dead.')
 						for item in monster.inventory:
 							item.pos = monster.pos
 							monster.inventory.remove(item)
-							dest_field.items.append(item)
+							dest_field.data.items.append(item)
 							self.messages.append('Monster dropped {0}.'.format(item.name))
 			elif dest_cell is None:
 				self.messages.append('Will not fall into the void.')
@@ -926,12 +935,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					dest_pos = Coord.from_global(new_pos, game.world)
 					dest_field = game.world.zones.cell(dest_pos.world).fields.cell(dest_pos.zone)
 					dest_cell = dest_field.tiles.cell(dest_pos.field)
-					if any(other.pos == dest_pos.field for other in dest_field.monsters):
+					if any(other.pos == dest_pos.field for other in dest_field.data.monsters):
 						self.messages.append('Monster bump into monster.')
 					elif dest_cell.passable:
 						if monster_coord.world != dest_pos.world or monster_coord.zone != dest_pos.zone:
-							game.world.zones.cell(monster_coord.world).fields.cell(monster_coord.zone).monsters.remove(monster)
-							dest_field.monsters.append(monster)
+							game.world.zones.cell(monster_coord.world).fields.cell(monster_coord.zone).data.monsters.remove(monster)
+							dest_field.data.monsters.append(monster)
 						monster.pos = dest_pos.field
 		return True
 
@@ -964,11 +973,11 @@ class TradeDialogMode(clckwrkbdgr.tui.Mode):
 		ui.print_line(24, 0, self.question)
 	def action(self, control):
 		if control:
-			if on.yes:
-				on_yes()
+			if self.on_yes:
+				self.on_yes()
 		else:
-			if on_no:
-				on_no()
+			if self.on_no:
+				self.on_no()
 
 class QuestLog(clckwrkbdgr.tui.Mode):
 	TRANSPARENT = False

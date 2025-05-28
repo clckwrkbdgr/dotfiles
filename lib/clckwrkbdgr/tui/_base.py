@@ -346,6 +346,7 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		""" Perform user actions for the current stack of modes. """
 		current_mode = self.modes[-1]
 		if not current_mode.pre_action():
+			self.modes.pop()
 			return False
 		return self.mode_action(current_mode)
 
