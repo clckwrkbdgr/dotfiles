@@ -9,6 +9,7 @@ import curses
 import clckwrkbdgr.logging
 Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
+from clckwrkbdgr.math.grid import NestedGrid
 from clckwrkbdgr import xdg
 import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.tui
@@ -27,69 +28,6 @@ MOVEMENT = {
 		}
 
 Sprite = namedtuple('Sprite', 'sprite color')
-
-class Coord:
-	def __init__(self, *coords):
-		self.values = list(coords)
-	@property
-	def world(self):
-		return self.values[0]
-	@world.setter
-	def world(self, value):
-		self.values[0] = value
-	@property
-	def zone(self):
-		return self.values[1]
-	@zone.setter
-	def zone(self, value):
-		self.values[1] = value
-	@property
-	def field(self):
-		return self.values[2]
-	@field.setter
-	def field(self, value):
-		self.values[2] = value
-
-	def save(self, stream):
-		for value in self.values:
-			stream.write(value.x)
-			stream.write(value.y)
-	def load(self, stream):
-		for value in self.values:
-			value.x = stream.read(int)
-			value.y = stream.read(int)
-	def get_global(self, nested_grid):
-		size = Size(1, 1)
-		result = self.values[-1]
-		for index, value in enumerate(reversed(self.values[:-1])):
-			size.width *= nested_grid.sizes[-1-index].width
-			size.height *= nested_grid.sizes[-1-index].height
-			result += Point(value.x * size.width, value.y * size.height)
-		return result
-	def __str__(self):
-		return ';'.join(
-				''.join('{0:02X}'.format(value.x) for value in self.values),
-				''.join('{0:02X}'.format(value.y) for value in self.values),
-				)
-	@classmethod
-	def from_global(cls, pos, nested_grid):
-		sizes = [Size(1, 1)]
-		for index in range(len(nested_grid.sizes) - 1):
-			sizes.append(Size(
-				sizes[-1].width * nested_grid.sizes[-1-index].width,
-				sizes[-1].height * nested_grid.sizes[-1-index].height,
-				))
-		values = []
-		for size in reversed(sizes):
-			values.append(Point(
-					pos.x // size.width,
-					pos.y // size.width,
-					))
-			pos = Point(
-					pos.x % size.width,
-					pos.y % size.height,
-					)
-		return cls(*values)
 
 class Terrain:
 	def __init__(self, sprite=None, passable=True):
@@ -141,12 +79,10 @@ class Monster:
 		self.behaviour = behaviour
 		self.inventory = []
 	def save(self, stream):
-		if isinstance(self.pos, Coord):
-			stream.write('|'.join((
-				','.join(map(str, self.pos.world)),
-				','.join(map(str, self.pos.zone)),
-				','.join(map(str, self.pos.field)),
-				)))
+		if isinstance(self.pos, NestedGrid.Coord):
+			stream.write('|'.join(
+				map(lambda p:','.join(map(str, p)), self.pos.values)
+				))
 		else:
 			stream.write(','.join(map(str, self.pos)))
 		stream.write(self.sprite.sprite)
@@ -170,8 +106,8 @@ class Monster:
 		pos = stream.read()
 		if '|' in pos:
 			parts = pos.split('|')
-			parts = tuple(tuple(map(int, part.split(','))) for part in parts)
-			self.pos = Coord(Point(*(parts[0])), Point(*(parts[1])), Point(*(parts[2])))
+			parts = (Point(*(map(int, part.split(',')))) for part in parts)
+			self.pos = NestedGrid.Coord(*parts)
 		else:
 			self.pos.x, self.pos.y = map(int, pos.split(','))
 		self.sprite = Sprite(stream.read(), stream.read())
@@ -216,64 +152,6 @@ class Item:
 		self.sprite = Sprite(stream.read(), stream.read())
 		self.name = stream.read()
 
-class NestedGrid:
-	def __init__(self, size, data_classes, cell_type):
-		self.cells = Matrix(size, None)
-		self.data_class = data_classes[0]
-		self.data = self.data_class() if self.data_class else None
-		self.nested_data = data_classes[1:]
-		self.cell_type = cell_type
-		self._valid_cell = None
-	def save(self, stream):
-		stream.write(self.cells.width)
-		stream.write(self.cells.height)
-		for tile_index in self.cells:
-			tile = self.cells.cell(tile_index)
-			if self.data_class:
-				tile.save(stream)
-			else:
-				if tile:
-					stream.write('.')
-					tile.save(stream)
-				else:
-					stream.write('')
-		if self.data_class:
-			stream.write(self.data)
-	def load(self, stream):
-		size = Size(stream.read(int), stream.read(int))
-		self.cells = Matrix(size, None)
-		for tile_index in self.cells:
-			if not self.data_class:
-				tile = stream.read()
-				if not tile:
-					continue
-			if self.nested_data:
-				tile = NestedGrid(Size(1, 1), self.nested_data, self.cell_type)
-			else:
-				tile = self.cell_type()
-			tile.load(stream)
-			self.cells.set_cell(tile_index, tile)
-			self._valid_cell = tile_index
-		if self.data_class:
-			self.data = stream.read(type(self.data))
-	def set_cell(self, pos, value):
-		self.cells.set_cell(pos, value)
-		self._valid_cell = pos
-	@property
-	def sizes(self):
-		if self.nested_data:
-			return (self.cells.size,) + self.cells.cell(self._valid_cell).sizes
-		return (self.cells.size,)
-	@property
-	def full_size(self):
-		result = self.sizes[0]
-		for size in self.sizes[1:]:
-			result = Size(
-					result.width * size.width,
-					result.height * size.height,
-					)
-		return result
-
 class ZoneData:
 	def save(self, stream):
 		pass
@@ -309,56 +187,48 @@ class FieldData:
 			self.monsters.append(monster)
 		return self
 
-def generate_field():
-	return random.choice([
+def generate_field(field):
+	random.choice([
 		generate_forest,
 		generate_desert,
 		generate_thundra,
 		generate_marsh,
-		])()
+		])(field)
 
-def generate_forest():
-	field = NestedGrid((16, 16), [FieldData], Terrain)
+def generate_forest(field):
 	field.cells.clear(Terrain(Sprite('.', 'green')))
 	forest_density = random.randrange(10) * 10
 	for _ in range(forest_density):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'bold_green')))
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'bold_green')))
 	for _ in range(10):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'bold_green')))
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'bold_green')))
 	for _ in range(10):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
-	return field
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
 
-def generate_desert():
-	field = NestedGrid((16, 16), [FieldData], Terrain)
+def generate_desert(field):
 	field.cells.clear(Terrain(Sprite('.', 'bold_yellow')))
 	for _ in range(random.randrange(3)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('^', 'yellow'), passable=False))
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('^', 'yellow'), passable=False))
 	for _ in range(10):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
-	return field
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
 
-def generate_thundra():
-	field = NestedGrid((16, 16), [FieldData], Terrain)
+def generate_thundra(field):
 	field.cells.clear(Terrain(Sprite('.', 'bold_white')))
 	for _ in range(3 + random.randrange(3)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'cyan')))
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'cyan')))
 	for _ in range(3 + random.randrange(7)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'white')))
-	return field
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'white')))
 
-def generate_marsh():
-	field = NestedGrid((16, 16), [FieldData], Terrain)
+def generate_marsh(field):
 	field.cells.clear(Terrain(Sprite('~', 'cyan')))
 	for _ in range(100):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('~', 'green')))
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('~', 'green')))
 	for _ in range(random.randrange(100)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'green')))
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'green')))
 	for _ in range(random.randrange(5)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'green')))
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'green')))
 	for _ in range(random.randrange(10)):
-		field.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'yellow')))
-	return field
+		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'yellow')))
 
 def add_building(field, colors):
 	building = Rect(
@@ -367,25 +237,25 @@ def add_building(field, colors):
 			)
 	for x in range(building.width):
 		for y in range(building.height):
-			field.set_cell((building.left + x, building.top + y), Terrain(Sprite('.', 'white')))
+			field.cells.set_cell((building.left + x, building.top + y), Terrain(Sprite('.', 'white')))
 	for x in range(building.width):
-		field.set_cell((building.left + x, building.top), Terrain(Sprite('#', 'white'), passable=False))
-		field.set_cell((building.left + x, building.bottom), Terrain(Sprite('#', 'white'), passable=False))
+		field.cells.set_cell((building.left + x, building.top), Terrain(Sprite('#', 'white'), passable=False))
+		field.cells.set_cell((building.left + x, building.bottom), Terrain(Sprite('#', 'white'), passable=False))
 	for y in range(building.height):
-		field.set_cell((building.left, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
-		field.set_cell((building.right, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
+		field.cells.set_cell((building.left, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
+		field.cells.set_cell((building.right, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
 	if random.randrange(2) == 0:
 		door = building.top + 1 + random.randrange(building.height - 2)
 		if random.randrange(2) == 0:
-			field.set_cell((building.left, door), Terrain(Sprite('.', 'white')))
+			field.cells.set_cell((building.left, door), Terrain(Sprite('.', 'white')))
 		else:
-			field.set_cell((building.right, door), Terrain(Sprite('.', 'white')))
+			field.cells.set_cell((building.right, door), Terrain(Sprite('.', 'white')))
 	else:
 		door = building.left + 1 + random.randrange(building.width - 2)
 		if random.randrange(2) == 0:
-			field.set_cell((door, building.top), Terrain(Sprite('.', 'white')))
+			field.cells.set_cell((door, building.top), Terrain(Sprite('.', 'white')))
 		else:
-			field.set_cell((door, building.bottom), Terrain(Sprite('.', 'white')))
+			field.cells.set_cell((door, building.bottom), Terrain(Sprite('.', 'white')))
 	dweller_pos = building.topleft + Point(1, 1) + Point(
 			random.randrange(building.width - 2),
 			random.randrange(building.height - 2),
@@ -407,7 +277,7 @@ def all_monsters(world, raw=False, zone_range=None):
 			continue
 		for field_index in zone.cells:
 			for monster in zone.cells.cell(field_index).data.monsters:
-				coord = Coord(zone_index, field_index, monster.pos)
+				coord = NestedGrid.Coord(zone_index, field_index, monster.pos)
 				if not raw:
 					coord = coord.get_global(world)
 				yield coord, monster
@@ -433,8 +303,8 @@ class Game:
 			'bold_white': Color(curses.COLOR_WHITE, curses.A_BOLD, False, True),
 			}
 	def __init__(self):
-		self.player = Monster(Coord(Point(0, 0), Point(0, 0), Point(0, 0)), Sprite('@', 'bold_white'), 10)
-		self.world = NestedGrid((256, 256), [None, ZoneData, FieldData], Terrain)
+		self.player = Monster(NestedGrid.Coord(Point(0, 0), Point(0, 0), Point(0, 0)), Sprite('@', 'bold_white'), 10)
+		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
 		self.passed_time = 0
 		self.colors = {}
 	def save(self, stream):
@@ -450,15 +320,17 @@ class Game:
 				random.randrange(self.world.cells.size.width),
 				random.randrange(self.world.cells.size.height),
 				)
-		self.player.pos.world = zone_pos
 		zone = self.generate_zone(zone_pos)
-		self.player.pos.zone = Point(
-				random.randrange(zone.cells.size.width),
-				random.randrange(zone.cells.size.height),
-				)
-		self.player.pos.field = Point(
-				random.randrange(zone.sizes[-1].width),
-				random.randrange(zone.sizes[-1].width),
+		self.player.pos = NestedGrid.Coord(
+				zone_pos,
+				Point(
+					random.randrange(zone.cells.size.width),
+					random.randrange(zone.cells.size.height),
+					),
+				Point(
+					random.randrange(zone.sizes[-1].width),
+					random.randrange(zone.sizes[-1].width),
+					),
 				)
 	def autoexpand(self, coord, margin):
 		pos = coord.get_global(self.world)
@@ -467,38 +339,39 @@ class Game:
 				pos.y % (self.world.sizes[-2].height * self.world.sizes[-1].height),
 				)
 		close_to_zone_boundaries = False
+		in_world_pos = coord.values[0]
 		expansion = Point(0, 0)
 		if within_zone.x - 40 < 0:
 			close_to_zone_boundaries = True
 			expansion.x = -1
-		if within_zone.x + 40 >= self.world.cells.cell(coord.world).full_size.width:
+		if within_zone.x + 40 >= self.world.cells.cell(in_world_pos).full_size.width:
 			close_to_zone_boundaries = True
 			expansion.x = +1
 		if within_zone.y - 40 < 0:
 			close_to_zone_boundaries = True
 			expansion.y = -1
-		if within_zone.y + 40 >= self.world.cells.cell(coord.world).full_size.height:
+		if within_zone.y + 40 >= self.world.cells.cell(in_world_pos).full_size.height:
 			close_to_zone_boundaries = True
 			expansion.y = +1
 		if not close_to_zone_boundaries:
 			return
 		if expansion.x:
-			new_pos = coord.world + Point(expansion.x, 0)
+			new_pos = in_world_pos + Point(expansion.x, 0)
 			if self.world.cells.valid(new_pos) and self.world.cells.cell(new_pos) is None:
 				self.generate_zone(new_pos)
 		if expansion.y:
-			new_pos = coord.world + Point(0, expansion.y)
+			new_pos = in_world_pos + Point(0, expansion.y)
 			if self.world.cells.valid(new_pos) and self.world.cells.cell(new_pos) is None:
 				self.generate_zone(new_pos)
 		if expansion.x * expansion.y:
-			new_pos = coord.world + expansion
+			new_pos = in_world_pos + expansion
 			if self.world.cells.valid(new_pos) and self.world.cells.cell(new_pos) is None:
 				self.generate_zone(new_pos)
 	def generate_zone(self, zone_pos):
-		zone = NestedGrid((16, 16), [ZoneData, FieldData], Terrain)
-		self.world.set_cell(zone_pos, zone)
+		zone = self.world.make_subgrid(zone_pos)
 		for pos in zone.cells:
-			zone.set_cell(pos, generate_field())
+			field = zone.make_subgrid(pos)
+			generate_field(field)
 
 			shift = Point(
 					pos.x * zone.sizes[-1].width,
@@ -640,10 +513,10 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				)
 		player_pos = game.player.pos.get_global(game.world)
 		player_relative_pos = player_pos - self.center
-		viewport_topleft = Coord.from_global(player_pos + self.centered_viewport.topleft, game.world)
-		viewport_bottomright = Coord.from_global(player_pos + self.centered_viewport.bottomright, game.world)
+		viewport_topleft = NestedGrid.Coord.from_global(player_pos + self.centered_viewport.topleft, game.world)
+		viewport_bottomright = NestedGrid.Coord.from_global(player_pos + self.centered_viewport.bottomright, game.world)
 
-		for zone_index in iter_rect(viewport_topleft.world, viewport_bottomright.world):
+		for zone_index in iter_rect(viewport_topleft.values[0], viewport_bottomright.values[0]):
 			zone = game.world.cells.cell(zone_index)
 			if zone is None:
 				continue
@@ -698,10 +571,10 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		ui.print_line(1, hud_pos, "T:{0}".format(game.passed_time))
 		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
 		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.player.inventory)))
-		player_zone_items = game.world.cells.cell(game.player.pos.world).cells.cell(game.player.pos.zone).data.items
+		player_zone_items = game.world.get_data(game.player.pos)[-1].items
 		item_here = next((
 			item for item in player_zone_items
-			if game.player.pos.field == item.pos
+			if game.player.pos.values[-1] == item.pos
 			), None)
 		if item_here:
 			ui.print_line(4, hud_pos, "here:{0}".format(item.sprite.sprite))
@@ -740,8 +613,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		if True:
 			item = next((
 				item for item in
-				game.world.cells.cell(game.player.pos.world).cells.cell(game.player.pos.zone).data.items
-				if game.player.pos.field == item.pos
+				game.world.get_data(game.player.pos)[-1].items
+				if game.player.pos.values[-1] == item.pos
 				), None)
 			if not item:
 				self.messages.append('Nothing to pick up here.')
@@ -749,7 +622,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				self.messages.append('Inventory is full.')
 			else:
 				game.player.inventory.append(item)
-				game.world.cells.cell(game.player.pos.world).cells.cell(game.player.pos.zone).data.items.remove(item)
+				game.world.get_data(game.player.pos)[-1].items.remove(item)
 				self.messages.append('Picked up {0}.'.format(item.name))
 				self.step_taken = True
 	@Keys.bind('C')
@@ -851,8 +724,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			else:
 				def _on_select_item(menu_choice):
 					item = game.player.inventory.pop(menu_choice)
-					item.pos = game.player.pos.field
-					game.world.cells.cell(game.player.pos.world).cells.cell(game.player.pos.zone).data.items.append(item)
+					item.pos = game.player.pos.values[-1]
+					game.world.get_data(game.player.pos)[-1].items.append(item)
 					self.messages.append('You drop {0}.'.format(item.name))
 					self.step_taken = True
 				return InventoryMode(
@@ -866,15 +739,13 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		player_pos = game.player.pos.get_global(game.world)
 		if True:
 			new_pos = player_pos + control
-			dest_pos = Coord.from_global(new_pos, game.world)
-			dest_field = None
+			dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
+			dest_field_data = None
 			dest_cell = None
-			if game.world.cells.valid(dest_pos.world):
-				if game.world.cells.cell(dest_pos.world).cells.valid(dest_pos.zone):
-					dest_field = game.world.cells.cell(dest_pos.world).cells.cell(dest_pos.zone)
-					if dest_field.cells.valid(dest_pos.field):
-						dest_cell = dest_field.cells.cell(dest_pos.field)
-			monster = next((monster for monster in dest_field.data.monsters if dest_pos.field == monster.pos), None)
+			if game.world.valid(dest_pos):
+				dest_field_data = game.world.get_data(dest_pos)[-1]
+				dest_cell = game.world.cell(dest_pos)
+			monster = next((monster for monster in dest_field_data.monsters if dest_pos.values[-1] == monster.pos), None)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
 					self.messages.append('You bump into dweller.')
@@ -882,12 +753,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					monster.hp -= 1
 					self.messages.append('You hit monster.')
 					if monster.hp <= 0:
-						dest_field.data.monsters.remove(monster)
+						dest_field_data.monsters.remove(monster)
 						self.messages.append('Monster is dead.')
 						for item in monster.inventory:
 							item.pos = monster.pos
 							monster.inventory.remove(item)
-							dest_field.data.items.append(item)
+							dest_field_data.items.append(item)
 							self.messages.append('Monster dropped {0}.'.format(item.name))
 			elif dest_cell is None:
 				self.messages.append('Will not fall into the void.')
@@ -913,10 +784,13 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 
 			monster_action_length = 10
 			monster_action_range = Point(monster_action_length, monster_action_length)
-			monster_zone_topleft = Coord.from_global(player_pos - monster_action_range, game.world)
-			monster_zone_bottomright = Coord.from_global(player_pos + monster_action_range, game.world)
-			monster_zone_range = iter_rect(monster_zone_topleft.world, monster_zone_bottomright.world)
+			monster_zone_topleft = NestedGrid.Coord.from_global(player_pos - monster_action_range, game.world)
+			monster_zone_bottomright = NestedGrid.Coord.from_global(player_pos + monster_action_range, game.world)
+			monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
+			already_acted_monsters_from_previous_fields = []
 			for monster_coord, monster in all_monsters(game.world, raw=True, zone_range=monster_zone_range):
+				if monster in already_acted_monsters_from_previous_fields:
+					continue
 				if isinstance(monster.behaviour, Questgiver):
 					continue
 				monster_pos = monster_coord.get_global(game.world)
@@ -931,16 +805,18 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 							sign(player_pos.y - monster_pos.y),
 							)
 					new_pos = monster_pos + shift
-					dest_pos = Coord.from_global(new_pos, game.world)
-					dest_field = game.world.cells.cell(dest_pos.world).cells.cell(dest_pos.zone)
-					dest_cell = dest_field.cells.cell(dest_pos.field)
-					if any(other.pos == dest_pos.field for other in dest_field.data.monsters):
+					dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
+					dest_field_data = game.world.get_data(dest_pos)[-1]
+					dest_cell = game.world.cell(dest_pos)
+					if any(other.pos == dest_pos.values[-1] for other in dest_field_data.monsters):
 						self.messages.append('Monster bump into monster.')
 					elif dest_cell.passable:
-						if monster_coord.world != dest_pos.world or monster_coord.zone != dest_pos.zone:
-							game.world.cells.cell(monster_coord.world).cells.cell(monster_coord.zone).data.monsters.remove(monster)
-							dest_field.data.monsters.append(monster)
-						monster.pos = dest_pos.field
+						current_field_data = game.world.get_data(monster_coord)[-1]
+						if current_field_data != dest_field_data:
+							current_field_data.monsters.remove(monster)
+							dest_field_data.monsters.append(monster)
+							already_acted_monsters_from_previous_fields.append(monster)
+						monster.pos = dest_pos.values[-1]
 		return True
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()

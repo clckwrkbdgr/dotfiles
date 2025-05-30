@@ -338,3 +338,171 @@ class EndlessMatrix(object):
 				block_shift.x * self.block_size.width,
 				block_shift.y * self.block_size.height,
 				)
+
+class NestedGrid: # pragma: no cover -- TODO
+	""" A grid, divided into sub-grids recursively.
+	I.e. a cell of top-level grid is a NestedGrid itself, and so on.
+	At the bottom level, each cell is of actual cell type.
+	All subgrids on each level are of the same size.
+	Cells can be adressed both via global positions
+	or via Coord object (nested set of coordinates). Number of coord elements
+	should correspond to the depth of the NestedGrid.
+	"""
+
+	class Coord:
+		""" A way to address cells on NestedGrids. """
+		def __init__(self, *coords):
+			""" Creates coord object from given sequence of Points. """
+			self.values = list(map(Point, coords))
+		def save(self, stream):
+			""" Saves object to a stream. """
+			for value in self.values:
+				stream.write(value.x)
+				stream.write(value.y)
+		def load(self, stream):
+			""" Loads object from a stream. """
+			for value in self.values:
+				value.x = stream.read(int)
+				value.y = stream.read(int)
+		def get_global(self, nested_grid):
+			""" Compresses into global position on the specified NestedGrid.
+			"""
+			size = Size(1, 1)
+			result = self.values[-1]
+			for index, value in enumerate(reversed(self.values[:-1])):
+				size.width *= nested_grid.sizes[-1-index].width
+				size.height *= nested_grid.sizes[-1-index].height
+				result += Point(value.x * size.width, value.y * size.height)
+			return result
+		def __str__(self):
+			return ';'.join(
+					''.join('{0:02X}'.format(value.x) for value in self.values),
+					''.join('{0:02X}'.format(value.y) for value in self.values),
+					)
+		@classmethod
+		def from_global(cls, pos, nested_grid):
+			""" Splits global pos on the specified NestedGrid into a Coord object.
+			"""
+			sizes = [Size(1, 1)]
+			for index in range(len(nested_grid.sizes) - 1):
+				sizes.append(Size(
+					sizes[-1].width * nested_grid.sizes[-1-index].width,
+					sizes[-1].height * nested_grid.sizes[-1-index].height,
+					))
+			values = []
+			for size in reversed(sizes):
+				values.append(Point(pos.x // size.width, pos.y // size.width))
+				pos = Point(pos.x % size.width, pos.y % size.height)
+			return cls(*values)
+
+	def __init__(self, sizes, data_classes, cell_type):
+		""" Creates grid of given sizes and and with specified
+		cell_type as a basic element.
+		Depth is calculated from the number of given sizes.
+		Each level of subgrid (including the top one) can contain additional
+		.data field for subgrid-wide data (e.g. placed objects, map properties,
+		etc). If data_class on some level is None, data object for that level
+		is not created (always None) and resulting grid also becomes sparse
+		(i.e. some subgrid cells on that level are allowed to be None.
+		This can be used on topmost levels to keep only needed subgrids, thus
+		preventing unnecessary memory overload.
+		Number of sizes and data classes should match.
+
+		E.g.: ((256, 256), (32, 32), (16, 16)), (None, RegionData, LocalData), Cell
+		Creates global sparse map of 256x256 regions, each region has .data=RegionData() and is 32x32 local maps, each map has .data=LocalData() and is 16x16 grid of Cell objects. Total of 131072x131072 cells.
+		"""
+		assert len(sizes) == len(data_classes), (sizes, data_classes)
+		self.cells = Matrix(sizes[0], None)
+		self.nested_sizes = tuple(map(Size, sizes[1:]))
+		self.data_class = data_classes[0]
+		self.data = self.data_class() if self.data_class else None
+		self.nested_data = data_classes[1:]
+		self.cell_type = cell_type
+		self._valid_cell = None
+	def save(self, stream):
+		""" Save full grid to the stream.
+		Automatically handles sparse grids.
+		"""
+		stream.write(self.cells.width)
+		stream.write(self.cells.height)
+		for tile_index in self.cells:
+			tile = self.cells.cell(tile_index)
+			if self.data_class:
+				tile.save(stream)
+			else:
+				if tile:
+					stream.write('.')
+					tile.save(stream)
+				else:
+					stream.write('')
+		if self.data_class:
+			stream.write(self.data)
+	def load(self, stream):
+		""" Loads full grid from the stream.
+		Grid object should be created beforehand with correct sizes, data classes and cell type.
+		Automatically handles sparse grids.
+		"""
+		size = Size(stream.read(int), stream.read(int))
+		self.cells = Matrix(size, None)
+		for tile_index in self.cells:
+			if not self.data_class:
+				tile = stream.read()
+				if not tile:
+					continue
+			if self.nested_sizes:
+				tile = NestedGrid((Size(1, 1),) + self.nested_sizes[1:], self.nested_data, self.cell_type)
+			else:
+				tile = self.cell_type()
+			tile.load(stream)
+			self.cells.set_cell(tile_index, tile)
+			self._valid_cell = tile_index
+		if self.data_class:
+			self.data = stream.read(type(self.data))
+	def make_subgrid(self, pos):
+		""" Initializes subgrid at specified position.
+		Required for each cell in non-sparse grids.
+		"""
+		value = NestedGrid(self.nested_sizes, self.nested_data, self.cell_type)
+		self.cells.set_cell(pos, value)
+		self._valid_cell = pos
+		return value
+	def valid(self, coord):
+		""" Returns True is Coord points to a valid nested chain of grids and a cell.
+		"""
+		subgrid = self
+		for pos in coord.values:
+			if not subgrid.cells.valid(pos):
+				return False
+			subgrid = subgrid.cells.cell(pos)
+		return True
+	def cell(self, coord):
+		""" Returns actual cell at specified Coord.
+		"""
+		cell = self
+		for pos in coord.values:
+			cell = cell.cells.cell(pos)
+		return cell
+	def get_data(self, coord):
+		""" Returns list of data object for every affected level at specified Coord.
+		I.e. global grid data, data for subgrid which contains coord and so on.
+		"""
+		result = [self.data]
+		subgrid = self
+		for pos in coord.values[:-1]:
+			subgrid = subgrid.cells.cell(pos)
+			result.append(subgrid.data)
+		return result
+	@property
+	def sizes(self):
+		""" List of nested sizes (see c-tor). """
+		return (self.cells.size,) + self.nested_sizes
+	@property
+	def full_size(self):
+		""" Full size in cells of the current grid. """
+		result = self.cells.size
+		for size in self.nested_sizes:
+			result = Size(
+					result.width * size.width,
+					result.height * size.height,
+					)
+		return result
