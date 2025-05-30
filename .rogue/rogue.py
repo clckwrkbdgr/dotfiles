@@ -498,7 +498,7 @@ class Game:
 		zone = NestedGrid((16, 16), [ZoneData, FieldData], Terrain)
 		self.world.set_cell(zone_pos, zone)
 		for pos in zone.cells:
-			zone.cells.set_cell(pos, generate_field())
+			zone.set_cell(pos, generate_field())
 
 			shift = Point(
 					pos.x * zone.sizes[-1].width,
