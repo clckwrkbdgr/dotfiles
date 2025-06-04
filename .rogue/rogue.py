@@ -13,6 +13,7 @@ from clckwrkbdgr.math.grid import NestedGrid
 from clckwrkbdgr import xdg
 import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.tui
+from src.engine import builders
 
 SAVEFILE_VERSION = 3
 
@@ -188,47 +189,69 @@ class FieldData:
 		return self
 
 def generate_field(field):
-	random.choice([
-		generate_forest,
-		generate_desert,
-		generate_thundra,
-		generate_marsh,
-		])(field)
+	builder_type = random.choice([
+		Forest,
+		Desert,
+		Thundra,
+		Marsh,
+		])
+	builder = builder_type(random, field.cells)
+	builder.map_key(
+			bog=Terrain(Sprite('~', 'green')),
+			bush=Terrain(Sprite('"', 'bold_green')),
+			dead_tree=Terrain(Sprite('&', 'yellow')),
+			frozen_ground=Terrain(Sprite('.', 'white')),
+			grass=Terrain(Sprite('.', 'green')),
+			ice=Terrain(Sprite('.', 'cyan')),
+			plant=Terrain(Sprite('"', 'green')),
+			rock=Terrain(Sprite('^', 'yellow'), passable=False),
+			sand=Terrain(Sprite('.', 'bold_yellow')),
+			snow=Terrain(Sprite('.', 'bold_white')),
+			swamp=Terrain(Sprite('~', 'cyan')),
+			tree=Terrain(Sprite('&', 'bold_green')),
+			swamp_tree=Terrain(Sprite('&', 'green')),
+			)
+	builder.generate()
+	builder.get_grid()
 
-def generate_forest(field):
-	field.cells.clear(Terrain(Sprite('.', 'green')))
-	forest_density = random.randrange(10) * 10
-	for _ in range(forest_density):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'bold_green')))
-	for _ in range(10):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'bold_green')))
-	for _ in range(10):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
+class Forest(builders.Builder):
+	def fill_grid(self, grid):
+		grid.clear('grass')
+		forest_density = random.randrange(10) * 10
+		for _ in range(forest_density):
+			grid.set_cell(self.point(), 'tree')
+		for _ in range(10):
+			grid.set_cell(self.point(), 'bush')
+		for _ in range(10):
+			grid.set_cell(self.point(), 'plant')
 
-def generate_desert(field):
-	field.cells.clear(Terrain(Sprite('.', 'bold_yellow')))
-	for _ in range(random.randrange(3)):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('^', 'yellow'), passable=False))
-	for _ in range(10):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('"', 'green')))
+class Desert(builders.Builder):
+	def fill_grid(self, grid):
+		grid.clear('sand')
+		for _ in range(random.randrange(3)):
+			grid.set_cell(self.point(), 'rock')
+		for _ in range(10):
+			grid.set_cell(self.point(), 'plant')
 
-def generate_thundra(field):
-	field.cells.clear(Terrain(Sprite('.', 'bold_white')))
-	for _ in range(3 + random.randrange(3)):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'cyan')))
-	for _ in range(3 + random.randrange(7)):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'white')))
+class Thundra(builders.Builder):
+	def fill_grid(self, grid):
+		grid.clear('snow')
+		for _ in range(3 + random.randrange(3)):
+			grid.set_cell(self.point(), 'ice')
+		for _ in range(3 + random.randrange(7)):
+			grid.set_cell(self.point(), 'frozen_ground')
 
-def generate_marsh(field):
-	field.cells.clear(Terrain(Sprite('~', 'cyan')))
-	for _ in range(100):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('~', 'green')))
-	for _ in range(random.randrange(100)):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('.', 'green')))
-	for _ in range(random.randrange(5)):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'green')))
-	for _ in range(random.randrange(10)):
-		field.cells.set_cell(Point(random.randrange(16), random.randrange(16)), Terrain(Sprite('&', 'yellow')))
+class Marsh(builders.Builder):
+	def fill_grid(self, grid):
+		grid.clear('swamp')
+		for _ in range(100):
+			grid.set_cell(self.point(), 'bog')
+		for _ in range(random.randrange(100)):
+			grid.set_cell(self.point(), 'grass')
+		for _ in range(random.randrange(5)):
+			grid.set_cell(self.point(), 'swamp_tree')
+		for _ in range(random.randrange(10)):
+			grid.set_cell(self.point(), 'dead_tree')
 
 def add_building(field, colors):
 	building = Rect(

@@ -101,7 +101,7 @@ def weighted_choices(rng, weights_and_items, amount=1):
 
 def point(rng, size):
 	""" Boundaries are NOT included. """
-	return Point(rng.randrange(size.width or 1), rng.range(size.height or 1))
+	return Point(rng.randrange(size.width or 1), rng.randrange(size.height or 1))
 
 def point_in_rect(rng, rect, with_boundaries=False):
 	shrink = 0 if with_boundaries else 1
