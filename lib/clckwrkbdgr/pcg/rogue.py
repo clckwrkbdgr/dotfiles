@@ -8,7 +8,28 @@ Original Rogue's dungeon: grid or rooms connected by straight tunnels.
 """
 
 class Dungeon(object):
+	""" Generates grid of rectangulare rooms connected by straight tunnels
+	(possibly bending in the middle). Some tunnels may be absent, but
+	all rooms are accessible.
+
+	Requires three steps:
+
+		builder.generate_rooms()
+		builder.generate_maze()
+		builder.generate_tunnels()
+	
+	After that, .iter_rooms() and .iter_tunnels() can be used to access
+	generated structures.
+	"""
+	ROOM_CLASS = Rect
+	TUNNEL_CLASS = RectConnection
+	MAX_TUNNEL_ETCHING_TRIES = 5
+
 	def __init__(self, rng, size, grid_size, min_room_size, room_margin=None):
+		""" Creates generator with given RNG and overall map size,
+		size of the grid of rooms and minimal room size.
+		Optional margin between rooms can be specified (default is 1x1).
+		"""
 		self.size = size
 		self.grid_size = Size(grid_size)
 		self.min_room_size = Size(min_room_size)
@@ -23,12 +44,15 @@ class Dungeon(object):
 				max(self.min_room_size.height, self.cell_size.height - self.margin.height * 2),
 				)
 	def iter_rooms(self):
+		""" Iterate over all generated room objects. """
 		for room in self.grid.size.iter_points():
 			yield self.grid.cell(room)
 	def iter_tunnels(self):
+		""" Iterate over all generated tunnel objects. """
 		for tunnel in self.tunnels:
 			yield tunnel
 	def generate_rooms(self):
+		""" Generate grid of random rooms. """
 		for cell in self.grid.size.iter_points():
 			room_size = Size(
 					self.rng.range(self.min_room_size.width, self.max_room_size.width + 1),
@@ -40,8 +64,13 @@ class Dungeon(object):
 					random_non_negative(self.cell_size.width - room_size.width - 1),
 					random_non_negative(self.cell_size.height - room_size.height - 1),
 					)
-			self.grid.set_cell(cell, Rect(topleft, room_size))
+			self.grid.set_cell(cell, self.ROOM_CLASS(topleft, room_size))
 	def generate_maze(self):
+		""" Generate random connections between rooms.
+		First generates all possible connections, then tries to erase some
+		of them (see MAX_TUNNEL_ETCHING_TRIES), but leaving the graph
+		interconnected.
+		"""
 		self.maze = {k:set() for k in self.grid.size.iter_points()}
 		for column in range(self.grid.size.width):
 			for row in range(self.grid.size.height):
@@ -53,7 +82,7 @@ class Dungeon(object):
 					a, b = Point(column, row), Point(column, row + 1)
 					self.maze[a].add(b)
 					self.maze[b].add(a)
-		for i in range(5):
+		for i in range(self.MAX_TUNNEL_ETCHING_TRIES):
 			new_config = copy.deepcopy(self.maze)
 			all_links = set(tuple(sorted((node_from, node_to))) for node_from in self.maze for node_to in self.maze[node_from])
 			removed = self.rng.choice(sorted(all_links))
@@ -83,6 +112,13 @@ class Dungeon(object):
 			if is_connected:
 				self.maze = new_config
 	def generate_tunnels(self):
+		""" Generate tunnels from connections between rooms.
+
+		Assumes that they are not intersecting and there is
+		at least 1 cell space between them.
+		Direction of tunnel should correspond to relative placement
+		of rooms, otherwise behaviour is undefined.
+		"""
 		self.tunnels = []
 		all_links = set(tuple(sorted((node_from, node_to))) for node_from in self.maze for node_to in self.maze[node_from])
 		for start_room, stop_room in sorted(all_links):
@@ -119,6 +155,6 @@ class Dungeon(object):
 					)
 				if abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)) > 1:
 					bending_point = self.rng.range(1, abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)))
-			self.tunnels.append(RectConnection(
+			self.tunnels.append(self.TUNNEL_CLASS(
 				start, stop, direction, bending_point,
 				))
