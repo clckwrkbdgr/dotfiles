@@ -1,12 +1,11 @@
-import itertools
-import copy
 import textwrap
-from clckwrkbdgr.math import Matrix, Point, Size, Rect
+from clckwrkbdgr.math import Matrix, Point, Size
 import logging
 Log = logging.getLogger('rogue')
 from clckwrkbdgr import pcg
 import clckwrkbdgr.pcg.cellular
 import clckwrkbdgr.pcg.maze
+import clckwrkbdgr.pcg.rogue
 from clckwrkbdgr.pcg import bsp
 import clckwrkbdgr.math
 
@@ -78,118 +77,12 @@ class RogueDungeon(Builder):
 	3x3 rooms connected by rectangular tunnels.
 	"""
 	def _build(self):
-		grid_size = Size(3, 3)
-		min_room_size = Size(4, 4)
-		margin = Size(1, 1)
-		grid = Matrix(grid_size)
-		cell_size = Size(self.size.width // grid_size.width, self.size.height // grid_size.height)
-		max_room_size = Size(
-				cell_size.width - margin.width * 2,
-				cell_size.height - margin.height * 2
-				)
-		if max_room_size.width < min_room_size.width:
-			max_room_size = Size(min_room_size.width, max_room_size.height)
-		if max_room_size.height < min_room_size.height:
-			max_room_size = Size(max_room_size.width, min_room_size.height)
-		for cell in grid.size.iter_points():
-			room_size = Size(
-					self.rng.range(min_room_size.width, max_room_size.width + 1),
-					self.rng.range(min_room_size.height, max_room_size.height + 1),
-					)
-			topleft = Point(cell.x * cell_size.width, cell.y * cell_size.height)
-			random_non_negative = lambda _:self.rng.range(_) if _ > 0 else 0
-			topleft += Point(
-					random_non_negative(cell_size.width - room_size.width - 1),
-					random_non_negative(cell_size.height - room_size.height - 1),
-					)
-			grid.set_cell(cell, Rect(topleft, room_size))
+		builder = clckwrkbdgr.pcg.rogue.Dungeon(self.rng, self.size, Size(3, 3), Size(4, 4))
+		builder.generate_rooms()
+		builder.generate_maze()
+		builder.generate_tunnels()
 
-		maze = {k:set() for k in grid.size.iter_points()}
-		for column in range(grid.size.width):
-			for row in range(grid.size.height):
-				if column < grid.size.width - 1:
-					a, b = Point(column, row), Point(column + 1, row)
-					maze[a].add(b)
-					maze[b].add(a)
-				if row < grid.size.height - 1:
-					a, b = Point(column, row), Point(column, row + 1)
-					maze[a].add(b)
-					maze[b].add(a)
-		for i in range(5):
-			new_config = copy.deepcopy(maze)
-			all_links = set(tuple(sorted((node_from, node_to))) for node_from in maze for node_to in maze[node_from])
-			removed = self.rng.choice(sorted(all_links))
-			node, other = removed
-			if node in new_config and other in new_config[node]:
-				new_config[node].remove(other)
-			if other in new_config and node in new_config[other]:
-				new_config[other].remove(node)
-
-			all_links = set(tuple(sorted((node_from, node_to))) for node_from in new_config for node_to in new_config[node_from])
-			clusters = []
-			for a, b in all_links:
-				new_clusters = [{a, b}]
-				for cluster in clusters:
-					for other in new_clusters:
-						if cluster & other:
-							other.update(cluster)
-							break
-					else:
-						new_clusters.append(cluster)
-				clusters = new_clusters
-			for node in new_config.keys():
-				if any(node in cluster for cluster in clusters):
-					continue
-				clusters.append({node})
-			is_connected = len(clusters) == 1
-			if is_connected:
-				maze = new_config
-
-		tunnels = []
-		all_links = set(tuple(sorted((node_from, node_to))) for node_from in maze for node_to in maze[node_from])
-		for start_room, stop_room in sorted(all_links):
-			assert abs(start_room.x - stop_room.x) + abs(start_room.y - stop_room.y) == 1
-			if abs(start_room.x - stop_room.x) > 0:
-				direction = 'H'
-			else:
-				direction = 'V'
-			start_room = grid.cell(start_room)
-			stop_room = grid.cell(stop_room)
-
-			bending_point = 1
-			if direction == 'H':
-				assert start_room.topleft.x < stop_room.topleft.x, "Original RNG seed: {0}".format(original_rng_seed)
-				start = Point(
-					start_room.topleft.x + start_room.size.width,
-					self.rng.range(start_room.topleft.y+1, start_room.topleft.y + stop_room.size.height),
-					)
-				stop = Point(
-					stop_room.topleft.x,
-					self.rng.range(stop_room.topleft.y+1, stop_room.topleft.y + stop_room.size.height),
-					)
-				if abs(stop_room.topleft.x - (start_room.topleft.x + start_room.size.width)) > 1:
-					bending_point = self.rng.range(1, abs(stop_room.topleft.x - (start_room.topleft.x + start_room.size.width)))
-			else:
-				assert start_room.topleft.y < stop_room.topleft.y, "Original RNG seed: {0}".format(original_rng_seed)
-				start = Point(
-					self.rng.range(start_room.topleft.x+1, start_room.topleft.x+start_room.size.width),
-					start_room.topleft.y + start_room.size.height,
-					)
-				stop = Point(
-					self.rng.range(stop_room.topleft.x+1, stop_room.topleft.x+stop_room.size.width),
-					stop_room.topleft.y,
-					)
-				if abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)) > 1:
-					bending_point = self.rng.range(1, abs(stop_room.topleft.y - (start_room.topleft.y + start_room.size.height)))
-			tunnels.append((
-				start,
-				stop,
-				direction,
-				bending_point,
-				))
-
-		for room in grid.size.iter_points():
-			room = grid.cell(room)
+		for room in builder.iter_rooms():
 			self.strata.set_cell((room.topleft.x, room.topleft.y), 'corner')
 			self.strata.set_cell((room.topleft.x, room.topleft.y+room.size.height), 'corner')
 			self.strata.set_cell((room.topleft.x+room.size.width, room.topleft.y), 'corner')
@@ -204,47 +97,22 @@ class RogueDungeon(Builder):
 				for x in range(room.topleft.x+1, room.topleft.x+room.size.width):
 					self.strata.set_cell((x, y), 'floor')
 
-		for start, stop, direction, bending_point in tunnels:
-			iter_points = []
-			if direction == 'H':
-				lead = start.y
-				for x in range(start.x, stop.x + 1):
-					iter_points.append( Point(x, lead))
-					if x == start.x + bending_point:
-						if start.y < stop.y:
-							for y in range(start.y + 1, stop.y + 1):
-								iter_points.append( Point(x, y))
-						else:
-							for y in reversed(range(stop.y, start.y)):
-								iter_points.append( Point(x, y))
-						lead = stop.y
-			else:
-				lead = start.x
-				for y in range(start.y, stop.y + 1):
-					iter_points.append( Point(lead, y))
-					if y == start.y + bending_point:
-						if start.x < stop.x:
-							for x in range(start.x + 1, stop.x + 1):
-								iter_points.append( Point(x, y))
-						else:
-							for x in reversed(range(stop.x, start.x)):
-								iter_points.append( Point(x, y))
-						lead = stop.x
-			for cell in iter_points:
+		for tunnel in builder.iter_tunnels():
+			for cell in tunnel.iter_points():
 				self.strata.set_cell(cell, 'rogue_passage')
-			self.strata.set_cell(start, 'rogue_door')
-			self.strata.set_cell(stop, 'rogue_door')
+			self.strata.set_cell(tunnel.start, 'rogue_door')
+			self.strata.set_cell(tunnel.stop, 'rogue_door')
 
-		enter_room_key = self.rng.choice(list(grid.size.iter_points()))
-		enter_room = grid.cell(enter_room_key)
+		enter_room_key = self.rng.choice(list(builder.grid.size.iter_points()))
+		enter_room = builder.grid.cell(enter_room_key)
 		self.start_pos = Point(
 					self.rng.range(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
 					self.rng.range(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
 					)
 
 		for _ in range(9):
-			exit_room_key = self.rng.choice(list(grid.size.iter_points()))
-			exit_room = grid.cell(exit_room_key)
+			exit_room_key = self.rng.choice(list(builder.grid.size.iter_points()))
+			exit_room = builder.grid.cell(exit_room_key)
 			self.exit_pos = Point(
 					self.rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
 					self.rng.range(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),

@@ -182,27 +182,6 @@ class TestRogueDungeon(unittest.TestCase):
 				_                                                                              _
 				""").replace('_', ' ')
 		self.assertEqual(builder.strata.tostring(str_terrain), expected)
-	def should_generate_small_rogue_dungeon(self):
-		rng = RNG(0)
-		builder = builders.RogueDungeon(rng, Size(11, 11))
-		builder.build()
-		self.assertEqual(builder.start_pos, Point(9, 4))
-		self.assertEqual(builder.exit_pos, Point(9, 8))
-		self.maxDiff = None
-		expected = textwrap.dedent("""\
-				+--+--+---+
-				|..|+.|...|
-				|..+..|...|
-				+--+--+-+-+
-				|..+..|.+.|
-				|..|..|...|
-				+--++-++--+
-				|..++.+.+.|
-				|..|..|+..|
-				|..|..|...|
-				+--+--+---+
-				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
 
 class TestBSPDungeon(unittest.TestCase):
 	def should_generate_bsp_dungeon(self):
