@@ -210,12 +210,49 @@ def generate_field(field):
 			swamp=Terrain(Sprite('~', 'cyan')),
 			tree=Terrain(Sprite('&', 'bold_green')),
 			swamp_tree=Terrain(Sprite('&', 'green')),
+			floor=Terrain(Sprite('.', 'white')),
+			wall=Terrain(Sprite('#', 'white'), passable=False),
 			)
 	builder.generate()
-	builder.get_grid()
+	builder.make_grid()
+	return builder
 
-class Forest(builders.Builder):
+class Builder(builders.Builder):
 	def fill_grid(self, grid):
+		self._make_terrain(grid)
+		self._building = random.randrange(50) == 0
+		if self._building:
+			self._building = self._add_building(grid)
+	def _add_building(self, grid):
+		building = Rect(
+				Point(2 + random.randrange(3), 2 + random.randrange(3)),
+				Size(6 + random.randrange(3), 6 + random.randrange(3)),
+				)
+		for x in range(building.width):
+			for y in range(building.height):
+				grid.set_cell((building.left + x, building.top + y), 'floor')
+		for x in range(building.width):
+			grid.set_cell((building.left + x, building.top), 'wall')
+			grid.set_cell((building.left + x, building.bottom), 'wall')
+		for y in range(building.height):
+			grid.set_cell((building.left, building.top + y), 'wall')
+			grid.set_cell((building.right, building.top + y), 'wall')
+		if random.randrange(2) == 0:
+			door = building.top + 1 + random.randrange(building.height - 2)
+			if random.randrange(2) == 0:
+				grid.set_cell((building.left, door), 'floor')
+			else:
+				grid.set_cell((building.right, door), 'floor')
+		else:
+			door = building.left + 1 + random.randrange(building.width - 2)
+			if random.randrange(2) == 0:
+				grid.set_cell((door, building.top), 'floor')
+			else:
+				grid.set_cell((door, building.bottom), 'floor')
+		return building
+
+class Forest(Builder):
+	def _make_terrain(self, grid):
 		grid.clear('grass')
 		forest_density = random.randrange(10) * 10
 		for _ in range(forest_density):
@@ -225,24 +262,24 @@ class Forest(builders.Builder):
 		for _ in range(10):
 			grid.set_cell(self.point(), 'plant')
 
-class Desert(builders.Builder):
-	def fill_grid(self, grid):
+class Desert(Builder):
+	def _make_terrain(self, grid):
 		grid.clear('sand')
 		for _ in range(random.randrange(3)):
 			grid.set_cell(self.point(), 'rock')
 		for _ in range(10):
 			grid.set_cell(self.point(), 'plant')
 
-class Thundra(builders.Builder):
-	def fill_grid(self, grid):
+class Thundra(Builder):
+	def _make_terrain(self, grid):
 		grid.clear('snow')
 		for _ in range(3 + random.randrange(3)):
 			grid.set_cell(self.point(), 'ice')
 		for _ in range(3 + random.randrange(7)):
 			grid.set_cell(self.point(), 'frozen_ground')
 
-class Marsh(builders.Builder):
-	def fill_grid(self, grid):
+class Marsh(Builder):
+	def _make_terrain(self, grid):
 		grid.clear('swamp')
 		for _ in range(100):
 			grid.set_cell(self.point(), 'bog')
@@ -252,46 +289,6 @@ class Marsh(builders.Builder):
 			grid.set_cell(self.point(), 'swamp_tree')
 		for _ in range(random.randrange(10)):
 			grid.set_cell(self.point(), 'dead_tree')
-
-def add_building(field, colors):
-	building = Rect(
-			Point(2 + random.randrange(3), 2 + random.randrange(3)),
-			Size(6 + random.randrange(3), 6 + random.randrange(3)),
-			)
-	for x in range(building.width):
-		for y in range(building.height):
-			field.cells.set_cell((building.left + x, building.top + y), Terrain(Sprite('.', 'white')))
-	for x in range(building.width):
-		field.cells.set_cell((building.left + x, building.top), Terrain(Sprite('#', 'white'), passable=False))
-		field.cells.set_cell((building.left + x, building.bottom), Terrain(Sprite('#', 'white'), passable=False))
-	for y in range(building.height):
-		field.cells.set_cell((building.left, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
-		field.cells.set_cell((building.right, building.top + y), Terrain(Sprite('#', 'white'), passable=False))
-	if random.randrange(2) == 0:
-		door = building.top + 1 + random.randrange(building.height - 2)
-		if random.randrange(2) == 0:
-			field.cells.set_cell((building.left, door), Terrain(Sprite('.', 'white')))
-		else:
-			field.cells.set_cell((building.right, door), Terrain(Sprite('.', 'white')))
-	else:
-		door = building.left + 1 + random.randrange(building.width - 2)
-		if random.randrange(2) == 0:
-			field.cells.set_cell((door, building.top), Terrain(Sprite('.', 'white')))
-		else:
-			field.cells.set_cell((door, building.bottom), Terrain(Sprite('.', 'white')))
-	dweller_pos = building.topleft + Point(1, 1) + Point(
-			random.randrange(building.width - 2),
-			random.randrange(building.height - 2),
-			)
-	colors = [name for name, color in colors.items() if color.dweller]
-	monster_color = random.choice(colors)
-	dweller = Monster(
-		dweller_pos,
-		Sprite('@', monster_color),
-		10,
-		behaviour=Questgiver(),
-		)
-	field.data.monsters.append(dweller)
 
 def all_monsters(world, raw=False, zone_range=None):
 	for zone_index in (zone_range or world.cells):
@@ -394,14 +391,22 @@ class Game:
 		zone = self.world.make_subgrid(zone_pos)
 		for pos in zone.cells:
 			field = zone.make_subgrid(pos)
-			generate_field(field)
+			builder = generate_field(field)
 
-			shift = Point(
-					pos.x * zone.sizes[-1].width,
-					pos.y * zone.sizes[-1].height,
+			if builder._building:
+				dweller_pos = builder._building.topleft + Point(1, 1) + Point(
+						random.randrange(builder._building.width - 2),
+						random.randrange(builder._building.height - 2),
+						)
+				colors = [name for name, color in self.COLORS.items() if color.dweller]
+				monster_color = random.choice(colors)
+				dweller = Monster(
+					dweller_pos,
+					Sprite('@', monster_color),
+					10,
+					behaviour=Questgiver(),
 					)
-			if random.randrange(50) == 0:
-				add_building(zone.cells.cell(pos), self.COLORS)
+				zone.cells.cell(pos).data.monsters.append(dweller)
 				continue
 			monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
 			for _ in range(monster_count):
