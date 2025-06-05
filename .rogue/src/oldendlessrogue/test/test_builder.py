@@ -8,7 +8,7 @@ class MockBuilder:
 		pass
 
 class TestMainBuilder(unittest.TestCase):
-	@unittest.mock.patch('random.choice', side_effect=['fill_with_garbage'])
+	@unittest.mock.patch('random.choice', side_effect=[FilledWithGarbage])
 	@unittest.mock.patch('random.randrange', side_effect=[0, 1, 1, 0, 2, 2])
 	def should_build_block(self, random_randrange, random_choice):
 		block = Matrix((3, 3), '.')
@@ -23,9 +23,9 @@ class TestMainBuilder(unittest.TestCase):
 
 class TestBuildings(unittest.TestCase):
 	def should_create_square_tank(self):
-		field = Matrix((6, 6), '.')
+		field = Matrix((6, 6), 'floor')
 		place_square_tank(field, (1, 1), (4, 4))
-		self.assertEqual(field.tostring(), unittest.dedent("""\
+		self.assertEqual(field.tostring(lambda c: '#' if c == 'wall' else '.'), unittest.dedent("""\
 		......
 		.####.
 		.####.
@@ -34,9 +34,9 @@ class TestBuildings(unittest.TestCase):
 		......
 		"""))
 	def should_create_round_tank(self):
-		field = Matrix((6, 6), '.')
+		field = Matrix((6, 6), 'floor')
 		place_round_tank(field, (1, 1), (4, 4))
-		self.assertEqual(field.tostring(), unittest.dedent("""\
+		self.assertEqual(field.tostring(lambda c: '#' if c == 'wall' else '.'), unittest.dedent("""\
 		......
 		..##..
 		.####.
@@ -50,9 +50,9 @@ class TestBuildings(unittest.TestCase):
 													 True, False, False, True,
 													 ])
 	def should_create_broken_tank(self, random_choice):
-		field = Matrix((6, 6), '.')
+		field = Matrix((6, 6), 'floor')
 		place_broken_tank(field, (1, 1), (4, 4))
-		self.assertEqual(field.tostring(), unittest.dedent("""\
+		self.assertEqual(field.tostring(lambda c: '#' if c == 'wall' else '.'), unittest.dedent("""\
 		......
 		..#.#.
 		.##...
@@ -65,18 +65,24 @@ class TestBuilders(unittest.TestCase):
 	@unittest.mock.patch('random.randrange', side_effect=[0, 1, 1, 0, 2, 2])
 	def should_fill_block_with_garbage(self, random_randrange):
 		field = Matrix((3, 3), '.')
-		fill_with_garbage(field)
+		builder = FilledWithGarbage(random, field)
+		builder.generate()
+		builder.make_grid()
 		self.assertEqual(field.tostring(), '.#.\n#..\n..#\n')
 	@unittest.mock.patch('random.randrange', side_effect=[1, 1])
 	def should_build_empty_square(self, random_randrange):
 		field = Matrix((3, 3), '.')
-		empty_square(field)
+		builder = EmptySquare(random, field)
+		builder.generate()
+		builder.make_grid()
 		self.assertEqual(field.tostring(), '...\n.#.\n...\n')
 	@unittest.mock.patch('random.choice', side_effect=[place_square_tank]*4)
 	@unittest.mock.patch('random.randrange', side_effect=[1, 2])
 	def should_build_field_of_tanks(self, random_randrange, random_choice):
 		field = Matrix((13, 13), '.')
-		field_of_tanks(field)
+		builder = FieldOfTanks(random, field)
+		builder.generate()
+		builder.make_grid()
 		self.assertEqual(field.tostring(), unittest.dedent("""\
 		.............
 		.............

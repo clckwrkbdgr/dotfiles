@@ -10,7 +10,7 @@ import clckwrkbdgr.logging
 Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
 from clckwrkbdgr.math.grid import NestedGrid
-from clckwrkbdgr import xdg
+from clckwrkbdgr import xdg, utils
 import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.tui
 from src.engine import builders
@@ -433,12 +433,7 @@ class Game:
 		zone = self.world.make_subgrid(zone_pos)
 		for pos in zone.cells:
 			field = zone.make_subgrid(pos)
-			builder_type = random.choice([
-				Forest,
-				Desert,
-				Thundra,
-				Marsh,
-				])
+			builder_type = random.choice(utils.all_subclasses(Builder))
 			builder = builder_type(random, field.cells)
 			builder.generate()
 			builder.make_grid()

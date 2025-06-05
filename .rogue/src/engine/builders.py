@@ -49,6 +49,8 @@ class Builder(object): # pragma: no cover -- TODO
 		self.fill_grid(grid)
 		self.actors = defaultdict(list)
 		for actor_data in self.generate_actors(grid):
+			if actor_data is None: # Empty generator.
+				continue
 			pos, actor_data = actor_data[0], actor_data[1:]
 			self.actors[pos].append(actor_data)
 		self.grid = grid
