@@ -188,36 +188,41 @@ class FieldData:
 			self.monsters.append(monster)
 		return self
 
-def generate_field(field):
-	builder_type = random.choice([
-		Forest,
-		Desert,
-		Thundra,
-		Marsh,
-		])
-	builder = builder_type(random, field.cells)
-	builder.map_key(
-			bog=Terrain(Sprite('~', 'green')),
-			bush=Terrain(Sprite('"', 'bold_green')),
-			dead_tree=Terrain(Sprite('&', 'yellow')),
-			frozen_ground=Terrain(Sprite('.', 'white')),
-			grass=Terrain(Sprite('.', 'green')),
-			ice=Terrain(Sprite('.', 'cyan')),
-			plant=Terrain(Sprite('"', 'green')),
-			rock=Terrain(Sprite('^', 'yellow'), passable=False),
-			sand=Terrain(Sprite('.', 'bold_yellow')),
-			snow=Terrain(Sprite('.', 'bold_white')),
-			swamp=Terrain(Sprite('~', 'cyan')),
-			tree=Terrain(Sprite('&', 'bold_green')),
-			swamp_tree=Terrain(Sprite('&', 'green')),
-			floor=Terrain(Sprite('.', 'white')),
-			wall=Terrain(Sprite('#', 'white'), passable=False),
-			)
-	builder.generate()
-	builder.make_grid()
-	return builder
-
 class Builder(builders.Builder):
+	class Mapping:
+		bog = Terrain(Sprite('~', 'green'))
+		bush = Terrain(Sprite('"', 'bold_green'))
+		dead_tree = Terrain(Sprite('&', 'yellow'))
+		frozen_ground = Terrain(Sprite('.', 'white'))
+		grass = Terrain(Sprite('.', 'green'))
+		ice = Terrain(Sprite('.', 'cyan'))
+		plant = Terrain(Sprite('"', 'green'))
+		rock = Terrain(Sprite('^', 'yellow'), passable=False)
+		sand = Terrain(Sprite('.', 'bold_yellow'))
+		snow = Terrain(Sprite('.', 'bold_white'))
+		swamp = Terrain(Sprite('~', 'cyan'))
+		tree = Terrain(Sprite('&', 'bold_green'))
+		swamp_tree = Terrain(Sprite('&', 'green'))
+		floor = Terrain(Sprite('.', 'white'))
+		wall = Terrain(Sprite('#', 'white'), passable=False)
+		def dweller(pos, color):
+			return Monster(pos, Sprite('@', color), 10, behaviour=Questgiver())
+		@classmethod
+		def monster(cls, pos, sprite, color, strong, aggressive):
+			return Monster(pos,
+				Sprite(sprite.upper() if strong else sprite, color),
+				1 + 10 * strong + random.randrange(4),
+				behaviour='aggressive' if aggressive else None,
+				)
+		@classmethod
+		def monster_carrying(cls, pos, sprite, color, strong, aggressive):
+			result = cls.monster(pos, sprite, color, strong, aggressive)
+			result.inventory.append(Item(
+				None, Sprite('*', color),
+				'{0} skin'.format(color.replace('_', ' ')),
+				))
+			return result
+
 	def fill_grid(self, grid):
 		self._make_terrain(grid)
 		self._building = random.randrange(50) == 0
@@ -250,6 +255,43 @@ class Builder(builders.Builder):
 			else:
 				grid.set_cell((door, building.bottom), 'floor')
 		return building
+	def generate_actors(self, grid):
+		if self._building:
+			yield self._make_dweller(self._building)
+			return
+		monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
+		for _ in range(monster_count):
+			yield self._make_monster(grid)
+	def _make_dweller(self, building):
+		dweller_pos = building.topleft + Point(1, 1) + Point(
+				random.randrange(building.width - 2),
+				random.randrange(building.height - 2),
+				)
+		colors = [name for name, color in Game.COLORS.items() if color.dweller]
+		monster_color = random.choice(colors)
+		return dweller_pos, 'dweller', monster_color
+	def _make_monster(self, grid):
+		monster_pos = Point(
+				random.randrange(grid.size.width),
+				random.randrange(grid.size.height),
+				)
+		while self.has_actor(monster_pos):
+			monster_pos = Point(
+					random.randrange(grid.size.width),
+					random.randrange(grid.size.height),
+					)
+		colors = [name for name, color in Game.COLORS.items() if color.monster]
+		normal_colors = [color for color in colors if not color.startswith('bold_')]
+		bold_colors = [color for color in colors if color.startswith('bold_')]
+		strong = random.randrange(2)
+		aggressive = random.randrange(2)
+		monster_color = random.choice(bold_colors if aggressive else normal_colors)
+		key = 'monster_carrying' if random.randrange(2) else 'monster'
+		return (
+				monster_pos, key, 
+				random.choice(string.ascii_lowercase),
+				monster_color, strong, aggressive,
+				)
 
 class Forest(Builder):
 	def _make_terrain(self, grid):
@@ -391,55 +433,16 @@ class Game:
 		zone = self.world.make_subgrid(zone_pos)
 		for pos in zone.cells:
 			field = zone.make_subgrid(pos)
-			builder = generate_field(field)
-
-			if builder._building:
-				dweller_pos = builder._building.topleft + Point(1, 1) + Point(
-						random.randrange(builder._building.width - 2),
-						random.randrange(builder._building.height - 2),
-						)
-				colors = [name for name, color in self.COLORS.items() if color.dweller]
-				monster_color = random.choice(colors)
-				dweller = Monster(
-					dweller_pos,
-					Sprite('@', monster_color),
-					10,
-					behaviour=Questgiver(),
-					)
-				zone.cells.cell(pos).data.monsters.append(dweller)
-				continue
-			monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
-			for _ in range(monster_count):
-				monster_pos = Point(
-						random.randrange(zone.cells.cell(pos).sizes[-1].width),
-						random.randrange(zone.cells.cell(pos).sizes[-1].height),
-						)
-				while any(other.pos == monster_pos for other in zone.cells.cell(pos).data.monsters):
-					monster_pos = Point(
-							random.randrange(zone.cells.cell(pos).sizes[-1].width),
-							random.randrange(zone.cells.cell(pos).sizes[-1].height),
-							)
-				colors = [name for name, color in self.COLORS.items() if color.monster]
-				normal_colors = [color for color in colors if not color.startswith('bold_')]
-				bold_colors = [color for color in colors if color.startswith('bold_')]
-				strong = random.randrange(2)
-				aggressive = random.randrange(2)
-				monster_color = random.choice(bold_colors if aggressive else normal_colors)
-				monster = Monster(
-					monster_pos,
-					Sprite(
-						random.choice(string.ascii_uppercase if strong else string.ascii_lowercase),
-						monster_color,
-						),
-					1 + 10 * strong + random.randrange(4),
-					behaviour='aggressive' if aggressive else None,
-					)
-				if random.randrange(2):
-					monster.inventory.append(Item(
-						None, Sprite('*', monster_color),
-						'{0} skin'.format(monster_color.replace('_', ' ')),
-						))
-				zone.cells.cell(pos).data.monsters.append(monster)
+			builder_type = random.choice([
+				Forest,
+				Desert,
+				Thundra,
+				Marsh,
+				])
+			builder = builder_type(random, field.cells)
+			builder.generate()
+			builder.make_grid()
+			field.data.monsters.extend(builder.make_actors())
 		return zone
 
 def iter_rect(topleft, bottomright):
