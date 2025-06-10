@@ -8,6 +8,7 @@ import clckwrkbdgr.pcg.maze
 import clckwrkbdgr.pcg.rogue
 from clckwrkbdgr.pcg import bsp
 import clckwrkbdgr.math
+from ..engine import builders
 
 class Builder(object):
 	""" Base class to build terrain matrix
@@ -21,14 +22,10 @@ class Builder(object):
 		""" Initializes builder with given RNG and map size.
 		To actually create and fill map call build().
 		"""
-		self.rng = rng
-		self.size = map_size
+		self.builder = builders.Builder(rng, map_size)
 		self.strata = None
-		self.original_rng_seed = rng.value
 		self.start_pos = None
 		self.exit_pos = None
-
-		self.builder = self # FIXME deprecated
 	def build(self):
 		""" Creates empty terrain matrix
 		and calls custom _build() to fill it.
@@ -36,27 +33,20 @@ class Builder(object):
 		but IDs of the terrain types available in the custom Game definitions
 		and should be replaced later with actual Terrain in the Game class itself.
 
-		To actually fill dungeon, call populate().
-		"""
-		self.strata = Matrix(self.size, None)
-		self._build()
-	def _build(self): # pragma: no cover
-		""" Should fill self.strata, self.start_pos and self.exit_pos. """
-		raise NotImplementedError()
-
-	def populate(self):
-		""" Places monsters, items and other objects all over map, according to custom overrides.
-
+		Places monsters, items and other objects all over map, according to custom overrides.
 		Creates list .monsters with data for each monster in form of tuple: (pos, ...other data).
-
 		Creates list .items with data for each item in form of tuple: (pos, ...other data).
-
 		Values should be replaced later with actual objects in the Game class itself.
 		"""
+		self.strata = Matrix(self.builder.size, None)
+		self._build()
 		self.monsters = []
 		self._populate()
 		self.items = []
 		self._place_items()
+	def _build(self): # pragma: no cover
+		""" Should fill self.strata, self.start_pos and self.exit_pos. """
+		raise NotImplementedError()
 	def _populate(self): # pragma: no cover
 		""" Should fill array of .monsters """
 		pass
@@ -89,8 +79,8 @@ class CustomMap(Builder):
 		map_size = Size(len(self._map_data[0]), len(self._map_data))
 		super(CustomMap, self).__init__(rng, map_size)
 	def _build(self):
-		for x in range(self.size.width):
-			for y in range(self.size.height):
+		for x in range(self.builder.size.width):
+			for y in range(self.builder.size.height):
 				if self._map_data[y][x] == '@':
 					self.start_pos = Point(x, y)
 					self.strata.set_cell((x, y), self.ENTER_TERRAIN)
@@ -105,7 +95,7 @@ class RogueDungeon(Builder):
 	3x3 rooms connected by rectangular tunnels.
 	"""
 	def _build(self):
-		builder = clckwrkbdgr.pcg.rogue.Dungeon(self.rng, self.size, Size(3, 3), Size(4, 4))
+		builder = clckwrkbdgr.pcg.rogue.Dungeon(self.builder.rng, self.builder.size, Size(3, 3), Size(4, 4))
 		builder.generate_rooms()
 		builder.generate_maze()
 		builder.generate_tunnels()
@@ -131,19 +121,19 @@ class RogueDungeon(Builder):
 			self.strata.set_cell(tunnel.start, 'rogue_door')
 			self.strata.set_cell(tunnel.stop, 'rogue_door')
 
-		enter_room_key = self.rng.choice(list(builder.grid.size.iter_points()))
+		enter_room_key = self.builder.rng.choice(list(builder.grid.size.iter_points()))
 		enter_room = builder.grid.cell(enter_room_key)
 		self.start_pos = Point(
-					self.rng.range(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
-					self.rng.range(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
+					self.builder.rng.range(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
+					self.builder.rng.range(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
 					)
 
 		for _ in range(9):
-			exit_room_key = self.rng.choice(list(builder.grid.size.iter_points()))
+			exit_room_key = self.builder.rng.choice(list(builder.grid.size.iter_points()))
 			exit_room = builder.grid.cell(exit_room_key)
 			self.exit_pos = Point(
-					self.rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
-					self.rng.range(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
+					self.builder.rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
+					self.builder.rng.range(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
 					)
 			if exit_room_key != enter_room_key:
 				break
@@ -210,31 +200,31 @@ class BSPDungeon(Builder):
 	"""
 	def _build(self):
 		Log.debug("Building surrounding walls.")
-		for x in range(self.size.width):
+		for x in range(self.builder.size.width):
 			self.strata.set_cell((x, 0), 'wall')
-			self.strata.set_cell((x, self.size.height - 1), 'wall')
-		for y in range(self.size.height):
+			self.strata.set_cell((x, self.builder.size.height - 1), 'wall')
+		for y in range(self.builder.size.height):
 			self.strata.set_cell((0, y), 'wall')
-			self.strata.set_cell((self.size.width - 1, y), 'wall')
+			self.strata.set_cell((self.builder.size.width - 1, y), 'wall')
 
 		Log.debug("Running BSP...")
-		partition = bsp.BinarySpacePartition(self.rng)
+		partition = bsp.BinarySpacePartition(self.builder.rng)
 		builder = BSPBuilder(self.strata,
 								 free=lambda: 'floor',
 								 obstacle=lambda: 'wall',
 								 door=lambda: 'floor',
 						 )
-		for splitter in partition.generate(Point(1, 1), Point(self.size.width - 2, self.size.height - 2)):
+		for splitter in partition.generate(Point(1, 1), Point(self.builder.size.width - 2, self.builder.size.height - 2)):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
 
 		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.builder.rng, self.builder.size)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.builder.rng, self.builder.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
 class CityBuilder(Builder):
@@ -242,48 +232,48 @@ class CityBuilder(Builder):
 	"""
 	def _build(self):
 		Log.debug("Building surrounding walls.")
-		for x in range(self.size.width):
+		for x in range(self.builder.size.width):
 			self.strata.set_cell((x, 0), 'wall')
-			self.strata.set_cell((x, self.size.height - 1), 'wall')
-		for y in range(self.size.height):
+			self.strata.set_cell((x, self.builder.size.height - 1), 'wall')
+		for y in range(self.builder.size.height):
 			self.strata.set_cell((0, y), 'wall')
-			self.strata.set_cell((self.size.width - 1, y), 'wall')
-		for x in range(1, self.size.width - 1):
-			for y in range(1, self.size.height - 1):
+			self.strata.set_cell((self.builder.size.width - 1, y), 'wall')
+		for x in range(1, self.builder.size.width - 1):
+			for y in range(1, self.builder.size.height - 1):
 				self.strata.set_cell((x, y), 'floor')
 
 		Log.debug("Running BSP...")
-		partition = bsp.BinarySpacePartition(self.rng, min_width=8, min_height=7)
+		partition = bsp.BinarySpacePartition(self.builder.rng, min_width=8, min_height=7)
 		partition.set_unfit_both_dimensions(True)
 		builder = BSPBuildingBuilder(self.strata,
 								 free=lambda: 'floor',
 								 obstacle=lambda: 'wall',
 								 door=lambda: 'floor',
 						 )
-		for splitter in partition.generate(Point(1, 1), Point(self.size.width - 2, self.size.height - 2)):
+		for splitter in partition.generate(Point(1, 1), Point(self.builder.size.width - 2, self.builder.size.height - 2)):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
 
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
 		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.builder.rng, self.builder.size)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.builder.rng, self.builder.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
 class CaveBuilder(Builder):
 	""" A large open natural cave.
 	"""
 	def _build(self):
-		self.strata = clckwrkbdgr.pcg.cellular.cave(self.rng, self.size)
+		self.strata = clckwrkbdgr.pcg.cellular.cave(self.builder.rng, self.builder.size)
 
 		floor_only = lambda pos: self.strata.cell(pos) > 1
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.builder.rng, self.builder.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.builder.rng, self.builder.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
 		for pos in self.strata.size.iter_points():
@@ -301,7 +291,7 @@ class MazeBuilder(Builder):
 		""" Fills actual map with terrain IDs according to given layout
 		and considering cell_size.
 		"""
-		self.strata = Matrix(self.size, 'wall')
+		self.strata = Matrix(self.builder.size, 'wall')
 		for pos in layout.size.iter_points():
 			if layout.cell(pos):
 				for x in range(self.CELL_SIZE.width):
@@ -315,15 +305,15 @@ class MazeBuilder(Builder):
 		""" Places other points of interests (start, exit).
 		"""
 		floor_only = lambda pos: self.strata.cell(pos) in ['floor', 'tunnel_floor']
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.builder.rng, self.builder.size)
 		Log.debug("Generated player pos: {0}".format(self.start_pos))
 
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.builder.rng, self.builder.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 	def _build(self):
-		maze = clckwrkbdgr.pcg.maze.Maze(self.rng, self.size, self.CELL_SIZE)
+		maze = clckwrkbdgr.pcg.maze.Maze(self.builder.rng, self.builder.size, self.CELL_SIZE)
 		layout = maze.build()
 		self._fill_maze(layout)
 		self._place_points()
@@ -340,8 +330,8 @@ class Sewers(MazeBuilder):
 		super(Sewers, self)._fill_maze(layout, floor_terrain='floor')
 
 		# Fill water streams.
-		for x in range(self.size.width):
-			for y in range(self.size.height):
+		for x in range(self.builder.size.width):
+			for y in range(self.builder.size.height):
 				if self.strata.cell((x, y)) == 'wall':
 					continue
 				for n in clckwrkbdgr.math.get_neighbours(self.strata, (x, y), with_diagonal=True):

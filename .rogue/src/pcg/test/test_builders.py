@@ -28,23 +28,23 @@ def str_terrain(name):
 
 class MockBuilder(builders.Builder):
 	def _build(self):
-		for x in range(self.size.width):
+		for x in range(self.builder.size.width):
 			self.strata.set_cell((x, 0), 'wall')
-			self.strata.set_cell((x, self.size.height - 1), 'wall')
-		for y in range(self.size.height):
+			self.strata.set_cell((x, self.builder.size.height - 1), 'wall')
+		for y in range(self.builder.size.height):
 			self.strata.set_cell((0, y), 'wall')
-			self.strata.set_cell((self.size.width - 1, y), 'wall')
-		for x in range(1, self.size.width - 1):
-			for y in range(1, self.size.height - 1):
+			self.strata.set_cell((self.builder.size.width - 1, y), 'wall')
+		for x in range(1, self.builder.size.width - 1):
+			for y in range(1, self.builder.size.height - 1):
 				self.strata.set_cell((x, y), 'floor')
 		floor_only = lambda pos: self.strata.cell(pos) == 'floor'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		obstacle_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		obstacle_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.builder.rng, self.builder.size)
 		self.strata.set_cell(obstacle_pos, 'wall')
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.builder.rng, self.builder.size)
+		pcg.point(self.builder.rng, self.builder.size) # FIXME work around legacy bug which scrapped the first result
+		self.exit_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.builder.rng, self.builder.size)
 
 class TestBuilder(unittest.TestCase):
 	def should_generate_dungeon(self):

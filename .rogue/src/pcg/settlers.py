@@ -3,6 +3,7 @@ from ..monsters import Behavior
 from .builders import Builder, CustomMap, RogueDungeon
 
 class Settler(Builder):
+	PASSABLE = None
 	pass
 
 class CustomSettler(CustomMap):
@@ -15,6 +16,7 @@ class CustomSettler(CustomMap):
 	ITEMS = [
 			]
 	def _populate(self):
+		self.builder.rng.choice([1]) # FIXME mock action just to shift RNG
 		self.monsters += self.MONSTERS
 	def _place_items(self):
 		self.items += self.ITEMS
@@ -27,11 +29,13 @@ class SingleMonster(Settler):
 	"""
 	MONSTER = None
 
+	def passable(self, pos):
+		return self.strata.cell(pos) in self.PASSABLE
 	def _populate(self):
 		""" Places monster at first passable terrain. """
-		passable = lambda pos: self.builder.strata.cell(pos).terrain.passable
-		pcg.point(self.rng, self.builder.strata.size) # FIXME work around legacy bug which scrapped the first result
-		pos = pcg.TryCheck(pcg.point).check(lambda pos: passable(pos) and pos not in [self.builder.start_pos, self.builder.exit_pos])(self.rng, self.builder.strata.size)
+		self.builder.rng.choice([1]) # FIXME mock action just to shift RNG
+		pcg.point(self.builder.rng, self.strata.size) # FIXME work around legacy bug which scrapped the first result
+		pos = pcg.TryCheck(pcg.point).check(lambda pos: self.passable(pos) and pos not in [self.start_pos, self.exit_pos])(self.builder.rng, self.strata.size)
 		self.monsters.append(self.MONSTER + (pos,))
 
 class CustomMapSingleMonster(CustomMap, SingleMonster):
@@ -54,38 +58,42 @@ class Squatters(Settler):
 
 	def is_passable(self, pos):
 		""" True if terrain is passable. """
-		return self.builder.strata.cell(pos).terrain.passable
+		return self.strata.cell(pos) in self.PASSABLE
 	def is_free(self, pos):
 		""" True if not occupied by any other object/monster. """
 		if not self.is_passable(pos):
 			return False
-		if pos == self.builder.start_pos:
+		if pos == self.start_pos:
 			return False
-		if pos == self.builder.exit_pos:
+		if pos == self.exit_pos:
 			return False
 		if pos in self.monster_cells:
 			return False
 		return True
 	def _choice(self, entries):
-		return self.rng.choice(entries) if len(entries) != 1 else entries[0]
+		return self.builder.rng.choice(entries) if len(entries) != 1 else entries[0]
 	def _populate(self):
 		""" Places random population of different types of monsters.
 		"""
-		total_passable_cells = sum(1 for pos in self.builder.strata.size.iter_points() if self.is_passable(pos))
+		total_passable_cells = sum(1 for pos in self.strata.size.iter_points() if self.is_passable(pos))
 		total_monsters = int(total_passable_cells / float(self.CELLS_PER_MONSTER))
 		self.monster_cells = set()
+		if not self.MONSTERS:
+			return
 		for _ in range(total_monsters):
-			pcg.point(self.rng, self.builder.strata.size) # FIXME work around legacy bug which scrapped the first result
-			pos = pcg.TryCheck(pcg.point).check(self.is_free)(self.rng, self.builder.strata.size)
+			pcg.point(self.builder.rng, self.strata.size) # FIXME work around legacy bug which scrapped the first result
+			pos = pcg.TryCheck(pcg.point).check(self.is_free)(self.builder.rng, self.strata.size)
 			self.monster_cells.add(pos)
 			self.monsters.append(self._choice(self.MONSTERS) + (pos,))
 	def _place_items(self):
 		""" Drops items in random locations. """
-		total_passable_cells = sum(1 for pos in self.builder.strata.size.iter_points() if self.is_passable(pos))
+		total_passable_cells = sum(1 for pos in self.strata.size.iter_points() if self.is_passable(pos))
 		total_items = int(total_passable_cells / float(self.CELLS_PER_ITEM))
+		if not self.ITEMS:
+			return
 		for _ in range(total_items):
-			pcg.point(self.rng, self.builder.strata.size) # FIXME work around legacy bug which scrapped the first result
-			pos = pcg.TryCheck(pcg.point).check(self.is_free)(self.rng, self.builder.strata.size)
+			pcg.point(self.builder.rng, self.strata.size) # FIXME work around legacy bug which scrapped the first result
+			pos = pcg.TryCheck(pcg.point).check(self.is_free)(self.builder.rng, self.strata.size)
 			self.items.append(self._choice(self.ITEMS) + (pos,))
 
 class WeightedSquatters(Squatters):
@@ -94,7 +102,7 @@ class WeightedSquatters(Squatters):
 	"""
 	def _choice(self, entries):
 		from clckwrkbdgr import pcg
-		return pcg.weighted_choices(self.rng, [(data[0], data[1:]) for data in entries])[0]
+		return pcg.weighted_choices(self.builder.rng, [(data[0], data[1:]) for data in entries])[0]
 
 class RogueDungeonSquatters(RogueDungeon, Squatters):
 	pass

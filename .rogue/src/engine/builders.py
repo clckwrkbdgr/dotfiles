@@ -1,6 +1,6 @@
 import copy
 from collections import defaultdict
-from clckwrkbdgr.math import Matrix
+from clckwrkbdgr.math import Matrix, Size
 from clckwrkbdgr import pcg
 
 class Builder(object): # pragma: no cover -- TODO
@@ -19,13 +19,20 @@ class Builder(object): # pragma: no cover -- TODO
 		"""
 		pass
 
-	def __init__(self, rng, grid):
-		""" Creates builder over existing grid.
-		It will be used to fill in make_grid().
+	def __init__(self, rng, grid_or_size):
+		""" Creates builder over grid.
+		Accepts either existing grid (which will be used to fill in make_grid()),
+		or a size (in this case new grid will be created and returned in make_grid()).
 		"""
 		self.rng = rng
-		self.size = grid.size
-		self.dest_grid = grid
+		if isinstance(grid_or_size, Matrix):
+			self.size = grid_or_size.size
+		else:
+			self.size = Size(grid_or_size)
+		if isinstance(grid_or_size, Matrix):
+			self.dest_grid = grid_or_size
+		else:
+			self.dest_grid = None
 		self.mapping = {}
 	def _get_mapping(self, key):
 		result = self.mapping.get(key)
@@ -56,10 +63,12 @@ class Builder(object): # pragma: no cover -- TODO
 		self.grid = grid
 	def make_grid(self):
 		""" Compiles generated abstract map and returns result grid.
-		If grid was passed to the builder's init, it will be re-used.
+		If existing grid was passed to the builder's init, it will be re-used.
 		Mapped objects will be pasted via copy.deepcopy().
 		"""
 		if self.grid:
+			if self.dest_grid is None:
+				self.dest_grid = self.grid
 			for pos in self.grid:
 				mapped_object = self._get_mapping(self.grid.cell(pos))
 				self.dest_grid.set_cell(pos, copy.deepcopy(mapped_object))

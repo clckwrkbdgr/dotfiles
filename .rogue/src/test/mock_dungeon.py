@@ -53,6 +53,7 @@ class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
 		#..................#
 		####################
 		"""
+	PASSABLE = ('.',)
 	MONSTER = ('thief', monsters.Behavior.ANGRY)
 
 class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
@@ -68,6 +69,7 @@ class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
 		#..................#
 		####################
 		"""
+	PASSABLE = ('.',)
 	MONSTER = ('monster', monsters.Behavior.ANGRY)
 
 class _MockBuilder_PotionsLyingAround(settlers.CustomSettler):

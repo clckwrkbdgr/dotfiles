@@ -7,6 +7,8 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 
 class MockSettler(settlers.Settler):
+	def _build(self):
+		pass
 	def _populate(self):
 		self.monsters.append(('monster', settlers.Behavior.DUMMY, Point(1, 2)))
 
@@ -14,7 +16,7 @@ class TestSettler(unittest.TestCase):
 	def should_populate_dungeon(self):
 		rng = RNG(0)
 		settler = MockSettler(rng, Size(20, 20))
-		settler.populate()
+		settler.build()
 		self.assertEqual(settler.monsters, [
 			('monster', settlers.Behavior.DUMMY, Point(1, 2)),
 			])
@@ -41,11 +43,9 @@ class TestSquatters(unittest.TestCase):
 	def should_check_availability_of_placement_position(self):
 		rng = RNG(0)
 		builder = settlers.RogueDungeonSquatters(rng, Size(80, 25))
-		builder.build()
-		self._make_terrain(builder)
-
+		builder.PASSABLE = ('floor',)
 		settler = builder
-		settler.rng = RNG(0)
+		builder.build()
 
 		self.assertTrue(settler.is_passable(Point(8, 2)))
 		self.assertFalse(settler.is_passable(Point(1, 1)))
@@ -69,26 +69,24 @@ class TestSquatters(unittest.TestCase):
 			ITEMS = [
 					('healing potion',),
 					]
+			PASSABLE = ('floor',)
 		builder = _MockSquatters(rng, Size(80, 25))
 		builder.build()
+		settler = builder
 		self._make_terrain(builder)
 
-		settler = builder
-		settler.rng = RNG(0)
-		settler.populate()
 		self.maxDiff = None
 		self.assertEqual(settler.monsters, [
-			('plant',  monsters.Behavior.DUMMY, Point(29, 20)),
-			('slime',  monsters.Behavior.INERT, Point(64, 11)),
-			('plant',  monsters.Behavior.DUMMY, Point(59, 4)),
-			('slime',  monsters.Behavior.INERT, Point(44, 12)),
-			('slime',  monsters.Behavior.INERT, Point(71, 13)),
-			('slime',  monsters.Behavior.INERT, Point(36, 7)),
-			('rodent', monsters.Behavior.ANGRY, Point(27, 18)),
+			('rodent', 3, Point(59, 18)),
+			('plant', 1,  Point(68, 12)),
+			('rodent', 3, Point(33, 9)),
+			('plant', 1,  Point(34, 11)),
+			('rodent', 3, Point(9, 19)),
+			('plant', 1,  Point(22, 19))
 			])
 		self.assertEqual(settler.items, [
-			('healing potion', Point(35, 21)),
-			('healing potion', Point(63, 7)),
+			('healing potion', Point(31, 19)),
+			('healing potion', Point(17, 19)),
 			])
 	def should_populate_dungeon_with_weighted_squatters(self):
 		rng = RNG(0)
@@ -101,24 +99,22 @@ class TestSquatters(unittest.TestCase):
 			ITEMS = [
 					(1, 'healing potion',),
 					]
+			PASSABLE = ('floor',)
 		builder = _MockSquatters(rng, Size(80, 25))
 		builder.build()
+		settler = builder
 		self._make_terrain(builder)
 
-		settler = builder
-		settler.rng = RNG(0)
-		settler.populate()
 		self.maxDiff = None
 		self.assertEqual(settler.monsters, [
-			('slime',  monsters.Behavior.INERT, Point(29, 20)),
-			('rodent', monsters.Behavior.ANGRY, Point(64, 11)),
-			('plant',  monsters.Behavior.DUMMY, Point(59, 4)),
-			('rodent', monsters.Behavior.ANGRY, Point(44, 12)),
-			('rodent', monsters.Behavior.ANGRY, Point(71, 13)),
-			('rodent', monsters.Behavior.ANGRY, Point(36, 7)),
-			('rodent', monsters.Behavior.ANGRY, Point(27, 18)),
+			('rodent', 3, Point(59, 18)),
+			('slime', 2,  Point(68, 12)),
+			('rodent', 3, Point(33, 9)),
+			('slime', 2,  Point(34, 11)),
+			('rodent', 3, Point(9, 19)),
+			('slime', 2,  Point(22, 19))
 			])
 		self.assertEqual(settler.items, [
-			('healing potion', Point(35, 21)),
-			('healing potion', Point(17, 11)),
+			('healing potion', Point(31, 19)),
+			('healing potion', Point(63, 4)),
 			])

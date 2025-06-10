@@ -298,6 +298,8 @@ class Game(object):
 		Log.debug('Building dungeon: {0}...'.format(builder))
 		Log.debug('With RNG: {0}...'.format(self.rng.value))
 		builder = builder(self.rng, Size(80, 23))
+		settler = builder
+		Log.debug("Populating dungeon: {0}".format(settler))
 		builder.build()
 		for pos in builder.strata.size.iter_points():
 			builder.strata.set_cell(
@@ -305,10 +307,6 @@ class Game(object):
 					terrain.Cell(self.TERRAIN[builder.strata.cell(pos)]),
 					)
 
-		settler = builder
-		self.rng.choice(self.builders) # FIXME mock action just to shift RNG
-		Log.debug("Populating dungeon: {0}".format(settler))
-		settler.populate()
 		player = self.get_player()
 		if player:
 			player.pos = builder.start_pos
