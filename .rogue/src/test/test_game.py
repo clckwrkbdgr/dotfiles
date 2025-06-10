@@ -511,7 +511,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move(dungeon.get_player(), game.Direction.UP_RIGHT), 
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		self.assertEqual(dungeon.tostring(), textwrap.dedent(mock_dungeon._MockBuilder.MAP_DATA))
+		self.assertEqual(dungeon.tostring(), textwrap.dedent(mock_dungeon._MockBuilderUnSettler.MAP_DATA))
 	def should_update_fov_after_movement(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
@@ -652,7 +652,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.descend()
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		self.assertEqual(dungeon.get_player().hp, 5)
-		self.assertEqual(dungeon.tostring(), textwrap.dedent(mock_dungeon._MockMiniBuilder.MAP_DATA).replace('~', '.'))
+		self.assertEqual(dungeon.tostring(), textwrap.dedent(mock_dungeon._MockMiniBuilderUnSettler.MAP_DATA).replace('~', '.'))
 	def should_directly_jump_to_new_position(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))

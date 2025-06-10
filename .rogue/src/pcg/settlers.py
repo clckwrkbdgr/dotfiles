@@ -1,40 +1,11 @@
 from clckwrkbdgr import pcg
 from ..monsters import Behavior
+from .builders import Builder, CustomMap, RogueDungeon
 
-class Settler(object):
-	""" Base class to populate terrain with monsters and other objects.
+class Settler(Builder):
+	pass
 
-	Override methods _populate() and _place_items() to do actual jobs.
-	"""
-	def __init__(self, rng, builder):
-		""" Creates settler over builder with already generated and filled map.
-		To actually fill dungeon, call populate().
-		"""
-		self.rng = rng
-		self.builder = builder
-	def populate(self):
-		""" Places monsters, items and other objects all over map, according to custom overrides.
-
-		Creates list .monsters with data for each monster in form of tuple: (pos, ...other data).
-
-		Creates list .items with data for each item in form of tuple: (pos, ...other data).
-
-		Values should be replaced later with actual objects in the Game class itself.
-		"""
-		self.monsters = []
-		self._populate()
-		self.items = []
-		self._place_items()
-	def _populate(self): # pragma: no cover
-		""" Should fill array of .monsters """
-		raise NotImplementedError()
-	def _place_items(self): # pragma: no cover
-		""" Should fill array of .items
-		Default implementation places no items.
-		"""
-		pass
-
-class CustomSettler(Settler):
+class CustomSettler(CustomMap):
 	""" Fills map with predetermined monsters and items.
 	Data should be provided as list of raw parameters:
 	(<item/monster data>, <pos>)
@@ -62,6 +33,9 @@ class SingleMonster(Settler):
 		pcg.point(self.rng, self.builder.strata.size) # FIXME work around legacy bug which scrapped the first result
 		pos = pcg.TryCheck(pcg.point).check(lambda pos: passable(pos) and pos not in [self.builder.start_pos, self.builder.exit_pos])(self.rng, self.builder.strata.size)
 		self.monsters.append(self.MONSTER + (pos,))
+
+class CustomMapSingleMonster(CustomMap, SingleMonster):
+	pass
 
 class Squatters(Settler):
 	""" Set of squatters, randomly distributed throughout the map.
@@ -121,3 +95,9 @@ class WeightedSquatters(Squatters):
 	def _choice(self, entries):
 		from clckwrkbdgr import pcg
 		return pcg.weighted_choices(self.rng, [(data[0], data[1:]) for data in entries])[0]
+
+class RogueDungeonSquatters(RogueDungeon, Squatters):
+	pass
+
+class RogueDungeonWeightedSquatters(RogueDungeon, WeightedSquatters):
+	pass

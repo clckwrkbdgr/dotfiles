@@ -11,9 +11,11 @@ import clckwrkbdgr.math
 
 class Builder(object):
 	""" Base class to build terrain matrix
-	with start pos and exit pos.
+	with start pos and exit pos
+	and to populate terrain with monsters and other objects.
 
 	Override method _build() to produce actual terrain.
+	Override methods _populate() and _place_items() to do actual jobs.
 	"""
 	def __init__(self, rng, map_size):
 		""" Initializes builder with given RNG and map size.
@@ -25,18 +27,44 @@ class Builder(object):
 		self.original_rng_seed = rng.value
 		self.start_pos = None
 		self.exit_pos = None
+
+		self.builder = self # FIXME deprecated
 	def build(self):
 		""" Creates empty terrain matrix
 		and calls custom _build() to fill it.
 		Usually matrix cells are not real Terrains,
 		but IDs of the terrain types available in the custom Game definitions
 		and should be replaced later with actual Terrain in the Game class itself.
+
+		To actually fill dungeon, call populate().
 		"""
 		self.strata = Matrix(self.size, None)
 		self._build()
 	def _build(self): # pragma: no cover
 		""" Should fill self.strata, self.start_pos and self.exit_pos. """
 		raise NotImplementedError()
+
+	def populate(self):
+		""" Places monsters, items and other objects all over map, according to custom overrides.
+
+		Creates list .monsters with data for each monster in form of tuple: (pos, ...other data).
+
+		Creates list .items with data for each item in form of tuple: (pos, ...other data).
+
+		Values should be replaced later with actual objects in the Game class itself.
+		"""
+		self.monsters = []
+		self._populate()
+		self.items = []
+		self._place_items()
+	def _populate(self): # pragma: no cover
+		""" Should fill array of .monsters """
+		pass
+	def _place_items(self): # pragma: no cover
+		""" Should fill array of .items
+		Default implementation places no items.
+		"""
+		pass
 
 class CustomMap(Builder):
 	""" Builds map described by custom layout.

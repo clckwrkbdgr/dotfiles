@@ -40,23 +40,67 @@ class MockGame(game.Game):
 		'^' : terrain.Terrain('^', "^", True, remembered='^', allow_diagonal=False, dark=True),
 		}
 
-class UnSettler(settlers.Settler):
-	def _populate(self):
-		pass
-
-class SingleMockMonster(settlers.SingleMonster):
-	MONSTER = ('monster', monsters.Behavior.ANGRY)
-
-class SingleMockThief(settlers.SingleMonster):
+class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTER = ('thief', monsters.Behavior.ANGRY)
 
-class _PotionsLyingAround(settlers.CustomSettler):
+class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
+	MONSTER = ('monster', monsters.Behavior.ANGRY)
+
+class _MockBuilder_PotionsLyingAround(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	ITEMS = [
 		('potion', Point(10, 6)),
 		('healing potion', Point(11, 6)),
 		]
 
-class _MockSettler(settlers.CustomSettler):
+class _MockBuilder_MockSettler(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTERS = [
 			('monster', settlers.Behavior.DUMMY, Point(2, 5)),
 			]
@@ -64,13 +108,7 @@ class _MockSettler(settlers.CustomSettler):
 			('potion', Point(10, 6)),
 			]
 
-class _NowYouSeeMe(settlers.CustomSettler):
-	MONSTERS = [
-		('monster', settlers.Behavior.DUMMY, Point(1, 1)),
-		('monster', settlers.Behavior.DUMMY, Point(1, 6)),
-		]
-
-class _MockBuilder(builders.CustomMap):
+class _MockBuilderUnSettler(settlers.CustomSettler):
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -84,7 +122,25 @@ class _MockBuilder(builders.CustomMap):
 		####################
 		"""
 
-class _MockMiniRogueBuilder(builders.CustomMap):
+class _MockBuilder_NowYouSeeMe(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
+	MONSTERS = [
+		('monster', settlers.Behavior.DUMMY, Point(1, 1)),
+		('monster', settlers.Behavior.DUMMY, Point(1, 6)),
+		]
+
+class _MockMiniRogueBuilderUnSettler(settlers.CustomSettler):
 	MAP_DATA = """\
 		  +--+ % 
 		* |@.| % 
@@ -93,7 +149,7 @@ class _MockMiniRogueBuilder(builders.CustomMap):
 		  +--+   
 		"""
 
-class _MockMiniBuilder(builders.CustomMap):
+class _MockMiniBuilderUnSettler(settlers.CustomSettler):
 	MAP_DATA = """\
 		@#..#
 		~#..#
@@ -101,7 +157,19 @@ class _MockMiniBuilder(builders.CustomMap):
 		#####
 		"""
 
-class _MonstersOnTopOfItems(settlers.CustomSettler):
+class _MockBuilder_MonstersOnTopOfItems(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTERS = [
 		('monster', settlers.Behavior.DUMMY, Point(1, 1)),
 		('monster', settlers.Behavior.DUMMY, Point(1, 6)),
@@ -111,32 +179,104 @@ class _MonstersOnTopOfItems(settlers.CustomSettler):
 		('potion', Point(1, 6)),
 		]
 
-class _CloseMonster(settlers.CustomSettler):
+class _MockBuilder_CloseMonster(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTERS = [
 		('monster', settlers.Behavior.DUMMY, Point(10, 6)),
 		]
 
-class _CloseThief(settlers.CustomSettler):
+class _MockBuilder_CloseThief(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTERS = [
 		('thief', settlers.Behavior.DUMMY, Point(10, 6)),
 		]
 
-class _CloseInertMonster(settlers.CustomSettler):
+class _MockBuilder_CloseInertMonster(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTERS = [
 		('monster', settlers.Behavior.INERT, Point(10, 6)),
 		]
 
-class _CloseAngryMonster(settlers.CustomSettler):
+class _MockBuilder_CloseAngryMonster(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTERS = [
 		('monster', settlers.Behavior.ANGRY, Point(11, 6)),
 		]
 
-class _CloseAngryMonster2(settlers.CustomSettler):
+class _MockBuilder_CloseAngryMonster2(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTERS = [
 		('monster', settlers.Behavior.ANGRY, Point(4, 4)),
 		]
 
-class _FightingGround(settlers.CustomSettler):
+class _MockBuilder_FightingGround(settlers.CustomSettler):
+	MAP_DATA = """\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#........@.........#
+		#..................#
+		#..................#
+		####################
+		"""
 	MONSTERS = [
 		('monster', settlers.Behavior.DUMMY, Point(10, 6)),
 		('monster', settlers.Behavior.INERT, Point(9, 4)),
@@ -144,31 +284,31 @@ class _FightingGround(settlers.CustomSettler):
 
 def build(dungeon_id, load_from_reader=None):
 	_DATA = {
-			'now you see me': ([_MockBuilder], [_NowYouSeeMe]),
-			'mini dark rogue': ([_MockMiniRogueBuilder], [UnSettler]),
-			'lonely': ([_MockBuilder], [UnSettler]),
-			'monsters on top': ([_MockBuilder], [_MonstersOnTopOfItems]),
-			'mini lonely': ([_MockMiniBuilder], [UnSettler]),
-			'mini 2 lonely': ([_MockMiniBuilder], [UnSettler]),
-			'mini 3 lonely': ([_MockMiniBuilder], [UnSettler]),
-			'mini 4 lonely': ([_MockMiniBuilder], [UnSettler]),
-			'mini 5 lonely': ([_MockMiniBuilder], [UnSettler]),
-			'mini 6 monster': ([_MockBuilder], [_NowYouSeeMe]),
-			'mini 6 lonely': ([_MockMiniBuilder], [UnSettler]),
-			'mini rogue 2 lonely': ([_MockMiniRogueBuilder], [UnSettler]),
-			'mini rogue lonely': ([_MockMiniRogueBuilder], [UnSettler]),
-			'potions lying around': ([_MockBuilder], [_PotionsLyingAround]),
-			'close monster': ([_MockBuilder], [_CloseMonster]),
-			'close thief': ([_MockBuilder], [_CloseThief]),
-			'close inert monster': ([_MockBuilder], [_CloseInertMonster]),
-			'close angry monster': ([_MockBuilder], [_CloseAngryMonster]),
-			'close angry monster 2': ([_MockBuilder], [_CloseAngryMonster2]),
-			'single mock monster': ([_MockBuilder], [SingleMockMonster]),
-			'single mock thief': ([_MockBuilder], [SingleMockThief]),
-			'mock settler': ([_MockBuilder], [_MockSettler]),
-			'mock settler restored': ([_MockBuilder], [_MockSettler]),
-			'fighting around': ([_MockBuilder], [_FightingGround]),
-			'potions lying around 2': ([_MockBuilder], [_PotionsLyingAround]),
-			'monster and potion': ([_MockBuilder], [_MockSettler]),
+			'now you see me': ([_MockBuilder_NowYouSeeMe]),
+			'mini dark rogue': ([_MockMiniRogueBuilderUnSettler]),
+			'lonely': ([_MockBuilderUnSettler]),
+			'monsters on top': ([_MockBuilder_MonstersOnTopOfItems]),
+			'mini lonely': ([_MockMiniBuilderUnSettler]),
+			'mini 2 lonely': ([_MockMiniBuilderUnSettler]),
+			'mini 3 lonely': ([_MockMiniBuilderUnSettler]),
+			'mini 4 lonely': ([_MockMiniBuilderUnSettler]),
+			'mini 5 lonely': ([_MockMiniBuilderUnSettler]),
+			'mini 6 monster': ([_MockBuilder_NowYouSeeMe]),
+			'mini 6 lonely': ([_MockMiniBuilderUnSettler]),
+			'mini rogue 2 lonely': ([_MockMiniRogueBuilderUnSettler]),
+			'mini rogue lonely': ([_MockMiniRogueBuilderUnSettler]),
+			'potions lying around': ([_MockBuilder_PotionsLyingAround]),
+			'close monster': ([_MockBuilder_CloseMonster]),
+			'close thief': ([_MockBuilder_CloseThief]),
+			'close inert monster': ([_MockBuilder_CloseInertMonster]),
+			'close angry monster': ([_MockBuilder_CloseAngryMonster]),
+			'close angry monster 2': ([_MockBuilder_CloseAngryMonster2]),
+			'single mock monster': ([_MockBuilderSingleMockMonster]),
+			'single mock thief': ([_MockBuilderSingleMockThief]),
+			'mock settler': ([_MockBuilder_MockSettler]),
+			'mock settler restored': ([_MockBuilder_MockSettler]),
+			'fighting around': ([_MockBuilder_FightingGround]),
+			'potions lying around 2': ([_MockBuilder_PotionsLyingAround]),
+			'monster and potion': ([_MockBuilder_MockSettler]),
 			}
-	return MockGame(rng_seed=0, builders=_DATA[dungeon_id][0], settlers=_DATA[dungeon_id][1], load_from_reader=load_from_reader)
+	return MockGame(rng_seed=0, builders=_DATA[dungeon_id], load_from_reader=load_from_reader)

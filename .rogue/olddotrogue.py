@@ -18,17 +18,27 @@ class DungeonSquatters(src.pcg.settlers.WeightedSquatters):
 			(1, 'healing potion',),
 			]
 
+class BSPDungeon(src.pcg.builders.BSPDungeon, DungeonSquatters):
+	pass
+class CityBuilder(src.pcg.builders.CityBuilder, DungeonSquatters):
+	pass
+class Sewers(src.pcg.builders.Sewers, DungeonSquatters):
+	pass
+class RogueDungeon(src.pcg.builders.RogueDungeon, DungeonSquatters):
+	pass
+class CaveBuilder(src.pcg.builders.CaveBuilder, DungeonSquatters):
+	pass
+class MazeBuilder(src.pcg.builders.MazeBuilder, DungeonSquatters):
+	pass
+
 class Game(src.game.Game):
 	BUILDERS = [
-			src.pcg.builders.BSPDungeon,
-			src.pcg.builders.CityBuilder,
-			src.pcg.builders.Sewers,
-			src.pcg.builders.RogueDungeon,
-			src.pcg.builders.CaveBuilder,
-			src.pcg.builders.MazeBuilder,
-			]
-	SETTLERS = [
-			DungeonSquatters,
+			BSPDungeon,
+			CityBuilder,
+			Sewers,
+			RogueDungeon,
+			CaveBuilder,
+			MazeBuilder,
 			]
 	TERRAIN = {
 			None : src.terrain.Terrain('void', ' ', False),
@@ -94,7 +104,7 @@ def cli():
 		game = Game(load_from_reader=savefile.reader)
 		with clckwrkbdgr.tui.Curses() as ui:
 			loop = clckwrkbdgr.tui.ModeLoop(ui)
-			main_mode = src.ui.curses.MainMode(game)
+			main_mode = src.ui.MainGame(game)
 			loop.run(main_mode)
 			if game.needs_saving():
 				savefile.save(game, src.game.Version.CURRENT)

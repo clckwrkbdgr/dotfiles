@@ -40,12 +40,12 @@ class TestSquatters(unittest.TestCase):
 					)
 	def should_check_availability_of_placement_position(self):
 		rng = RNG(0)
-		builder = builders.RogueDungeon(rng, Size(80, 25))
+		builder = settlers.RogueDungeonSquatters(rng, Size(80, 25))
 		builder.build()
 		self._make_terrain(builder)
 
-		rng = RNG(0)
-		settler = settlers.Squatters(rng, builder)
+		settler = builder
+		settler.rng = RNG(0)
 
 		self.assertTrue(settler.is_passable(Point(8, 2)))
 		self.assertFalse(settler.is_passable(Point(1, 1)))
@@ -60,12 +60,7 @@ class TestSquatters(unittest.TestCase):
 		self.assertFalse(settler.is_free(builder.exit_pos))
 	def should_populate_dungeon_with_squatters(self):
 		rng = RNG(0)
-		builder = builders.RogueDungeon(rng, Size(80, 25))
-		builder.build()
-		self._make_terrain(builder)
-
-		rng = RNG(0)
-		class _MockSquatters(settlers.Squatters):
+		class _MockSquatters(settlers.RogueDungeonSquatters):
 			MONSTERS = [
 					('plant', monsters.Behavior.DUMMY),
 					('slime', monsters.Behavior.INERT),
@@ -74,7 +69,12 @@ class TestSquatters(unittest.TestCase):
 			ITEMS = [
 					('healing potion',),
 					]
-		settler = _MockSquatters(rng, builder)
+		builder = _MockSquatters(rng, Size(80, 25))
+		builder.build()
+		self._make_terrain(builder)
+
+		settler = builder
+		settler.rng = RNG(0)
 		settler.populate()
 		self.maxDiff = None
 		self.assertEqual(settler.monsters, [
@@ -92,12 +92,7 @@ class TestSquatters(unittest.TestCase):
 			])
 	def should_populate_dungeon_with_weighted_squatters(self):
 		rng = RNG(0)
-		builder = builders.RogueDungeon(rng, Size(80, 25))
-		builder.build()
-		self._make_terrain(builder)
-
-		rng = RNG(0)
-		class _MockSquatters(settlers.WeightedSquatters):
+		class _MockSquatters(settlers.RogueDungeonWeightedSquatters):
 			MONSTERS = [
 					(1, 'plant', monsters.Behavior.DUMMY),
 					(5, 'slime', monsters.Behavior.INERT),
@@ -106,7 +101,12 @@ class TestSquatters(unittest.TestCase):
 			ITEMS = [
 					(1, 'healing potion',),
 					]
-		settler = _MockSquatters(rng, builder)
+		builder = _MockSquatters(rng, Size(80, 25))
+		builder.build()
+		self._make_terrain(builder)
+
+		settler = builder
+		settler.rng = RNG(0)
 		settler.populate()
 		self.maxDiff = None
 		self.assertEqual(settler.monsters, [

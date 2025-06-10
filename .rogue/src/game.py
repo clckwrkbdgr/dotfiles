@@ -46,7 +46,7 @@ class Game(object):
 	SPECIES = None
 	ITEMS = None
 
-	def __init__(self, rng_seed=None, dummy=False, builders=None, settlers=None, load_from_reader=None):
+	def __init__(self, rng_seed=None, dummy=False, builders=None, load_from_reader=None):
 		""" Creates game instance and optionally generate new world.
 		Custom rng_seed may be used for PCG.
 		If dummy = True, does not automatically generate or load game, just create empty object.
@@ -55,7 +55,7 @@ class Game(object):
 		Otherwise new game is generated.
 		"""
 		self.builders = builders or self.BUILDERS
-		self.settlers = settlers or self.SETTLERS
+		assert not hasattr(self, 'SETTLERS') or self.SETTLERS is None
 		self.rng = RNG(rng_seed)
 		self.god = God()
 		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
@@ -305,9 +305,9 @@ class Game(object):
 					terrain.Cell(self.TERRAIN[builder.strata.cell(pos)]),
 					)
 
-		settler = self.rng.choice(self.settlers)
+		settler = builder
+		self.rng.choice(self.builders) # FIXME mock action just to shift RNG
 		Log.debug("Populating dungeon: {0}".format(settler))
-		settler = settler(self.rng, builder)
 		settler.populate()
 		player = self.get_player()
 		if player:
