@@ -7,9 +7,9 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 
 class MockSettler(settlers.Settler):
-	def _build(self):
+	def _build(self, grid):
 		pass
-	def _populate(self):
+	def _populate(self, grid):
 		self.monsters.append(('monster', settlers.Behavior.DUMMY, Point(1, 2)))
 
 class TestSettler(unittest.TestCase):
@@ -47,17 +47,17 @@ class TestSquatters(unittest.TestCase):
 		settler = builder
 		builder.build()
 
-		self.assertTrue(settler.is_passable(Point(8, 2)))
-		self.assertFalse(settler.is_passable(Point(1, 1)))
-		self.assertFalse(settler.is_passable(Point(8, 1)))
+		self.assertTrue(settler.is_passable(builder.strata, Point(8, 2)))
+		self.assertFalse(settler.is_passable(builder.strata, Point(1, 1)))
+		self.assertFalse(settler.is_passable(builder.strata, Point(8, 1)))
 
 		settler.monster_cells = set([Point(7, 3)])
-		self.assertTrue(settler.is_free(Point(8, 2)))
-		self.assertFalse(settler.is_free(Point(1, 1)))
-		self.assertFalse(settler.is_free(Point(8, 1)))
-		self.assertFalse(settler.is_free(next(iter(settler.monster_cells))))
-		self.assertFalse(settler.is_free(builder.start_pos))
-		self.assertFalse(settler.is_free(builder.exit_pos))
+		self.assertTrue(settler.is_free(builder.strata, Point(8, 2)))
+		self.assertFalse(settler.is_free(builder.strata, Point(1, 1)))
+		self.assertFalse(settler.is_free(builder.strata, Point(8, 1)))
+		self.assertFalse(settler.is_free(builder.strata, next(iter(settler.monster_cells))))
+		self.assertFalse(settler.is_free(builder.strata, builder.start_pos))
+		self.assertFalse(settler.is_free(builder.strata, builder.exit_pos))
 	def should_populate_dungeon_with_squatters(self):
 		rng = RNG(0)
 		class _MockSquatters(settlers.RogueDungeonSquatters):

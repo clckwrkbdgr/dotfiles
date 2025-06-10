@@ -15,10 +15,10 @@ class CustomSettler(CustomMap):
 			]
 	ITEMS = [
 			]
-	def _populate(self):
-		self.builder.rng.choice([1]) # FIXME mock action just to shift RNG
+	def _populate(self, grid):
+		self.rng.choice([1]) # FIXME mock action just to shift RNG
 		self.monsters += self.MONSTERS
-	def _place_items(self):
+	def _place_items(self, grid):
 		self.items += self.ITEMS
 
 class SingleMonster(Settler):
@@ -29,13 +29,13 @@ class SingleMonster(Settler):
 	"""
 	MONSTER = None
 
-	def passable(self, pos):
-		return self.strata.cell(pos) in self.PASSABLE
-	def _populate(self):
+	def passable(self, grid, pos):
+		return grid.cell(pos) in self.PASSABLE
+	def _populate(self, grid):
 		""" Places monster at first passable terrain. """
-		self.builder.rng.choice([1]) # FIXME mock action just to shift RNG
-		pcg.point(self.builder.rng, self.strata.size) # FIXME work around legacy bug which scrapped the first result
-		pos = pcg.TryCheck(pcg.point).check(lambda pos: self.passable(pos) and pos not in [self.start_pos, self.exit_pos])(self.builder.rng, self.strata.size)
+		self.rng.choice([1]) # FIXME mock action just to shift RNG
+		pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
+		pos = pcg.TryCheck(pcg.point).check(lambda pos: self.passable(grid, pos) and pos not in [self.start_pos, self.exit_pos])(self.rng, grid.size)
 		self.monsters.append(self.MONSTER + (pos,))
 
 class CustomMapSingleMonster(CustomMap, SingleMonster):
@@ -56,12 +56,12 @@ class Squatters(Settler):
 	CELLS_PER_ITEM = 180 # One item for every 180 cells.
 	ITEMS = []
 
-	def is_passable(self, pos):
+	def is_passable(self, grid, pos):
 		""" True if terrain is passable. """
-		return self.strata.cell(pos) in self.PASSABLE
-	def is_free(self, pos):
+		return grid.cell(pos) in self.PASSABLE
+	def is_free(self, grid, pos):
 		""" True if not occupied by any other object/monster. """
-		if not self.is_passable(pos):
+		if not self.is_passable(grid, pos):
 			return False
 		if pos == self.start_pos:
 			return False
@@ -71,29 +71,29 @@ class Squatters(Settler):
 			return False
 		return True
 	def _choice(self, entries):
-		return self.builder.rng.choice(entries) if len(entries) != 1 else entries[0]
-	def _populate(self):
+		return self.rng.choice(entries) if len(entries) != 1 else entries[0]
+	def _populate(self, grid):
 		""" Places random population of different types of monsters.
 		"""
-		total_passable_cells = sum(1 for pos in self.strata.size.iter_points() if self.is_passable(pos))
+		total_passable_cells = sum(1 for pos in grid.size.iter_points() if self.is_passable(grid, pos))
 		total_monsters = int(total_passable_cells / float(self.CELLS_PER_MONSTER))
 		self.monster_cells = set()
 		if not self.MONSTERS:
 			return
 		for _ in range(total_monsters):
-			pcg.point(self.builder.rng, self.strata.size) # FIXME work around legacy bug which scrapped the first result
-			pos = pcg.TryCheck(pcg.point).check(self.is_free)(self.builder.rng, self.strata.size)
+			pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
+			pos = pcg.TryCheck(pcg.point).check(lambda _p: self.is_free(grid, _p))(self.rng, grid.size)
 			self.monster_cells.add(pos)
 			self.monsters.append(self._choice(self.MONSTERS) + (pos,))
-	def _place_items(self):
+	def _place_items(self, grid):
 		""" Drops items in random locations. """
-		total_passable_cells = sum(1 for pos in self.strata.size.iter_points() if self.is_passable(pos))
+		total_passable_cells = sum(1 for pos in grid.size.iter_points() if self.is_passable(grid, pos))
 		total_items = int(total_passable_cells / float(self.CELLS_PER_ITEM))
 		if not self.ITEMS:
 			return
 		for _ in range(total_items):
-			pcg.point(self.builder.rng, self.strata.size) # FIXME work around legacy bug which scrapped the first result
-			pos = pcg.TryCheck(pcg.point).check(self.is_free)(self.builder.rng, self.strata.size)
+			pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
+			pos = pcg.TryCheck(pcg.point).check(lambda _p: self.is_free(grid, _p))(self.rng, grid.size)
 			self.items.append(self._choice(self.ITEMS) + (pos,))
 
 class WeightedSquatters(Squatters):
@@ -102,7 +102,7 @@ class WeightedSquatters(Squatters):
 	"""
 	def _choice(self, entries):
 		from clckwrkbdgr import pcg
-		return pcg.weighted_choices(self.builder.rng, [(data[0], data[1:]) for data in entries])[0]
+		return pcg.weighted_choices(self.rng, [(data[0], data[1:]) for data in entries])[0]
 
 class RogueDungeonSquatters(RogueDungeon, Squatters):
 	pass
