@@ -18,17 +18,43 @@ class DungeonSquatters(src.pcg.settlers.WeightedSquatters):
 			(1, 'healing potion',),
 			]
 
+class DungeonMapping:
+	void = src.terrain.Cell(src.terrain.Terrain('void', ' ', False))
+	corner = src.terrain.Cell(src.terrain.Terrain('corner', "+", False, remembered='+'))
+	door = src.terrain.Cell(src.terrain.Terrain('door', "+", True, remembered='+'))
+	rogue_door = src.terrain.Cell(src.terrain.Terrain('rogue_door', "+", True, remembered='+', allow_diagonal=False, dark=True))
+	floor = src.terrain.Cell(src.terrain.Terrain('floor', ".", True))
+	tunnel_floor = src.terrain.Cell(src.terrain.Terrain('tunnel_floor', ".", True, allow_diagonal=False))
+	passage = src.terrain.Cell(src.terrain.Terrain('passage', "#", True, remembered='#'))
+	rogue_passage = src.terrain.Cell(src.terrain.Terrain('rogue_passage', "#", True, remembered='#', allow_diagonal=False, dark=True))
+	wall = src.terrain.Cell(src.terrain.Terrain('wall', '#', False, remembered='#'))
+	wall_h = src.terrain.Cell(src.terrain.Terrain('wall_h', "-", False, remembered='-'))
+	wall_v = src.terrain.Cell(src.terrain.Terrain('wall_v', "|", False, remembered='|'))
+	water = src.terrain.Cell(src.terrain.Terrain('water', "~", True))
+
 class BSPDungeon(src.pcg.builders.BSPDungeon, DungeonSquatters):
+	Mapping = DungeonMapping
+	PASSABLE = ('floor',)
 	pass
 class CityBuilder(src.pcg.builders.CityBuilder, DungeonSquatters):
+	Mapping = DungeonMapping
+	PASSABLE = ('floor',)
 	pass
 class Sewers(src.pcg.builders.Sewers, DungeonSquatters):
+	Mapping = DungeonMapping
+	PASSABLE = ('floor',)
 	pass
 class RogueDungeon(src.pcg.builders.RogueDungeon, DungeonSquatters):
+	Mapping = DungeonMapping
+	PASSABLE = ('floor',)
 	pass
 class CaveBuilder(src.pcg.builders.CaveBuilder, DungeonSquatters):
+	Mapping = DungeonMapping
+	PASSABLE = ('floor',)
 	pass
 class MazeBuilder(src.pcg.builders.MazeBuilder, DungeonSquatters):
+	Mapping = DungeonMapping
+	PASSABLE = ('floor',)
 	pass
 
 class Game(src.game.Game):

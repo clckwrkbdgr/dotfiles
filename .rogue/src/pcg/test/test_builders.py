@@ -6,28 +6,8 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr import pcg
 
-STR_TERRAIN = {
-		None : ' ',
-		'wall' : '#',
-		'floor' : ".",
-		'tunnel_floor' : ".",
-		'water' : "~",
-		'corner' : "+",
-		'wall_h' : "-",
-		'wall_v' : "|",
-		'rogue_door' : "+",
-		'rogue_passage' : "#",
-
-		'#' : "#",
-		'.' : ".",
-		'~' : "~",
-		'"' : '"',
-		}
-def str_terrain(name):
-	return STR_TERRAIN[name]
-
 class MockBuilder(builders.Builder):
-	def _build(self, grid):
+	def fill_grid(self, grid):
 		for x in range(self.size.width):
 			grid.set_cell((x, 0), 'wall')
 			grid.set_cell((x, self.size.height - 1), 'wall')
@@ -50,10 +30,15 @@ class TestBuilder(unittest.TestCase):
 	def should_generate_dungeon(self):
 		rng = RNG(0)
 		builder = MockBuilder(rng, Size(20, 20))
+		builder.map_key(**({
+			'wall':'#',
+			'floor':'.',
+			}))
 		builder.build()
 		self.assertEqual(builder.start_pos, Point(9, 12))
 		self.assertEqual(builder.exit_pos, Point(7, 16))
 		self.maxDiff = None
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				####################
 				#..................#
@@ -76,7 +61,7 @@ class TestBuilder(unittest.TestCase):
 				#..................#
 				####################
 				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)
 
 class TestCustomMapLayout(unittest.TestCase):
 	def should_generate_map_from_given_custom_layout(self):
@@ -94,9 +79,14 @@ class TestCustomMapLayout(unittest.TestCase):
 				####################
 		""")
 		builder.build()
+		builder.map_key(**({
+			'#':'#',
+			'.':'.',
+			}))
 		self.assertEqual(builder.start_pos, Point(9, 6))
 		self.assertEqual(builder.exit_pos, Point(10, 1))
 		self.maxDiff = None
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				####################
 				#........#.##......#
@@ -109,7 +99,7 @@ class TestCustomMapLayout(unittest.TestCase):
 				#..................#
 				####################
 				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)
 	def should_generate_map_from_custom_layout_in_class_field(self):
 		class _MockCustomMap(builders.CustomMap):
 			MAP_DATA = """\
@@ -128,10 +118,17 @@ class TestCustomMapLayout(unittest.TestCase):
 			EXIT_TERRAIN = '~'
 		rng = RNG(0)
 		builder = _MockCustomMap(rng, None)
+		builder.map_key(**({
+			'#':'#',
+			'.':'.',
+			'"':'"',
+			'~':'~',
+			}))
 		builder.build()
 		self.assertEqual(builder.start_pos, Point(9, 6))
 		self.assertEqual(builder.exit_pos, Point(10, 1))
 		self.maxDiff = None
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				####################
 				#........#~##......#
@@ -144,16 +141,29 @@ class TestCustomMapLayout(unittest.TestCase):
 				#..................#
 				####################
 				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)
 
 class TestRogueDungeon(unittest.TestCase):
 	def should_generate_rogue_dungeon(self):
 		rng = RNG(1)
 		builder = builders.RogueDungeon(rng, Size(80, 25))
+		builder.map_key(
+				void = ' ',
+				wall = '#',
+				floor = ".",
+				tunnel_floor = ".",
+				water = "~",
+				corner = "+",
+				wall_h = "-",
+				wall_v = "|",
+				rogue_door = "+",
+				rogue_passage = "#",
+				)
 		builder.build()
 		self.assertEqual(builder.start_pos, Point(37, 13))
 		self.assertEqual(builder.exit_pos, Point(18, 11))
 		self.maxDiff = None
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				_                          +----------------------+                            _
 				_  +-------------+         |......................| +-------------+            _
@@ -181,16 +191,28 @@ class TestRogueDungeon(unittest.TestCase):
 				_                                                                              _
 				_                                                                              _
 				""").replace('_', ' ')
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)
 
 class TestBSPDungeon(unittest.TestCase):
 	def should_generate_bsp_dungeon(self):
 		rng = RNG(0)
 		builder = builders.BSPDungeon(rng, Size(80, 25))
+		builder.map_key(
+				wall = '#',
+				floor = ".",
+				tunnel_floor = ".",
+				water = "~",
+				corner = "+",
+				wall_h = "-",
+				wall_v = "|",
+				rogue_door = "+",
+				rogue_passage = "#",
+				)
 		builder.build()
 		self.assertEqual(builder.start_pos, Point(31, 20))
 		self.assertEqual(builder.exit_pos, Point(29, 2))
 		self.maxDiff = None
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				################################################################################
 				#................#..........#.......#................#.......#............#....#
@@ -218,16 +240,28 @@ class TestBSPDungeon(unittest.TestCase):
 				#...........#.....#........#...............#...........#......#........#.....#.#
 				################################################################################
 				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)
 
 class TestBSPCityBuilder(unittest.TestCase):
 	def should_generate_bsp_dungeon(self):
 		rng = RNG(0)
 		builder = builders.CityBuilder(rng, Size(80, 25))
+		builder.map_key(
+				wall = '#',
+				floor = ".",
+				tunnel_floor = ".",
+				water = "~",
+				corner = "+",
+				wall_h = "-",
+				wall_v = "|",
+				rogue_door = "+",
+				rogue_passage = "#",
+				)
 		builder.build()
 		self.assertEqual(builder.start_pos, Point(11, 1))
 		self.assertEqual(builder.exit_pos, Point(58, 22))
 		self.maxDiff = None
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				################################################################################
 				#..............................................................................#
@@ -255,16 +289,28 @@ class TestBSPCityBuilder(unittest.TestCase):
 				#..............................................................................#
 				################################################################################
 				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)
 
 class TestCaveDungeon(unittest.TestCase):
 	def should_generate_cave_dungeon(self):
 		rng = RNG(0)
 		builder = builders.CaveBuilder(rng, Size(80, 25))
+		builder.map_key(
+				wall = '#',
+				floor = ".",
+				tunnel_floor = ".",
+				water = "~",
+				corner = "+",
+				wall_h = "-",
+				wall_v = "|",
+				rogue_door = "+",
+				rogue_passage = "#",
+				)
 		builder.build()
 		self.assertEqual(builder.start_pos, Point(51, 2))
 		self.assertEqual(builder.exit_pos, Point(52, 3))
 		self.maxDiff = None
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				################################################################################
 				########.#######......####..........#.........###########...#.#...............##
@@ -292,16 +338,28 @@ class TestCaveDungeon(unittest.TestCase):
 				##............#####...##....############.#######..###......###................##
 				################################################################################
 				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)
 
 class TestMazeDungeon(unittest.TestCase):
 	def should_generate_maze(self):
 		rng = RNG(0)
 		builder = builders.MazeBuilder(rng, Size(80, 25))
+		builder.map_key(
+				wall = '#',
+				floor = ".",
+				tunnel_floor = ".",
+				water = "~",
+				corner = "+",
+				wall_h = "-",
+				wall_v = "|",
+				rogue_door = "+",
+				rogue_passage = "#",
+				)
 		builder.build()
 		self.assertEqual(builder.start_pos, Point(7, 4))
 		self.assertEqual(builder.exit_pos, Point(31, 17))
 		self.maxDiff = None
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				################################################################################
 				#.#.....#.#.....#.......#...#...#...#...#.....#...#...........#.....#...#...#.##
@@ -329,16 +387,28 @@ class TestMazeDungeon(unittest.TestCase):
 				#...#...#.#.........#.......#...#...........#.....#.#...#.....#.#.............##
 				################################################################################
 				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)
 
 class TestSewers(unittest.TestCase):
 	def should_generate_sewers_maze(self):
 		rng = RNG(0)
 		builder = builders.Sewers(rng, Size(80, 25))
+		builder.map_key(
+				wall = '#',
+				floor = ".",
+				tunnel_floor = ".",
+				water = "~",
+				corner = "+",
+				wall_h = "-",
+				wall_v = "|",
+				rogue_door = "+",
+				rogue_passage = "#",
+				)
 		builder.build()
 		self.maxDiff = None
 		self.assertEqual(builder.start_pos, Point(10, 13))
 		self.assertEqual(builder.exit_pos, Point(17, 8))
+		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				################################################################################
 				#....................####....####............................................###
@@ -366,4 +436,4 @@ class TestSewers(unittest.TestCase):
 				################################################################################
 				################################################################################
 				""")
-		self.assertEqual(builder.strata.tostring(str_terrain), expected)
+		self.assertEqual(grid.tostring(), expected)

@@ -40,7 +40,11 @@ class MockGame(game.Game):
 		'^' : terrain.Terrain('^', "^", True, remembered='^', allow_diagonal=False, dark=True),
 		}
 
+class MockMapping:
+	_ = {_key:terrain.Cell(_item) for (_key, _item) in MockGame.TERRAIN.items()}
+
 class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -57,6 +61,7 @@ class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
 	MONSTER = ('thief', monsters.Behavior.ANGRY)
 
 class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -73,6 +78,7 @@ class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
 	MONSTER = ('monster', monsters.Behavior.ANGRY)
 
 class _MockBuilder_PotionsLyingAround(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -91,6 +97,7 @@ class _MockBuilder_PotionsLyingAround(settlers.CustomSettler):
 		]
 
 class _MockBuilder_MockSettler(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -111,6 +118,7 @@ class _MockBuilder_MockSettler(settlers.CustomSettler):
 			]
 
 class _MockBuilderUnSettler(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -125,6 +133,7 @@ class _MockBuilderUnSettler(settlers.CustomSettler):
 		"""
 
 class _MockBuilder_NowYouSeeMe(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -143,6 +152,7 @@ class _MockBuilder_NowYouSeeMe(settlers.CustomSettler):
 		]
 
 class _MockMiniRogueBuilderUnSettler(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		  +--+ % 
 		* |@.| % 
@@ -152,6 +162,7 @@ class _MockMiniRogueBuilderUnSettler(settlers.CustomSettler):
 		"""
 
 class _MockMiniBuilderUnSettler(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		@#..#
 		~#..#
@@ -160,6 +171,7 @@ class _MockMiniBuilderUnSettler(settlers.CustomSettler):
 		"""
 
 class _MockBuilder_MonstersOnTopOfItems(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -182,6 +194,7 @@ class _MockBuilder_MonstersOnTopOfItems(settlers.CustomSettler):
 		]
 
 class _MockBuilder_CloseMonster(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -199,6 +212,7 @@ class _MockBuilder_CloseMonster(settlers.CustomSettler):
 		]
 
 class _MockBuilder_CloseThief(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -216,6 +230,7 @@ class _MockBuilder_CloseThief(settlers.CustomSettler):
 		]
 
 class _MockBuilder_CloseInertMonster(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -233,6 +248,7 @@ class _MockBuilder_CloseInertMonster(settlers.CustomSettler):
 		]
 
 class _MockBuilder_CloseAngryMonster(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -250,6 +266,7 @@ class _MockBuilder_CloseAngryMonster(settlers.CustomSettler):
 		]
 
 class _MockBuilder_CloseAngryMonster2(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#
@@ -267,6 +284,7 @@ class _MockBuilder_CloseAngryMonster2(settlers.CustomSettler):
 		]
 
 class _MockBuilder_FightingGround(settlers.CustomSettler):
+	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
 		#........#>##......#

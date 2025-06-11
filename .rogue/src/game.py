@@ -301,11 +301,7 @@ class Game(object):
 		settler = builder
 		Log.debug("Populating dungeon: {0}".format(settler))
 		builder.build()
-		for pos in builder.strata.size.iter_points():
-			builder.strata.set_cell(
-					pos,
-					terrain.Cell(self.TERRAIN[builder.strata.cell(pos)]),
-					)
+		self.strata = builder.make_grid()
 
 		player = self.get_player()
 		if player:
@@ -328,7 +324,6 @@ class Game(object):
 
 		Log.debug("Finalizing dungeon...")
 		self.exit_pos = builder.exit_pos
-		self.strata = builder.strata
 		self.remembered_exit = False
 		self.update_vision()
 		Log.debug("Dungeon is ready.")

@@ -15,8 +15,8 @@ class Builder(builders.Builder):
 	with start pos and exit pos
 	and to populate terrain with monsters and other objects.
 
-	Override method _build() to produce actual terrain.
-	Override methods _populate() and _place_items() to do actual jobs.
+	Override method fill_grid() to produce actual terrain.
+	Override methods generate_actors() and generate_items() to do actual jobs.
 	"""
 	def build(self):
 		""" Creates empty terrain matrix
@@ -31,23 +31,29 @@ class Builder(builders.Builder):
 		Values should be replaced later with actual objects in the Game class itself.
 		"""
 		grid = Matrix(self.size, None)
-		self._build(grid)
+		self.fill_grid(grid)
 		self.monsters = []
-		self._populate(grid)
+		for _ in self.generate_actors(grid):
+			if _ is None:
+				continue
+			self.monsters.append(_)
 		self.items = []
-		self._place_items(grid)
-		self.strata = grid
-	def _build(self, grid): # pragma: no cover
+		for _ in self.generate_items(grid):
+			if _ is None:
+				continue
+			self.items.append(_)
+		self.grid = grid
+	def fill_grid(self, grid): # pragma: no cover
 		""" Should fill grid, self.start_pos and self.exit_pos. """
 		raise NotImplementedError()
-	def _populate(self, grid): # pragma: no cover
+	def generate_actors(self, grid): # pragma: no cover
 		""" Should fill array of .monsters """
-		pass
-	def _place_items(self, grid): # pragma: no cover
+		yield
+	def generate_items(self, grid): # pragma: no cover
 		""" Should fill array of .items
 		Default implementation places no items.
 		"""
-		pass
+		yield
 
 class CustomMap(Builder):
 	""" Builds map described by custom layout.
@@ -71,7 +77,7 @@ class CustomMap(Builder):
 		self._map_data = textwrap.dedent(self._map_data).splitlines()
 		map_size = Size(len(self._map_data[0]), len(self._map_data))
 		super(CustomMap, self).__init__(rng, map_size)
-	def _build(self, grid):
+	def fill_grid(self, grid):
 		for x in range(self.size.width):
 			for y in range(self.size.height):
 				if self._map_data[y][x] == '@':
@@ -87,11 +93,12 @@ class RogueDungeon(Builder):
 	""" Original Rogue dungeon.
 	3x3 rooms connected by rectangular tunnels.
 	"""
-	def _build(self, grid):
+	def fill_grid(self, grid):
 		builder = clckwrkbdgr.pcg.rogue.Dungeon(self.rng, self.size, Size(3, 3), Size(4, 4))
 		builder.generate_rooms()
 		builder.generate_maze()
 		builder.generate_tunnels()
+		grid.clear('void')
 
 		for room in builder.iter_rooms():
 			grid.set_cell((room.topleft.x, room.topleft.y), 'corner')
@@ -191,7 +198,7 @@ class BSPDungeon(Builder):
 	""" Builds closed set of rooms/galleries/quarters
 	packed into large rectangular space.
 	"""
-	def _build(self, grid):
+	def fill_grid(self, grid):
 		Log.debug("Building surrounding walls.")
 		for x in range(self.size.width):
 			grid.set_cell((x, 0), 'wall')
@@ -223,7 +230,7 @@ class BSPDungeon(Builder):
 class CityBuilder(Builder):
 	""" A city block of buildings, surrounded by a thick wall.
 	"""
-	def _build(self, grid):
+	def fill_grid(self, grid):
 		Log.debug("Building surrounding walls.")
 		for x in range(self.size.width):
 			grid.set_cell((x, 0), 'wall')
@@ -259,7 +266,7 @@ class CityBuilder(Builder):
 class CaveBuilder(Builder):
 	""" A large open natural cave.
 	"""
-	def _build(self, grid):
+	def fill_grid(self, grid):
 		cave = clckwrkbdgr.pcg.cellular.cave(self.rng, self.size)
 
 		floor_only = lambda pos: cave.cell(pos) > 1
@@ -305,7 +312,7 @@ class MazeBuilder(Builder):
 		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
 		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
-	def _build(self, grid):
+	def fill_grid(self, grid):
 		maze = clckwrkbdgr.pcg.maze.Maze(self.rng, self.size, self.CELL_SIZE)
 		layout = maze.build()
 		self._fill_maze(grid, layout)
