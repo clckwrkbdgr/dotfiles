@@ -7,63 +7,6 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr import pcg
 
-class MockBuilder(Builder):
-	def fill_grid(self, grid):
-		for x in range(self.size.width):
-			grid.set_cell((x, 0), 'wall')
-			grid.set_cell((x, self.size.height - 1), 'wall')
-		for y in range(self.size.height):
-			grid.set_cell((0, y), 'wall')
-			grid.set_cell((self.size.width - 1, y), 'wall')
-		for x in range(1, self.size.width - 1):
-			for y in range(1, self.size.height - 1):
-				grid.set_cell((x, y), 'floor')
-		floor_only = lambda pos: grid.cell(pos) == 'floor'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		obstacle_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		grid.set_cell(obstacle_pos, 'wall')
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-
-class TestBuilder(unittest.TestCase):
-	def should_generate_dungeon(self):
-		rng = RNG(0)
-		builder = MockBuilder(rng, Size(20, 20))
-		builder.map_key(**({
-			'wall':'#',
-			'floor':'.',
-			}))
-		builder.generate()
-		self.assertEqual(builder.start_pos, Point(9, 12))
-		self.assertEqual(builder.exit_pos, Point(7, 16))
-		self.maxDiff = None
-		grid = builder.make_grid()
-		expected = textwrap.dedent("""\
-				####################
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#.....#............#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				#..................#
-				####################
-				""")
-		self.assertEqual(grid.tostring(), expected)
-
 class TestCustomMapLayout(unittest.TestCase):
 	def should_generate_map_from_given_custom_layout(self):
 		rng = RNG(0)
@@ -83,9 +26,14 @@ class TestCustomMapLayout(unittest.TestCase):
 		builder.map_key(**({
 			'#':'#',
 			'.':'.',
+			'start':lambda pos: (pos, 'start'),
+			'exit':lambda pos: (pos, 'exit'),
 			}))
-		self.assertEqual(builder.start_pos, Point(9, 6))
-		self.assertEqual(builder.exit_pos, Point(10, 1))
+		appliances = sorted(builder.make_appliances())
+		self.assertEqual(appliances, sorted([
+			(Point(9, 6), 'start'),
+			(Point(10, 1), 'exit'),
+			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -124,10 +72,15 @@ class TestCustomMapLayout(unittest.TestCase):
 			'.':'.',
 			'"':'"',
 			'~':'~',
+			'start':lambda pos: (pos, 'start'),
+			'exit':lambda pos: (pos, 'exit'),
 			}))
 		builder.generate()
-		self.assertEqual(builder.start_pos, Point(9, 6))
-		self.assertEqual(builder.exit_pos, Point(10, 1))
+		appliances = sorted(builder.make_appliances())
+		self.assertEqual(appliances, sorted([
+			(Point(9, 6), 'start'),
+			(Point(10, 1), 'exit'),
+			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -159,10 +112,15 @@ class TestRogueDungeon(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
+				start = lambda pos: (pos, 'start'),
+				exit = lambda pos: (pos, 'exit'),
 				)
 		builder.generate()
-		self.assertEqual(builder.start_pos, Point(37, 13))
-		self.assertEqual(builder.exit_pos, Point(18, 11))
+		appliances = sorted(builder.make_appliances())
+		self.assertEqual(appliances, sorted([
+			(Point(37, 13), 'start'),
+			(Point(22, 10), 'exit'),
+			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -208,10 +166,15 @@ class TestBSPDungeon(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
+				start = lambda pos: (pos, 'start'),
+				exit = lambda pos: (pos, 'exit'),
 				)
 		builder.generate()
-		self.assertEqual(builder.start_pos, Point(31, 20))
-		self.assertEqual(builder.exit_pos, Point(29, 2))
+		appliances = sorted(builder.make_appliances())
+		self.assertEqual(appliances, sorted([
+			(Point(31, 20), 'start'),
+			(Point(29, 2), 'exit'),
+			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -257,10 +220,15 @@ class TestBSPCityBuilder(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
+				start = lambda pos: (pos, 'start'),
+				exit = lambda pos: (pos, 'exit'),
 				)
 		builder.generate()
-		self.assertEqual(builder.start_pos, Point(11, 1))
-		self.assertEqual(builder.exit_pos, Point(58, 22))
+		appliances = sorted(builder.make_appliances())
+		self.assertEqual(appliances, sorted([
+			(Point(11, 1), 'start'),
+			(Point(58, 22), 'exit'),
+			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -306,10 +274,15 @@ class TestCaveDungeon(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
+				start = lambda pos: (pos, 'start'),
+				exit = lambda pos: (pos, 'exit'),
 				)
 		builder.generate()
-		self.assertEqual(builder.start_pos, Point(51, 2))
-		self.assertEqual(builder.exit_pos, Point(52, 3))
+		appliances = sorted(builder.make_appliances())
+		self.assertEqual(appliances, sorted([
+			(Point(51, 2), 'start'),
+			(Point(52, 3), 'exit'),
+			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -355,10 +328,15 @@ class TestMazeDungeon(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
+				start = lambda pos: (pos, 'start'),
+				exit = lambda pos: (pos, 'exit'),
 				)
 		builder.generate()
-		self.assertEqual(builder.start_pos, Point(7, 4))
-		self.assertEqual(builder.exit_pos, Point(31, 17))
+		appliances = sorted(builder.make_appliances())
+		self.assertEqual(appliances, sorted([
+			(Point(7, 4), 'start'),
+			(Point(31, 17), 'exit'),
+			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -404,11 +382,16 @@ class TestSewers(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
+				start = lambda pos: (pos, 'start'),
+				exit = lambda pos: (pos, 'exit'),
 				)
 		builder.generate()
 		self.maxDiff = None
-		self.assertEqual(builder.start_pos, Point(10, 13))
-		self.assertEqual(builder.exit_pos, Point(17, 8))
+		appliances = sorted(builder.make_appliances())
+		self.assertEqual(appliances, sorted([
+			(Point(10, 13), 'start'),
+			(Point(17, 8), 'exit'),
+			]))
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				################################################################################

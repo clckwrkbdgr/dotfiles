@@ -6,25 +6,6 @@ from ... import monsters
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 
-class MockSettler(settlers.Settler):
-	def fill_grid(self, grid):
-		grid.clear('floor')
-	def generate_actors(self, grid):
-		yield (Point(1, 2), 'monster', settlers.Behavior.DUMMY)
-
-class TestSettler(unittest.TestCase):
-	def should_populate_dungeon(self):
-		rng = RNG(0)
-		settler = MockSettler(rng, Size(20, 20))
-		settler.map_key(
-				monster = lambda pos,*data: ('monster',) + data + (pos,)
-				)
-		settler.generate()
-		_monsters = list(settler.make_actors())
-		self.assertEqual(_monsters, [
-			('monster', settlers.Behavior.DUMMY, Point(1, 2)),
-			])
-
 class TestSquatters(unittest.TestCase):
 	def _make_terrain(self, builder):
 		from ...game import Game # FIXME circular dependency
@@ -58,8 +39,9 @@ class TestSquatters(unittest.TestCase):
 		self.assertFalse(settler.is_free(grid, Point(1, 1)))
 		self.assertFalse(settler.is_free(grid, Point(8, 1)))
 		self.assertFalse(settler.is_free(grid, next(iter(settler.monster_cells))))
-		self.assertFalse(settler.is_free(grid, builder.start_pos))
-		self.assertFalse(settler.is_free(grid, builder.exit_pos))
+		appliances = list(builder.appliances)
+		self.assertFalse(settler.is_free(grid, appliances[0]))
+		self.assertFalse(settler.is_free(grid, appliances[1]))
 	def should_populate_dungeon_with_squatters(self):
 		rng = RNG(0)
 		class _MockSquatters(settlers.RogueDungeonSquatters):

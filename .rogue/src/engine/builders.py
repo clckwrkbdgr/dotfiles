@@ -3,7 +3,7 @@ from collections import defaultdict
 from clckwrkbdgr.math import Matrix, Size
 from clckwrkbdgr import pcg
 
-class Builder(object): # pragma: no cover -- TODO
+class Builder(object):
 	""" Basic generator for maps with content.
 	Subclasses should generate content (maps, objects)
 	using key names, which should be mapped using map_key()
@@ -57,20 +57,35 @@ class Builder(object): # pragma: no cover -- TODO
 	def generate(self):
 		""" Main method. Calls all overloaded methods to generate
 		abstract content. Use make_*() to compile actual content.
+
+		Order of generation:
+		- fill_grid
+		- generate_appliances (only grid is available)
+		- generate_actors (available: grid, appliances)
+		- generate_items (available: grid, appliances, actors)
 		"""
 		grid = Matrix(self.size, None)
 		self.fill_grid(grid)
+		assert not hasattr(self, 'exit_pos')
+		assert not hasattr(self, 'start_pos')
+
+		self.appliances = defaultdict(list)
+		for appliance_data in self.generate_appliances(grid):
+			if appliance_data is None: # pragma: no cover -- Empty generator.
+				continue
+			pos, appliance_data = appliance_data[0], appliance_data[1:]
+			self.appliances[pos].append(appliance_data)
 
 		self.actors = defaultdict(list)
 		for actor_data in self.generate_actors(grid):
-			if actor_data is None: # Empty generator.
+			if actor_data is None: # pragma: no cover -- Empty generator.
 				continue
 			pos, actor_data = actor_data[0], actor_data[1:]
 			self.actors[pos].append(actor_data)
 
 		self.items = defaultdict(list)
 		for item_data in self.generate_items(grid):
-			if item_data is None: # Empty generator.
+			if item_data is None: # pragma: no cover -- Empty generator.
 				continue
 			pos, item_data = item_data[0], item_data[1:]
 			self.items[pos].append(item_data)
@@ -98,17 +113,18 @@ class Builder(object): # pragma: no cover -- TODO
 		remaining arguments.
 		If mapped object is a callable, it should accept full list
 		of arguments (pos,)+entity_data and return fully constructed object.
-		Otherwise it is considered a proper object and will be copied
-		via copy.deepcopy()
 		"""
 		for pos, entities in position_map.items():
 			for entity_data in entities:
 				key, entity_data = entity_data[0], entity_data[1:]
 				mapped_object = self._get_mapping(key)
-				if callable(mapped_object):
-					yield mapped_object(pos, *entity_data)
-				else:
-					yield copy.deepcopy(mapped_object)
+				yield mapped_object(pos, *entity_data)
+	def make_appliances(self):
+		""" Yields ready appliance objects according to mapping.
+		See make_entities() for details.
+		"""
+		for _ in self.make_entities(self.appliances):
+			yield _
 	def make_actors(self):
 		""" Yields actor objects according to mapping.
 		See make_entities() for details.
@@ -134,14 +150,32 @@ class Builder(object): # pragma: no cover -- TODO
 
 	# Customization.
 
-	def fill_grid(self, grid):
-		""" Should populate grid (terrain). """
+	def fill_grid(self, grid): # pragma: no cover
+		""" Should populate grid (terrain).
+
+		Terrain cells cannot be moved or removed.
+		Destructible terrain should be implemented as switching cell content/type.
+		"""
 		raise NotImplementedError()
-	def generate_actors(self, grid):
-		""" Should yield actors data as tuples: (pos, key, <custom data...>)
+	def generate_appliances(self, grid): # pragma: no cover
+		""" Should yield appliance data as tuples: (pos, key, <custom data...>)
+
+		Appliance is an object that is considered a part of surroundings,
+		can be interacted with, can be removed (destructed),
+		potentially can be moved,
+		but cannot move on its own, act on its own and cannot be picked up.
 		"""
 		yield
-	def generate_items(self, grid):
+	def generate_actors(self, grid): # pragma: no cover
+		""" Should yield actors data as tuples: (pos, key, <custom data...>)
+
+		Actors are movable objects that can interact with surroundings.
+		"""
+		yield
+	def generate_items(self, grid): # pragma: no cover
 		""" Should yield item data as tuples: (pos, key, <custom data...>)
+
+		Items are objects that cannot interact or move,
+		only picked up/dropped down.
 		"""
 		yield

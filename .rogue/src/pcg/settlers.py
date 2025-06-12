@@ -38,7 +38,7 @@ class SingleMonster(Settler):
 		""" Places monster at first passable terrain. """
 		self.rng.choice([1]) # FIXME mock action just to shift RNG
 		pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
-		pos = pcg.TryCheck(pcg.point).check(lambda pos: self.passable(grid, pos) and pos not in [self.start_pos, self.exit_pos])(self.rng, grid.size)
+		pos = pcg.TryCheck(pcg.point).check(lambda pos: self.passable(grid, pos) and pos not in self.appliances)(self.rng, grid.size)
 		yield (pos,) + self.MONSTER
 
 class CustomMapSingleMonster(CustomMap, SingleMonster):
@@ -66,9 +66,7 @@ class Squatters(Settler):
 		""" True if not occupied by any other object/monster. """
 		if not self.is_passable(grid, pos):
 			return False
-		if pos == self.start_pos:
-			return False
-		if pos == self.exit_pos:
+		if pos in self.appliances:
 			return False
 		if pos in self.monster_cells:
 			return False

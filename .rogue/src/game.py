@@ -303,11 +303,13 @@ class Game(object):
 		builder.generate()
 		self.strata = builder.make_grid()
 
+		appliances = list(builder.make_appliances())
+		start_pos = next(_pos for _pos, _name in appliances if _name == 'start')
 		player = self.get_player()
 		if player:
-			player.pos = builder.start_pos
+			player.pos = start_pos
 		else:
-			player = monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, builder.start_pos)
+			player = monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, start_pos)
 			player.fill_inventory_from_drops(self.rng, self.ITEMS)
 		self.monsters[:] = [player]
 		for monster in settler.make_actors():
@@ -318,7 +320,7 @@ class Game(object):
 			self.items.append(item)
 
 		Log.debug("Finalizing dungeon...")
-		self.exit_pos = builder.exit_pos
+		self.exit_pos = next(_pos for _pos, _name in appliances if _name == 'exit')
 		self.remembered_exit = False
 		self.update_vision()
 		Log.debug("Dungeon is ready.")

@@ -43,6 +43,10 @@ class MockGame(game.Game):
 class MockMapping:
 	_ = {_key:terrain.Cell(_item) for (_key, _item) in MockGame.TERRAIN.items()}
 	@staticmethod
+	def start(pos): return (pos, 'start')
+	@staticmethod
+	def exit(pos): return (pos, 'exit')
+	@staticmethod
 	def monster(pos,*data):
 		return monsters.Monster(monsters.Species('monster', "M", 3, vision=10), *(data + (pos,)))
 	@staticmethod

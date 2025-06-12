@@ -33,6 +33,11 @@ class DungeonMapping:
 	water = src.terrain.Cell(src.terrain.Terrain('water', "~", True))
 
 	@staticmethod
+	def start(pos): return (pos, 'start')
+	@staticmethod
+	def exit(pos): return (pos, 'exit')
+
+	@staticmethod
 	def plant(pos,*data):
 		return src.monsters.Monster(src.monsters.Species('plant', "P", 1, vision=1, drops=[
 		(1, None),
@@ -88,6 +93,7 @@ class Game(src.game.Game):
 			]
 	TERRAIN = {
 			None : src.terrain.Terrain('void', ' ', False),
+			'void' : src.terrain.Terrain('void', ' ', False),
 			'corner' : src.terrain.Terrain('corner', "+", False, remembered='+'),
 			'door' : src.terrain.Terrain('door', "+", True, remembered='+'),
 			'rogue_door' : src.terrain.Terrain('rogue_door', "+", True, remembered='+', allow_diagonal=False, dark=True),

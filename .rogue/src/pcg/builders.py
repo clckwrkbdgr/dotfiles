@@ -37,13 +37,18 @@ class CustomMap(builders.Builder):
 		for x in range(self.size.width):
 			for y in range(self.size.height):
 				if self._map_data[y][x] == '@':
-					self.start_pos = Point(x, y)
 					grid.set_cell((x, y), self.ENTER_TERRAIN)
 				elif self._map_data[y][x] == '>':
-					self.exit_pos = Point(x, y)
 					grid.set_cell((x, y), self.EXIT_TERRAIN)
 				else:
 					grid.set_cell((x, y), self._map_data[y][x])
+	def generate_appliances(self, grid):
+		for x in range(self.size.width):
+			for y in range(self.size.height):
+				if self._map_data[y][x] == '@':
+					yield Point(x, y), 'start'
+				elif self._map_data[y][x] == '>':
+					yield Point(x, y), 'exit'
 
 class RogueDungeon(builders.Builder):
 	""" Original Rogue dungeon.
@@ -76,24 +81,27 @@ class RogueDungeon(builders.Builder):
 				grid.set_cell(cell, 'rogue_passage')
 			grid.set_cell(tunnel.start, 'rogue_door')
 			grid.set_cell(tunnel.stop, 'rogue_door')
-
-		enter_room_key = self.rng.choice(list(builder.grid.size.iter_points()))
-		enter_room = builder.grid.cell(enter_room_key)
-		self.start_pos = Point(
+		self.dungeon = builder
+	def generate_appliances(self, grid):
+		enter_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+		enter_room = self.dungeon.grid.cell(enter_room_key)
+		start_pos = Point(
 					self.rng.range(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
 					self.rng.range(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
 					)
+		yield start_pos, 'start'
 
 		for _ in range(9):
-			exit_room_key = self.rng.choice(list(builder.grid.size.iter_points()))
-			exit_room = builder.grid.cell(exit_room_key)
-			self.exit_pos = Point(
-					self.rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
-					self.rng.range(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
-					)
-			if exit_room_key != enter_room_key:
-				break
-		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
+			exit_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+			exit_room = self.dungeon.grid.cell(exit_room_key)
+			if exit_room_key == enter_room_key:
+				continue
+		exit_pos = Point(
+				self.rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
+				self.rng.range(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
+				)
+		yield exit_pos, 'exit'
+		Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 class BSPBuilder(object):
 	""" Fills specified field with binary space partition.
@@ -173,15 +181,17 @@ class BSPDungeon(builders.Builder):
 		for splitter in partition.generate(Point(1, 1), Point(self.size.width - 2, self.size.height - 2)):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
-
+	def generate_appliances(self, grid):
 		floor_only = lambda pos: grid.cell(pos) == 'floor'
 		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		Log.debug("Generated player pos: {0}".format(self.start_pos))
+		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		yield start_pos, 'start'
+		Log.debug("Generated player pos: {0}".format(start_pos))
 
 		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
-		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
+		exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != start_pos)(self.rng, self.size)
+		yield exit_pos, 'exit'
+		Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 class CityBuilder(builders.Builder):
 	""" A city block of buildings, surrounded by a thick wall.
@@ -209,34 +219,37 @@ class CityBuilder(builders.Builder):
 		for splitter in partition.generate(Point(1, 1), Point(self.size.width - 2, self.size.height - 2)):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
-
+	def generate_appliances(self, grid):
 		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
 		floor_only = lambda pos: grid.cell(pos) == 'floor'
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		Log.debug("Generated player pos: {0}".format(self.start_pos))
+		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		yield start_pos, 'start'
+		Log.debug("Generated player pos: {0}".format(start_pos))
 
 		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
-		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
+		exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != start_pos)(self.rng, self.size)
+		yield exit_pos, 'exit'
+		Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 class CaveBuilder(builders.Builder):
 	""" A large open natural cave.
 	"""
 	def fill_grid(self, grid):
 		cave = clckwrkbdgr.pcg.cellular.cave(self.rng, self.size)
-
-		floor_only = lambda pos: cave.cell(pos) > 1
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
-		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
-
 		for pos in cave.size.iter_points():
 			if cave.cell(pos):
 				grid.set_cell(pos, 'floor')
 			else:
 				grid.set_cell(pos, 'wall')
+	def generate_appliances(self, grid):
+		floor_only = lambda pos: grid.cell(pos) == 'floor'
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		yield start_pos, 'start'
+		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
+		exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != start_pos)(self.rng, self.size)
+		yield exit_pos, 'exit'
+		Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 class MazeBuilder(builders.Builder):
 	""" A maze labyrinth on a grid.
@@ -257,22 +270,23 @@ class MazeBuilder(builders.Builder):
 								1 + pos.y * self.CELL_SIZE.height + y,
 								), floor_terrain,
 								)
-	def _place_points(self, grid):
+	def generate_appliances(self, grid):
 		""" Places other points of interests (start, exit).
 		"""
 		floor_only = lambda pos: grid.cell(pos) in ['floor', 'tunnel_floor']
 		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		Log.debug("Generated player pos: {0}".format(self.start_pos))
+		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		yield start_pos, 'start'
+		Log.debug("Generated player pos: {0}".format(start_pos))
 
 		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
-		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
+		exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != start_pos)(self.rng, self.size)
+		yield exit_pos, 'exit'
+		Log.debug("Generated exit pos: {0}".format(exit_pos))
 	def fill_grid(self, grid):
 		maze = clckwrkbdgr.pcg.maze.Maze(self.rng, self.size, self.CELL_SIZE)
 		layout = maze.build()
 		self._fill_maze(grid, layout)
-		self._place_points(grid)
 
 class Sewers(MazeBuilder):
 	""" Sewers: labyrinth of wide tunnels with water streams.
