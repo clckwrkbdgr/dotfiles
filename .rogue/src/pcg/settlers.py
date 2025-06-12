@@ -36,9 +36,7 @@ class SingleMonster(Settler):
 		return grid.cell(pos) in self.PASSABLE
 	def generate_actors(self, grid):
 		""" Places monster at first passable terrain. """
-		self.rng.choice([1]) # FIXME mock action just to shift RNG
-		pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
-		pos = pcg.TryCheck(pcg.point).check(lambda pos: self.passable(grid, pos) and pos not in self.appliances)(self.rng, grid.size)
+		pos = self.point(lambda pos: self.passable(grid, pos) and not self.has_appliance(pos))
 		yield (pos,) + self.MONSTER
 
 class CustomMapSingleMonster(CustomMap, SingleMonster):
@@ -82,8 +80,7 @@ class Squatters(Settler):
 		if not self.MONSTERS:
 			return
 		for _ in range(total_monsters):
-			pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
-			pos = pcg.TryCheck(pcg.point).check(lambda _p: self.is_free(grid, _p))(self.rng, grid.size)
+			pos = self.point(lambda _p: self.is_free(grid, _p))
 			self.monster_cells.add(pos)
 			yield (pos,) + self._choice(self.MONSTERS)
 	def generate_items(self, grid):
@@ -93,8 +90,7 @@ class Squatters(Settler):
 		if not self.ITEMS:
 			return
 		for _ in range(total_items):
-			pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
-			pos = pcg.TryCheck(pcg.point).check(lambda _p: self.is_free(grid, _p))(self.rng, grid.size)
+			pos = self.point(lambda _p: self.is_free(grid, _p))
 			yield (pos,) + self._choice(self.ITEMS)
 
 class WeightedSquatters(Squatters):

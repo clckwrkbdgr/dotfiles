@@ -144,9 +144,21 @@ class Builder(object):
 		""" Returns True if position is already occupied by some actor.
 		"""
 		return pos in self.actors
-	def point(self):
-		""" Generates random point on map. """
+	def has_appliance(self, pos):
+		""" Returns True if position is already occupied by some appliance.
+		"""
+		return pos in self.appliances
+	def point(self, check=None):
+		""" Generates random point on map.
+		If check is supplied, it should be a callable(Point)
+		and should return True if given position is free.
+		"""
+		if check:
+			return pcg.TryCheck(pcg.point).check(check)(self.rng, self.size)
 		return pcg.point(self.rng, self.size)
+	def point_in_rect(self, rect, with_boundaries=False):
+		""" Generates random point within rect area. """
+		return pcg.point_in_rect(self.rng, rect, with_boundaries=with_boundaries)
 
 	# Customization.
 

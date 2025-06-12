@@ -41,9 +41,9 @@ class TestCurses(unittest.TestCase):
 			'    #####        #  ',
 			'     ....   #  ...  ',
 			'      ...  .# ..... ',
-			'     ##..##.#...... ',
+			'     ##..##.#M..... ',
 			'     #............. ',
-			'#.M..#............. ',
+			'#....#............. ',
 			'#........@.........#',
 			'#.................. ',
 			'#.................. ',
@@ -55,19 +55,19 @@ class TestCurses(unittest.TestCase):
 			'      ...  .# ..... ',
 			'     ##..##.#...... ',
 			'     #............. ',
-			'#....#............. ',
+			'#.M..#............. ',
 			'#........@.........#',
 			'#.................. ',
-			'#......M........... ',
+			'#.................. ',
 			' #################  ',
 			]
 	DISPLAYED_LAYOUT_DEAD = [
 			'    #####        #  ',
 			'     ....   #  ...  ',
 			'      ...  .# ..... ',
-			'     ##..##.#...... ',
+			'     ##..##.#M..... ',
 			'     #............. ',
-			'#.M..#............. ',
+			'#....#............. ',
 			'#..................#',
 			'#.................. ',
 			'#.................. ',
@@ -77,7 +77,7 @@ class TestCurses(unittest.TestCase):
 			'  #########      ###',
 			'          >##    ..#',
 			'          ..#  ....#',
-			'     ##..##.#......#',
+			'     ##..##.#M.....#',
 			'     #.....@.......#',
 			'#    #.............#',
 			'#  ................#',
@@ -86,48 +86,48 @@ class TestCurses(unittest.TestCase):
 			' ###################',
 			]
 	DISPLAYED_LAYOUT_FIGHT = [
-			'#########        #  ',
-			'#......     #       ',
-			'#.....      #       ',
-			'#....##  ## #       ',
-			'#....#              ',
-			'#.M..#......        ',
-			'#.@..........      #',
-			'#...........        ',
-			'#...........        ',
-			'##################  ',
+			'    #####   ########',
+			'            #......#',
+			'            #......#',
+			'     ##..##.#M.....#',
+			'     #.......@.....#',
+			'#    #.............#',
+			'#   ...............#',
+			'#   ...............#',
+			'#   ...............#',
+			' ###################',
 			]
 	DISPLAYED_LAYOUT_FIGHT_THIEF = [
-			'#########        #  ',
-			'#......     #       ',
-			'#.....      #       ',
-			'#....##  ## #       ',
-			'#....#              ',
-			'#.T..#......        ',
-			'#.@..........      #',
-			'#...........        ',
-			'#...........        ',
-			'##################  ',
+			'    #####   ########',
+			'            #......#',
+			'            #......#',
+			'     ##..##.#T.....#',
+			'     #.......@.....#',
+			'#    #.............#',
+			'#   ...............#',
+			'#   ...............#',
+			'#   ...............#',
+			' ###################',
 			]
 	DISPLAYED_LAYOUT_KILLED_MONSTER = [
-			'#########        #  ',
-			'#......     #       ',
-			'#.....      #       ',
-			'#....##  ## #       ',
-			'#....#              ',
-			'#....#......        ',
-			'#.@..........      #',
-			'#...........        ',
-			'#...........        ',
-			'##################  ',
+			'    #####   ########',
+			'            #......#',
+			'            #......#',
+			'     ##..##.#......#',
+			'     #.......@.....#',
+			'#    #.............#',
+			'#   ...............#',
+			'#   ...............#',
+			'#   ...............#',
+			' ###################',
 			]
 	DISPLAYED_LAYOUT_FULL = [
 			'####################',
 			'#........#>##......#',
 			'#........#..#......#',
-			'#....##..##.#......#',
+			'#....##..##.#M.....#',
 			'#....#.............#',
-			'#.M..#.............#',
+			'#....#.............#',
 			'#........@.........#',
 			'#..................#',
 			'#..................#',
@@ -215,10 +215,23 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(dungeon._last_control_action, (_base.Action.WAIT, None))
 		loop.redraw()
 		self.maxDiff = None
+
+		DISPLAYED_LAYOUT_EXIT = [
+				'  #########      ###',
+				'          >##    ..#',
+				'          ..#  ....#',
+				'     ##..##.#......#',
+				'     #.....@M......#',
+				'#    #.............#',
+				'#  ................#',
+				'# .................#',
+				'# .................#',
+				' ###################',
+				]
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
+			('addstr', y, x, DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, '                                                                                '),
+			('addstr', 0, 0, 'monster...                                                                      '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])
@@ -227,7 +240,7 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon)
 		dungeon.clear_event()
 
-		dungeon.jump_to(Point(2, 6))
+		dungeon.jump_to(Point(13, 4))
 		dungeon.move(dungeon.get_player(), Direction.UP)
 
 		loop.redraw()
@@ -260,11 +273,10 @@ class TestCurses(unittest.TestCase):
 		dungeon.clear_event()
 		dungeon.god.vision = True
 
-		dungeon.move(dungeon.get_player(), Direction.UP)
-		dungeon.move(dungeon.get_player(), Direction.UP)
-		dungeon.move(dungeon.get_player(), Direction.UP)
+		dungeon.move(dungeon.get_player(), Direction.RIGHT)
+		dungeon.move(dungeon.get_player(), Direction.RIGHT)
+		dungeon.move(dungeon.get_player(), Direction.RIGHT)
 
-		dungeon.move(dungeon.monsters[-1], Direction.LEFT)
 		dungeon.move(dungeon.monsters[-1], Direction.LEFT)
 
 		loop.redraw()
@@ -273,10 +285,10 @@ class TestCurses(unittest.TestCase):
 				'####################',
 				'#........#>##......#',
 				'#........#..#......#',
-				'#....##..##.#......#',
-				'#....#...@.........#',
-				'#M...#.............#',
-				'#..................#',
+				'#....##..##.#M.....#',
+				'#....#.............#',
+				'#....#.............#',
+				'#...........@......#',
 				'#..................#',
 				'#..................#',
 				'####################',
@@ -284,7 +296,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster... monster bumps.                                                       '),
+			('addstr', 0, 0, 'exit! monster bumps.                                                            '),
 			('addstr', 24, 0, 'hp: 10/10 [vis]                                                              [?]'),
 			('refresh',),
 			])
@@ -503,6 +515,7 @@ class TestCurses(unittest.TestCase):
 		dungeon.descend()
 
 		loop.redraw()
+		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.NEXT_DUNGEON[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
@@ -920,7 +933,7 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon)
 		dungeon.clear_event()
 
-		dungeon.jump_to(Point(2, 6))
+		dungeon.jump_to(Point(13, 4))
 		dungeon.move(dungeon.get_player(), Direction.UP)
 
 		loop.redraw()
@@ -942,16 +955,16 @@ class TestCurses(unittest.TestCase):
 		loop.redraw()
 		self.maxDiff = None
 		DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP = [
-				'#########        #  ',
-				'#......     #       ',
-				'#.....      #       ',
-				'#....##  ## #       ',
-				'#....#              ',
-				'#.$..#......        ',
-				'#.@..........      #',
-				'#...........        ',
-				'#...........        ',
-				'##################  ',
+				'    #####   ########',
+				'            #......#',
+				'            #......#',
+				'     ##..##.#$.....#',
+				'     #.......@.....#',
+				'#    #.............#',
+				'#   ...............#',
+				'#   ...............#',
+				'#   ...............#',
+				' ###################',
 				]
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP[y-1][x]) for y in range(1, 11) for x in range(20)

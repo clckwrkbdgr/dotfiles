@@ -118,8 +118,8 @@ class TestRogueDungeon(unittest.TestCase):
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(37, 13), 'start'),
-			(Point(22, 10), 'exit'),
+			(Point(37, 12), 'start'),
+			(Point(21, 10), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -172,8 +172,8 @@ class TestBSPDungeon(unittest.TestCase):
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(31, 20), 'start'),
-			(Point(29, 2), 'exit'),
+			(Point(31, 20), 'exit'),
+			(Point(55, 22), 'start'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -280,8 +280,8 @@ class TestCaveDungeon(unittest.TestCase):
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(51, 2), 'start'),
-			(Point(52, 3), 'exit'),
+			(Point(9, 9), 'start'),
+			(Point(51, 2), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -335,7 +335,7 @@ class TestMazeDungeon(unittest.TestCase):
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
 			(Point(7, 4), 'start'),
-			(Point(31, 17), 'exit'),
+			(Point(25, 20), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()

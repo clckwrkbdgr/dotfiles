@@ -73,11 +73,11 @@ class TestSquatters(unittest.TestCase):
 			('rodent', 3, Point(33, 9)),
 			('plant', 1,  Point(34, 11)),
 			('rodent', 3, Point(9, 19)),
-			('plant', 1,  Point(22, 19))
+			('plant', 1,  Point(65, 11))
 			]))
 		self.assertEqual(sorted(_items), sorted([
 			('healing potion', Point(31, 19)),
-			('healing potion', Point(17, 19)),
+			('healing potion', Point(61, 3)),
 			]))
 	def should_populate_dungeon_with_weighted_squatters(self):
 		rng = RNG(0)
@@ -110,9 +110,9 @@ class TestSquatters(unittest.TestCase):
 			('rodent', 3, Point(33, 9)),
 			('slime', 2,  Point(34, 11)),
 			('rodent', 3, Point(9, 19)),
-			('slime', 2,  Point(22, 19))
+			('slime', 2,  Point(65, 11))
 			]))
 		self.assertEqual(sorted(_items), sorted([
-			('healing potion', Point(31, 19)),
+			('healing potion', Point(61, 3)),
 			('healing potion', Point(63, 4)),
 			]))

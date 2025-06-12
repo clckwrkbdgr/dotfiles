@@ -85,10 +85,7 @@ class RogueDungeon(builders.Builder):
 	def generate_appliances(self, grid):
 		enter_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
 		enter_room = self.dungeon.grid.cell(enter_room_key)
-		start_pos = Point(
-					self.rng.range(enter_room.topleft.x + 1, enter_room.topleft.x + enter_room.size.width + 1 - 1),
-					self.rng.range(enter_room.topleft.y + 1, enter_room.topleft.y + enter_room.size.height + 1 - 1),
-					)
+		start_pos = self.point_in_rect(enter_room)
 		yield start_pos, 'start'
 
 		for _ in range(9):
@@ -96,10 +93,7 @@ class RogueDungeon(builders.Builder):
 			exit_room = self.dungeon.grid.cell(exit_room_key)
 			if exit_room_key == enter_room_key:
 				continue
-		exit_pos = Point(
-				self.rng.range(exit_room.topleft.x + 1, exit_room.topleft.x + exit_room.size.width + 1 - 1),
-				self.rng.range(exit_room.topleft.y + 1, exit_room.topleft.y + exit_room.size.height + 1 - 1),
-				)
+		exit_pos = self.point_in_rect(exit_room)
 		yield exit_pos, 'exit'
 		Log.debug("Generated exit pos: {0}".format(exit_pos))
 
@@ -182,16 +176,9 @@ class BSPDungeon(builders.Builder):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
 	def generate_appliances(self, grid):
-		floor_only = lambda pos: grid.cell(pos) == 'floor'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		yield start_pos, 'start'
-		Log.debug("Generated player pos: {0}".format(start_pos))
-
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != start_pos)(self.rng, self.size)
-		yield exit_pos, 'exit'
-		Log.debug("Generated exit pos: {0}".format(exit_pos))
+		floor_only = lambda pos: grid.cell(pos) == 'floor' and not self.has_appliance(pos)
+		yield self.point(floor_only), 'start'
+		yield self.point(floor_only), 'exit'
 
 class CityBuilder(builders.Builder):
 	""" A city block of buildings, surrounded by a thick wall.
@@ -220,16 +207,9 @@ class CityBuilder(builders.Builder):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
 	def generate_appliances(self, grid):
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		floor_only = lambda pos: grid.cell(pos) == 'floor'
-		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		yield start_pos, 'start'
-		Log.debug("Generated player pos: {0}".format(start_pos))
-
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != start_pos)(self.rng, self.size)
-		yield exit_pos, 'exit'
-		Log.debug("Generated exit pos: {0}".format(exit_pos))
+		floor_only = lambda pos: grid.cell(pos) == 'floor' and not self.has_appliance(pos)
+		yield self.point(floor_only), 'start'
+		yield self.point(floor_only), 'exit'
 
 class CaveBuilder(builders.Builder):
 	""" A large open natural cave.
@@ -242,14 +222,9 @@ class CaveBuilder(builders.Builder):
 			else:
 				grid.set_cell(pos, 'wall')
 	def generate_appliances(self, grid):
-		floor_only = lambda pos: grid.cell(pos) == 'floor'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		yield start_pos, 'start'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != start_pos)(self.rng, self.size)
-		yield exit_pos, 'exit'
-		Log.debug("Generated exit pos: {0}".format(exit_pos))
+		floor_only = lambda pos: grid.cell(pos) == 'floor' and not self.has_appliance(pos)
+		yield self.point(floor_only), 'start'
+		yield self.point(floor_only), 'exit'
 
 class MazeBuilder(builders.Builder):
 	""" A maze labyrinth on a grid.
@@ -273,16 +248,9 @@ class MazeBuilder(builders.Builder):
 	def generate_appliances(self, grid):
 		""" Places other points of interests (start, exit).
 		"""
-		floor_only = lambda pos: grid.cell(pos) in ['floor', 'tunnel_floor']
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		yield start_pos, 'start'
-		Log.debug("Generated player pos: {0}".format(start_pos))
-
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != start_pos)(self.rng, self.size)
-		yield exit_pos, 'exit'
-		Log.debug("Generated exit pos: {0}".format(exit_pos))
+		floor_only = lambda pos: grid.cell(pos) in ['floor', 'tunnel_floor'] and not self.has_appliance(pos)
+		yield self.point(floor_only), 'start'
+		yield self.point(floor_only), 'exit'
 	def fill_grid(self, grid):
 		maze = clckwrkbdgr.pcg.maze.Maze(self.rng, self.size, self.CELL_SIZE)
 		layout = maze.build()

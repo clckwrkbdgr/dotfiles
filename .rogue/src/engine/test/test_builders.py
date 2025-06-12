@@ -25,19 +25,14 @@ class MockBuilder(builders.Builder):
 			for y in range(1, self.size.height - 1):
 				grid.set_cell((x, y), 'floor')
 		floor_only = lambda pos: grid.cell(pos) == 'floor'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		obstacle_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
+		obstacle_pos = self.point(floor_only)
 		grid.set_cell(obstacle_pos, 'wall')
 		obstacle_pos = self.point()
 		grid.set_cell(obstacle_pos, 'water')
 	def generate_appliances(self, grid):
 		floor_only = lambda pos: grid.cell(pos) == 'floor'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		start_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		yield start_pos, 'start'
-		pcg.point(self.rng, self.size) # FIXME work around legacy bug which scrapped the first result
-		exit_pos = pcg.TryCheck(pcg.point).check(floor_only)(self.rng, self.size)
-		yield exit_pos, 'exit'
+		yield self.point(floor_only), 'start'
+		yield self.point(floor_only), 'exit'
 	def generate_actors(self, grid):
 		yield (Point(1, 2), 'monster', 'angry')
 	def generate_items(self, grid):
@@ -71,8 +66,8 @@ class TestBuilder(unittest.TestCase):
 		self.maxDiff = None
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(7, 5), 'start'),
-			(Point(3, 5), 'exit'),
+			(Point(7, 5), 'exit'),
+			(Point(9, 12), 'start'),
 			]))
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
