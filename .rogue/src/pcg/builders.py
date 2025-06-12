@@ -1,4 +1,5 @@
 import textwrap
+from collections import defaultdict
 from clckwrkbdgr.math import Matrix, Point, Size
 import logging
 Log = logging.getLogger('rogue')
@@ -32,16 +33,18 @@ class Builder(builders.Builder):
 		"""
 		grid = Matrix(self.size, None)
 		self.fill_grid(grid)
-		self.monsters = []
+		self.actors = defaultdict(list)
 		for _ in self.generate_actors(grid):
 			if _ is None:
 				continue
-			self.monsters.append(_)
-		self.items = []
+			key, data = _[0], _[1:]
+			self.actors[key].append(data)
+		self.items = defaultdict(list)
 		for _ in self.generate_items(grid):
 			if _ is None:
 				continue
-			self.items.append(_)
+			key, data = _[0], _[1:]
+			self.items[key].append(data)
 		self.grid = grid
 	def fill_grid(self, grid): # pragma: no cover
 		""" Should fill grid, self.start_pos and self.exit_pos. """

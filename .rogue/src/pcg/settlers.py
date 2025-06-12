@@ -38,7 +38,7 @@ class SingleMonster(Settler):
 		self.rng.choice([1]) # FIXME mock action just to shift RNG
 		pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
 		pos = pcg.TryCheck(pcg.point).check(lambda pos: self.passable(grid, pos) and pos not in [self.start_pos, self.exit_pos])(self.rng, grid.size)
-		yield self.MONSTER + (pos,)
+		yield (pos,) + self.MONSTER
 
 class CustomMapSingleMonster(CustomMap, SingleMonster):
 	pass
@@ -86,7 +86,7 @@ class Squatters(Settler):
 			pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
 			pos = pcg.TryCheck(pcg.point).check(lambda _p: self.is_free(grid, _p))(self.rng, grid.size)
 			self.monster_cells.add(pos)
-			yield self._choice(self.MONSTERS) + (pos,)
+			yield (pos,) + self._choice(self.MONSTERS)
 	def generate_items(self, grid):
 		""" Drops items in random locations. """
 		total_passable_cells = sum(1 for pos in grid.size.iter_points() if self.is_passable(grid, pos))
@@ -96,7 +96,7 @@ class Squatters(Settler):
 		for _ in range(total_items):
 			pcg.point(self.rng, grid.size) # FIXME work around legacy bug which scrapped the first result
 			pos = pcg.TryCheck(pcg.point).check(lambda _p: self.is_free(grid, _p))(self.rng, grid.size)
-			yield self._choice(self.ITEMS) + (pos,)
+			yield (pos,) + self._choice(self.ITEMS)
 
 class WeightedSquatters(Squatters):
 	""" Like Squatters, except distributing items/monsters based on their weights.

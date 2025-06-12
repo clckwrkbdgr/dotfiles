@@ -67,7 +67,7 @@ class AbstractTestDungeon(unittest.TestCase):
 	def _formatMessage(self, msg, standardMsg): # pragma: no cover
 		if hasattr(self, 'dungeon'):
 			msg = (msg or '') + '\n' + self.dungeon.tostring()
-		return super()._formatMessage(msg, standardMsg)
+		return super(AbstractTestDungeon, self)._formatMessage(msg, standardMsg)
 	def main_loop(self, dungeon, loop):
 		from ..ui import MainGame
 		loop.run(MainGame(dungeon))
@@ -347,24 +347,24 @@ class TestEvents(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('now you see me')
 		dungeon.jump_to(Point(11, 2))
 		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
+		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 6)))
 		self.assertEqual(dungeon.events[1].obj, '>')
 
 		dungeon.clear_event(dungeon.events[1])
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
+		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 6)))
 	def should_notify_when_see_monsters(self):
 		dungeon = self.dungeon = mock_dungeon.build('now you see me')
 		# At start we see just the one monster.
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
-		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[2])
+		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 6)))
 		dungeon.clear_event()
 
 		# Now we see both, but reporting only the new one.
 		dungeon.jump_to(Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[1])
+		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 1)))
 		dungeon.clear_event()
 
 		# Now we see just the original one - visibility did not change.
@@ -374,7 +374,7 @@ class TestEvents(AbstractTestDungeon):
 		# Now we see both, but reporting only the new one again.
 		dungeon.jump_to(Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(dungeon.events[0].obj, dungeon.monsters[1])
+		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 1)))
 		dungeon.clear_event()
 
 class TestVisibility(AbstractTestDungeon):
@@ -707,7 +707,7 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon.affect_health(dungeon.get_player(), -9)
 		dungeon.clear_event()
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
-		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['healing potion'], Point(0, 0)))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['healing_potion'], Point(0, 0)))
 
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
@@ -1057,7 +1057,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
-			self.assertEqual(monster.species, restored_monster.species)
+			self.assertEqual(monster.species.name, restored_monster.species.name)
 			self.assertEqual(monster.behavior, restored_monster.behavior)
 			self.assertEqual(monster.pos, restored_monster.pos)
 			self.assertEqual(monster.hp, restored_monster.hp)
@@ -1084,7 +1084,10 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon = MockGame(dummy=True)
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
-		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
+		self.assertEqual(
+				[(_.species.name, _.pos) for _ in dungeon.monsters],
+				[(_.species.name, _.pos) for _ in restored_dungeon.monsters],
+				)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size.iter_points():
 			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
@@ -1093,7 +1096,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
-			self.assertEqual(monster.species, restored_monster.species)
+			self.assertEqual(monster.species.name, restored_monster.species.name)
 			self.assertEqual(monster.behavior, restored_monster.behavior)
 			self.assertEqual(monster.pos, restored_monster.pos)
 			self.assertEqual(monster.hp, restored_monster.hp)
@@ -1127,7 +1130,10 @@ class TestGameSerialization(AbstractTestDungeon):
 		self.assertEqual(game.Version.CURRENT, game.Version.WIELDING + 1)
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
-		self.assertEqual(dungeon.monsters, restored_dungeon.monsters)
+		self.assertEqual(
+				[(_.species.name, _.pos) for _ in dungeon.monsters],
+				[(_.species.name, _.pos) for _ in restored_dungeon.monsters],
+				)
 		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
 		for pos in dungeon.strata.size.iter_points():
 			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
@@ -1136,12 +1142,12 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
-			self.assertEqual(monster.species, restored_monster.species)
+			self.assertEqual(monster.species.name, restored_monster.species.name)
 			self.assertEqual(monster.behavior, restored_monster.behavior)
 			self.assertEqual(monster.pos, restored_monster.pos)
 			self.assertEqual(monster.hp, restored_monster.hp)
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 		self.assertEqual(len(dungeon.items), len(restored_dungeon.items))
 		for item, restored_item in zip(dungeon.items, restored_dungeon.items):
-			self.assertEqual(item.item_type, restored_item.item_type)
+			self.assertEqual(item.item_type.name, restored_item.item_type.name)
 			self.assertEqual(item.pos, restored_item.pos)

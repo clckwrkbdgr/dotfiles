@@ -15,7 +15,7 @@ class DungeonSquatters(src.pcg.settlers.WeightedSquatters):
 			(10, 'rodent', src.monsters.Behavior.ANGRY),
 			]
 	ITEMS = [
-			(1, 'healing potion',),
+			(1, 'healing_potion',),
 			]
 
 class DungeonMapping:
@@ -31,6 +31,26 @@ class DungeonMapping:
 	wall_h = src.terrain.Cell(src.terrain.Terrain('wall_h', "-", False, remembered='-'))
 	wall_v = src.terrain.Cell(src.terrain.Terrain('wall_v', "|", False, remembered='|'))
 	water = src.terrain.Cell(src.terrain.Terrain('water', "~", True))
+
+	@staticmethod
+	def plant(pos,*data):
+		return src.monsters.Monster(src.monsters.Species('plant', "P", 1, vision=1, drops=[
+		(1, None),
+		(5, 'healing_potion'),
+		]), *(data + (pos,)))
+	@staticmethod
+	def slime(pos,*data):
+		return src.monsters.Monster(src.monsters.Species('slime', "o", 5, vision=3, drops=[
+		(1, None),
+		(1, 'healing_potion'),
+		]), *(data + (pos,)))
+	@staticmethod
+	def rodent(pos,*data):
+		return src.monsters.Monster(src.monsters.Species('rodent', "r", 3, vision=8, drops=[
+		(5, None),
+		(1, 'healing_potion'),
+		]), *(data + (pos,)))
+	healing_potion = lambda pos,*data: src.items.Item(src.items.ItemType('healing potion', '!', src.items.Effect.HEALING), *data, pos)
 
 class BSPDungeon(src.pcg.builders.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
@@ -99,7 +119,7 @@ class Game(src.game.Game):
 			}
 	ITEMS = {
 			'potion' : src.items.ItemType('potion', '!', src.items.Effect.NONE),
-			'healing potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
+			'healing_potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
 			}
 
 def cli():

@@ -310,17 +310,12 @@ class Game(object):
 			player = monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, builder.start_pos)
 			player.fill_inventory_from_drops(self.rng, self.ITEMS)
 		self.monsters[:] = [player]
-		for monster_data in settler.monsters:
-			species, monster_data = monster_data[0], monster_data[1:]
-			monster_data = (self.SPECIES[species],) + monster_data
-			monster = monsters.Monster(*monster_data)
+		for monster in settler.make_actors():
 			monster.fill_inventory_from_drops(self.rng, self.ITEMS)
 			self.monsters.append(monster)
 		self.items[:] = []
-		for item_data in settler.items:
-			item_type, item_data = item_data[0], item_data[1:]
-			item_data = (self.ITEMS[item_type],) + item_data
-			self.items.append(items.Item(*item_data))
+		for item in settler.make_items():
+			self.items.append(item)
 
 		Log.debug("Finalizing dungeon...")
 		self.exit_pos = builder.exit_pos
