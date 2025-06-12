@@ -2,11 +2,12 @@ import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
 from .. import builders
+from ...engine.builders import Builder
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr import pcg
 
-class MockBuilder(builders.Builder):
+class MockBuilder(Builder):
 	def fill_grid(self, grid):
 		for x in range(self.size.width):
 			grid.set_cell((x, 0), 'wall')
@@ -34,7 +35,7 @@ class TestBuilder(unittest.TestCase):
 			'wall':'#',
 			'floor':'.',
 			}))
-		builder.build()
+		builder.generate()
 		self.assertEqual(builder.start_pos, Point(9, 12))
 		self.assertEqual(builder.exit_pos, Point(7, 16))
 		self.maxDiff = None
@@ -78,7 +79,7 @@ class TestCustomMapLayout(unittest.TestCase):
 				#..................#
 				####################
 		""")
-		builder.build()
+		builder.generate()
 		builder.map_key(**({
 			'#':'#',
 			'.':'.',
@@ -124,7 +125,7 @@ class TestCustomMapLayout(unittest.TestCase):
 			'"':'"',
 			'~':'~',
 			}))
-		builder.build()
+		builder.generate()
 		self.assertEqual(builder.start_pos, Point(9, 6))
 		self.assertEqual(builder.exit_pos, Point(10, 1))
 		self.maxDiff = None
@@ -159,7 +160,7 @@ class TestRogueDungeon(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				)
-		builder.build()
+		builder.generate()
 		self.assertEqual(builder.start_pos, Point(37, 13))
 		self.assertEqual(builder.exit_pos, Point(18, 11))
 		self.maxDiff = None
@@ -208,7 +209,7 @@ class TestBSPDungeon(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				)
-		builder.build()
+		builder.generate()
 		self.assertEqual(builder.start_pos, Point(31, 20))
 		self.assertEqual(builder.exit_pos, Point(29, 2))
 		self.maxDiff = None
@@ -257,7 +258,7 @@ class TestBSPCityBuilder(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				)
-		builder.build()
+		builder.generate()
 		self.assertEqual(builder.start_pos, Point(11, 1))
 		self.assertEqual(builder.exit_pos, Point(58, 22))
 		self.maxDiff = None
@@ -306,7 +307,7 @@ class TestCaveDungeon(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				)
-		builder.build()
+		builder.generate()
 		self.assertEqual(builder.start_pos, Point(51, 2))
 		self.assertEqual(builder.exit_pos, Point(52, 3))
 		self.maxDiff = None
@@ -355,7 +356,7 @@ class TestMazeDungeon(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				)
-		builder.build()
+		builder.generate()
 		self.assertEqual(builder.start_pos, Point(7, 4))
 		self.assertEqual(builder.exit_pos, Point(31, 17))
 		self.maxDiff = None
@@ -404,7 +405,7 @@ class TestSewers(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				)
-		builder.build()
+		builder.generate()
 		self.maxDiff = None
 		self.assertEqual(builder.start_pos, Point(10, 13))
 		self.assertEqual(builder.exit_pos, Point(17, 8))

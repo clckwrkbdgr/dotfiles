@@ -300,7 +300,7 @@ class Game(object):
 		builder = builder(self.rng, Size(80, 23))
 		settler = builder
 		Log.debug("Populating dungeon: {0}".format(settler))
-		builder.build()
+		builder.generate()
 		self.strata = builder.make_grid()
 
 		player = self.get_player()

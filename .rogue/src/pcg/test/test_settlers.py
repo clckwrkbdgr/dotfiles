@@ -19,7 +19,7 @@ class TestSettler(unittest.TestCase):
 		settler.map_key(
 				monster = lambda pos,*data: ('monster',) + data + (pos,)
 				)
-		settler.build()
+		settler.generate()
 		_monsters = list(settler.make_actors())
 		self.assertEqual(_monsters, [
 			('monster', settlers.Behavior.DUMMY, Point(1, 2)),
@@ -44,7 +44,7 @@ class TestSquatters(unittest.TestCase):
 		builder = settlers.RogueDungeonSquatters(rng, Size(80, 25))
 		builder.PASSABLE = ('floor',)
 		settler = builder
-		builder.build()
+		builder.generate()
 		grid = self._make_terrain(builder)
 		for _ in grid.size.iter_points():
 			grid.set_cell(_, grid.cell(_).terrain.name) # Ugh.
@@ -78,7 +78,7 @@ class TestSquatters(unittest.TestCase):
 					]
 			PASSABLE = ('floor',)
 		builder = _MockSquatters(rng, Size(80, 25))
-		builder.build()
+		builder.generate()
 		settler = builder
 		self._make_terrain(builder)
 		_monsters = list(builder.make_actors())
@@ -115,7 +115,7 @@ class TestSquatters(unittest.TestCase):
 					]
 			PASSABLE = ('floor',)
 		builder = _MockSquatters(rng, Size(80, 25))
-		builder.build()
+		builder.generate()
 		settler = builder
 		self._make_terrain(builder)
 		_monsters = list(builder.make_actors())

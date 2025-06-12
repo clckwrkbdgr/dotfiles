@@ -1,6 +1,7 @@
 from clckwrkbdgr import pcg
 from ..monsters import Behavior
-from .builders import Builder, CustomMap, RogueDungeon
+from ..engine.builders import Builder
+from .builders import CustomMap, RogueDungeon
 
 class Settler(Builder):
 	PASSABLE = None

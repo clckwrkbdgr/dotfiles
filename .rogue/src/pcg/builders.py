@@ -11,54 +11,7 @@ from clckwrkbdgr.pcg import bsp
 import clckwrkbdgr.math
 from ..engine import builders
 
-class Builder(builders.Builder):
-	""" Base class to build terrain matrix
-	with start pos and exit pos
-	and to populate terrain with monsters and other objects.
-
-	Override method fill_grid() to produce actual terrain.
-	Override methods generate_actors() and generate_items() to do actual jobs.
-	"""
-	def build(self):
-		""" Creates empty terrain matrix
-		and calls custom _build() to fill it.
-		Usually matrix cells are not real Terrains,
-		but IDs of the terrain types available in the custom Game definitions
-		and should be replaced later with actual Terrain in the Game class itself.
-
-		Places monsters, items and other objects all over map, according to custom overrides.
-		Creates list .monsters with data for each monster in form of tuple: (pos, ...other data).
-		Creates list .items with data for each item in form of tuple: (pos, ...other data).
-		Values should be replaced later with actual objects in the Game class itself.
-		"""
-		grid = Matrix(self.size, None)
-		self.fill_grid(grid)
-		self.actors = defaultdict(list)
-		for _ in self.generate_actors(grid):
-			if _ is None:
-				continue
-			key, data = _[0], _[1:]
-			self.actors[key].append(data)
-		self.items = defaultdict(list)
-		for _ in self.generate_items(grid):
-			if _ is None:
-				continue
-			key, data = _[0], _[1:]
-			self.items[key].append(data)
-		self.grid = grid
-	def fill_grid(self, grid): # pragma: no cover
-		""" Should fill grid, self.start_pos and self.exit_pos. """
-		raise NotImplementedError()
-	def generate_actors(self, grid): # pragma: no cover
-		""" Should fill array of .monsters """
-		yield
-	def generate_items(self, grid): # pragma: no cover
-		""" Should fill array of .items
-		Default implementation places no items.
-		"""
-		yield
-
-class CustomMap(Builder):
+class CustomMap(builders.Builder):
 	""" Builds map described by custom layout.
 	Forces map size to fit given layout instead of considering passed parameter.
 	Set .MAP_DATA to multiline string (one char for each cell)
@@ -92,7 +45,7 @@ class CustomMap(Builder):
 				else:
 					grid.set_cell((x, y), self._map_data[y][x])
 
-class RogueDungeon(Builder):
+class RogueDungeon(builders.Builder):
 	""" Original Rogue dungeon.
 	3x3 rooms connected by rectangular tunnels.
 	"""
@@ -197,7 +150,7 @@ class BSPBuildingBuilder(BSPBuilder):
 				self.field.set_cell((x, the_divide + 1), self.free())
 		self.field.set_cell(door_pos, self.door())
 
-class BSPDungeon(Builder):
+class BSPDungeon(builders.Builder):
 	""" Builds closed set of rooms/galleries/quarters
 	packed into large rectangular space.
 	"""
@@ -230,7 +183,7 @@ class BSPDungeon(Builder):
 		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
-class CityBuilder(Builder):
+class CityBuilder(builders.Builder):
 	""" A city block of buildings, surrounded by a thick wall.
 	"""
 	def fill_grid(self, grid):
@@ -266,7 +219,7 @@ class CityBuilder(Builder):
 		self.exit_pos = pcg.TryCheck(pcg.point).check(lambda pos: floor_only(pos) and pos != self.start_pos)(self.rng, self.size)
 		Log.debug("Generated exit pos: {0}".format(self.exit_pos))
 
-class CaveBuilder(Builder):
+class CaveBuilder(builders.Builder):
 	""" A large open natural cave.
 	"""
 	def fill_grid(self, grid):
@@ -285,7 +238,7 @@ class CaveBuilder(Builder):
 			else:
 				grid.set_cell(pos, 'wall')
 
-class MazeBuilder(Builder):
+class MazeBuilder(builders.Builder):
 	""" A maze labyrinth on a grid.
 	Size of the grid cell is controlled by the field CELL_SIZE, default is 1 cell.
 	"""
