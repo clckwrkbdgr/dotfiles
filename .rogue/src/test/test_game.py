@@ -8,7 +8,7 @@ except: # pragma: no cover
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 import clckwrkbdgr.tui
-from ..pcg import builders, settlers
+from ..pcg import builders
 from .. import monsters, items, terrain
 from .. import pcg
 from .. import game

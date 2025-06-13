@@ -8,7 +8,7 @@ import src.pcg
 import clckwrkbdgr.fs
 import clckwrkbdgr.serialize.stream
 
-class DungeonSquatters(src.pcg.settlers.WeightedSquatters):
+class DungeonSquatters(src.pcg.WeightedSquatters):
 	MONSTERS = [
 			(1, ('plant', src.monsters.Behavior.DUMMY)),
 			(3, ('slime', src.monsters.Behavior.INERT)),
@@ -57,27 +57,27 @@ class DungeonMapping:
 		]), *(data + (pos,)))
 	healing_potion = lambda pos,*data: src.items.Item(src.items.ItemType('healing potion', '!', src.items.Effect.HEALING), *data, pos)
 
-class BSPDungeon(src.pcg.builders.BSPDungeon, DungeonSquatters):
+class BSPDungeon(src.pcg.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
 	PASSABLE = ('floor',)
 	pass
-class CityBuilder(src.pcg.builders.CityBuilder, DungeonSquatters):
+class CityBuilder(src.pcg.CityBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
 	PASSABLE = ('floor',)
 	pass
-class Sewers(src.pcg.builders.Sewers, DungeonSquatters):
+class Sewers(src.pcg.Sewers, DungeonSquatters):
 	Mapping = DungeonMapping
 	PASSABLE = ('floor',)
 	pass
-class RogueDungeon(src.pcg.builders.RogueDungeon, DungeonSquatters):
+class RogueDungeon(src.pcg.RogueDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
 	PASSABLE = ('floor',)
 	pass
-class CaveBuilder(src.pcg.builders.CaveBuilder, DungeonSquatters):
+class CaveBuilder(src.pcg.CaveBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
 	PASSABLE = ('floor',)
 	pass
-class MazeBuilder(src.pcg.builders.MazeBuilder, DungeonSquatters):
+class MazeBuilder(src.pcg.MazeBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
 	PASSABLE = ('floor',)
 	pass
@@ -125,6 +125,7 @@ class Game(src.game.Game):
 			}
 	ITEMS = {
 			'potion' : src.items.ItemType('potion', '!', src.items.Effect.NONE),
+			'healing potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
 			'healing_potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
 			}
 

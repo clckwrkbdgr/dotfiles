@@ -80,7 +80,7 @@ class Game(object):
 
 		legacy_player = None
 		if reader.version <= Version.MONSTERS:
-			legacy_player = monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, reader.read_point())
+			legacy_player = monsters.Monster(self.SPECIES['player'], monsters.Behavior.PLAYER, reader.read_point())
 		self.exit_pos = reader.read_point()
 		self.remembered_exit = reader.read_bool()
 
@@ -309,7 +309,7 @@ class Game(object):
 		if player:
 			player.pos = start_pos
 		else:
-			player = monsters.Monster(self.SPECIES['player'], pcg.settlers.Behavior.PLAYER, start_pos)
+			player = monsters.Monster(self.SPECIES['player'], monsters.Behavior.PLAYER, start_pos)
 			player.fill_inventory_from_drops(self.rng, self.ITEMS)
 		self.monsters[:] = [player]
 		for monster in settler.make_actors():
@@ -326,7 +326,7 @@ class Game(object):
 		Log.debug("Dungeon is ready.")
 	def get_player(self):
 		""" Returns player character if exists, or None. """
-		return next((monster for monster in self.monsters if monster.behavior == pcg.settlers.Behavior.PLAYER), None)
+		return next((monster for monster in self.monsters if monster.behavior == monsters.Behavior.PLAYER), None)
 	def move(self, actor, direction):
 		""" Moves monster into given direction (if possible).
 		If there is a monster, performs attack().
