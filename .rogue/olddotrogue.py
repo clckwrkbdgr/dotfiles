@@ -10,12 +10,12 @@ import clckwrkbdgr.serialize.stream
 
 class DungeonSquatters(src.pcg.settlers.WeightedSquatters):
 	MONSTERS = [
-			(1, 'plant', src.monsters.Behavior.DUMMY),
-			(3, 'slime', src.monsters.Behavior.INERT),
-			(10, 'rodent', src.monsters.Behavior.ANGRY),
+			(1, ('plant', src.monsters.Behavior.DUMMY)),
+			(3, ('slime', src.monsters.Behavior.INERT)),
+			(10, ('rodent', src.monsters.Behavior.ANGRY)),
 			]
 	ITEMS = [
-			(1, 'healing_potion',),
+			(1, ('healing_potion',)),
 			]
 
 class DungeonMapping:

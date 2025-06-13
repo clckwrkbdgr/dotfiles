@@ -66,12 +66,12 @@ class TestSquatters(unittest.TestCase):
 				slime = staticmethod(lambda pos,*data: ('slime',) + data + (pos,))
 				healing_potion = staticmethod(lambda pos,*data: ('healing potion',) + data + (pos,))
 			MONSTERS = [
-					(1, 'plant', monsters.Behavior.DUMMY),
-					(5, 'slime', monsters.Behavior.INERT),
-					(10, 'rodent', monsters.Behavior.ANGRY),
+					(1, ('plant', monsters.Behavior.DUMMY)),
+					(5, ('slime', monsters.Behavior.INERT)),
+					(10, ('rodent', monsters.Behavior.ANGRY)),
 					]
 			ITEMS = [
-					(1, 'healing_potion',),
+					(1, ('healing_potion',)),
 					]
 			PASSABLE = ('floor',)
 		builder = _MockSquatters(rng, Size(80, 25))

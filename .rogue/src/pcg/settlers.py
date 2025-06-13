@@ -56,29 +56,24 @@ class Squatters(Settler):
 	CELLS_PER_ITEM = 180 # One item for every 180 cells.
 	ITEMS = []
 
-	def _choice(self, entries):
-		return self.rng.choice(entries) if len(entries) != 1 else entries[0]
+	def distribution(self):
+		return self.uniform_distribution
 	def generate_actors(self):
 		""" Places random population of different types of monsters.
 		"""
-		total_passable_cells = sum(1 for pos in self.grid.size.iter_points() if self.is_open(pos))
-		total_monsters = int(total_passable_cells / float(self.CELLS_PER_MONSTER))
-		for _ in range(total_monsters):
-			yield (self.point(self.is_free),) + self._choice(self.MONSTERS)
+		for _ in self.distribute(self.distribution(), self.MONSTERS, self.CELLS_PER_MONSTER):
+			yield _
 	def generate_items(self):
 		""" Drops items in random locations. """
-		total_passable_cells = sum(1 for pos in self.grid.size.iter_points() if self.is_free(pos))
-		total_items = int(total_passable_cells / float(self.CELLS_PER_ITEM))
-		for _ in range(total_items):
-			yield (self.point(self.is_free),) + self._choice(self.ITEMS)
+		for _ in self.distribute(self.distribution(), self.ITEMS, self.CELLS_PER_ITEM):
+			yield _
 
 class WeightedSquatters(Squatters):
 	""" Like Squatters, except distributing items/monsters based on their weights.
 	Lists MONSTERS and ITEMS should have additional first element - relative weight (int or float) for each item/monster.
 	"""
-	def _choice(self, entries):
-		from clckwrkbdgr import pcg
-		return pcg.weighted_choices(self.rng, [(data[0], data[1:]) for data in entries])[0]
+	def distribution(self):
+		return self.weighted_distribution
 
 class RogueDungeonSquatters(RogueDungeon, Squatters):
 	pass

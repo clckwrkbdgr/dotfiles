@@ -181,6 +181,32 @@ class Builder(object):
 	def point_in_rect(self, rect, with_boundaries=False):
 		""" Generates random point within rect area. """
 		return pcg.point_in_rect(self.rng, rect, with_boundaries=with_boundaries)
+	def uniform_distribution(self, entities):
+		""" Returns single random choice from an entity list.
+		All entities have the same probabilty weight.
+		"""
+		return self.rng.choice(entities) if len(entities) != 1 else entities[0]
+	def weighted_distribution(self, entities):
+		""" Returns single random weighted choice from a weighted entity list.
+		Each item should be a tuple of (weight, <data>).
+		Returns data without weight.
+		Weight is a number - the greater the number, the more probable the choice.
+		"""
+		return pcg.weighted_choices(self.rng, entities)[0]
+	def distribute(self, distribution, entities, cell_per_entity, is_free=None):
+		""" Yields entities (pos+data) randomly distributed
+		using given distribution over free cells
+		with specified cell_per_entity ratio.
+		Entity list format should correspond to the one that is accepted by
+		given distribution.
+		Default is_free check corresponds to is_free method,
+		i.e. passable and not occupied by any appliance or actor.
+		"""
+		is_free = is_free or self.is_free
+		total_free_cells = sum(1 for pos in self.grid.size.iter_points() if is_free(pos))
+		total_entities = int(total_free_cells / float(cell_per_entity))
+		for _ in range(total_entities):
+			yield (self.point(is_free),) + distribution(entities)
 
 	# Customization.
 
