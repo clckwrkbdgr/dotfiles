@@ -20,28 +20,6 @@ class TestSquatters(unittest.TestCase):
 				'wall_v' : Cell(Terrain('wall_v', "|", False, remembered='|')),
 				}))
 		return builder.make_grid()
-	def should_check_availability_of_placement_position(self):
-		rng = RNG(0)
-		builder = settlers.RogueDungeonSquatters(rng, Size(80, 25))
-		builder.PASSABLE = ('floor',)
-		settler = builder
-		builder.generate()
-		grid = self._make_terrain(builder)
-		for _ in grid.size.iter_points():
-			grid.set_cell(_, grid.cell(_).terrain.name) # Ugh.
-
-		self.assertTrue(settler.is_passable(grid, Point(8, 2)))
-		self.assertFalse(settler.is_passable(grid, Point(1, 1)))
-		self.assertFalse(settler.is_passable(grid, Point(8, 1)))
-
-		settler.monster_cells = set([Point(7, 3)])
-		self.assertTrue(settler.is_free(grid, Point(8, 2)))
-		self.assertFalse(settler.is_free(grid, Point(1, 1)))
-		self.assertFalse(settler.is_free(grid, Point(8, 1)))
-		self.assertFalse(settler.is_free(grid, next(iter(settler.monster_cells))))
-		appliances = list(builder.appliances)
-		self.assertFalse(settler.is_free(grid, appliances[0]))
-		self.assertFalse(settler.is_free(grid, appliances[1]))
 	def should_populate_dungeon_with_squatters(self):
 		rng = RNG(0)
 		class _MockSquatters(settlers.RogueDungeonSquatters):

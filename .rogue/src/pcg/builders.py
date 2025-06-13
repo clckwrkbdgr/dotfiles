@@ -42,7 +42,7 @@ class CustomMap(builders.Builder):
 					grid.set_cell((x, y), self.EXIT_TERRAIN)
 				else:
 					grid.set_cell((x, y), self._map_data[y][x])
-	def generate_appliances(self, grid):
+	def generate_appliances(self):
 		for x in range(self.size.width):
 			for y in range(self.size.height):
 				if self._map_data[y][x] == '@':
@@ -82,7 +82,7 @@ class RogueDungeon(builders.Builder):
 			grid.set_cell(tunnel.start, 'rogue_door')
 			grid.set_cell(tunnel.stop, 'rogue_door')
 		self.dungeon = builder
-	def generate_appliances(self, grid):
+	def generate_appliances(self):
 		enter_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
 		enter_room = self.dungeon.grid.cell(enter_room_key)
 		start_pos = self.point_in_rect(enter_room)
@@ -175,10 +175,11 @@ class BSPDungeon(builders.Builder):
 		for splitter in partition.generate(Point(1, 1), Point(self.size.width - 2, self.size.height - 2)):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
-	def generate_appliances(self, grid):
-		floor_only = lambda pos: grid.cell(pos) == 'floor' and not self.has_appliance(pos)
-		yield self.point(floor_only), 'start'
-		yield self.point(floor_only), 'exit'
+	def is_open(self, pos):
+		return self.grid.cell(pos) == 'floor'
+	def generate_appliances(self):
+		yield self.point(self.is_accessible), 'start'
+		yield self.point(self.is_accessible), 'exit'
 
 class CityBuilder(builders.Builder):
 	""" A city block of buildings, surrounded by a thick wall.
@@ -206,10 +207,11 @@ class CityBuilder(builders.Builder):
 		for splitter in partition.generate(Point(1, 1), Point(self.size.width - 2, self.size.height - 2)):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
-	def generate_appliances(self, grid):
-		floor_only = lambda pos: grid.cell(pos) == 'floor' and not self.has_appliance(pos)
-		yield self.point(floor_only), 'start'
-		yield self.point(floor_only), 'exit'
+	def is_open(self, pos):
+		return self.grid.cell(pos) == 'floor'
+	def generate_appliances(self):
+		yield self.point(self.is_accessible), 'start'
+		yield self.point(self.is_accessible), 'exit'
 
 class CaveBuilder(builders.Builder):
 	""" A large open natural cave.
@@ -221,10 +223,11 @@ class CaveBuilder(builders.Builder):
 				grid.set_cell(pos, 'floor')
 			else:
 				grid.set_cell(pos, 'wall')
-	def generate_appliances(self, grid):
-		floor_only = lambda pos: grid.cell(pos) == 'floor' and not self.has_appliance(pos)
-		yield self.point(floor_only), 'start'
-		yield self.point(floor_only), 'exit'
+	def is_open(self, pos):
+		return self.grid.cell(pos) == 'floor'
+	def generate_appliances(self):
+		yield self.point(self.is_accessible), 'start'
+		yield self.point(self.is_accessible), 'exit'
 
 class MazeBuilder(builders.Builder):
 	""" A maze labyrinth on a grid.
@@ -245,12 +248,13 @@ class MazeBuilder(builders.Builder):
 								1 + pos.y * self.CELL_SIZE.height + y,
 								), floor_terrain,
 								)
-	def generate_appliances(self, grid):
+	def is_open(self, pos):
+		return self.grid.cell(pos) in ['floor', 'tunnel_floor']
+	def generate_appliances(self):
 		""" Places other points of interests (start, exit).
 		"""
-		floor_only = lambda pos: grid.cell(pos) in ['floor', 'tunnel_floor'] and not self.has_appliance(pos)
-		yield self.point(floor_only), 'start'
-		yield self.point(floor_only), 'exit'
+		yield self.point(self.is_accessible), 'start'
+		yield self.point(self.is_accessible), 'exit'
 	def fill_grid(self, grid):
 		maze = clckwrkbdgr.pcg.maze.Maze(self.rng, self.size, self.CELL_SIZE)
 		layout = maze.build()

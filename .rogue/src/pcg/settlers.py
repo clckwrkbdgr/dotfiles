@@ -5,7 +5,9 @@ from .builders import CustomMap, RogueDungeon
 
 class Settler(Builder):
 	PASSABLE = None
-	pass
+	def is_open(self, pos):
+		""" True if terrain is passable. """
+		return self.grid.cell(pos) in self.PASSABLE
 
 class CustomSettler(CustomMap):
 	""" Fills map with predetermined monsters and items.
@@ -16,11 +18,11 @@ class CustomSettler(CustomMap):
 			]
 	ITEMS = [
 			]
-	def generate_actors(self, grid):
+	def generate_actors(self):
 		self.rng.choice([1]) # FIXME mock action just to shift RNG
 		for _ in self.MONSTERS:
 			yield _
-	def generate_items(self, grid):
+	def generate_items(self):
 		for _ in self.ITEMS:
 			yield _
 
@@ -32,12 +34,9 @@ class SingleMonster(Settler):
 	"""
 	MONSTER = None
 
-	def passable(self, grid, pos):
-		return grid.cell(pos) in self.PASSABLE
-	def generate_actors(self, grid):
+	def generate_actors(self):
 		""" Places monster at first passable terrain. """
-		pos = self.point(lambda pos: self.passable(grid, pos) and not self.has_appliance(pos))
-		yield (pos,) + self.MONSTER
+		yield (self.point(self.is_free),) + self.MONSTER
 
 class CustomMapSingleMonster(CustomMap, SingleMonster):
 	pass
@@ -57,41 +56,21 @@ class Squatters(Settler):
 	CELLS_PER_ITEM = 180 # One item for every 180 cells.
 	ITEMS = []
 
-	def is_passable(self, grid, pos):
-		""" True if terrain is passable. """
-		return grid.cell(pos) in self.PASSABLE
-	def is_free(self, grid, pos):
-		""" True if not occupied by any other object/monster. """
-		if not self.is_passable(grid, pos):
-			return False
-		if pos in self.appliances:
-			return False
-		if pos in self.monster_cells:
-			return False
-		return True
 	def _choice(self, entries):
 		return self.rng.choice(entries) if len(entries) != 1 else entries[0]
-	def generate_actors(self, grid):
+	def generate_actors(self):
 		""" Places random population of different types of monsters.
 		"""
-		total_passable_cells = sum(1 for pos in grid.size.iter_points() if self.is_passable(grid, pos))
+		total_passable_cells = sum(1 for pos in self.grid.size.iter_points() if self.is_open(pos))
 		total_monsters = int(total_passable_cells / float(self.CELLS_PER_MONSTER))
-		self.monster_cells = set()
-		if not self.MONSTERS:
-			return
 		for _ in range(total_monsters):
-			pos = self.point(lambda _p: self.is_free(grid, _p))
-			self.monster_cells.add(pos)
-			yield (pos,) + self._choice(self.MONSTERS)
-	def generate_items(self, grid):
+			yield (self.point(self.is_free),) + self._choice(self.MONSTERS)
+	def generate_items(self):
 		""" Drops items in random locations. """
-		total_passable_cells = sum(1 for pos in grid.size.iter_points() if self.is_passable(grid, pos))
+		total_passable_cells = sum(1 for pos in self.grid.size.iter_points() if self.is_free(pos))
 		total_items = int(total_passable_cells / float(self.CELLS_PER_ITEM))
-		if not self.ITEMS:
-			return
 		for _ in range(total_items):
-			pos = self.point(lambda _p: self.is_free(grid, _p))
-			yield (pos,) + self._choice(self.ITEMS)
+			yield (self.point(self.is_free),) + self._choice(self.ITEMS)
 
 class WeightedSquatters(Squatters):
 	""" Like Squatters, except distributing items/monsters based on their weights.

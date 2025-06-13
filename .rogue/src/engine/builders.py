@@ -66,31 +66,29 @@ class Builder(object):
 		"""
 		grid = Matrix(self.size, None)
 		self.fill_grid(grid)
-		assert not hasattr(self, 'exit_pos')
-		assert not hasattr(self, 'start_pos')
 
+		self.grid = grid
 		self.appliances = defaultdict(list)
-		for appliance_data in self.generate_appliances(grid):
+		self.actors = defaultdict(list)
+		self.items = defaultdict(list)
+
+		for appliance_data in self.generate_appliances():
 			if appliance_data is None: # pragma: no cover -- Empty generator.
 				continue
 			pos, appliance_data = appliance_data[0], appliance_data[1:]
 			self.appliances[pos].append(appliance_data)
 
-		self.actors = defaultdict(list)
-		for actor_data in self.generate_actors(grid):
+		for actor_data in self.generate_actors():
 			if actor_data is None: # pragma: no cover -- Empty generator.
 				continue
 			pos, actor_data = actor_data[0], actor_data[1:]
 			self.actors[pos].append(actor_data)
 
-		self.items = defaultdict(list)
-		for item_data in self.generate_items(grid):
+		for item_data in self.generate_items():
 			if item_data is None: # pragma: no cover -- Empty generator.
 				continue
 			pos, item_data = item_data[0], item_data[1:]
 			self.items[pos].append(item_data)
-
-		self.grid = grid
 	def make_grid(self):
 		""" Compiles generated abstract map and returns result grid.
 		If existing grid was passed to the builder's init, it will be re-used.
@@ -138,7 +136,8 @@ class Builder(object):
 		for _ in self.make_entities(self.items):
 			yield _
 
-	# PCG routines and controls.
+	# Generation controls and checks.
+	# All of these are available only after call to fill_grid()
 
 	def has_actor(self, pos):
 		""" Returns True if position is already occupied by some actor.
@@ -148,6 +147,29 @@ class Builder(object):
 		""" Returns True if position is already occupied by some appliance.
 		"""
 		return pos in self.appliances
+	def is_open(self, pos): # pragma: no cover
+		""" Should return True is given grid cell is considered "open",
+		i.e. passable.
+		By default all cells are open.
+		"""
+		return True
+	def is_accessible(self, pos):
+		""" Should return True is given grid cell is considered "accessible",
+		i.e. open and available to place appliances or drop any items there.
+		By default all open cells are accessible except ones
+		already occupied by appliances.
+		"""
+		return self.is_open(pos) and not self.has_appliance(pos)
+	def is_free(self, pos):
+		""" Should return True is given pos is considered "vacant",
+		i.e. accessible and/or available to putting appliances/actors/items.
+		By default all open cells are free except ones occupied by appliances
+		and/or other actors.
+		"""
+		return self.is_accessible(pos) and not self.has_actor(pos)
+
+	# PCG routines.
+
 	def point(self, check=None):
 		""" Generates random point on map.
 		If check is supplied, it should be a callable(Point)
@@ -169,7 +191,7 @@ class Builder(object):
 		Destructible terrain should be implemented as switching cell content/type.
 		"""
 		raise NotImplementedError()
-	def generate_appliances(self, grid): # pragma: no cover
+	def generate_appliances(self): # pragma: no cover
 		""" Should yield appliance data as tuples: (pos, key, <custom data...>)
 
 		Appliance is an object that is considered a part of surroundings,
@@ -178,13 +200,13 @@ class Builder(object):
 		but cannot move on its own, act on its own and cannot be picked up.
 		"""
 		yield
-	def generate_actors(self, grid): # pragma: no cover
+	def generate_actors(self): # pragma: no cover
 		""" Should yield actors data as tuples: (pos, key, <custom data...>)
 
 		Actors are movable objects that can interact with surroundings.
 		"""
 		yield
-	def generate_items(self, grid): # pragma: no cover
+	def generate_items(self): # pragma: no cover
 		""" Should yield item data as tuples: (pos, key, <custom data...>)
 
 		Items are objects that cannot interact or move,
