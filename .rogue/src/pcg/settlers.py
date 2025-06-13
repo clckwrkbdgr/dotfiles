@@ -1,6 +1,6 @@
 from clckwrkbdgr import pcg
 from ..monsters import Behavior
-from ..engine.builders import Builder
+from ..engine.builders import Builder, UniformDistribution, WeightedDistribution
 from .builders import CustomMap, RogueDungeon
 
 class Settler(Builder):
@@ -51,29 +51,27 @@ class Squatters(Settler):
 	Distribution is controlled by corresponding CELLS_PER_* fields, which should
 	set amount of _free_ (i.e. passable) cells that support one monster/item.
 	"""
+	DISTRIBUTION = UniformDistribution
 	CELLS_PER_MONSTER = 60 # One monster for every 60 cells.
 	MONSTERS = []
 	CELLS_PER_ITEM = 180 # One item for every 180 cells.
 	ITEMS = []
 
-	def distribution(self):
-		return self.uniform_distribution
 	def generate_actors(self):
 		""" Places random population of different types of monsters.
 		"""
-		for _ in self.distribute(self.distribution(), self.MONSTERS, self.CELLS_PER_MONSTER):
+		for _ in self.distribute(self.DISTRIBUTION, self.MONSTERS, self.amount_by_free_cells(self.CELLS_PER_MONSTER)):
 			yield _
 	def generate_items(self):
 		""" Drops items in random locations. """
-		for _ in self.distribute(self.distribution(), self.ITEMS, self.CELLS_PER_ITEM):
+		for _ in self.distribute(self.DISTRIBUTION, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
 			yield _
 
 class WeightedSquatters(Squatters):
 	""" Like Squatters, except distributing items/monsters based on their weights.
 	Lists MONSTERS and ITEMS should have additional first element - relative weight (int or float) for each item/monster.
 	"""
-	def distribution(self):
-		return self.weighted_distribution
+	DISTRIBUTION = WeightedDistribution
 
 class RogueDungeonSquatters(RogueDungeon, Squatters):
 	pass

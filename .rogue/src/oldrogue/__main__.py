@@ -245,6 +245,68 @@ class BumpsIntoOther(MessageEvent): _message = "{Who} bumps into {whom}."
 class WelcomeBack(MessageEvent): _message = "Welcome back, {who}!"
 Event.register('WelcomeBack', 'who')
 
+class _Builder(builders.Builder):
+	class _Dungeon(clckwrkbdgr.pcg.rogue.Dungeon):
+		ROOM_CLASS = Room
+		TUNNEL_CLASS = Tunnel
+		MAX_TUNNEL_ETCHING_TRIES = 5
+	def __init__(self, depth, *args, **kwargs):
+		self.depth = depth
+		super().__init__(*args, **kwargs)
+	def fill_grid(self, grid):
+		self.dungeon = self._Dungeon(self.size, (3, 3))
+	def generate_appliances(self):
+		self.enter_room_key = self.rng.choice(list(result.rooms.keys()))
+		enter_room = result.rooms.cell(self.enter_room_key)
+		yield (self.pos_in_rect(enter_room), 'enter')
+
+		if not is_bottom:
+			exit_room_key = self.rng.choice(list(set(result.rooms.keys()) - {self.enter_room_key}))
+			exit_room = result.rooms.cell(exit_room_key)
+			yield (self.pos_in_rect(exit_room), 'exit')
+	def generate_items(self):
+		item_distribution = [
+			(50, HealingPotion),
+			(self.depth, Dagger),
+			(self.depth // 2, Sword),
+			(max(0, (self.depth-5) // 3), Axe),
+			(self.depth, Rags),
+			(self.depth // 2, Leather),
+			(max(0, (self.depth-5) // 3), ChainMail),
+			(max(0, (self.depth-10) // 3), PlateArmor),
+			]
+		for _ in self.distribute(WeightedDistribution, item_distribution, self.amont_fixed(2, 4)
+			):
+			if _ is None:
+				continue
+			room = self.rng.choice(list(result.rooms.values()))
+			pos = self.pos_in_rect(room)
+			yield pos, _()
+		if is_bottom:
+			exit_room_key = self.rng.choice(list(set(result.rooms.keys()) - {self.enter_room_key}))
+			exit_room = result.rooms.cell(exit_room_key)
+			yield (self.pos_in_rect(exit_room), 'exit_item')
+	def generate_actors(self):
+		monster_distribution = list(itertools.chain(
+			easy_monsters.get_distribution(self.depth),
+			norm_monsters.get_distribution(self.depth),
+			hard_monsters.get_distribution(self.depth),
+			))
+		available_rooms = [room for room in result.rooms.values() if room != enter_room and room != exit_room]
+		for pos, monster in self.distribute(WeightedDistribution, monster_distribution,  self.amont_fixed(5)):
+			if monster is None:
+				continue
+			room = self.rng.choice(list(result.rooms.values()))
+			pos = self.pos_in_rect(room)
+			monster = monster()
+			monster.pos = pos
+			drop_distributions = monster.drops
+			if drop_distributions and drop_distributions[0] and not utils.is_collection(drop_distributions[0][0]):
+				drop_distributions = [drop_distributions]
+			for distribution in drop_distributions:
+				monster.inventory.extend(self.rng.choice(distribution))
+			yield monster
+
 class RogueDungeonGenerator(pcg.Generator):
 	MAX_LEVELS = 26
 	def build_level(self, level_id):
@@ -252,37 +314,25 @@ class RogueDungeonGenerator(pcg.Generator):
 			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
 		depth = level_id
 		is_bottom = depth >= (self.MAX_LEVELS - 1)
-		result = self.original_rogue_dungeon(
-				map_size=(78, 21),
-				grid_size=(3, 3),
-				room_class=Room, tunnel_class=Tunnel,
-				item_distribution = [
-					(50, HealingPotion),
-					(depth, Dagger),
-					(depth // 2, Sword),
-					(max(0, (depth-5) // 3), Axe),
-					(depth, Rags),
-					(depth // 2, Leather),
-					(max(0, (depth-5) // 3), ChainMail),
-					(max(0, (depth-10) // 3), PlateArmor),
-					],
-				item_amount=(2, 4),
-				monster_distribution = list(itertools.chain(
-					easy_monsters.get_distribution(depth),
-					norm_monsters.get_distribution(depth),
-					hard_monsters.get_distribution(depth),
-					)),
-				monster_amount=5,
-				prev_level_id=level_id - 1 if level_id > 0 else None,
-				next_level_id=level_id + 1 if not is_bottom else None,
-				enter_object_type=StairsUp if level_id > 0 else DungeonGates,
-				exit_object_type=StairsDown,
-				enter_connected_id='exit',
-				exit_connected_id='enter',
-				item_instead_of_exit=McGuffin if is_bottom else None,
+
+		enter_object_type = StairsUp if level_id > 0 else DungeonGates
+		prev_level_id = level_id - 1 if level_id > 0 else None
+		next_level_id = level_id + 1 if not is_bottom else None
+		builder = _Builder(depth, random, (78, 21))
+		builder.map_key(enter=enter_object_type(prev_level_id, 'exit'))
+		if is_bottom:
+			builder.map_key(exit_item=McGuffin())
+		else:
+			builder.map_key(exit=StairsDown(next_level_id, 'enter'))
+		builder.generate()
+		return GridRoomMap(
+				rooms = builder.dungeon.grid,
+				tunnels = builder.dungeon.tunnels,
+				objects = list(builder.make_appliances()),
+				items = list(builder.make_items()),
+				monsters = list(builder.make_actors()),
+				level_id = level_id,
 				)
-		result.level_id = level_id
-		return GridRoomMap(**vars(result))
 
 class ExitWithoutSave(tui.app.AppExit):
 	def __init__(self):

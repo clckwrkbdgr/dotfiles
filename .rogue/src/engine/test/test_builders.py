@@ -58,6 +58,24 @@ class TestUtilities(unittest.TestCase):
 		builder.generate()
 		self.assertTrue(builder.has_actor(Point(1, 1)))
 		self.assertFalse(builder.has_actor(Point(1, 2)))
+	def should_generate_amount_by_free_cells(self):
+		builder = make_builder(RNG(0), (10, 10))
+		builder.generate()
+		gen_amount = builder.amount_by_free_cells(4)
+		self.assertEqual(gen_amount(), 14)
+		self.assertEqual(gen_amount(), 14)
+	def should_generate_amount_by_fixed_range(self):
+		builder = make_builder(RNG(0), (10, 10))
+		builder.generate()
+		gen_amount = builder.amount_fixed(4)
+		self.assertEqual(gen_amount(), 4)
+		self.assertEqual(gen_amount(), 4)
+		gen_amount = builder.amount_fixed((4, 10))
+		self.assertEqual(gen_amount(), 5)
+		self.assertEqual(gen_amount(), 5)
+		gen_amount = builder.amount_fixed(4, 10)
+		self.assertEqual(gen_amount(), 7)
+		self.assertEqual(gen_amount(), 8)
 
 class TestBuilder(unittest.TestCase):
 	def should_generate_dungeon(self):
