@@ -629,5 +629,5 @@ class TestDungeon(unittest.TestCase):
 			game.Event.MonsterDied(dungeon.rogue),
 			game.Event.MonsterDroppedItem(dungeon.rogue, pistol),
 			])
-		self.assertFalse(dungeon.rogue.is_alive())
+		self.assertTrue(dungeon.is_finished())
 		self.assertEqual(dungeon.current_level.items, [(Point(9, 3), pistol)])

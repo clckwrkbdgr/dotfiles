@@ -7,6 +7,7 @@ import logging
 Log = logging.getLogger('rogue')
 from .ui import Action
 from . import monsters, items, terrain
+from . import engine
 import clckwrkbdgr.math
 
 class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
@@ -25,7 +26,7 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	def is_passable(self, p, from_point):
 		return self.matrix.cell(p).terrain.passable and self.matrix.cell(p).visited and self.allow_movement_direction(self.matrix, from_point, p)
 
-class Game(object):
+class Game(engine.Game):
 	""" Main game object.
 
 	Override definitions for content:
@@ -107,8 +108,8 @@ class Game(object):
 		writer.write(self.strata)
 		writer.write(self.monsters)
 		writer.write(self.items)
-	def needs_saving(self):
-		return self.get_player() and self.get_player().is_alive()
+	def is_finished(self):
+		return not (self.get_player() and self.get_player().is_alive())
 	def _pre_action(self):
 		if not self.get_player():
 			return False

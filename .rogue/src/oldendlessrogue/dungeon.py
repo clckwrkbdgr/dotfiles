@@ -1,8 +1,9 @@
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.math.grid import EndlessMatrix
 from . import builders
+from .. import engine
 
-class Dungeon(object):
+class Dungeon(engine.Game):
 	BLOCK_SIZE = Size(32, 32)
 
 	def __init__(self, builder=None):
@@ -10,6 +11,8 @@ class Dungeon(object):
 		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block)
 		self.rogue = Point(self.builder.place_rogue(self.terrain))
 		self.time = 0
+	def is_finished(self): # pragma: no cover -- TODO
+		return False
 	def __getstate__(self):
 		return self.__dict__
 	def __setstate__(self, state):

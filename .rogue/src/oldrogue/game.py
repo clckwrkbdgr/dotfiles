@@ -9,6 +9,7 @@ import logging
 trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
 from clckwrkbdgr import xdg
+from .. import engine
 
 def is_diagonal_movement(point_from, point_to):
 	shift = abs(point_to - point_from)
@@ -433,7 +434,7 @@ class GodMode(object):
 	def __init__(self):
 		self.vision = False
 
-class Dungeon(object):
+class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
 	def __init__(self, generator, player_type):
 		self.levels = {}
@@ -451,6 +452,8 @@ class Dungeon(object):
 	@property
 	def current_tunnel(self):
 		return self.current_level.tunnel_of(self.rogue.pos)
+	def is_finished(self):
+		return not self.rogue.is_alive()
 	def is_visible(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) is visible for player.
 		Additional data depends on type of primary object.

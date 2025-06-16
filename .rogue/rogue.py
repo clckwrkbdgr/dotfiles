@@ -13,6 +13,7 @@ from clckwrkbdgr.math.grid import NestedGrid
 from clckwrkbdgr import xdg, utils
 import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.tui
+from src import engine
 from src.engine import builders
 
 SAVEFILE_VERSION = 3
@@ -345,7 +346,7 @@ def all_monsters(world, raw=False, zone_range=None):
 				yield coord, monster
 
 Color = namedtuple('Color', 'fg attr dweller monster')
-class Game:
+class Game(engine.Game):
 	COLORS = {
 			'black': Color(curses.COLOR_BLACK, 0, False, False),
 			'red': Color(curses.COLOR_RED, 0, True, True),
@@ -377,6 +378,8 @@ class Game:
 		self.player.load(stream)
 		self.world.load(stream)
 		self.passed_time = stream.read(int)
+	def is_finished(self):
+		return self.player.hp <= 0
 	def generate(self):
 		zone_pos = Point(
 				random.randrange(self.world.cells.size.width),
@@ -516,7 +519,7 @@ def main(ui):
 	main_game = MainGameMode(game)
 	loop = clckwrkbdgr.tui.ModeLoop(ui)
 	loop.run(main_game)
-	if game.player.hp > 0:
+	if not game.is_finished():
 		with savefile.save(SAVEFILE_VERSION) as writer:
 			game.save(writer)
 	else:

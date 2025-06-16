@@ -798,7 +798,7 @@ def main(stdscr):
 
 		game = Game(stdscr)
 		return_code = game.run(to_main_screen(dotdict(data=dungeon)))
-		if return_code is False:
+		if dungeon.is_finished():
 			savefile.reset()
 
 import click

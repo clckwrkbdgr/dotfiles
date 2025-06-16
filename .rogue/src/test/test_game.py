@@ -71,7 +71,7 @@ class AbstractTestDungeon(unittest.TestCase):
 	def main_loop(self, dungeon, loop):
 		from ..ui import MainGame
 		loop.run(MainGame(dungeon))
-		return dungeon.needs_saving()
+		return not dungeon.is_finished()
 
 class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_run_main_loop(self):

@@ -159,7 +159,7 @@ def cli():
 			loop = clckwrkbdgr.tui.ModeLoop(ui)
 			main_mode = src.ui.MainGame(game)
 			loop.run(main_mode)
-			if game.needs_saving():
+			if not game.is_finished():
 				savefile.save(game, src.game.Version.CURRENT)
 	Log.debug('exited')
 
