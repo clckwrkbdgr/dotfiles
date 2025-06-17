@@ -498,12 +498,6 @@ QuestLogKeys = clckwrkbdgr.tui.Keymapping()
 QuestLogKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
 
 def main(ui):
-	debug = '--debug' in sys.argv
-	if debug:
-		clckwrkbdgr.logging.init(
-			'rogue', debug=True, filename='rogue.log', stream=None,
-			)
-
 	for name, color in Game.COLORS.items():
 		ui.init_color(name, color.fg, color.attr)
 
@@ -902,5 +896,16 @@ class QuestLog(clckwrkbdgr.tui.Mode):
 	def action(self, control):
 		return control != 'cancel'
 
-with clckwrkbdgr.tui.Curses() as ui:
-	main(ui)
+import click
+@click.command()
+@click.option('-d', '--debug', is_flag=True)
+def cli(debug=False):
+	if debug:
+		clckwrkbdgr.logging.init(
+			'rogue', debug=True, filename='rogue.log', stream=None,
+			)
+	with clckwrkbdgr.tui.Curses() as ui:
+		main(ui)
+
+if __name__ == '__main__':
+	cli()

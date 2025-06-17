@@ -7,9 +7,12 @@ import clckwrkbdgr.tui
 from .dungeon import Dungeon
 from .game import Game
 
-if __name__ == '__main__':
+import click
+@click.command()
+@click.option('-d', '--debug', is_flag=True)
+def cli(debug=False):
 	logging.init('rogue',
-			debug='-d' in sys.argv,
+			debug=debug,
 			filename=xdg.save_state_path('dotrogue')/'rogue.log',
 			stream=None,
 			)
@@ -17,3 +20,6 @@ if __name__ == '__main__':
 		game = Game(dungeon)
 		with clckwrkbdgr.tui.Curses() as ui:
 			clckwrkbdgr.tui.Mode.run(game, ui)
+
+if __name__ == '__main__':
+	cli()
