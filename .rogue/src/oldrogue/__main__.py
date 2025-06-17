@@ -786,20 +786,19 @@ def main(stdscr):
 	curses.curs_set(0)
 
 	with SerializedEntity(xdg.save_data_path('dotrogue')/'rogue.sav', Version._top(), entity_name='dungeon', unlink=True, readable=True) as savefile:
+		dungeon = Dungeon(RogueDungeonGenerator(), Rogue)
 		if savefile.entity:
-			dungeon = savefile.entity
-			dungeon.generator = RogueDungeonGenerator()
-			dungeon.history.append(Event.WelcomeBack(dungeon.rogue))
+			dungeon.load(savefile.entity)
 		else:
-			dungeon = Dungeon(RogueDungeonGenerator(), Rogue)
-			dungeon.go_to_level(0)
-			dungeon.rogue.inventory.append(Dagger())
+			dungeon.generate()
 			savefile.reset(dungeon)
 
 		game = Game(stdscr)
 		return_code = game.run(to_main_screen(dotdict(data=dungeon)))
 		if dungeon.is_finished():
 			savefile.reset()
+		else:
+			game.save(savefile.entity)
 
 import click
 @click.command()

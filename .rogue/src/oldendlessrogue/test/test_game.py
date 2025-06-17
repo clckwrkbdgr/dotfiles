@@ -42,6 +42,7 @@ class MockBuilder:
 class TestGame(unittest.TestCase):
 	def _create_dungeon(self):
 		dungeon = Dungeon(builder=MockBuilder(walls=[[]]*4+[[(2, 3)]]))
+		dungeon.generate()
 		return dungeon
 	def _extract_matrix(self, m, source):
 		result = Matrix(source.size, ' ')

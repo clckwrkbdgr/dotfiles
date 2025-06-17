@@ -31,6 +31,7 @@ class TestDungeon(unittest.TestCase):
 	def should_generate_random_dungeon(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 		self.assertEqual(dungeon.terrain.cell((0, 0)), '.')
 		self.assertEqual(dungeon.terrain.cell((1, 0)), '#')
 		self.assertEqual(dungeon.terrain.cell((0, 1)), '#')
@@ -39,6 +40,7 @@ class TestDungeon(unittest.TestCase):
 	def should_get_dungeon_sprites_for_view(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 		self.assertEqual(dungeon.get_sprite((-1, -1)), '.')
 		self.assertEqual(dungeon.get_sprite((0, 0)), '@')
 		self.assertEqual(dungeon.get_sprite((-1, 0)), '#')
@@ -46,18 +48,21 @@ class TestDungeon(unittest.TestCase):
 	def should_move_player(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 		self.assertEqual(dungeon.rogue, (1, 1))
 		dungeon.control(Point(0, 1))
 		self.assertEqual(dungeon.rogue, (1, 2))
 	def should_not_move_player_into_wall(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0)]])
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 		self.assertEqual(dungeon.rogue, (1, 1))
 		dungeon.control(Point(0, -1))
 		self.assertEqual(dungeon.rogue, (1, 1))
 	def should_recalibrate_plane_after_player_moved(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]] + [[]]*4 + [[(2, 2)]])
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 		self.assertEqual(dungeon.rogue, (1, 1))
 		self.assertEqual(dungeon.terrain.shift, Point(-3, -3))
 		self.assertEqual(self.to_string(dungeon), unittest.dedent("""\
@@ -102,6 +107,7 @@ class TestDungeon(unittest.TestCase):
 	def should_check_if_cell_is_passable(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 		self.assertEqual(dungeon.terrain.cell((0, 0)), '.')
 		self.assertTrue(dungeon.is_passable((0, 0)))
 		self.assertFalse(dungeon.is_passable((1, 0)))
@@ -109,6 +115,7 @@ class TestDungeon(unittest.TestCase):
 	def should_raise_given_game_exception(self):
 		builder = MockBuilder(rogue_pos=(1, 1))
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 		class MockEvent(Exception): pass
 		with self.assertRaises(MockEvent):
 			dungeon.control(MockEvent)
@@ -119,6 +126,7 @@ class TestSerialization(unittest.TestCase):
 	def should_serialize_deserialize_dungeon(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 		dungeon.time = 666
 
 		import pickle
@@ -129,8 +137,9 @@ class TestSerialization(unittest.TestCase):
 	def should_deserialize_dungeons_from_previous_versions(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
+		dungeon.generate()
 
 		state = {'builder' : builder, 'terrain':dungeon.terrain, 'rogue':dungeon.rogue}
-		other = object.__new__(Dungeon)
-		other.__setstate__(state)
+		other = MockDungeon(builder=builder)
+		other.load(state)
 		self.assertEqual(other.time, 0)

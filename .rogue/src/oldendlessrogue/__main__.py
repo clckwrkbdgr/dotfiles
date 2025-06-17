@@ -16,10 +16,19 @@ def cli(debug=False):
 			filename=xdg.save_state_path('dotrogue')/'rogue.log',
 			stream=None,
 			)
-	with fs.SerializedEntity.store(xdg.save_data_path('dotrogue')/'rogue.sav', 'dungeon', Dungeon) as dungeon:
+	with fs.SerializedEntity.store(xdg.save_data_path('dotrogue')/'rogue.sav', 'dungeon', Dungeon) as savefile:
+		dungeon = Dungeon()
+		if savefile.entity:
+			dungeon.load(savefile.entity)
+		else:
+			dungeon.generate()
 		game = Game(dungeon)
 		with clckwrkbdgr.tui.Curses() as ui:
 			clckwrkbdgr.tui.Mode.run(game, ui)
+		if dungeon.is_finished():
+			savefile.reset()
+		else:
+			game.save(savefile.entity)
 
 if __name__ == '__main__':
 	cli()

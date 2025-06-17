@@ -8,18 +8,21 @@ class Dungeon(engine.Game):
 
 	def __init__(self, builder=None):
 		self.builder = builder or builders.Builders()
-		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block)
-		self.rogue = Point(self.builder.place_rogue(self.terrain))
+		self.terrain = None
+		self.rogue = None
 		self.time = 0
 	def is_finished(self): # pragma: no cover -- TODO
 		return False
-	def __getstate__(self):
-		return self.__dict__
-	def __setstate__(self, state):
+	def generate(self):
+		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block)
+		self.rogue = Point(self.builder.place_rogue(self.terrain))
+	def load(self, state):
 		self.__dict__.update(state)
 		if 'time' not in state:
 			self.time = 0
 		self.terrain.builder = self.builder.build_block
+	def save(self, state): # pragma: no cover -- TODO
+		state.update(self.__dict__)
 	def get_sprite(self, pos):
 		if pos == Point(0, 0):
 			return "@"

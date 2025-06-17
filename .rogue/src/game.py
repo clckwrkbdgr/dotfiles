@@ -47,7 +47,7 @@ class Game(engine.Game):
 	SPECIES = None
 	ITEMS = None
 
-	def __init__(self, rng_seed=None, dummy=False, builders=None, load_from_reader=None):
+	def __init__(self, rng_seed=None, builders=None):
 		""" Creates game instance and optionally generate new world.
 		Custom rng_seed may be used for PCG.
 		If dummy = True, does not automatically generate or load game, just create empty object.
@@ -68,12 +68,8 @@ class Game(engine.Game):
 		self.visible_items = []
 		self.events = []
 		self.player_turn = True
-		if dummy:
-			return
-		if load_from_reader:
-			self.load(load_from_reader)
-		else:
-			self.build_new_strata()
+	def generate(self):
+		self.build_new_strata()
 	def load(self, reader):
 		""" Loads game from reader. """
 		if reader.version > Version.PERSISTENT_RNG:

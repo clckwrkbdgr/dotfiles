@@ -158,13 +158,19 @@ def cli(debug=False, command=None, tests=None):
 			sys.exit(rc)
 	Log.debug('started')
 	with clckwrkbdgr.serialize.stream.AutoSavefile(savefile) as savefile:
-		game = Game(load_from_reader=savefile.reader)
+		game = Game()
+		if savefile.reader:
+			game.load(savefile.reader)
+		else:
+			game.generate()
 		with clckwrkbdgr.tui.Curses() as ui:
 			loop = clckwrkbdgr.tui.ModeLoop(ui)
 			main_mode = src.ui.MainGame(game)
 			loop.run(main_mode)
-			if not game.is_finished():
-				savefile.save(game, src.game.Version.CURRENT)
+		if not game.is_finished():
+			savefile.save(game, src.game.Version.CURRENT)
+		else:
+			savefile.reset()
 	Log.debug('exited')
 
 if __name__ == '__main__':

@@ -321,7 +321,7 @@ class _MockBuilder_FightingGround(settlers.CustomSettler):
 		(Point(9, 4), 'monster', monsters.Behavior.INERT),
 		]
 
-def build(dungeon_id, load_from_reader=None):
+def build(dungeon_id):
 	_DATA = {
 			'now you see me': ([_MockBuilder_NowYouSeeMe]),
 			'mini dark rogue': ([_MockMiniRogueBuilderUnSettler]),
@@ -350,4 +350,6 @@ def build(dungeon_id, load_from_reader=None):
 			'potions lying around 2': ([_MockBuilder_PotionsLyingAround]),
 			'monster and potion': ([_MockBuilder_MockSettler]),
 			}
-	return MockGame(rng_seed=0, builders=_DATA[dungeon_id], load_from_reader=load_from_reader)
+	game = MockGame(rng_seed=0, builders=_DATA[dungeon_id])
+	game.generate()
+	return game

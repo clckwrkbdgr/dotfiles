@@ -443,6 +443,18 @@ class Dungeon(engine.Game):
 		self.generator = generator
 		self.god = GodMode()
 		self.history = []
+	def generate(self): # pragma: no cover -- TODO
+		self.go_to_level(0)
+		self.rogue.inventory.append(Dagger())
+	def load(self, reader): # pragma: no cover -- TODO
+		self.levels = data.levels
+		self.current_level_id = data.current_level
+		self.rogue = data.rogue
+		dungeon.history.append(Event.WelcomeBack(dungeon.rogue))
+	def save(self, data): # pragma: no cover -- TODO
+		data.levels = self.levels
+		data.current_level = self.current_level_id
+		data.rogue = self.rogue
 	@property
 	def current_level(self):
 		return self.levels[self.current_level_id]
@@ -537,14 +549,3 @@ class Dungeon(engine.Game):
 			for item in self.current_level.rip(other):
 				events.append(Event.MonsterDroppedItem(other, item))
 		return events
-	def __setstate__(self, data): # pragma: no cover -- TODO
-		self.__init__(None, lambda:None)
-		self.levels = data.levels
-		self.current_level_id = data.current_level
-		self.rogue = data.rogue
-	def __getstate__(self): # pragma: no cover -- TODO
-		data = dotdict()
-		data.levels = self.levels
-		data.current_level = self.current_level_id
-		data.rogue = self.rogue
-		return data
