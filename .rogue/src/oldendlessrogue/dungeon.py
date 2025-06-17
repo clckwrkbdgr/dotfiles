@@ -7,6 +7,7 @@ class Dungeon(engine.Game):
 	BLOCK_SIZE = Size(32, 32)
 
 	def __init__(self, builder=None):
+		super(Dungeon, self).__init__()
 		self.builder = builder or builders.Builders()
 		self.terrain = None
 		self.rogue = None
@@ -22,7 +23,10 @@ class Dungeon(engine.Game):
 			self.time = 0
 		self.terrain.builder = self.builder.build_block
 	def save(self, state): # pragma: no cover -- TODO
-		state.update(self.__dict__)
+		data = {}
+		data.update(self.__dict__)
+		del data['rng']
+		state.update(data)
 	def get_sprite(self, pos):
 		if pos == Point(0, 0):
 			return "@"

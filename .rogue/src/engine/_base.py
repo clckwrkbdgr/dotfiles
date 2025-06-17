@@ -1,6 +1,11 @@
 class Game(object):
 	""" Main object for the game mechanics.
 	"""
+	def __init__(self, rng=None):
+		if rng is None:
+			import random
+			rng = random
+		self.rng = rng
 	def generate(self): # pragma: no cover
 		""" Should reset game and generate new state.
 		Common pattern is create dummy Game object

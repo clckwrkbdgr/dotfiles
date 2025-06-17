@@ -366,6 +366,7 @@ class Game(engine.Game):
 			'bold_white': Color(curses.COLOR_WHITE, curses.A_BOLD, False, True),
 			}
 	def __init__(self):
+		super(Game, self).__init__()
 		self.player = Monster(NestedGrid.Coord(Point(0, 0), Point(0, 0), Point(0, 0)), Sprite('@', 'bold_white'), 10)
 		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
 		self.passed_time = 0

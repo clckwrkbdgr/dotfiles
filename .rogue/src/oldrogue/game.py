@@ -436,11 +436,14 @@ class GodMode(object):
 
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
-	def __init__(self, generator, player_type):
+	GENERATOR = None
+	PLAYER_TYPE = None
+	def __init__(self):
+		super(Dungeon, self).__init__()
 		self.levels = {}
 		self.current_level_id = None
-		self.rogue = player_type()
-		self.generator = generator
+		self.rogue = self.PLAYER_TYPE()
+		self.generator = self.GENERATOR()
 		self.god = GodMode()
 		self.history = []
 	def generate(self): # pragma: no cover -- TODO

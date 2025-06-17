@@ -55,9 +55,9 @@ class Game(engine.Game):
 		If load_from_reader is given, it should be a Reader class, from which game is loaded.
 		Otherwise new game is generated.
 		"""
+		super(Game, self).__init__(rng=RNG(rng_seed))
 		self.builders = builders or self.BUILDERS
 		assert not hasattr(self, 'SETTLERS') or self.SETTLERS is None
-		self.rng = RNG(rng_seed)
 		self.god = God()
 		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
 		self.autoexploring = False

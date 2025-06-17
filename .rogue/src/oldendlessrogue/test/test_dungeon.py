@@ -130,7 +130,12 @@ class TestSerialization(unittest.TestCase):
 		dungeon.time = 666
 
 		import pickle
-		other = pickle.loads(pickle.dumps(dungeon))
+		from clckwrkbdgr.collections import dotdict
+		data = dotdict()
+		dungeon.save(data)
+		other_data = pickle.loads(pickle.dumps(data))
+		other = MockDungeon(builder=builder)
+		other.load(other_data)
 		self.assertEqual(dungeon.terrain, other.terrain)
 		self.assertEqual(dungeon.rogue, other.rogue)
 		self.assertEqual(dungeon.time, other.time)

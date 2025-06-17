@@ -782,11 +782,15 @@ class Greetings(tui.widgets.TextScreen):
 class Game(tui.app.App):
 	pass
 
+class RogueDungeon(Dungeon):
+	GENERATOR = RogueDungeonGenerator
+	PLAYER_TYPE = Rogue
+
 def main(stdscr):
 	curses.curs_set(0)
 
 	with SerializedEntity(xdg.save_data_path('dotrogue')/'rogue.sav', Version._top(), entity_name='dungeon', unlink=True, readable=True) as savefile:
-		dungeon = Dungeon(RogueDungeonGenerator(), Rogue)
+		dungeon = Dungeon()
 		if savefile.entity:
 			dungeon.load(savefile.entity)
 		else:

@@ -514,19 +514,22 @@ class TestGridRoomMap(unittest.TestCase):
 			})
 
 class TestDungeon(unittest.TestCase):
+	class UNATCO(game.Dungeon):
+		GENERATOR = MockGenerator
+		PLAYER_TYPE = UNATCOAgent
 	def should_move_to_level(self):
-		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 		self.assertEqual(dungeon.rogue.pos, Point(1, 1))
 	def should_use_stairs(self):
-		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		dungeon.use_stairs(dungeon.current_level.objects[1][1])
 		self.assertEqual(dungeon.current_level, dungeon.levels['roof'])
 		self.assertEqual(dungeon.rogue.pos, Point(1, 1))
 	def should_locate_in_maze(self):
-		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
@@ -542,7 +545,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertIsNone(dungeon.current_room)
 		self.assertEqual(dungeon.current_tunnel, dungeon.current_level.tunnels[0])
 	def should_detect_visible_objects(self):
-		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
@@ -563,7 +566,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_visible(Point(5, 1)))
 		self.assertTrue(dungeon.is_visible(Point(8, 2)))
 	def should_remember_objects(self):
-		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
@@ -586,7 +589,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_remembered(Point(5, 1)))
 		self.assertTrue(dungeon.is_remembered(Point(8, 2)))
 	def should_move_monster(self):
-		dungeon = game.Dungeon(MockGenerator(), UNATCOAgent)
+		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		dungeon.rogue.pos = Point(9, 3)
 		pistol = StealthPistol()
