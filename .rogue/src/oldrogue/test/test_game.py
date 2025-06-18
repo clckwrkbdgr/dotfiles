@@ -5,6 +5,7 @@ from .. import game
 from ..game import Item, Wearable, Consumable, LevelPassage
 from ..game import Monster
 from ..game import Tunnel, Room, GridRoomMap, Dungeon
+from ...engine import events
 
 class Elevator(LevelPassage):
 	_sprite = '>'
@@ -32,12 +33,12 @@ class HazmatSuit(Item, Wearable):
 class StimPack(Item, Consumable):
 	def consume_by(self, monster):
 		monster.heal(25)
-		return True
+		return []
 
 class SmartStimPack(Item, Consumable):
 	def consume_by(self, monster):
 		if monster.hp >= monster.max_hp:
-			return False
+			return None
 		else: # pragma: no cover
 			raise RuntimeError("Should never reach here.")
 
@@ -99,43 +100,43 @@ class TestMonster(unittest.TestCase):
 		jc.inventory.append(pistol)
 		jc.inventory.append(armor)
 
-		self.assertEqual(jc.wield(pistol), [
+		self.assertEqual(_R(jc.wield(pistol)), _R([
 			game.Event.Wielding(jc, pistol),
-			])
-		self.assertEqual(jc.wield(key), [
+			]))
+		self.assertEqual(_R(jc.wield(key)), _R([
 			game.Event.Unwielding(jc, pistol),
 			game.Event.Wielding(jc, key),
-			])
-		self.assertEqual(jc.wear(armor), [
+			]))
+		self.assertEqual(_R(jc.wear(armor)), _R([
 			game.Event.Wearing(jc, armor),
-			])
-		self.assertEqual(jc.wear(hazmat), [
+			]))
+		self.assertEqual(_R(jc.wear(hazmat)), _R([
 			game.Event.TakingOff(jc, armor),
 			game.Event.Wearing(jc, hazmat),
-			])
-		self.assertEqual(jc.wield(hazmat), [
+			]))
+		self.assertEqual(_R(jc.wield(hazmat)), _R([
 			game.Event.TakingOff(jc, hazmat),
 			game.Event.Unwielding(jc, key),
 			game.Event.Wielding(jc, hazmat),
-			])
-		self.assertEqual(jc.wear(pistol), [
+			]))
+		self.assertEqual(_R(jc.wear(pistol)), _R([
 			game.Event.NotWearable(pistol),
-			])
-		self.assertEqual(jc.wear(armor), [
+			]))
+		self.assertEqual(_R(jc.wear(armor)), _R([
 			game.Event.Wearing(jc, armor),
-			])
-		self.assertEqual(jc.wear(hazmat), [
+			]))
+		self.assertEqual(_R(jc.wear(hazmat)), _R([
 			game.Event.Unwielding(jc, hazmat),
 			game.Event.TakingOff(jc, armor),
 			game.Event.Wearing(jc, hazmat),
-			])
+			]))
 		jc.wield(pistol)
-		self.assertEqual(jc.wield(None), [
+		self.assertEqual(_R(jc.wield(None)), _R([
 			game.Event.Unwielding(jc, pistol),
-			])
-		self.assertEqual(jc.wear(None), [
+			]))
+		self.assertEqual(_R(jc.wear(None)), _R([
 			game.Event.TakingOff(jc, hazmat),
-			])
+			]))
 	def should_drop_items(self):
 		key = NanoKey()
 		key.value = '0451'
@@ -151,19 +152,19 @@ class TestMonster(unittest.TestCase):
 		jc.wear(armor)
 		jc.wield(pistol)
 
-		self.assertEqual(jc.drop(key), [
+		self.assertEqual(_R(jc.drop(key)), _R([
 			game.Event.MonsterDroppedItem(jc, key),
-			])
+			]))
 		self.assertFalse(jc.has_item(NanoKey))
-		self.assertEqual(jc.drop(pistol), [
+		self.assertEqual(_R(jc.drop(pistol)), _R([
 			game.Event.Unwielding(jc, pistol),
 			game.Event.MonsterDroppedItem(jc, pistol),
-			])
+			]))
 		self.assertFalse(jc.has_item(StealthPistol))
-		self.assertEqual(jc.drop(armor), [
+		self.assertEqual(_R(jc.drop(armor)), _R([
 			game.Event.TakingOff(jc, armor),
 			game.Event.MonsterDroppedItem(jc, armor),
-			])
+			]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
 	def should_consumeItems(self):
 		key = NanoKey()
@@ -176,23 +177,23 @@ class TestMonster(unittest.TestCase):
 		jc.inventory.append(stimpack)
 		jc.inventory.append(smart_stimpack)
 
-		self.assertEqual(jc.consume(key), [
+		self.assertEqual(_R(jc.consume(key)), _R([
 			game.Event.NotConsumable(key),
-			])
+			]))
 		self.assertTrue(jc.has_item(NanoKey))
 
 		jc.wield(stimpack)
-		self.assertEqual(jc.consume(stimpack), [
+		self.assertEqual(_R(jc.consume(stimpack)), _R([
 			game.Event.Unwielding(jc, stimpack),
 			game.Event.MonsterConsumedItem(jc, stimpack),
-			])
+			]))
 		self.assertFalse(jc.has_item(StimPack))
 		self.assertEqual(jc.hp, jc.max_hp)
 
 		jc.wield(smart_stimpack)
-		self.assertEqual(jc.consume(smart_stimpack), [
+		self.assertEqual(_R(jc.consume(smart_stimpack)), _R([
 			game.Event.Unwielding(jc, smart_stimpack),
-			])
+			]))
 		self.assertTrue(jc.has_item(SmartStimPack))
 	def should_calc_attack_damage(self):
 		pistol = StealthPistol()
@@ -358,6 +359,8 @@ class MockGenerator:
 
 		return rooms, tunnels, objects
 
+def _R(events): return list(map(repr, events))
+
 class TestGridRoomMap(unittest.TestCase):
 	def _map(self):
 		return MockGenerator().build_level('top')
@@ -470,17 +473,17 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor, pistol, key])
 
 		events = gridmap.grab_item(jc, key)
-		self.assertEqual(events, [game.Event.GrabbedItem(jc, key)])
+		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, key)]))
 		self.assertTrue(jc.has_item(NanoKey))
 		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor, pistol])
 
 		events = gridmap.grab_item(jc, pistol)
-		self.assertEqual(events, [game.Event.GrabbedItem(jc, pistol)])
+		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, pistol)]))
 		self.assertTrue(jc.has_item(StealthPistol))
 		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor])
 
 		events = gridmap.grab_item(jc, armor)
-		self.assertEqual(events, [game.Event.InventoryFull(armor)])
+		self.assertEqual(_R(events), _R([game.Event.InventoryFull(armor)]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
 		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor])
 	def should_drop_item(self):
@@ -492,7 +495,7 @@ class TestGridRoomMap(unittest.TestCase):
 		gridmap = self._map()
 		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [])
 		events = gridmap.drop_item(jc, pistol)
-		self.assertEqual(events, [game.Event.MonsterDroppedItem(jc, pistol)])
+		self.assertEqual(_R(events), _R([game.Event.MonsterDroppedItem(jc, pistol)]))
 		self.assertFalse(jc.has_item(StealthPistol))
 		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [pistol])
 	def should_visit_places(self):
@@ -609,7 +612,7 @@ class TestDungeon(unittest.TestCase):
 
 		events = dungeon.move_monster(mj12, Point(6, 3), with_tunnels=False)
 		self.assertEqual(mj12.pos, Point(7, 3))
-		self.assertEqual(events, [game.Event.BumpIntoTerrain(mj12, Point(6, 3))])
+		self.assertEqual(_R(events), _R([game.Event.BumpIntoTerrain(mj12, Point(6, 3))]))
 
 		events = dungeon.move_monster(mj12, Point(8, 3))
 		self.assertEqual(mj12.pos, Point(8, 3))
@@ -617,20 +620,20 @@ class TestDungeon(unittest.TestCase):
 
 		events = dungeon.move_monster(mj12, Point(8, 2))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(events, [game.Event.BumpIntoMonster(mj12, vacuum)])
+		self.assertEqual(_R(events), _R([game.Event.BumpIntoMonster(mj12, vacuum)]))
 
 		events = dungeon.move_monster(mj12, Point(9, 3))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(events, [game.Event.AttackMonster(mj12, dungeon.rogue, 3)])
+		self.assertEqual(_R(events), _R([game.Event.AttackMonster(mj12, dungeon.rogue, 3)]))
 		self.assertEqual(dungeon.rogue.hp, 97)
 
 		dungeon.rogue.hp = 3
 		events = dungeon.move_monster(mj12, Point(9, 3))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(events, [
+		self.assertEqual(_R(events), _R([
 			game.Event.AttackMonster(mj12, dungeon.rogue, 3),
 			game.Event.MonsterDied(dungeon.rogue),
 			game.Event.MonsterDroppedItem(dungeon.rogue, pistol),
-			])
+			]))
 		self.assertTrue(dungeon.is_finished())
 		self.assertEqual(dungeon.current_level.items, [(Point(9, 3), pistol)])

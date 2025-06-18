@@ -47,6 +47,3 @@ class Events:
 		See .get() for details.
 		"""
 		return cls.get(event, bind_self=bind_self)(event)
-	@classmethod
-	def list_all_events(cls):
-		return sorted(cls._registry.keys(), key=lambda cls: cls.__name__)

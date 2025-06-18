@@ -10,6 +10,7 @@ trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
 from clckwrkbdgr import xdg
 from .. import engine
+from ..engine import events
 
 def is_diagonal_movement(point_from, point_to):
 	shift = abs(point_to - point_from)
@@ -29,29 +30,21 @@ class Version(clckwrkbdgr.collections.Enum):
 	WEARING = auto()
 	JSONPICKLE = auto()
 
-class Event(object):
-	@classmethod
-	def register(cls, name, fields):
-		""" Registers new Event/namedtuple subclass with given name and fields (like for namedtuple).
-		Registered class will be available as Event.<name>
-		"""
-		exec('class {0}(cls, namedtuple(name, fields)): pass'.format(name, repr(name), repr(fields)))
-		setattr(cls, name, eval(name))
-
-Event.register('BumpIntoTerrain', 'who pos')
-Event.register('BumpIntoMonster', 'who whom')
-Event.register('AttackMonster', 'who whom damage')
-Event.register('MonsterDied', 'who')
-Event.register('MonsterDroppedItem', 'who item')
-Event.register('MonsterConsumedItem', 'who item')
-Event.register('Unwielding', 'who item')
-Event.register('TakingOff', 'who item')
-Event.register('Wielding', 'who item')
-Event.register('Wearing', 'who item')
-Event.register('NotWearable', 'item')
-Event.register('NotConsumable', 'item')
-Event.register('InventoryFull', 'item')
-Event.register('GrabbedItem', 'who item')
+class Event:
+	class BumpIntoTerrain(events.Event): FIELDS = 'who pos'
+	class BumpIntoMonster(events.Event): FIELDS = 'who whom'
+	class AttackMonster(events.Event): FIELDS = 'who whom damage'
+	class MonsterDied(events.Event): FIELDS = 'who'
+	class MonsterDroppedItem(events.Event): FIELDS = 'who item'
+	class MonsterConsumedItem(events.Event): FIELDS = 'who item'
+	class Unwielding(events.Event): FIELDS = 'who item'
+	class TakingOff(events.Event): FIELDS = 'who item'
+	class Wielding(events.Event): FIELDS = 'who item'
+	class Wearing(events.Event): FIELDS = 'who item'
+	class NotWearable(events.Event): FIELDS = 'item'
+	class NotConsumable(events.Event): FIELDS = 'item'
+	class InventoryFull(events.Event): FIELDS = 'item'
+	class GrabbedItem(events.Event): FIELDS = 'who item'
 
 class Item(object):
 	""" Basic pickable and carryable item. """
@@ -196,8 +189,10 @@ class Monster(object):
 		if not isinstance(item, Consumable):
 			return [Event.NotConsumable(item)]
 		events = self._unequip(item)
-		if not item.consume_by(self):
+		consume_events = item.consume_by(self)
+		if consume_events is None:
 			return events
+		events.extend(consume_events)
 		self.inventory.remove(item)
 		events.append(Event.MonsterConsumedItem(self, item))
 		return events

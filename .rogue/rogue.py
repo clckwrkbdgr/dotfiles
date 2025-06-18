@@ -15,6 +15,7 @@ import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.tui
 from src import engine
 from src.engine import builders
+from src.engine import events
 
 SAVEFILE_VERSION = 3
 
@@ -345,6 +346,43 @@ def all_monsters(world, raw=False, zone_range=None):
 					coord = coord.get_global(world)
 				yield coord, monster
 
+class NothingToPickUp(events.Event): FIELDS = ''
+class NoOneToChat(events.Event): FIELDS = ''
+class NoOneToChatInDirection(events.Event): FIELDS = ''
+class TooMuchQuests(events.Event): FIELDS = ''
+class InventoryIsFull(events.Event): FIELDS = ''
+class PickedUpItem(events.Event): FIELDS = 'item'
+class ChatThanks(events.Event): FIELDS = ''
+class ChatComeLater(events.Event): FIELDS = ''
+class ChatQuestReminder(events.Event): FIELDS = 'color item'
+class NothingToDrop(events.Event): FIELDS = ''
+class DroppedItem(events.Event): FIELDS = 'actor item'
+class Bump(events.Event): FIELDS = 'actor target'
+class HitMonster(events.Event): FIELDS = 'actor target'
+class MonsterDead(events.Event): FIELDS = 'target'
+class StareIntoVoid(events.Event): FIELDS = ''
+
+events.Events.on(NothingToPickUp)(lambda _:'Nothing to pick up here.')
+events.Events.on(NoOneToChat)(lambda _:'No one to chat with.')
+events.Events.on(NoOneToChatInDirection)(lambda _:'No one to chat with in that direction.')
+events.Events.on(TooMuchQuests)(lambda _:"Too much quests already.")
+events.Events.on(InventoryIsFull)(lambda _:'Inventory is full.')
+events.Events.on(PickedUpItem)(lambda _:'Picked up {0}.'.format(_.item.name))
+
+events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
+events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')
+events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(_.color, _.item))
+events.Events.on(NothingToDrop)(lambda _:'Nothing to drop.')
+events.Events.on(DroppedItem)(lambda _:'{0} drop {1}.'.format(_.actor.title(), _.item.name))
+events.Events.on(Bump)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
+events.Events.on(HitMonster)(lambda _:'{0} hit {1}.'.format(_.actor.title(), _.target))
+@events.Events.on(MonsterDead)
+def monster_is_dead(_):
+	if _.target == 'you':
+		return 'You died!!!'
+	return '{0} is dead.'.format(_.target.title())
+events.Events.on(StareIntoVoid)(lambda _:'Will not fall into the void.')
+
 Color = namedtuple('Color', 'fg attr dweller monster')
 class Game(engine.Game):
 	COLORS = {
@@ -528,7 +566,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		self.viewport = Rect((0, 0), (61, 23))
 		self.center = Point(*(self.viewport.size // 2))
 		self.centered_viewport = Rect((-self.center.x, -self.center.y), self.viewport.size)
-		self.messages = []
+		self.events = []
 	def redraw(self, ui):
 		game = self.game
 		full_zone_size = Size(
@@ -604,20 +642,22 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			ui.print_line(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
 		ui.print_line(24, 0, " " * 80)
-		while self.messages:
-			message = self.messages.pop(0)
+		messages = [events.Events.process(event) for event in self.events]
+		self.events[:] = []
+		while messages:
+			message = messages.pop(0)
 			if len(message) >= 80 - 5:
 				message, tail = message[:80-5], message[80-5:]
-				self.messages.insert(0, tail)
+				messages.insert(0, tail)
 			else:
-				while self.messages and len(message) + 1 + len(self.messages[0]) < 80 - 5:
-					message += ' ' + self.messages.pop(0)
+				while messages and len(message) + 1 + len(messages[0]) < 80 - 5:
+					message += ' ' + messages.pop(0)
 			message_line = message
-			if self.messages:
+			if messages:
 				message_line += '[...]'
 			ui.print_line(24, 0, " " * 80)
 			ui.print_line(24, 0, message_line)
-			if self.messages or game.player.hp <= 0:
+			if messages or game.player.hp <= 0:
 				ui.get_keypress()
 	def pre_action(self):
 		if self.game.player.hp <= 0:
@@ -641,13 +681,13 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				if game.player.pos.values[-1] == item.pos
 				), None)
 			if not item:
-				self.messages.append('Nothing to pick up here.')
+				self.events.append(NothingToPickUp())
 			elif len(game.player.inventory) >= 26:
-				self.messages.append('Inventory is full.')
+				self.events.append(InventoryIsFull())
 			else:
 				game.player.inventory.append(item)
 				game.world.get_data(game.player.pos)[-1].items.remove(item)
-				self.messages.append('Picked up {0}.'.format(item.name))
+				self.events.append(PickedUpItem(item))
 				self.step_taken = True
 	@Keys.bind('C')
 	def char(self):
@@ -666,9 +706,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					and npc.behaviour.quest
 					]
 			if not npcs:
-				self.messages.append('No one to chat with.')
+				self.events.append(NoOneToChat())
 			elif len(questing) > 20:
-				self.messages.append("Too much quests already.")
+				self.events.append(TooMuchQuests())
 			else:
 				if len(npcs) > 1:
 					def _on_direction(direction):
@@ -684,7 +724,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					npc = npcs[0]
 					return self._chat_with_npc(npc)
 				else:
-					self.messages.append('No one to chat with in that direction.')
+					self.events.append(NoOneToChatInDirection())
 	def _chat_with_npc(self, npc):
 		game = self.game
 		if True:
@@ -698,7 +738,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 								][:required_amount]
 						if len(have_required_items) >= required_amount:
 							def _on_yes():
-								self.messages.append('"Thanks. Here you go."')
+								self.events.append(ChatThanks())
 								for item in have_required_items:
 									game.player.inventory.remove(item)
 								if game.player.hp == game.player.max_hp:
@@ -706,11 +746,11 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 								game.player.max_hp += bounty
 								npc.behaviour.quest = None
 							def _on_no():
-								self.messages.append('"OK, come back later if you want it."')
+								self.events.append(ChatComeLater())
 							return TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(self.npc.behaviour.quest)),
 										on_yes=_on_yes, on_no=_on_no)
 						else:
-							self.messages.append('"Come back with {0} {1}."'.format(*(npc.behaviour.quest)))
+							self.events.append(ChatQuestReminder(*(npc.behaviour.quest)))
 					else:
 						if not npc.behaviour.prepared_quest:
 							amount = 1 + random.randrange(3)
@@ -722,7 +762,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 							npc.behaviour.quest = npc.behaviour.prepared_quest
 							npc.behaviour.prepared_quest = None
 						def _on_no():
-							self.messages.append('"OK, come back later if you want it."')
+							self.events.append(ChatComeLater())
 						return TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)),
 										 on_yes=_on_yes, on_no=_on_no)
 	@Keys.bind('q')
@@ -744,13 +784,13 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		game = self.game
 		if True:
 			if not game.player.inventory:
-				self.messages.append('Nothing to drop.')
+				self.events.append(NothingToDrop())
 			else:
 				def _on_select_item(menu_choice):
 					item = game.player.inventory.pop(menu_choice)
 					item.pos = game.player.pos.values[-1]
 					game.world.get_data(game.player.pos)[-1].items.append(item)
-					self.messages.append('You drop {0}.'.format(item.name))
+					self.events.append(DroppedItem('you', item))
 					self.step_taken = True
 				return InventoryMode(
 						game.player.inventory,
@@ -772,20 +812,20 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			monster = next((monster for monster in dest_field_data.monsters if dest_pos.values[-1] == monster.pos), None)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
-					self.messages.append('You bump into dweller.')
+					self.events.append(Bump('you', 'dweller'))
 				else:
 					monster.hp -= 1
-					self.messages.append('You hit monster.')
+					self.events.append(HitMonster('you', 'monster'))
 					if monster.hp <= 0:
 						dest_field_data.monsters.remove(monster)
-						self.messages.append('Monster is dead.')
+						self.events.append(MonsterDead('monster'))
 						for item in monster.inventory:
 							item.pos = monster.pos
 							monster.inventory.remove(item)
 							dest_field_data.items.append(item)
-							self.messages.append('Monster dropped {0}.'.format(item.name))
+							self.events.append(DroppedItem('monster', item))
 			elif dest_cell is None:
-				self.messages.append('Will not fall into the void.')
+				self.events.append(StareIntoVoid())
 			elif dest_cell.passable:
 				game.player.pos = dest_pos
 				game.autoexpand(game.player.pos, Size(40, 40))
@@ -820,9 +860,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				monster_pos = monster_coord.get_global(game.world)
 				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
 					game.player.hp -= 1
-					self.messages.append('Monster hits you.')
+					self.events.append(HitMonster('monster', 'you'))
 					if game.player.hp <= 0:
-						self.messages.append('You died!!!')
+						self.events.append(MonsterDead('you'))
 				elif monster.behaviour == 'aggressive' and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
 					shift = Point(
 							sign(player_pos.x - monster_pos.x),
@@ -833,7 +873,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					dest_field_data = game.world.get_data(dest_pos)[-1]
 					dest_cell = game.world.cell(dest_pos)
 					if any(other.pos == dest_pos.values[-1] for other in dest_field_data.monsters):
-						self.messages.append('Monster bump into monster.')
+						self.events.append(Bump('monster', 'monster.'))
 					elif dest_cell.passable:
 						current_field_data = game.world.get_data(monster_coord)[-1]
 						if current_field_data != dest_field_data:

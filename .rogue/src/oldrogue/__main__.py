@@ -21,10 +21,10 @@ import clckwrkbdgr.text
 from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
-from clckwrkbdgr.events import Events, MessageEvent
 from . import game
 from .game import Version, Item, Consumable, Wearable, Monster, Room, Tunnel, GridRoomMap, GridRoomMap as Map, Furniture, LevelPassage, GodMode, Dungeon, Event
 from . import pcg
+from ..engine import events
 
 class MakeEntity:
 	""" Creates builders for bare-properties-based classes to create subclass in one line. """
@@ -88,8 +88,7 @@ class HealingPotion(Item, Consumable):
 	_name = "potion"
 	def consume_by(self, who):
 		who.heal(10)
-		Events().trigger(DrinksHealingPotion(Who=who.name.title()))
-		return True
+		return [DrinksHealingPotion(Who=who.name.title())]
 
 make_weapon = MakeEntity(Item, '_sprite _name _attack')
 make_weapon('Dagger', '(', 'dagger', 1)
@@ -208,42 +207,60 @@ hard_monsters << make_monster('Xenomorph', 'X', 'xenomorph', 30, 3, animal_drops
 norm_monsters << make_monster('Yeti', 'Y', 'yeti', 10, 2, animal_drops)
 norm_monsters << make_monster('Zealot', 'Z', 'zealot', 10, 2, thug_drops)
 
-class GodModeSwitched(MessageEvent): _message = "God {name} -> {state}"
+class GodModeSwitched(events.Event): FIELDS = 'name state'
+events.Event.on(GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
 
-class NeedMcGuffin(MessageEvent): _message = "You cannot escape the dungeon without mcguffin!"
-class GoingUp(MessageEvent): _message = "Going up..."
-class GoingDown(MessageEvent): _message = "Going down..."
-class CannotGoBelow(MessageEvent): _message = "No place down below."
-class CannotDig(MessageEvent): _message = "Cannot dig through the ground."
-class CannotReachCeiling(MessageEvent): _message = "Cannot reach the ceiling."
+class NeedMcGuffin(events.Event): FIELDS = ''
+events.Event.on(NeedMcGuffin)(lambda event:"You cannot escape the dungeon without mcguffin!")
+class GoingUp(events.Event): FIELDS = ''
+events.Event.on(GoingUp)(lambda event:"Going up...")
+class GoingDown(events.Event): FIELDS = ''
+events.Event.on(GoingDown)(lambda event:"Going down...")
+class CannotGoBelow(events.Event): FIELDS = ''
+events.Event.on(CannotGoBelow)(lambda event:"No place down below.")
+class CannotDig(events.Event): FIELDS = ''
+events.Event.on(CannotDig)(lambda event:"Cannot dig through the ground.")
+class CannotReachCeiling(events.Event): FIELDS = ''
+events.Event.on(CannotReachCeiling)(lambda event:"Cannot reach the ceiling.")
 
-class NoSuchItem(MessageEvent): _message = "No such item '{char}'."
-class InventoryFull(MessageEvent): _message = "Inventory is full! Cannot pick up {item}"
-class GrabbedItem(MessageEvent): _message = "Grabbed {item}."
-class NothingToPickUp(MessageEvent): _message = "There is nothing here to pick up."
-class InventoryEmpty(MessageEvent): _message = "Inventory is empty."
-class ItemDropped(MessageEvent): _message = "Dropped {item}."
-class DropsItem(MessageEvent): _message = "{Who} drops {item}."
+class NoSuchItem(events.Event): FIELDS = 'char'
+events.Event.on(NoSuchItem)(lambda event:"No such item '{char}'.".format(char=event.char))
+events.Event.on(Event.InventoryFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
+events.Event.on(Event.GrabbedItem)(lambda event: "Grabbed {item}.".format(who=event.who.name, item=event.item.name))
+class NothingToPickUp(events.Event): FIELDS = ''
+events.Event.on(NothingToPickUp)(lambda event:"There is nothing here to pick up.")
+class InventoryEmpty(events.Event): FIELDS = ''
+events.Event.on(InventoryEmpty)(lambda event:"Inventory is empty.")
+events.Event.on(Event.MonsterDroppedItem)(lambda event:"Dropped {item}.".format(Who=event.who.name.title(), item=event.item.name))
+class DropsItem(events.Event): FIELDS = 'Who'
+events.Event.on(DropsItem)(lambda event:"{Who} drops {item}.".format(Who=event.Who))
 
-class CannotConsume(MessageEvent): _message = "Cannot consume {item}."
-class ItemConsumed(MessageEvent): _message = "Consumed {item}."
-class DrinksHealingPotion(MessageEvent): _message = "{Who} heals itself."
+events.Event.on(Event.NotConsumable)(lambda event:"Cannot consume {item}.".format(item=event.item.name))
+events.Event.on(Event.MonsterConsumedItem)(lambda event:"Consumed {item}.".format(item=event.item.name))
+class DrinksHealingPotion(events.Event): FIELDS = 'Who'
+events.Event.on(DrinksHealingPotion)(lambda event:"{Who} heals itself.".format(Who=event.Who))
 
-class NothingToUnwield(MessageEvent): _message = "Nothing is wielded already."
-class Unwielding(MessageEvent): _message = "Unwielding {item}."
-class Wielding(MessageEvent): _message = "Wielding {item}."
+class NothingToUnwield(events.Event): FIELDS = ''
+events.Event.on(NothingToUnwield)(lambda event:"Nothing is wielded already.")
+events.Event.on(Unwielding)(lambda event:"Unwielding {item}.".format(item=event.item.name))
+events.Event.on(Wielding)(lambda event:"Wielding {item}.".format(item=event.item.name))
 
-class CannotWear(MessageEvent): _message = "Cannot wear {item}."
-class NothingToTakeOff(MessageEvent): _message = "Nothing is worn already."
-class TakingOff(MessageEvent): _message = "Taking off {item}."
-class Wearing(MessageEvent): _message = "Wearing {item}."
+events.Event.on(Event.NotWearable)(lambda event:"Cannot wear {item}.".format(item=event.item.name))
+class NothingToTakeOff(events.Event): FIELDS = ''
+events.Event.on(NothingToTakeOff)(lambda event:"Nothing is worn already.")
+events.Event.on(TakingOff)(lambda event:"Taking off {item}.".format(item=event.item.name))
+events.Event.on(Wearing)(lambda event:"Wearing {item}.".format(item=event.item.name))
 
-class Attacking(MessageEvent): _message = "{Who} hit {whom} for {damage} hp."
-class IsDead(MessageEvent): _message = "{Who} is dead."
-class BumpsIntoWall(MessageEvent): _message = "{Who} bumps into wall."
-class BumpsIntoOther(MessageEvent): _message = "{Who} bumps into {whom}."
-class WelcomeBack(MessageEvent): _message = "Welcome back, {who}!"
-Event.register('WelcomeBack', 'who')
+events.Event.on(Event.AttackMonster)(lambda event: "{Who} hit {whom} for {damage} hp.".format(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
+events.Event.on(Event.MonsterDied)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
+@events.Event.on(Event.BumpIntoTerrain)
+def bumps_into_terrain(event):
+	if event.who != dungeon.rogue:
+		return "{Who} bumps into wall.".format(Who=event.who.name.title())
+events.Event.on(Event.BumpIntoMonster)(lambda event:"{Who} bumps into {whom}.".format(Who=event.who.name.title(), whom=event.whom.name))
+
+class WelcomeBack(Event): FIELDS = 'who'
+events.Event.on(WelcomeBack)(lambda event:"Welcome back, {who}!".format(who=event.who.name))
 
 class _Builder(builders.Builder):
 	class _Dungeon(clckwrkbdgr.pcg.rogue.Dungeon):
@@ -350,13 +367,11 @@ def to_main_screen(mode):
 
 class MessageView(tui.widgets.MessageLineOverlay):
 	def get_new_messages(self):
-		process_game_events(self.data, self.data.history)
+		for event in self.data.history:
+			message = events.Events.process(event)
+			trace.debug("Message posted: {0}: {1}".format(repr(event), message))
+			yield message
 		del self.data.history[:]
-
-		events = Events()
-		while events.listen():
-			trace.debug("Message posted: {0}: {1}".format(repr(events.current), str(events.current)))
-			yield events.current
 	def force_ellipsis(self):
 		return not self.data.rogue.is_alive()
 
@@ -463,10 +478,10 @@ class MainGame(tui.app.MVC):
 		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.current_level.objects_at(dungeon.rogue.pos)), None)
 		if stairs_here:
 			dungeon.use_stairs(stairs_here)
-			Events().trigger(GoingDown())
+			dungeon.history.append(GoingDown())
 			return to_main_screen(self)
 		else:
-			Events().trigger(CannotDig())
+			dungeon.history.append(CannotDig())
 	@Controls('<')
 	def ascend(self):
 		""" Go up. """
@@ -475,14 +490,14 @@ class MainGame(tui.app.MVC):
 		if stairs_here:
 			try:
 				dungeon.use_stairs(stairs_here)
-				Events().trigger(GoingUp())
+				dungeon.history.append(GoingUp())
 				return to_main_screen(self)
 			except Furniture.Locked:
-				Events().trigger(NeedMcGuffin())
+				dungeon.history.append(NeedMcGuffin())
 			except GameCompleted:
 				return Greetings
 		else:
-			Events().trigger(CannotReachCeiling())
+			dungeon.history.append(CannotReachCeiling())
 	@Controls('g')
 	def grab(self):
 		""" Grab item. """
@@ -499,13 +514,13 @@ class MainGame(tui.app.MVC):
 			self.data.history += dungeon.current_level.grab_item(dungeon.rogue, item)
 			self.step_is_over = True
 		else:
-			Events().trigger(NothingToPickUp())
+			dungeon.history.append(NothingToPickUp())
 	@Controls('d')
 	def drop(self):
 		""" Drop item. """
 		dungeon = self.data
 		if not dungeon.rogue.inventory:
-			Events().trigger(InventoryEmpty())
+			dungeon.history.append(InventoryEmpty())
 		else:
 			return QuickDropItem(to_main_screen(self), self.data)
 	@Controls('e')
@@ -513,7 +528,7 @@ class MainGame(tui.app.MVC):
 		""" Consume item. """
 		dungeon = self.data
 		if not dungeon.rogue.inventory:
-			Events().trigger(InventoryEmpty())
+			dungeon.history.append(InventoryEmpty())
 		else:
 			return QuickConsumeItem(to_main_screen(self), self.data)
 	@Controls('w')
@@ -521,7 +536,7 @@ class MainGame(tui.app.MVC):
 		""" Wield item. """
 		dungeon = self.data
 		if not dungeon.rogue.inventory:
-			Events().trigger(InventoryEmpty())
+			dungeon.history.append(InventoryEmpty())
 		else:
 			return QuickWieldItem(to_main_screen(self), self.data)
 	@Controls('U')
@@ -529,7 +544,7 @@ class MainGame(tui.app.MVC):
 		""" Unwield item. """
 		dungeon = self.data
 		if not dungeon.rogue.wielding:
-			Events().trigger(NothingToUnwield())
+			dungeon.history.append(NothingToUnwield())
 		else:
 			self.data.history += dungeon.rogue.wield(None)
 	@Controls('W')
@@ -537,7 +552,7 @@ class MainGame(tui.app.MVC):
 		""" Wear item. """
 		dungeon = self.data
 		if not dungeon.rogue.inventory:
-			Events().trigger(InventoryEmpty())
+			dungeon.history.append(InventoryEmpty())
 		else:
 			return QuickWearItem(to_main_screen(self), self.data)
 	@Controls('T')
@@ -545,7 +560,7 @@ class MainGame(tui.app.MVC):
 		""" Take item off. """
 		dungeon = self.data
 		if not dungeon.rogue.wearing:
-			Events().trigger(NothingToTakeOff())
+			dungeon.history.append(NothingToTakeOff())
 		else:
 			self.data.history += dungeon.rogue.wear(None)
 	@Controls('i')
@@ -613,41 +628,6 @@ class MainGame(tui.app.MVC):
 		if not dungeon.rogue.is_alive():
 			return MessageView(Grave, self.data)
 
-def process_game_events(dungeon, events):
-	for event in events:
-		if isinstance(event, Event.BumpIntoTerrain):
-			if event.who != dungeon.rogue:
-				Events().trigger(BumpsIntoWall(Who=event.who.name.title()))
-		elif isinstance(event, Event.BumpIntoMonster):
-			Events().trigger(BumpsIntoOther(Who=event.who.name.title(), whom=event.whom.name))
-		elif isinstance(event, Event.AttackMonster):
-			Events().trigger(Attacking(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
-		elif isinstance(event, Event.MonsterDied):
-			Events().trigger(IsDead(Who=event.who.name.title()))
-		elif isinstance(event, Event.MonsterDroppedItem):
-			Events().trigger(DropsItem(Who=event.who.name.title(), item=event.item.name))
-		elif isinstance(event, Event.MonsterConsumedItem):
-			Events().trigger(ItemConsumed(item=event.item.name))
-		elif isinstance(event, Event.Unwielding):
-			Events().trigger(Unwielding(item=event.item.name))
-		elif isinstance(event, Event.TakingOff):
-			Events().trigger(TakingOff(item=event.item.name))
-		elif isinstance(event, Event.Wielding):
-			Events().trigger(Wielding(item=event.item.name))
-		elif isinstance(event, Event.Wearing):
-			Events().trigger(Wearing(item=event.item.name))
-		elif isinstance(event, Event.NotWearable):
-			Events().trigger(CannotWear(item=event.item.name))
-		elif isinstance(event, Event.NotConsumable):
-			Events().trigger(CannotConsume(item=event.item.name))
-		elif isinstance(event, Event.WelcomeBack):
-			trace.debug(event)
-			Events().trigger(WelcomeBack(who=event.who.name))
-		elif isinstance(event, Event.InventoryFull):
-			Events().trigger(InventoryFull(item=event.item.name))
-		elif isinstance(event, Event.GrabbedItem):
-			Events().trigger(GrabbedItem(who=event.who.name, item=event.item.name))
-
 class GodModeAction(tui.widgets.Menu):
 	KEYS_TO_CLOSE = [curses.ascii.ESC, ord('~')]
 	def items(self):
@@ -659,7 +639,7 @@ class GodModeAction(tui.widgets.Menu):
 	def on_item(self, item):
 		new_state = not getattr(self.data.god, item.data)
 		setattr(self.data.god, item.data, new_state)
-		Events().trigger(GodModeSwitched(name=item.text, state='ON' if new_state else 'off'))
+		self.data.history.append(GodModeSwitched(name=item.text, state='ON' if new_state else 'off'))
 		return to_main_screen(self)
 
 class ConsumeItem:
