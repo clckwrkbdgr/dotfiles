@@ -5,37 +5,12 @@ from collections import namedtuple
 import curses, curses.ascii
 import logging
 Log = logging.getLogger('rogue')
-from . import messages
+from . import game
 from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
 import clckwrkbdgr.tui
 from clckwrkbdgr.tui import Key, Keymapping
-
-class Events:
-	""" Registry of convertors of events to string representation for messages line. """
-	_registry = {}
-	@classmethod
-	def on(cls, event_type):
-		""" Registers callback for given event type. """
-		def _actual(f):
-			cls._registry[event_type] = f
-			return f
-		return _actual
-	@classmethod
-	def get(cls, event, bind_self=None):
-		""" Returns callback for given event.
-		If bind_self is given, considers callback a method
-		and binds it to the given instance.
-		"""
-		callback = cls._registry.get(type(event))
-		if not callback:
-			return None
-		if bind_self:
-			callback = callback.__get__(bind_self, type(bind_self))
-		return callback
-	@classmethod
-	def list_all_events(cls):
-		return sorted(cls._registry.keys(), key=lambda cls: cls.__name__)
+from .engine.events import Events
 
 DIRECTION = {
 	'h' : Direction.LEFT,
@@ -156,7 +131,7 @@ class MainGame(SubMode):
 
 		if self.aim:
 			ui.cursor().move(self.aim.x, 1+self.aim.y)
-	@Events.on(messages.DiscoverEvent)
+	@Events.on(game.DiscoverEvent)
 	def on_discovering(self, game, event):
 		if event.obj == '>':
 			return 'exit!'
@@ -164,39 +139,39 @@ class MainGame(SubMode):
 			return '{0}!'.format(event.obj.name)
 		else:
 			return '{0}!'.format(event.obj)
-	@Events.on(messages.AttackEvent)
+	@Events.on(game.AttackEvent)
 	def on_attack(self, game, event):
 		return '{0} x> {1}.'.format(event.actor.name, event.target.name)
-	@Events.on(messages.HealthEvent)
+	@Events.on(game.HealthEvent)
 	def on_health_change(self, game, event):
 		return '{0}{1:+}hp.'.format(event.target.name, event.diff)
-	@Events.on(messages.DeathEvent)
+	@Events.on(game.DeathEvent)
 	def on_death(self, game, event):
 		return '{0} dies.'.format(event.target.name)
-	@Events.on(messages.MoveEvent)
+	@Events.on(game.MoveEvent)
 	def on_movement(self, game, event):
 		if event.actor != game.get_player():
 			return '{0}...'.format(event.actor.name)
-	@Events.on(messages.DescendEvent)
+	@Events.on(game.DescendEvent)
 	def on_descending(self, game, event):
 		return '{0} V...'.format(event.actor.name)
-	@Events.on(messages.BumpEvent)
+	@Events.on(game.BumpEvent)
 	def on_bumping(self, game, event):
 		if event.actor != game.get_player():
 			return '{0} bumps.'.format(event.actor.name)
-	@Events.on(messages.GrabItemEvent)
+	@Events.on(game.GrabItemEvent)
 	def on_grabbing(self, game, event):
 		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(messages.DropItemEvent)
+	@Events.on(game.DropItemEvent)
 	def on_dropping(self, game, event):
 		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(messages.ConsumeItemEvent)
+	@Events.on(game.ConsumeItemEvent)
 	def on_consuming(self, game, event):
 		return '{0} <~ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(messages.EquipItemEvent)
+	@Events.on(game.EquipItemEvent)
 	def on_equipping(self, game, event):
 		return '{0} <+ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(messages.UnequipItemEvent)
+	@Events.on(game.UnequipItemEvent)
 	def on_unequipping(self, game, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 

@@ -7,13 +7,14 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 from .. import ui
 from ..ui import MainGame
-from .. import items, messages
+from .. import items
 from .. import defs as _base
 from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
 from ..test import mock_dungeon
 from ..test.mock_dungeon import MockGame
 from clckwrkbdgr.tui import Key, ModeLoop, Curses
+from ..engine.events import Event
 
 class MockCurses:
 	class SubCall:
@@ -141,10 +142,6 @@ class TestCurses(unittest.TestCase):
 		loop.modes.append(main_mode)
 		ui.window = MockCurses(key_sequence)
 		return ui, loop
-	def should_handle_all_events(self):
-		handled_events = ui.Events.list_all_events()
-		known_events = sorted(utils.all_subclasses(messages.Event), key=lambda cls: cls.__name__)
-		self.assertEqual(known_events, handled_events)
 
 	def should_draw_game(self):
 		dungeon = mock_dungeon.build('single mock monster')

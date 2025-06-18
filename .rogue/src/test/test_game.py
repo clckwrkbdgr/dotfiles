@@ -13,7 +13,6 @@ from .. import monsters, items, terrain
 from .. import pcg
 from .. import game
 from .. import ui
-from .. import messages
 import clckwrkbdgr.serialize.stream as savefile
 from . import mock_dungeon
 from .mock_dungeon import MockGame
@@ -99,10 +98,10 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @[9, 5] 10/10hp moves to [9, 5]',
+			'MoveEvent(actor=player @[9, 5] 10/10hp, dest=[9, 5])',
 			'redraw',
 			'user_action',
-			'player @[9, 6] 10/10hp moves to [9, 6]',
+			'MoveEvent(actor=player @[9, 6] 10/10hp, dest=[9, 6])',
 			'redraw',
 			'user_action',
 			] + [ # walking...
@@ -111,7 +110,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			] * 2 + [ # NONE AUTOEXPLORE
 			'redraw',
 			'user_action',
-			] + ['Discovered >'] + [ # exploring...
+			] + ['DiscoverEvent(obj=>)'] + [ # exploring...
 			'redraw',
 			'user_action',
 			] + [ # exploring...
@@ -144,27 +143,27 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'__enter__',
 			'redraw',
 			'user_action',
-			'Discovered monster @[10, 6] 3/3hp',
-			'Discovered monster @[9, 4] 3/3hp',
+			'DiscoverEvent(obj=monster @[10, 6] 3/3hp)',
+			'DiscoverEvent(obj=monster @[9, 4] 3/3hp)',
 			'redraw',
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @[9, 5] 9/10hp moves to [9, 5]',
-			'monster @[9, 4] 3/3hp attacks player @[9, 5] 9/10hp',
-			'player @[9, 5] 9/10hp -1 hp',
+			'MoveEvent(actor=player @[9, 5] 9/10hp, dest=[9, 5])',
+			'AttackEvent(actor=monster @[9, 4] 3/3hp, target=player @[9, 5] 9/10hp)',
+			'HealthEvent(target=player @[9, 5] 9/10hp, diff=-1)',
 			'redraw',
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @[9, 5] 8/10hp attacks monster @[9, 4] 2/3hp',
-			'monster @[9, 4] 2/3hp -1 hp',
-			'monster @[9, 4] 2/3hp attacks player @[9, 5] 8/10hp',
-			'player @[9, 5] 8/10hp -1 hp',
+			'AttackEvent(actor=player @[9, 5] 8/10hp, target=monster @[9, 4] 2/3hp)',
+			'HealthEvent(target=monster @[9, 4] 2/3hp, diff=-1)',
+			'AttackEvent(actor=monster @[9, 4] 2/3hp, target=player @[9, 5] 8/10hp)',
+			'HealthEvent(target=player @[9, 5] 8/10hp, diff=-1)',
 			'redraw',
 			'user_action',
-			'monster @[9, 4] 2/3hp attacks player @[9, 5] 7/10hp',
-			'player @[9, 5] 7/10hp -1 hp',
+			'AttackEvent(actor=monster @[9, 4] 2/3hp, target=player @[9, 5] 7/10hp)',
+			'HealthEvent(target=player @[9, 5] 7/10hp, diff=-1)',
 			'__exit__',
 			])
 		self.assertEqual(dungeon.get_player().hp, 7)
@@ -185,20 +184,20 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'__enter__',
 			'redraw',
 			'user_action',
-			'Discovered monster @[10, 6] 3/3hp',
-			'Discovered monster @[9, 4] 3/3hp',
+			'DiscoverEvent(obj=monster @[10, 6] 3/3hp)',
+			'DiscoverEvent(obj=monster @[9, 4] 3/3hp)',
 			'redraw',
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @[9, 5] 9/10hp moves to [9, 5]',
-			'monster @[9, 4] 3/3hp attacks player @[9, 5] {0}/10hp'.format(9),
-			'player @[9, 5] {0}/10hp -1 hp'.format(9),
+			'MoveEvent(actor=player @[9, 5] 9/10hp, dest=[9, 5])',
+			'AttackEvent(actor=monster @[9, 4] 3/3hp, target=player @[9, 5] {0}/10hp)'.format(9),
+			'HealthEvent(target=player @[9, 5] {0}/10hp, diff=-1)'.format(9),
 			] + sum(([
 			'redraw',
 			'user_action',
-			'monster @[9, 4] 3/3hp attacks player @[9, 5] {0}/10hp'.format(9 - i),
-			'player @[9, 5] {0}/10hp -1 hp'.format(9 - i),
+			'AttackEvent(actor=monster @[9, 4] 3/3hp, target=player @[9, 5] {0}/10hp)'.format(9 - i),
+			'HealthEvent(target=player @[9, 5] {0}/10hp, diff=-1)'.format(9 - i),
 			] for i in range(1, 9)), []) + [
 			'redraw',
 			'__exit__',
@@ -239,14 +238,14 @@ class TestItems(AbstractTestDungeon):
 			'__enter__',
 			'redraw',
 			'user_action',
-			'Discovered potion @[10, 6]',
-			'Discovered healing potion @[11, 6]',
+			'DiscoverEvent(obj=potion @[10, 6])',
+			'DiscoverEvent(obj=healing potion @[11, 6])',
 			'redraw',
 			'user_action',
-			'player @[10, 6] 10/10hp moves to [10, 6]',
+			'MoveEvent(actor=player @[10, 6] 10/10hp, dest=[10, 6])',
 			'redraw',
 			'user_action',
-			'player @[10, 6] 10/10hp grabs potion @[10, 6]',
+			'GrabItemEvent(actor=player @[10, 6] 10/10hp, item=potion @[10, 6])',
 			'__exit__',
 			])
 	def should_consume_items(self):
@@ -266,7 +265,7 @@ class TestItems(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @[9, 6] 10/10hp consumes potion @[0, 0]',
+			'ConsumeItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[0, 0])',
 			'__exit__',
 			])
 	def should_drop_items(self):
@@ -286,7 +285,7 @@ class TestItems(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @[9, 6] 10/10hp drops potion @[9, 6]',
+			'DropItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[9, 6])',
 			'__exit__',
 			])
 	def should_equip_items(self):
@@ -306,7 +305,7 @@ class TestItems(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @[9, 6] 10/10hp equips weapon @[0, 0]',
+			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
 			'__exit__',
 			])
 	def should_unequip_items(self):
@@ -326,7 +325,7 @@ class TestItems(AbstractTestDungeon):
 			'user_action',
 			'redraw',
 			'user_action',
-			'player @[9, 6] 10/10hp unequips weapon @[0, 0]',
+			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
 			'__exit__',
 			])
 
@@ -336,7 +335,7 @@ class TestEvents(AbstractTestDungeon):
 		self.assertEqual(dungeon.events, [])
 		dungeon.jump_to(Point(11, 2))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
+		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, '>')
 		dungeon.clear_event()
 		dungeon.jump_to(Point(9, 6))
@@ -357,7 +356,7 @@ class TestEvents(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('now you see me')
 		# At start we see just the one monster.
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
+		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 6)))
 		dungeon.clear_event()
 
@@ -694,13 +693,13 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @[9, 6] 10/10hp grabs potion @[10, 6]',
+			'GrabItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[10, 6])',
 			])
 
 		dungeon.clear_event()
 		dungeon.grab_item_at(dungeon.get_player(), Point(11, 6))
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @[9, 6] 10/10hp grabs healing potion @[11, 6]',
+			'GrabItemEvent(actor=player @[9, 6] 10/10hp, item=healing potion @[11, 6])',
 			])
 	def should_consume_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
@@ -711,7 +710,7 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @[9, 6] 1/10hp consumes potion @[0, 0]',
+			'ConsumeItemEvent(actor=player @[9, 6] 1/10hp, item=potion @[0, 0])',
 			])
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
 		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'healing potion')
@@ -719,8 +718,8 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon.clear_event()
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @[9, 6] 6/10hp consumes healing potion @[0, 0]',
-			'player @[9, 6] 6/10hp +5 hp',
+			'ConsumeItemEvent(actor=player @[9, 6] 6/10hp, item=healing potion @[0, 0])',
+			'HealthEvent(target=player @[9, 6] 6/10hp, diff=5)',
 			])
 		self.assertEqual(dungeon.get_player().hp, 6)
 		self.assertEqual(len(dungeon.get_player().inventory), 0)
@@ -732,7 +731,7 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @[9, 6] 10/10hp equips weapon @[0, 0]',
+			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
 			])
 		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'weapon')
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -741,8 +740,8 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon.clear_event()
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @[9, 6] 10/10hp unequips weapon @[0, 0]',
-			'player @[9, 6] 10/10hp equips ranged @[0, 0]',
+			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
+			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=ranged @[0, 0])',
 			])
 		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'ranged')
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -751,7 +750,7 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon.clear_event()
 		dungeon.unwield_item(dungeon.get_player())
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'player @[9, 6] 10/10hp unequips ranged @[0, 0]',
+			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=ranged @[0, 0])',
 			])
 		self.assertIsNone(dungeon.get_player().wielding)
 		self.assertEqual(len(dungeon.get_player().inventory), 2)
@@ -778,10 +777,10 @@ class TestFight(AbstractTestDungeon):
 		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.find_monster(10, 6).hp, 2)
 		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(type(dungeon.events[0]), messages.AttackEvent)
+		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
 		self.assertEqual(dungeon.events[0].actor, dungeon.get_player())
 		self.assertEqual(dungeon.events[0].target, dungeon.find_monster(10, 6))
-		self.assertEqual(type(dungeon.events[1]), messages.HealthEvent)
+		self.assertEqual(type(dungeon.events[1]), game.HealthEvent)
 		self.assertEqual(dungeon.events[1].target, dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.events[1].diff, -1)
 	def should_kill_monster(self):
@@ -790,7 +789,7 @@ class TestFight(AbstractTestDungeon):
 		dungeon.find_monster(10, 6).hp = 1
 		monster = dungeon.find_monster(10, 6)
 		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
-		self.assertEqual(type(dungeon.events[-1]), messages.DeathEvent)
+		self.assertEqual(type(dungeon.events[-1]), game.DeathEvent)
 		self.assertEqual(dungeon.events[-1].target, monster)
 		self.assertIsNone(dungeon.find_monster(10, 6))
 	def should_drop_loot_from_monster(self):
@@ -802,7 +801,7 @@ class TestFight(AbstractTestDungeon):
 
 		item = dungeon.find_item(10, 6)
 		self.assertEqual(item.item_type.name, 'money')
-		self.assertEqual(type(dungeon.events[-1]), messages.DropItemEvent)
+		self.assertEqual(type(dungeon.events[-1]), game.DropItemEvent)
 		self.assertEqual(dungeon.events[-1].actor, monster)
 		self.assertEqual(dungeon.events[-1].item, item)
 	def should_be_attacked_by_monster(self):
@@ -812,10 +811,10 @@ class TestFight(AbstractTestDungeon):
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
 		self.assertEqual(dungeon.get_player().hp, 9)
 		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(type(dungeon.events[0]), messages.AttackEvent)
+		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
 		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.events[0].target, dungeon.get_player())
-		self.assertEqual(type(dungeon.events[1]), messages.HealthEvent)
+		self.assertEqual(type(dungeon.events[1]), game.HealthEvent)
 		self.assertEqual(dungeon.events[1].target, dungeon.get_player())
 		self.assertEqual(dungeon.events[1].diff, -1)
 	def should_be_killed_by_monster(self):
@@ -827,13 +826,13 @@ class TestFight(AbstractTestDungeon):
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
 		self.assertIsNone(dungeon.get_player())
 		self.assertEqual(len(dungeon.events), 3)
-		self.assertEqual(type(dungeon.events[0]), messages.AttackEvent)
+		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
 		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.events[0].target, player)
-		self.assertEqual(type(dungeon.events[1]), messages.HealthEvent)
+		self.assertEqual(type(dungeon.events[1]), game.HealthEvent)
 		self.assertEqual(dungeon.events[1].target, player)
 		self.assertEqual(dungeon.events[1].diff, -1)
-		self.assertEqual(type(dungeon.events[-1]), messages.DeathEvent)
+		self.assertEqual(type(dungeon.events[-1]), game.DeathEvent)
 		self.assertEqual(dungeon.events[-1].target, player)
 	def should_angry_move_to_attack_player(self):
 		dungeon = self.dungeon = mock_dungeon.build('close angry monster')
@@ -842,17 +841,17 @@ class TestFight(AbstractTestDungeon):
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
 		self.assertEqual(dungeon.monsters[-1].pos, Point(10, 6))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), messages.MoveEvent)
+		self.assertEqual(type(dungeon.events[0]), game.MoveEvent)
 		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.events[0].dest, Point(10, 6))
 		dungeon.clear_event()
 
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
 		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(type(dungeon.events[0]), messages.AttackEvent)
+		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
 		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.events[0].target, dungeon.get_player())
-		self.assertEqual(type(dungeon.events[1]), messages.HealthEvent)
+		self.assertEqual(type(dungeon.events[1]), game.HealthEvent)
 		self.assertEqual(dungeon.events[1].target, dungeon.get_player())
 		self.assertEqual(dungeon.events[1].diff, -1)
 	def should_not_angry_move_when_player_is_out_of_sight(self):
@@ -911,7 +910,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
+		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, 'monsters')
 	def should_autoexplore(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
@@ -953,7 +952,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertFalse(dungeon.start_autoexploring())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), messages.DiscoverEvent)
+		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, 'monsters')
 
 class TestGameSerialization(AbstractTestDungeon):
