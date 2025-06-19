@@ -440,7 +440,6 @@ class Dungeon(engine.Game):
 		self.rogue = self.PLAYER_TYPE()
 		self.generator = self.GENERATOR()
 		self.god = GodMode()
-		self.history = []
 	def generate(self): # pragma: no cover -- TODO
 		self.go_to_level(0)
 		self.rogue.inventory.append(Dagger())
@@ -448,7 +447,7 @@ class Dungeon(engine.Game):
 		self.levels = data.levels
 		self.current_level_id = data.current_level
 		self.rogue = data.rogue
-		dungeon.history.append(Event.WelcomeBack(dungeon.rogue))
+		self.fire_event(Event.WelcomeBack(dungeon.rogue))
 	def save(self, data): # pragma: no cover -- TODO
 		data.levels = self.levels
 		data.current_level = self.current_level_id

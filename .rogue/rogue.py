@@ -566,7 +566,6 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		self.viewport = Rect((0, 0), (61, 23))
 		self.center = Point(*(self.viewport.size // 2))
 		self.centered_viewport = Rect((-self.center.x, -self.center.y), self.viewport.size)
-		self.events = []
 	def redraw(self, ui):
 		game = self.game
 		full_zone_size = Size(
@@ -642,8 +641,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			ui.print_line(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
 		ui.print_line(24, 0, " " * 80)
-		messages = [events.Events.process(event) for event in self.events]
-		self.events[:] = []
+		messages = list(game.process_events())
 		while messages:
 			message = messages.pop(0)
 			if len(message) >= 80 - 5:
@@ -681,13 +679,13 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				if game.player.pos.values[-1] == item.pos
 				), None)
 			if not item:
-				self.events.append(NothingToPickUp())
+				self.game.fire_event(NothingToPickUp())
 			elif len(game.player.inventory) >= 26:
-				self.events.append(InventoryIsFull())
+				self.game.fire_event(InventoryIsFull())
 			else:
 				game.player.inventory.append(item)
 				game.world.get_data(game.player.pos)[-1].items.remove(item)
-				self.events.append(PickedUpItem(item))
+				self.game.fire_event(PickedUpItem(item))
 				self.step_taken = True
 	@Keys.bind('C')
 	def char(self):
@@ -706,9 +704,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					and npc.behaviour.quest
 					]
 			if not npcs:
-				self.events.append(NoOneToChat())
+				self.game.fire_event(NoOneToChat())
 			elif len(questing) > 20:
-				self.events.append(TooMuchQuests())
+				self.game.fire_event(TooMuchQuests())
 			else:
 				if len(npcs) > 1:
 					def _on_direction(direction):
@@ -724,7 +722,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					npc = npcs[0]
 					return self._chat_with_npc(npc)
 				else:
-					self.events.append(NoOneToChatInDirection())
+					self.game.fire_event(NoOneToChatInDirection())
 	def _chat_with_npc(self, npc):
 		game = self.game
 		if True:
@@ -738,7 +736,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 								][:required_amount]
 						if len(have_required_items) >= required_amount:
 							def _on_yes():
-								self.events.append(ChatThanks())
+								self.game.fire_event(ChatThanks())
 								for item in have_required_items:
 									game.player.inventory.remove(item)
 								if game.player.hp == game.player.max_hp:
@@ -746,11 +744,11 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 								game.player.max_hp += bounty
 								npc.behaviour.quest = None
 							def _on_no():
-								self.events.append(ChatComeLater())
+								self.game.fire_event(ChatComeLater())
 							return TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(self.npc.behaviour.quest)),
 										on_yes=_on_yes, on_no=_on_no)
 						else:
-							self.events.append(ChatQuestReminder(*(npc.behaviour.quest)))
+							self.game.fire_event(ChatQuestReminder(*(npc.behaviour.quest)))
 					else:
 						if not npc.behaviour.prepared_quest:
 							amount = 1 + random.randrange(3)
@@ -762,7 +760,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 							npc.behaviour.quest = npc.behaviour.prepared_quest
 							npc.behaviour.prepared_quest = None
 						def _on_no():
-							self.events.append(ChatComeLater())
+							self.game.fire_event(ChatComeLater())
 						return TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)),
 										 on_yes=_on_yes, on_no=_on_no)
 	@Keys.bind('q')
@@ -784,13 +782,13 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		game = self.game
 		if True:
 			if not game.player.inventory:
-				self.events.append(NothingToDrop())
+				self.game.fire_event(NothingToDrop())
 			else:
 				def _on_select_item(menu_choice):
 					item = game.player.inventory.pop(menu_choice)
 					item.pos = game.player.pos.values[-1]
 					game.world.get_data(game.player.pos)[-1].items.append(item)
-					self.events.append(DroppedItem('you', item))
+					self.game.fire_event(DroppedItem('you', item))
 					self.step_taken = True
 				return InventoryMode(
 						game.player.inventory,
@@ -812,20 +810,20 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			monster = next((monster for monster in dest_field_data.monsters if dest_pos.values[-1] == monster.pos), None)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
-					self.events.append(Bump('you', 'dweller'))
+					self.game.fire_event(Bump('you', 'dweller'))
 				else:
 					monster.hp -= 1
-					self.events.append(HitMonster('you', 'monster'))
+					self.game.fire_event(HitMonster('you', 'monster'))
 					if monster.hp <= 0:
 						dest_field_data.monsters.remove(monster)
-						self.events.append(MonsterDead('monster'))
+						self.game.fire_event(MonsterDead('monster'))
 						for item in monster.inventory:
 							item.pos = monster.pos
 							monster.inventory.remove(item)
 							dest_field_data.items.append(item)
-							self.events.append(DroppedItem('monster', item))
+							self.game.fire_event(DroppedItem('monster', item))
 			elif dest_cell is None:
-				self.events.append(StareIntoVoid())
+				self.game.fire_event(StareIntoVoid())
 			elif dest_cell.passable:
 				game.player.pos = dest_pos
 				game.autoexpand(game.player.pos, Size(40, 40))
@@ -860,9 +858,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				monster_pos = monster_coord.get_global(game.world)
 				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
 					game.player.hp -= 1
-					self.events.append(HitMonster('monster', 'you'))
+					self.game.fire_event(HitMonster('monster', 'you'))
 					if game.player.hp <= 0:
-						self.events.append(MonsterDead('you'))
+						self.game.fire_event(MonsterDead('you'))
 				elif monster.behaviour == 'aggressive' and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
 					shift = Point(
 							sign(player_pos.x - monster_pos.x),
@@ -873,7 +871,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					dest_field_data = game.world.get_data(dest_pos)[-1]
 					dest_cell = game.world.cell(dest_pos)
 					if any(other.pos == dest_pos.values[-1] for other in dest_field_data.monsters):
-						self.events.append(Bump('monster', 'monster.'))
+						self.game.fire_event(Bump('monster', 'monster.'))
 					elif dest_cell.passable:
 						current_field_data = game.world.get_data(monster_coord)[-1]
 						if current_field_data != dest_field_data:

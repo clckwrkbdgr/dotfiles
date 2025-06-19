@@ -49,8 +49,8 @@ class MockUI(clckwrkbdgr.tui.ModeLoop):
 				return ui.Action.NONE, None
 		control = self.user_actions.pop(0)
 		self.events.append('user_action')
-		for event in self.game.events:
-			self.events.append(str(event))
+		for callback, event in self.game.process_events(raw=True, bind_self=self):
+			self.events.append(repr(event))
 		return control
 	def action(self):
 		if not self.game._pre_action():
@@ -337,34 +337,24 @@ class TestEvents(AbstractTestDungeon):
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, '>')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.jump_to(Point(9, 6))
 		self.assertEqual(dungeon.events, [])
 		dungeon.jump_to(Point(11, 2))
 		self.assertEqual(dungeon.events, [])
-	def should_clear_specific_event_only(self):
-		dungeon = self.dungeon = mock_dungeon.build('now you see me')
-		dungeon.jump_to(Point(11, 2))
-		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 6)))
-		self.assertEqual(dungeon.events[1].obj, '>')
-
-		dungeon.clear_event(dungeon.events[1])
-		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 6)))
 	def should_notify_when_see_monsters(self):
 		dungeon = self.dungeon = mock_dungeon.build('now you see me')
 		# At start we see just the one monster.
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
 		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 6)))
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		# Now we see both, but reporting only the new one.
 		dungeon.jump_to(Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 1)))
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		# Now we see just the original one - visibility did not change.
 		dungeon.jump_to(Point(9, 6))
@@ -374,7 +364,7 @@ class TestEvents(AbstractTestDungeon):
 		dungeon.jump_to(Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 1)))
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 class TestVisibility(AbstractTestDungeon):
 	def should_get_visible_surroundings(self):
@@ -600,7 +590,7 @@ class TestMovement(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
 	def should_not_allow_move_player_diagonally_in_autoexplore_mode(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
-		dungeon.clear_event() # Clear events.
+		list(dungeon.process_events(raw=True)) # Clear events.
 		self.assertTrue(dungeon.start_autoexploring())
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
@@ -608,7 +598,7 @@ class TestMovement(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
 	def should_not_allow_move_player_diagonally_in_autowalk_mode(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
-		dungeon.clear_event() # Clear events.
+		list(dungeon.process_events(raw=True)) # Clear events.
 		dungeon.walk_to(Point(7, 1))
 		self.assertTrue(dungeon.start_autoexploring())
 		self.assertTrue(dungeon.perform_automovement())
@@ -686,7 +676,7 @@ class TestActorEffects(AbstractTestDungeon):
 class TestItemActions(AbstractTestDungeon):
 	def should_grab_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		dungeon.grab_item_at(dungeon.get_player(), Point(9, 6))
 		self.assertEqual(dungeon.events, [])
@@ -696,7 +686,7 @@ class TestItemActions(AbstractTestDungeon):
 			'GrabItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[10, 6])',
 			])
 
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.grab_item_at(dungeon.get_player(), Point(11, 6))
 		self.assertEqual(list(map(str, dungeon.events)), [
 			'GrabItemEvent(actor=player @[9, 6] 10/10hp, item=healing potion @[11, 6])',
@@ -704,7 +694,7 @@ class TestItemActions(AbstractTestDungeon):
 	def should_consume_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
 		dungeon.affect_health(dungeon.get_player(), -9)
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['healing_potion'], Point(0, 0)))
 
@@ -715,7 +705,7 @@ class TestItemActions(AbstractTestDungeon):
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
 		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'healing potion')
 
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
 			'ConsumeItemEvent(actor=player @[9, 6] 6/10hp, item=healing potion @[0, 0])',
@@ -725,7 +715,7 @@ class TestItemActions(AbstractTestDungeon):
 		self.assertEqual(len(dungeon.get_player().inventory), 0)
 	def should_equip_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon'], Point(0, 0)))
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['ranged'], Point(0, 0)))
 
@@ -737,7 +727,7 @@ class TestItemActions(AbstractTestDungeon):
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
 		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'ranged')
 
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
 			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
@@ -747,7 +737,7 @@ class TestItemActions(AbstractTestDungeon):
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
 		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'weapon')
 
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.unwield_item(dungeon.get_player())
 		self.assertEqual(list(map(str, dungeon.events)), [
 			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=ranged @[0, 0])',
@@ -757,7 +747,7 @@ class TestItemActions(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'weapon')
 		self.assertEqual(dungeon.get_player().inventory[1].item_type.name, 'ranged')
 
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.unwield_item(dungeon.get_player())
 		self.assertEqual(len(dungeon.events), 0)
 		self.assertIsNone(dungeon.get_player().wielding)
@@ -772,7 +762,7 @@ class TestFight(AbstractTestDungeon):
 		self.assertEqual(dungeon.find_monster(10, 6).hp, 2)
 	def should_attack_monster(self):
 		dungeon = self.dungeon = mock_dungeon.build('close monster')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		
 		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.find_monster(10, 6).hp, 2)
@@ -806,7 +796,7 @@ class TestFight(AbstractTestDungeon):
 		self.assertEqual(dungeon.events[-1].item, item)
 	def should_be_attacked_by_monster(self):
 		dungeon = self.dungeon = mock_dungeon.build('close inert monster')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
 		self.assertEqual(dungeon.get_player().hp, 9)
@@ -820,7 +810,7 @@ class TestFight(AbstractTestDungeon):
 	def should_be_killed_by_monster(self):
 		dungeon = self.dungeon = mock_dungeon.build('close inert monster')
 		dungeon.get_player().hp = 1
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		
 		player = dungeon.get_player()
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
@@ -836,7 +826,7 @@ class TestFight(AbstractTestDungeon):
 		self.assertEqual(dungeon.events[-1].target, player)
 	def should_angry_move_to_attack_player(self):
 		dungeon = self.dungeon = mock_dungeon.build('close angry monster')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
 		self.assertEqual(dungeon.monsters[-1].pos, Point(10, 6))
@@ -844,7 +834,7 @@ class TestFight(AbstractTestDungeon):
 		self.assertEqual(type(dungeon.events[0]), game.MoveEvent)
 		self.assertEqual(dungeon.events[0].actor, dungeon.find_monster(10, 6))
 		self.assertEqual(dungeon.events[0].dest, Point(10, 6))
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
 		self.assertEqual(len(dungeon.events), 2)
@@ -856,7 +846,7 @@ class TestFight(AbstractTestDungeon):
 		self.assertEqual(dungeon.events[1].diff, -1)
 	def should_not_angry_move_when_player_is_out_of_sight(self):
 		dungeon = self.dungeon = mock_dungeon.build('close angry monster 2')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		dungeon._perform_monster_actions(dungeon.monsters[-1])
 		self.assertEqual(dungeon.monsters[-1].pos, Point(4, 4))
@@ -873,7 +863,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Notices stairs and stops.
-		dungeon.clear_event() # Clear events.
+		list(dungeon.process_events(raw=True)) # Clear events.
 		self.assertFalse(dungeon.perform_automovement())
 
 		dungeon.walk_to(Point(11, 2))
@@ -896,7 +886,7 @@ class TestAutoMode(AbstractTestDungeon):
 	def should_not_stop_immediately_in_auto_mode_if_exit_is_already_visible(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 6 lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-		dungeon.clear_event() # Clear events.
+		list(dungeon.process_events(raw=True)) # Clear events.
 
 		dungeon.walk_to(Point(1, 2))
 		self.assertTrue(dungeon.perform_automovement())
@@ -904,7 +894,7 @@ class TestAutoMode(AbstractTestDungeon):
 	def should_not_allow_autowalking_if_monsters_are_nearby(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 6 monster')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
-		dungeon.clear_event() # Clear events.
+		list(dungeon.process_events(raw=True)) # Clear events.
 
 		dungeon.walk_to(Point(12, 8))
 		self.assertFalse(dungeon.perform_automovement())
@@ -922,7 +912,7 @@ class TestAutoMode(AbstractTestDungeon):
 			self.assertTrue(dungeon.perform_automovement())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement() # Notices stairs and stops.
-		dungeon.clear_event() # Clear events.
+		list(dungeon.process_events(raw=True)) # Clear events.
 		self.assertFalse(dungeon.perform_automovement())
 
 		self.assertTrue(dungeon.start_autoexploring())
@@ -947,7 +937,7 @@ class TestAutoMode(AbstractTestDungeon):
 				"""))
 	def should_not_allow_autoexploring_if_monsters_are_nearby(self):
 		dungeon = self.dungeon = mock_dungeon.build('single mock monster')
-		dungeon.clear_event() # Clear events.
+		list(dungeon.process_events(raw=True)) # Clear events.
 
 		self.assertFalse(dungeon.start_autoexploring())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))

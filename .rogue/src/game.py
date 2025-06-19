@@ -103,7 +103,6 @@ class Game(engine.Game):
 		self.items = []
 		self.visible_monsters = []
 		self.visible_items = []
-		self.events = []
 		self.player_turn = True
 	def generate(self):
 		self.build_new_strata()
@@ -163,8 +162,6 @@ class Game(engine.Game):
 		return True
 	def _perform_player_actions(self, action, action_data):
 		""" Controller for player character (via UI). """
-		if not self.in_automovement():
-			self.clear_event() # If we acted - we've seen all the events.
 		if action == Action.AUTOSTOP:
 			try:
 				self.stop_automovement()
@@ -299,30 +296,24 @@ class Game(engine.Game):
 					continue
 				if p == monster.pos:
 					if monster not in self.visible_monsters:
-						self.events.append(DiscoverEvent(monster))
+						self.fire_event(DiscoverEvent(monster))
 					current_visible_monsters.append(monster)
 
 			for item in self.items:
 				if p == item.pos:
 					if item not in self.visible_items:
-						self.events.append(DiscoverEvent(item))
+						self.fire_event(DiscoverEvent(item))
 					current_visible_items.append(item)
 
 			if cell.visited:
 				continue
 			if p == self.exit_pos:
-				self.events.append(DiscoverEvent('>'))
+				self.fire_event(DiscoverEvent('>'))
 			cell.visited = True
 		self.visible_monsters = current_visible_monsters
 		self.visible_items = current_visible_items
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
 			self.remembered_exit = True
-	def clear_event(self, event=None):
-		""" Makes specific event seen, or all of them. """
-		if event is None:
-			self.events[:] = []
-		else:
-			self.events.remove(event)
 	def build_new_strata(self):
 		""" Constructs and populates new random level.
 		Transfers player from previous level.
@@ -377,10 +368,10 @@ class Game(engine.Game):
 		else:
 			passable = self.strata.cell(new_pos).terrain.passable
 		if not passable:
-			self.events.append(BumpEvent(actor, new_pos))
+			self.fire_event(BumpEvent(actor, new_pos))
 			return False
 		if not Pathfinder.allow_movement_direction(self.strata, actor.pos, new_pos):
-			self.events.append(BumpEvent(actor, new_pos))
+			self.fire_event(BumpEvent(actor, new_pos))
 			return False
 		monster = self.find_monster(new_pos.x, new_pos.y)
 		if monster:
@@ -388,7 +379,7 @@ class Game(engine.Game):
 			self.attack(actor, monster)
 			return True
 		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
-		self.events.append(MoveEvent(actor, new_pos))
+		self.fire_event(MoveEvent(actor, new_pos))
 		actor.pos = new_pos
 		self.update_vision()
 		return True
@@ -405,9 +396,9 @@ class Game(engine.Game):
 			new_hp = target.species.max_hp
 			diff = new_hp - target.hp
 		target.hp += diff
-		self.events.append(HealthEvent(target, diff))
+		self.fire_event(HealthEvent(target, diff))
 		if not target.is_alive():
-			self.events.append(DeathEvent(target))
+			self.fire_event(DeathEvent(target))
 			drops = target.drop_loot()
 			for item in drops:
 				self.drop_item(target, item)
@@ -416,7 +407,7 @@ class Game(engine.Game):
 		""" Attacks target monster.
 		Raises attack event.
 		"""
-		self.events.append(AttackEvent(actor, target))
+		self.fire_event(AttackEvent(actor, target))
 		self.affect_health(target, -1)
 		self.update_vision()
 	def find_monster(self, x, y):
@@ -438,7 +429,7 @@ class Game(engine.Game):
 		item = self.find_item(pos.x, pos.y)
 		if not item:
 			return
-		self.events.append(GrabItemEvent(actor, item))
+		self.fire_event(GrabItemEvent(actor, item))
 		self.items.remove(item)
 		actor.inventory.append(item)
 	def consume_item(self, monster, item):
@@ -448,7 +439,7 @@ class Game(engine.Game):
 		"""
 		assert item in monster.inventory
 		monster.inventory.remove(item)
-		self.events.append(ConsumeItemEvent(monster, item))
+		self.fire_event(ConsumeItemEvent(monster, item))
 		if item.item_type.effect == items.Effect.HEALING:
 			self.affect_health(monster, +5)
 	def drop_item(self, monster, item):
@@ -460,7 +451,7 @@ class Game(engine.Game):
 		monster.inventory.remove(item)
 		self.items.append(item)
 		self.visible_items.append(item)
-		self.events.append(DropItemEvent(monster, item))
+		self.fire_event(DropItemEvent(monster, item))
 	def wield_item(self, monster, item):
 		""" Monster equips item from inventory.
 		Produces events.
@@ -470,7 +461,7 @@ class Game(engine.Game):
 			self.unwield_item(monster)
 		monster.inventory.remove(item)
 		monster.wielding = item
-		self.events.append(EquipItemEvent(monster, item))
+		self.fire_event(EquipItemEvent(monster, item))
 	def unwield_item(self, monster):
 		""" Monster unequips item and puts back to the inventory.
 		Produces events.
@@ -480,7 +471,7 @@ class Game(engine.Game):
 		item = monster.wielding
 		monster.inventory.append(item)
 		monster.wielding = None
-		self.events.append(UnequipItemEvent(monster, item))
+		self.fire_event(UnequipItemEvent(monster, item))
 	def jump_to(self, new_pos):
 		""" Teleports player to new pos. """
 		self.get_player().pos = new_pos
@@ -492,7 +483,7 @@ class Game(engine.Game):
 		"""
 		if self.get_player().pos != self.exit_pos:
 			return
-		self.events.append(DescendEvent(self.get_player()))
+		self.fire_event(DescendEvent(self.get_player()))
 		self.build_new_strata()
 	def find_path(self, start, find_target):
 		""" Find free path from start and until find_target() returns suitable target.
@@ -510,7 +501,7 @@ class Game(engine.Game):
 		Does not start when monsters are around and produces event.
 		"""
 		if self.visible_monsters:
-			self.events.append(DiscoverEvent('monsters'))
+			self.fire_event(DiscoverEvent('monsters'))
 			return
 		path = self.find_path(self.get_player().pos,
 				find_target=lambda wave: dest if dest in wave else None,
@@ -522,7 +513,7 @@ class Game(engine.Game):
 		Does not start when monsters are around and produces event.
 		"""
 		if self.visible_monsters:
-			self.events.append(DiscoverEvent('monsters'))
+			self.fire_event(DiscoverEvent('monsters'))
 			return False
 		path = self.find_path(self.get_player().pos,
 			find_target=lambda wave: next((target for target in sorted(wave)

@@ -170,7 +170,7 @@ def cli(debug=False, command=None, tests=None):
 		if not game.is_finished():
 			savefile.save(game, src.game.Version.CURRENT)
 		else:
-			savefile.reset()
+			savefile.savefile.unlink()
 	Log.debug('exited')
 
 if __name__ == '__main__':

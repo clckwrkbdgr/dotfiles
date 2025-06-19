@@ -180,7 +180,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster!                                                                        '),
+			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10 [vis] [clip]                                                       [?]'),
 			('refresh',),
 			])
@@ -207,7 +207,7 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 		
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		self.assertTrue(loop.action())
 		self.assertEqual(dungeon._last_control_action, (_base.Action.WAIT, None))
 		loop.redraw()
@@ -235,7 +235,7 @@ class TestCurses(unittest.TestCase):
 	def should_display_attack_events(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon)
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		dungeon.jump_to(Point(13, 4))
 		dungeon.move(dungeon.get_player(), Direction.UP)
@@ -251,7 +251,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		# Finish him.
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.move(dungeon.get_player(), Direction.UP)
 		dungeon.move(dungeon.get_player(), Direction.UP)
 
@@ -267,7 +267,7 @@ class TestCurses(unittest.TestCase):
 	def should_display_movement_events(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon)
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.god.vision = True
 
 		dungeon.move(dungeon.get_player(), Direction.RIGHT)
@@ -300,7 +300,7 @@ class TestCurses(unittest.TestCase):
 	def should_wait_user_reaction_after_player_is_dead(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, ' ')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		dungeon.affect_health(dungeon.get_player(), -dungeon.get_player().hp)
 
@@ -323,7 +323,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(loop.action(), False)
 	def should_show_keybindings_help(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		ui, loop = self._init(dungeon, '? ')
 
 		self.assertTrue(loop.action())
@@ -361,7 +361,7 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'x')
 
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		self.assertTrue(loop.action())
 		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
@@ -448,14 +448,14 @@ class TestCurses(unittest.TestCase):
 	def should_toggle_god_settings(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '~Q~v~c')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		loop.redraw()
 		main_display = ui.window.get_calls()
 		godmode_display = main_display + [('addstr', 0, 0, 'Select God option (cv)'), ('refresh',)]
 		self.maxDiff = None
 		self.assertTrue(loop.action()) # ~
 		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertFalse(loop.action()) # Q
@@ -516,7 +516,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.NEXT_DUNGEON[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'player V... monster!                                                            '),
+			('addstr', 0, 0, 'monster! exit! player V... monster!                                             '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])
@@ -593,7 +593,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, '                                                                                '),
+			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])
@@ -663,7 +663,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'player ^^ potion.                                                               '),
+			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10 inv:  3                                                            [?]'),
 			('refresh',),
 			])
@@ -686,7 +686,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'player ^^ potion.                                                               '),
+			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10 inv: 13                                                            [?]'),
 			('refresh',),
 			])
@@ -723,7 +723,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, '                                                                                '),
+			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])
@@ -820,7 +820,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, '                                                                                '),
+			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10 here: !                                                            [?]'),
 			('refresh',),
 			])
@@ -928,7 +928,7 @@ class TestCurses(unittest.TestCase):
 	def should_drop_loot_from_monsters(self):
 		dungeon = mock_dungeon.build('single mock thief')
 		ui, loop = self._init(dungeon)
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		dungeon.jump_to(Point(13, 4))
 		dungeon.move(dungeon.get_player(), Direction.UP)
@@ -944,9 +944,9 @@ class TestCurses(unittest.TestCase):
 			])
 
 		# Finish him.
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.move(dungeon.get_player(), Direction.UP)
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 		dungeon.move(dungeon.get_player(), Direction.UP)
 
 		loop.redraw()
@@ -973,7 +973,7 @@ class TestCurses(unittest.TestCase):
 	def should_show_inventory(self):
 		dungeon = mock_dungeon.build('monster and potion')
 		ui, loop = self._init(dungeon, 'ia' + chr(Key.ESCAPE) + 'i')
-		dungeon.clear_event()
+		list(dungeon.process_events(raw=True))
 
 		self.assertTrue(loop.action())
 		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
@@ -1062,7 +1062,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, '                                                                                '),
+			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10 inv:  (                                                            [?]'),
 			('refresh',),
 			])

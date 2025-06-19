@@ -367,11 +367,9 @@ def to_main_screen(mode):
 
 class MessageView(tui.widgets.MessageLineOverlay):
 	def get_new_messages(self):
-		for event in self.data.history:
-			message = events.Events.process(event)
-			trace.debug("Message posted: {0}: {1}".format(repr(event), message))
+		for message in self.data.process_events():
+			trace.debug("Message posted: {0}".format(message))
 			yield message
-		del self.data.history[:]
 	def force_ellipsis(self):
 		return not self.data.rogue.is_alive()
 
@@ -478,10 +476,10 @@ class MainGame(tui.app.MVC):
 		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.current_level.objects_at(dungeon.rogue.pos)), None)
 		if stairs_here:
 			dungeon.use_stairs(stairs_here)
-			dungeon.history.append(GoingDown())
+			dungeon.fire_event(GoingDown())
 			return to_main_screen(self)
 		else:
-			dungeon.history.append(CannotDig())
+			dungeon.fire_event(CannotDig())
 	@Controls('<')
 	def ascend(self):
 		""" Go up. """
@@ -490,14 +488,14 @@ class MainGame(tui.app.MVC):
 		if stairs_here:
 			try:
 				dungeon.use_stairs(stairs_here)
-				dungeon.history.append(GoingUp())
+				dungeon.fire_event(GoingUp())
 				return to_main_screen(self)
 			except Furniture.Locked:
-				dungeon.history.append(NeedMcGuffin())
+				dungeon.fire_event(NeedMcGuffin())
 			except GameCompleted:
 				return Greetings
 		else:
-			dungeon.history.append(CannotReachCeiling())
+			dungeon.fire_event(CannotReachCeiling())
 	@Controls('g')
 	def grab(self):
 		""" Grab item. """
@@ -511,16 +509,17 @@ class MainGame(tui.app.MVC):
 			item_here = len(dungeon.current_level.items) - 1 - item_here # Index is from reversed list.
 			trace.debug("Unreversed item here: {0}".format(item_here))
 			_, item = dungeon.current_level.items[item_here]
-			self.data.history += dungeon.current_level.grab_item(dungeon.rogue, item)
+			for _ in dungeon.current_level.grab_item(dungeon.rogue, item):
+				self.data.fire_event(_)
 			self.step_is_over = True
 		else:
-			dungeon.history.append(NothingToPickUp())
+			dungeon.fire_event(NothingToPickUp())
 	@Controls('d')
 	def drop(self):
 		""" Drop item. """
 		dungeon = self.data
 		if not dungeon.rogue.inventory:
-			dungeon.history.append(InventoryEmpty())
+			dungeon.fire_event(InventoryEmpty())
 		else:
 			return QuickDropItem(to_main_screen(self), self.data)
 	@Controls('e')
@@ -528,7 +527,7 @@ class MainGame(tui.app.MVC):
 		""" Consume item. """
 		dungeon = self.data
 		if not dungeon.rogue.inventory:
-			dungeon.history.append(InventoryEmpty())
+			dungeon.fire_event(InventoryEmpty())
 		else:
 			return QuickConsumeItem(to_main_screen(self), self.data)
 	@Controls('w')
@@ -536,7 +535,7 @@ class MainGame(tui.app.MVC):
 		""" Wield item. """
 		dungeon = self.data
 		if not dungeon.rogue.inventory:
-			dungeon.history.append(InventoryEmpty())
+			dungeon.fire_event(InventoryEmpty())
 		else:
 			return QuickWieldItem(to_main_screen(self), self.data)
 	@Controls('U')
@@ -544,15 +543,16 @@ class MainGame(tui.app.MVC):
 		""" Unwield item. """
 		dungeon = self.data
 		if not dungeon.rogue.wielding:
-			dungeon.history.append(NothingToUnwield())
+			dungeon.fire_event(NothingToUnwield())
 		else:
-			self.data.history += dungeon.rogue.wield(None)
+			for _ in dungeon.rogue.wield(None):
+				self.data.fire_event(_)
 	@Controls('W')
 	def wear(self):
 		""" Wear item. """
 		dungeon = self.data
 		if not dungeon.rogue.inventory:
-			dungeon.history.append(InventoryEmpty())
+			dungeon.fire_event(InventoryEmpty())
 		else:
 			return QuickWearItem(to_main_screen(self), self.data)
 	@Controls('T')
@@ -560,9 +560,10 @@ class MainGame(tui.app.MVC):
 		""" Take item off. """
 		dungeon = self.data
 		if not dungeon.rogue.wearing:
-			dungeon.history.append(NothingToTakeOff())
+			dungeon.fire_event(NothingToTakeOff())
 		else:
-			self.data.history += dungeon.rogue.wear(None)
+			for _ in dungeon.rogue.wear(None):
+				self.data.fire_event(_)
 	@Controls('i')
 	def inventory(self):
 		""" Toggle inventory. """
@@ -606,7 +607,8 @@ class MainGame(tui.app.MVC):
 
 	def move_by(self, shift):
 		dungeon = self.data
-		self.data.history += dungeon.move_monster(dungeon.rogue, dungeon.rogue.pos + shift)
+		for _ in dungeon.move_monster(dungeon.rogue, dungeon.rogue.pos + shift):
+			self.data.fire_event(_)
 		dungeon.current_level.visit(dungeon.rogue.pos)
 		self.step_is_over = True
 
@@ -623,7 +625,8 @@ class MainGame(tui.app.MVC):
 					clckwrkbdgr.math.sign(dungeon.rogue.pos.y - monster.pos.y),
 					)
 			new_pos = monster.pos + shift
-			self.data.history += dungeon.move_monster(monster, new_pos, with_tunnels=False)
+			for _ in dungeon.move_monster(monster, new_pos, with_tunnels=False):
+				self.data.fire_event(_)
 
 		if not dungeon.rogue.is_alive():
 			return MessageView(Grave, self.data)
@@ -639,32 +642,36 @@ class GodModeAction(tui.widgets.Menu):
 	def on_item(self, item):
 		new_state = not getattr(self.data.god, item.data)
 		setattr(self.data.god, item.data, new_state)
-		self.data.history.append(GodModeSwitched(name=item.text, state='ON' if new_state else 'off'))
+		self.data.fire_event(GodModeSwitched(name=item.text, state='ON' if new_state else 'off'))
 		return to_main_screen(self)
 
 class ConsumeItem:
 	def prompt(self): return "Which item to consume?"
 	def item_action(self, index):
 		item = self.data.rogue.inventory[index]
-		self.data.history += self.data.rogue.consume(item)
+		for _ in self.data.rogue.consume(item):
+			self.data.fire_event(_)
 
 class DropItem:
 	def prompt(self): return "Which item to drop?"
 	def item_action(self, index):
 		item = self.data.rogue.inventory[index]
-		self.data.history += self.data.current_level.drop_item(self.data.rogue, item)
+		for _ in self.data.current_level.drop_item(self.data.rogue, item):
+			self.data.fire_event(_)
 
 class WieldItem:
 	def prompt(self): return "Which item to wield?"
 	def item_action(self, index):
 		item = self.data.rogue.inventory[index]
-		self.data.history += self.data.rogue.wield(item)
+		for _ in self.data.rogue.wield(item):
+			self.data.fire_event(_)
 
 class WearItem:
 	def prompt(self): return "Which item to wear?"
 	def item_action(self, index):
 		item = self.data.rogue.inventory[index]
-		self.data.history += self.data.rogue.wear(item)
+		for _ in self.data.rogue.wear(item):
+			self.data.fire_event(_)
 
 class QuickItemSelection(tui.widgets.Prompt):
 	def extended_mode(self):

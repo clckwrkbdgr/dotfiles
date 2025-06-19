@@ -93,8 +93,7 @@ class MainGame(SubMode):
 				ui.print_char(col, 1+row, sprite or ' ')
 
 		events = []
-		for event in game.events:
-			callback = Events.get(event, bind_self=self)
+		for callback, event in game.process_events(raw=True, bind_self=self):
 			if not callback:
 				events.append('Unknown event {0}!'.format(repr(event)))
 				continue
