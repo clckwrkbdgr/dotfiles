@@ -536,7 +536,7 @@ class Game(engine.Game):
 		"""
 		if not self.movement_queue:
 			return False
-		if self.events:
+		if self.has_unprocessed_events():
 			Log.debug('New events in FOV, aborting auto-moving mode.')
 			return self.stop_automovement()
 		Log.debug('Performing queued actions.')

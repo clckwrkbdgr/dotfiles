@@ -284,6 +284,13 @@ class Mode(object): # pragma: no cover -- TODO
 		By default every user input will be blocking.
 		"""
 		return False
+	def get_keymapping(self):
+		""" Should return current keymapping (or None).
+		Useful for switching control modes within one UI mode,
+		e.g. emulating "any key" (by returning None).
+		By default returns class field KEYMAPPING
+		"""
+		return self.KEYMAPPING
 
 	@classmethod
 	def run(cls, mode, ui):
@@ -324,8 +331,9 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		Any callbacks are bound to the mode (see also Mode.get_bind_callback_args).
 		Returns False if mode is done and should be closed, otherwise True.
 		"""
-		if mode.KEYMAPPING:
-			control = self.ui.get_control(mode.KEYMAPPING, nodelay=mode.nodelay(), bind_self=mode, callback_args=mode.get_bind_callback_args())
+		keymapping = mode.get_keymapping()
+		if keymapping:
+			control = self.ui.get_control(keymapping, nodelay=mode.nodelay(), bind_self=mode, callback_args=mode.get_bind_callback_args())
 		else:
 			control = self.ui.get_keypress(nodelay=mode.nodelay())
 

@@ -9,6 +9,7 @@ from . import game
 from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
 import clckwrkbdgr.tui
+import clckwrkbdgr.text
 from clckwrkbdgr.tui import Key, Keymapping
 from .engine.events import Events
 
@@ -92,18 +93,25 @@ class MainGame(SubMode):
 				sprite = game.get_sprite(col, row)
 				ui.print_char(col, 1+row, sprite or ' ')
 
-		events = []
 		for callback, event in game.process_events(raw=True, bind_self=self):
 			if not callback:
-				events.append('Unknown event {0}!'.format(repr(event)))
+				self.messages.append('Unknown event {0}!'.format(repr(event)))
 				continue
 			result = callback(game, event)
 			if not result:
 				continue
-			events.append(result)
-		events.extend(self.messages)
-		self.messages[:] = []
-		ui.print_line(0, 0, (' '.join(events) + " " * 80)[:80])
+			self.messages.append(result)
+		if self.messages:
+			to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=80)
+			if not to_remove:
+				del self.messages[:]
+			elif to_remove > 0: # pragma: no cover -- TODO
+				self.messages = self.messages[self.to_remove:]
+			else: # pragma: no cover -- TODO
+				self.messages[0] = self.messages[0][-to_remove:]
+			ui.print_line(0, 0, (message_line + ' '*80)[:80])
+		else:
+			ui.print_line(0, 0, " " * 80)
 
 		status = []
 		player = game.get_player()
@@ -274,6 +282,7 @@ class GodModeMenu(SubMode):
 		ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
 	def on_any_key(self):
 		self.done = True
+		return True
 	@GodModeKeys.bind('v')
 	def vision(self, game):
 		""" See all. """

@@ -34,15 +34,25 @@ class Game(object):
 		""" Adds new event to the list.
 		"""
 		self.events.append(event)
+	def has_unprocessed_events(self):
+		""" Returns True if there are unprocessed events left. """
+		return bool(self.events)
+	def process_next_event(self, raw=False, bind_self=None):
+		""" Immediately processes next event from the event queue,
+		returning results of the processing.
+		Effectively removes each processed event.
+		If raw is True, yields tuples of (raw callback, event object) instead of executing them.
+		"""
+		event = self.events.pop(0)
+		if raw:
+			return events.Events.get(event, bind_self=bind_self), event
+		else:
+			return events.Events.process(event, bind_self=bind_self)
 	def process_events(self, raw=False, bind_self=None):
 		""" Iterates over accumulated events and processes them immediately,
 		yielding results of the processing.
 		Effectively removes each processed event.
 		If raw is True, yields tuples of (raw callback, event object) instead of executing them.
 		"""
-		while self.events:
-			event = self.events.pop(0)
-			if raw:
-				yield events.Events.get(event, bind_self=bind_self), event
-			else:
-				yield events.Events.process(event, bind_self=bind_self)
+		while self.has_unprocessed_events():
+			yield self.process_next_event(raw=raw, bind_self=bind_self)

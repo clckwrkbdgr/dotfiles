@@ -257,13 +257,13 @@ class Builder(builders.Builder):
 			else:
 				grid.set_cell((door, building.bottom), 'floor')
 		return building
-	def generate_actors(self, grid):
+	def generate_actors(self):
 		if self._building:
 			yield self._make_dweller(self._building)
 			return
 		monster_count = random.randrange(5) if random.randrange(5) == 0 else 0
 		for _ in range(monster_count):
-			yield self._make_monster(grid)
+			yield self._make_monster(self.grid)
 	def _make_dweller(self, building):
 		dweller_pos = building.topleft + Point(1, 1) + Point(
 				random.randrange(building.width - 2),
@@ -566,6 +566,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		self.viewport = Rect((0, 0), (61, 23))
 		self.center = Point(*(self.viewport.size // 2))
 		self.centered_viewport = Rect((-self.center.x, -self.center.y), self.viewport.size)
+		self.messages = []
 	def redraw(self, ui):
 		game = self.game
 		full_zone_size = Size(
@@ -641,27 +642,23 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			ui.print_line(4, hud_pos, "here:{0}".format(item.sprite.sprite))
 
 		ui.print_line(24, 0, " " * 80)
-		messages = list(game.process_events())
-		while messages:
-			message = messages.pop(0)
-			if len(message) >= 80 - 5:
-				message, tail = message[:80-5], message[80-5:]
-				messages.insert(0, tail)
+		self.messages.extend(game.process_events())
+		if self.messages:
+			to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=80)
+			if not to_remove:
+				del self.messages[:]
+			elif to_remove > 0:
+				self.messages = self.messages[self.to_remove:]
 			else:
-				while messages and len(message) + 1 + len(messages[0]) < 80 - 5:
-					message += ' ' + messages.pop(0)
-			message_line = message
-			if messages:
-				message_line += '[...]'
-			ui.print_line(24, 0, " " * 80)
+				self.messages[0] = self.messages[0][-to_remove:]
 			ui.print_line(24, 0, message_line)
-			if messages or game.player.hp <= 0:
-				ui.get_keypress()
 	def pre_action(self):
-		if self.game.player.hp <= 0:
-			return False
 		self.step_taken = False
 		return True
+	def get_keymapping(self):
+		if self.messages or self.game.player.hp <= 0:
+			return None
+		return super().get_keymapping()
 	@Keys.bind('S')
 	def exit_game(self):
 		return 'quit'
@@ -829,6 +826,11 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				game.autoexpand(game.player.pos, Size(40, 40))
 			self.step_taken = True
 	def action(self, control):
+		if isinstance(control, clckwrkbdgr.tui.Key):
+			if self.messages:
+				return True
+			if self.game.player.hp <= 0:
+				return False
 		if control == 'quit':
 			return False
 		game = self.game
