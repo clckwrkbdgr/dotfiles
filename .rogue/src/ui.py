@@ -57,17 +57,16 @@ class SubMode(clckwrkbdgr.tui.Mode):
 		If keymapping is not set, every action will close the mode.
 		See also: on_any_key()
 		"""
-		if not self.KEYMAPPING:
-			control = None
-			self.done = True
-		if control is not None and self.was_nodelay:
-			control = Action.AUTOSTOP, None
+		self.game._last_control_action = None
+		if isinstance(control, clckwrkbdgr.tui.Key):
+			return False
 		if control is None:
-			control = (Action.NONE, None)
-		action, action_data = control
-		self.game._last_control_action = (action, action_data)
-		self.on_any_key()
-		if not self.game._perform_actors_actions(action, action_data):
+			self.on_any_key()
+			return not self.done
+		if self.was_nodelay:
+			control = Action.AUTOSTOP, None
+		self.game._last_control_action = control
+		if not self.game._perform_actors_actions(*control):
 			return False
 		return not self.done
 
