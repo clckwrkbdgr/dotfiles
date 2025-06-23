@@ -24,7 +24,7 @@ class DungeonExplorer(Autoexplorer): # pragma: no cover
 		return Size(21, 21)
 
 Keys = clckwrkbdgr.tui.Keymapping()
-Keys.map('q', SystemExit)
+Keys.map('q', 'quit')
 Keys.map('o', 'autoexplore')
 Keys.map('h', Point(-1,  0))
 Keys.map('j', Point( 0, +1))
@@ -66,17 +66,16 @@ class Game(clckwrkbdgr.tui.Mode):
 			if self.autoexplore:
 				control = self.autoexplore.next()
 				trace.debug('Autoexploring: {0}'.format(repr(control)))
+				self.dungeon.shift_player(control)
 			else:
 				trace.debug('Starting self.autoexplore.')
 				self.autoexplore = self.autoexplorer_class(self.dungeon)
-				return True
 		elif control == 'ESC':
 			trace.debug('Stopping self.autoexplore.')
 			self.autoexplore = None
 			return True
-		try:
-			self.dungeon.control(control)
-		except SystemExit:
-			trace.debug('Exiting...')
+		elif control == 'quit':
 			return False
+		elif isinstance(control, Point):
+			self.dungeon.shift_player(control)
 		return True

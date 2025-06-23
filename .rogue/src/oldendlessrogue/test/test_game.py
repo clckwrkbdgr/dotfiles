@@ -69,12 +69,12 @@ class TestGame(unittest.TestCase):
 		self.addTypeEqualityFunc(Matrix, self._compare_matrices)
 
 	def should_start_game_and_exit(self):
-		ui = MockUI([SystemExit])
+		ui = MockUI(['quit'])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
 		game.run(game, ui)
 	def should_draw_game_and_print_info(self):
-		ui = MockUI([SystemExit])
+		ui = MockUI(['quit'])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
 		game.run(game, ui)
@@ -89,7 +89,7 @@ class TestGame(unittest.TestCase):
 			24: '                             ',
 			})
 	def should_control_dungeon_via_ui(self):
-		ui = MockUI([Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0), SystemExit])
+		ui = MockUI([Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0), 'quit'])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
 		game.run(game, ui)
@@ -107,7 +107,7 @@ class TestGame(unittest.TestCase):
 			24: '                             ',
 			})
 	def should_pass_on_unknown_control(self):
-		ui = MockUI([None, 'unknown', SystemExit])
+		ui = MockUI([None, 'unknown', 'quit'])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
 		game.run(game, ui)
@@ -115,7 +115,7 @@ class TestGame(unittest.TestCase):
 		autoexplorer_controls = [
 			Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0),
 			]
-		ui = MockUI(['autoexplore'] + ['autoexplore'] * len(autoexplorer_controls) + ['ESC', SystemExit])
+		ui = MockUI(['autoexplore'] + ['autoexplore'] * len(autoexplorer_controls) + ['ESC', 'quit'])
 		dungeon = self._create_dungeon()
 		game = Game(dungeon, autoexplorer=lambda _: MockExplorer(autoexplorer_controls))
 		game.run(game, ui)

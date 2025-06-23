@@ -57,7 +57,37 @@ class MockUI(clckwrkbdgr.tui.ModeLoop):
 			self.modes = [] # Emulate ending loop.
 			return False
 		action, action_data = self._user_action()
-		result = self.game._perform_actors_actions(action, action_data)
+		result = True
+		if action == ui.Action.AUTOSTOP:
+			self.game.autostop()
+		elif action == ui.Action.EXIT:
+			result = False
+		elif action == ui.Action.SUICIDE:
+			self.game.suicide()
+		elif action == ui.Action.WALK_TO:
+			self.game.walk_to(action_data)
+		elif action == ui.Action.AUTOEXPLORE:
+			self.game.start_autoexploring()
+		elif action == ui.Action.GOD_TOGGLE_VISION:
+			self.game.toggle_god_vision()
+		elif action == ui.Action.GOD_TOGGLE_NOCLIP:
+			self.game.toggle_god_noclip()
+		elif action == ui.Action.DESCEND:
+			self.game.descend()
+		elif action == ui.Action.MOVE:
+			self.game.move_player(action_data)
+		elif action == ui.Action.GRAB:
+			self.game.player_grab(action_data)
+		elif action == ui.Action.CONSUME:
+			self.game.player_consume(action_data)
+		elif action == ui.Action.DROP:
+			self.game.player_drop(action_data)
+		elif action == ui.Action.WIELD:
+			self.game.player_wield(action_data)
+		elif action == ui.Action.UNWIELD:
+			self.game.player_unwield()
+		elif action == ui.Action.WAIT:
+			self.game.wait()
 		if not result:
 			self.modes = [] # Emulate ending loop.
 		return result

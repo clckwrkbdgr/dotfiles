@@ -209,7 +209,6 @@ class TestCurses(unittest.TestCase):
 		
 		list(dungeon.process_events(raw=True))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.WAIT, None))
 		loop.redraw()
 		self.maxDiff = None
 
@@ -327,7 +326,6 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon, '? ')
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 
 		self.maxDiff = None
@@ -354,7 +352,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 	@mock.patch('curses.curs_set')
 	def should_display_aim(self, curs_set):
@@ -363,7 +360,6 @@ class TestCurses(unittest.TestCase):
 
 		list(dungeon.process_events(raw=True))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		curs_set.assert_has_calls([
 			mock.call(1),
@@ -384,27 +380,24 @@ class TestCurses(unittest.TestCase):
 
 		dungeon.autoexploring = True
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
+		self.assertTrue(dungeon.autoexploring)
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
+		self.assertTrue(dungeon.autoexploring)
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.AUTOSTOP, None))
+		self.assertFalse(dungeon.autoexploring)
 	def should_ignore_unknown_keys(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'Z')
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 	def should_exit(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'q')
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.EXIT, None))
 	@mock.patch('curses.curs_set')
 	def should_enable_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'x')
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(loop.modes[0].aim, dungeon.get_player().pos)
 		curs_set.assert_has_calls([
@@ -417,7 +410,6 @@ class TestCurses(unittest.TestCase):
 		loop.modes[0].aim = dungeon.get_player().pos
 		ui.cursor(True)
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertIsNone(loop.modes[0].aim)
 		curs_set.assert_has_calls([
@@ -428,13 +420,10 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '.x.')
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.WAIT, None))
 		loop.redraw()
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.WALK_TO, Point(9, 6)))
 		self.assertIsNone(loop.modes[0].aim)
 		loop.redraw()
 		curs_set.assert_has_calls([
@@ -442,9 +431,13 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_autoexplore(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui, loop = self._init(dungeon, 'o')
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.AUTOEXPLORE, None))
+		ui, loop = self._init(dungeon, 'yykko')
+		self.assertTrue(loop.action()) # move...
+		self.assertTrue(loop.action()) # ...out of...
+		self.assertTrue(loop.action()) # ...monster's...
+		self.assertTrue(loop.action()) # ...vision
+		self.assertTrue(loop.action()) # explore
+		self.assertTrue(dungeon.autoexploring)
 	def should_toggle_god_settings(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '~Q~v~c')
@@ -454,20 +447,16 @@ class TestCurses(unittest.TestCase):
 		godmode_display = main_display + [('addstr', 0, 0, 'Select God option (cv)'), ('refresh',)]
 		self.maxDiff = None
 		self.assertTrue(loop.action()) # ~
-		self.assertEqual(dungeon._last_control_action, None)
 		list(dungeon.process_events(raw=True))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertFalse(loop.action()) # Q
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), main_display)
 		self.assertTrue(loop.action()) # ~
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertFalse(loop.action()) # v
-		self.assertEqual(dungeon._last_control_action, (_base.Action.GOD_TOGGLE_VISION, None))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
@@ -477,7 +466,6 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 		self.assertTrue(loop.action()) # ~
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
@@ -489,7 +477,6 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 		self.assertFalse(loop.action()) # c
-		self.assertEqual(dungeon._last_control_action, (_base.Action.GOD_TOGGLE_NOCLIP, None))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
@@ -502,14 +489,12 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'Q')
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.SUICIDE, None))
+		self.assertTrue(dungeon.is_finished())
 	def should_descend(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '>')
 		dungeon.jump_to(Point(10, 1))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.DESCEND, None))
-		dungeon.descend()
 
 		loop.redraw()
 		self.maxDiff = None
@@ -524,51 +509,42 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'hjklyubn')
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.LEFT))
+		self.assertEqual(dungeon.get_player().pos, Point(8, 6))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.DOWN))
+		self.assertEqual(dungeon.get_player().pos, Point(8, 7))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.UP))
+		self.assertEqual(dungeon.get_player().pos, Point(8, 6))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.RIGHT))
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.UP_LEFT))
+		self.assertEqual(dungeon.get_player().pos, Point(8, 5))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.UP_RIGHT))
+		self.assertEqual(dungeon.get_player().pos, Point(9, 4))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.DOWN_LEFT))
+		self.assertEqual(dungeon.get_player().pos, Point(8, 5))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.DOWN_RIGHT))
+		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 	@mock.patch('curses.curs_set')
 	def should_move_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'xhjklyubn')
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(9, 6))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(8, 6))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(8, 7))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(8, 6))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(9, 6))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(8, 5))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(9, 4))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(8, 5))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		self.assertEqual(loop.modes[0].aim, Point(9, 6))
 	def should_grab_items(self):
 		self.maxDiff = None
@@ -576,7 +552,6 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon, 'glgD')
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.GRAB, Point(9, 6)))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####        #  ',
@@ -599,7 +574,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.RIGHT))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -622,8 +596,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.GRAB, Point(10, 6)))
-		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -696,7 +668,6 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon, 'd' + chr(Key.ESCAPE) + 'lgdja')
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -706,7 +677,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####        #  ',
@@ -729,10 +699,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.RIGHT))
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.GRAB, Point(10, 6)))
-		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -755,7 +722,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -765,7 +731,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -776,7 +741,6 @@ class TestCurses(unittest.TestCase):
 
 		item = dungeon.get_player().inventory[0]
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.DROP, item))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -803,7 +767,6 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon, 'le' + chr(Key.ESCAPE) + 'geja')
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.MOVE, Direction.RIGHT))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -826,7 +789,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -836,7 +798,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -859,8 +820,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.GRAB, Point(10, 6)))
-		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -883,7 +842,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -893,7 +851,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -904,7 +861,6 @@ class TestCurses(unittest.TestCase):
 
 		item = dungeon.get_player().inventory[0]
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.CONSUME, item))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -976,7 +932,6 @@ class TestCurses(unittest.TestCase):
 		list(dungeon.process_events(raw=True))
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 
 		self.maxDiff = None
@@ -987,7 +942,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -996,7 +950,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####        #  ',
@@ -1022,7 +975,6 @@ class TestCurses(unittest.TestCase):
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -1036,7 +988,6 @@ class TestCurses(unittest.TestCase):
 		dungeon.get_player().inventory.append(items.Item(MockGame.ITEMS['weapon'], Point(0, 0)))
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -1045,7 +996,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####        #  ',
@@ -1068,7 +1018,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -1077,7 +1026,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -1087,7 +1035,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
@@ -1098,7 +1045,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -1107,7 +1053,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -1117,7 +1062,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.NONE, None))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -1127,7 +1071,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.WIELD, dungeon.get_player().wielding))
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
@@ -1138,7 +1081,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
-		self.assertEqual(dungeon._last_control_action, None)
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
@@ -1147,8 +1089,6 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertFalse(loop.action())
-		self.assertEqual(dungeon._last_control_action, (_base.Action.UNWIELD, None))
-		dungeon.unwield_item(dungeon.get_player())
 		loop.redraw()
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)

@@ -50,14 +50,14 @@ class TestDungeon(unittest.TestCase):
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
 		self.assertEqual(dungeon.rogue, (1, 1))
-		dungeon.control(Point(0, 1))
+		dungeon.shift_player(Point(0, 1))
 		self.assertEqual(dungeon.rogue, (1, 2))
 	def should_not_move_player_into_wall(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0)]])
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
 		self.assertEqual(dungeon.rogue, (1, 1))
-		dungeon.control(Point(0, -1))
+		dungeon.shift_player(Point(0, -1))
 		self.assertEqual(dungeon.rogue, (1, 1))
 	def should_recalibrate_plane_after_player_moved(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]] + [[]]*4 + [[(2, 2)]])
@@ -77,7 +77,7 @@ class TestDungeon(unittest.TestCase):
 		.........
 		"""))
 
-		dungeon.control(Point(0, 1))
+		dungeon.shift_player(Point(0, 1))
 		self.assertEqual(dungeon.rogue, (1, 2))
 		self.assertEqual(dungeon.terrain.shift, Point(-3, -3))
 		self.assertEqual(self.to_string(dungeon), unittest.dedent("""\
@@ -91,7 +91,7 @@ class TestDungeon(unittest.TestCase):
 		.........
 		""") + ' '*9 + '\n')
 
-		dungeon.control(Point(0, 1))
+		dungeon.shift_player(Point(0, 1))
 		self.assertEqual(dungeon.rogue, (1, 3))
 		self.assertEqual(dungeon.terrain.shift, Point(-3, 0))
 		self.assertEqual(self.to_string(dungeon), ' '*9 + '\n' + unittest.dedent("""\
@@ -112,15 +112,6 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_passable((0, 0)))
 		self.assertFalse(dungeon.is_passable((1, 0)))
 		self.assertFalse(dungeon.is_passable((-10, -10)))
-	def should_raise_given_game_exception(self):
-		builder = MockBuilder(rogue_pos=(1, 1))
-		dungeon = MockDungeon(builder=builder)
-		dungeon.generate()
-		class MockEvent(Exception): pass
-		with self.assertRaises(MockEvent):
-			dungeon.control(MockEvent)
-		with self.assertRaises(MockEvent):
-			dungeon.control(MockEvent())
 
 class TestSerialization(unittest.TestCase):
 	def should_serialize_deserialize_dungeon(self):

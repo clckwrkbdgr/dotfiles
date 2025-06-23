@@ -34,14 +34,9 @@ class Dungeon(engine.Game):
 		return self.terrain.cell(pos)
 	def is_passable(self, pos):
 		return self.terrain.cell(pos) == '.'
-	def control(self, control):
-		if isinstance(control, type) and issubclass(control, BaseException):
-			control = control()
-		if isinstance(control, BaseException):
-			raise control
-		if isinstance(control, Point):
-			new_pos = self.rogue + control
-			if self.is_passable(new_pos):
-				self.rogue = new_pos
-				self.terrain.recalibrate(self.rogue)
-			self.time += 1
+	def shift_player(self, shift):
+		new_pos = self.rogue + shift
+		if self.is_passable(new_pos):
+			self.rogue = new_pos
+			self.terrain.recalibrate(self.rogue)
+		self.time += 1

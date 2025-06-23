@@ -150,61 +150,46 @@ class Game(engine.Game):
 		except Game.AutoMovementStopped:
 			pass
 		return True
-	def _perform_actors_actions(self, action, action_data):
-		if not self._perform_player_actions(action, action_data):
-			return False
+	def end_turn(self):
+		self.player_turn = False
 		if not self.player_turn:
 			for monster in self.monsters:
 				if monster.behavior == monsters.Behavior.PLAYER:
 					continue
 				self._perform_monster_actions(monster)
 			self.player_turn = True
-		return True
-	def _perform_player_actions(self, action, action_data):
-		""" Controller for player character (via UI). """
-		if action == Action.AUTOSTOP:
-			try:
-				self.stop_automovement()
-			except Game.AutoMovementStopped:
-				pass
-		if action == Action.NONE:
+	def autostop(self):
+		try:
+			self.stop_automovement()
+		except Game.AutoMovementStopped:
 			pass
-		elif action == Action.EXIT:
-			return False
-		elif action == Action.SUICIDE:
-			self.affect_health(self.get_player(), -self.get_player().hp)
-			self.player_turn = False
-		elif action == Action.WALK_TO:
-			self.walk_to(action_data)
-		elif action == Action.AUTOEXPLORE:
-			self.start_autoexploring()
-		elif action == Action.GOD_TOGGLE_VISION:
-			self.god.vision = not self.god.vision
-		elif action == Action.GOD_TOGGLE_NOCLIP:
-			self.god.noclip = not self.god.noclip
-		elif action == Action.DESCEND:
-			self.descend()
-		elif action == Action.MOVE:
-			self.move(self.get_player(), action_data)
-			self.player_turn = False
-		elif action == Action.GRAB:
-			self.grab_item_at(self.get_player(), action_data)
-			self.player_turn = False
-		elif action == Action.CONSUME:
-			self.consume_item(self.get_player(), action_data)
-			self.player_turn = False
-		elif action == Action.DROP:
-			self.drop_item(self.get_player(), action_data)
-			self.player_turn = False
-		elif action == Action.WIELD:
-			self.wield_item(self.get_player(), action_data)
-			self.player_turn = False
-		elif action == Action.UNWIELD:
-			self.unwield_item(self.get_player())
-			self.player_turn = False
-		elif action == Action.WAIT:
-			self.player_turn = False
-		return True
+	def suicide(self):
+		self.affect_health(self.get_player(), -self.get_player().hp)
+		self.end_turn()
+	def toggle_god_vision(self):
+		self.god.vision = not self.god.vision
+	def toggle_god_noclip(self):
+		self.god.noclip = not self.god.noclip
+	def move_player(self, shift):
+		self.move(self.get_player(), shift)
+		self.end_turn()
+	def player_grab(self, pos):
+		self.grab_item_at(self.get_player(), pos)
+		self.end_turn()
+	def player_consume(self, item):
+		self.consume_item(self.get_player(), item)
+		self.end_turn()
+	def player_drop(self, item):
+		self.drop_item(self.get_player(), item)
+		self.end_turn()
+	def player_wield(self, item):
+		self.wield_item(self.get_player(), item)
+		self.end_turn()
+	def player_unwield(self):
+		self.unwield_item(self.get_player())
+		self.end_turn()
+	def wait(self):
+		self.end_turn()
 	def _perform_monster_actions(self, monster):
 		""" Controller for monster actions (depends on behavior). """
 		if monster.behavior == monsters.Behavior.DUMMY:

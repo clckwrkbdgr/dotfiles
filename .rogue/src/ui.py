@@ -31,7 +31,6 @@ class SubMode(clckwrkbdgr.tui.Mode):
 	"""
 	def __init__(self, game):
 		self.game = game
-		self.was_nodelay = False
 		self.done = False
 	def redraw(self, ui): # pragma: no cover
 		""" Redefine to draw mode-related features on screen.
@@ -44,10 +43,11 @@ class SubMode(clckwrkbdgr.tui.Mode):
 		"""
 		pass
 	def pre_action(self):
-		self.was_nodelay = self.nodelay()
 		return self.game._pre_action()
 	def get_bind_callback_args(self):
 		return (self.game,)
+	def get_keymapping(self):
+		return None if self.nodelay() else self.KEYMAPPING
 	def action(self, control):
 		""" Performs user action in current mode.
 		May start or quit sub-modes as a result.
@@ -57,17 +57,9 @@ class SubMode(clckwrkbdgr.tui.Mode):
 		If keymapping is not set, every action will close the mode.
 		See also: on_any_key()
 		"""
-		self.game._last_control_action = None
+		self.on_any_key()
 		if isinstance(control, clckwrkbdgr.tui.Key):
-			return False
-		if control is None:
-			self.on_any_key()
-			return not self.done
-		if self.was_nodelay:
-			control = Action.AUTOSTOP, None
-		self.game._last_control_action = control
-		if not self.game._perform_actors_actions(*control):
-			return False
+			self.game.autostop()
 		return not self.done
 
 Keys = Keymapping()
@@ -182,7 +174,7 @@ class MainGame(SubMode):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
 	@Keys.bind(None)
-	def on_idle(self, game):
+	def on_idle(self, game): # pragma: no cover -- TODO why is this needed?
 		""" Show this help. """
 		return None
 	@Keys.bind('?')
@@ -193,7 +185,7 @@ class MainGame(SubMode):
 	def quit(self, game):
 		""" Save and quit. """
 		Log.debug('Exiting the game.')
-		return Action.EXIT, None
+		self.done = True
 	@Keys.bind('x')
 	def examine(self, game):
 		""" Examine surroundings (cursor mode). """
@@ -207,13 +199,13 @@ class MainGame(SubMode):
 		if self.aim:
 			dest = self.aim
 			self.aim = None
-			return Action.WALK_TO, dest
+			self.game.walk_to(dest)
 		else:
-			return Action.WAIT, None
+			game.wait()
 	@Keys.bind('o')
 	def autoexplore(self, game):
 		""" Autoexplore. """
-		return Action.AUTOEXPLORE, None
+		game.start_autoexploring()
 	@Keys.bind('~')
 	def god_mode(self, game):
 		""" God mode options. """
@@ -222,16 +214,16 @@ class MainGame(SubMode):
 	def suicide(self, game):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
-		return Action.SUICIDE, None
+		self.game.suicide()
 	@Keys.bind('>')
 	def descend(self, game):
 		""" Descend. """
 		if not self.aim:
-			return Action.DESCEND, None
+			game.descend()
 	@Keys.bind('g')
 	def grab(self, game):
 		""" Grab item. """
-		return Action.GRAB, game.get_player().pos
+		self.game.player_grab(game.get_player().pos)
 	@Keys.bind('d')
 	def drop(self, game):
 		""" Drop item. """
@@ -258,7 +250,7 @@ class MainGame(SubMode):
 			if game.strata.valid(new_pos):
 				self.aim = new_pos
 		else:
-			return Action.MOVE, direction
+			game.move_player(direction)
 
 class HelpScreen(SubMode):
 	""" Main help screen with controls cheatsheet. """
@@ -270,6 +262,9 @@ class HelpScreen(SubMode):
 				keys = str(binding.key)
 			ui.print_line(row, 0, '{0} - {1}'.format(keys, binding.help))
 		ui.print_line(row + 1, 0, '[Press Any Key...]')
+	def on_any_key(self):
+		self.done = True
+		return True
 
 GodModeKeys = Keymapping()
 class GodModeMenu(SubMode):
@@ -286,12 +281,12 @@ class GodModeMenu(SubMode):
 	def vision(self, game):
 		""" See all. """
 		self.done = True
-		return Action.GOD_TOGGLE_VISION, None
+		game.toggle_god_vision()
 	@GodModeKeys.bind('c')
 	def noclip(self, game):
 		""" Walk through walls. """
 		self.done = True
-		return Action.GOD_TOGGLE_NOCLIP, None
+		game.toggle_god_noclip()
 
 InventoryKeys = Keymapping()
 class Inventory(SubMode):
@@ -321,7 +316,6 @@ class Inventory(SubMode):
 	def close(self, game):
 		""" Close by Escape. """
 		self.done = True
-		return Action.NONE, None
 
 EquipmentKeys = Keymapping()
 class Equipment(SubMode):
@@ -339,13 +333,13 @@ class Equipment(SubMode):
 		""" Wield or unwield item. """
 		self.done = True
 		if game.get_player().wielding:
-			return Action.UNWIELD, None
+			game.player_unwield()
+			return
 		return WieldSelection(game)
 	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self, game):
 		""" Close by Escape. """
 		self.done = True
-		return Action.NONE, None
 
 ConsumeSelectionKeys = Keymapping()
 class ConsumeSelection(Inventory):
@@ -358,14 +352,13 @@ class ConsumeSelection(Inventory):
 		index = ord(param) - ord('a')
 		if index >= len(game.get_player().inventory):
 			self.prompt = "No such item ({0})".format(param)
-			return Action.NONE, None
+			return None
 		self.done = True
-		return Action.CONSUME, game.get_player().inventory[index]
+		game.player_consume(game.get_player().inventory[index])
 	@ConsumeSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True
-		return Action.NONE, None
 
 DropSelectionKeys = Keymapping()
 class DropSelection(Inventory):
@@ -378,14 +371,13 @@ class DropSelection(Inventory):
 		index = ord(param) - ord('a')
 		if index >= len(game.get_player().inventory):
 			self.prompt = "No such item ({0})".format(param)
-			return Action.NONE, None
+			return None
 		self.done = True
-		return Action.DROP, game.get_player().inventory[index]
+		game.player_drop(game.get_player().inventory[index])
 	@DropSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True
-		return Action.NONE, None
 
 WieldSelectionKeys = Keymapping()
 class WieldSelection(Inventory):
@@ -398,11 +390,10 @@ class WieldSelection(Inventory):
 		index = ord(param) - ord('a')
 		if index >= len(game.get_player().inventory):
 			self.prompt = "No such item ({0})".format(param)
-			return Action.NONE, None
+			return None
 		self.done = True
-		return Action.WIELD, game.get_player().inventory[index]
+		game.player_wield(game.get_player().inventory[index])
 	@WieldSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """
 		self.done = True
-		return Action.NONE, None
