@@ -648,7 +648,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			if not to_remove:
 				del self.messages[:]
 			elif to_remove > 0:
-				self.messages = self.messages[self.to_remove:]
+				self.messages = self.messages[to_remove:]
 			else:
 				self.messages[0] = self.messages[0][-to_remove:]
 			ui.print_line(24, 0, message_line)
