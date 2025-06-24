@@ -24,222 +24,120 @@ class MockWriterStream:
 			return
 		self.dump.append(item)
 
-class MockUI(object):
-	def __init__(self, game, user_actions):
-		self.game = game
-		self.user_actions = list(user_actions)
-		self.events = []
-
 class AbstractTestDungeon(unittest.TestCase):
 	def _formatMessage(self, msg, standardMsg): # pragma: no cover
 		if hasattr(self, 'dungeon'):
 			msg = (msg or '') + '\n' + self.dungeon.tostring()
 		return super(AbstractTestDungeon, self)._formatMessage(msg, standardMsg)
-	def _run(self, dungeon, loop, interrupted=False):
-		self = loop
-		self.events = []
-		self.events.append([])
-		if not self.game._pre_action():
-			return False
-		if self.game.in_automovement():
-			self.events[-1].append('user_interrupted')
-			if interrupted:
-				self.game.autostop()
-			return True
-		action, action_data = self.user_actions.pop(0)
-		self.events[-1].append('user_action')
-		for callback, event in self.game.process_events(raw=True, bind_self=self):
-			self.events[-1].append(repr(event))
-		if action == ui.Action.EXIT:
-			return False
-		elif action == ui.Action.SUICIDE:
-			self.game.suicide()
-		elif action == ui.Action.WALK_TO:
-			self.game.walk_to(action_data)
-		elif action == ui.Action.AUTOEXPLORE:
-			self.game.start_autoexploring()
-		elif action == ui.Action.GOD_TOGGLE_VISION:
-			self.game.toggle_god_vision()
-		elif action == ui.Action.GOD_TOGGLE_NOCLIP:
-			self.game.toggle_god_noclip()
-		elif action == ui.Action.DESCEND:
-			self.game.descend()
-		elif action == ui.Action.MOVE:
-			self.game.move_player(action_data)
-		elif action == ui.Action.GRAB:
-			self.game.player_grab(action_data)
-		elif action == ui.Action.CONSUME:
-			self.game.player_consume(action_data)
-		elif action == ui.Action.DROP:
-			self.game.player_drop(action_data)
-		elif action == ui.Action.WIELD:
-			self.game.player_wield(action_data)
-		elif action == ui.Action.UNWIELD:
-			self.game.player_unwield()
-		elif action == ui.Action.WAIT:
-			self.game.wait()
-		return True
+	def _events(self):
+		return [list(repr(event) for callback, event in self.dungeon.process_events(raw=True, bind_self=self))]
 
 class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_run_main_loop(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.MOVE, game.Direction.UP),
-			(ui.Action.MOVE, game.Direction.DOWN),
-			(ui.Action.DESCEND, None),
-			(ui.Action.WALK_TO, Point(11, 2)),
-			(ui.Action.NONE, None),
-			(ui.Action.AUTOEXPLORE, None),
-			(ui.Action.AUTOEXPLORE, None),
-			(ui.Action.GOD_TOGGLE_VISION, None),
-			(ui.Action.GOD_TOGGLE_NOCLIP, None),
-			(ui.Action.EXIT, None),
-			]
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.move_player(game.Direction.UP)
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player @[9, 5] 10/10hp, dest=[9, 5])',
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.move_player(game.Direction.DOWN)
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player @[9, 6] 10/10hp, dest=[9, 6])',
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.descend()
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # walking...
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # walking...
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # NONE AUTOEXPLORE
-			'user_action',
+		dungeon.walk_to(Point(11, 2))
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # walking...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # walking...
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[ # NONE AUTOEXPLORE
 			'DiscoverEvent(obj=>)',
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[ # exploring...
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_interrupted',
+		dungeon.start_autoexploring()
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # exploring...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # exploring...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # exploring...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # exploring...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # exploring...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # exploring...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # exploring...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement()) # exploring...
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement())
+		dungeon.autostop()
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_interrupted',
+		dungeon.start_autoexploring()
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement())
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement())
+		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.in_automovement())
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[ # GOD_TOGGLE_* EXIT
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_interrupted',
+		dungeon.toggle_god_vision()
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # exploring...
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui, interrupted=True))
-		self.assertEqual(mock_ui.events, [[
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_interrupted',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[ # GOD_TOGGLE_* EXIT
-			'user_action',
-			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
-			]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.toggle_god_noclip()
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
 	def should_perform_monsters_turns_after_player_has_done_with_their_turn(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.NONE, None),
-			(ui.Action.MOVE, game.Direction.UP), # Step in.
-			(ui.Action.NONE, None),
-			(ui.Action.MOVE, game.Direction.UP), # Attack.
-			(ui.Action.WAIT, None), # Just wait.
-			(ui.Action.EXIT, None),
-			],
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'DiscoverEvent(obj=monster @[10, 6] 3/3hp)',
 			'DiscoverEvent(obj=monster @[9, 4] 3/3hp)',
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.move_player(game.Direction.UP) # Step in.
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player @[9, 5] 9/10hp, dest=[9, 5])',
 			'AttackEvent(actor=monster @[9, 4] 3/3hp, target=player @[9, 5] 9/10hp)',
 			'HealthEvent(target=player @[9, 5] 9/10hp, diff=-1)',
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.move_player(game.Direction.UP) # Attack.
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'AttackEvent(actor=player @[9, 5] 8/10hp, target=monster @[9, 4] 2/3hp)',
 			'HealthEvent(target=monster @[9, 4] 2/3hp, diff=-1)',
 			'AttackEvent(actor=monster @[9, 4] 2/3hp, target=player @[9, 5] 8/10hp)',
 			'HealthEvent(target=player @[9, 5] 8/10hp, diff=-1)',
 			]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.wait() # Just wait.
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'AttackEvent(actor=monster @[9, 4] 2/3hp, target=player @[9, 5] 7/10hp)',
 			'HealthEvent(target=player @[9, 5] 7/10hp, diff=-1)',
 			]])
@@ -249,57 +147,41 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(dungeon.monsters[2].hp, 2)
 	def should_die_after_monster_attack(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.NONE, None),
-			(ui.Action.MOVE, game.Direction.UP), # Step in.
-			] + [
-			(ui.Action.WAIT, None), # Just wait while monster kills you.
-			] * 10,
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'DiscoverEvent(obj=monster @[10, 6] 3/3hp)',
 			'DiscoverEvent(obj=monster @[9, 4] 3/3hp)',
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.move_player(game.Direction.UP) # Step in.
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player @[9, 5] 9/10hp, dest=[9, 5])',
 			'AttackEvent(actor=monster @[9, 4] 3/3hp, target=player @[9, 5] {0}/10hp)'.format(9),
 			'HealthEvent(target=player @[9, 5] {0}/10hp, diff=-1)'.format(9),
 			]])
-		for i in range(1, 9):
-			self.assertTrue(self._run(dungeon, mock_ui))
-			self.assertEqual(mock_ui.events, [[
-				'user_action',
+		dungeon.wait()
+		for i in range(1, 9): # Just wait while monster kills you.
+			self.assertTrue(dungeon._pre_action())
+			self.assertEqual(self._events(), [[
 				'AttackEvent(actor=monster @[9, 4] 3/3hp, target=player @[9, 5] {0}/10hp)'.format(9 - i),
 				'HealthEvent(target=player @[9, 5] {0}/10hp, diff=-1)'.format(9 - i),
 				]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			]])
+			dungeon.wait()
+		self.assertFalse(dungeon._pre_action())
 		self.assertTrue(dungeon.is_finished())
 		self.maxDiff = None
 		self.assertIsNone(dungeon.get_player())
 		self.assertEqual(dungeon.monsters[1].hp, 3)
 	def should_suicide_out_of_main_loop(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.SUICIDE, None),
-			],
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			]])
+		dungeon.suicide()
+		self.assertFalse(dungeon._pre_action())
 		self.assertTrue(dungeon.is_finished())
 		self.assertIsNone(dungeon.get_player())
 		self.maxDiff = None
@@ -307,26 +189,19 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 class TestItems(AbstractTestDungeon):
 	def should_grab_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around 2')
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.MOVE, game.Direction.RIGHT),
-			(ui.Action.GRAB, Point(10, 6)),
-			(ui.Action.EXIT, None),
-			],
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'DiscoverEvent(obj=potion @[10, 6])',
 			'DiscoverEvent(obj=healing potion @[11, 6])',
 			]])
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.move_player(game.Direction.RIGHT)
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player @[10, 6] 10/10hp, dest=[10, 6])',
 			]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.player_grab(Point(10, 6))
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'GrabItemEvent(actor=player @[10, 6] 10/10hp, item=potion @[10, 6])',
 			]])
 		self.assertFalse(dungeon.is_finished())
@@ -334,18 +209,12 @@ class TestItems(AbstractTestDungeon):
 	def should_consume_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.CONSUME, dungeon.get_player().inventory[0]),
-			(ui.Action.EXIT, None),
-			],
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.player_consume(dungeon.get_player().inventory[0])
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'ConsumeItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[0, 0])',
 			]])
 		self.assertFalse(dungeon.is_finished())
@@ -353,18 +222,12 @@ class TestItems(AbstractTestDungeon):
 	def should_drop_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.DROP, dungeon.get_player().inventory[0]),
-			(ui.Action.EXIT, None),
-			],
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.player_drop(dungeon.get_player().inventory[0])
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'DropItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[9, 6])',
 			]])
 		self.assertFalse(dungeon.is_finished())
@@ -372,18 +235,12 @@ class TestItems(AbstractTestDungeon):
 	def should_equip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon'], Point(0, 0)))
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.WIELD, dungeon.get_player().inventory[0]),
-			(ui.Action.EXIT, None),
-			],
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.player_wield(dungeon.get_player().inventory[0])
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
 			]])
 		self.assertFalse(dungeon.is_finished())
@@ -391,18 +248,12 @@ class TestItems(AbstractTestDungeon):
 	def should_unequip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().wielding = items.Item(dungeon.ITEMS['weapon'], Point(0, 0))
-		mock_ui = MockUI(dungeon, user_actions=[
-			(ui.Action.UNWIELD, None),
-			(ui.Action.EXIT, None),
-			],
-		)
-		self.assertTrue(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			]])
-		self.assertFalse(self._run(dungeon, mock_ui))
-		self.assertEqual(mock_ui.events, [[
-			'user_action',
+		dungeon.player_unwield()
+		self.assertTrue(dungeon._pre_action())
+		self.assertEqual(self._events(), [[
 			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
 			]])
 		self.assertFalse(dungeon.is_finished())
