@@ -435,8 +435,8 @@ class TestGridRoomMap(unittest.TestCase):
 
 		elevator = gridmap.objects[0][1]
 
-		self.assertEqual(list(gridmap.items_at(Point(2, 1))), [])
-		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor, pistol])
+		self.assertEqual(list(gridmap.iter_items_at(Point(2, 1))), [])
+		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor, pistol])
 		self.assertEqual(list(gridmap.objects_at(Point(1, 2))), [])
 		self.assertEqual(list(gridmap.objects_at(Point(1, 1))), [elevator])
 		self.assertEqual(list(gridmap.monsters_at(Point(9, 2))), [mj12])
@@ -472,22 +472,22 @@ class TestGridRoomMap(unittest.TestCase):
 		gridmap.items.append( (Point(1, 1), key) )
 		gridmap.items.append( (Point(1, 1), pistol) )
 		gridmap.items.append( (Point(1, 1), armor) )
-		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor, pistol, key])
+		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor, pistol, key])
 
 		events = gridmap.grab_item(jc, key)
 		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, key)]))
 		self.assertTrue(jc.has_item(NanoKey))
-		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor, pistol])
+		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor, pistol])
 
 		events = gridmap.grab_item(jc, pistol)
 		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, pistol)]))
 		self.assertTrue(jc.has_item(StealthPistol))
-		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor])
+		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor])
 
 		events = gridmap.grab_item(jc, armor)
 		self.assertEqual(_R(events), _R([game.Event.InventoryFull(armor)]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
-		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [armor])
+		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor])
 	def should_drop_item(self):
 		pistol = StealthPistol()
 		jc = UNATCOAgent()
@@ -495,11 +495,11 @@ class TestGridRoomMap(unittest.TestCase):
 		jc.pos = Point(1, 1)
 
 		gridmap = self._map()
-		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [])
+		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [])
 		events = gridmap.drop_item(jc, pistol)
 		self.assertEqual(_R(events), _R([game.Event.MonsterDroppedItem(jc, pistol)]))
 		self.assertFalse(jc.has_item(StealthPistol))
-		self.assertEqual(list(gridmap.items_at(Point(1, 1))), [pistol])
+		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [pistol])
 	def should_visit_places(self):
 		gridmap = self._map()
 

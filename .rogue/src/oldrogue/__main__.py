@@ -387,7 +387,7 @@ class StatusLine(tui.widgets.StatusLine):
 					))),
 			StatusSection("Wld", 7, lambda dungeon: dungeon.get_player().wielding.name if dungeon.get_player().wielding else None),
 			StatusSection("Wear", 7, lambda dungeon: dungeon.get_player().wearing.name if dungeon.get_player().wearing else None),
-			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.current_level.items_at(dungeon.get_player().pos), next(dungeon.current_level.objects_at(dungeon.get_player().pos), None)), 'sprite', None)),
+			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.current_level.iter_items_at(dungeon.get_player().pos), next(dungeon.current_level.objects_at(dungeon.get_player().pos), None)), 'sprite', None)),
 			]
 
 Controls = AutoRegistry()

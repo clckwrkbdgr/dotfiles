@@ -723,7 +723,7 @@ class TestFight(AbstractTestDungeon):
 		monster = dungeon.find_monster(10, 6)
 		dungeon.attack(dungeon.get_player(), dungeon.find_monster(10, 6))
 
-		item = dungeon.find_item(10, 6)
+		item = next(dungeon.iter_items_at((10, 6)))
 		self.assertEqual(item.item_type.name, 'money')
 		self.assertEqual(type(dungeon.events[-1]), game.DropItemEvent)
 		self.assertEqual(dungeon.events[-1].actor, monster)

@@ -119,7 +119,7 @@ class MainGame(SubMode):
 		player = game.get_player()
 		if player:
 			status.append('hp: {0:>{1}}/{2}'.format(player.hp, len(str(player.species.max_hp)), player.species.max_hp))
-			item = game.find_item(player.pos.x, player.pos.y)
+			item = next(game.iter_items_at(player.pos), None)
 			if item:
 				status.append('here: {0}'.format(item.item_type.sprite))
 			if player.inventory:

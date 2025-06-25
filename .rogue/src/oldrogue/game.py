@@ -351,7 +351,7 @@ class GridRoomMap(object):
 		for obj_pos, obj in reversed(self.objects):
 			if obj_pos == pos:
 				yield obj
-	def items_at(self, pos):
+	def iter_items_at(self, pos):
 		""" Yield items at pos in reverse order (from top to bottom). """
 		for item_pos, item in reversed(self.items):
 			if item_pos == pos:

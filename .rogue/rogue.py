@@ -530,6 +530,11 @@ class Game(engine.Game):
 				)
 	def get_player(self):
 		return self.player
+	def iter_items_at(self, pos):
+		zone_items = self.world.get_data(pos)[-1].items
+		for item in zone_items:
+			if pos.values[-1] == item.pos:
+				yield item
 
 def iter_rect(topleft, bottomright):
 	for x in range(topleft.x, bottomright.x + 1):
@@ -649,13 +654,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		ui.print_line(1, hud_pos, "T:{0}".format(game.passed_time))
 		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.get_player().hp, game.get_player().max_hp))
 		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.get_player().inventory)))
-		player_zone_items = game.world.get_data(game.get_player().pos)[-1].items
-		item_here = next((
-			item for item in player_zone_items
-			if game.get_player().pos.values[-1] == item.pos
-			), None)
+		item_here = next(game.iter_items_at(game.get_player().pos), None)
 		if item_here:
-			ui.print_line(4, hud_pos, "here:{0}".format(item.sprite.sprite))
+			ui.print_line(4, hud_pos, "here:{0}".format(item_here.sprite.sprite))
 
 		ui.print_line(24, 0, " " * 80)
 		self.messages.extend(game.process_events())
@@ -686,11 +687,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 	def grab_item(self):
 		game = self.game
 		if True:
-			item = next((
-				item for item in
-				game.world.get_data(game.get_player().pos)[-1].items
-				if game.get_player().pos.values[-1] == item.pos
-				), None)
+			item = next(game.iter_items_at(game.get_player().pos), None)
 			if not item:
 				self.game.fire_event(NothingToPickUp())
 			elif len(game.get_player().inventory) >= 26:

@@ -233,7 +233,7 @@ class Game(engine.Game):
 		return (
 				self.strata.cell(pos),
 				[True] if self.exit_pos == pos else [],
-				list(self.find_items(pos)),
+				list(self.iter_items_at(pos)),
 				list(self.find_monsters(pos)),
 				)
 	def get_cell_repr(self, pos, cell_info):
@@ -288,11 +288,10 @@ class Game(engine.Game):
 						self.fire_event(DiscoverEvent(monster))
 					current_visible_monsters.append(monster)
 
-			for item in self.items:
-				if p == item.pos:
-					if item not in self.visible_items:
-						self.fire_event(DiscoverEvent(item))
-					current_visible_items.append(item)
+			for item in self.iter_items_at(p):
+				if item not in self.visible_items:
+					self.fire_event(DiscoverEvent(item))
+				current_visible_items.append(item)
 
 			if cell.visited:
 				continue
@@ -405,18 +404,12 @@ class Game(engine.Game):
 			if monster.pos.x == x and monster.pos.y == y:
 				return monster
 		return None
-	def find_item(self, x, y):
-		""" Return first item at given cell. """
-		for item in self.items:
-			if item.pos.x == x and item.pos.y == y:
-				return item
-		return None
 	def find_monsters(self, pos):
 		""" Yield all monsters at given cell. """
 		for monster in self.monsters:
 			if monster.pos == pos:
 				yield monster
-	def find_items(self, pos):
+	def iter_items_at(self, pos):
 		""" Return all items at given cell. """
 		for item in self.items:
 			if item.pos == pos:
@@ -425,7 +418,7 @@ class Game(engine.Game):
 		""" Grabs topmost item at given cell and puts to the inventory.
 		Produces events.
 		"""
-		item = self.find_item(pos.x, pos.y)
+		item = next(self.iter_items_at(pos), None)
 		if not item:
 			return
 		self.fire_event(GrabItemEvent(actor, item))
