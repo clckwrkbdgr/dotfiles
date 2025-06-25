@@ -501,6 +501,49 @@ class Dungeon(engine.Game):
 				if self.is_remembered(tunnel, obj):
 					return True
 		return False
+	def iter_cells(self, view_rect):
+		dungeon = self
+		trace.debug(list(dungeon.current_level.rooms.keys()))
+		terrain = []
+		for room in dungeon.current_level.rooms.values():
+			if not dungeon.is_remembered(room):
+				continue
+			terrain.append((room.top, room.top, "+"))
+			terrain.append((room.top, room.left, "+"))
+			terrain.append((room.bottom, room.left, "+"))
+			terrain.append((room.top, room.right, "+"))
+			terrain.append((room.bottom, room.right, "+"))
+			for x in range(room.left+1, room.right):
+				terrain.append((room.top, x, "-"))
+				terrain.append((room.bottom, x, "-"))
+			for y in range(room.top+1, room.bottom):
+				terrain.append((y, room.left, "|"))
+				terrain.append((y, room.right, "|"))
+			if dungeon.is_visible(room):
+				for y in range(room.top+1, room.bottom):
+					for x in range(room.left+1, room.right):
+						terrain.append((y, x, "."))
+			else:
+				for y in range(room.top+1, room.bottom):
+					for x in range(room.left+1, room.right):
+						terrain.append((y, x, " "))
+		for tunnel in dungeon.current_level.tunnels:
+			for cell in tunnel.iter_points():
+				if dungeon.is_visible(tunnel, cell):
+					terrain.append((cell.y, cell.x, "#"))
+			if dungeon.is_visible(tunnel, tunnel.start):
+				terrain.append((tunnel.start.y, tunnel.start.x, "+"))
+			if dungeon.is_visible(tunnel, tunnel.stop):
+				terrain.append((tunnel.stop.y, tunnel.stop.x, "+"))
+
+		for y, x, sprite in terrain:
+			pos = Point(x, y)
+			objects = [obj for _pos, obj in dungeon.current_level.objects if _pos == pos]
+			items = [item for _pos, item in dungeon.current_level.items if _pos == pos]
+			monsters = [monster for monster in dungeon.current_level.monsters if monster.pos == pos]
+			if dungeon.rogue.pos == pos:
+				monsters.append(dungeon.rogue)
+			yield pos, (sprite, objects, items, monsters)
 	def go_to_level(self, level_id, connected_passage='enter'):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.

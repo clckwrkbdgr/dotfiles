@@ -1,7 +1,7 @@
 from .defs import *
 from . import pcg
 from clckwrkbdgr.pcg import RNG
-from clckwrkbdgr.math import Point, Direction, Matrix, Size
+from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
 from .defs import Action
@@ -210,42 +210,46 @@ class Game(engine.Game):
 	def get_viewport(self):
 		""" Returns current viewport size (for UI purposes). """
 		return self.strata.size
-	def tostring(self, with_fov=False, strcell=None):
+	def tostring(self, with_fov=False):
 		""" Creates string representation of the current viewport.
 		If with_fov=True, considers transparency/lighting, otherwise everything is visible.
 		If strcell is given, it is lambda that takes pair (x, y) and returns single-char representation of that cell. By default get_sprite(x, y) is used.
 		"""
-		size = self.get_viewport()
-		strcell = strcell or self.get_sprite
-		result = ""
 		if not with_fov:
 			old_god_vision = self.god.vision
 			self.god.vision = True
-		for y in range(size.height):
-			for x in range(size.width):
-				result += strcell(x, y) or ' '
-			result += "\n"
+		result = Matrix(self.get_viewport())
+		for pos, cell_info in self.iter_cells(Rect(Point(0, 0), self.get_viewport())):
+			result.set_cell(pos, self.get_cell_repr(pos, cell_info) or ' ')
 		if not with_fov:
 			self.god.vision = old_god_vision
-		return result
-	def get_sprite(self, x, y):
-		""" Returns top sprite at the given position. """
-		monster = self.find_monster(x, y)
-		if monster:
-			if self.field_of_view.is_visible(x, y) or self.god.vision:
-				return monster.species.sprite
-		item = self.find_item(x, y)
-		if item:
-			if self.field_of_view.is_visible(x, y) or self.god.vision:
-				return item.item_type.sprite
-		if self.exit_pos.x == x and self.exit_pos.y == y:
-			if self.god.vision or self.remembered_exit or self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
+		return result.tostring()
+	def iter_cells(self, view_rect):
+		for y in range(view_rect.height):
+			for x in range(view_rect.width):
+				pos = Point(x, y)
+				yield pos, self.get_cell_info(pos)
+	def get_cell_info(self, pos):
+		return (
+				self.strata.cell(pos),
+				[True] if self.exit_pos == pos else [],
+				list(self.find_items(pos)),
+				list(self.find_monsters(pos)),
+				)
+	def get_cell_repr(self, pos, cell_info):
+		cell, objects, items, monsters = cell_info
+		if self.god.vision or self.field_of_view.is_visible(pos.x, pos.y):
+			if monsters:
+				return monsters[-1].species.sprite
+			if items:
+				return items[-1].item_type.sprite
+			if objects:
 				return '>'
-
-		cell = self.strata.cell((x, y))
-		if self.field_of_view.is_visible(x, y) or self.god.vision:
 			return cell.terrain.sprite
-		elif cell.visited and cell.terrain.remembered:
+		if objects:
+			if self.remembered_exit:
+				return '>'
+		if cell.visited and cell.terrain.remembered:
 			return cell.terrain.remembered
 		return None
 	def is_transparent(self, p):
@@ -407,6 +411,16 @@ class Game(engine.Game):
 			if item.pos.x == x and item.pos.y == y:
 				return item
 		return None
+	def find_monsters(self, pos):
+		""" Yield all monsters at given cell. """
+		for monster in self.monsters:
+			if monster.pos == pos:
+				yield monster
+	def find_items(self, pos):
+		""" Return all items at given cell. """
+		for item in self.items:
+			if item.pos == pos:
+				yield item
 	def grab_item_at(self, actor, pos):
 		""" Grabs topmost item at given cell and puts to the inventory.
 		Produces events.

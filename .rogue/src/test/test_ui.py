@@ -86,6 +86,18 @@ class TestCurses(unittest.TestCase):
 			'# .................#',
 			' ###################',
 			]
+	DISPLAYED_LAYOUT_REMEMBERED_EXIT = [
+			'  #########      ###',
+			'  ...     >##      #',
+			'    ...    .#    ..#',
+			'     ##..##.#M.....#',
+			'     #....@........#',
+			'#    #.............#',
+			'#  ................#',
+			'#..................#',
+			'#..................#',
+			' ###################',
+			]
 	DISPLAYED_LAYOUT_FIGHT = [
 			'    #####   ########',
 			'            #......#',
@@ -228,6 +240,28 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster...                                                                      '),
+			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('refresh',),
+			])
+	def should_display_remembered_exit(self):
+		dungeon = mock_dungeon.build('single mock monster')
+		ui, loop = self._init(dungeon, '.')
+
+		dungeon.start_autoexploring()
+		# Monster is already spotted from the beginning,
+		# now move into cave opening to detect exit.
+		dungeon.move(dungeon.get_player(), Direction.UP_RIGHT)
+		dungeon.move(dungeon.get_player(), Direction.UP_RIGHT)
+		dungeon.move(dungeon.get_player(), Direction.UP_RIGHT)
+		# Now move back and try to remember exit.
+		dungeon.move(dungeon.get_player(), Direction.LEFT)
+
+		loop.redraw()
+		self.maxDiff = None
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
+			('addstr', y, x, self.DISPLAYED_LAYOUT_REMEMBERED_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'monster! monsters! exit!                                                        '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])

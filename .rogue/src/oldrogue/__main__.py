@@ -395,53 +395,16 @@ Controls = AutoRegistry()
 class MainGame(tui.app.MVC):
 	_full_redraw = True
 	def _view(self, window):
-		stdscr, dungeon = window, self.data
-
-		trace.debug(list(dungeon.current_level.rooms.keys()))
-		for room in dungeon.current_level.rooms.values():
-			if not dungeon.is_remembered(room):
-				continue
-			stdscr.addstr(1 + room.top, room.left, "+")
-			stdscr.addstr(1 + room.bottom, room.left, "+")
-			stdscr.addstr(1 + room.top, room.right, "+")
-			stdscr.addstr(1 + room.bottom, room.right, "+")
-			for x in range(room.left+1, room.right):
-				stdscr.addstr(1 + room.top, x, "-")
-				stdscr.addstr(1 + room.bottom, x, "-")
-			for y in range(room.top+1, room.bottom):
-				stdscr.addstr(1 + y, room.left, "|")
-				stdscr.addstr(1 + y, room.right, "|")
-			if dungeon.is_visible(room):
-				for y in range(room.top+1, room.bottom):
-					for x in range(room.left+1, room.right):
-						stdscr.addstr(1 + y, x, ".")
+		for pos, (terrain, objects, items, monsters) in self.data.iter_cells(None):
+			if monsters and dungeon.is_visible(pos):
+				window.addstr(1 + pos.y, pos.x, monsters[-1].sprite)
+			elif items and (dungeon.is_remembered(pos) or dungeon.is_visible(pos)):
+				window.addstr(1 + pos.y, pos.x, items[-1].sprite)
+			elif objects and (dungeon.is_remembered(pos) or dungeon.is_visible(pos)):
+				window.addstr(1 + pos.y, pos.x, objects[-1].sprite)
 			else:
-				for y in range(room.top+1, room.bottom):
-					for x in range(room.left+1, room.right):
-						stdscr.addstr(1 + y, x, " ")
-		for tunnel in dungeon.current_level.tunnels:
-			for cell in tunnel.iter_points():
-				if dungeon.is_visible(tunnel, cell):
-					stdscr.addstr(1 + cell.y, cell.x, "#")
-			if dungeon.is_visible(tunnel, tunnel.start):
-				stdscr.addstr(1 + tunnel.start.y, tunnel.start.x, "+")
-			if dungeon.is_visible(tunnel, tunnel.stop):
-				stdscr.addstr(1 + tunnel.stop.y, tunnel.stop.x, "+")
-
-		for pos, obj in dungeon.current_level.objects:
-			if dungeon.is_remembered(pos) or dungeon.is_visible(pos):
-				stdscr.addstr(1 + pos.y, pos.x, obj.sprite)
-		for pos, item in dungeon.current_level.items:
-			if dungeon.is_remembered(pos) or dungeon.is_visible(pos):
-				stdscr.addstr(1 + pos.y, pos.x, item.sprite)
-
-		for monster in dungeon.current_level.monsters:
-			if dungeon.is_visible(monster.pos):
-				stdscr.addstr(1 + monster.pos.y, monster.pos.x, monster.sprite)
-		stdscr.addstr(1 + dungeon.rogue.pos.y, dungeon.rogue.pos.x, dungeon.rogue.sprite)
-
+				window.addstr(1 + pos.y, pos.x, terrain)
 	def _control(self, ch):
-
 		self.step_is_over = False
 		try:
 			new_mode = Controls[str(ch)](self)

@@ -481,6 +481,53 @@ class Game(engine.Game):
 			builder.make_grid()
 			field.data.monsters.extend(builder.make_actors())
 		return zone
+	def iter_cells(self, view_rect):
+		viewport_topleft = NestedGrid.Coord.from_global(view_rect.topleft, self.world)
+		viewport_bottomright = NestedGrid.Coord.from_global(view_rect.bottomright, self.world)
+		raw_viewport = Rect(Point(0, 0), view_rect.size)
+		raw_viewport_center = Point(*(raw_viewport.size // 2))
+		view_shift = view_rect.topleft
+
+		full_zone_size = Size(
+				self.world.sizes[-2].width * self.world.sizes[-1].width,
+				self.world.sizes[-2].height * self.world.sizes[-1].height,
+				)
+		for zone_index in iter_rect(viewport_topleft.values[0], viewport_bottomright.values[0]):
+			zone = self.world.cells.cell(zone_index)
+			if zone is None:
+				continue
+			zone_shift = Point(
+						zone_index.x * full_zone_size.width,
+						zone_index.y * full_zone_size.height,
+						)
+			for field_index in zone.cells:
+				field = zone.cells.cell(field_index)
+				field_rect = Rect(zone_shift + Point(
+							field_index.x * field.full_size.width,
+							field_index.y * field.full_size.height,
+							), field.full_size)
+				control_points = [
+						Point(field_rect.left, field_rect.top),
+						Point(field_rect.right, field_rect.top),
+						Point(field_rect.left, field_rect.bottom),
+						Point(field_rect.right, field_rect.bottom),
+						]
+				if not any(raw_viewport.contains(pos - view_shift, with_border=True) for pos in control_points):
+					continue
+				for pos in field.cells:
+					if not view_rect.contains(pos + field_rect.topleft, with_border=True):
+						continue
+					coord_pos = NestedGrid.Coord(zone_index, field_index, pos)
+					
+					yield ((pos + field_rect.topleft), self.get_cell_info(coord_pos, context=field))
+	def get_cell_info(self, pos, context=None):
+		field = context
+		return (
+				field.cells.cell(pos.values[-1]),
+				[], # No objects.
+				[item for item in field.data.items if pos.values[-1] == item.pos],
+				[monster for monster in field.data.monsters if pos.values[-1] == monster.pos] + ([self.player] if self.player.pos == pos else []),
+				)
 
 def iter_rect(topleft, bottomright):
 	for x in range(topleft.x, bottomright.x + 1):
@@ -569,55 +616,22 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		self.messages = []
 	def redraw(self, ui):
 		game = self.game
-		full_zone_size = Size(
-				game.world.sizes[-2].width * game.world.sizes[-1].width,
-				game.world.sizes[-2].height * game.world.sizes[-1].height,
+		view_rect = Rect(
+				game.player.pos.get_global(game.world) + self.centered_viewport.topleft,
+				self.centered_viewport.size,
 				)
-		player_pos = game.player.pos.get_global(game.world)
-		player_relative_pos = player_pos - self.center
-		viewport_topleft = NestedGrid.Coord.from_global(player_pos + self.centered_viewport.topleft, game.world)
-		viewport_bottomright = NestedGrid.Coord.from_global(player_pos + self.centered_viewport.bottomright, game.world)
-
-		for zone_index in iter_rect(viewport_topleft.values[0], viewport_bottomright.values[0]):
-			zone = game.world.cells.cell(zone_index)
-			if zone is None:
-				continue
-			zone_shift = Point(
-						zone_index.x * full_zone_size.width,
-						zone_index.y * full_zone_size.height,
-						)
-			for field_index in zone.cells:
-				field = zone.cells.cell(field_index)
-				field_rect = Rect(zone_shift + Point(
-							field_index.x * field.full_size.width,
-							field_index.y * field.full_size.height,
-							), field.full_size)
-				control_points = [
-						Point(field_rect.left, field_rect.top),
-						Point(field_rect.right, field_rect.top),
-						Point(field_rect.left, field_rect.bottom),
-						Point(field_rect.right, field_rect.bottom),
-						]
-				if not any(self.viewport.contains(pos - player_relative_pos, with_border=True) for pos in control_points):
-					continue
-				field_topleft = field_rect.topleft - player_relative_pos
-				for pos in field.cells:
-					screen_pos = pos + field_topleft
-					if not self.viewport.contains(screen_pos, with_border=True):
-						continue
-					tile_sprite = field.cells.cell(pos).sprite
-					ui.print_char(screen_pos.x, screen_pos.y, tile_sprite.sprite, tile_sprite.color)
-				for item in field.data.items:
-					screen_pos = item.pos + field_topleft
-					if not self.viewport.contains(screen_pos, with_border=True):
-						continue
-					ui.print_char(screen_pos.x, screen_pos.y, item.sprite.sprite, item.sprite.color)
-				for monster in field.data.monsters:
-					screen_pos = monster.pos + field_topleft
-					if not self.viewport.contains(screen_pos, with_border=True):
-						continue
-					ui.print_char(screen_pos.x, screen_pos.y, monster.sprite.sprite, monster.sprite.color)
-		ui.print_char(self.center.x, self.center.y, game.player.sprite.sprite, game.player.sprite.color)
+		for _pos, (_terrain, _objects, _items, _monsters) in game.iter_cells(view_rect):
+			if _monsters:
+				entity = _monsters[-1]
+			elif _items:
+				entity = _items[-1]
+			elif _objects:
+				entity = _objects[-1]
+			else:
+				entity = _terrain
+			sprite = entity.sprite
+			screen_pos = _pos - view_rect.topleft
+			ui.print_char(screen_pos.x, screen_pos.y, sprite.sprite, sprite.color)
 
 		hud_pos = self.viewport.right + 1
 		for row in range(5):

@@ -23,6 +23,7 @@ class NanoKey(Item):
 
 class StealthPistol(Item):
 	_attack = 5
+	_sprite = '('
 
 class ThermopticCamo(Item, Wearable):
 	_protection = 3
@@ -46,6 +47,7 @@ class UNATCOAgent(Monster):
 	_attack = 2
 	_max_hp = 100
 	_max_inventory = 2
+	_sprite = '@'
 
 class VacuumCleaner(Monster):
 	_max_hp = 5
@@ -58,6 +60,7 @@ class MJ12Trooper(Monster):
 	_attack = 3
 	_max_hp = 200
 	_hostile_to = [UNATCOAgent, NSFTerrorist]
+	_sprite = 'M'
 
 class TestUtils(unittest.TestCase):
 	def should_detect_diagonal_movement(self):
@@ -282,13 +285,12 @@ class MockGenerator:
 	def build_level(self, level_id):
 		result = GridRoomMap()
 		if level_id == 'top':
-			result.rooms, result.tunnels[:], result.objects[:] = MockGenerator._parse_layout(self.MAIN_LEVEL)
+			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.MAIN_LEVEL)
 		elif level_id == 'roof':
-			result.rooms, result.tunnels[:], result.objects[:] = MockGenerator._parse_layout(self.ROOF)
+			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.ROOF)
 		return result
-	@staticmethod
 	@functools.lru_cache()
-	def _parse_layout(layout):
+	def _parse_layout(self, layout):
 		layout = Matrix.fromstring(layout)
 
 		rects = []
@@ -520,6 +522,62 @@ class TestDungeon(unittest.TestCase):
 	class UNATCO(game.Dungeon):
 		GENERATOR = MockGenerator
 		PLAYER_TYPE = UNATCOAgent
+	def should_iter_dungeon_cells(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.rogue.pos = Point(3, 1)
+		dungeon.current_level.visit(dungeon.rogue.pos)
+		dungeon.rogue.pos = Point(5, 1)
+		dungeon.current_level.visit(dungeon.rogue.pos)
+		dungeon.rogue.pos = Point(5, 3)
+		dungeon.current_level.visit(dungeon.rogue.pos)
+		dungeon.rogue.pos = Point(7, 3)
+		dungeon.current_level.visit(dungeon.rogue.pos)
+		mj12 = MJ12Trooper()
+		mj12.pos = Point(8, 3)
+		dungeon.current_level.monsters.append(mj12)
+		pistol = StealthPistol()
+		dungeon.current_level.items.append((Point(9, 2), pistol))
+
+		view = Matrix((80, 25), '_')
+		for pos, (terrain, objects, items, monsters) in dungeon.iter_cells(None):
+			if monsters:
+				view.set_cell(pos, monsters[-1].sprite)
+			elif items:
+				view.set_cell(pos, items[-1].sprite)
+			elif objects:
+				view.set_cell(pos, objects[-1].sprite)
+			else:
+				view.set_cell(pos, terrain)
+		expected = textwrap.dedent("""\
+				+--+____________________________________________________________________________
+				|> +##_+----+___________________________________________________________________
+				+--+_#_|.(..|___________________________________________________________________
+				_____##@M...|___________________________________________________________________
+				_______+---++___________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				________________________________________________________________________________
+				""")
+		self.maxDiff = None
+		self.assertEqual(view.tostring(), expected)
 	def should_move_to_level(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')

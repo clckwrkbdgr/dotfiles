@@ -374,11 +374,17 @@ class NestedGrid: # pragma: no cover -- TODO
 				size.height *= nested_grid.sizes[-1-index].height
 				result += Point(value.x * size.width, value.y * size.height)
 			return result
+		def __eq__(self, other):
+			if not isinstance(other, NestedGrid.Coord):
+				raise TypeError("Cannot compare NestedGrid.Coord with {0}".format(type(other)))
+			return self.values == other.values
+		def __ne__(self, other):
+			return not (self == other)
 		def __str__(self):
-			return ';'.join(
+			return ';'.join((
 					''.join('{0:02X}'.format(value.x) for value in self.values),
 					''.join('{0:02X}'.format(value.y) for value in self.values),
-					)
+					))
 		@classmethod
 		def from_global(cls, pos, nested_grid):
 			""" Splits global pos on the specified NestedGrid into a Coord object.

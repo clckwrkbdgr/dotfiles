@@ -6,7 +6,7 @@ import curses, curses.ascii
 import logging
 Log = logging.getLogger('rogue')
 from . import game
-from clckwrkbdgr.math import Point, Direction
+from clckwrkbdgr.math import Point, Direction, Rect
 from clckwrkbdgr import utils
 import clckwrkbdgr.tui
 import clckwrkbdgr.text
@@ -77,12 +77,23 @@ class MainGame(SubMode):
 		game = self.game
 		ui.cursor(bool(self.aim))
 		Log.debug('Redrawing interface.')
-		viewport = game.get_viewport()
-		for row in range(viewport.height):
-			for col in range(viewport.width):
-				Log.debug('Cell {0},{1}'.format(col, row))
-				sprite = game.get_sprite(col, row)
-				ui.print_char(col, 1+row, sprite or ' ')
+		for pos, cell_info in game.iter_cells(Rect(Point(0, 0), game.get_viewport())):
+			cell, objects, items, monsters = cell_info
+			sprite = ' '
+			if game.god.vision or game.field_of_view.is_visible(pos.x, pos.y):
+				if monsters:
+					sprite = monsters[-1].species.sprite
+				elif items:
+					sprite = items[-1].item_type.sprite
+				elif objects:
+					sprite = '>'
+				else:
+					sprite = cell.terrain.sprite
+			elif objects and game.remembered_exit:
+				sprite = '>'
+			elif cell.visited and cell.terrain.remembered:
+				sprite = cell.terrain.remembered
+			ui.print_char(pos.x, 1+pos.y, sprite or ' ')
 
 		for callback, event in game.process_events(raw=True, bind_self=self):
 			if not callback:

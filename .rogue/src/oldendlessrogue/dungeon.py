@@ -27,11 +27,18 @@ class Dungeon(engine.Game):
 		data.update(self.__dict__)
 		del data['rng']
 		state.update(data)
+	def get_cell_info(self, pos):
+		return self.terrain.cell(pos), [], [], (["@"] if self.rogue == pos else [])
+	def iter_cells(self, view_rect):
+		for y in range(view_rect.topleft.y, view_rect.bottomright.y + 1):
+			for x in range(view_rect.topleft.x, view_rect.bottomright.x + 1):
+				pos = Point(x, y)
+				yield pos, self.get_cell_info(pos)
 	def get_sprite(self, pos):
-		if pos == Point(0, 0):
-			return "@"
-		pos = Point(pos) + self.rogue
-		return self.terrain.cell(pos)
+		terrain, objects, items, monsters = self.get_cell_info(pos)
+		if monsters:
+			return monsters[-1]
+		return terrain
 	def is_passable(self, pos):
 		return self.terrain.cell(pos) == '.'
 	def shift_player(self, shift):

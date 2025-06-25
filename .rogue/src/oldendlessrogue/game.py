@@ -1,6 +1,6 @@
 import logging
 trace = logging.getLogger('rogue')
-from clckwrkbdgr.math import Point
+from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
 from clckwrkbdgr.math.auto import Autoexplorer
 
@@ -45,13 +45,16 @@ class Game(clckwrkbdgr.tui.Mode):
 		self.autoexplore = None
 		self.autoexplorer_class = autoexplorer or DungeonExplorer
 	def redraw(self, ui):
-		for y in range(-self.VIEW_CENTER.y, 25 - self.VIEW_CENTER.y):
-			for x in range(-self.VIEW_CENTER.x, 25 - self.VIEW_CENTER.x):
-				ui.print_char(
-						self.VIEW_CENTER.x + x,
-						self.VIEW_CENTER.y + y,
-						self.dungeon.get_sprite((x, y)),
-						)
+		view_rect = Rect(self.dungeon.rogue - self.VIEW_CENTER, Size(25, 25))
+		for pos, (terrain, _1, _2, monsters) in self.dungeon.iter_cells(view_rect):
+			sprite = terrain
+			if monsters:
+				sprite = monsters[-1]
+			ui.print_char(
+					pos.x - view_rect.topleft.x,
+					pos.y - view_rect.topleft.y,
+					sprite,
+					)
 		ui.print_line(0, 27, 'Time: {0}'.format(self.dungeon.time))
 		ui.print_line(1, 27, 'X:{x} Y:{y}  '.format(x=self.dungeon.rogue.x, y=self.dungeon.rogue.y))
 		ui.print_line(24, 27, '[autoexploring, press ESC...]' if self.autoexplore else '                             ')
