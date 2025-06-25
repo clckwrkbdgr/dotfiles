@@ -34,6 +34,8 @@ class Dungeon(engine.Game):
 			for x in range(view_rect.topleft.x, view_rect.bottomright.x + 1):
 				pos = Point(x, y)
 				yield pos, self.get_cell_info(pos)
+	def get_player(self):
+		return self.rogue
 	def get_sprite(self, pos):
 		terrain, objects, items, monsters = self.get_cell_info(pos)
 		if monsters:
@@ -42,8 +44,8 @@ class Dungeon(engine.Game):
 	def is_passable(self, pos):
 		return self.terrain.cell(pos) == '.'
 	def shift_player(self, shift):
-		new_pos = self.rogue + shift
+		new_pos = self.get_player() + shift
 		if self.is_passable(new_pos):
-			self.rogue = new_pos
-			self.terrain.recalibrate(self.rogue)
+			self.rogue = new_pos # TODO move character in-place
+			self.terrain.recalibrate(self.get_player())
 		self.time += 1

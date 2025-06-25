@@ -81,3 +81,6 @@ class Game(object):
 		See get_cell_info() for details.
 		"""
 		raise NotImplementedError()
+	def get_player(self): # pragma: no cover
+		""" Should return player-controlled actor character. """
+		raise NotImplementedError()

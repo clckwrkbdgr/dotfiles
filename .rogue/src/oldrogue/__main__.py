@@ -255,7 +255,7 @@ events.Event.on(Event.AttackMonster)(lambda event: "{Who} hit {whom} for {damage
 events.Event.on(Event.MonsterDied)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
 @events.Event.on(Event.BumpIntoTerrain)
 def bumps_into_terrain(event):
-	if event.who != dungeon.rogue:
+	if event.who != dungeon.get_player():
 		return "{Who} bumps into wall.".format(Who=event.who.name.title())
 events.Event.on(Event.BumpIntoMonster)(lambda event:"{Who} bumps into {whom}.".format(Who=event.who.name.title(), whom=event.whom.name))
 
@@ -371,23 +371,23 @@ class MessageView(tui.widgets.MessageLineOverlay):
 			trace.debug("Message posted: {0}".format(message))
 			yield message
 	def force_ellipsis(self):
-		return not self.data.rogue.is_alive()
+		return not self.data.get_player().is_alive()
 
 StatusSection = tui.widgets.StatusLine.LabeledSection
 class StatusLine(tui.widgets.StatusLine):
 	CORNER = "[?]"
 	SECTIONS = [
 			StatusSection('Lvl', 2, lambda dungeon: 1+dungeon.current_level_id),
-			StatusSection("HP", 6, lambda dungeon: "{0}/{1}".format(dungeon.rogue.hp, dungeon.rogue.max_hp)),
+			StatusSection("HP", 6, lambda dungeon: "{0}/{1}".format(dungeon.get_player().hp, dungeon.get_player().max_hp)),
 			StatusSection("Items", 2, lambda dungeon:(
-				None if not dungeon.rogue.inventory else (
-					''.join(item.sprite for item in dungeon.rogue.inventory)
-					if len(dungeon.rogue.inventory) <= 2
-					else len(dungeon.rogue.inventory)
+				None if not dungeon.get_player().inventory else (
+					''.join(item.sprite for item in dungeon.get_player().inventory)
+					if len(dungeon.get_player().inventory) <= 2
+					else len(dungeon.get_player().inventory)
 					))),
-			StatusSection("Wld", 7, lambda dungeon: dungeon.rogue.wielding.name if dungeon.rogue.wielding else None),
-			StatusSection("Wear", 7, lambda dungeon: dungeon.rogue.wearing.name if dungeon.rogue.wearing else None),
-			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.current_level.items_at(dungeon.rogue.pos), next(dungeon.current_level.objects_at(dungeon.rogue.pos), None)), 'sprite', None)),
+			StatusSection("Wld", 7, lambda dungeon: dungeon.get_player().wielding.name if dungeon.get_player().wielding else None),
+			StatusSection("Wear", 7, lambda dungeon: dungeon.get_player().wearing.name if dungeon.get_player().wearing else None),
+			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.current_level.items_at(dungeon.get_player().pos), next(dungeon.current_level.objects_at(dungeon.get_player().pos), None)), 'sprite', None)),
 			]
 
 Controls = AutoRegistry()
@@ -436,7 +436,7 @@ class MainGame(tui.app.MVC):
 	def descend(self):
 		""" Go down. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.current_level.objects_at(dungeon.rogue.pos)), None)
+		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.current_level.objects_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			dungeon.use_stairs(stairs_here)
 			dungeon.fire_event(GoingDown())
@@ -447,7 +447,7 @@ class MainGame(tui.app.MVC):
 	def ascend(self):
 		""" Go up. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_up, dungeon.current_level.objects_at(dungeon.rogue.pos)), None)
+		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_up, dungeon.current_level.objects_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			try:
 				dungeon.use_stairs(stairs_here)
@@ -463,16 +463,16 @@ class MainGame(tui.app.MVC):
 	def grab(self):
 		""" Grab item. """
 		dungeon = self.data
-		item_here = next( (index for index, (pos, item) in enumerate(reversed(dungeon.current_level.items)) if pos == dungeon.rogue.pos), None)
+		item_here = next( (index for index, (pos, item) in enumerate(reversed(dungeon.current_level.items)) if pos == dungeon.get_player().pos), None)
 		trace.debug("Items: {0}".format(dungeon.current_level.items))
-		trace.debug("Rogue: {0}".format(dungeon.rogue.pos))
-		trace.debug("Items here: {0}".format([(index, pos, item) for index, (pos, item) in enumerate(reversed(dungeon.current_level.items)) if pos == dungeon.rogue.pos]))
+		trace.debug("Rogue: {0}".format(dungeon.get_player().pos))
+		trace.debug("Items here: {0}".format([(index, pos, item) for index, (pos, item) in enumerate(reversed(dungeon.current_level.items)) if pos == dungeon.get_player().pos]))
 		trace.debug("Item here: {0}".format(item_here))
 		if item_here is not None:
 			item_here = len(dungeon.current_level.items) - 1 - item_here # Index is from reversed list.
 			trace.debug("Unreversed item here: {0}".format(item_here))
 			_, item = dungeon.current_level.items[item_here]
-			for _ in dungeon.current_level.grab_item(dungeon.rogue, item):
+			for _ in dungeon.current_level.grab_item(dungeon.get_player(), item):
 				self.data.fire_event(_)
 			self.step_is_over = True
 		else:
@@ -481,7 +481,7 @@ class MainGame(tui.app.MVC):
 	def drop(self):
 		""" Drop item. """
 		dungeon = self.data
-		if not dungeon.rogue.inventory:
+		if not dungeon.get_player().inventory:
 			dungeon.fire_event(InventoryEmpty())
 		else:
 			return QuickDropItem(to_main_screen(self), self.data)
@@ -489,7 +489,7 @@ class MainGame(tui.app.MVC):
 	def eat(self):
 		""" Consume item. """
 		dungeon = self.data
-		if not dungeon.rogue.inventory:
+		if not dungeon.get_player().inventory:
 			dungeon.fire_event(InventoryEmpty())
 		else:
 			return QuickConsumeItem(to_main_screen(self), self.data)
@@ -497,7 +497,7 @@ class MainGame(tui.app.MVC):
 	def wield(self):
 		""" Wield item. """
 		dungeon = self.data
-		if not dungeon.rogue.inventory:
+		if not dungeon.get_player().inventory:
 			dungeon.fire_event(InventoryEmpty())
 		else:
 			return QuickWieldItem(to_main_screen(self), self.data)
@@ -505,16 +505,16 @@ class MainGame(tui.app.MVC):
 	def unwield(self):
 		""" Unwield item. """
 		dungeon = self.data
-		if not dungeon.rogue.wielding:
+		if not dungeon.get_player().wielding:
 			dungeon.fire_event(NothingToUnwield())
 		else:
-			for _ in dungeon.rogue.wield(None):
+			for _ in dungeon.get_player().wield(None):
 				self.data.fire_event(_)
 	@Controls('W')
 	def wear(self):
 		""" Wear item. """
 		dungeon = self.data
-		if not dungeon.rogue.inventory:
+		if not dungeon.get_player().inventory:
 			dungeon.fire_event(InventoryEmpty())
 		else:
 			return QuickWearItem(to_main_screen(self), self.data)
@@ -522,10 +522,10 @@ class MainGame(tui.app.MVC):
 	def take_off(self):
 		""" Take item off. """
 		dungeon = self.data
-		if not dungeon.rogue.wearing:
+		if not dungeon.get_player().wearing:
 			dungeon.fire_event(NothingToTakeOff())
 		else:
-			for _ in dungeon.rogue.wear(None):
+			for _ in dungeon.get_player().wear(None):
 				self.data.fire_event(_)
 	@Controls('i')
 	def inventory(self):
@@ -570,9 +570,9 @@ class MainGame(tui.app.MVC):
 
 	def move_by(self, shift):
 		dungeon = self.data
-		for _ in dungeon.move_monster(dungeon.rogue, dungeon.rogue.pos + shift):
+		for _ in dungeon.move_monster(dungeon.get_player(), dungeon.get_player().pos + shift):
 			self.data.fire_event(_)
-		dungeon.current_level.visit(dungeon.rogue.pos)
+		dungeon.current_level.visit(dungeon.get_player().pos)
 		self.step_is_over = True
 
 	def process_others(self):
@@ -584,14 +584,14 @@ class MainGame(tui.app.MVC):
 			if not sees_rogue:
 				continue
 			shift = Point(
-					clckwrkbdgr.math.sign(dungeon.rogue.pos.x - monster.pos.x),
-					clckwrkbdgr.math.sign(dungeon.rogue.pos.y - monster.pos.y),
+					clckwrkbdgr.math.sign(dungeon.get_player().pos.x - monster.pos.x),
+					clckwrkbdgr.math.sign(dungeon.get_player().pos.y - monster.pos.y),
 					)
 			new_pos = monster.pos + shift
 			for _ in dungeon.move_monster(monster, new_pos, with_tunnels=False):
 				self.data.fire_event(_)
 
-		if not dungeon.rogue.is_alive():
+		if not dungeon.get_player().is_alive():
 			return MessageView(Grave, self.data)
 
 class GodModeAction(tui.widgets.Menu):
@@ -611,36 +611,36 @@ class GodModeAction(tui.widgets.Menu):
 class ConsumeItem:
 	def prompt(self): return "Which item to consume?"
 	def item_action(self, index):
-		item = self.data.rogue.inventory[index]
-		for _ in self.data.rogue.consume(item):
+		item = self.data.get_player().inventory[index]
+		for _ in self.data.get_player().consume(item):
 			self.data.fire_event(_)
 
 class DropItem:
 	def prompt(self): return "Which item to drop?"
 	def item_action(self, index):
-		item = self.data.rogue.inventory[index]
-		for _ in self.data.current_level.drop_item(self.data.rogue, item):
+		item = self.data.get_player().inventory[index]
+		for _ in self.data.current_level.drop_item(self.data.get_player(), item):
 			self.data.fire_event(_)
 
 class WieldItem:
 	def prompt(self): return "Which item to wield?"
 	def item_action(self, index):
-		item = self.data.rogue.inventory[index]
-		for _ in self.data.rogue.wield(item):
+		item = self.data.get_player().inventory[index]
+		for _ in self.data.get_player().wield(item):
 			self.data.fire_event(_)
 
 class WearItem:
 	def prompt(self): return "Which item to wear?"
 	def item_action(self, index):
-		item = self.data.rogue.inventory[index]
-		for _ in self.data.rogue.wear(item):
+		item = self.data.get_player().inventory[index]
+		for _ in self.data.get_player().wear(item):
 			self.data.fire_event(_)
 
 class QuickItemSelection(tui.widgets.Prompt):
 	def extended_mode(self):
 		raise NotImplementedError
 	def choices(self):
-		return [chr(ord('a') + i) for i in range(len(self.data.rogue.inventory))] + ['*']
+		return [chr(ord('a') + i) for i in range(len(self.data.get_player().inventory))] + ['*']
 	def on_choice(self, key):
 		if key == '*':
 			return self.extended_mode()
@@ -670,15 +670,15 @@ class Inventory(tui.widgets.Menu):
 	def on_close(self):
 		return to_main_screen(self)
 	def prompt(self):
-		if not self.data.rogue.inventory:
+		if not self.data.get_player().inventory:
 			return "(empty)"
 		return ""
 	def items(self):
-		for index, item in enumerate(self.data.rogue.inventory):
+		for index, item in enumerate(self.data.get_player().inventory):
 			line = "{0} {1}".format(item.sprite, item.name)
-			if self.data.rogue.wielding == item:
+			if self.data.get_player().wielding == item:
 				line += " (wielding)"
-			if self.data.rogue.wearing == item:
+			if self.data.get_player().wearing == item:
 				line += " (wearing)"
 			key = ord('a') + index
 			yield tui.widgets.Menu.Item(key, line, key)

@@ -528,6 +528,8 @@ class Game(engine.Game):
 				[item for item in field.data.items if pos.values[-1] == item.pos],
 				[monster for monster in field.data.monsters if pos.values[-1] == monster.pos] + ([self.player] if self.player.pos == pos else []),
 				)
+	def get_player(self):
+		return self.player
 
 def iter_rect(topleft, bottomright):
 	for x in range(topleft.x, bottomright.x + 1):
@@ -617,7 +619,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 	def redraw(self, ui):
 		game = self.game
 		view_rect = Rect(
-				game.player.pos.get_global(game.world) + self.centered_viewport.topleft,
+				game.get_player().pos.get_global(game.world) + self.centered_viewport.topleft,
 				self.centered_viewport.size,
 				)
 		for _pos, (_terrain, _objects, _items, _monsters) in game.iter_cells(view_rect):
@@ -637,20 +639,20 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		for row in range(5):
 			ui.print_line(row, hud_pos, " " * (80 - hud_pos))
 		ui.print_line(0, hud_pos, "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
-			game.player.pos.values[0].x,
-			game.player.pos.values[1].x,
-			game.player.pos.values[2].x,
-			game.player.pos.values[0].y,
-			game.player.pos.values[1].y,
-			game.player.pos.values[2].y,
+			game.get_player().pos.values[0].x,
+			game.get_player().pos.values[1].x,
+			game.get_player().pos.values[2].x,
+			game.get_player().pos.values[0].y,
+			game.get_player().pos.values[1].y,
+			game.get_player().pos.values[2].y,
 			))
 		ui.print_line(1, hud_pos, "T:{0}".format(game.passed_time))
-		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.player.hp, game.player.max_hp))
-		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.player.inventory)))
-		player_zone_items = game.world.get_data(game.player.pos)[-1].items
+		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.get_player().hp, game.get_player().max_hp))
+		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.get_player().inventory)))
+		player_zone_items = game.world.get_data(game.get_player().pos)[-1].items
 		item_here = next((
 			item for item in player_zone_items
-			if game.player.pos.values[-1] == item.pos
+			if game.get_player().pos.values[-1] == item.pos
 			), None)
 		if item_here:
 			ui.print_line(4, hud_pos, "here:{0}".format(item.sprite.sprite))
@@ -670,7 +672,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		self.step_taken = False
 		return True
 	def get_keymapping(self):
-		if self.messages or self.game.player.hp <= 0:
+		if self.messages or self.game.get_player().hp <= 0:
 			return None
 		return super().get_keymapping()
 	@Keys.bind('S')
@@ -686,22 +688,22 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		if True:
 			item = next((
 				item for item in
-				game.world.get_data(game.player.pos)[-1].items
-				if game.player.pos.values[-1] == item.pos
+				game.world.get_data(game.get_player().pos)[-1].items
+				if game.get_player().pos.values[-1] == item.pos
 				), None)
 			if not item:
 				self.game.fire_event(NothingToPickUp())
-			elif len(game.player.inventory) >= 26:
+			elif len(game.get_player().inventory) >= 26:
 				self.game.fire_event(InventoryIsFull())
 			else:
-				game.player.inventory.append(item)
-				game.world.get_data(game.player.pos)[-1].items.remove(item)
+				game.get_player().inventory.append(item)
+				game.world.get_data(game.get_player().pos)[-1].items.remove(item)
 				self.game.fire_event(PickedUpItem(item))
 				self.step_taken = True
 	@Keys.bind('C')
 	def char(self):
 		game = self.game
-		player_pos = game.player.pos.get_global(game.world)
+		player_pos = game.get_player().pos.get_global(game.world)
 		if True:
 			npcs = [
 					monster for monster_pos, monster
@@ -742,17 +744,17 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					if npc.behaviour.quest:
 						required_amount, required_name, bounty = npc.behaviour.quest
 						have_required_items = [
-								item for item in game.player.inventory
+								item for item in game.get_player().inventory
 								if item.name == required_name
 								][:required_amount]
 						if len(have_required_items) >= required_amount:
 							def _on_yes():
 								self.game.fire_event(ChatThanks())
 								for item in have_required_items:
-									game.player.inventory.remove(item)
-								if game.player.hp == game.player.max_hp:
-									game.player.hp += bounty
-								game.player.max_hp += bounty
+									game.get_player().inventory.remove(item)
+								if game.get_player().hp == game.get_player().max_hp:
+									game.get_player().hp += bounty
+								game.get_player().max_hp += bounty
 								npc.behaviour.quest = None
 							def _on_no():
 								self.game.fire_event(ChatComeLater())
@@ -787,29 +789,29 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			return quest_log
 	@Keys.bind('i')
 	def display_inventory(self):
-		return InventoryMode(self.game.player.inventory)
+		return InventoryMode(self.game.get_player().inventory)
 	@Keys.bind('d')
 	def drop_item(self):
 		game = self.game
 		if True:
-			if not game.player.inventory:
+			if not game.get_player().inventory:
 				self.game.fire_event(NothingToDrop())
 			else:
 				def _on_select_item(menu_choice):
-					item = game.player.inventory.pop(menu_choice)
-					item.pos = game.player.pos.values[-1]
-					game.world.get_data(game.player.pos)[-1].items.append(item)
+					item = game.get_player().inventory.pop(menu_choice)
+					item.pos = game.get_player().pos.values[-1]
+					game.world.get_data(game.get_player().pos)[-1].items.append(item)
 					self.game.fire_event(DroppedItem('you', item))
 					self.step_taken = True
 				return InventoryMode(
-						game.player.inventory,
+						game.get_player().inventory,
 						caption="Select item to drop (a-z/ESC):",
 						on_select=_on_select_item
 					)
 	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 	def move_player(self, control):
 		game = self.game
-		player_pos = game.player.pos.get_global(game.world)
+		player_pos = game.get_player().pos.get_global(game.world)
 		if True:
 			new_pos = player_pos + control
 			dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
@@ -836,27 +838,27 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			elif dest_cell is None:
 				self.game.fire_event(StareIntoVoid())
 			elif dest_cell.passable:
-				game.player.pos = dest_pos
-				game.autoexpand(game.player.pos, Size(40, 40))
+				game.get_player().pos = dest_pos
+				game.autoexpand(game.get_player().pos, Size(40, 40))
 			self.step_taken = True
 	def action(self, control):
 		if isinstance(control, clckwrkbdgr.tui.Key):
 			if self.messages:
 				return True
-			if self.game.player.hp <= 0:
+			if self.game.get_player().hp <= 0:
 				return False
 		if control == 'quit':
 			return False
 		game = self.game
 		if self.step_taken:
-			player_pos = game.player.pos.get_global(game.world)
-			if game.player.hp < game.player.max_hp:
-				game.player.regeneration += 1
-				while game.player.regeneration >= 10:
-					game.player.regeneration -= 10
-					game.player.hp += 1
-					if game.player.hp >= game.player.max_hp:
-						game.player.hp = game.player.max_hp
+			player_pos = game.get_player().pos.get_global(game.world)
+			if game.get_player().hp < game.get_player().max_hp:
+				game.get_player().regeneration += 1
+				while game.get_player().regeneration >= 10:
+					game.get_player().regeneration -= 10
+					game.get_player().hp += 1
+					if game.get_player().hp >= game.get_player().max_hp:
+						game.get_player().hp = game.get_player().max_hp
 
 			game.passed_time += 1
 
@@ -873,9 +875,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					continue
 				monster_pos = monster_coord.get_global(game.world)
 				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-					game.player.hp -= 1
+					game.get_player().hp -= 1
 					self.game.fire_event(HitMonster('monster', 'you'))
-					if game.player.hp <= 0:
+					if game.get_player().hp <= 0:
 						self.game.fire_event(MonsterDead('you'))
 				elif monster.behaviour == 'aggressive' and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
 					shift = Point(

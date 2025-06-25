@@ -457,12 +457,14 @@ class Dungeon(engine.Game):
 		return self.levels[self.current_level_id]
 	@property
 	def current_room(self):
-		return self.current_level.room_of(self.rogue.pos)
+		return self.current_level.room_of(self.get_player().pos)
 	@property
 	def current_tunnel(self):
-		return self.current_level.tunnel_of(self.rogue.pos)
+		return self.current_level.tunnel_of(self.get_player().pos)
 	def is_finished(self):
-		return not self.rogue.is_alive()
+		return not self.get_player().is_alive()
+	def get_player(self):
+		return self.rogue
 	def is_visible(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) is visible for player.
 		Additional data depends on type of primary object.
@@ -553,11 +555,11 @@ class Dungeon(engine.Game):
 		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, LevelPassage) and obj.id == connected_passage), None)
 		assert stairs is not None, "No stairs with id {0}".format(repr(connected_passage))
 		self.current_level_id = level_id
-		self.rogue.pos = stairs
-		self.current_level.visit(self.rogue.pos)
+		self.get_player().pos = stairs
+		self.current_level.visit(self.get_player().pos)
 	def use_stairs(self, stairs):
 		""" Use level passage object. """
-		stairs.use(self.rogue)
+		stairs.use(self.get_player())
 		self.go_to_level(stairs.level_id, stairs.connected_passage)
 	def move_monster(self, monster, new_pos, with_tunnels=True):
 		""" Tries to move monster to a new position.
@@ -573,8 +575,8 @@ class Dungeon(engine.Game):
 		if not can_move:
 			return [Event.BumpIntoTerrain(monster, new_pos)]
 		others = [other for other in self.current_level.monsters_at(new_pos) if other != monster]
-		if self.rogue.pos == new_pos:
-			others.append(self.rogue)
+		if self.get_player().pos == new_pos:
+			others.append(self.get_player())
 		if not others:
 			monster.pos = new_pos
 			return []

@@ -9,7 +9,7 @@ class DungeonExplorer(Autoexplorer): # pragma: no cover
 		self.dungeon = dungeon
 		super(DungeonExplorer, self).__init__()
 	def get_current_pos(self):
-		return self.dungeon.rogue
+		return self.dungeon.get_player()
 	def get_matrix(self):
 		return self.dungeon.terrain
 	def is_passable(self, cell):
@@ -45,7 +45,7 @@ class Game(clckwrkbdgr.tui.Mode):
 		self.autoexplore = None
 		self.autoexplorer_class = autoexplorer or DungeonExplorer
 	def redraw(self, ui):
-		view_rect = Rect(self.dungeon.rogue - self.VIEW_CENTER, Size(25, 25))
+		view_rect = Rect(self.dungeon.get_player() - self.VIEW_CENTER, Size(25, 25))
 		for pos, (terrain, _1, _2, monsters) in self.dungeon.iter_cells(view_rect):
 			sprite = terrain
 			if monsters:
@@ -56,7 +56,7 @@ class Game(clckwrkbdgr.tui.Mode):
 					sprite,
 					)
 		ui.print_line(0, 27, 'Time: {0}'.format(self.dungeon.time))
-		ui.print_line(1, 27, 'X:{x} Y:{y}  '.format(x=self.dungeon.rogue.x, y=self.dungeon.rogue.y))
+		ui.print_line(1, 27, 'X:{x} Y:{y}  '.format(x=self.dungeon.get_player().x, y=self.dungeon.get_player().y))
 		ui.print_line(24, 27, '[autoexploring, press ESC...]' if self.autoexplore else '                             ')
 	def nodelay(self):
 		return self.autoexplore
