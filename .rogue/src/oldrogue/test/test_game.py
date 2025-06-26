@@ -540,14 +540,14 @@ class TestDungeon(unittest.TestCase):
 	def should_iter_dungeon_cells(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
-		dungeon.rogue.pos = Point(3, 1)
-		dungeon.current_level.visit(dungeon.rogue.pos)
-		dungeon.rogue.pos = Point(5, 1)
-		dungeon.current_level.visit(dungeon.rogue.pos)
-		dungeon.rogue.pos = Point(5, 3)
-		dungeon.current_level.visit(dungeon.rogue.pos)
-		dungeon.rogue.pos = Point(7, 3)
-		dungeon.current_level.visit(dungeon.rogue.pos)
+		dungeon.get_player().pos = Point(3, 1)
+		dungeon.current_level.visit(dungeon.get_player().pos)
+		dungeon.get_player().pos = Point(5, 1)
+		dungeon.current_level.visit(dungeon.get_player().pos)
+		dungeon.get_player().pos = Point(5, 3)
+		dungeon.current_level.visit(dungeon.get_player().pos)
+		dungeon.get_player().pos = Point(7, 3)
+		dungeon.current_level.visit(dungeon.get_player().pos)
 		mj12 = MJ12Trooper()
 		mj12.pos = Point(8, 3)
 		dungeon.current_level.monsters.append(mj12)
@@ -597,27 +597,27 @@ class TestDungeon(unittest.TestCase):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
-		self.assertEqual(dungeon.rogue.pos, Point(1, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 	def should_use_stairs(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		dungeon.use_stairs(dungeon.current_level.objects[1][1])
 		self.assertEqual(dungeon.current_level, dungeon.levels['roof'])
-		self.assertEqual(dungeon.rogue.pos, Point(1, 1))
+		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 	def should_locate_in_maze(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
-		dungeon.rogue.pos = Point(1, 1)
+		dungeon.get_player().pos = Point(1, 1)
 		self.assertEqual(dungeon.current_room, dungeon.current_level.rooms.cell((0, 0)))
 		self.assertIsNone(dungeon.current_tunnel)
 
-		dungeon.rogue.pos = Point(3, 1)
+		dungeon.get_player().pos = Point(3, 1)
 		self.assertEqual(dungeon.current_room, dungeon.current_level.rooms.cell((0, 0)))
 		self.assertEqual(dungeon.current_tunnel, dungeon.current_level.tunnels[0])
 
-		dungeon.rogue.pos = Point(5, 1)
+		dungeon.get_player().pos = Point(5, 1)
 		self.assertIsNone(dungeon.current_room)
 		self.assertEqual(dungeon.current_tunnel, dungeon.current_level.tunnels[0])
 	def should_detect_visible_objects(self):
@@ -625,8 +625,8 @@ class TestDungeon(unittest.TestCase):
 		dungeon.go_to_level('top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
-		dungeon.rogue.pos = Point(1, 1)
-		dungeon.current_level.visit(dungeon.rogue.pos)
+		dungeon.get_player().pos = Point(1, 1)
+		dungeon.current_level.visit(dungeon.get_player().pos)
 		self.assertTrue(dungeon.is_visible(dungeon.current_level.rooms.cell((0, 0))))
 		self.assertFalse(dungeon.is_visible(dungeon.current_level.rooms.cell((1, 0))))
 		self.assertTrue(dungeon.is_visible(dungeon.current_level.tunnels[0], additional=Point(3, 1)))
@@ -646,9 +646,9 @@ class TestDungeon(unittest.TestCase):
 		dungeon.go_to_level('top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
-		dungeon.rogue.pos = Point(1, 1)
-		dungeon.current_level.visit(dungeon.rogue.pos)
-		dungeon.rogue.pos = Point(2, 6)
+		dungeon.get_player().pos = Point(1, 1)
+		dungeon.current_level.visit(dungeon.get_player().pos)
+		dungeon.get_player().pos = Point(2, 6)
 
 		self.assertTrue(dungeon.is_remembered(dungeon.current_level.rooms.cell((0, 0))))
 		self.assertFalse(dungeon.is_remembered(dungeon.current_level.rooms.cell((1, 0))))
@@ -667,9 +667,9 @@ class TestDungeon(unittest.TestCase):
 	def should_move_monster(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level('top', connected_passage='basement')
-		dungeon.rogue.pos = Point(9, 3)
+		dungeon.get_player().pos = Point(9, 3)
 		pistol = StealthPistol()
-		dungeon.rogue.inventory.append(pistol)
+		dungeon.get_player().inventory.append(pistol)
 
 		mj12 = MJ12Trooper()
 		mj12.pos = Point(8, 3)
@@ -697,16 +697,17 @@ class TestDungeon(unittest.TestCase):
 
 		events = dungeon.move_monster(mj12, Point(9, 3))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(events), _R([game.Event.AttackMonster(mj12, dungeon.rogue, 3)]))
-		self.assertEqual(dungeon.rogue.hp, 97)
+		self.assertEqual(_R(events), _R([game.Event.AttackMonster(mj12, dungeon.get_player(), 3)]))
+		self.assertEqual(dungeon.get_player().hp, 97)
 
-		dungeon.rogue.hp = 3
+		dungeon.get_player().hp = 3
+		player = dungeon.get_player()
 		events = dungeon.move_monster(mj12, Point(9, 3))
 		self.assertEqual(mj12.pos, Point(8, 3))
 		self.assertEqual(_R(events), _R([
-			game.Event.AttackMonster(mj12, dungeon.rogue, 3),
-			game.Event.MonsterDied(dungeon.rogue),
-			game.Event.MonsterDroppedItem(dungeon.rogue, pistol),
+			game.Event.AttackMonster(mj12, player, 3),
+			game.Event.MonsterDied(player),
+			game.Event.MonsterDroppedItem(player, pistol),
 			]))
 		self.assertTrue(dungeon.is_finished())
 		self.assertEqual(dungeon.current_level.items, [(Point(9, 3), pistol)])

@@ -49,7 +49,7 @@ class Game(clckwrkbdgr.tui.Mode):
 		for pos, (terrain, _1, _2, monsters) in self.dungeon.iter_cells(view_rect):
 			sprite = terrain
 			if monsters:
-				sprite = monsters[-1]
+				sprite = "@"
 			ui.print_char(
 					pos.x - view_rect.topleft.x,
 					pos.y - view_rect.topleft.y,

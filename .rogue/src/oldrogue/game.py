@@ -422,21 +422,19 @@ class Dungeon(engine.Game):
 		super(Dungeon, self).__init__()
 		self.levels = {}
 		self.current_level_id = None
-		self.rogue = self.PLAYER_TYPE()
 		self.generator = self.GENERATOR()
 		self.god = GodMode()
 	def generate(self): # pragma: no cover -- TODO
-		self.go_to_level(0)
-		self.rogue.inventory.append(Dagger())
+		rogue = self.PLAYER_TYPE()
+		rogue.inventory.append(Dagger())
+		self.go_to_level(0, player=rogue)
 	def load(self, reader): # pragma: no cover -- TODO
 		self.levels = data.levels
 		self.current_level_id = data.current_level
-		self.rogue = data.rogue
-		self.fire_event(Event.WelcomeBack(dungeon.rogue))
+		self.fire_event(Event.WelcomeBack(dungeon.get_player()))
 	def save(self, data): # pragma: no cover -- TODO
 		data.levels = self.levels
 		data.current_level = self.current_level_id
-		data.rogue = self.rogue
 	@property
 	def current_level(self):
 		return self.levels[self.current_level_id]
@@ -447,9 +445,9 @@ class Dungeon(engine.Game):
 	def current_tunnel(self):
 		return self.current_level.tunnel_of(self.get_player().pos)
 	def is_finished(self):
-		return not self.get_player().is_alive()
+		return not (self.get_player() and self.get_player().is_alive())
 	def get_player(self):
-		return self.rogue
+		return next((monster for monster in self.current_level.monsters if isinstance(monster, self.PLAYER_TYPE)), None)
 	def is_visible(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) is visible for player.
 		Additional data depends on type of primary object.
@@ -537,26 +535,34 @@ class Dungeon(engine.Game):
 	def iter_actors_at(self, pos, with_player=False):
 		""" Yield monsters at pos in reverse order (from top to bottom). """
 		for monster in reversed(self.current_level.monsters):
+			if not with_player and isinstance(monster, self.PLAYER_TYPE):
+				continue
 			if monster.pos == pos:
 				yield monster
-		if with_player and self.rogue.pos == pos:
-			yield self.rogue
 	def iter_placements_at(self, pos):
 		""" Yield objects at pos in reverse order (from top to bottom). """
 		for obj_pos, obj in reversed(self.current_level.objects):
 			if obj_pos == pos:
 				yield obj
-	def go_to_level(self, level_id, connected_passage='enter'):
+	def go_to_level(self, level_id, connected_passage='enter', player=None):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
 		"""
+		if player is None:
+			if self.current_level_id is not None:
+				player = self.get_player()
+				self.current_level.monsters.remove(player)
+			else:
+				player = self.PLAYER_TYPE()
 		if level_id not in self.levels:
 			self.levels[level_id] = self.generator.build_level(level_id)
 		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, LevelPassage) and obj.id == connected_passage), None)
 		assert stairs is not None, "No stairs with id {0}".format(repr(connected_passage))
 		self.current_level_id = level_id
-		self.get_player().pos = stairs
-		self.current_level.visit(self.get_player().pos)
+		if player:
+			self.current_level.monsters.append(player)
+			player.pos = stairs
+			self.current_level.visit(player.pos)
 	def use_stairs(self, stairs):
 		""" Use level passage object. """
 		stairs.use(self.get_player())

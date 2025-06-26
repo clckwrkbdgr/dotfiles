@@ -578,6 +578,8 @@ class MainGame(tui.app.MVC):
 	def process_others(self):
 		dungeon = self.data
 		for monster in dungeon.current_level.monsters:
+			if isinstance(monster, self.PLAYER_TYPE):
+				continue
 			if not dungeon.current_room:
 				continue
 			sees_rogue = dungeon.current_room.contains(monster.pos)
