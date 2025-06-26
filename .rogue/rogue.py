@@ -525,8 +525,8 @@ class Game(engine.Game):
 		return (
 				field.cells.cell(pos.values[-1]),
 				[], # No objects.
-				[item for item in field.data.items if pos.values[-1] == item.pos],
-				[monster for monster in field.data.monsters if pos.values[-1] == monster.pos] + ([self.player] if self.player.pos == pos else []),
+				list(self.iter_items_at(pos)),
+				list(self.iter_actors_at(pos, with_player=True)),
 				)
 	def get_player(self):
 		return self.player
@@ -535,6 +535,13 @@ class Game(engine.Game):
 		for item in zone_items:
 			if pos.values[-1] == item.pos:
 				yield item
+	def iter_actors_at(self, pos, with_player=False):
+		zone_actors = self.world.get_data(pos)[-1].monsters
+		for actor in zone_actors:
+			if pos.values[-1] == actor.pos:
+				yield actor
+		if with_player and self.player.pos == pos:
+			yield self.player
 
 def iter_rect(topleft, bottomright):
 	for x in range(topleft.x, bottomright.x + 1):
@@ -817,7 +824,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			if game.world.valid(dest_pos):
 				dest_field_data = game.world.get_data(dest_pos)[-1]
 				dest_cell = game.world.cell(dest_pos)
-			monster = next((monster for monster in dest_field_data.monsters if dest_pos.values[-1] == monster.pos), None)
+			monster = next(game.iter_actors_at(dest_pos), None)
 			if monster:
 				if isinstance(monster.behaviour, Questgiver):
 					self.game.fire_event(Bump('you', 'dweller'))
@@ -885,7 +892,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
 					dest_field_data = game.world.get_data(dest_pos)[-1]
 					dest_cell = game.world.cell(dest_pos)
-					if any(other.pos == dest_pos.values[-1] for other in dest_field_data.monsters):
+					if any(True for _ in game.iter_actors_at(dest_pos)):
 						self.game.fire_event(Bump('monster', 'monster.'))
 					elif dest_cell.passable:
 						current_field_data = game.world.get_data(monster_coord)[-1]

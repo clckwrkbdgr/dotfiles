@@ -234,7 +234,7 @@ class Game(engine.Game):
 				self.strata.cell(pos),
 				[True] if self.exit_pos == pos else [],
 				list(self.iter_items_at(pos)),
-				list(self.find_monsters(pos)),
+				list(self.iter_actors_at(pos, with_player=True)),
 				)
 	def get_cell_repr(self, pos, cell_info):
 		cell, objects, items, monsters = cell_info
@@ -280,13 +280,10 @@ class Game(engine.Game):
 				):
 			cell = self.strata.cell(p)
 
-			for monster in self.monsters:
-				if monster.behavior == monsters.Behavior.PLAYER:
-					continue
-				if p == monster.pos:
-					if monster not in self.visible_monsters:
-						self.fire_event(DiscoverEvent(monster))
-					current_visible_monsters.append(monster)
+			for monster in self.iter_actors_at(p):
+				if monster not in self.visible_monsters:
+					self.fire_event(DiscoverEvent(monster))
+				current_visible_monsters.append(monster)
 
 			for item in self.iter_items_at(p):
 				if item not in self.visible_items:
@@ -361,7 +358,7 @@ class Game(engine.Game):
 		if not Pathfinder.allow_movement_direction(self.strata, actor.pos, new_pos):
 			self.fire_event(BumpEvent(actor, new_pos))
 			return False
-		monster = self.find_monster(new_pos.x, new_pos.y)
+		monster = next(self.iter_actors_at(new_pos), None)
 		if monster:
 			Log.debug('Monster at dest pos {0}: '.format(new_pos, monster))
 			self.attack(actor, monster)
@@ -398,15 +395,11 @@ class Game(engine.Game):
 		self.fire_event(AttackEvent(actor, target))
 		self.affect_health(target, -1)
 		self.update_vision()
-	def find_monster(self, x, y):
-		""" Return first monster at given cell. """
-		for monster in self.monsters:
-			if monster.pos.x == x and monster.pos.y == y:
-				return monster
-		return None
-	def find_monsters(self, pos):
+	def iter_actors_at(self, pos, with_player=False):
 		""" Yield all monsters at given cell. """
 		for monster in self.monsters:
+			if not with_player and monster.behavior == monsters.Behavior.PLAYER:
+				continue
 			if monster.pos == pos:
 				yield monster
 	def iter_items_at(self, pos):

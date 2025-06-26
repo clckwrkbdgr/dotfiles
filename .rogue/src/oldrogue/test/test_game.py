@@ -364,6 +364,9 @@ class MockGenerator:
 def _R(events): return list(map(repr, events))
 
 class TestGridRoomMap(unittest.TestCase):
+	class UNATCO(game.Dungeon):
+		GENERATOR = MockGenerator
+		PLAYER_TYPE = UNATCOAgent
 	def _map(self):
 		return MockGenerator().build_level('top')
 	def should_parse_layout_correctly(self):
@@ -423,11 +426,14 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertTrue(gridmap.can_move_to(Point(5, 1), with_tunnels=True))
 		self.assertFalse(gridmap.can_move_to(Point(7, 3), with_tunnels=True, from_pos=Point(8, 2)))
 	def should_detect_objects_on_map(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level('top', connected_passage='basement')
+
 		mj12 = MJ12Trooper()
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
-		gridmap = self._map()
+		gridmap = dungeon.current_level
 		gridmap.items.append( (Point(1, 1), pistol) )
 		gridmap.items.append( (Point(1, 1), armor) )
 		mj12.pos = Point(9, 2)
@@ -435,12 +441,15 @@ class TestGridRoomMap(unittest.TestCase):
 
 		elevator = gridmap.objects[0][1]
 
-		self.assertEqual(list(gridmap.iter_items_at(Point(2, 1))), [])
-		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor, pistol])
+		self.assertEqual(list(dungeon.iter_items_at(Point(2, 1))), [])
+		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [armor, pistol])
 		self.assertEqual(list(gridmap.objects_at(Point(1, 2))), [])
 		self.assertEqual(list(gridmap.objects_at(Point(1, 1))), [elevator])
-		self.assertEqual(list(gridmap.monsters_at(Point(9, 2))), [mj12])
+		self.assertEqual(list(dungeon.iter_actors_at(Point(9, 2))), [mj12])
 	def should_rip_monster(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level('top', connected_passage='basement')
+
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
@@ -448,58 +457,64 @@ class TestGridRoomMap(unittest.TestCase):
 		mj12.inventory.append(pistol)
 		mj12.inventory.append(armor)
 
-		gridmap = self._map()
+		gridmap = dungeon.current_level
 		mj12.pos = Point(9, 2)
 		gridmap.monsters.append(mj12)
 		self.assertTrue(mj12.is_alive())
 		with self.assertRaises(RuntimeError):
 			list(gridmap.rip(mj12))
 		self.assertTrue(mj12.is_alive())
-		self.assertEqual(list(gridmap.monsters_at(Point(9, 2))), [mj12])
+		self.assertEqual(list(dungeon.iter_actors_at(Point(9, 2))), [mj12])
 
 		mj12.hp = 0
 		loot = list(gridmap.rip(mj12))
 		self.assertEqual(loot, [armor, pistol])
-		self.assertEqual(list(gridmap.monsters_at(Point(9, 2))), [])
+		self.assertEqual(list(dungeon.iter_actors_at(Point(9, 2))), [])
 	def should_grab_item(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level('top', connected_passage='basement')
+
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
 		jc = UNATCOAgent()
 
-		gridmap = self._map()
+		gridmap = dungeon.current_level
 		key = NanoKey()
 		gridmap.items.append( (Point(1, 1), key) )
 		gridmap.items.append( (Point(1, 1), pistol) )
 		gridmap.items.append( (Point(1, 1), armor) )
-		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor, pistol, key])
+		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [armor, pistol, key])
 
 		events = gridmap.grab_item(jc, key)
 		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, key)]))
 		self.assertTrue(jc.has_item(NanoKey))
-		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor, pistol])
+		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [armor, pistol])
 
 		events = gridmap.grab_item(jc, pistol)
 		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, pistol)]))
 		self.assertTrue(jc.has_item(StealthPistol))
-		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor])
+		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [armor])
 
 		events = gridmap.grab_item(jc, armor)
 		self.assertEqual(_R(events), _R([game.Event.InventoryFull(armor)]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
-		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [armor])
+		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [armor])
 	def should_drop_item(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level('top', connected_passage='basement')
+
 		pistol = StealthPistol()
 		jc = UNATCOAgent()
 		jc.inventory.append(pistol)
 		jc.pos = Point(1, 1)
 
-		gridmap = self._map()
-		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [])
+		gridmap = dungeon.current_level
+		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [])
 		events = gridmap.drop_item(jc, pistol)
 		self.assertEqual(_R(events), _R([game.Event.MonsterDroppedItem(jc, pistol)]))
 		self.assertFalse(jc.has_item(StealthPistol))
-		self.assertEqual(list(gridmap.iter_items_at(Point(1, 1))), [pistol])
+		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [pistol])
 	def should_visit_places(self):
 		gridmap = self._map()
 

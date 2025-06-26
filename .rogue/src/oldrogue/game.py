@@ -351,16 +351,6 @@ class GridRoomMap(object):
 		for obj_pos, obj in reversed(self.objects):
 			if obj_pos == pos:
 				yield obj
-	def iter_items_at(self, pos):
-		""" Yield items at pos in reverse order (from top to bottom). """
-		for item_pos, item in reversed(self.items):
-			if item_pos == pos:
-				yield item
-	def monsters_at(self, pos):
-		""" Yield monsters at pos in reverse order (from top to bottom). """
-		for monster in reversed(self.monsters):
-			if monster.pos == pos:
-				yield monster
 	def rip(self, who):
 		""" Processes monster's death (it should be actually not is_alive() for that).
 		Drops all items from inventory to the ground at the same pos.
@@ -541,11 +531,21 @@ class Dungeon(engine.Game):
 		for y, x, sprite in terrain:
 			pos = Point(x, y)
 			objects = [obj for _pos, obj in dungeon.current_level.objects if _pos == pos]
-			items = [item for _pos, item in dungeon.current_level.items if _pos == pos]
-			monsters = [monster for monster in dungeon.current_level.monsters if monster.pos == pos]
-			if dungeon.rogue.pos == pos:
-				monsters.append(dungeon.rogue)
+			items = list(self.iter_items_at(pos))
+			monsters = list(dungeon.iter_actors_at(pos, with_player=True))
 			yield pos, (sprite, objects, items, monsters)
+	def iter_items_at(self, pos):
+		""" Yield items at pos in reverse order (from top to bottom). """
+		for item_pos, item in reversed(self.current_level.items):
+			if item_pos == pos:
+				yield item
+	def iter_actors_at(self, pos, with_player=False):
+		""" Yield monsters at pos in reverse order (from top to bottom). """
+		for monster in reversed(self.current_level.monsters):
+			if monster.pos == pos:
+				yield monster
+		if with_player and self.rogue.pos == pos:
+			yield self.rogue
 	def go_to_level(self, level_id, connected_passage='enter'):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
@@ -574,7 +574,7 @@ class Dungeon(engine.Game):
 		can_move = self.current_level.can_move_to(new_pos, with_tunnels=with_tunnels, from_pos=monster.pos)
 		if not can_move:
 			return [Event.BumpIntoTerrain(monster, new_pos)]
-		others = [other for other in self.current_level.monsters_at(new_pos) if other != monster]
+		others = [other for other in self.iter_actors_at(new_pos) if other != monster]
 		if self.get_player().pos == new_pos:
 			others.append(self.get_player())
 		if not others:

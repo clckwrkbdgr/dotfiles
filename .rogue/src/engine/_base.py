@@ -87,3 +87,9 @@ class Game(object):
 	def iter_items_at(self, pos): # pragma: no cover
 		""" Should iterate over all items at the specified position. """
 		raise NotImplementedError()
+	def iter_actors_at(self, pos, with_player=False): # pragma: no cover
+		""" Should iterate over all actors at the specified position.
+		If with_player is True, additionaly returns player characters.
+		By default (False) returns only non-player actors.
+		"""
+		raise NotImplementedError()
