@@ -86,7 +86,7 @@ class MainGame(SubMode):
 				elif items:
 					sprite = items[-1].item_type.sprite
 				elif objects:
-					sprite = '>'
+					sprite = objects[-1]
 				else:
 					sprite = cell.terrain.sprite
 			elif objects and game.remembered_exit:

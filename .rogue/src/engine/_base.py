@@ -93,3 +93,6 @@ class Game(object):
 		By default (False) returns only non-player actors.
 		"""
 		raise NotImplementedError()
+	def iter_placements_at(self, pos): # pragma: no cover
+		""" Should iterate over all placement objects at the specified position. """
+		raise NotImplementedError()

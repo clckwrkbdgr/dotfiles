@@ -346,11 +346,6 @@ class GridRoomMap(object):
 					return False
 				return True
 		return False
-	def objects_at(self, pos):
-		""" Yield objects at pos in reverse order (from top to bottom). """
-		for obj_pos, obj in reversed(self.objects):
-			if obj_pos == pos:
-				yield obj
 	def rip(self, who):
 		""" Processes monster's death (it should be actually not is_alive() for that).
 		Drops all items from inventory to the ground at the same pos.
@@ -530,7 +525,7 @@ class Dungeon(engine.Game):
 
 		for y, x, sprite in terrain:
 			pos = Point(x, y)
-			objects = [obj for _pos, obj in dungeon.current_level.objects if _pos == pos]
+			objects = list(self.iter_placements_at(pos))
 			items = list(self.iter_items_at(pos))
 			monsters = list(dungeon.iter_actors_at(pos, with_player=True))
 			yield pos, (sprite, objects, items, monsters)
@@ -546,6 +541,11 @@ class Dungeon(engine.Game):
 				yield monster
 		if with_player and self.rogue.pos == pos:
 			yield self.rogue
+	def iter_placements_at(self, pos):
+		""" Yield objects at pos in reverse order (from top to bottom). """
+		for obj_pos, obj in reversed(self.current_level.objects):
+			if obj_pos == pos:
+				yield obj
 	def go_to_level(self, level_id, connected_passage='enter'):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
