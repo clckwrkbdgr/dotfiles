@@ -17,7 +17,7 @@ from src import engine
 from src.engine import builders
 from src.engine import events
 
-SAVEFILE_VERSION = 3
+SAVEFILE_VERSION = 4
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -120,6 +120,8 @@ class Monster:
 
 		self.behaviour = stream.read()
 		if self.behaviour == 'aggressive':
+			pass
+		elif self.behaviour == 'player':
 			pass
 		elif self.behaviour == 'quest':
 			self.behaviour = Questgiver()
@@ -405,27 +407,27 @@ class Game(engine.Game):
 			}
 	def __init__(self):
 		super(Game, self).__init__()
-		self.player = Monster(NestedGrid.Coord(Point(0, 0), Point(0, 0), Point(0, 0)), Sprite('@', 'bold_white'), 10)
 		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
 		self.passed_time = 0
 		self.colors = {}
+		self._cached_player_pos = None
 	def save(self, stream):
-		self.player.save(stream)
 		self.world.save(stream)
 		stream.write(self.passed_time)
 	def load(self, stream):
-		self.player.load(stream)
 		self.world.load(stream)
 		self.passed_time = stream.read(int)
 	def is_finished(self):
-		return self.player.hp <= 0
+		return self.get_player().hp <= 0
 	def generate(self):
 		zone_pos = Point(
 				random.randrange(self.world.cells.size.width),
 				random.randrange(self.world.cells.size.height),
 				)
 		zone = self.generate_zone(zone_pos)
-		self.player.pos = NestedGrid.Coord(
+
+		player = Monster(NestedGrid.Coord(Point(0, 0), Point(0, 0), Point(0, 0)), Sprite('@', 'bold_white'), 10, behaviour='player')
+		player_pos = NestedGrid.Coord(
 				zone_pos,
 				Point(
 					random.randrange(zone.cells.size.width),
@@ -436,6 +438,8 @@ class Game(engine.Game):
 					random.randrange(zone.sizes[-1].width),
 					),
 				)
+		player.pos = player_pos.values[-1]
+		self.world.get_data(player_pos)[-1].monsters.append(player)
 	def autoexpand(self, coord, margin):
 		pos = coord.get_global(self.world)
 		within_zone = Point(
@@ -529,7 +533,45 @@ class Game(engine.Game):
 				list(self.iter_actors_at(pos, with_player=True)),
 				)
 	def get_player(self):
-		return self.player
+		player, _ = self._get_player_data()
+		return player
+	def get_player_coord(self):
+		_, coord = self._get_player_data()
+		return coord
+	def _get_player_data(self):
+		if self._cached_player_pos is None:
+			player, self._cached_player_pos = next((monster, coord) for coord, monster in all_monsters(self.world, raw=True) if monster.behaviour == 'player')
+			return player, self._cached_player_pos
+		expected_zone_index = self._cached_player_pos.values[0]
+		expected_zone = self.world.cells.cell(expected_zone_index)
+		expected_field_index = self._cached_player_pos.values[1]
+		expected_field = expected_zone.cells.cell(expected_field_index)
+		# Expecting at the last remembered field:
+		for monster in expected_field.data.monsters:
+			if monster.behaviour == 'player':
+				self._cached_player_pos = NestedGrid.Coord(expected_zone_index, expected_field_index, monster.pos)
+				return monster, self._cached_player_pos
+		# Not found in the field.
+		# Checking the whole last remembered zone:
+		for coord, monster in all_monsters(self.world, raw=True, zone_range=[expected_zone_index]):
+			if monster.behaviour == 'player':
+				self._cached_player_pos = coord
+				return monster, self._cached_player_pos
+		# Not found in the last remembered zone.
+		# Checking adjacent zones:
+		adjacent_zones = set(iter_rect(
+			expected_zone_index - Point(1, 1),
+			expected_zone_index + Point(1, 1),
+			)) - {expected_zone_index}
+		for coord, monster in all_monsters(self.world, raw=True, zone_range=adjacent_zones):
+			if monster.behaviour == 'player':
+				self._cached_player_pos = coord
+				return monster, self._cached_player_pos
+		# Not found in adjacent zones.
+		# Performing full lookup:
+		player, self._cached_player_pos = next((monster, coord) for coord, monster in all_monsters(self.world, raw=True) if monster.behaviour == 'player')
+		return player, self._cached_player_pos
+
 	def iter_items_at(self, pos):
 		zone_items = self.world.get_data(pos)[-1].items
 		for item in zone_items:
@@ -538,10 +580,10 @@ class Game(engine.Game):
 	def iter_actors_at(self, pos, with_player=False):
 		zone_actors = self.world.get_data(pos)[-1].monsters
 		for actor in zone_actors:
+			if not with_player and actor.behaviour == 'player':
+				continue
 			if pos.values[-1] == actor.pos:
 				yield actor
-		if with_player and self.player.pos == pos:
-			yield self.player
 
 def iter_rect(topleft, bottomright):
 	for x in range(topleft.x, bottomright.x + 1):
@@ -605,7 +647,7 @@ def main(ui):
 	savefile = clckwrkbdgr.serialize.stream.Savefile(xdg.save_data_path('dotrogue')/'rogue.sav')
 	with savefile.get_reader() as reader:
 		if reader:
-			assert reader.version == SAVEFILE_VERSION, (reader.version, SAVEFILE_VERSION)
+			assert reader.version == SAVEFILE_VERSION, (reader.version, SAVEFILE_VERSION, savefile.filename)
 			game.load(reader)
 		else:
 			game.generate()
@@ -631,7 +673,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 	def redraw(self, ui):
 		game = self.game
 		view_rect = Rect(
-				game.get_player().pos.get_global(game.world) + self.centered_viewport.topleft,
+				game.get_player_coord().get_global(game.world) + self.centered_viewport.topleft,
 				self.centered_viewport.size,
 				)
 		for _pos, (_terrain, _objects, _items, _monsters) in game.iter_cells(view_rect):
@@ -651,17 +693,17 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		for row in range(5):
 			ui.print_line(row, hud_pos, " " * (80 - hud_pos))
 		ui.print_line(0, hud_pos, "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
-			game.get_player().pos.values[0].x,
-			game.get_player().pos.values[1].x,
-			game.get_player().pos.values[2].x,
-			game.get_player().pos.values[0].y,
-			game.get_player().pos.values[1].y,
-			game.get_player().pos.values[2].y,
+			game.get_player_coord().values[0].x,
+			game.get_player_coord().values[1].x,
+			game.get_player_coord().values[2].x,
+			game.get_player_coord().values[0].y,
+			game.get_player_coord().values[1].y,
+			game.get_player_coord().values[2].y,
 			))
 		ui.print_line(1, hud_pos, "T:{0}".format(game.passed_time))
 		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.get_player().hp, game.get_player().max_hp))
 		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.get_player().inventory)))
-		item_here = next(game.iter_items_at(game.get_player().pos), None)
+		item_here = next(game.iter_items_at(game.get_player_coord()), None)
 		if item_here:
 			ui.print_line(4, hud_pos, "here:{0}".format(item_here.sprite.sprite))
 
@@ -694,20 +736,20 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 	def grab_item(self):
 		game = self.game
 		if True:
-			item = next(game.iter_items_at(game.get_player().pos), None)
+			item = next(game.iter_items_at(game.get_player_coord()), None)
 			if not item:
 				self.game.fire_event(NothingToPickUp())
 			elif len(game.get_player().inventory) >= 26:
 				self.game.fire_event(InventoryIsFull())
 			else:
 				game.get_player().inventory.append(item)
-				game.world.get_data(game.get_player().pos)[-1].items.remove(item)
+				game.world.get_data(game.get_player_coord())[-1].items.remove(item)
 				self.game.fire_event(PickedUpItem(item))
 				self.step_taken = True
 	@Keys.bind('C')
 	def char(self):
 		game = self.game
-		player_pos = game.get_player().pos.get_global(game.world)
+		player_pos = game.get_player_coord().get_global(game.world)
 		if True:
 			npcs = [
 					monster for monster_pos, monster
@@ -803,8 +845,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			else:
 				def _on_select_item(menu_choice):
 					item = game.get_player().inventory.pop(menu_choice)
-					item.pos = game.get_player().pos.values[-1]
-					game.world.get_data(game.get_player().pos)[-1].items.append(item)
+					item.pos = game.get_player_coord().values[-1]
+					game.world.get_data(game.get_player_coord())[-1].items.append(item)
 					self.game.fire_event(DroppedItem('you', item))
 					self.step_taken = True
 				return InventoryMode(
@@ -815,7 +857,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 	def move_player(self, control):
 		game = self.game
-		player_pos = game.get_player().pos.get_global(game.world)
+		player_pos = game.get_player_coord().get_global(game.world)
 		if True:
 			new_pos = player_pos + control
 			dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
@@ -842,8 +884,13 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			elif dest_cell is None:
 				self.game.fire_event(StareIntoVoid())
 			elif dest_cell.passable:
-				game.get_player().pos = dest_pos
-				game.autoexpand(game.get_player().pos, Size(40, 40))
+				player = game.get_player()
+				current_field_data = game.world.get_data(self.game.get_player_coord())[-1]
+				if current_field_data != dest_field_data:
+					current_field_data.monsters.remove(player)
+					dest_field_data.monsters.append(player)
+				player.pos = dest_pos.values[-1]
+				game.autoexpand(self.game.get_player_coord(), Size(40, 40))
 			self.step_taken = True
 	def action(self, control):
 		if isinstance(control, clckwrkbdgr.tui.Key):
@@ -855,7 +902,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			return False
 		game = self.game
 		if self.step_taken:
-			player_pos = game.get_player().pos.get_global(game.world)
+			player_pos = game.get_player_coord().get_global(game.world)
 			if game.get_player().hp < game.get_player().max_hp:
 				game.get_player().regeneration += 1
 				while game.get_player().regeneration >= 10:
@@ -876,6 +923,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				if monster in already_acted_monsters_from_previous_fields:
 					continue
 				if isinstance(monster.behaviour, Questgiver):
+					continue
+				if monster.behaviour == 'player':
 					continue
 				monster_pos = monster_coord.get_global(game.world)
 				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
