@@ -213,6 +213,7 @@ class MainGame(SubMode):
 			self.game.walk_to(dest)
 		else:
 			game.wait()
+			game.end_turn()
 	@Keys.bind('o')
 	def autoexplore(self, game):
 		""" Autoexplore. """
@@ -225,7 +226,8 @@ class MainGame(SubMode):
 	def suicide(self, game):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
-		self.game.suicide()
+		self.game.suicide(game.get_player())
+		self.game.end_turn()
 	@Keys.bind('>')
 	def descend(self, game):
 		""" Descend. """
@@ -234,7 +236,8 @@ class MainGame(SubMode):
 	@Keys.bind('g')
 	def grab(self, game):
 		""" Grab item. """
-		self.game.player_grab(game.get_player().pos)
+		self.game.grab_item_at(self.game.get_player(), game.get_player().pos)
+		self.game.end_turn()
 	@Keys.bind('d')
 	def drop(self, game):
 		""" Drop item. """
@@ -261,7 +264,8 @@ class MainGame(SubMode):
 			if game.strata.valid(new_pos):
 				self.aim = new_pos
 		else:
-			game.move_player(direction)
+			game.move(game.get_player(), direction)
+			game.end_turn()
 
 class HelpScreen(SubMode):
 	""" Main help screen with controls cheatsheet. """
@@ -344,7 +348,8 @@ class Equipment(SubMode):
 		""" Wield or unwield item. """
 		self.done = True
 		if game.get_player().wielding:
-			game.player_unwield()
+			game.unwield_item(game.get_player())
+			game.end_turn()
 			return
 		return WieldSelection(game)
 	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
@@ -365,7 +370,8 @@ class ConsumeSelection(Inventory):
 			self.prompt = "No such item ({0})".format(param)
 			return None
 		self.done = True
-		game.player_consume(game.get_player().inventory[index])
+		game.consume_item(game.get_player(), game.get_player().inventory[index])
+		game.end_turn()
 	@ConsumeSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """
@@ -384,7 +390,8 @@ class DropSelection(Inventory):
 			self.prompt = "No such item ({0})".format(param)
 			return None
 		self.done = True
-		game.player_drop(game.get_player().inventory[index])
+		game.drop_item(game.get_player(), game.get_player().inventory[index])
+		game.end_turn()
 	@DropSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """
@@ -403,7 +410,8 @@ class WieldSelection(Inventory):
 			self.prompt = "No such item ({0})".format(param)
 			return None
 		self.done = True
-		game.player_wield(game.get_player().inventory[index])
+		game.wield_item(game.get_player(), game.get_player().inventory[index])
+		game.end_turn()
 	@WieldSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def cancel(self, game):
 		""" Cancel selection. """

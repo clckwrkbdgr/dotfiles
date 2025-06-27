@@ -163,33 +163,14 @@ class Game(engine.Game):
 			self.stop_automovement()
 		except Game.AutoMovementStopped:
 			pass
-	def suicide(self):
-		self.affect_health(self.get_player(), -self.get_player().hp)
-		self.end_turn()
+	def suicide(self, monster):
+		self.affect_health(monster, -monster.hp)
 	def toggle_god_vision(self):
 		self.god.vision = not self.god.vision
 	def toggle_god_noclip(self):
 		self.god.noclip = not self.god.noclip
-	def move_player(self, shift):
-		self.move(self.get_player(), shift)
-		self.end_turn()
-	def player_grab(self, pos):
-		self.grab_item_at(self.get_player(), pos)
-		self.end_turn()
-	def player_consume(self, item):
-		self.consume_item(self.get_player(), item)
-		self.end_turn()
-	def player_drop(self, item):
-		self.drop_item(self.get_player(), item)
-		self.end_turn()
-	def player_wield(self, item):
-		self.wield_item(self.get_player(), item)
-		self.end_turn()
-	def player_unwield(self):
-		self.unwield_item(self.get_player())
-		self.end_turn()
 	def wait(self):
-		self.end_turn()
+		pass
 	def _perform_monster_actions(self, monster):
 		""" Controller for monster actions (depends on behavior). """
 		if monster.behavior == monsters.Behavior.DUMMY:
@@ -252,9 +233,6 @@ class Game(engine.Game):
 		if cell.visited and cell.terrain.remembered:
 			return cell.terrain.remembered
 		return None
-	def is_transparent(self, p):
-		""" True if cell at position p is transparent/visible to the player. """
-		return self.is_transparent_to_monster(p, self.get_player())
 	def is_transparent_to_monster(self, p, monster):
 		""" True if cell at position p is transparent/visible to a monster. """
 		if not self.strata.valid(p):
@@ -274,9 +252,10 @@ class Game(engine.Game):
 			return
 		current_visible_monsters = []
 		current_visible_items = []
+		is_transparent = lambda p: self.is_transparent_to_monster(p, self.get_player())
 		for p in self.field_of_view.update(
 				self.get_player().pos,
-				is_transparent=self.is_transparent,
+				is_transparent=is_transparent,
 				):
 			cell = self.strata.cell(p)
 

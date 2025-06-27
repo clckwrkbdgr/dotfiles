@@ -3,6 +3,11 @@ from clckwrkbdgr.math.grid import EndlessMatrix
 from . import builders
 from .. import engine
 
+class Monster:
+	def __init__(self, pos, sprite):
+		self.sprite = sprite
+		self.pos = Point(pos)
+
 class Dungeon(engine.Game):
 	BLOCK_SIZE = Size(32, 32)
 
@@ -16,7 +21,7 @@ class Dungeon(engine.Game):
 		return False
 	def generate(self):
 		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block)
-		self.monsters.append(Point(self.builder.place_rogue(self.terrain)))
+		self.monsters.append(Monster(self.builder.place_rogue(self.terrain), "@"))
 	def load(self, state):
 		self.__dict__.update(state)
 		if 'time' not in state:
@@ -30,9 +35,9 @@ class Dungeon(engine.Game):
 	def get_cell_info(self, pos):
 		return self.terrain.cell(pos), [], [], list(self.iter_actors_at(pos))
 	def iter_actors_at(self, pos, with_player=False):
-		for _ in self.monsters:
-			if _ == pos:
-				yield _
+		for monster in self.monsters:
+			if monster.pos == pos:
+				yield monster
 	def iter_cells(self, view_rect):
 		for y in range(view_rect.topleft.y, view_rect.bottomright.y + 1):
 			for x in range(view_rect.topleft.x, view_rect.bottomright.x + 1):
@@ -43,13 +48,14 @@ class Dungeon(engine.Game):
 	def get_sprite(self, pos):
 		terrain, objects, items, monsters = self.get_cell_info(pos)
 		if monsters:
-			return "@"
+			return monsters[-1].sprite
 		return terrain
 	def is_passable(self, pos):
 		return self.terrain.cell(pos) == '.'
-	def shift_player(self, shift):
-		new_pos = self.get_player() + shift
+	def shift_monster(self, monster, shift):
+		new_pos = monster.pos + shift
 		if self.is_passable(new_pos):
-			self.monsters[0] = new_pos
-			self.terrain.recalibrate(self.get_player())
+			monster.pos = new_pos
+	def finish_action(self):
+		self.terrain.recalibrate(self.get_player().pos)
 		self.time += 1

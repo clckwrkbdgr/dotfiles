@@ -427,7 +427,7 @@ class Dungeon(engine.Game):
 	def generate(self): # pragma: no cover -- TODO
 		rogue = self.PLAYER_TYPE()
 		rogue.inventory.append(Dagger())
-		self.go_to_level(0, player=rogue)
+		self.go_to_level(rogue, 0)
 	def load(self, reader): # pragma: no cover -- TODO
 		self.levels = data.levels
 		self.current_level_id = data.current_level
@@ -544,29 +544,25 @@ class Dungeon(engine.Game):
 		for obj_pos, obj in reversed(self.current_level.objects):
 			if obj_pos == pos:
 				yield obj
-	def go_to_level(self, level_id, connected_passage='enter', player=None):
+	def go_to_level(self, monster, level_id, connected_passage='enter'):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
 		"""
-		if player is None:
-			if self.current_level_id is not None:
-				player = self.get_player()
-				self.current_level.monsters.remove(player)
-			else:
-				player = self.PLAYER_TYPE()
+		if self.current_level_id is not None:
+			self.current_level.monsters.remove(monster)
 		if level_id not in self.levels:
 			self.levels[level_id] = self.generator.build_level(level_id)
 		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, LevelPassage) and obj.id == connected_passage), None)
 		assert stairs is not None, "No stairs with id {0}".format(repr(connected_passage))
 		self.current_level_id = level_id
-		if player:
-			self.current_level.monsters.append(player)
-			player.pos = stairs
-			self.current_level.visit(player.pos)
-	def use_stairs(self, stairs):
+
+		self.current_level.monsters.append(monster)
+		monster.pos = stairs
+		self.current_level.visit(monster.pos)
+	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """
-		stairs.use(self.get_player())
-		self.go_to_level(stairs.level_id, stairs.connected_passage)
+		stairs.use(monster)
+		self.go_to_level(monster, stairs.level_id, stairs.connected_passage)
 	def move_monster(self, monster, new_pos, with_tunnels=True):
 		""" Tries to move monster to a new position.
 		May attack hostile other monster there.
@@ -580,9 +576,7 @@ class Dungeon(engine.Game):
 		can_move = self.current_level.can_move_to(new_pos, with_tunnels=with_tunnels, from_pos=monster.pos)
 		if not can_move:
 			return [Event.BumpIntoTerrain(monster, new_pos)]
-		others = [other for other in self.iter_actors_at(new_pos) if other != monster]
-		if self.get_player().pos == new_pos:
-			others.append(self.get_player())
+		others = [other for other in self.iter_actors_at(new_pos, with_player=True) if other != monster]
 		if not others:
 			monster.pos = new_pos
 			return []

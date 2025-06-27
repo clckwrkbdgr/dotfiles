@@ -427,7 +427,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertFalse(gridmap.can_move_to(Point(7, 3), with_tunnels=True, from_pos=Point(8, 2)))
 	def should_detect_objects_on_map(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 
 		mj12 = MJ12Trooper()
 		pistol = StealthPistol()
@@ -448,7 +448,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(dungeon.iter_actors_at(Point(9, 2))), [mj12])
 	def should_rip_monster(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
@@ -472,7 +472,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(dungeon.iter_actors_at(Point(9, 2))), [])
 	def should_grab_item(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
@@ -502,7 +502,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [armor])
 	def should_drop_item(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 
 		pistol = StealthPistol()
 		jc = UNATCOAgent()
@@ -539,7 +539,7 @@ class TestDungeon(unittest.TestCase):
 		PLAYER_TYPE = UNATCOAgent
 	def should_iter_dungeon_cells(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 		dungeon.get_player().pos = Point(3, 1)
 		dungeon.current_level.visit(dungeon.get_player().pos)
 		dungeon.get_player().pos = Point(5, 1)
@@ -595,18 +595,18 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(view.tostring(), expected)
 	def should_move_to_level(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 	def should_use_stairs(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
-		dungeon.use_stairs(dungeon.current_level.objects[1][1])
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.use_stairs(dungeon.get_player(), dungeon.current_level.objects[1][1])
 		self.assertEqual(dungeon.current_level, dungeon.levels['roof'])
 		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 	def should_locate_in_maze(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
 		dungeon.get_player().pos = Point(1, 1)
@@ -622,7 +622,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.current_tunnel, dungeon.current_level.tunnels[0])
 	def should_detect_visible_objects(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
 		dungeon.get_player().pos = Point(1, 1)
@@ -643,7 +643,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_visible(Point(8, 2)))
 	def should_remember_objects(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
 		dungeon.get_player().pos = Point(1, 1)
@@ -666,7 +666,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_remembered(Point(8, 2)))
 	def should_move_monster(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level('top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
 		dungeon.get_player().pos = Point(9, 3)
 		pistol = StealthPistol()
 		dungeon.get_player().inventory.append(pistol)

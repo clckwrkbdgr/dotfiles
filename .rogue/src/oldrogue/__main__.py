@@ -438,7 +438,7 @@ class MainGame(tui.app.MVC):
 		dungeon = self.data
 		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.current_level.iter_placements_at(dungeon.get_player().pos)), None)
 		if stairs_here:
-			dungeon.use_stairs(stairs_here)
+			dungeon.use_stairs(dungeon.get_player(), stairs_here)
 			dungeon.fire_event(GoingDown())
 			return to_main_screen(self)
 		else:
@@ -450,7 +450,7 @@ class MainGame(tui.app.MVC):
 		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_up, dungeon.current_level.iter_placements_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			try:
-				dungeon.use_stairs(stairs_here)
+				dungeon.use_stairs(dungeon.get_player(), stairs_here)
 				dungeon.fire_event(GoingUp())
 				return to_main_screen(self)
 			except Furniture.Locked:
