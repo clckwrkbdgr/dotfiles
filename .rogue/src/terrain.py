@@ -1,4 +1,5 @@
 from .defs import *
+from .engine import terrain
 
 class Terrain(object):
 	""" Basic fixed stats shared by terrain cells of the same kind. """
@@ -16,7 +17,7 @@ class Terrain(object):
 		self.allow_diagonal = allow_diagonal
 		self.dark = dark
 
-class Cell(object):
+class Cell(terrain.Terrain):
 	""" Basic element for each terrain map. """
 	def __init__(self, terrain, visited=False):
 		self.terrain = terrain

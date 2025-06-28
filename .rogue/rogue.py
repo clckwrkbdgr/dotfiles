@@ -16,6 +16,7 @@ import clckwrkbdgr.tui
 from src import engine
 from src.engine import builders
 from src.engine import events
+import src.engine.actors, src.engine.items, src.engine.placements, src.engine.terrain
 
 SAVEFILE_VERSION = 4
 
@@ -32,7 +33,7 @@ MOVEMENT = {
 
 Sprite = namedtuple('Sprite', 'sprite color')
 
-class Terrain:
+class Terrain(src.engine.terrain.Terrain):
 	def __init__(self, sprite=None, passable=True):
 		self.sprite = sprite
 		self.passable = passable
@@ -73,7 +74,7 @@ class Questgiver:
 		else:
 			self.prepared_quest = None
 
-class Monster:
+class Monster(src.engine.actors.Monster):
 	def __init__(self, pos, sprite, max_hp, behaviour=None):
 		self.pos = pos
 		self.sprite = sprite
@@ -136,7 +137,7 @@ class Monster:
 			item.load(stream)
 			self.inventory.append(item)
 
-class Item:
+class Item(src.engine.items.Item):
 	def __init__(self, pos, sprite, name):
 		self.pos = pos
 		self.sprite = sprite

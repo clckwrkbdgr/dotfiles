@@ -1,6 +1,7 @@
 from .defs import *
 from clckwrkbdgr.collections import DocstringEnum as Enum
 from . import items
+from .engine import actors
 
 class Behavior(Enum):
 	""" PLAYER
@@ -24,7 +25,7 @@ class Species(object):
 	def __str__(self):
 		return "{0} {1}hp".format(self.name, self.max_hp)
 
-class Monster(object):
+class Monster(actors.Monster):
 	""" Base for every living being (including player). """
 	def __init__(self, species, behavior, pos):
 		self.species = species

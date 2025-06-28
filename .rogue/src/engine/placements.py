@@ -1,0 +1,2 @@
+class Placement(object):
+	pass

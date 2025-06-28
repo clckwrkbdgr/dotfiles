@@ -11,6 +11,7 @@ import clckwrkbdgr.logging
 from clckwrkbdgr import xdg
 from .. import engine
 from ..engine import events
+from ..engine import actors, items, placements
 
 def is_diagonal_movement(point_from, point_to):
 	shift = abs(point_to - point_from)
@@ -46,7 +47,7 @@ class Event:
 	class InventoryFull(events.Event): FIELDS = 'item'
 	class GrabbedItem(events.Event): FIELDS = 'who item'
 
-class Item(object):
+class Item(items.Item):
 	""" Basic pickable and carryable item. """
 	sprite = classfield('_sprite', '*')
 	name = classfield('_name', 'mcguffin')
@@ -59,7 +60,7 @@ class Consumable(object):
 class Wearable(object):
 	protection = classfield('_protection', 0)
 
-class Furniture(object):
+class Furniture(placements.Placement):
 	""" Any object placed on map that is not a part of the terrain.
 	Like stairs, doors, levers etc or even inert objects like statues.
 	"""
@@ -90,7 +91,7 @@ class LevelPassage(Furniture):
 		"""
 		pass
 
-class Monster(object):
+class Monster(actors.Monster):
 	def __init__(self):
 		self.pos = None
 		self.wielding = None

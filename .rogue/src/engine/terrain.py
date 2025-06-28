@@ -1,0 +1,2 @@
+class Terrain(object):
+	pass

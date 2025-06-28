@@ -1,4 +1,5 @@
 from clckwrkbdgr.collections import DocstringEnum as Enum
+from .engine import items
 
 class Effect(Enum):
 	""" NONE
@@ -14,7 +15,7 @@ class ItemType(object):
 	def __str__(self):
 		return '{0}'.format(self.name)
 
-class Item(object):
+class Item(items.Item):
 	""" Any item that can be picked, carried, stored and used. """
 	def __init__(self, item_type, pos):
 		self.item_type = item_type

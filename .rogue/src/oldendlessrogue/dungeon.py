@@ -2,8 +2,9 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.math.grid import EndlessMatrix
 from . import builders
 from .. import engine
+from ..engine import actors
 
-class Monster:
+class Monster(actors.Monster):
 	def __init__(self, pos, sprite):
 		self.sprite = sprite
 		self.pos = Point(pos)
