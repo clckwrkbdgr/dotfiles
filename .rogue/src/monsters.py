@@ -28,9 +28,9 @@ class Species(object):
 class Monster(actors.Monster):
 	""" Base for every living being (including player). """
 	def __init__(self, species, behavior, pos):
+		super(Monster, self).__init__(pos)
 		self.species = species
 		self.behavior = behavior
-		self.pos = pos
 		self.hp = self.species.max_hp
 		self.inventory = []
 		self.wielding = None

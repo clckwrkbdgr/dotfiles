@@ -93,7 +93,7 @@ class LevelPassage(Furniture):
 
 class Monster(actors.Monster):
 	def __init__(self):
-		self.pos = None
+		super(Monster, self).__init__(None)
 		self.wielding = None
 		self.wearing = None
 		self.inventory = []

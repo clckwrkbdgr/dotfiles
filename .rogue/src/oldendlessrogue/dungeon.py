@@ -6,8 +6,8 @@ from ..engine import actors
 
 class Monster(actors.Monster):
 	def __init__(self, pos, sprite):
+		super(Monster, self).__init__(pos)
 		self.sprite = sprite
-		self.pos = Point(pos)
 
 class Dungeon(engine.Game):
 	BLOCK_SIZE = Size(32, 32)

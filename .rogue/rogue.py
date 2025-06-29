@@ -76,7 +76,7 @@ class Questgiver:
 
 class Monster(src.engine.actors.Monster):
 	def __init__(self, pos, sprite, max_hp, behaviour=None):
-		self.pos = pos
+		super(Monster, self).__init__(pos)
 		self.sprite = sprite
 		self.hp = self.max_hp = max_hp
 		self.regeneration = 0

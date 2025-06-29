@@ -1,2 +1,5 @@
+from clckwrkbdgr.math import Point
+
 class Monster(object):
-	pass
+	def __init__(self, pos): # pragma: no cover -- TODO
+		self.pos = Point(pos) if pos else None
