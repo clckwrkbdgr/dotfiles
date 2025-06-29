@@ -57,10 +57,10 @@ class MockMapping:
 		]), *(data + (pos,)))
 	@staticmethod
 	def potion(pos,*data):
-		return items.Item(items.ItemType('potion', '!', items.Effect.NONE), *(data + (pos,)))
+		return items.ItemAtPos(pos, items.Item(items.ItemType('potion', '!', items.Effect.NONE), *data))
 	@staticmethod
 	def healing_potion(pos,*data):
-		return items.Item(items.ItemType('healing potion', '!', items.Effect.HEALING), *(data + (pos,)))
+		return items.ItemAtPos(pos, items.Item(items.ItemType('healing potion', '!', items.Effect.HEALING), *data))
 
 class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
 	Mapping = MockMapping

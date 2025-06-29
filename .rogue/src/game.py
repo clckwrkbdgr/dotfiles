@@ -126,7 +126,7 @@ class Game(engine.Game):
 		if reader.version > Version.MONSTERS:
 			self.monsters.extend(reader.read_list(monsters.Monster))
 		if reader.version > Version.ITEMS:
-			self.items.extend(reader.read_list(items.Item))
+			self.items.extend(reader.read_list(items.ItemAtPos))
 
 		self.update_vision()
 		Log.debug('Loaded.')
@@ -383,8 +383,8 @@ class Game(engine.Game):
 				yield monster
 	def iter_items_at(self, pos):
 		""" Return all items at given cell. """
-		for item in self.items:
-			if item.pos == pos:
+		for item_pos, item in self.items:
+			if item_pos == pos:
 				yield item
 	def iter_appliances_at(self, pos):
 		if self.exit_pos == pos:
@@ -414,9 +414,8 @@ class Game(engine.Game):
 		Produces events.
 		"""
 		assert item in monster.inventory
-		item.pos = monster.pos
 		monster.inventory.remove(item)
-		self.items.append(item)
+		self.items.append(items.ItemAtPos(monster.pos, item))
 		self.visible_items.append(item)
 		self.fire_event(DropItemEvent(monster, item))
 	def wield_item(self, monster, item):

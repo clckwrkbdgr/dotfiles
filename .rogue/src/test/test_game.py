@@ -200,8 +200,8 @@ class TestItems(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around 2')
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
-			'DiscoverEvent(obj=potion @[10, 6])',
-			'DiscoverEvent(obj=healing potion @[11, 6])',
+			'DiscoverEvent(obj=potion)',
+			'DiscoverEvent(obj=healing potion)',
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.end_turn()
@@ -213,13 +213,13 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
-			'GrabItemEvent(actor=player @[10, 6] 10/10hp, item=potion @[10, 6])',
+			'GrabItemEvent(actor=player @[10, 6] 10/10hp, item=potion)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
 	def should_consume_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion']))
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
@@ -227,13 +227,13 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
-			'ConsumeItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[0, 0])',
+			'ConsumeItemEvent(actor=player @[9, 6] 10/10hp, item=potion)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
 	def should_drop_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion']))
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
@@ -241,13 +241,13 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
-			'DropItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[9, 6])',
+			'DropItemEvent(actor=player @[9, 6] 10/10hp, item=potion)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
 	def should_equip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon'], Point(0, 0)))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon']))
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
@@ -255,13 +255,13 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
-			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
+			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
 	def should_unequip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().wielding = items.Item(dungeon.ITEMS['weapon'], Point(0, 0))
+		dungeon.get_player().wielding = items.Item(dungeon.ITEMS['weapon'])
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
@@ -269,7 +269,7 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
-			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
+			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
@@ -632,24 +632,24 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'GrabItemEvent(actor=player @[9, 6] 10/10hp, item=potion @[10, 6])',
+			'GrabItemEvent(actor=player @[9, 6] 10/10hp, item=potion)',
 			])
 
 		list(dungeon.process_events(raw=True))
 		dungeon.grab_item_at(dungeon.get_player(), Point(11, 6))
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'GrabItemEvent(actor=player @[9, 6] 10/10hp, item=healing potion @[11, 6])',
+			'GrabItemEvent(actor=player @[9, 6] 10/10hp, item=healing potion)',
 			])
 	def should_consume_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
 		dungeon.affect_health(dungeon.get_player(), -9)
 		list(dungeon.process_events(raw=True))
-		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion'], Point(0, 0)))
-		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['healing_potion'], Point(0, 0)))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['potion']))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['healing_potion']))
 
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'ConsumeItemEvent(actor=player @[9, 6] 1/10hp, item=potion @[0, 0])',
+			'ConsumeItemEvent(actor=player @[9, 6] 1/10hp, item=potion)',
 			])
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
 		self.assertEqual(dungeon.get_player().inventory[0].item_type.name, 'healing potion')
@@ -657,7 +657,7 @@ class TestItemActions(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True))
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'ConsumeItemEvent(actor=player @[9, 6] 6/10hp, item=healing potion @[0, 0])',
+			'ConsumeItemEvent(actor=player @[9, 6] 6/10hp, item=healing potion)',
 			'HealthEvent(target=player @[9, 6] 6/10hp, diff=5)',
 			])
 		self.assertEqual(dungeon.get_player().hp, 6)
@@ -665,12 +665,12 @@ class TestItemActions(AbstractTestDungeon):
 	def should_equip_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
 		list(dungeon.process_events(raw=True))
-		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon'], Point(0, 0)))
-		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['ranged'], Point(0, 0)))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['weapon']))
+		dungeon.get_player().inventory.append(items.Item(dungeon.ITEMS['ranged']))
 
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
+			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon)',
 			])
 		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'weapon')
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -679,8 +679,8 @@ class TestItemActions(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True))
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon @[0, 0])',
-			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=ranged @[0, 0])',
+			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=weapon)',
+			'EquipItemEvent(actor=player @[9, 6] 10/10hp, item=ranged)',
 			])
 		self.assertEqual(dungeon.get_player().wielding.item_type.name, 'ranged')
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -689,7 +689,7 @@ class TestItemActions(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True))
 		dungeon.unwield_item(dungeon.get_player())
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=ranged @[0, 0])',
+			'UnequipItemEvent(actor=player @[9, 6] 10/10hp, item=ranged)',
 			])
 		self.assertIsNone(dungeon.get_player().wielding)
 		self.assertEqual(len(dungeon.get_player().inventory), 2)
@@ -1095,5 +1095,5 @@ class TestGameSerialization(AbstractTestDungeon):
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 		self.assertEqual(len(dungeon.items), len(restored_dungeon.items))
 		for item, restored_item in zip(dungeon.items, restored_dungeon.items):
-			self.assertEqual(item.item_type.name, restored_item.item_type.name)
+			self.assertEqual(item.item.item_type.name, restored_item.item.item_type.name)
 			self.assertEqual(item.pos, restored_item.pos)
