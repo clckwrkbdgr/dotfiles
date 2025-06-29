@@ -1,2 +1,0 @@
-class Placement(object):
-	pass

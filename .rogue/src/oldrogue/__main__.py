@@ -387,7 +387,7 @@ class StatusLine(tui.widgets.StatusLine):
 					))),
 			StatusSection("Wld", 7, lambda dungeon: dungeon.get_player().wielding.name if dungeon.get_player().wielding else None),
 			StatusSection("Wear", 7, lambda dungeon: dungeon.get_player().wearing.name if dungeon.get_player().wearing else None),
-			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.current_level.iter_items_at(dungeon.get_player().pos), next(dungeon.current_level.iter_placements_at(dungeon.get_player().pos), None)), 'sprite', None)),
+			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.current_level.iter_items_at(dungeon.get_player().pos), next(dungeon.current_level.iter_appliances_at(dungeon.get_player().pos), None)), 'sprite', None)),
 			]
 
 Controls = AutoRegistry()
@@ -436,7 +436,7 @@ class MainGame(tui.app.MVC):
 	def descend(self):
 		""" Go down. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.current_level.iter_placements_at(dungeon.get_player().pos)), None)
+		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.current_level.iter_appliances_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			dungeon.use_stairs(dungeon.get_player(), stairs_here)
 			dungeon.fire_event(GoingDown())
@@ -447,7 +447,7 @@ class MainGame(tui.app.MVC):
 	def ascend(self):
 		""" Go up. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_up, dungeon.current_level.iter_placements_at(dungeon.get_player().pos)), None)
+		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_up, dungeon.current_level.iter_appliances_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			try:
 				dungeon.use_stairs(dungeon.get_player(), stairs_here)

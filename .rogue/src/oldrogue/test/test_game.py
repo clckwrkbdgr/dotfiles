@@ -443,8 +443,8 @@ class TestGridRoomMap(unittest.TestCase):
 
 		self.assertEqual(list(dungeon.iter_items_at(Point(2, 1))), [])
 		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [armor, pistol])
-		self.assertEqual(list(dungeon.iter_placements_at(Point(1, 2))), [])
-		self.assertEqual(list(dungeon.iter_placements_at(Point(1, 1))), [elevator])
+		self.assertEqual(list(dungeon.iter_appliances_at(Point(1, 2))), [])
+		self.assertEqual(list(dungeon.iter_appliances_at(Point(1, 1))), [elevator])
 		self.assertEqual(list(dungeon.iter_actors_at(Point(9, 2))), [mj12])
 	def should_rip_monster(self):
 		dungeon = self.UNATCO()

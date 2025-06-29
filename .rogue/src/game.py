@@ -213,7 +213,7 @@ class Game(engine.Game):
 	def get_cell_info(self, pos):
 		return (
 				self.strata.cell(pos),
-				list(self.iter_placements_at(pos)),
+				list(self.iter_appliances_at(pos)),
 				list(self.iter_items_at(pos)),
 				list(self.iter_actors_at(pos, with_player=True)),
 				)
@@ -271,8 +271,8 @@ class Game(engine.Game):
 
 			if cell.visited:
 				continue
-			for placement in self.iter_placements_at(p):
-				self.fire_event(DiscoverEvent(placement))
+			for appliance in self.iter_appliances_at(p):
+				self.fire_event(DiscoverEvent(appliance))
 			cell.visited = True
 		self.visible_monsters = current_visible_monsters
 		self.visible_items = current_visible_items
@@ -386,7 +386,7 @@ class Game(engine.Game):
 		for item in self.items:
 			if item.pos == pos:
 				yield item
-	def iter_placements_at(self, pos):
+	def iter_appliances_at(self, pos):
 		if self.exit_pos == pos:
 			yield '>'
 	def grab_item_at(self, actor, pos):

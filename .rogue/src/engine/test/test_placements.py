@@ -1,2 +1,2 @@
 from clckwrkbdgr import unittest
-from .. import placements
+from .. import appliances

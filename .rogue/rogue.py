@@ -16,7 +16,7 @@ import clckwrkbdgr.tui
 from src import engine
 from src.engine import builders
 from src.engine import events
-import src.engine.actors, src.engine.items, src.engine.placements, src.engine.terrain
+import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 
 SAVEFILE_VERSION = 4
 

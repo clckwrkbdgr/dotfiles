@@ -11,7 +11,7 @@ import clckwrkbdgr.logging
 from clckwrkbdgr import xdg
 from .. import engine
 from ..engine import events
-from ..engine import actors, items, placements
+from ..engine import actors, items, appliances
 
 def is_diagonal_movement(point_from, point_to):
 	shift = abs(point_to - point_from)
@@ -60,7 +60,7 @@ class Consumable(object):
 class Wearable(object):
 	protection = classfield('_protection', 0)
 
-class Furniture(placements.Placement):
+class Furniture(appliances.Appliance):
 	""" Any object placed on map that is not a part of the terrain.
 	Like stairs, doors, levers etc or even inert objects like statues.
 	"""
@@ -524,7 +524,7 @@ class Dungeon(engine.Game):
 
 		for y, x, sprite in terrain:
 			pos = Point(x, y)
-			objects = list(self.iter_placements_at(pos))
+			objects = list(self.iter_appliances_at(pos))
 			items = list(self.iter_items_at(pos))
 			monsters = list(dungeon.iter_actors_at(pos, with_player=True))
 			yield pos, (sprite, objects, items, monsters)
@@ -540,7 +540,7 @@ class Dungeon(engine.Game):
 				continue
 			if monster.pos == pos:
 				yield monster
-	def iter_placements_at(self, pos):
+	def iter_appliances_at(self, pos):
 		""" Yield objects at pos in reverse order (from top to bottom). """
 		for obj_pos, obj in reversed(self.current_level.objects):
 			if obj_pos == pos:
