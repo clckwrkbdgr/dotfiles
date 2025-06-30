@@ -7,6 +7,7 @@ from .. import monsters
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr import pcg
+from ..engine import items as items_module, appliances as appliances_module
 
 class TestCustomMapLayout(unittest.TestCase):
 	def should_generate_map_from_given_custom_layout(self):
@@ -27,13 +28,13 @@ class TestCustomMapLayout(unittest.TestCase):
 		builder.map_key(**({
 			'#':'#',
 			'.':'.',
-			'start':lambda pos: (pos, 'start'),
-			'exit':lambda pos: (pos, 'exit'),
+			'start':lambda: 'start',
+			'exit':lambda: 'exit',
 			}))
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(9, 6), 'start'),
-			(Point(10, 1), 'exit'),
+			appliances_module.ObjectAtPos(Point( 9, 6), 'start'),
+			appliances_module.ObjectAtPos(Point(10, 1), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -73,14 +74,14 @@ class TestCustomMapLayout(unittest.TestCase):
 			'.':'.',
 			'"':'"',
 			'~':'~',
-			'start':lambda pos: (pos, 'start'),
-			'exit':lambda pos: (pos, 'exit'),
+			'start':lambda: 'start',
+			'exit':lambda: 'exit',
 			}))
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(9, 6), 'start'),
-			(Point(10, 1), 'exit'),
+			appliances_module.ObjectAtPos(Point( 9, 6), 'start'),
+			appliances_module.ObjectAtPos(Point(10, 1), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -113,14 +114,14 @@ class TestRogueDungeon(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
-				start = lambda pos: (pos, 'start'),
-				exit = lambda pos: (pos, 'exit'),
+				start = lambda: 'start',
+				exit = lambda: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(37, 12), 'start'),
-			(Point(21, 10), 'exit'),
+			appliances_module.ObjectAtPos(Point(37, 12), 'start'),
+			appliances_module.ObjectAtPos(Point(21, 10), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -167,14 +168,14 @@ class TestBSPDungeon(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
-				start = lambda pos: (pos, 'start'),
-				exit = lambda pos: (pos, 'exit'),
+				start = lambda: 'start',
+				exit = lambda: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(31, 20), 'exit'),
-			(Point(55, 22), 'start'),
+			appliances_module.ObjectAtPos(Point(31, 20), 'exit'),
+			appliances_module.ObjectAtPos(Point(55, 22), 'start'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -221,14 +222,14 @@ class TestBSPCityBuilder(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
-				start = lambda pos: (pos, 'start'),
-				exit = lambda pos: (pos, 'exit'),
+				start = lambda: 'start',
+				exit = lambda: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(11, 1), 'start'),
-			(Point(58, 22), 'exit'),
+			appliances_module.ObjectAtPos(Point(11,  1), 'start'),
+			appliances_module.ObjectAtPos(Point(58, 22), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -275,14 +276,14 @@ class TestCaveDungeon(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
-				start = lambda pos: (pos, 'start'),
-				exit = lambda pos: (pos, 'exit'),
+				start = lambda: 'start',
+				exit = lambda: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(9, 9), 'start'),
-			(Point(51, 2), 'exit'),
+			appliances_module.ObjectAtPos(Point( 9, 9), 'start'),
+			appliances_module.ObjectAtPos(Point(51, 2), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -329,14 +330,14 @@ class TestMazeDungeon(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
-				start = lambda pos: (pos, 'start'),
-				exit = lambda pos: (pos, 'exit'),
+				start = lambda: 'start',
+				exit = lambda: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(7, 4), 'start'),
-			(Point(25, 20), 'exit'),
+			appliances_module.ObjectAtPos(Point( 7,  4), 'start'),
+			appliances_module.ObjectAtPos(Point(25, 20), 'exit'),
 			]))
 		self.maxDiff = None
 		grid = builder.make_grid()
@@ -383,15 +384,15 @@ class TestSewers(unittest.TestCase):
 				wall_v = "|",
 				rogue_door = "+",
 				rogue_passage = "#",
-				start = lambda pos: (pos, 'start'),
-				exit = lambda pos: (pos, 'exit'),
+				start = lambda: 'start',
+				exit = lambda: 'exit',
 				)
 		builder.generate()
 		self.maxDiff = None
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
-			(Point(10, 13), 'start'),
-			(Point(17, 8), 'exit'),
+			appliances_module.ObjectAtPos(Point(10, 13), 'start'),
+			appliances_module.ObjectAtPos(Point(17, 8), 'exit'),
 			]))
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -431,7 +432,7 @@ class TestSquatters(unittest.TestCase):
 				rodent = staticmethod(lambda pos,*data: ('rodent',) + data + (pos,))
 				plant = staticmethod(lambda pos,*data: ('plant',) + data + (pos,))
 				slime = staticmethod(lambda pos,*data: ('slime',) + data + (pos,))
-				healing_potion = staticmethod(lambda pos,*data: ('healing potion',) + data + (pos,))
+				healing_potion = staticmethod(lambda *data: ('healing potion',) + data)
 			MONSTERS = [
 					('plant', monsters.Behavior.DUMMY),
 					('slime', monsters.Behavior.INERT),
@@ -457,8 +458,8 @@ class TestSquatters(unittest.TestCase):
 			('plant', 1,  Point(65, 11))
 			]))
 		self.assertEqual(sorted(_items), sorted([
-			('healing potion', Point(31, 19)),
-			('healing potion', Point(61, 3)),
+			items_module.ItemAtPos(Point(31, 19), ('healing potion',)),
+			items_module.ItemAtPos(Point(61,  3), ('healing potion',)),
 			]))
 	def should_populate_dungeon_with_weighted_squatters(self):
 		rng = RNG(0)
@@ -467,7 +468,7 @@ class TestSquatters(unittest.TestCase):
 				rodent = staticmethod(lambda pos,*data: ('rodent',) + data + (pos,))
 				plant = staticmethod(lambda pos,*data: ('plant',) + data + (pos,))
 				slime = staticmethod(lambda pos,*data: ('slime',) + data + (pos,))
-				healing_potion = staticmethod(lambda pos,*data: ('healing potion',) + data + (pos,))
+				healing_potion = staticmethod(lambda *data: ('healing potion',) + data)
 			MONSTERS = [
 					(1, ('plant', monsters.Behavior.DUMMY)),
 					(5, ('slime', monsters.Behavior.INERT)),
@@ -493,6 +494,6 @@ class TestSquatters(unittest.TestCase):
 			('slime', 2,  Point(65, 11))
 			]))
 		self.assertEqual(sorted(_items), sorted([
-			('healing potion', Point(61, 3)),
-			('healing potion', Point(63, 4)),
+			items_module.ItemAtPos(Point(61, 3), ('healing potion',)),
+			items_module.ItemAtPos(Point(63, 4), ('healing potion',)),
 			]))

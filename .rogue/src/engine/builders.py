@@ -3,6 +3,7 @@ from collections import defaultdict
 from clckwrkbdgr.math import Matrix, Size
 from clckwrkbdgr import pcg
 from clckwrkbdgr import utils
+from . import items, appliances
 
 class EntityDistribution(object):
 	""" Basic distribution of entities from the list. """
@@ -126,7 +127,7 @@ class Builder(object):
 				self.dest_grid.set_cell(pos, copy.deepcopy(mapped_object))
 			self.grid = None
 		return self.dest_grid
-	def make_entities(self, position_map):
+	def make_entities(self, position_map, at_pos_type=None):
 		""" Iterates over entities data and yields ready entities
 		according to mapping.
 		Position map is a dict {pos:[list of entities tied to that pos]}
@@ -135,17 +136,22 @@ class Builder(object):
 		remaining arguments.
 		If mapped object is a callable, it should accept full list
 		of arguments (pos,)+entity_data and return fully constructed object.
+		If at_pos_type is given, it is constructed and yielded instead of
+		passing pos to entity's c-tor (see ItemAtPos, ObjectAtPos).
 		"""
 		for pos, entities in position_map.items():
 			for entity_data in entities:
 				key, entity_data = entity_data[0], entity_data[1:]
 				mapped_object = self._get_mapping(key)
-				yield mapped_object(pos, *entity_data)
+				if at_pos_type:
+					yield at_pos_type(pos, mapped_object(*entity_data))
+				else:
+					yield mapped_object(pos, *entity_data)
 	def make_appliances(self):
 		""" Yields ready appliance objects according to mapping.
 		See make_entities() for details.
 		"""
-		for _ in self.make_entities(self.appliances):
+		for _ in self.make_entities(self.appliances, at_pos_type=appliances.ObjectAtPos):
 			yield _
 	def make_actors(self):
 		""" Yields actor objects according to mapping.
@@ -157,7 +163,7 @@ class Builder(object):
 		""" Yields ready item objects according to mapping.
 		See make_entities() for details.
 		"""
-		for _ in self.make_entities(self.items):
+		for _ in self.make_entities(self.items, at_pos_type=items.ItemAtPos):
 			yield _
 
 	# Generation controls and checks.

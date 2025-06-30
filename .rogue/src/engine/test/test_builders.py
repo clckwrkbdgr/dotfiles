@@ -4,6 +4,7 @@ from clckwrkbdgr.math import Point, Size, Matrix, Rect
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr import pcg
 from .. import builders
+from .. import items, appliances
 
 class MockBuilder(builders.Builder):
 	class Mapping:
@@ -13,7 +14,7 @@ class MockBuilder(builders.Builder):
 			'water': '~',
 			}
 		@staticmethod
-		def start(pos): return (pos, 'start')
+		def start(): return 'start'
 	def is_open(self, pos):
 		return self.grid.cell(pos) == 'floor'
 
@@ -42,11 +43,11 @@ class MockBuilder(builders.Builder):
 def make_builder(rng, grid_or_size):
 	builder = MockBuilder(rng, grid_or_size)
 	builder.map_key(**({
-		'exit':lambda pos: (pos, 'exit'),
+		'exit':lambda: 'exit',
 		}))
 	builder.map_key(
 			monster = lambda pos,*data: ('monster',) + data + (pos,),
-			item = lambda pos,*data: ('item',) + data + (pos,),
+			item = lambda *data: ('item',) + data,
 			)
 	return builder
 
@@ -83,10 +84,10 @@ class TestBuilder(unittest.TestCase):
 		builder = make_builder(rng, Size(20, 20))
 		builder.generate()
 		self.maxDiff = None
-		appliances = sorted(builder.make_appliances())
-		self.assertEqual(appliances, sorted([
-			(Point(2, 10), 'start'),
-			(Point(9, 12), 'exit'),
+		_appliances = sorted(builder.make_appliances())
+		self.assertEqual(_appliances, sorted([
+			appliances.ObjectAtPos(Point(2, 10), 'start'),
+			appliances.ObjectAtPos(Point(9, 12), 'exit'),
 			]))
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
@@ -120,7 +121,7 @@ class TestBuilder(unittest.TestCase):
 
 		_items = list(builder.make_items())
 		self.assertEqual(_items, [
-			('item', 'mcguffin', Point(7, 16)),
+			items.ItemAtPos(Point(7, 16), ('item', 'mcguffin')),
 			])
 	def should_generate_dungeon_on_existing_grid(self):
 		rng = RNG(0)

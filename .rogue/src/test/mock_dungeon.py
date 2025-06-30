@@ -44,9 +44,9 @@ class MockGame(game.Game):
 class MockMapping:
 	_ = {_key:terrain.Cell(_item) for (_key, _item) in MockGame.TERRAIN.items()}
 	@staticmethod
-	def start(pos): return (pos, 'start')
+	def start(): return 'start'
 	@staticmethod
-	def exit(pos): return (pos, 'exit')
+	def exit(): return 'exit'
 	@staticmethod
 	def monster(pos,*data):
 		return monsters.Monster(monsters.Species('monster', "M", 3, vision=10), *(data + (pos,)))
@@ -56,11 +56,11 @@ class MockMapping:
 		(1, 'money'),
 		]), *(data + (pos,)))
 	@staticmethod
-	def potion(pos,*data):
-		return items.ItemAtPos(pos, items.Item(items.ItemType('potion', '!', items.Effect.NONE), *data))
+	def potion(*data):
+		return items.Item(items.ItemType('potion', '!', items.Effect.NONE), *data)
 	@staticmethod
-	def healing_potion(pos,*data):
-		return items.ItemAtPos(pos, items.Item(items.ItemType('healing potion', '!', items.Effect.HEALING), *data))
+	def healing_potion(*data):
+		return items.Item(items.ItemType('healing potion', '!', items.Effect.HEALING), *data)
 
 class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
 	Mapping = MockMapping

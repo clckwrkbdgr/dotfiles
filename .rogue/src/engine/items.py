@@ -1,14 +1,20 @@
 class Item(object):
 	pass
 
-class ItemAtPos(object):
+class ItemAtPos(object): # pragma: no cover -- TODO
 	def __init__(self, pos, item):
 		self.pos = pos
 		self.item = item
+	def __repr__(self):
+		return '{0} @{1}'.format(repr(self.item), repr(self.pos))
 	def __str__(self):
 		return '{0} @{1}'.format(self.item, self.pos)
-	def __eq__(self, item):
-		return self.item == item
+	def __lt__(self, other):
+		return (self.pos, self.item) < (other.pos, other.item)
+	def __eq__(self, other):
+		if isinstance(other, type(self)):
+			return (self.pos, self.item) == (other.pos, other.item)
+		return self.item == other
 	def __iter__(self):
 		return iter((self.pos, self.item))
 	@classmethod
