@@ -39,6 +39,7 @@ class TestSavefile(unittest.TestCase):
 		stream = StringIO(str(Version.CURRENT) + '\x00name\x001\x001')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
+		reader.set_meta_info('ItemClass', items.Item)
 		pos, item = reader.read(items.ItemAtPos)
 		self.assertEqual(item.item_type, mock_dungeon.MockGame.ITEMS['name'])
 		self.assertEqual(pos, Point(1, 1))

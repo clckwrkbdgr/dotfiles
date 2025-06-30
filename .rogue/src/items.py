@@ -1,5 +1,6 @@
 from clckwrkbdgr.collections import DocstringEnum as Enum
 from .engine import items
+from .engine.items import ItemAtPos
 
 class Effect(Enum):
 	""" NONE
@@ -31,22 +32,3 @@ class Item(items.Item):
 		return cls(item_type)
 	def save(self, writer):
 		writer.write(self.item_type.name)
-
-class ItemAtPos(object):
-	def __init__(self, pos, item):
-		self.pos = pos
-		self.item = item
-	def __str__(self):
-		return '{0} @{1}'.format(self.item, self.pos)
-	def __eq__(self, item):
-		return self.item == item
-	def __iter__(self):
-		return iter((self.pos, self.item))
-	@classmethod
-	def load(cls, reader):
-		item = reader.read(Item)
-		pos = reader.read_point()
-		return cls(pos, item)
-	def save(self, writer):
-		writer.write(self.item)
-		writer.write(self.pos)

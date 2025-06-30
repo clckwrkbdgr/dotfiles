@@ -133,28 +133,19 @@ class Monster(src.engine.actors.Monster):
 
 		items = stream.read(int)
 		for _ in range(items):
-			item = Item(Point(0, 0), None, None)
+			item = Item(None, None)
 			item.load(stream)
 			self.inventory.append(item)
 
 class Item(src.engine.items.Item):
-	def __init__(self, pos, sprite, name):
-		self.pos = pos
+	def __init__(self, sprite, name):
 		self.sprite = sprite
 		self.name = name
 	def save(self, stream):
-		if self.pos:
-			stream.write(self.pos.x)
-			stream.write(self.pos.y)
-		else:
-			stream.write(0)
-			stream.write(0)
 		stream.write(self.sprite.sprite)
 		stream.write(self.sprite.color)
 		stream.write(self.name)
 	def load(self, stream):
-		self.pos.x = stream.read(int)
-		self.pos.y = stream.read(int)
 		self.sprite = Sprite(stream.read(), stream.read())
 		self.name = stream.read()
 
@@ -182,9 +173,10 @@ class FieldData:
 		self = cls()
 		items = stream.read(int)
 		for _ in range(items):
-			item = Item(Point(0, 0), None, None)
+			item = Item(None, None)
 			item.load(stream)
-			self.items.append(item)
+			pos = stream.read_point()
+			self.items.append(src.engine.items.ItemAtPos(pos, item))
 
 		monsters = stream.read(int)
 		for _ in range(monsters):
@@ -223,7 +215,7 @@ class Builder(builders.Builder):
 		def monster_carrying(cls, pos, sprite, color, strong, aggressive):
 			result = cls.monster(pos, sprite, color, strong, aggressive)
 			result.inventory.append(Item(
-				None, Sprite('*', color),
+				Sprite('*', color),
 				'{0} skin'.format(color.replace('_', ' ')),
 				))
 			return result
@@ -575,8 +567,8 @@ class Game(engine.Game):
 
 	def iter_items_at(self, pos):
 		zone_items = self.world.get_data(pos)[-1].items
-		for item in zone_items:
-			if pos.values[-1] == item.pos:
+		for item_pos, item in zone_items:
+			if pos.values[-1] == item_pos:
 				yield item
 	def iter_actors_at(self, pos, with_player=False):
 		zone_actors = self.world.get_data(pos)[-1].monsters
@@ -846,8 +838,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			else:
 				def _on_select_item(menu_choice):
 					item = game.get_player().inventory.pop(menu_choice)
-					item.pos = game.get_player_coord().values[-1]
-					game.world.get_data(game.get_player_coord())[-1].items.append(item)
+					item_pos = game.get_player_coord().values[-1]
+					game.world.get_data(game.get_player_coord())[-1].items.append(src.engine.items.ItemAtPos(item_pos, item))
 					self.game.fire_event(DroppedItem('you', item))
 					self.step_taken = True
 				return InventoryMode(
@@ -878,9 +870,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 						dest_field_data.monsters.remove(monster)
 						self.game.fire_event(MonsterDead('monster'))
 						for item in monster.inventory:
-							item.pos = monster.pos
+							item_pos = monster.pos
 							monster.inventory.remove(item)
-							dest_field_data.items.append(item)
+							dest_field_data.items.append(src.engine.items.ItemAtPos(item_pos, item))
 							self.game.fire_event(DroppedItem('monster', item))
 			elif dest_cell is None:
 				self.game.fire_event(StareIntoVoid())

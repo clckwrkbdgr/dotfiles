@@ -55,7 +55,7 @@ class DungeonMapping:
 		(5, None),
 		(1, 'healing_potion'),
 		]), *(data + (pos,)))
-	healing_potion = lambda pos,*data: src.items.Item(src.items.ItemType('healing potion', '!', src.items.Effect.HEALING), *data, pos)
+	healing_potion = lambda pos,*data: src.items.ItemAtPos(pos, src.items.Item(src.items.ItemType('healing potion', '!', src.items.Effect.HEALING), *data))
 
 class BSPDungeon(src.pcg.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping

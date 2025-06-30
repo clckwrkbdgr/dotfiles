@@ -120,6 +120,7 @@ class Game(engine.Game):
 		reader.set_meta_info('ITEMS', self.ITEMS)
 		reader.set_meta_info('SPECIES', self.SPECIES)
 		reader.set_meta_info('TERRAIN', self.TERRAIN)
+		reader.set_meta_info('ItemClass', items.Item)
 		self.strata = reader.read_matrix(terrain.Cell)
 		if legacy_player:
 			self.monsters.append(legacy_player)
