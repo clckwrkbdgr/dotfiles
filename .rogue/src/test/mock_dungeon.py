@@ -37,6 +37,35 @@ class Thief(monsters.Monster):
 			(1, 'money'),
 			]
 
+class NameItem(items.Item):
+	name = 'name'
+	sprite = '!'
+
+class Potion(items.Item):
+	name = 'potion'
+	sprite = '!'
+
+class HealingPotion(items.Item):
+	name = 'healing potion'
+	sprite = '!'
+	effect = items.Effect.HEALING
+
+class Money(items.Item):
+	name = 'money'
+	sprite = '$'
+
+class Weapon(items.Item):
+	name = 'weapon'
+	sprite = '('
+
+class Ranged(items.Item):
+	name = 'ranged'
+	sprite = ')'
+
+class Rags(items.Item):
+	name = 'rags'
+	sprite = '['
+
 class MockGame(game.Game):
 	SPECIES = {
 			'name' : Name,
@@ -49,13 +78,20 @@ class MockGame(game.Game):
 			'Thief' : Thief,
 			}
 	ITEMS = {
-			'name' : items.ItemType('name', '!', items.Effect.NONE),
-			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
-			'healing_potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
-			'money' : items.ItemType('money', '$', items.Effect.NONE),
-			'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
-			'ranged' : items.ItemType('ranged', ')', items.Effect.NONE),
-			'rags' : items.ItemType('rags', '[', items.Effect.NONE),
+			'name' : NameItem,
+			'potion' : Potion,
+			'healing_potion' : HealingPotion,
+			'money' : Money,
+			'weapon' : Weapon,
+			'ranged' : Ranged,
+			'rags' : Rags,
+			'NameItem' : NameItem,
+			'Potion' : Potion,
+			'HealingPotion' : HealingPotion,
+			'Money' : Money,
+			'Weapon' : Weapon,
+			'Ranged' : Ranged,
+			'Rags' : Rags,
 			}
 	TERRAIN = {
 		None : terrain.Terrain(' ', ' ', False),
@@ -87,10 +123,10 @@ class MockMapping:
 		return Thief(*(data + (pos,)))
 	@staticmethod
 	def potion(*data):
-		return items.Item(items.ItemType('potion', '!', items.Effect.NONE), *data)
+		return Potion(*data)
 	@staticmethod
 	def healing_potion(*data):
-		return items.Item(items.ItemType('healing potion', '!', items.Effect.HEALING), *data)
+		return HealingPotion(*data)
 
 class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
 	Mapping = MockMapping

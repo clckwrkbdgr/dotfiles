@@ -62,6 +62,16 @@ class Rodent(src.monsters.Monster):
 			(1, 'healing potion'),
 			]
 
+class Potion(src.items.Item):
+	name = 'potion'
+	sprite = '!'
+	effect = src.items.Effect.NONE
+
+class HealingPotion(src.items.Item):
+	name = 'healing potion'
+	sprite = '!'
+	effect = src.items.Effect.HEALING
+
 class DungeonMapping:
 	void = src.terrain.Cell(src.terrain.Terrain('void', ' ', False))
 	corner = src.terrain.Cell(src.terrain.Terrain('corner', "+", False, remembered='+'))
@@ -90,7 +100,7 @@ class DungeonMapping:
 	@staticmethod
 	def rodent(pos,*data):
 		return Rodent(*(data + (pos,)))
-	healing_potion = lambda *data: src.items.Item(src.items.ItemType('healing potion', '!', src.items.Effect.HEALING), *data)
+	healing_potion = HealingPotion
 
 class BSPDungeon(src.pcg.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
@@ -154,9 +164,11 @@ class Game(src.game.Game):
 			'Rodent' : Rodent,
 			}
 	ITEMS = {
-			'potion' : src.items.ItemType('potion', '!', src.items.Effect.NONE),
-			'healing potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
-			'healing_potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
+			'potion' : Potion,
+			'healing potion' : HealingPotion,
+			'healing_potion' : HealingPotion,
+			'Potion' : Potion,
+			'HealingPotion' : HealingPotion,
 			}
 
 import click

@@ -105,8 +105,8 @@ class TestSavefile(unittest.TestCase):
 		stream = StringIO()
 		writer = savefile.Writer(stream, Version.CURRENT)
 		monster = mock_dungeon.MockGame.SPECIES['name'](monsters.Behavior.ANGRY, Point(1, 1))
-		monster.wielding = items.Item(mock_dungeon.MockGame.ITEMS['weapon'])
+		monster.wielding = mock_dungeon.MockGame.ITEMS['weapon']()
 		monster.fill_inventory_from_drops(RNG(0), mock_dungeon.MockGame.ITEMS)
 		monster.hp = 3
 		writer.write(monster)
-		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00Name\x003\x001\x001\x003\x001\x00money\x001\x00weapon')
+		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00Name\x003\x001\x001\x003\x001\x00Money\x001\x00Weapon')

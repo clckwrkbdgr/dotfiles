@@ -77,8 +77,7 @@ class Monster(Species):
 	def fill_inventory_from_drops(self, rng, item_types):
 		for item_data in self._generate_drops(rng):
 			item_type, item_data = item_data[0], item_data[1:]
-			item_data = (item_types[item_type],) + item_data
-			item = items.Item(*item_data)
+			item = item_types[item_type](*item_data)
 			self.inventory.append(item)
 	def drop_loot(self):
 		for item in self.inventory:
