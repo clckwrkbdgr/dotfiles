@@ -12,28 +12,38 @@ import clckwrkbdgr.serialize.stream as savefile
 from ..defs import Version
 from . import mock_dungeon
 
-class TestSpecies(unittest.TestCase):
-	def should_str_species(self):
-		self.assertEqual(str(monsters.Species('name', '@', 100, vision=10)), 'name 100hp')
+class MockSpecies(monsters.Monster):
+	name = 'name'
+	sprite = '@'
+	max_hp = 100
+	vision = 10
+	drops = None
 
-class TestMonsters(unittest.TestCase):
-	def should_str_monster(self):
-		species = monsters.Species('name', '@', 100, vision=10)
-		monster = monsters.Monster(species, monsters.Behavior.ANGRY, Point(1, 1))
-		self.assertEqual(str(monster), 'name @[1, 1] 100/100hp')
-	def should_not_drop_items(self):
-		rng = RNG(0)
-		species = monsters.Species('name', '@', 100, vision=10, drops=None)
-		monster = monsters.Monster(species, monsters.Behavior.ANGRY, Point(1, 1))
-		self.assertEqual(monster._generate_drops(rng), [])
-	def should_drop_items(self):
-		rng = RNG(0)
-		species = monsters.Species('name', '@', 100, vision=10, drops=[
+class MockSpeciesWithDrops(MockSpecies):
+	drops = [
 			(1, 'potion'),
 			(2, 'money'),
 			(3, 'rags'),
-			])
-		monster = monsters.Monster(species, monsters.Behavior.ANGRY, Point(1, 1))
+			]
+
+class MockSpeciesWithPoorDrops(MockSpecies):
+	drops = [
+			(1, None),
+			(2, 'money'),
+			(3, None),
+			]
+
+class TestMonsters(unittest.TestCase):
+	def should_str_monster(self):
+		monster = MockSpecies(monsters.Behavior.ANGRY, Point(1, 1))
+		self.assertEqual(str(monster), 'name @[1, 1] 100/100hp')
+	def should_not_drop_items(self):
+		rng = RNG(0)
+		monster = MockSpecies(monsters.Behavior.ANGRY, Point(1, 1))
+		self.assertEqual(monster._generate_drops(rng), [])
+	def should_drop_items(self):
+		rng = RNG(0)
+		monster = MockSpeciesWithDrops(monsters.Behavior.ANGRY, Point(1, 1))
 		self.assertEqual(monster._generate_drops(rng), [('potion',)])
 		self.assertEqual(monster._generate_drops(rng), [('rags',)])
 		self.assertEqual(monster._generate_drops(rng), [('money',)])
@@ -45,12 +55,7 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(drops[0].item_type.name, 'potion')
 	def should_drop_nothing_sometimes(self):
 		rng = RNG(0)
-		species = monsters.Species('name', '@', 100, vision=10, drops=[
-			(1, None),
-			(2, 'money'),
-			(3, None),
-			])
-		monster = monsters.Monster(species, monsters.Behavior.ANGRY, Point(1, 1))
+		monster = MockSpeciesWithPoorDrops(monsters.Behavior.ANGRY, Point(1, 1))
 		self.assertEqual(monster._generate_drops(rng), [])
 		self.assertEqual(monster._generate_drops(rng), [])
 		self.assertEqual(monster._generate_drops(rng), [('money',)])
@@ -64,7 +69,7 @@ class TestSavefile(unittest.TestCase):
 		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
 		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
 		monster = reader.read(monsters.Monster)
-		self.assertEqual(monster.species, mock_dungeon.MockGame.SPECIES['name'])
+		self.assertEqual(type(monster.species), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.behavior, monsters.Behavior.ANGRY)
 		self.assertEqual(monster.pos, Point(1, 1))
 		self.assertEqual(monster.hp, 3)
@@ -77,7 +82,7 @@ class TestSavefile(unittest.TestCase):
 		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
 		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
 		monster = reader.read(monsters.Monster)
-		self.assertEqual(monster.species, mock_dungeon.MockGame.SPECIES['name'])
+		self.assertEqual(type(monster.species), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.behavior, monsters.Behavior.ANGRY)
 		self.assertEqual(monster.pos, Point(1, 1))
 		self.assertEqual(monster.hp, 3)
@@ -89,7 +94,7 @@ class TestSavefile(unittest.TestCase):
 		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
 		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
 		monster = reader.read(monsters.Monster)
-		self.assertEqual(monster.species, mock_dungeon.MockGame.SPECIES['name'])
+		self.assertEqual(type(monster.species), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.behavior, monsters.Behavior.ANGRY)
 		self.assertEqual(monster.pos, Point(1, 1))
 		self.assertEqual(monster.hp, 3)
@@ -99,9 +104,9 @@ class TestSavefile(unittest.TestCase):
 	def should_save_monster(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, Version.CURRENT)
-		monster = monsters.Monster(mock_dungeon.MockGame.SPECIES['name'], monsters.Behavior.ANGRY, Point(1, 1))
+		monster = mock_dungeon.MockGame.SPECIES['name'](monsters.Behavior.ANGRY, Point(1, 1))
 		monster.wielding = items.Item(mock_dungeon.MockGame.ITEMS['weapon'])
 		monster.fill_inventory_from_drops(RNG(0), mock_dungeon.MockGame.ITEMS)
 		monster.hp = 3
 		writer.write(monster)
-		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00name\x003\x001\x001\x003\x001\x00money\x001\x00weapon')
+		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00Name\x003\x001\x001\x003\x001\x00money\x001\x00weapon')

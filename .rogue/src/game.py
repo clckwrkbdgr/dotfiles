@@ -113,7 +113,7 @@ class Game(engine.Game):
 
 		legacy_player = None
 		if reader.version <= Version.MONSTERS:
-			legacy_player = monsters.Monster(self.SPECIES['player'], monsters.Behavior.PLAYER, reader.read_point())
+			legacy_player = self.SPECIES['Player'](monsters.Behavior.PLAYER, reader.read_point())
 		self.exit_pos = reader.read_point()
 		self.remembered_exit = reader.read_bool()
 
@@ -299,7 +299,7 @@ class Game(engine.Game):
 		if player:
 			player.pos = start_pos
 		else:
-			player = monsters.Monster(self.SPECIES['player'], monsters.Behavior.PLAYER, start_pos)
+			player = self.SPECIES['Player'](monsters.Behavior.PLAYER, start_pos)
 			player.fill_inventory_from_drops(self.rng, self.ITEMS)
 		self.monsters[:] = [player]
 		for monster in settler.make_actors():

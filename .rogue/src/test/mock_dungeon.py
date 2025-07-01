@@ -4,17 +4,49 @@ from .. import pcg as settlers
 from .. import terrain, items, monsters
 from .. import game
 
+class Name(monsters.Monster):
+	name = 'name'
+	sprite = 'M'
+	max_hp = 100
+	vision = 10
+	drops = [
+			(1, 'money'),
+			(2, 'potion'),
+			]
+
+class Player(monsters.Monster):
+	name = 'player'
+	sprite = '@'
+	max_hp = 10
+	vision = 10
+	drops = None
+
+class Monster(monsters.Monster):
+	name = 'monster'
+	sprite = 'M'
+	max_hp = 3
+	vision = 10
+	drops = None
+
+class Thief(monsters.Monster):
+	name = 'thief'
+	sprite = 'T'
+	max_hp = 3
+	vision = 10
+	drops = [
+			(1, 'money'),
+			]
+
 class MockGame(game.Game):
 	SPECIES = {
-			'name' : monsters.Species('name', 'M', 100, vision=10, drops=[
-				(1, 'money'),
-				(2, 'potion'),
-				]),
-			'player' : monsters.Species('player', "@", 10, vision=10),
-			'monster' : monsters.Species('monster', "M", 3, vision=10),
-			'thief' : monsters.Species('thief', "T", 3, vision=10, drops=[
-				(1, 'money'),
-				]),
+			'name' : Name,
+			'player' : Player,
+			'monster' : Monster,
+			'thief' : Thief,
+			'Name' : Name,
+			'Player' : Player,
+			'Monster' : Monster,
+			'Thief' : Thief,
 			}
 	ITEMS = {
 			'name' : items.ItemType('name', '!', items.Effect.NONE),
@@ -49,12 +81,10 @@ class MockMapping:
 	def exit(): return 'exit'
 	@staticmethod
 	def monster(pos,*data):
-		return monsters.Monster(monsters.Species('monster', "M", 3, vision=10), *(data + (pos,)))
+		return Monster(*(data + (pos,)))
 	@staticmethod
 	def thief(pos,*data):
-		return monsters.Monster(monsters.Species('thief', "T", 3, vision=10, drops=[
-		(1, 'money'),
-		]), *(data + (pos,)))
+		return Thief(*(data + (pos,)))
 	@staticmethod
 	def potion(*data):
 		return items.Item(items.ItemType('potion', '!', items.Effect.NONE), *data)
