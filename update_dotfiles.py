@@ -20,6 +20,11 @@ if __name__ == "__main__":
 	git.sync(quiet=quiet)
 
 	if git.branch_is_behind_remote('master'):
+		# Any unstaged files with no real diff (filtered by gitfilter)
+		# will be restored to the stock version, so force stage them
+		# to keep local changes intact.
+		for filename in git.list_modified_files_with_no_real_changes():
+			git.stage_file(filename)
 		git.update('master', quiet=quiet)
 
 	dotfiles_caps = os.path.join('.git', 'info', 'CAPS')

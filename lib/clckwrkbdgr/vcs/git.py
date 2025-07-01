@@ -163,12 +163,33 @@ def branch_is_behind_remote(branch): # pragma: no cover -- TODO commands
 		else:
 			raise
 
-def branch_is_ahead_remote(): # pragma: no cover -- TODO commands
+def _status_porcelain(): # pragma: no cover -- TODO commands
 	args = ["git", "status", '--porcelain', '--branch']
 	git = subprocess.run(args, stdout=subprocess.PIPE)
 	if git.returncode != 0:
+		return None
+	status = git.stdout.decode().splitlines()
+	branch_info, status_info = status[0], status[1:]
+	branch_state = None
+	if 'ahead' in branch_info:
+		branch_state = 'ahead'
+	elif 'behind' in branch_info:
+		branch_state = 'behind'
+	files = []
+	for line in status_info:
+		file_status = line[:2]
+		filename = line[3:]
+		if filename.startswith('"') and filename.endswith('"'):
+			filename = filename[1:-1] # TODO properly parse/unescape quoted file name.
+		files.append((file_status, filename))
+	return branch_state, files
+
+def branch_is_ahead_remote(): # pragma: no cover -- TODO commands
+	status = _status_porcelain()
+	if status is None:
 		return False
-	return b'ahead' in git.stdout
+	branch_state, files = status
+	return branch_state == 'ahead'
 
 def sync(quiet=False): # pragma: no cover -- TODO commands
 	""" Synchronizes info about remote repository.
@@ -291,26 +312,32 @@ def show_diff(with_color=False): # pragma: no cover -- TODO commands
 	args += ["status"]
 	return 0 == subprocess.call(args)
 
+def list_modified_files_with_no_real_changes(): # pragma: no cover -- TODO commands
+	status = _status_porcelain()
+	if status is None:
+		return
+	_, files = status
+	for file_status, filename in files:
+		if file_status[1] != 'M':
+			continue
+		if not file_needs_commit(filename):
+			yield filename # Content does not differ.
+
 def has_changes(check_diff=False): # pragma: no cover -- TODO commands
-	args = ["git", "status", '--porcelain', '--branch']
-	git = subprocess.run(args, stdout=subprocess.PIPE)
-	if git.returncode != 0:
+	status = _status_porcelain()
+	if status is None:
 		return True
-	status = git.stdout.decode().splitlines()
-	branch_info, status_info = status[0], status[1:]
-	if 'ahead' in status[0] or 'behind' in status[0]:
+	branch_state, files = status
+	if branch_state is not None:
 		return True
 	if not check_diff:
-		return bool(status_info)
-	for line in status_info:
-		if line[0] != ' ':
+		return bool(files)
+	for file_status, filename in files:
+		if file_status[0] != ' ':
 			return True # Staged.
-		if line[1] in 'AD':
+		if file_status[1] in 'AD':
 			return True # Definitely changes.
-		if line[1] == 'M':
-			filename = line[3:]
-			if filename.startswith('"') and filename.endswith('"'):
-				filename = filename[1:-1] # TODO properly parse/unescape quoted file name.
+		if file_status[1] == 'M':
 			if file_needs_commit(filename):
 				return True # Content actually differs.
 	return False
@@ -351,6 +378,9 @@ def commit_one_file(path, commit_message, show_diff=False): # pragma: no cover -
 	subprocess.call(['git', 'add', str(path)])
 	rc = subprocess.call(['git', 'commit', '--quiet', '-m', str(commit_message)])
 	return rc == 0
+
+def stage_file(path): # pragma: no cover -- TODO commands
+	subprocess.call(['git', 'add', str(path)])
 
 def commit_files(paths, commit_message, show_diff=False): # pragma: no cover -- TODO commands
 	for path in paths:
