@@ -4,26 +4,94 @@ from .. import pcg as settlers
 from .. import terrain, items, monsters
 from .. import game
 
+class Name(monsters.Monster):
+	name = 'name'
+	sprite = 'M'
+	max_hp = 100
+	vision = 10
+	drops = [
+			(1, 'money'),
+			(2, 'potion'),
+			]
+
+class Player(monsters.Monster):
+	name = 'player'
+	sprite = '@'
+	max_hp = 10
+	vision = 10
+	drops = None
+
+class Monster(monsters.Monster):
+	name = 'monster'
+	sprite = 'M'
+	max_hp = 3
+	vision = 10
+	drops = None
+
+class Thief(monsters.Monster):
+	name = 'thief'
+	sprite = 'T'
+	max_hp = 3
+	vision = 10
+	drops = [
+			(1, 'money'),
+			]
+
+class NameItem(items.Item):
+	name = 'name'
+	sprite = '!'
+
+class Potion(items.Item):
+	name = 'potion'
+	sprite = '!'
+
+class HealingPotion(items.Item):
+	name = 'healing potion'
+	sprite = '!'
+	effect = items.Effect.HEALING
+
+class Money(items.Item):
+	name = 'money'
+	sprite = '$'
+
+class Weapon(items.Item):
+	name = 'weapon'
+	sprite = '('
+
+class Ranged(items.Item):
+	name = 'ranged'
+	sprite = ')'
+
+class Rags(items.Item):
+	name = 'rags'
+	sprite = '['
+
 class MockGame(game.Game):
 	SPECIES = {
-			'name' : monsters.Species('name', 'M', 100, vision=10, drops=[
-				(1, 'money'),
-				(2, 'potion'),
-				]),
-			'player' : monsters.Species('player', "@", 10, vision=10),
-			'monster' : monsters.Species('monster', "M", 3, vision=10),
-			'thief' : monsters.Species('thief', "T", 3, vision=10, drops=[
-				(1, 'money'),
-				]),
+			'name' : Name,
+			'player' : Player,
+			'monster' : Monster,
+			'thief' : Thief,
+			'Name' : Name,
+			'Player' : Player,
+			'Monster' : Monster,
+			'Thief' : Thief,
 			}
 	ITEMS = {
-			'name' : items.ItemType('name', '!', items.Effect.NONE),
-			'potion' : items.ItemType('potion', '!', items.Effect.NONE),
-			'healing_potion' : items.ItemType('healing potion', '!', items.Effect.HEALING),
-			'money' : items.ItemType('money', '$', items.Effect.NONE),
-			'weapon' : items.ItemType('weapon', '(', items.Effect.NONE),
-			'ranged' : items.ItemType('ranged', ')', items.Effect.NONE),
-			'rags' : items.ItemType('rags', '[', items.Effect.NONE),
+			'name' : NameItem,
+			'potion' : Potion,
+			'healing_potion' : HealingPotion,
+			'money' : Money,
+			'weapon' : Weapon,
+			'ranged' : Ranged,
+			'rags' : Rags,
+			'NameItem' : NameItem,
+			'Potion' : Potion,
+			'HealingPotion' : HealingPotion,
+			'Money' : Money,
+			'Weapon' : Weapon,
+			'Ranged' : Ranged,
+			'Rags' : Rags,
 			}
 	TERRAIN = {
 		None : terrain.Terrain(' ', ' ', False),
@@ -49,18 +117,16 @@ class MockMapping:
 	def exit(): return 'exit'
 	@staticmethod
 	def monster(pos,*data):
-		return monsters.Monster(monsters.Species('monster', "M", 3, vision=10), *(data + (pos,)))
+		return Monster(*(data + (pos,)))
 	@staticmethod
 	def thief(pos,*data):
-		return monsters.Monster(monsters.Species('thief', "T", 3, vision=10, drops=[
-		(1, 'money'),
-		]), *(data + (pos,)))
+		return Thief(*(data + (pos,)))
 	@staticmethod
 	def potion(*data):
-		return items.Item(items.ItemType('potion', '!', items.Effect.NONE), *data)
+		return Potion(*data)
 	@staticmethod
 	def healing_potion(*data):
-		return items.Item(items.ItemType('healing potion', '!', items.Effect.HEALING), *data)
+		return HealingPotion(*data)
 
 class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
 	Mapping = MockMapping

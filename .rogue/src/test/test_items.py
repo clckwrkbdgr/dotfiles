@@ -10,14 +10,14 @@ import clckwrkbdgr.serialize.stream as savefile
 from ..defs import Version
 from . import mock_dungeon
 
-class TestItemTypes(unittest.TestCase):
-	def should_str_item_type(self):
-		self.assertEqual(str(items.ItemType('name', '!', items.Effect.NONE)), 'name')
+class MockItem(items.Item):
+	name = 'name'
+	sprite = '!'
+	effect = items.Effect.NONE
 
 class TestItems(unittest.TestCase):
 	def should_str_item(self):
-		item_type = items.ItemType('name', '!', items.Effect.NONE)
-		item = items.Item(item_type)
+		item = MockItem()
 		self.assertEqual(str(item), 'name')
 		item = items.ItemAtPos(Point(1, 1), item)
 		self.assertEqual(str(item), 'name @[1, 1]')
@@ -28,25 +28,25 @@ class TestSavefile(unittest.TestCase):
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
 		item = reader.read(items.Item)
-		self.assertEqual(item.item_type, mock_dungeon.MockGame.ITEMS['name'])
+		self.assertEqual(type(item.item_type), mock_dungeon.MockGame.ITEMS['name'])
 	def should_save_item(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, Version.CURRENT)
-		item = items.Item(mock_dungeon.MockGame.ITEMS['name'])
+		item = mock_dungeon.MockGame.ITEMS['name']()
 		writer.write(item)
-		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00name')
+		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00NameItem')
 	def should_load_item_at_pos(self):
 		stream = StringIO(str(Version.CURRENT) + '\x00name\x001\x001')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
 		reader.set_meta_info('ItemClass', items.Item)
 		pos, item = reader.read(items.ItemAtPos)
-		self.assertEqual(item.item_type, mock_dungeon.MockGame.ITEMS['name'])
+		self.assertEqual(type(item.item_type), mock_dungeon.MockGame.ITEMS['name'])
 		self.assertEqual(pos, Point(1, 1))
 	def should_save_item_at_pos(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, Version.CURRENT)
-		item = items.Item(mock_dungeon.MockGame.ITEMS['name'])
+		item = mock_dungeon.MockGame.ITEMS['name']()
 		item = items.ItemAtPos(Point(1, 1), item)
 		writer.write(item)
-		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00name\x001\x001')
+		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00NameItem\x001\x001')

@@ -18,6 +18,60 @@ class DungeonSquatters(src.pcg.WeightedSquatters):
 			(1, ('healing_potion',)),
 			]
 
+class Player(src.monsters.Monster):
+	name = 'player'
+	sprite = '@'
+	max_hp = 10
+	vision = 10
+	drops = None
+
+class Monster(src.monsters.Monster):
+	name = 'monster'
+	sprite = 'M'
+	max_hp = 3
+	vision = 10
+	drops = None
+
+class Plant(src.monsters.Monster):
+	name = 'plant'
+	sprite = 'P'
+	max_hp = 1
+	vision = 1
+	drops = [
+			(1, None),
+			(5, 'healing potion'),
+			]
+
+class Slime(src.monsters.Monster):
+	name = 'slime'
+	sprite = 'o'
+	max_hp = 5
+	vision = 3
+	drops = [
+			(1, None),
+			(1, 'healing potion'),
+			]
+
+class Rodent(src.monsters.Monster):
+	name = 'rodent'
+	sprite = 'r'
+	max_hp = 3
+	vision = 8
+	drops = [
+			(5, None),
+			(1, 'healing potion'),
+			]
+
+class Potion(src.items.Item):
+	name = 'potion'
+	sprite = '!'
+	effect = src.items.Effect.NONE
+
+class HealingPotion(src.items.Item):
+	name = 'healing potion'
+	sprite = '!'
+	effect = src.items.Effect.HEALING
+
 class DungeonMapping:
 	void = src.terrain.Cell(src.terrain.Terrain('void', ' ', False))
 	corner = src.terrain.Cell(src.terrain.Terrain('corner', "+", False, remembered='+'))
@@ -39,23 +93,14 @@ class DungeonMapping:
 
 	@staticmethod
 	def plant(pos,*data):
-		return src.monsters.Monster(src.monsters.Species('plant', "P", 1, vision=1, drops=[
-		(1, None),
-		(5, 'healing_potion'),
-		]), *(data + (pos,)))
+		return Plant(*(data + (pos,)))
 	@staticmethod
 	def slime(pos,*data):
-		return src.monsters.Monster(src.monsters.Species('slime', "o", 5, vision=3, drops=[
-		(1, None),
-		(1, 'healing_potion'),
-		]), *(data + (pos,)))
+		return Slime(*(data + (pos,)))
 	@staticmethod
 	def rodent(pos,*data):
-		return src.monsters.Monster(src.monsters.Species('rodent', "r", 3, vision=8, drops=[
-		(5, None),
-		(1, 'healing_potion'),
-		]), *(data + (pos,)))
-	healing_potion = lambda *data: src.items.Item(src.items.ItemType('healing potion', '!', src.items.Effect.HEALING), *data)
+		return Rodent(*(data + (pos,)))
+	healing_potion = HealingPotion
 
 class BSPDungeon(src.pcg.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
@@ -107,26 +152,23 @@ class Game(src.game.Game):
 			'water' : src.terrain.Terrain('water', "~", True),
 			}
 	SPECIES = {
-			'player' : src.monsters.Species('player', "@", 10, vision=10),
-			'monster' : src.monsters.Species('monster', "M", 3, vision=10),
-
-			'plant' : src.monsters.Species('plant', "P", 1, vision=1, drops=[
-				(1, None),
-				(5, 'healing potion'),
-				]),
-			'slime' : src.monsters.Species('slime', "o", 5, vision=3, drops=[
-				(1, None),
-				(1, 'healing potion'),
-				]),
-			'rodent' : src.monsters.Species('rodent', "r", 3, vision=8, drops=[
-				(5, None),
-				(1, 'healing potion'),
-				]),
+			'player' : Player,
+			'monster' : Monster,
+			'plant' : Plant,
+			'slime' : Slime,
+			'rodent' : Rodent,
+			'Player' : Player,
+			'Monster' : Monster,
+			'Plant' : Plant,
+			'Slime' : Slime,
+			'Rodent' : Rodent,
 			}
 	ITEMS = {
-			'potion' : src.items.ItemType('potion', '!', src.items.Effect.NONE),
-			'healing potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
-			'healing_potion' : src.items.ItemType('healing potion', '!', src.items.Effect.HEALING),
+			'potion' : Potion,
+			'healing potion' : HealingPotion,
+			'healing_potion' : HealingPotion,
+			'Potion' : Potion,
+			'HealingPotion' : HealingPotion,
 			}
 
 import click

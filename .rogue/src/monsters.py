@@ -10,26 +10,24 @@ class Behavior(Enum):
 	ANGRY
 	"""
 
-class Species(object):
-	""" Basic fixed stats shared by monsters of the same species. """
-	def __init__(self, name, sprite, max_hp, vision, drops=None):
-		""" Vision - radius of field of vision (detection range).
-		Drops - weighted distribution list of items: [(<weight>, <args...>), ...]
-		Args can be None - to support probability that nothing is dropped.
-		"""
-		self.name = name
-		self.sprite = sprite
-		self.max_hp = max_hp
-		self.vision = vision
-		self.drops = drops
-	def __str__(self):
-		return "{0} {1}hp".format(self.name, self.max_hp)
+class Species(actors.Monster):
+	""" Basic fixed stats shared by monsters of the same species.
 
-class Monster(actors.Monster):
+	Vision - radius of field of vision (detection range).
+	Drops - weighted distribution list of items: [(<weight>, <args...>), ...]
+	Args can be None - to support probability that nothing is dropped.
+	"""
+	name = NotImplemented
+	sprite = NotImplemented
+	max_hp = NotImplemented
+	vision = NotImplemented
+	drops = None
+
+class Monster(Species):
 	""" Base for every living being (including player). """
-	def __init__(self, species, behavior, pos):
+	def __init__(self, behavior, pos):
 		super(Monster, self).__init__(pos)
-		self.species = species
+		self.species = self
 		self.behavior = behavior
 		self.hp = self.species.max_hp
 		self.inventory = []
@@ -48,7 +46,7 @@ class Monster(actors.Monster):
 			else:
 				behavior = Behavior.DUMMY
 		pos = reader.read_point()
-		monster = cls(species, behavior, pos)
+		monster = species(behavior, pos)
 		monster.hp = reader.read_int()
 		if reader.version > Version.INVENTORY:
 			monster.inventory.extend(reader.read_list(items.Item))
@@ -60,7 +58,7 @@ class Monster(actors.Monster):
 			monster.wielding = reader.read(items.Item, optional=True)
 		return monster
 	def save(self, writer):
-		writer.write(self.species.name)
+		writer.write(type(self).__name__)
 		writer.write(self.behavior)
 		writer.write(self.pos)
 		writer.write(self.hp)
@@ -68,9 +66,6 @@ class Monster(actors.Monster):
 		writer.write(self.wielding, optional=True)
 	def is_alive(self):
 		return self.hp > 0
-	@property
-	def name(self):
-		return self.species.name
 	def _generate_drops(self, rng):
 		from clckwrkbdgr import pcg
 		if not self.species.drops:
@@ -82,8 +77,7 @@ class Monster(actors.Monster):
 	def fill_inventory_from_drops(self, rng, item_types):
 		for item_data in self._generate_drops(rng):
 			item_type, item_data = item_data[0], item_data[1:]
-			item_data = (item_types[item_type],) + item_data
-			item = items.Item(*item_data)
+			item = item_types[item_type](*item_data)
 			self.inventory.append(item)
 	def drop_loot(self):
 		for item in self.inventory:
@@ -92,6 +86,6 @@ class Monster(actors.Monster):
 	def __eq__(self, other):
 		if not isinstance(other, Monster):
 			return False
-		return self.species == other.species \
+		return type(self) == type(other) \
 				and self.pos == other.pos \
 				and self.hp == other.hp
