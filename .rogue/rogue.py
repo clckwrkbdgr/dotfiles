@@ -18,7 +18,7 @@ from src.engine import builders
 from src.engine import events
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 
-SAVEFILE_VERSION = 5
+SAVEFILE_VERSION = 6
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -58,6 +58,7 @@ class Monster(src.engine.actors.Monster):
 
 		stream.write(len(self.inventory))
 		for item in self.inventory:
+			stream.write(type(item).__name__)
 			item.save(stream)
 	def load(self, stream):
 		pos = stream.read()
@@ -66,7 +67,8 @@ class Monster(src.engine.actors.Monster):
 
 		items = stream.read(int)
 		for _ in range(items):
-			item = Item(None, None)
+			item_type = globals()[stream.read()]
+			item = item_type()
 			item.load(stream)
 			self.inventory.append(item)
 
@@ -141,7 +143,11 @@ class Dweller(Monster):
 			self.prepared_quest = None
 
 class Item(src.engine.items.Item):
-	def __init__(self, sprite, name):
+	sprite = NotImplemented
+	name = NotImplemented
+
+class ColoredSkin(Item):
+	def __init__(self, sprite=None, name=None):
 		self.sprite = sprite
 		self.name = name
 	def save(self, stream):
@@ -166,7 +172,9 @@ class FieldData:
 	def save(self, stream):
 		stream.write(len(self.items))
 		for item in self.items:
-			item.save(stream)
+			stream.write(type(item.item).__name__)
+			item.item.save(stream)
+			stream.write(item.pos)
 
 		stream.write(len(self.monsters))
 		for monster in self.monsters:
@@ -177,7 +185,8 @@ class FieldData:
 		self = cls()
 		items = stream.read(int)
 		for _ in range(items):
-			item = Item(None, None)
+			item_type = globals()[stream.read()]
+			item = item_type()
 			item.load(stream)
 			pos = stream.read_point()
 			self.items.append(src.engine.items.ItemAtPos(pos, item))
@@ -219,7 +228,7 @@ class Builder(builders.Builder):
 		@classmethod
 		def monster_carrying(cls, pos, sprite, color, strong, aggressive):
 			result = cls.monster(pos, sprite, color, strong, aggressive)
-			result.inventory.append(Item(
+			result.inventory.append(ColoredSkin(
 				Sprite('*', color),
 				'{0} skin'.format(color.replace('_', ' ')),
 				))
