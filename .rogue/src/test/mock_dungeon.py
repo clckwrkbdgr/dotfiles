@@ -66,6 +66,63 @@ class Rags(items.Item):
 	name = 'rags'
 	sprite = '['
 
+class NameTerrain(terrain.Cell):
+	name = 'name'
+	sprite = '.'
+class Space(terrain.Cell):
+	name = ' '
+	sprite = ' '
+	passable = False
+class Wall(terrain.Cell):
+	name = '#'
+	sprite = "#"
+	passable = False
+	remembered='#'
+class Floor(terrain.Cell):
+	name = '.'
+	sprite = "."
+	passable = True
+class Water(terrain.Cell):
+	name = '~'
+	sprite = "."
+	passable = True
+	allow_diagonal=False
+class NonDiagonalWall(terrain.Cell):
+	name = '#'
+	sprite = "#"
+	passable = True
+	remembered='#'
+	allow_diagonal=False
+	dark=True
+class NonDiagonalOblivionWall(terrain.Cell):
+	name = '#'
+	sprite = "#"
+	passable = True
+	allow_diagonal=False
+	dark=True
+class Corner(terrain.Cell):
+	name = '+'
+	sprite = "+"
+	passable = False
+	remembered='+'
+class WallH(terrain.Cell):
+	name = '-'
+	sprite = "-"
+	passable = False
+	remembered='-'
+class WallV(terrain.Cell):
+	name = '|'
+	sprite = "|"
+	passable = False
+	remembered='|'
+class DarkFloor(terrain.Cell):
+	name = '^'
+	sprite = "^"
+	passable = True
+	remembered='^'
+	allow_diagonal=False
+	dark=True
+
 class MockGame(game.Game):
 	SPECIES = {
 			'name' : Name,
@@ -94,23 +151,34 @@ class MockGame(game.Game):
 			'Rags' : Rags,
 			}
 	TERRAIN = {
-		None : terrain.Terrain(' ', ' ', False),
-		'name' : terrain.Terrain('name', '.'),
-		' ' : terrain.Terrain(' ', ' ', False),
-		'#' : terrain.Terrain('#', "#", False, remembered='#'),
-		'.' : terrain.Terrain('.', ".", True),
-		'~' : terrain.Terrain('~', ".", True, allow_diagonal=False),
+		None : Space,
+		'name' : NameTerrain,
+		' ' : Space,
+		'#' : Wall,
+		'.' : Floor,
+		'~' : Water,
+		'NameTerrain' : NameTerrain,
+		'Space' : Space,
+		'Wall' : Wall,
+		'Floor' : Floor,
+		'Water' : Water,
 		# Rogue dungeon:
-		'*' : terrain.Terrain('#', "#", True, remembered='#', allow_diagonal=False, dark=True),
-		'%' : terrain.Terrain('#', "#", True, allow_diagonal=False, dark=True),
-		'+' : terrain.Terrain('+', "+", False, remembered='+'),
-		'-' : terrain.Terrain('-', "-", False, remembered='-'),
-		'|' : terrain.Terrain('|', "|", False, remembered='|'),
-		'^' : terrain.Terrain('^', "^", True, remembered='^', allow_diagonal=False, dark=True),
+		'*' : NonDiagonalWall,
+		'%' : NonDiagonalOblivionWall,
+		'+' : Corner,
+		'-' : WallH,
+		'|' : WallV,
+		'^' : DarkFloor,
+		'NonDiagonalWall' : NonDiagonalWall,
+		'NonDiagonalOblivionWall' : NonDiagonalOblivionWall,
+		'Corner' : Corner,
+		'WallH' : WallH,
+		'WallV' : WallV,
+		'DarkFloor' : DarkFloor,
 		}
 
 class MockMapping:
-	_ = {_key:terrain.Cell(_item) for (_key, _item) in MockGame.TERRAIN.items()}
+	_ = {_key:_item() for (_key, _item) in MockGame.TERRAIN.items()}
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod

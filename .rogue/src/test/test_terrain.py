@@ -15,12 +15,12 @@ class TestTerrainSavefile(unittest.TestCase):
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('TERRAIN', mock_dungeon.MockGame.TERRAIN)
 		cell = reader.read(terrain.Cell)
-		self.assertEqual(cell.terrain, mock_dungeon.MockGame.TERRAIN['name'])
+		self.assertEqual(type(cell), mock_dungeon.MockGame.TERRAIN['name'])
 		self.assertEqual(cell.visited, True)
 	def should_save_terrain(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, Version.CURRENT)
-		cell = terrain.Cell(mock_dungeon.MockGame.TERRAIN['name'])
+		cell = mock_dungeon.MockGame.TERRAIN['name']()
 		cell.visited = True
 		writer.write(cell)
-		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00name\x001')
+		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00NameTerrain\x001')

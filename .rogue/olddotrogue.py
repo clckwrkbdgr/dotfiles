@@ -72,19 +72,81 @@ class HealingPotion(src.items.Item):
 	sprite = '!'
 	effect = src.items.Effect.HEALING
 
+class Void(src.terrain.Cell):
+	name = 'void'
+	sprite = ' '
+	passable = False
+class Corner(src.terrain.Cell):
+	name = 'corner'
+	sprite = "+"
+	passable = False
+	remembered='+'
+class Door(src.terrain.Cell):
+	name = 'door'
+	sprite = "+"
+	passable = True
+	remembered='+'
+class RogueDoor(src.terrain.Cell):
+	name = 'rogue_door'
+	sprite = "+"
+	passable = True
+	remembered='+'
+	allow_diagonal=False
+	dark=True
+class Floor(src.terrain.Cell):
+	name = 'floor'
+	sprite = "."
+	passable = True
+class TunnelFloor(src.terrain.Cell):
+	name = 'tunnel_floor'
+	sprite = "."
+	passable = True
+	allow_diagonal=False
+class Passage(src.terrain.Cell):
+	name = 'passage'
+	sprite = "#"
+	passable = True
+	remembered='#'
+class RoguePassage(src.terrain.Cell):
+	name = 'rogue_passage'
+	sprite = "#"
+	passable = True
+	remembered='#'
+	allow_diagonal=False
+	dark=True
+class Wall(src.terrain.Cell):
+	name = 'wall'
+	sprite = '#'
+	passable = False
+	remembered='#'
+class WallH(src.terrain.Cell):
+	name = 'wall_h'
+	sprite = "-"
+	passable = False
+	remembered='-'
+class WallV(src.terrain.Cell):
+	name = 'wall_v'
+	sprite = "|"
+	passable = False
+	remembered='|'
+class Water(src.terrain.Cell):
+	name = 'water'
+	sprite = "~"
+	passable = True
+
 class DungeonMapping:
-	void = src.terrain.Cell(src.terrain.Terrain('void', ' ', False))
-	corner = src.terrain.Cell(src.terrain.Terrain('corner', "+", False, remembered='+'))
-	door = src.terrain.Cell(src.terrain.Terrain('door', "+", True, remembered='+'))
-	rogue_door = src.terrain.Cell(src.terrain.Terrain('rogue_door', "+", True, remembered='+', allow_diagonal=False, dark=True))
-	floor = src.terrain.Cell(src.terrain.Terrain('floor', ".", True))
-	tunnel_floor = src.terrain.Cell(src.terrain.Terrain('tunnel_floor', ".", True, allow_diagonal=False))
-	passage = src.terrain.Cell(src.terrain.Terrain('passage', "#", True, remembered='#'))
-	rogue_passage = src.terrain.Cell(src.terrain.Terrain('rogue_passage', "#", True, remembered='#', allow_diagonal=False, dark=True))
-	wall = src.terrain.Cell(src.terrain.Terrain('wall', '#', False, remembered='#'))
-	wall_h = src.terrain.Cell(src.terrain.Terrain('wall_h', "-", False, remembered='-'))
-	wall_v = src.terrain.Cell(src.terrain.Terrain('wall_v', "|", False, remembered='|'))
-	water = src.terrain.Cell(src.terrain.Terrain('water', "~", True))
+	void = Void
+	corner = Corner
+	door = Door
+	rogue_door = RogueDoor
+	floor = Floor
+	tunnel_floor = TunnelFloor
+	passage = Passage
+	rogue_passage = RoguePassage
+	wall = Wall
+	wall_h = WallH
+	wall_v = WallV
+	water = Water
 
 	@staticmethod
 	def start(): return 'start'
@@ -137,19 +199,31 @@ class Game(src.game.Game):
 			MazeBuilder,
 			]
 	TERRAIN = {
-			None : src.terrain.Terrain('void', ' ', False),
-			'void' : src.terrain.Terrain('void', ' ', False),
-			'corner' : src.terrain.Terrain('corner', "+", False, remembered='+'),
-			'door' : src.terrain.Terrain('door', "+", True, remembered='+'),
-			'rogue_door' : src.terrain.Terrain('rogue_door', "+", True, remembered='+', allow_diagonal=False, dark=True),
-			'floor' : src.terrain.Terrain('floor', ".", True),
-			'tunnel_floor' : src.terrain.Terrain('tunnel_floor', ".", True, allow_diagonal=False),
-			'passage' : src.terrain.Terrain('passage', "#", True, remembered='#'),
-			'rogue_passage' : src.terrain.Terrain('rogue_passage', "#", True, remembered='#', allow_diagonal=False, dark=True),
-			'wall' : src.terrain.Terrain('wall', '#', False, remembered='#'),
-			'wall_h' : src.terrain.Terrain('wall_h', "-", False, remembered='-'),
-			'wall_v' : src.terrain.Terrain('wall_v', "|", False, remembered='|'),
-			'water' : src.terrain.Terrain('water', "~", True),
+			None : Void,
+			'void' : Void,
+			'corner' : Corner,
+			'door' : Door,
+			'rogue_door' : RogueDoor,
+			'floor' : Floor,
+			'tunnel_floor' : TunnelFloor,
+			'passage' : Passage,
+			'rogue_passage' : RoguePassage,
+			'wall' : Wall,
+			'wall_h' : WallH,
+			'wall_v' : WallV,
+			'water' : Water,
+			'Void' : Void,
+			'Corner' : Corner,
+			'Door' : Door,
+			'RogueDoor' : RogueDoor,
+			'Floor' : Floor,
+			'TunnelFloor' : TunnelFloor,
+			'Passage' : Passage,
+			'RoguePassage' : RoguePassage,
+			'Wall' : Wall,
+			'WallH' : WallH,
+			'WallV' : WallV,
+			'Water' : Water,
 			}
 	SPECIES = {
 			'player' : Player,
