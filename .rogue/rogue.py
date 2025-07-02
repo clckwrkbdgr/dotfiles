@@ -18,7 +18,7 @@ from src.engine import builders
 from src.engine import events
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 
-SAVEFILE_VERSION = 4
+SAVEFILE_VERSION = 5
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -45,11 +45,74 @@ class Terrain(src.engine.terrain.Terrain):
 		self.sprite = Sprite(stream.read(), stream.read())
 		self.passable = bool(stream.read(int))
 
-class Questgiver:
-	def __init__(self):
+class Monster(src.engine.actors.Monster):
+	max_hp = None
+	sprite = None
+	def __init__(self, pos):
+		super(Monster, self).__init__(pos)
+		self.hp = self.max_hp
+		self.inventory = []
+	def save(self, stream):
+		stream.write(','.join(map(str, self.pos)))
+		stream.write(self.hp)
+
+		stream.write(len(self.inventory))
+		for item in self.inventory:
+			item.save(stream)
+	def load(self, stream):
+		pos = stream.read()
+		self.pos.x, self.pos.y = map(int, pos.split(','))
+		self.hp = stream.read(int)
+
+		items = stream.read(int)
+		for _ in range(items):
+			item = Item(None, None)
+			item.load(stream)
+			self.inventory.append(item)
+
+class ColoredMonster(Monster):
+	def __init__(self, pos, sprite=None, max_hp=None):
+		self.sprite = sprite
+		self.max_hp = max_hp
+		super(ColoredMonster, self).__init__(pos)
+	def save(self, stream):
+		super(ColoredMonster, self).save(stream)
+		stream.write(self.sprite.sprite)
+		stream.write(self.sprite.color)
+	def load(self, stream):
+		super(ColoredMonster, self).load(stream)
+		self.sprite = Sprite(stream.read(), stream.read())
+
+class AggressiveColoredMonster(ColoredMonster):
+	pass
+
+class Player(Monster):
+	sprite = Sprite('@', 'bold_white')
+	init_max_hp = 10
+	def __init__(self, pos):
+		self.max_hp = self.init_max_hp
+		super(Player, self).__init__(pos)
+		self.regeneration = 0
+	def save(self, stream):
+		super(Player, self).save(stream)
+		stream.write(self.regeneration)
+		stream.write(self.max_hp)
+	def load(self, stream):
+		super(Player, self).load(stream)
+		self.regeneration = stream.read(int)
+		self.max_hp = stream.read(int)
+
+class Dweller(Monster):
+	max_hp = 10
+	def __init__(self, pos, color=None):
+		self.sprite = Sprite('@', color)
+		super(Dweller, self).__init__(pos)
 		self.quest = None
 		self.prepared_quest = None
 	def save(self, stream):
+		super(Dweller, self).save(stream)
+		stream.write(self.sprite.color)
+
 		if self.quest:
 			stream.write(self.quest[0])
 			stream.write(self.quest[1])
@@ -63,6 +126,9 @@ class Questgiver:
 		else:
 			stream.write('')
 	def load(self, stream):
+		super(Dweller, self).load(stream)
+		self.sprite = Sprite(self.sprite.sprite, stream.read())
+
 		self.quest = stream.read()
 		if self.quest:
 			self.quest = (int(self.quest), stream.read(), stream.read(int))
@@ -73,69 +139,6 @@ class Questgiver:
 			self.prepared_quest = (int(self.prepared_quest), stream.read(), stream.read(int))
 		else:
 			self.prepared_quest = None
-
-class Monster(src.engine.actors.Monster):
-	def __init__(self, pos, sprite, max_hp, behaviour=None):
-		super(Monster, self).__init__(pos)
-		self.sprite = sprite
-		self.hp = self.max_hp = max_hp
-		self.regeneration = 0
-		self.behaviour = behaviour
-		self.inventory = []
-	def save(self, stream):
-		if isinstance(self.pos, NestedGrid.Coord):
-			stream.write('|'.join(
-				map(lambda p:','.join(map(str, p)), self.pos.values)
-				))
-		else:
-			stream.write(','.join(map(str, self.pos)))
-		stream.write(self.sprite.sprite)
-		stream.write(self.sprite.color)
-		stream.write(self.hp)
-		stream.write(self.max_hp)
-		stream.write(self.regeneration)
-
-		if self.behaviour is None:
-			stream.write('')
-		elif isinstance(self.behaviour, Questgiver):
-			stream.write('quest')
-			self.behaviour.save(stream)
-		else:
-			stream.write(self.behaviour)
-
-		stream.write(len(self.inventory))
-		for item in self.inventory:
-			item.save(stream)
-	def load(self, stream):
-		pos = stream.read()
-		if '|' in pos:
-			parts = pos.split('|')
-			parts = (Point(*(map(int, part.split(',')))) for part in parts)
-			self.pos = NestedGrid.Coord(*parts)
-		else:
-			self.pos.x, self.pos.y = map(int, pos.split(','))
-		self.sprite = Sprite(stream.read(), stream.read())
-		self.hp = stream.read(int)
-		self.max_hp = stream.read(int)
-		self.regeneration = stream.read(int)
-
-		self.behaviour = stream.read()
-		if self.behaviour == 'aggressive':
-			pass
-		elif self.behaviour == 'player':
-			pass
-		elif self.behaviour == 'quest':
-			self.behaviour = Questgiver()
-			self.behaviour.load(stream)
-		else:
-			assert not self.behaviour, self.behaviour
-			self.behaviour = None
-
-		items = stream.read(int)
-		for _ in range(items):
-			item = Item(None, None)
-			item.load(stream)
-			self.inventory.append(item)
 
 class Item(src.engine.items.Item):
 	def __init__(self, sprite, name):
@@ -167,6 +170,7 @@ class FieldData:
 
 		stream.write(len(self.monsters))
 		for monster in self.monsters:
+			stream.write(type(monster).__name__)
 			monster.save(stream)
 	@classmethod
 	def load(cls, stream):
@@ -180,7 +184,8 @@ class FieldData:
 
 		monsters = stream.read(int)
 		for _ in range(monsters):
-			monster = Monster(Point(0, 0), None, None)
+			monster_type = globals()[stream.read()]
+			monster = monster_type(Point(0, 0))
 			monster.load(stream)
 			self.monsters.append(monster)
 		return self
@@ -203,13 +208,13 @@ class Builder(builders.Builder):
 		floor = Terrain(Sprite('.', 'white'))
 		wall = Terrain(Sprite('#', 'white'), passable=False)
 		def dweller(pos, color):
-			return Monster(pos, Sprite('@', color), 10, behaviour=Questgiver())
+			return Dweller(pos, color)
 		@classmethod
 		def monster(cls, pos, sprite, color, strong, aggressive):
-			return Monster(pos,
+			monster_type = AggressiveColoredMonster if aggressive else ColoredMonster
+			return monster_type(pos,
 				Sprite(sprite.upper() if strong else sprite, color),
 				1 + 10 * strong + random.randrange(4),
-				behaviour='aggressive' if aggressive else None,
 				)
 		@classmethod
 		def monster_carrying(cls, pos, sprite, color, strong, aggressive):
@@ -419,7 +424,6 @@ class Game(engine.Game):
 				)
 		zone = self.generate_zone(zone_pos)
 
-		player = Monster(NestedGrid.Coord(Point(0, 0), Point(0, 0), Point(0, 0)), Sprite('@', 'bold_white'), 10, behaviour='player')
 		player_pos = NestedGrid.Coord(
 				zone_pos,
 				Point(
@@ -431,7 +435,7 @@ class Game(engine.Game):
 					random.randrange(zone.sizes[-1].width),
 					),
 				)
-		player.pos = player_pos.values[-1]
+		player = Player(player_pos.values[-1])
 		self.world.get_data(player_pos)[-1].monsters.append(player)
 	def autoexpand(self, coord, margin):
 		pos = coord.get_global(self.world)
@@ -533,7 +537,7 @@ class Game(engine.Game):
 		return coord
 	def _get_player_data(self):
 		if self._cached_player_pos is None:
-			player, self._cached_player_pos = next((monster, coord) for coord, monster in all_monsters(self.world, raw=True) if monster.behaviour == 'player')
+			player, self._cached_player_pos = next((monster, coord) for coord, monster in all_monsters(self.world, raw=True) if isinstance(monster, Player))
 			return player, self._cached_player_pos
 		expected_zone_index = self._cached_player_pos.values[0]
 		expected_zone = self.world.cells.cell(expected_zone_index)
@@ -541,13 +545,13 @@ class Game(engine.Game):
 		expected_field = expected_zone.cells.cell(expected_field_index)
 		# Expecting at the last remembered field:
 		for monster in expected_field.data.monsters:
-			if monster.behaviour == 'player':
+			if isinstance(monster, Player):
 				self._cached_player_pos = NestedGrid.Coord(expected_zone_index, expected_field_index, monster.pos)
 				return monster, self._cached_player_pos
 		# Not found in the field.
 		# Checking the whole last remembered zone:
 		for coord, monster in all_monsters(self.world, raw=True, zone_range=[expected_zone_index]):
-			if monster.behaviour == 'player':
+			if isinstance(monster, Player):
 				self._cached_player_pos = coord
 				return monster, self._cached_player_pos
 		# Not found in the last remembered zone.
@@ -557,12 +561,12 @@ class Game(engine.Game):
 			expected_zone_index + Point(1, 1),
 			)) - {expected_zone_index}
 		for coord, monster in all_monsters(self.world, raw=True, zone_range=adjacent_zones):
-			if monster.behaviour == 'player':
+			if isinstance(monster, Player):
 				self._cached_player_pos = coord
 				return monster, self._cached_player_pos
 		# Not found in adjacent zones.
 		# Performing full lookup:
-		player, self._cached_player_pos = next((monster, coord) for coord, monster in all_monsters(self.world, raw=True) if monster.behaviour == 'player')
+		player, self._cached_player_pos = next((monster, coord) for coord, monster in all_monsters(self.world, raw=True) if isinstance(monster, Player))
 		return player, self._cached_player_pos
 
 	def iter_items_at(self, pos):
@@ -573,7 +577,7 @@ class Game(engine.Game):
 	def iter_actors_at(self, pos, with_player=False):
 		zone_actors = self.world.get_data(pos)[-1].monsters
 		for actor in zone_actors:
-			if not with_player and actor.behaviour == 'player':
+			if not with_player and isinstance(actor, Player):
 				continue
 			if pos.values[-1] == actor.pos:
 				yield actor
@@ -748,12 +752,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					monster for monster_pos, monster
 					in all_monsters(game.world)
 					if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1
-					and isinstance(monster.behaviour, Questgiver)
+					and isinstance(monster, Dweller)
 					]
 			questing = [
 					npc for _, npc in all_monsters(game.world)
-					if isinstance(npc.behaviour, Questgiver)
-					and npc.behaviour.quest
+					if isinstance(npc, Dweller)
+					and npc.quest
 					]
 			if not npcs:
 				self.game.fire_event(NoOneToChat())
@@ -780,8 +784,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		if True:
 			if True:
 				if True:
-					if npc.behaviour.quest:
-						required_amount, required_name, bounty = npc.behaviour.quest
+					if npc.quest:
+						required_amount, required_name, bounty = npc.quest
 						have_required_items = [
 								item for item in game.get_player().inventory
 								if item.name == required_name
@@ -794,26 +798,26 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 								if game.get_player().hp == game.get_player().max_hp:
 									game.get_player().hp += bounty
 								game.get_player().max_hp += bounty
-								npc.behaviour.quest = None
+								npc.quest = None
 							def _on_no():
 								self.game.fire_event(ChatComeLater())
-							return TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(self.npc.behaviour.quest)),
+							return TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(self.npc.quest)),
 										on_yes=_on_yes, on_no=_on_no)
 						else:
-							self.game.fire_event(ChatQuestReminder(*(npc.behaviour.quest)))
+							self.game.fire_event(ChatQuestReminder(*(npc.quest)))
 					else:
-						if not npc.behaviour.prepared_quest:
+						if not npc.prepared_quest:
 							amount = 1 + random.randrange(3)
 							bounty = max(1, amount // 2 + 1)
 							colors = [name for name, color in game.COLORS.items() if color.monster]
 							color = random.choice(colors).replace('_', ' ') + ' skin'
-							npc.behaviour.prepared_quest = (amount, color, bounty)
+							npc.prepared_quest = (amount, color, bounty)
 						def _on_yes():
-							npc.behaviour.quest = npc.behaviour.prepared_quest
-							npc.behaviour.prepared_quest = None
+							npc.quest = npc.prepared_quest
+							npc.prepared_quest = None
 						def _on_no():
 							self.game.fire_event(ChatComeLater())
-						return TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.behaviour.prepared_quest)),
+						return TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.prepared_quest)),
 										 on_yes=_on_yes, on_no=_on_no)
 	@Keys.bind('q')
 	def show_questlog(self):
@@ -821,8 +825,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		if True:
 			questing = [
 					(coord, npc) for coord, npc in all_monsters(game.world, raw=True)
-					if isinstance(npc.behaviour, Questgiver)
-					and npc.behaviour.quest
+					if isinstance(npc, Dweller)
+					and npc.quest
 					]
 			quest_log = QuestLog(questing)
 			return quest_log
@@ -861,7 +865,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				dest_cell = game.world.cell(dest_pos)
 			monster = next(game.iter_actors_at(dest_pos), None)
 			if monster:
-				if isinstance(monster.behaviour, Questgiver):
+				if isinstance(monster, Dweller):
 					self.game.fire_event(Bump('you', 'dweller'))
 				else:
 					monster.hp -= 1
@@ -915,9 +919,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			for monster_coord, monster in all_monsters(game.world, raw=True, zone_range=monster_zone_range):
 				if monster in already_acted_monsters_from_previous_fields:
 					continue
-				if isinstance(monster.behaviour, Questgiver):
+				if isinstance(monster, Dweller):
 					continue
-				if monster.behaviour == 'player':
+				if isinstance(monster, Player):
 					continue
 				monster_pos = monster_coord.get_global(game.world)
 				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
@@ -925,7 +929,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					self.game.fire_event(HitMonster('monster', 'you'))
 					if game.get_player().hp <= 0:
 						self.game.fire_event(MonsterDead('you'))
-				elif monster.behaviour == 'aggressive' and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
+				elif isinstance(monster, AggressiveColoredMonster) and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
 					shift = Point(
 							sign(player_pos.x - monster_pos.x),
 							sign(player_pos.y - monster_pos.y),
@@ -992,8 +996,8 @@ class QuestLog(clckwrkbdgr.tui.Mode):
 			ui.print_line(0, 0, "Current quests:")
 		for index, (coord, npc) in enumerate(self.quests):
 			ui.print_line(index + 1, 0, "@ {2}: Bring {0} {1}.".format(
-				npc.behaviour.quest[0],
-				npc.behaviour.quest[1],
+				npc.quest[0],
+				npc.quest[1],
 				coord,
 				))
 	def action(self, control):
