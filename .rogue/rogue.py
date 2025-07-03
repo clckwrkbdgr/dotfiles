@@ -18,7 +18,7 @@ from src.engine import builders
 from src.engine import events
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 
-SAVEFILE_VERSION = 6
+SAVEFILE_VERSION = 7
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -34,16 +34,47 @@ MOVEMENT = {
 Sprite = namedtuple('Sprite', 'sprite color')
 
 class Terrain(src.engine.terrain.Terrain):
-	def __init__(self, sprite=None, passable=True):
-		self.sprite = sprite
-		self.passable = passable
+	sprite = NotImplemented
+	passable = True
 	def save(self, stream):
-		stream.write(self.sprite.sprite)
-		stream.write(self.sprite.color)
-		stream.write(int(self.passable))
-	def load(self, stream):
-		self.sprite = Sprite(stream.read(), stream.read())
-		self.passable = bool(stream.read(int))
+		stream.write(type(self).__name__)
+	@classmethod
+	def load(cls, stream):
+		cell_type = stream.read()
+		return globals()[cell_type]()
+
+class Bog(Terrain):
+	sprite = Sprite('~', 'green')
+class Bush(Terrain):
+	sprite = Sprite('"', 'bold_green')
+class DeadTree(Terrain):
+	sprite = Sprite('&', 'yellow')
+class FrozenGround(Terrain):
+	sprite = Sprite('.', 'white')
+class Grass(Terrain):
+	sprite = Sprite('.', 'green')
+class Ice(Terrain):
+	sprite = Sprite('.', 'cyan')
+class Plant(Terrain):
+	sprite = Sprite('"', 'green')
+class Rock(Terrain):
+	sprite = Sprite('^', 'yellow')
+	passable = False
+class Sand(Terrain):
+	sprite = Sprite('.', 'bold_yellow')
+class Snow(Terrain):
+	sprite = Sprite('.', 'bold_white')
+class Swamp(Terrain):
+	sprite = Sprite('~', 'cyan')
+class Tree(Terrain):
+	sprite = Sprite('&', 'bold_green')
+class SwampTree(Terrain):
+	sprite = Sprite('&', 'green')
+class Floor(Terrain):
+	sprite = Sprite('.', 'white')
+class Wall(Terrain):
+	sprite = Sprite('#', 'white')
+	passable = False
 
 class Monster(src.engine.actors.Monster):
 	max_hp = None
@@ -201,21 +232,21 @@ class FieldData:
 
 class Builder(builders.Builder):
 	class Mapping:
-		bog = Terrain(Sprite('~', 'green'))
-		bush = Terrain(Sprite('"', 'bold_green'))
-		dead_tree = Terrain(Sprite('&', 'yellow'))
-		frozen_ground = Terrain(Sprite('.', 'white'))
-		grass = Terrain(Sprite('.', 'green'))
-		ice = Terrain(Sprite('.', 'cyan'))
-		plant = Terrain(Sprite('"', 'green'))
-		rock = Terrain(Sprite('^', 'yellow'), passable=False)
-		sand = Terrain(Sprite('.', 'bold_yellow'))
-		snow = Terrain(Sprite('.', 'bold_white'))
-		swamp = Terrain(Sprite('~', 'cyan'))
-		tree = Terrain(Sprite('&', 'bold_green'))
-		swamp_tree = Terrain(Sprite('&', 'green'))
-		floor = Terrain(Sprite('.', 'white'))
-		wall = Terrain(Sprite('#', 'white'), passable=False)
+		bog = Bog()
+		bush = Bush()
+		dead_tree = DeadTree()
+		frozen_ground = FrozenGround()
+		grass = Grass()
+		ice = Ice()
+		plant = Plant()
+		rock = Rock()
+		sand = Sand()
+		snow = Snow()
+		swamp = Swamp()
+		tree = Tree()
+		swamp_tree = SwampTree()
+		floor = Floor()
+		wall = Wall()
 		def dweller(pos, color):
 			return Dweller(pos, color)
 		@classmethod

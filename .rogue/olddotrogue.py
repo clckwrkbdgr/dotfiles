@@ -135,18 +135,18 @@ class Water(src.terrain.Cell):
 	passable = True
 
 class DungeonMapping:
-	void = Void
-	corner = Corner
-	door = Door
-	rogue_door = RogueDoor
-	floor = Floor
-	tunnel_floor = TunnelFloor
-	passage = Passage
-	rogue_passage = RoguePassage
-	wall = Wall
-	wall_h = WallH
-	wall_v = WallV
-	water = Water
+	void = Void()
+	corner = Corner()
+	door = Door()
+	rogue_door = RogueDoor()
+	floor = Floor()
+	tunnel_floor = TunnelFloor()
+	passage = Passage()
+	rogue_passage = RoguePassage()
+	wall = Wall()
+	wall_h = WallH()
+	wall_v = WallV()
+	water = Water()
 
 	@staticmethod
 	def start(): return 'start'

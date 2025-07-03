@@ -457,9 +457,9 @@ class NestedGrid: # pragma: no cover -- TODO
 					continue
 			if self.nested_sizes:
 				tile = NestedGrid((Size(1, 1),) + self.nested_sizes[1:], self.nested_data, self.cell_type)
+				tile.load(stream)
 			else:
-				tile = self.cell_type()
-			tile.load(stream)
+				tile = self.cell_type.load(stream)
 			self.cells.set_cell(tile_index, tile)
 			self._valid_cell = tile_index
 		if self.data_class:
