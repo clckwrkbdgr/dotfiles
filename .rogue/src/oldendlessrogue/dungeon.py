@@ -4,10 +4,8 @@ from . import builders
 from .. import engine
 from ..engine import actors
 
-class Monster(actors.Monster):
-	def __init__(self, pos, sprite):
-		super(Monster, self).__init__(pos)
-		self.sprite = sprite
+class Player(actors.Monster):
+	_sprite = "@"
 
 class Dungeon(engine.Game):
 	BLOCK_SIZE = Size(32, 32)
@@ -22,7 +20,7 @@ class Dungeon(engine.Game):
 		return False
 	def generate(self):
 		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block)
-		self.monsters.append(Monster(self.builder.place_rogue(self.terrain), "@"))
+		self.monsters.append(Player(self.builder.place_rogue(self.terrain)))
 	def load(self, state):
 		self.__dict__.update(state)
 		if 'time' not in state:

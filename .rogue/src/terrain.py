@@ -1,15 +1,13 @@
 from .defs import *
 from .engine import terrain
 
-class Terrain(object):
+class Terrain(terrain.Terrain):
 	""" Basic fixed stats shared by terrain cells of the same kind.
 	- passable: allow free movement.
 	- remembered: sprite for "remembered" state, where it is not seen directly, but was visited before.
 	- allow_diagonal: allows diagonal movement to and from this cell. Otherwise only orthogonal movement is allowed.
 	- dark: if True, no light is present and it is not considered transparent if further than 1 cell from the center.
 	"""
-	name = NotImplemented
-	sprite = NotImplemented
 	passable = True
 	remembered = None
 	allow_diagonal = True

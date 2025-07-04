@@ -17,6 +17,7 @@ from src import engine
 from src.engine import builders
 from src.engine import events
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
+from src.engine.items import Item
 
 SAVEFILE_VERSION = 7
 
@@ -34,7 +35,6 @@ MOVEMENT = {
 Sprite = namedtuple('Sprite', 'sprite color')
 
 class Terrain(src.engine.terrain.Terrain):
-	sprite = NotImplemented
 	passable = True
 	def save(self, stream):
 		stream.write(type(self).__name__)
@@ -44,41 +44,40 @@ class Terrain(src.engine.terrain.Terrain):
 		return globals()[cell_type]()
 
 class Bog(Terrain):
-	sprite = Sprite('~', 'green')
+	_sprite = Sprite('~', 'green')
 class Bush(Terrain):
-	sprite = Sprite('"', 'bold_green')
+	_sprite = Sprite('"', 'bold_green')
 class DeadTree(Terrain):
-	sprite = Sprite('&', 'yellow')
+	_sprite = Sprite('&', 'yellow')
 class FrozenGround(Terrain):
-	sprite = Sprite('.', 'white')
+	_sprite = Sprite('.', 'white')
 class Grass(Terrain):
-	sprite = Sprite('.', 'green')
+	_sprite = Sprite('.', 'green')
 class Ice(Terrain):
-	sprite = Sprite('.', 'cyan')
+	_sprite = Sprite('.', 'cyan')
 class Plant(Terrain):
-	sprite = Sprite('"', 'green')
+	_sprite = Sprite('"', 'green')
 class Rock(Terrain):
-	sprite = Sprite('^', 'yellow')
+	_sprite = Sprite('^', 'yellow')
 	passable = False
 class Sand(Terrain):
-	sprite = Sprite('.', 'bold_yellow')
+	_sprite = Sprite('.', 'bold_yellow')
 class Snow(Terrain):
-	sprite = Sprite('.', 'bold_white')
+	_sprite = Sprite('.', 'bold_white')
 class Swamp(Terrain):
-	sprite = Sprite('~', 'cyan')
+	_sprite = Sprite('~', 'cyan')
 class Tree(Terrain):
-	sprite = Sprite('&', 'bold_green')
+	_sprite = Sprite('&', 'bold_green')
 class SwampTree(Terrain):
-	sprite = Sprite('&', 'green')
+	_sprite = Sprite('&', 'green')
 class Floor(Terrain):
-	sprite = Sprite('.', 'white')
+	_sprite = Sprite('.', 'white')
 class Wall(Terrain):
-	sprite = Sprite('#', 'white')
+	_sprite = Sprite('#', 'white')
 	passable = False
 
 class Monster(src.engine.actors.Monster):
 	max_hp = None
-	sprite = None
 	def __init__(self, pos):
 		super(Monster, self).__init__(pos)
 		self.hp = self.max_hp
@@ -105,22 +104,22 @@ class Monster(src.engine.actors.Monster):
 
 class ColoredMonster(Monster):
 	def __init__(self, pos, sprite=None, max_hp=None):
-		self.sprite = sprite
+		self._sprite = sprite
 		self.max_hp = max_hp
 		super(ColoredMonster, self).__init__(pos)
 	def save(self, stream):
 		super(ColoredMonster, self).save(stream)
-		stream.write(self.sprite.sprite)
-		stream.write(self.sprite.color)
+		stream.write(self._sprite.sprite)
+		stream.write(self._sprite.color)
 	def load(self, stream):
 		super(ColoredMonster, self).load(stream)
-		self.sprite = Sprite(stream.read(), stream.read())
+		self._sprite = Sprite(stream.read(), stream.read())
 
 class AggressiveColoredMonster(ColoredMonster):
 	pass
 
 class Player(Monster):
-	sprite = Sprite('@', 'bold_white')
+	_sprite = Sprite('@', 'bold_white')
 	init_max_hp = 10
 	def __init__(self, pos):
 		self.max_hp = self.init_max_hp
@@ -138,13 +137,13 @@ class Player(Monster):
 class Dweller(Monster):
 	max_hp = 10
 	def __init__(self, pos, color=None):
-		self.sprite = Sprite('@', color)
+		self._sprite = Sprite('@', color)
 		super(Dweller, self).__init__(pos)
 		self.quest = None
 		self.prepared_quest = None
 	def save(self, stream):
 		super(Dweller, self).save(stream)
-		stream.write(self.sprite.color)
+		stream.write(self._sprite.color)
 
 		if self.quest:
 			stream.write(self.quest[0])
@@ -160,7 +159,7 @@ class Dweller(Monster):
 			stream.write('')
 	def load(self, stream):
 		super(Dweller, self).load(stream)
-		self.sprite = Sprite(self.sprite.sprite, stream.read())
+		self._sprite = Sprite(self._sprite.sprite, stream.read())
 
 		self.quest = stream.read()
 		if self.quest:
@@ -173,21 +172,17 @@ class Dweller(Monster):
 		else:
 			self.prepared_quest = None
 
-class Item(src.engine.items.Item):
-	sprite = NotImplemented
-	name = NotImplemented
-
 class ColoredSkin(Item):
 	def __init__(self, sprite=None, name=None):
-		self.sprite = sprite
-		self.name = name
+		self._sprite = sprite
+		self._name = name
 	def save(self, stream):
-		stream.write(self.sprite.sprite)
-		stream.write(self.sprite.color)
-		stream.write(self.name)
+		stream.write(self._sprite.sprite)
+		stream.write(self._sprite.color)
+		stream.write(self._name)
 	def load(self, stream):
-		self.sprite = Sprite(stream.read(), stream.read())
-		self.name = stream.read()
+		self._sprite = Sprite(stream.read(), stream.read())
+		self._name = stream.read()
 
 class ZoneData:
 	def save(self, stream):

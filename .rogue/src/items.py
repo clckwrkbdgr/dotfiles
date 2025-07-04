@@ -9,8 +9,6 @@ class Effect(Enum):
 
 class ItemType(items.Item):
 	""" Basic fixed stats shared by items of the same kind. """
-	name = NotImplemented
-	sprite = NotImplemented
 	effect = Effect.NONE
 
 class Item(ItemType):

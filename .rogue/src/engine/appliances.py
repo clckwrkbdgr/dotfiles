@@ -1,5 +1,8 @@
+from clckwrkbdgr.utils import classfield
+
 class Appliance(object):
-	pass
+	sprite = classfield('_sprite', '?')
+	name = classfield('_name', 'unknown object')
 
 class ObjectAtPos(object): # pragma: no cover -- TODO
 	def __init__(self, pos, obj):

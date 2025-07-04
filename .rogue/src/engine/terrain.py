@@ -1,2 +1,5 @@
+from clckwrkbdgr.utils import classfield
+
 class Terrain(object):
-	pass
+	sprite = classfield('_sprite', ' ')
+	name = classfield('_name', 'void')

@@ -49,8 +49,6 @@ class Event:
 
 class Item(items.Item):
 	""" Basic pickable and carryable item. """
-	sprite = classfield('_sprite', '*')
-	name = classfield('_name', 'mcguffin')
 	attack = classfield('_attack', 0)
 
 class Consumable(object):
@@ -70,8 +68,6 @@ class Furniture(appliances.Appliance):
 			self.key_item_type = key_item_type
 		def __str__(self):
 			return "Locked; required {0} to unlock".format(self.key_item_type)
-	sprite = classfield('_sprite', '?')
-	name = classfield('_name', 'object')
 
 class LevelPassage(Furniture):
 	""" Object that allows travel between levels.
@@ -98,8 +94,6 @@ class Monster(actors.Monster):
 		self.wearing = None
 		self.inventory = []
 		self.hp = self.max_hp
-	sprite = classfield('_sprite', NotImplemented)
-	name = classfield('_name', NotImplemented)
 	max_hp = classfield('_max_hp', 0)
 	base_attack = classfield('_attack', None)
 	drops = classfield('_drops', [])

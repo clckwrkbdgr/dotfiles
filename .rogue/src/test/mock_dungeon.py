@@ -5,8 +5,8 @@ from .. import terrain, items, monsters
 from .. import game
 
 class Name(monsters.Monster):
-	name = 'name'
-	sprite = 'M'
+	_name = 'name'
+	_sprite = 'M'
 	max_hp = 100
 	vision = 10
 	drops = [
@@ -15,22 +15,22 @@ class Name(monsters.Monster):
 			]
 
 class Player(monsters.Monster):
-	name = 'player'
-	sprite = '@'
+	_name = 'player'
+	_sprite = '@'
 	max_hp = 10
 	vision = 10
 	drops = None
 
 class Monster(monsters.Monster):
-	name = 'monster'
-	sprite = 'M'
+	_name = 'monster'
+	_sprite = 'M'
 	max_hp = 3
 	vision = 10
 	drops = None
 
 class Thief(monsters.Monster):
-	name = 'thief'
-	sprite = 'T'
+	_name = 'thief'
+	_sprite = 'T'
 	max_hp = 3
 	vision = 10
 	drops = [
@@ -38,86 +38,86 @@ class Thief(monsters.Monster):
 			]
 
 class NameItem(items.Item):
-	name = 'name'
-	sprite = '!'
+	_name = 'name'
+	_sprite = '!'
 
 class Potion(items.Item):
-	name = 'potion'
-	sprite = '!'
+	_name = 'potion'
+	_sprite = '!'
 
 class HealingPotion(items.Item):
-	name = 'healing potion'
-	sprite = '!'
+	_name = 'healing potion'
+	_sprite = '!'
 	effect = items.Effect.HEALING
 
 class Money(items.Item):
-	name = 'money'
-	sprite = '$'
+	_name = 'money'
+	_sprite = '$'
 
 class Weapon(items.Item):
-	name = 'weapon'
-	sprite = '('
+	_name = 'weapon'
+	_sprite = '('
 
 class Ranged(items.Item):
-	name = 'ranged'
-	sprite = ')'
+	_name = 'ranged'
+	_sprite = ')'
 
 class Rags(items.Item):
-	name = 'rags'
-	sprite = '['
+	_name = 'rags'
+	_sprite = '['
 
 class NameTerrain(terrain.Cell):
-	name = 'name'
-	sprite = '.'
+	_name = 'name'
+	_sprite = '.'
 class Space(terrain.Cell):
-	name = ' '
-	sprite = ' '
+	_name = ' '
+	_sprite = ' '
 	passable = False
 class Wall(terrain.Cell):
-	name = '#'
-	sprite = "#"
+	_name = '#'
+	_sprite = "#"
 	passable = False
 	remembered='#'
 class Floor(terrain.Cell):
-	name = '.'
-	sprite = "."
+	_name = '.'
+	_sprite = "."
 	passable = True
 class Water(terrain.Cell):
-	name = '~'
-	sprite = "."
+	_name = '~'
+	_sprite = "."
 	passable = True
 	allow_diagonal=False
 class NonDiagonalWall(terrain.Cell):
-	name = '#'
-	sprite = "#"
+	_name = '#'
+	_sprite = "#"
 	passable = True
 	remembered='#'
 	allow_diagonal=False
 	dark=True
 class NonDiagonalOblivionWall(terrain.Cell):
-	name = '#'
-	sprite = "#"
+	_name = '#'
+	_sprite = "#"
 	passable = True
 	allow_diagonal=False
 	dark=True
 class Corner(terrain.Cell):
-	name = '+'
-	sprite = "+"
+	_name = '+'
+	_sprite = "+"
 	passable = False
 	remembered='+'
 class WallH(terrain.Cell):
-	name = '-'
-	sprite = "-"
+	_name = '-'
+	_sprite = "-"
 	passable = False
 	remembered='-'
 class WallV(terrain.Cell):
-	name = '|'
-	sprite = "|"
+	_name = '|'
+	_sprite = "|"
 	passable = False
 	remembered='|'
 class DarkFloor(terrain.Cell):
-	name = '^'
-	sprite = "^"
+	_name = '^'
+	_sprite = "^"
 	passable = True
 	remembered='^'
 	allow_diagonal=False

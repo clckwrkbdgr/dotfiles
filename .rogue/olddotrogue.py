@@ -19,22 +19,22 @@ class DungeonSquatters(src.pcg.WeightedSquatters):
 			]
 
 class Player(src.monsters.Monster):
-	name = 'player'
-	sprite = '@'
+	_name = 'player'
+	_sprite = '@'
 	max_hp = 10
 	vision = 10
 	drops = None
 
 class Monster(src.monsters.Monster):
-	name = 'monster'
-	sprite = 'M'
+	_name = 'monster'
+	_sprite = 'M'
 	max_hp = 3
 	vision = 10
 	drops = None
 
 class Plant(src.monsters.Monster):
-	name = 'plant'
-	sprite = 'P'
+	_name = 'plant'
+	_sprite = 'P'
 	max_hp = 1
 	vision = 1
 	drops = [
@@ -43,8 +43,8 @@ class Plant(src.monsters.Monster):
 			]
 
 class Slime(src.monsters.Monster):
-	name = 'slime'
-	sprite = 'o'
+	_name = 'slime'
+	_sprite = 'o'
 	max_hp = 5
 	vision = 3
 	drops = [
@@ -53,8 +53,8 @@ class Slime(src.monsters.Monster):
 			]
 
 class Rodent(src.monsters.Monster):
-	name = 'rodent'
-	sprite = 'r'
+	_name = 'rodent'
+	_sprite = 'r'
 	max_hp = 3
 	vision = 8
 	drops = [
@@ -63,75 +63,75 @@ class Rodent(src.monsters.Monster):
 			]
 
 class Potion(src.items.Item):
-	name = 'potion'
-	sprite = '!'
+	_name = 'potion'
+	_sprite = '!'
 	effect = src.items.Effect.NONE
 
 class HealingPotion(src.items.Item):
-	name = 'healing potion'
-	sprite = '!'
+	_name = 'healing potion'
+	_sprite = '!'
 	effect = src.items.Effect.HEALING
 
 class Void(src.terrain.Cell):
-	name = 'void'
-	sprite = ' '
+	_name = 'void'
+	_sprite = ' '
 	passable = False
 class Corner(src.terrain.Cell):
-	name = 'corner'
-	sprite = "+"
+	_name = 'corner'
+	_sprite = "+"
 	passable = False
 	remembered='+'
 class Door(src.terrain.Cell):
-	name = 'door'
-	sprite = "+"
+	_name = 'door'
+	_sprite = "+"
 	passable = True
 	remembered='+'
 class RogueDoor(src.terrain.Cell):
-	name = 'rogue_door'
-	sprite = "+"
+	_name = 'rogue_door'
+	_sprite = "+"
 	passable = True
 	remembered='+'
 	allow_diagonal=False
 	dark=True
 class Floor(src.terrain.Cell):
-	name = 'floor'
-	sprite = "."
+	_name = 'floor'
+	_sprite = "."
 	passable = True
 class TunnelFloor(src.terrain.Cell):
-	name = 'tunnel_floor'
-	sprite = "."
+	_name = 'tunnel_floor'
+	_sprite = "."
 	passable = True
 	allow_diagonal=False
 class Passage(src.terrain.Cell):
-	name = 'passage'
-	sprite = "#"
+	_name = 'passage'
+	_sprite = "#"
 	passable = True
 	remembered='#'
 class RoguePassage(src.terrain.Cell):
-	name = 'rogue_passage'
-	sprite = "#"
+	_name = 'rogue_passage'
+	_sprite = "#"
 	passable = True
 	remembered='#'
 	allow_diagonal=False
 	dark=True
 class Wall(src.terrain.Cell):
-	name = 'wall'
-	sprite = '#'
+	_name = 'wall'
+	_sprite = '#'
 	passable = False
 	remembered='#'
 class WallH(src.terrain.Cell):
-	name = 'wall_h'
-	sprite = "-"
+	_name = 'wall_h'
+	_sprite = "-"
 	passable = False
 	remembered='-'
 class WallV(src.terrain.Cell):
-	name = 'wall_v'
-	sprite = "|"
+	_name = 'wall_v'
+	_sprite = "|"
 	passable = False
 	remembered='|'
 class Water(src.terrain.Cell):
-	name = 'water'
-	sprite = "~"
+	_name = 'water'
+	_sprite = "~"
 	passable = True
 
 class DungeonMapping:

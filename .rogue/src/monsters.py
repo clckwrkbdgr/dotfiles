@@ -17,8 +17,6 @@ class Species(actors.Monster):
 	Drops - weighted distribution list of items: [(<weight>, <args...>), ...]
 	Args can be None - to support probability that nothing is dropped.
 	"""
-	name = NotImplemented
-	sprite = NotImplemented
 	max_hp = NotImplemented
 	vision = NotImplemented
 	drops = None
@@ -29,11 +27,11 @@ class Monster(Species):
 		super(Monster, self).__init__(pos)
 		self.species = self
 		self.behavior = behavior
-		self.hp = self.species.max_hp
+		self.hp = self.max_hp
 		self.inventory = []
 		self.wielding = None
 	def __str__(self):
-		return "{0} @{1} {2}/{3}hp".format(self.species.name, self.pos, self.hp, self.species.max_hp)
+		return "{0} @{1} {2}/{3}hp".format(self.name, self.pos, self.hp, self.max_hp)
 	@classmethod
 	def load(cls, reader):
 		species_name = reader.read()
@@ -68,10 +66,10 @@ class Monster(Species):
 		return self.hp > 0
 	def _generate_drops(self, rng):
 		from clckwrkbdgr import pcg
-		if not self.species.drops:
+		if not self.drops:
 			return []
 		return [result for result
-				in pcg.weighted_choices(rng, [(data[0], data[1:]) for data in self.species.drops])
+				in pcg.weighted_choices(rng, [(data[0], data[1:]) for data in self.drops])
 				if result[0] is not None
 				]
 	def fill_inventory_from_drops(self, rng, item_types):
