@@ -3,6 +3,10 @@ from clckwrkbdgr.utils import classfield
 class Item(object):
 	sprite = classfield('_sprite', '?')
 	name = classfield('_name', 'unknown item')
+	def __str__(self):
+		return self.name
+	def __repr__(self):
+		return '{0}({1})'.format(type(self).__name__, self.name)
 
 class ItemAtPos(object): # pragma: no cover -- TODO
 	def __init__(self, pos, item):

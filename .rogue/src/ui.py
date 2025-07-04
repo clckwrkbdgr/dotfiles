@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from .defs import Action
 import functools
 from collections import namedtuple
 import curses, curses.ascii
@@ -82,9 +81,9 @@ class MainGame(SubMode):
 			sprite = ' '
 			if game.god.vision or game.field_of_view.is_visible(pos.x, pos.y):
 				if monsters:
-					sprite = monsters[-1].species.sprite
+					sprite = monsters[-1].sprite
 				elif items:
-					sprite = items[-1].item_type.sprite
+					sprite = items[-1].sprite
 				elif objects:
 					sprite = objects[-1]
 				else:
@@ -118,13 +117,13 @@ class MainGame(SubMode):
 		status = []
 		player = game.get_player()
 		if player:
-			status.append('hp: {0:>{1}}/{2}'.format(player.hp, len(str(player.species.max_hp)), player.species.max_hp))
+			status.append('hp: {0:>{1}}/{2}'.format(player.hp, len(str(player.max_hp)), player.max_hp))
 			item = next(game.iter_items_at(player.pos), None)
 			if item:
-				status.append('here: {0}'.format(item.item_type.sprite))
+				status.append('here: {0}'.format(item.sprite))
 			if player.inventory:
 				if len(player.inventory) <= 2:
-					content = ''.join(item.item_type.sprite for item in player.inventory)
+					content = ''.join(item.sprite for item in player.inventory)
 				else:
 					content = len(player.inventory)
 				status.append('inv: {0:>2}'.format(content))
@@ -325,7 +324,7 @@ class Inventory(SubMode):
 			for row, item in enumerate(inventory):
 				ui.print_line(row + 1, 0, '{0} - {1}'.format(
 					chr(ord('a') + row),
-					item.item_type.name,
+					item.name,
 					))
 	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self, game):
@@ -341,7 +340,7 @@ class Equipment(SubMode):
 		game = self.game
 		wielding = game.get_player().wielding
 		if wielding:
-			wielding = wielding.item_type.name
+			wielding = wielding.name
 		ui.print_line(0, 0, 'wielding [a] - {0}'.format(wielding))
 	@EquipmentKeys.bind('a')
 	def wield(self, game):

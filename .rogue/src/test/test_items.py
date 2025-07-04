@@ -13,7 +13,6 @@ from . import mock_dungeon
 class MockItem(items.Item):
 	name = 'name'
 	sprite = '!'
-	effect = items.Effect.NONE
 
 class TestItems(unittest.TestCase):
 	def should_str_item(self):
@@ -28,7 +27,7 @@ class TestSavefile(unittest.TestCase):
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
 		item = reader.read(items.Item)
-		self.assertEqual(type(item.item_type), mock_dungeon.MockGame.ITEMS['name'])
+		self.assertEqual(type(item), mock_dungeon.MockGame.ITEMS['name'])
 	def should_save_item(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, Version.CURRENT)
@@ -41,7 +40,7 @@ class TestSavefile(unittest.TestCase):
 		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
 		reader.set_meta_info('ItemClass', items.Item)
 		pos, item = reader.read(items.ItemAtPos)
-		self.assertEqual(type(item.item_type), mock_dungeon.MockGame.ITEMS['name'])
+		self.assertEqual(type(item), mock_dungeon.MockGame.ITEMS['name'])
 		self.assertEqual(pos, Point(1, 1))
 	def should_save_item_at_pos(self):
 		stream = StringIO()

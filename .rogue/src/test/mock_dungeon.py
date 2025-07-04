@@ -14,7 +14,7 @@ class Name(monsters.Monster):
 			(2, 'potion'),
 			]
 
-class Player(monsters.Monster):
+class Player(game.Player):
 	_name = 'player'
 	_sprite = '@'
 	max_hp = 10
@@ -28,7 +28,30 @@ class Monster(monsters.Monster):
 	vision = 10
 	drops = None
 
-class Thief(monsters.Monster):
+class AngryMonster(monsters.Angry):
+	_name = 'monster'
+	_sprite = 'M'
+	max_hp = 3
+	vision = 10
+	drops = None
+
+class InertMonster(monsters.Inert):
+	_name = 'monster'
+	_sprite = 'M'
+	max_hp = 3
+	vision = 10
+	drops = None
+
+class DummyThief(monsters.Monster):
+	_name = 'thief'
+	_sprite = 'T'
+	max_hp = 3
+	vision = 10
+	drops = [
+			(1, 'money'),
+			]
+
+class Thief(monsters.Angry):
 	_name = 'thief'
 	_sprite = 'T'
 	max_hp = 3
@@ -45,10 +68,11 @@ class Potion(items.Item):
 	_name = 'potion'
 	_sprite = '!'
 
-class HealingPotion(items.Item):
+class HealingPotion(items.Item, items.Consumable):
 	_name = 'healing potion'
 	_sprite = '!'
-	effect = items.Effect.HEALING
+	def apply_effect(self, game, monster):
+		game.affect_health(monster, +5)
 
 class Money(items.Item):
 	_name = 'money'
@@ -187,8 +211,17 @@ class MockMapping:
 	def monster(pos,*data):
 		return Monster(*(data + (pos,)))
 	@staticmethod
+	def angry_monster(pos,*data):
+		return AngryMonster(*(data + (pos,)))
+	@staticmethod
+	def inert_monster(pos,*data):
+		return InertMonster(*(data + (pos,)))
+	@staticmethod
 	def thief(pos,*data):
 		return Thief(*(data + (pos,)))
+	@staticmethod
+	def dummy_thief(pos,*data):
+		return DummyThief(*(data + (pos,)))
 	@staticmethod
 	def potion(*data):
 		return Potion(*data)
@@ -211,7 +244,7 @@ class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
 		####################
 		"""
 	PASSABLE = ('.',)
-	MONSTER = ('thief', monsters.Behavior.ANGRY)
+	MONSTER = ('thief',)
 
 class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
 	Mapping = MockMapping
@@ -228,7 +261,7 @@ class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
 		####################
 		"""
 	PASSABLE = ('.',)
-	MONSTER = ('monster', monsters.Behavior.ANGRY)
+	MONSTER = ('angry_monster',)
 
 class _MockBuilder_PotionsLyingAround(settlers.CustomSettler):
 	Mapping = MockMapping
@@ -264,7 +297,7 @@ class _MockBuilder_MockSettler(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-			(Point(2, 5), 'monster', monsters.Behavior.DUMMY),
+			(Point(2, 5), 'monster',),
 			]
 	ITEMS = [
 			(Point(10, 6), 'potion'),
@@ -300,8 +333,8 @@ class _MockBuilder_NowYouSeeMe(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-		(Point(1, 1), 'monster', monsters.Behavior.DUMMY),
-		(Point(1, 6), 'monster', monsters.Behavior.DUMMY),
+		(Point(1, 1), 'monster',),
+		(Point(1, 6), 'monster',),
 		]
 
 class _MockMiniRogueBuilderUnSettler(settlers.CustomSettler):
@@ -338,8 +371,8 @@ class _MockBuilder_MonstersOnTopOfItems(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-		(Point(1, 1), 'monster', monsters.Behavior.DUMMY),
-		(Point(1, 6), 'monster', monsters.Behavior.DUMMY),
+		(Point(1, 1), 'monster',),
+		(Point(1, 6), 'monster',),
 		]
 	ITEMS = [
 		(Point(2, 6), 'potion'),
@@ -361,7 +394,7 @@ class _MockBuilder_CloseMonster(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-		(Point(10, 6), 'monster', monsters.Behavior.DUMMY),
+		(Point(10, 6), 'monster',),
 		]
 
 class _MockBuilder_CloseThief(settlers.CustomSettler):
@@ -379,7 +412,7 @@ class _MockBuilder_CloseThief(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-		(Point(10, 6), 'thief', monsters.Behavior.DUMMY),
+		(Point(10, 6), 'dummy_thief'),
 		]
 
 class _MockBuilder_CloseInertMonster(settlers.CustomSettler):
@@ -397,7 +430,7 @@ class _MockBuilder_CloseInertMonster(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-		(Point(10, 6), 'monster', monsters.Behavior.INERT),
+		(Point(10, 6), 'inert_monster',),
 		]
 
 class _MockBuilder_CloseAngryMonster(settlers.CustomSettler):
@@ -415,7 +448,7 @@ class _MockBuilder_CloseAngryMonster(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-		(Point(11, 6), 'monster', monsters.Behavior.ANGRY),
+		(Point(11, 6), 'angry_monster',),
 		]
 
 class _MockBuilder_CloseAngryMonster2(settlers.CustomSettler):
@@ -433,7 +466,7 @@ class _MockBuilder_CloseAngryMonster2(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-		(Point(4, 4), 'monster', monsters.Behavior.ANGRY),
+		(Point(4, 4), 'angry_monster',),
 		]
 
 class _MockBuilder_FightingGround(settlers.CustomSettler):
@@ -451,8 +484,8 @@ class _MockBuilder_FightingGround(settlers.CustomSettler):
 		####################
 		"""
 	MONSTERS = [
-		(Point(10, 6), 'monster', monsters.Behavior.DUMMY),
-		(Point(9, 4), 'monster', monsters.Behavior.INERT),
+		(Point(10, 6), 'monster',),
+		(Point(9, 4), 'inert_monster',),
 		]
 
 def build(dungeon_id):

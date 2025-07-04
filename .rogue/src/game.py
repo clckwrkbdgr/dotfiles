@@ -4,7 +4,6 @@ from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
-from .defs import Action
 from . import monsters, items, terrain
 from . import engine
 from .engine.events import Event
@@ -46,6 +45,9 @@ class EquipItemEvent(Event):
 class UnequipItemEvent(Event):
 	""" Unequips item. """
 	FIELDS = 'actor item'
+
+class Player(monsters.Monster):
+	pass
 
 class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	@staticmethod
@@ -113,7 +115,7 @@ class Game(engine.Game):
 
 		legacy_player = None
 		if reader.version <= Version.MONSTERS:
-			legacy_player = self.SPECIES['Player'](monsters.Behavior.PLAYER, reader.read_point())
+			legacy_player = self.SPECIES['Player'](reader.read_point())
 		self.exit_pos = reader.read_point()
 		self.remembered_exit = reader.read_bool()
 
@@ -155,7 +157,7 @@ class Game(engine.Game):
 		self.player_turn = False
 		if not self.player_turn:
 			for monster in self.monsters:
-				if monster.behavior == monsters.Behavior.PLAYER:
+				if isinstance(monster, Player):
 					continue
 				self._perform_monster_actions(monster)
 			self.player_turn = True
@@ -174,21 +176,7 @@ class Game(engine.Game):
 		pass
 	def _perform_monster_actions(self, monster):
 		""" Controller for monster actions (depends on behavior). """
-		if monster.behavior == monsters.Behavior.DUMMY:
-			pass
-		elif monster.behavior == monsters.Behavior.INERT:
-			if self.get_player():
-				if clckwrkbdgr.math.distance(monster.pos, self.get_player().pos) == 1:
-					self.attack(monster, self.get_player())
-		elif monster.behavior == monsters.Behavior.ANGRY:
-			if self.get_player():
-				if clckwrkbdgr.math.distance(monster.pos, self.get_player().pos) == 1:
-					self.attack(monster, self.get_player())
-				elif clckwrkbdgr.math.distance(monster.pos, self.get_player().pos) <= monster.species.vision:
-					is_transparent = lambda p: self.is_transparent_to_monster(p, monster)
-					if clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(monster.pos, self.get_player().pos, is_transparent):
-						direction = Direction.from_points(monster.pos, self.get_player().pos)
-						self.move(monster, direction)
+		monster.perform_action(self)
 	def get_viewport(self):
 		""" Returns current viewport size (for UI purposes). """
 		return self.strata.size
@@ -222,9 +210,9 @@ class Game(engine.Game):
 		cell, objects, items, monsters = cell_info
 		if self.god.vision or self.field_of_view.is_visible(pos.x, pos.y):
 			if monsters:
-				return monsters[-1].species.sprite
+				return monsters[-1].sprite
 			if items:
-				return items[-1].item_type.sprite
+				return items[-1].sprite
 			if objects:
 				return '>'
 			return cell.terrain.sprite
@@ -299,7 +287,7 @@ class Game(engine.Game):
 		if player:
 			player.pos = start_pos
 		else:
-			player = self.SPECIES['Player'](monsters.Behavior.PLAYER, start_pos)
+			player = self.SPECIES['Player'](start_pos)
 			player.fill_inventory_from_drops(self.rng, self.ITEMS)
 		self.monsters[:] = [player]
 		for monster in settler.make_actors():
@@ -316,7 +304,7 @@ class Game(engine.Game):
 		Log.debug("Dungeon is ready.")
 	def get_player(self):
 		""" Returns player character if exists, or None. """
-		return next((monster for monster in self.monsters if monster.behavior == monsters.Behavior.PLAYER), None)
+		return next((monster for monster in self.monsters if isinstance(monster, Player)), None)
 	def move(self, actor, direction):
 		""" Moves monster into given direction (if possible).
 		If there is a monster, performs attack().
@@ -357,8 +345,8 @@ class Game(engine.Game):
 		if new_hp < 0:
 			new_hp = 0
 			diff = new_hp - target.hp
-		elif new_hp >= target.species.max_hp:
-			new_hp = target.species.max_hp
+		elif new_hp >= target.max_hp:
+			new_hp = target.max_hp
 			diff = new_hp - target.hp
 		target.hp += diff
 		self.fire_event(HealthEvent(target, diff))
@@ -378,7 +366,7 @@ class Game(engine.Game):
 	def iter_actors_at(self, pos, with_player=False):
 		""" Yield all monsters at given cell. """
 		for monster in self.monsters:
-			if not with_player and monster.behavior == monsters.Behavior.PLAYER:
+			if not with_player and isinstance(monster, Player):
 				continue
 			if monster.pos == pos:
 				yield monster
@@ -408,8 +396,8 @@ class Game(engine.Game):
 		assert item in monster.inventory
 		monster.inventory.remove(item)
 		self.fire_event(ConsumeItemEvent(monster, item))
-		if item.item_type.effect == items.Effect.HEALING:
-			self.affect_health(monster, +5)
+		if isinstance(item, items.Consumable):
+			item.apply_effect(self, monster)
 	def drop_item(self, monster, item):
 		""" Drops item from inventory (item is removed).
 		Produces events.

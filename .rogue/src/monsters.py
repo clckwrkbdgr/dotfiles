@@ -1,14 +1,8 @@
 from .defs import *
-from clckwrkbdgr.collections import DocstringEnum as Enum
 from . import items
 from .engine import actors
-
-class Behavior(Enum):
-	""" PLAYER
-	DUMMY
-	INERT
-	ANGRY
-	"""
+import clckwrkbdgr.math
+from clckwrkbdgr.math import Direction
 
 class Species(actors.Monster):
 	""" Basic fixed stats shared by monsters of the same species.
@@ -23,10 +17,8 @@ class Species(actors.Monster):
 
 class Monster(Species):
 	""" Base for every living being (including player). """
-	def __init__(self, behavior, pos):
+	def __init__(self, pos):
 		super(Monster, self).__init__(pos)
-		self.species = self
-		self.behavior = behavior
 		self.hp = self.max_hp
 		self.inventory = []
 		self.wielding = None
@@ -36,15 +28,8 @@ class Monster(Species):
 	def load(cls, reader):
 		species_name = reader.read()
 		species = reader.get_meta_info('SPECIES')[species_name]
-		if reader.version > Version.MONSTER_BEHAVIOR:
-			behavior = reader.read_int()
-		else:
-			if species_name == 'player':
-				behavior = Behavior.PLAYER
-			else:
-				behavior = Behavior.DUMMY
 		pos = reader.read_point()
-		monster = species(behavior, pos)
+		monster = species(pos)
 		monster.hp = reader.read_int()
 		if reader.version > Version.INVENTORY:
 			monster.inventory.extend(reader.read_list(items.Item))
@@ -57,7 +42,6 @@ class Monster(Species):
 		return monster
 	def save(self, writer):
 		writer.write(type(self).__name__)
-		writer.write(self.behavior)
 		writer.write(self.pos)
 		writer.write(self.hp)
 		writer.write(self.inventory)
@@ -87,3 +71,26 @@ class Monster(Species):
 		return type(self) == type(other) \
 				and self.pos == other.pos \
 				and self.hp == other.hp
+	def perform_action(self, game):
+		pass
+
+class Angry(Monster):
+	def perform_action(self, game):
+		player = game.get_player()
+		if not player: # pragma: no cover
+			return
+		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
+			game.attack(self, player)
+		elif clckwrkbdgr.math.distance(self.pos, player.pos) <= self.vision:
+			is_transparent = lambda p: game.is_transparent_to_monster(p, self)
+			if clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(self.pos, player.pos, is_transparent):
+				direction = Direction.from_points(self.pos, player.pos)
+				game.move(self, direction)
+
+class Inert(Monster):
+	def perform_action(self, game):
+		player = game.get_player()
+		if not player: # pragma: no cover
+			return
+		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
+			game.attack(self, player)

@@ -434,9 +434,9 @@ class TestSquatters(unittest.TestCase):
 				slime = staticmethod(lambda pos,*data: ('slime',) + data + (pos,))
 				healing_potion = staticmethod(lambda *data: ('healing potion',) + data)
 			MONSTERS = [
-					('plant', monsters.Behavior.DUMMY),
-					('slime', monsters.Behavior.INERT),
-					('rodent', monsters.Behavior.ANGRY),
+					('plant',),
+					('slime',),
+					('rodent',),
 					]
 			ITEMS = [
 					('healing_potion',),
@@ -450,12 +450,12 @@ class TestSquatters(unittest.TestCase):
 
 		self.maxDiff = None
 		self.assertEqual(sorted(_monsters), sorted([
-			('rodent', 3, Point(59, 18)),
-			('plant', 1,  Point(68, 12)),
-			('rodent', 3, Point(33, 9)),
-			('plant', 1,  Point(34, 11)),
-			('rodent', 3, Point(9, 19)),
-			('plant', 1,  Point(65, 11))
+			('rodent', Point(59, 18)),
+			('plant',  Point(68, 12)),
+			('rodent', Point(33, 9)),
+			('plant',  Point(34, 11)),
+			('rodent', Point(9, 19)),
+			('plant',  Point(65, 11))
 			]))
 		self.assertEqual(sorted(_items), sorted([
 			items_module.ItemAtPos(Point(31, 19), ('healing potion',)),
@@ -470,9 +470,9 @@ class TestSquatters(unittest.TestCase):
 				slime = staticmethod(lambda pos,*data: ('slime',) + data + (pos,))
 				healing_potion = staticmethod(lambda *data: ('healing potion',) + data)
 			MONSTERS = [
-					(1, ('plant', monsters.Behavior.DUMMY)),
-					(5, ('slime', monsters.Behavior.INERT)),
-					(10, ('rodent', monsters.Behavior.ANGRY)),
+					(1, ('plant',)),
+					(5, ('slime',)),
+					(10, ('rodent',)),
 					]
 			ITEMS = [
 					(1, ('healing_potion',)),
@@ -486,12 +486,12 @@ class TestSquatters(unittest.TestCase):
 
 		self.maxDiff = None
 		self.assertEqual(sorted(_monsters), sorted([
-			('rodent', 3, Point(59, 18)),
-			('slime', 2,  Point(68, 12)),
-			('rodent', 3, Point(33, 9)),
-			('slime', 2,  Point(34, 11)),
-			('rodent', 3, Point(9, 19)),
-			('slime', 2,  Point(65, 11))
+			('rodent', Point(59, 18)),
+			('slime',  Point(68, 12)),
+			('rodent', Point(33, 9)),
+			('slime',  Point(34, 11)),
+			('rodent', Point(9, 19)),
+			('slime',  Point(65, 11))
 			]))
 		self.assertEqual(sorted(_items), sorted([
 			items_module.ItemAtPos(Point(61, 3), ('healing potion',)),

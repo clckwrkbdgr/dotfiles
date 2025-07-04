@@ -10,15 +10,15 @@ import clckwrkbdgr.serialize.stream
 
 class DungeonSquatters(src.pcg.WeightedSquatters):
 	MONSTERS = [
-			(1, ('plant', src.monsters.Behavior.DUMMY)),
-			(3, ('slime', src.monsters.Behavior.INERT)),
-			(10, ('rodent', src.monsters.Behavior.ANGRY)),
+			(1, ('plant',)),
+			(3, ('slime',)),
+			(10, ('rodent',)),
 			]
 	ITEMS = [
 			(1, ('healing_potion',)),
 			]
 
-class Player(src.monsters.Monster):
+class Player(src.game.Player):
 	_name = 'player'
 	_sprite = '@'
 	max_hp = 10
@@ -42,7 +42,7 @@ class Plant(src.monsters.Monster):
 			(5, 'healing potion'),
 			]
 
-class Slime(src.monsters.Monster):
+class Slime(src.monsters.Inert):
 	_name = 'slime'
 	_sprite = 'o'
 	max_hp = 5
@@ -52,7 +52,7 @@ class Slime(src.monsters.Monster):
 			(1, 'healing potion'),
 			]
 
-class Rodent(src.monsters.Monster):
+class Rodent(src.monsters.Angry):
 	_name = 'rodent'
 	_sprite = 'r'
 	max_hp = 3
@@ -65,12 +65,16 @@ class Rodent(src.monsters.Monster):
 class Potion(src.items.Item):
 	_name = 'potion'
 	_sprite = '!'
-	effect = src.items.Effect.NONE
 
-class HealingPotion(src.items.Item):
+class Healing(object):
+	healing = 0
+	def apply_effect(self, game, monster):
+		game.affect_health(monster, self.healing)
+
+class HealingPotion(src.items.Item, Healing):
 	_name = 'healing potion'
 	_sprite = '!'
-	effect = src.items.Effect.HEALING
+	healing = +5
 
 class Void(src.terrain.Cell):
 	_name = 'void'
