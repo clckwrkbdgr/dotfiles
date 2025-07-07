@@ -35,7 +35,6 @@ MOVEMENT = {
 Sprite = namedtuple('Sprite', 'sprite color')
 
 class Terrain(src.engine.terrain.Terrain):
-	passable = True
 	def save(self, stream):
 		stream.write(type(self).__name__)
 	@classmethod
@@ -59,7 +58,7 @@ class Plant(Terrain):
 	_sprite = Sprite('"', 'green')
 class Rock(Terrain):
 	_sprite = Sprite('^', 'yellow')
-	passable = False
+	_passable = False
 class Sand(Terrain):
 	_sprite = Sprite('.', 'bold_yellow')
 class Snow(Terrain):
@@ -74,7 +73,7 @@ class Floor(Terrain):
 	_sprite = Sprite('.', 'white')
 class Wall(Terrain):
 	_sprite = Sprite('#', 'white')
-	passable = False
+	_passable = False
 
 class Monster(src.engine.actors.Monster):
 	max_hp = None

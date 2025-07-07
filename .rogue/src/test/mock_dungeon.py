@@ -96,56 +96,56 @@ class NameTerrain(terrain.Cell):
 class Space(terrain.Cell):
 	_name = ' '
 	_sprite = ' '
-	passable = False
+	_passable = False
 class Wall(terrain.Cell):
 	_name = '#'
 	_sprite = "#"
-	passable = False
-	remembered='#'
+	_passable = False
+	_remembered='#'
 class Floor(terrain.Cell):
 	_name = '.'
 	_sprite = "."
-	passable = True
+	_passable = True
 class Water(terrain.Cell):
 	_name = '~'
 	_sprite = "."
-	passable = True
-	allow_diagonal=False
+	_passable = True
+	_allow_diagonal=False
 class NonDiagonalWall(terrain.Cell):
 	_name = '#'
 	_sprite = "#"
-	passable = True
-	remembered='#'
-	allow_diagonal=False
-	dark=True
+	_passable = True
+	_remembered='#'
+	_allow_diagonal=False
+	_dark=True
 class NonDiagonalOblivionWall(terrain.Cell):
 	_name = '#'
 	_sprite = "#"
-	passable = True
-	allow_diagonal=False
-	dark=True
+	_passable = True
+	_allow_diagonal=False
+	_dark=True
 class Corner(terrain.Cell):
 	_name = '+'
 	_sprite = "+"
-	passable = False
-	remembered='+'
+	_passable = False
+	_remembered='+'
 class WallH(terrain.Cell):
 	_name = '-'
 	_sprite = "-"
-	passable = False
-	remembered='-'
+	_passable = False
+	_remembered='-'
 class WallV(terrain.Cell):
 	_name = '|'
 	_sprite = "|"
-	passable = False
-	remembered='|'
+	_passable = False
+	_remembered='|'
 class DarkFloor(terrain.Cell):
 	_name = '^'
 	_sprite = "^"
-	passable = True
-	remembered='^'
-	allow_diagonal=False
-	dark=True
+	_passable = True
+	_remembered='^'
+	_allow_diagonal=False
+	_dark=True
 
 class MockGame(game.Game):
 	SPECIES = {
