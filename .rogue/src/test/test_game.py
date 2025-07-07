@@ -921,17 +921,29 @@ class TestGameSerialization(AbstractTestDungeon):
 	def should_deserialize_game_before_monsters(self):
 		dungeon = self.dungeon = mock_dungeon.build('mock settler')
 		dump = [
-			9, 6, 10, 1, 0, 20, 10,
-			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '.',1, '#',0, '.',0, '#',0, '#',1, '.',0, '.',0, '.',1, '.',1, '.',1, '.',0, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '#',0, '.',0, '.',1, '#',1, '.',0, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '#',1, '.',1, '.',1, '#',1, '#',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',1,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
+			9, 6, 10, 1, 0,
+			20, 10,
+			'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '#', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '#', '.', '.', '#', '#', '.', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+			20, 10,
+			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0,
+			0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
 			]
 		dump = [str(game.Version.MONSTERS), str(dungeon.rng.seed)] + list(map(str, dump))
 		restored_dungeon = MockGame()
@@ -944,22 +956,34 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
+			self.assertEqual(dungeon.visited.cell(pos), restored_dungeon.visited.cell(pos), str(pos))
 		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
 	def should_deserialize_game_before_behavior(self):
 		dungeon = self.dungeon = mock_dungeon.build('mock settler')
 		dump = [
-			10, 1, 0, 20, 10,
-			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '.',1, '#',0, '.',0, '#',0, '#',1, '.',0, '.',0, '.',1, '.',1, '.',1, '.',0, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '#',0, '.',0, '.',1, '#',1, '.',0, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '#',1, '.',1, '.',1, '#',1, '#',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',1,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
+			10, 1, 0,
+			20, 10,
+			'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '#', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '#', '.', '.', '#', '#', '.', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+			20, 10,
+			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0,
+			0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
 			2,
 				'player', 9, 6, 10, 
 				'monster', 2, 5, 3, 
@@ -973,7 +997,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
+			self.assertEqual(dungeon.visited.cell(pos), restored_dungeon.visited.cell(pos), str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
 			self.assertEqual(monster.name, restored_monster.name)
@@ -983,17 +1007,29 @@ class TestGameSerialization(AbstractTestDungeon):
 	def should_deserialize_game_before_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('mock settler')
 		dump = [
-			10, 1, 0, 20, 10,
-			'#',0, '#',0, '#',0, '#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',0, '#',1, '#',0, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '.',1, '#',0, '.',0, '#',0, '#',1, '.',0, '.',0, '.',1, '.',1, '.',1, '.',0, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '.',0, '.',1, '.',1, '.',1, '#',0, '.',0, '.',1, '#',1, '.',0, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '#',1, '.',1, '.',1, '#',1, '#',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '.',0, '.',0, '.',0, '.',0, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',1,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '.',1, '#',0,
-			'#',0, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',1, '#',0, '#',0,
+			10, 1, 0,
+			20, 10,
+			'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '#', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '#', '.', '.', '#', '#', '.', '#', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#',
+			'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+			20, 10,
+			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0,
+			0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
 			2,
 				'player', 9, 6, 10, 
 				'monster', 2, 5, 3, 
@@ -1011,7 +1047,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
+			self.assertEqual(dungeon.visited.cell(pos), restored_dungeon.visited.cell(pos), str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
 			self.assertEqual(monster.name, restored_monster.name)
@@ -1027,17 +1063,30 @@ class TestGameSerialization(AbstractTestDungeon):
 		Wall = mock_dungeon.MockGame.TERRAIN['Wall'].__name__
 		Floor = mock_dungeon.MockGame.TERRAIN['Floor'].__name__
 		self.assertEqual(dump, list(map(str, [1406932606,
-			10, 1, 0, 20, 10,
-			Wall,0, Wall,0, Wall,0, Wall,0, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,0, Wall,0, Wall,0, Wall,0, Wall,0, Wall,0, Wall,0, Wall,0, Wall,1, Wall,0, Wall,0,
-			Wall,0, Floor,0, Floor,0, Floor,0, Floor,0, Floor,1, Floor,1, Floor,1, Floor,1, Wall,0, Floor,0, Wall,0, Wall,1, Floor,0, Floor,0, Floor,1, Floor,1, Floor,1, Floor,0, Wall,0,
-			Wall,0, Floor,0, Floor,0, Floor,0, Floor,0, Floor,0, Floor,1, Floor,1, Floor,1, Wall,0, Floor,0, Floor,1, Wall,1, Floor,0, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Wall,0,
-			Wall,0, Floor,0, Floor,0, Floor,0, Floor,0, Wall,1, Wall,1, Floor,1, Floor,1, Wall,1, Wall,1, Floor,1, Wall,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Wall,0,
-			Wall,0, Floor,0, Floor,0, Floor,0, Floor,0, Wall,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Wall,0,
-			Wall,1, Floor,1, Floor,1, Floor,1, Floor,1, Wall,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Wall,0,
-			Wall,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Wall,1,
-			Wall,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Wall,0,
-			Wall,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Floor,1, Wall,0,
-			Wall,0, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,1, Wall,0, Wall,0,
+			10, 1, 0,
+			20, 10,
+			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall, Floor, Wall, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall, Floor, Floor, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Wall, Wall, Floor, Floor, Wall, Wall, Floor, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
+			20, 10,
+			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0,
+			0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+
 			2,
 				'Player', 9, 6, 10, 0, 0,
 				'Monster', 2, 5, 3, 0, 0,
@@ -1058,7 +1107,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(dungeon.strata.cell(pos).terrain.sprite, restored_dungeon.strata.cell(pos).terrain.sprite, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos).terrain.passable, restored_dungeon.strata.cell(pos).terrain.passable, str(pos))
 			self.assertEqual(dungeon.strata.cell(pos).terrain.remembered, restored_dungeon.strata.cell(pos).terrain.remembered, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos).visited, restored_dungeon.strata.cell(pos).visited, str(pos))
+			self.assertEqual(dungeon.visited.cell(pos), restored_dungeon.visited.cell(pos), str(pos))
 		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
 		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
 			self.assertEqual(monster.name, restored_monster.name)

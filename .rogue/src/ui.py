@@ -90,7 +90,7 @@ class MainGame(SubMode):
 					sprite = cell.terrain.sprite
 			elif objects and game.remembered_exit:
 				sprite = '>'
-			elif cell.visited and cell.terrain.remembered:
+			elif game.visited.cell(pos) and cell.terrain.remembered:
 				sprite = cell.terrain.remembered
 			ui.print_char(pos.x, 1+pos.y, sprite or ' ')
 

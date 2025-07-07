@@ -50,6 +50,11 @@ class Player(monsters.Monster):
 	pass
 
 class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
+	def __init__(self, *args, **kwargs):
+		if kwargs.get('visited'):
+			self.visited = kwargs.get('visited')
+			del kwargs['visited']
+		super(Pathfinder, self).__init__(*args, **kwargs)
 	@staticmethod
 	def allow_movement_direction(strata, from_point, to_point):
 		""" Returns True, if current map allows direct movement from point to point. """
@@ -63,7 +68,7 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 			return False
 		return True
 	def is_passable(self, p, from_point):
-		return self.matrix.cell(p).terrain.passable and self.matrix.cell(p).visited and self.allow_movement_direction(self.matrix, from_point, p)
+		return self.matrix.cell(p).terrain.passable and self.visited.cell(p) and self.allow_movement_direction(self.matrix, from_point, p)
 
 class Game(engine.Game):
 	""" Main game object.
@@ -124,6 +129,7 @@ class Game(engine.Game):
 		reader.set_meta_info('TERRAIN', self.TERRAIN)
 		reader.set_meta_info('ItemClass', items.Item)
 		self.strata = reader.read_matrix(terrain.Cell)
+		self.visited = reader.read_matrix(lambda c:c=='1')
 		if legacy_player:
 			self.monsters.append(legacy_player)
 		if reader.version > Version.MONSTERS:
@@ -141,6 +147,7 @@ class Game(engine.Game):
 		writer.write(self.exit_pos)
 		writer.write(self.remembered_exit)
 		writer.write(self.strata)
+		writer.write(self.visited)
 		writer.write(self.monsters)
 		writer.write(self.items)
 	def is_finished(self):
@@ -219,7 +226,7 @@ class Game(engine.Game):
 		if objects:
 			if self.remembered_exit:
 				return '>'
-		if cell.visited and cell.terrain.remembered:
+		if self.visited.cell(pos) and cell.terrain.remembered:
 			return cell.terrain.remembered
 		return None
 	def is_transparent_to_monster(self, p, monster):
@@ -258,11 +265,11 @@ class Game(engine.Game):
 					self.fire_event(DiscoverEvent(item))
 				current_visible_items.append(item)
 
-			if cell.visited:
+			if self.visited.cell(p):
 				continue
 			for appliance in self.iter_appliances_at(p):
 				self.fire_event(DiscoverEvent(appliance))
-			cell.visited = True
+			self.visited.set_cell(p, True)
 		self.visible_monsters = current_visible_monsters
 		self.visible_items = current_visible_items
 		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
@@ -280,6 +287,7 @@ class Game(engine.Game):
 		Log.debug("Populating dungeon: {0}".format(settler))
 		builder.generate()
 		self.strata = builder.make_grid()
+		self.visited = Matrix(self.strata.size, False)
 
 		appliances = list(builder.make_appliances())
 		start_pos = next(_pos for _pos, _name in appliances if _name == 'start')
@@ -444,7 +452,7 @@ class Game(engine.Game):
 		""" Find free path from start and until find_target() returns suitable target.
 		Otherwise return None.
 		"""
-		wave = Pathfinder(self.strata)
+		wave = Pathfinder(self.strata, visited=self.visited)
 		path = wave.run(start, find_target)
 		if not path:
 			return None
@@ -473,7 +481,7 @@ class Game(engine.Game):
 		path = self.find_path(self.get_player().pos,
 			find_target=lambda wave: next((target for target in sorted(wave)
 			if any(
-				not self.strata.cell(p).visited
+				not self.visited.cell(p)
 				for p in clckwrkbdgr.math.get_neighbours(self.strata, target, with_diagonal=True)
 				)
 			), None),
