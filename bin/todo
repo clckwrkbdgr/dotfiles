@@ -112,36 +112,35 @@ def sync_tasks(config):
 def list_tasks(config, verbose=False):
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
-	prefixes = (
-			termcolor.colored('x', 'blue', 'on_blue'),
-			termcolor.colored('+', 'yellow', 'on_yellow'),
-			)
-	group_index = 0
 	for item in tasklist.list_all(with_groups=True):
-		group_index = 1 - group_index
 		if utils.is_collection(item):
 			for index, subtask in enumerate(item):
-				print_single_task(subtask, verbose=verbose, prefix=prefixes[group_index])
+				print_single_task(subtask, verbose=verbose, underline=(index==len(item)-1))
 		else:
-			print_single_task(item, verbose=verbose, prefix=prefixes[group_index])
+			print_single_task(item, verbose=verbose, underline=True)
 
-def print_single_task(task, verbose=False, prefix=None):
+def print_single_task(task, verbose=False, underline=False):
 	priority_color = 'green'
 	if task.priority.urgent and task.priority.important:
 		priority_color = 'red'
 	elif task.priority.urgent or task.priority.important:
 		priority_color = 'yellow'
-	priority = '{1}{0}{2} '.format(
-			termcolor.colored(str(task.priority), priority_color),
-			termcolor.colored('[', priority_color),
-			termcolor.colored(']', priority_color),
-			) if verbose else ''
-	prefix = '{0} '.format(prefix) if prefix else ''
-	tags = (' ' + termcolor.colored(''.join('[{}]'.format(tag) for tag in sorted(task.tags)), 'cyan')) if task.tags and verbose else ''
+	attrs = ['underline'] if underline else None
+	_c = lambda _line, _color: termcolor.colored(_line, _color, attrs=attrs)
+	priority = ''.join((
+			_c('[', priority_color),
+			_c(str(task.priority), priority_color),
+			_c(']', priority_color),
+			_c(' ', None)
+			)) if verbose else ''
+	if task.tags and verbose:
+		tags = _c(' ', None) + _(''.join('[{}]'.format(tag) for tag in sorted(task.tags)), 'cyan')
+	else:
+		tags = ''
 	try:
-		print(prefix + priority + str(task) + tags)
+		print(priority + _c(str(task), None) + tags)
 	except UnicodeError:
-		print((prefix + priority + str(task) + tags).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
+		print((priority + str(task) + tags).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 
 @cli.command('sort')
 @click.pass_obj
