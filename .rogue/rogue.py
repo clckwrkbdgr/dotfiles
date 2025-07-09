@@ -18,6 +18,7 @@ from src.engine import builders
 from src.engine import events
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 from src.engine.items import Item
+from src.engine.Terrain import Terrain
 
 SAVEFILE_VERSION = 7
 
@@ -33,14 +34,6 @@ MOVEMENT = {
 		}
 
 Sprite = namedtuple('Sprite', 'sprite color')
-
-class Terrain(src.engine.terrain.Terrain):
-	def save(self, stream):
-		stream.write(type(self).__name__)
-	@classmethod
-	def load(cls, stream):
-		cell_type = stream.read()
-		return globals()[cell_type]()
 
 class Bog(Terrain):
 	_sprite = Sprite('~', 'green')
@@ -447,6 +440,7 @@ class Game(engine.Game):
 		self.world.save(stream)
 		stream.write(self.passed_time)
 	def load(self, stream):
+		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(src.engine.terrain.Terrain)})
 		self.world.load(stream)
 		self.passed_time = stream.read(int)
 	def is_finished(self):

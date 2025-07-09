@@ -4,8 +4,9 @@ from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
-from . import monsters, items, terrain
+from . import monsters, items
 from . import engine
+from .engine.terrain import Terrain
 from .engine.events import Event
 import clckwrkbdgr.math
 
@@ -62,13 +63,13 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 		is_diagonal = abs(shift.x) + abs(shift.y) == 2
 		if not is_diagonal:
 			return True
-		if not strata.cell(from_point).terrain.allow_diagonal:
+		if not strata.cell(from_point).allow_diagonal:
 			return False
-		if not strata.cell(to_point).terrain.allow_diagonal:
+		if not strata.cell(to_point).allow_diagonal:
 			return False
 		return True
 	def is_passable(self, p, from_point):
-		return self.matrix.cell(p).terrain.passable and self.visited.cell(p) and self.allow_movement_direction(self.matrix, from_point, p)
+		return self.matrix.cell(p).passable and self.visited.cell(p) and self.allow_movement_direction(self.matrix, from_point, p)
 
 class Game(engine.Game):
 	""" Main game object.
@@ -126,9 +127,9 @@ class Game(engine.Game):
 
 		reader.set_meta_info('ITEMS', self.ITEMS)
 		reader.set_meta_info('SPECIES', self.SPECIES)
-		reader.set_meta_info('TERRAIN', self.TERRAIN)
+		reader.set_meta_info('Terrain', self.TERRAIN)
 		reader.set_meta_info('ItemClass', items.Item)
-		self.strata = reader.read_matrix(terrain.Cell)
+		self.strata = reader.read_matrix(Terrain)
 		self.visited = reader.read_matrix(lambda c:c=='1')
 		if legacy_player:
 			self.monsters.append(legacy_player)
@@ -222,20 +223,20 @@ class Game(engine.Game):
 				return items[-1].sprite
 			if objects:
 				return '>'
-			return cell.terrain.sprite
+			return cell.sprite
 		if objects:
 			if self.remembered_exit:
 				return '>'
-		if self.visited.cell(pos) and cell.terrain.remembered:
-			return cell.terrain.remembered
+		if self.visited.cell(pos) and cell.remembered:
+			return cell.remembered
 		return None
 	def is_transparent_to_monster(self, p, monster):
 		""" True if cell at position p is transparent/visible to a monster. """
 		if not self.strata.valid(p):
 			return False
-		if not self.strata.cell(p).terrain.passable:
+		if not self.strata.cell(p).passable:
 			return False
-		if self.strata.cell(p).terrain.dark:
+		if self.strata.cell(p).dark:
 			if clckwrkbdgr.math.distance(monster.pos, p) >= 1:
 				return False
 		return True
@@ -327,7 +328,7 @@ class Game(engine.Game):
 		if self.god.noclip:
 			passable = True
 		else:
-			passable = self.strata.cell(new_pos).terrain.passable
+			passable = self.strata.cell(new_pos).passable
 		if not passable:
 			self.fire_event(BumpEvent(actor, new_pos))
 			return False

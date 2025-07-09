@@ -1,8 +1,9 @@
 from clckwrkbdgr.math import Point
 from .. import pcg as builders
 from .. import pcg as settlers
-from .. import terrain, items, monsters
+from .. import items, monsters
 from .. import game
+from ..engine.terrain import Terrain
 
 class Name(monsters.Monster):
 	_name = 'name'
@@ -90,56 +91,56 @@ class Rags(items.Item):
 	_name = 'rags'
 	_sprite = '['
 
-class NameTerrain(terrain.Cell):
+class NameTerrain(Terrain):
 	_name = 'name'
 	_sprite = '.'
-class Space(terrain.Cell):
+class Space(Terrain):
 	_name = ' '
 	_sprite = ' '
 	_passable = False
-class Wall(terrain.Cell):
+class Wall(Terrain):
 	_name = '#'
 	_sprite = "#"
 	_passable = False
 	_remembered='#'
-class Floor(terrain.Cell):
+class Floor(Terrain):
 	_name = '.'
 	_sprite = "."
 	_passable = True
-class Water(terrain.Cell):
+class Water(Terrain):
 	_name = '~'
 	_sprite = "."
 	_passable = True
 	_allow_diagonal=False
-class NonDiagonalWall(terrain.Cell):
+class NonDiagonalWall(Terrain):
 	_name = '#'
 	_sprite = "#"
 	_passable = True
 	_remembered='#'
 	_allow_diagonal=False
 	_dark=True
-class NonDiagonalOblivionWall(terrain.Cell):
+class NonDiagonalOblivionWall(Terrain):
 	_name = '#'
 	_sprite = "#"
 	_passable = True
 	_allow_diagonal=False
 	_dark=True
-class Corner(terrain.Cell):
+class Corner(Terrain):
 	_name = '+'
 	_sprite = "+"
 	_passable = False
 	_remembered='+'
-class WallH(terrain.Cell):
+class WallH(Terrain):
 	_name = '-'
 	_sprite = "-"
 	_passable = False
 	_remembered='-'
-class WallV(terrain.Cell):
+class WallV(Terrain):
 	_name = '|'
 	_sprite = "|"
 	_passable = False
 	_remembered='|'
-class DarkFloor(terrain.Cell):
+class DarkFloor(Terrain):
 	_name = '^'
 	_sprite = "^"
 	_passable = True
