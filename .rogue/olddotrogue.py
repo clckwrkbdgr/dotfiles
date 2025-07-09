@@ -2,7 +2,7 @@ from __future__ import print_function
 import os, sys
 import logging
 Log = logging.getLogger('rogue')
-import src.game, src.items, src.monsters, src.terrain
+import src.game, src.engine.items, src.monsters, src.engine.terrain
 import src.ui
 import src.pcg
 import clckwrkbdgr.fs
@@ -62,7 +62,7 @@ class Rodent(src.monsters.Angry):
 			(1, 'healing potion'),
 			]
 
-class Potion(src.items.Item):
+class Potion(src.engine.items.Item):
 	_name = 'potion'
 	_sprite = '!'
 
@@ -71,69 +71,69 @@ class Healing(src.game.Consumable):
 	def apply_effect(self, game, monster):
 		game.affect_health(monster, self.healing)
 
-class HealingPotion(src.items.Item, Healing):
+class HealingPotion(src.engine.items.Item, Healing):
 	_name = 'healing potion'
 	_sprite = '!'
 	healing = +5
 
-class Void(src.terrain.Cell):
+class Void(src.engine.terrain.Terrain):
 	_name = 'void'
 	_sprite = ' '
 	_passable = False
-class Corner(src.terrain.Cell):
+class Corner(src.engine.terrain.Terrain):
 	_name = 'corner'
 	_sprite = "+"
 	_passable = False
 	_remembered='+'
-class Door(src.terrain.Cell):
+class Door(src.engine.terrain.Terrain):
 	_name = 'door'
 	_sprite = "+"
 	_passable = True
 	_remembered='+'
-class RogueDoor(src.terrain.Cell):
+class RogueDoor(src.engine.terrain.Terrain):
 	_name = 'rogue_door'
 	_sprite = "+"
 	_passable = True
 	_remembered='+'
 	_allow_diagonal=False
 	_dark=True
-class Floor(src.terrain.Cell):
+class Floor(src.engine.terrain.Terrain):
 	_name = 'floor'
 	_sprite = "."
 	_passable = True
-class TunnelFloor(src.terrain.Cell):
+class TunnelFloor(src.engine.terrain.Terrain):
 	_name = 'tunnel_floor'
 	_sprite = "."
 	_passable = True
 	_allow_diagonal=False
-class Passage(src.terrain.Cell):
+class Passage(src.engine.terrain.Terrain):
 	_name = 'passage'
 	_sprite = "#"
 	_passable = True
 	_remembered='#'
-class RoguePassage(src.terrain.Cell):
+class RoguePassage(src.engine.terrain.Terrain):
 	_name = 'rogue_passage'
 	_sprite = "#"
 	_passable = True
 	_remembered='#'
 	_allow_diagonal=False
 	_dark=True
-class Wall(src.terrain.Cell):
+class Wall(src.engine.terrain.Terrain):
 	_name = 'wall'
 	_sprite = '#'
 	_passable = False
 	_remembered='#'
-class WallH(src.terrain.Cell):
+class WallH(src.engine.terrain.Terrain):
 	_name = 'wall_h'
 	_sprite = "-"
 	_passable = False
 	_remembered='-'
-class WallV(src.terrain.Cell):
+class WallV(src.engine.terrain.Terrain):
 	_name = 'wall_v'
 	_sprite = "|"
 	_passable = False
 	_remembered='|'
-class Water(src.terrain.Cell):
+class Water(src.engine.terrain.Terrain):
 	_name = 'water'
 	_sprite = "~"
 	_passable = True
