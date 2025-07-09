@@ -18,7 +18,7 @@ from src.engine import builders
 from src.engine import events
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 from src.engine.items import Item
-from src.engine.Terrain import Terrain
+from src.engine.terrain import Terrain
 
 SAVEFILE_VERSION = 7
 
@@ -80,7 +80,6 @@ class Monster(src.engine.actors.Monster):
 
 		stream.write(len(self.inventory))
 		for item in self.inventory:
-			stream.write(type(item).__name__)
 			item.save(stream)
 	def load(self, stream):
 		pos = stream.read()
@@ -89,9 +88,7 @@ class Monster(src.engine.actors.Monster):
 
 		items = stream.read(int)
 		for _ in range(items):
-			item_type = globals()[stream.read()]
-			item = item_type()
-			item.load(stream)
+			item = stream.read(Item)
 			self.inventory.append(item)
 
 class ColoredMonster(Monster):
@@ -169,6 +166,7 @@ class ColoredSkin(Item):
 		self._sprite = sprite
 		self._name = name
 	def save(self, stream):
+		super(ColoredSkin, self).save(stream)
 		stream.write(self._sprite.sprite)
 		stream.write(self._sprite.color)
 		stream.write(self._name)
@@ -190,9 +188,7 @@ class FieldData:
 	def save(self, stream):
 		stream.write(len(self.items))
 		for item in self.items:
-			stream.write(type(item.item).__name__)
-			item.item.save(stream)
-			stream.write(item.pos)
+			item.save(stream)
 
 		stream.write(len(self.monsters))
 		for monster in self.monsters:
@@ -203,11 +199,7 @@ class FieldData:
 		self = cls()
 		items = stream.read(int)
 		for _ in range(items):
-			item_type = globals()[stream.read()]
-			item = item_type()
-			item.load(stream)
-			pos = stream.read_point()
-			self.items.append(src.engine.items.ItemAtPos(pos, item))
+			self.items.append(stream.read(src.engine.items.ItemAtPos))
 
 		monsters = stream.read(int)
 		for _ in range(monsters):
@@ -441,6 +433,7 @@ class Game(engine.Game):
 		stream.write(self.passed_time)
 	def load(self, stream):
 		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(src.engine.terrain.Terrain)})
+		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(src.engine.items.Item)})
 		self.world.load(stream)
 		self.passed_time = stream.read(int)
 	def is_finished(self):

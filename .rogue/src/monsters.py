@@ -1,5 +1,5 @@
 from .defs import *
-from . import items
+from .engine import items
 from .engine import actors
 import clckwrkbdgr.math
 from clckwrkbdgr.math import Direction
@@ -34,7 +34,7 @@ class Monster(Species):
 		if reader.version > Version.INVENTORY:
 			monster.inventory.extend(reader.read_list(items.Item))
 		else:
-			item_types = reader.get_meta_info('ITEMS')
+			item_types = reader.get_meta_info('Items')
 			from clckwrkbdgr.pcg import RNG
 			monster.fill_inventory_from_drops(RNG(0), item_types)
 		if reader.version > Version.WIELDING:

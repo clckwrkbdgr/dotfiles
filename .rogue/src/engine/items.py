@@ -1,4 +1,6 @@
 from clckwrkbdgr.utils import classfield
+import six
+import inspect
 
 class Item(object):
 	sprite = classfield('_sprite', '?')
@@ -7,6 +9,35 @@ class Item(object):
 		return self.name
 	def __repr__(self):
 		return '{0}({1})'.format(type(self).__name__, self.name)
+
+	@classmethod
+	def load(cls, reader):
+		""" Loads info about Item object (class name), constructs actual instance
+		and optionally loads subclass-specific data.
+		Classes are serialized as their class names, so reader metainfo with key 'Items'
+		should be a dict-like object which stores all required classes under their class names.
+		Subclasses should have default c-tor.
+		Subclasses should override this method as non-classmethod (regular instance method)
+		which loads subclass-specific data only.
+		"""
+		type_name = reader.read()
+		registry = reader.get_meta_info('Items')
+		obj_type = registry[type_name]
+		assert obj_type is cls or issubclass(obj_type, cls)
+		obj = obj_type()
+		if six.PY2: # pragma: no cover -- TODO
+			is_overridden_as_instance_method = obj_type.load.__self__ is not None
+		else: # pragma: no cover -- TODO
+			is_overridden_as_instance_method = inspect.ismethod(obj_type.load)
+		if not is_overridden_as_instance_method:
+			obj.load(reader)
+		return obj
+	def save(self, writer):
+		""" Default implementation writes only class name.
+		Override to write additional subclass-specific properties.
+		Don't forget to call super().save()!
+		"""
+		writer.write(type(self).__name__)
 
 class ItemAtPos(object): # pragma: no cover -- TODO
 	def __init__(self, pos, item):
@@ -26,8 +57,7 @@ class ItemAtPos(object): # pragma: no cover -- TODO
 		return iter((self.pos, self.item))
 	@classmethod
 	def load(cls, reader):
-		item_class = reader.get_meta_info('ItemClass')
-		item = reader.read(item_class)
+		item = reader.read(Item)
 		pos = reader.read_point()
 		return cls(pos, item)
 	def save(self, writer):

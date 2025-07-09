@@ -1,9 +1,10 @@
 from clckwrkbdgr.math import Point
 from .. import pcg as builders
 from .. import pcg as settlers
-from .. import items, monsters
+from .. import monsters
 from .. import game
 from ..engine.terrain import Terrain
+from ..engine import items
 
 class Name(monsters.Monster):
 	_name = 'name'
@@ -69,7 +70,7 @@ class Potion(items.Item):
 	_name = 'potion'
 	_sprite = '!'
 
-class HealingPotion(items.Item, items.Consumable):
+class HealingPotion(items.Item, game.Consumable):
 	_name = 'healing potion'
 	_sprite = '!'
 	def apply_effect(self, game, monster):

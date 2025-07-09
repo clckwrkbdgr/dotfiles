@@ -4,11 +4,16 @@ from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
-from . import monsters, items
+from . import monsters
+from .engine import items
 from . import engine
 from .engine.terrain import Terrain
 from .engine.events import Event
 import clckwrkbdgr.math
+
+class Consumable(object):
+	def apply_effect(self, game, monster): # pragma: no cover
+		raise NotImplementedError()
 
 class DiscoverEvent(Event):
 	""" Something new is discovered on the map! """
@@ -125,7 +130,7 @@ class Game(engine.Game):
 		self.exit_pos = reader.read_point()
 		self.remembered_exit = reader.read_bool()
 
-		reader.set_meta_info('ITEMS', self.ITEMS)
+		reader.set_meta_info('Items', self.ITEMS)
 		reader.set_meta_info('SPECIES', self.SPECIES)
 		reader.set_meta_info('Terrain', self.TERRAIN)
 		reader.set_meta_info('ItemClass', items.Item)
@@ -405,7 +410,7 @@ class Game(engine.Game):
 		assert item in monster.inventory
 		monster.inventory.remove(item)
 		self.fire_event(ConsumeItemEvent(monster, item))
-		if isinstance(item, items.Consumable):
+		if isinstance(item, Consumable):
 			item.apply_effect(self, monster)
 	def drop_item(self, monster, item):
 		""" Drops item from inventory (item is removed).

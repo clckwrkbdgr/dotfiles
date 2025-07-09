@@ -66,7 +66,7 @@ class Potion(src.items.Item):
 	_name = 'potion'
 	_sprite = '!'
 
-class Healing(object):
+class Healing(src.game.Consumable):
 	healing = 0
 	def apply_effect(self, game, monster):
 		game.affect_health(monster, self.healing)

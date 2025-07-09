@@ -8,7 +8,8 @@ except: # pragma: no cover
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from ..pcg import builders
-from .. import monsters, items
+from .. import monsters
+from ..engine import items
 from .. import pcg
 from .. import game
 from .. import ui

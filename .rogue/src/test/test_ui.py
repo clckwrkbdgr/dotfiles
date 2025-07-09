@@ -7,8 +7,6 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 from .. import ui
 from ..ui import MainGame
-from .. import items
-from .. import defs as _base
 from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
 from ..test import mock_dungeon

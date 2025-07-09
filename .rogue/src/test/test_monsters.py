@@ -6,7 +6,7 @@ except: # pragma: no cover
 	from io import StringIO
 from clckwrkbdgr.math import Point
 from .. import monsters
-from .. import items
+from ..engine import items
 from clckwrkbdgr.pcg import RNG
 import clckwrkbdgr.serialize.stream as savefile
 from ..defs import Version
@@ -67,7 +67,7 @@ class TestSavefile(unittest.TestCase):
 		stream = StringIO(str(Version.CURRENT) + '\x00name\x001\x001\x003\x001\x00money\x001\x00weapon')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
-		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
+		reader.set_meta_info('Items', mock_dungeon.MockGame.ITEMS)
 		monster = reader.read(monsters.Monster)
 		self.assertEqual(type(monster), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.pos, Point(1, 1))
@@ -79,7 +79,7 @@ class TestSavefile(unittest.TestCase):
 		stream = StringIO(str(Version.INVENTORY) + '\x00name\x001\x001\x003')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
-		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
+		reader.set_meta_info('Items', mock_dungeon.MockGame.ITEMS)
 		monster = reader.read(monsters.Monster)
 		self.assertEqual(type(monster), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.pos, Point(1, 1))
@@ -90,7 +90,7 @@ class TestSavefile(unittest.TestCase):
 		stream = StringIO(str(Version.WIELDING) + '\x00name\x001\x001\x003\x000')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
-		reader.set_meta_info('ITEMS', mock_dungeon.MockGame.ITEMS)
+		reader.set_meta_info('Items', mock_dungeon.MockGame.ITEMS)
 		monster = reader.read(monsters.Monster)
 		self.assertEqual(type(monster), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.pos, Point(1, 1))
