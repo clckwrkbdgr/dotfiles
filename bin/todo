@@ -16,6 +16,7 @@ import clckwrkbdgr.todo.search
 import clckwrkbdgr.todo.tasklist
 import clckwrkbdgr.fs
 import clckwrkbdgr.logging
+import clckwrkbdgr.text
 from clckwrkbdgr import utils
 
 def format_file_line(filename, line_number, value):
@@ -105,6 +106,50 @@ def sync_tasks(config):
 	ok = tasklist.sync()
 	return ok
 
+class Pager:
+	def __init__(self):
+		self.lines = []
+	def __call__(self, line):
+		self.lines.append(line + '\n')
+	def dump(self):
+		if platform.system() != 'Windows':
+			click.echo_via_pager(self.lines, color=True)
+			return
+		# TODO click._tempfilepager does not parses PAGER="less -R" parameters (-R) on Win.
+		from shutil import which
+		from click._compat import get_best_encoding, strip_ansi, open_stream
+		cmd_parts = os.environ.get('PAGER', '').split()
+		generator = self.lines
+		color = True
+
+		cmd = cmd_parts[0]
+		cmd_params = cmd_parts[1:]
+
+		cmd_filepath = which(cmd)
+		if not cmd_filepath:
+		  return False
+# Resolves symlinks and produces a normalized absolute path string.
+		cmd_path = Path(cmd_filepath).resolve()
+		cmd_name = cmd_path.name
+
+		import subprocess
+		import tempfile
+		fd, filename = tempfile.mkstemp()
+		text = "".join(generator)
+		if not color:
+			 text = strip_ansi(text)
+		encoding = get_best_encoding(sys.stdout)
+		with open_stream(filename, "wb")[0] as f:
+			 f.write(text.encode(encoding))
+		try:
+			 subprocess.call([str(cmd_path)] + cmd_params + [filename])
+		except OSError:
+			 # Command not found
+			 pass
+		finally:
+			 os.close(fd)
+			 os.unlink(filename)
+
 @cli.command('list')
 @click.option('-v', '--verbose', is_flag=True, help='Display priority legend for each task.')
 @click.pass_obj
@@ -112,35 +157,61 @@ def sync_tasks(config):
 def list_tasks(config, verbose=False):
 	tasklist_class = config.tasklist or clckwrkbdgr.todo.tasklist.TaskList
 	tasklist = tasklist_class()
+	entries = []
 	for item in tasklist.list_all(with_groups=True):
 		if utils.is_collection(item):
-			for index, subtask in enumerate(item):
-				print_single_task(subtask, verbose=verbose, underline=(index==len(item)-1))
+			entries.append([format_single_task(subtask, verbose=verbose) for subtask in item])
 		else:
-			print_single_task(item, verbose=verbose, underline=True)
+			entries.append([format_single_task(item, verbose=verbose)])
 
-def print_single_task(task, verbose=False, underline=False):
+	line_size = os.get_terminal_size().columns
+	sep_color = config.todo_separator_color
+	if config.pager:
+		if isinstance(config.pager, str):
+			os.environ['PAGER'] = config.pager
+		printer = Pager()
+	else:
+		printer = print
+	for task_group in entries:
+		lines = []
+		for entry in task_group:
+			lines.extend(clckwrkbdgr.text.word_wrap_colored_text(entry, line_size, subindent=3, pad_last_line=True))
+
+		last_index = len(lines) - 1
+		for index, line in enumerate(lines):
+			print_single_task_line(printer, line, sep_color=sep_color, underline=(index == last_index))
+	if config.pager:
+		printer.dump()
+
+def format_single_task(task, verbose=False):
 	priority_color = 'green'
 	if task.priority.urgent and task.priority.important:
 		priority_color = 'red'
 	elif task.priority.urgent or task.priority.important:
 		priority_color = 'yellow'
-	attrs = ['underline'] if underline else None
-	_c = lambda _line, _color: termcolor.colored(_line, _color, attrs=attrs)
+	_c = lambda _line, _color: termcolor.colored(_line, _color)
 	priority = ''.join((
 			_c('[', priority_color),
 			_c(str(task.priority), priority_color),
 			_c(']', priority_color),
-			_c(' ', None)
+			' ',
 			)) if verbose else ''
 	if task.tags and verbose:
-		tags = _c(' ', None) + _(''.join('[{}]'.format(tag) for tag in sorted(task.tags)), 'cyan')
+		tags = ' ' + _c(''.join('[{}]'.format(tag) for tag in sorted(task.tags)), 'cyan')
 	else:
 		tags = ''
+	task = str(task)
+	return priority + task + tags
+
+def print_single_task_line(printer, line, sep_color=None, underline=False):
+	if underline and sys.stdout.isatty():
+		reset_marker = termcolor.colored('')
+		colored_parts = line.split(reset_marker)
+		line = ''.join(termcolor.colored(part, sep_color, attrs=["underline"]) for part in colored_parts)
 	try:
-		print(priority + _c(str(task), None) + tags)
+		printer(line)
 	except UnicodeError:
-		print((priority + str(task) + tags).encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
+		printer(task.encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 
 @cli.command('sort')
 @click.pass_obj

@@ -1,3 +1,5 @@
+import re
+
 def wrap_lines(lines, width=80, sep=' ', ellipsis="...", force_ellipsis=False, rjust_ellipsis=False):
 	""" Wraps given list of lines into a single line of specified width
 	while they can fit. Parts are separated with sep string.
@@ -155,3 +157,27 @@ def to_braille(text):
 			row_dots[2].extend(c[2])
 		dots.extend(row_dots)
 	return tuple(tuple(row) for row in dots)
+
+def word_wrap_colored_text(text, width, subindent=0, pad_last_line=False): # pragma: no cover -- TODO
+	""" Word wraps text with ANSI colored sequences under given max line width.
+	Optional subindent may be added to the start of each new line.
+	If pad_last_line is True, adds spaces at the end of the last line to the full width,
+	counting real characters (skipping color sequences).
+	"""
+	result = ['']
+	current_line_size = 0
+	for part in re.split(r'(\x1b[^m]*m)', text):
+		if not part:
+			continue
+		if part.startswith('\x1b'):
+			result[-1] += part
+			continue
+		for word in re.split(r'(\w+)', part):
+			if current_line_size + len(word) > width:
+				result.append(' ' * subindent)
+				current_line_size = subindent
+			result[-1] += word
+			current_line_size += len(word)
+	if pad_last_line and current_line_size < width:
+		result[-1] += ' ' * (width - current_line_size)
+	return result

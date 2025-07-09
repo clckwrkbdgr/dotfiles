@@ -190,7 +190,7 @@ class TestConfig(unittest.fs.TestCase):
 	@unittest.mock.patch('importlib.import_module')
 	def should_read_config(self, import_module):
 		config = todo.read_config.__wrapped__()
-		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor'})
+		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor', 'pager', 'todo_separator_color'})
 		self.assertEqual(config.inbox_file, Path("~/.local/share/todo/.INBOX.md").expanduser())
 		self.assertEqual(config.prepend_inbox, False)
 		self.assertEqual(config.editor, ["myeditor"])
@@ -217,7 +217,7 @@ class TestConfig(unittest.fs.TestCase):
 		import_module.side_effect = [ImportError, mock_module]
 
 		config = todo.read_config.__wrapped__()
-		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor'})
+		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor', 'pager', 'todo_separator_color'})
 		self.assertEqual(config.inbox_file, Path("~/myvalue/inbox.txt").expanduser())
 		self.assertEqual(config.prepend_inbox, True)
 		self.assertEqual(config.editor, ["vim", "+cw"])

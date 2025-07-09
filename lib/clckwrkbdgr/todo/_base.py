@@ -108,6 +108,8 @@ Fields:
 - todo_dir: entries in this directory will be used for default built-in task provider (clckwrkbdgr.todo.provider.todo_dir).
 - task_providers: list of entries; each entry should be either Python module or path to Python file. These files should export functions decorated with @clckwrkbdgr.todo.task_provider(...).
 - tasklist: name of fully quialifed Python class; module should be available in sys.path. It will be used instead of default clckwrkbdgr.todo.tasklist.TaskList
+- pager: use pager to display todo list. Either pager, command or bool (in case of True will try to autodetect available pager).
+- todo_separator_color: termcolor-recognizable color name to use for underlines between groups in todo list. Default is autocolor (usually white).
 """
 
 @functools.lru_cache()
@@ -153,8 +155,10 @@ def read_config(config_file=None):
 	return dotdict(
 			inbox_file=Path(os.path.expandvars(data.get('inbox_file', "~/.local/share/todo/.INBOX.md"))).expanduser(),
 			prepend_inbox=bool(data.get('prepend_inbox', False)),
+			pager=data.get('pager', False),
 			editor=list(data.get('editor', [os.environ.get('EDITOR', 'vim')])),
 			todo_dir=Path(os.path.expandvars(data.get('todo_dir', "~/.local/share/todo/"))).expanduser(),
 			task_providers=list(data.get('task_providers', [])),
+			todo_separator_color=data.get('todo_separator_color', None),
 			tasklist=tasklist,
 			)
