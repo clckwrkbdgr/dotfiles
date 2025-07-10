@@ -5,7 +5,7 @@ from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
 from . import monsters
-from .engine import items
+from .engine import items, actors
 from . import engine
 from .engine.terrain import Terrain
 from .engine.events import Event
@@ -131,7 +131,7 @@ class Game(engine.Game):
 		self.remembered_exit = reader.read_bool()
 
 		reader.set_meta_info('Items', self.ITEMS)
-		reader.set_meta_info('SPECIES', self.SPECIES)
+		reader.set_meta_info('Actors', self.SPECIES)
 		reader.set_meta_info('Terrain', self.TERRAIN)
 		reader.set_meta_info('ItemClass', items.Item)
 		self.strata = reader.read_matrix(Terrain)
@@ -139,7 +139,7 @@ class Game(engine.Game):
 		if legacy_player:
 			self.monsters.append(legacy_player)
 		if reader.version > Version.MONSTERS:
-			self.monsters.extend(reader.read_list(monsters.Monster))
+			self.monsters.extend(reader.read_list(actors.Actor))
 		if reader.version > Version.ITEMS:
 			self.items.extend(reader.read_list(items.ItemAtPos))
 

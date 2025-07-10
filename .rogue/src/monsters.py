@@ -24,12 +24,9 @@ class Monster(Species):
 		self.wielding = None
 	def __str__(self):
 		return "{0} @{1} {2}/{3}hp".format(self.name, self.pos, self.hp, self.max_hp)
-	@classmethod
-	def load(cls, reader):
-		species_name = reader.read()
-		species = reader.get_meta_info('SPECIES')[species_name]
-		pos = reader.read_point()
-		monster = species(pos)
+	def load(self, reader):
+		#super(Monster, self).load(reader)
+		monster = self
 		monster.hp = reader.read_int()
 		if reader.version > Version.INVENTORY:
 			monster.inventory.extend(reader.read_list(items.Item))
@@ -41,8 +38,7 @@ class Monster(Species):
 			monster.wielding = reader.read(items.Item, optional=True)
 		return monster
 	def save(self, writer):
-		writer.write(type(self).__name__)
-		writer.write(self.pos)
+		super(Monster, self).save(writer)
 		writer.write(self.hp)
 		writer.write(self.inventory)
 		writer.write(self.wielding, optional=True)

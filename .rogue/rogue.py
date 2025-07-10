@@ -75,21 +75,20 @@ class Monster(src.engine.actors.Monster):
 		self.hp = self.max_hp
 		self.inventory = []
 	def save(self, stream):
-		stream.write(','.join(map(str, self.pos)))
+		super(Monster, self).save(stream)
 		stream.write(self.hp)
 
 		stream.write(len(self.inventory))
 		for item in self.inventory:
 			item.save(stream)
 	def load(self, stream):
-		pos = stream.read()
-		self.pos.x, self.pos.y = map(int, pos.split(','))
 		self.hp = stream.read(int)
 
 		items = stream.read(int)
 		for _ in range(items):
 			item = stream.read(Item)
 			self.inventory.append(item)
+		return self
 
 class ColoredMonster(Monster):
 	def __init__(self, pos, sprite=None, max_hp=None):
@@ -192,7 +191,6 @@ class FieldData:
 
 		stream.write(len(self.monsters))
 		for monster in self.monsters:
-			stream.write(type(monster).__name__)
 			monster.save(stream)
 	@classmethod
 	def load(cls, stream):
@@ -203,10 +201,7 @@ class FieldData:
 
 		monsters = stream.read(int)
 		for _ in range(monsters):
-			monster_type = globals()[stream.read()]
-			monster = monster_type(Point(0, 0))
-			monster.load(stream)
-			self.monsters.append(monster)
+			self.monsters.append(src.engine.actors.Actor.load(stream))
 		return self
 
 class Builder(builders.Builder):
@@ -434,6 +429,7 @@ class Game(engine.Game):
 	def load(self, stream):
 		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(src.engine.terrain.Terrain)})
 		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(src.engine.items.Item)})
+		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(src.engine.actors.Actor)})
 		self.world.load(stream)
 		self.passed_time = stream.read(int)
 	def is_finished(self):

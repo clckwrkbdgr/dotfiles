@@ -11,6 +11,7 @@ from clckwrkbdgr.pcg import RNG
 import clckwrkbdgr.serialize.stream as savefile
 from ..defs import Version
 from . import mock_dungeon
+from ..engine import actors
 
 class MockSpecies(monsters.Monster):
 	name = 'name'
@@ -66,9 +67,9 @@ class TestSavefile(unittest.TestCase):
 	def should_load_monster(self):
 		stream = StringIO(str(Version.CURRENT) + '\x00name\x001\x001\x003\x001\x00money\x001\x00weapon')
 		reader = savefile.Reader(stream)
-		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
+		reader.set_meta_info('Actors', mock_dungeon.MockGame.SPECIES)
 		reader.set_meta_info('Items', mock_dungeon.MockGame.ITEMS)
-		monster = reader.read(monsters.Monster)
+		monster = reader.read(actors.Actor)
 		self.assertEqual(type(monster), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.pos, Point(1, 1))
 		self.assertEqual(monster.hp, 3)
@@ -78,9 +79,9 @@ class TestSavefile(unittest.TestCase):
 	def should_load_monster_without_inventory(self):
 		stream = StringIO(str(Version.INVENTORY) + '\x00name\x001\x001\x003')
 		reader = savefile.Reader(stream)
-		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
+		reader.set_meta_info('Actors', mock_dungeon.MockGame.SPECIES)
 		reader.set_meta_info('Items', mock_dungeon.MockGame.ITEMS)
-		monster = reader.read(monsters.Monster)
+		monster = reader.read(actors.Actor)
 		self.assertEqual(type(monster), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.pos, Point(1, 1))
 		self.assertEqual(monster.hp, 3)
@@ -89,9 +90,9 @@ class TestSavefile(unittest.TestCase):
 	def should_load_monster_without_wielding_equipment(self):
 		stream = StringIO(str(Version.WIELDING) + '\x00name\x001\x001\x003\x000')
 		reader = savefile.Reader(stream)
-		reader.set_meta_info('SPECIES', mock_dungeon.MockGame.SPECIES)
+		reader.set_meta_info('Actors', mock_dungeon.MockGame.SPECIES)
 		reader.set_meta_info('Items', mock_dungeon.MockGame.ITEMS)
-		monster = reader.read(monsters.Monster)
+		monster = reader.read(actors.Actor)
 		self.assertEqual(type(monster), mock_dungeon.MockGame.SPECIES['name'])
 		self.assertEqual(monster.pos, Point(1, 1))
 		self.assertEqual(monster.hp, 3)
