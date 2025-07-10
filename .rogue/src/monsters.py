@@ -16,8 +16,6 @@ class Monster(actors.Monster):
 	def __init__(self, pos):
 		super(Monster, self).__init__(pos)
 		self.wielding = None
-	def __str__(self):
-		return "{0} @{1} {2}/{3}hp".format(self.name, self.pos, self.hp, self.max_hp)
 	def load(self, reader):
 		super(Monster, self).load(reader)
 		monster = self
@@ -27,8 +25,6 @@ class Monster(actors.Monster):
 	def save(self, writer):
 		super(Monster, self).save(writer)
 		writer.write(self.wielding, optional=True)
-	def is_alive(self):
-		return self.hp > 0
 	def _generate_drops(self, rng):
 		from clckwrkbdgr import pcg
 		if not self.drops:

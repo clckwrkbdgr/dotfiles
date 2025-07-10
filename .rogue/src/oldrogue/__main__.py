@@ -87,7 +87,7 @@ class HealingPotion(Item, Consumable):
 	_sprite = "!"
 	_name = "potion"
 	def consume_by(self, who):
-		who.heal(10)
+		who.affect_health(10)
 		return [DrinksHealingPotion(Who=who.name.title())]
 
 make_weapon = MakeEntity(Item, '_sprite _name _attack')

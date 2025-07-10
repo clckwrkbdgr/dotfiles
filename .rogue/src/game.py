@@ -350,14 +350,7 @@ class Game(engine.Game):
 		Removes monsters from the main list, if health is zero.
 		Raises events for health change and death.
 		"""
-		new_hp = target.hp + diff
-		if new_hp < 0:
-			new_hp = 0
-			diff = new_hp - target.hp
-		elif new_hp >= target.max_hp:
-			new_hp = target.max_hp
-			diff = new_hp - target.hp
-		target.hp += diff
+		diff = target.affect_health(diff)
 		self.fire_event(HealthEvent(target, diff))
 		if not target.is_alive():
 			self.fire_event(DeathEvent(target))

@@ -33,7 +33,7 @@ class HazmatSuit(Item, Wearable):
 
 class StimPack(Item, Consumable):
 	def consume_by(self, monster):
-		monster.heal(25)
+		monster.affect_health(25)
 		return []
 
 class SmartStimPack(Item, Consumable):
@@ -73,7 +73,7 @@ class TestMonster(unittest.TestCase):
 	def should_heal(self):
 		jc = UNATCOAgent()
 		jc.hp = 50
-		jc.heal(70)
+		jc.affect_health(70)
 		self.assertEqual(jc.hp, 100)
 	def should_detect_hostiles(self):
 		jc = UNATCOAgent()

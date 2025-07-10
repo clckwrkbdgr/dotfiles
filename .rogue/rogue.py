@@ -21,7 +21,7 @@ from src.engine.items import Item
 from src.engine.terrain import Terrain
 from src.engine.actors import Monster
 
-SAVEFILE_VERSION = 7
+SAVEFILE_VERSION = 8
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -78,9 +78,11 @@ class ColoredMonster(Monster):
 		super(ColoredMonster, self).save(stream)
 		stream.write(self._sprite.sprite)
 		stream.write(self._sprite.color)
+		stream.write(self._max_hp)
 	def load(self, stream):
 		super(ColoredMonster, self).load(stream)
 		self._sprite = Sprite(stream.read(), stream.read())
+		self._max_hp = stream.read_int()
 
 class AggressiveColoredMonster(ColoredMonster):
 	pass
@@ -102,7 +104,7 @@ class Player(Monster):
 		self._max_hp = stream.read(int)
 
 class Dweller(Monster):
-	max_hp = 10
+	_max_hp = 10
 	def __init__(self, pos, color=None):
 		self._sprite = Sprite('@', color)
 		super(Dweller, self).__init__(pos)
@@ -412,7 +414,7 @@ class Game(engine.Game):
 		self.world.load(stream)
 		self.passed_time = stream.read(int)
 	def is_finished(self):
-		return self.get_player().hp <= 0
+		return not self.get_player().is_alive()
 	def generate(self):
 		zone_pos = Point(
 				random.randrange(self.world.cells.size.width),
@@ -715,7 +717,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		self.step_taken = False
 		return True
 	def get_keymapping(self):
-		if self.messages or self.game.get_player().hp <= 0:
+		if self.messages or not self.game.get_player().is_alive():
 			return None
 		return super().get_keymapping()
 	@Keys.bind('S')
@@ -864,9 +866,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				if isinstance(monster, Dweller):
 					self.game.fire_event(Bump('you', 'dweller'))
 				else:
-					monster.hp -= 1
+					monster.affect_health(-1)
 					self.game.fire_event(HitMonster('you', 'monster'))
-					if monster.hp <= 0:
+					if not monster.is_alive():
 						dest_field_data.monsters.remove(monster)
 						self.game.fire_event(MonsterDead('monster'))
 						for item in monster.inventory:
@@ -889,7 +891,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		if isinstance(control, clckwrkbdgr.tui.Key):
 			if self.messages:
 				return True
-			if self.game.get_player().hp <= 0:
+			if not self.game.get_player().is_alive():
 				return False
 		if control == 'quit':
 			return False
@@ -921,9 +923,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					continue
 				monster_pos = monster_coord.get_global(game.world)
 				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-					game.get_player().hp -= 1
+					game.get_player().affect_health(-1)
 					self.game.fire_event(HitMonster('monster', 'you'))
-					if game.get_player().hp <= 0:
+					if not game.get_player().is_alive():
 						self.game.fire_event(MonsterDead('you'))
 				elif isinstance(monster, AggressiveColoredMonster) and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
 					shift = Point(

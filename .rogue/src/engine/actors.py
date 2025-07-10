@@ -58,6 +58,8 @@ class Monster(Actor):
 		super(Monster, self).__init__(pos)
 		self.hp = self.max_hp
 		self.inventory = []
+	def __repr__(self):
+		return '{0}({1} @{2} {3}/{4}hp)'.format(type(self).__name__, self.name, self.pos, self.hp, self.max_hp)
 	def save(self, stream):
 		super(Monster, self).save(stream)
 		stream.write(self.hp)
@@ -73,3 +75,19 @@ class Monster(Actor):
 			item = stream.read(items.Item)
 			self.inventory.append(item)
 		return self
+
+	def is_alive(self):
+		return self.hp > 0
+	def affect_health(self, diff):
+		""" Increase or decrease health by specified amount, but keeps within ranger [0; max_hp].
+		Returns actually applied diff.
+		"""
+		new_hp = self.hp + diff
+		if new_hp < 0:
+			new_hp = 0
+			diff = new_hp - self.hp
+		elif new_hp >= self.max_hp:
+			new_hp = self.max_hp
+			diff = new_hp - self.hp
+		self.hp += diff
+		return diff

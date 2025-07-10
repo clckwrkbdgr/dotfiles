@@ -35,9 +35,6 @@ class MockSpeciesWithPoorDrops(MockSpecies):
 			]
 
 class TestMonsters(unittest.TestCase):
-	def should_str_monster(self):
-		monster = MockSpecies(Point(1, 1))
-		self.assertEqual(str(monster), 'name @[1, 1] 100/100hp')
 	def should_not_drop_items(self):
 		rng = RNG(0)
 		monster = MockSpecies(Point(1, 1))

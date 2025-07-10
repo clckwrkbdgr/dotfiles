@@ -102,12 +102,6 @@ class Monster(actors.Monster):
 			if isinstance(other, monster_class):
 				return True
 		return False
-	def heal(self, amount):
-		""" Increase health by specified amount, but no more than max_hp. """
-		assert amount >= 0
-		self.hp += amount
-		if self.hp > self.max_hp:
-			self.hp = self.max_hp
 	def has_item(self, item_class, **properties):
 		""" Returns True if inventory contains an item of specified class
 		with exact values for given properties.
@@ -201,14 +195,12 @@ class Monster(actors.Monster):
 		if self.wearing:
 			return self.wearing.protection
 		return 0
-	def is_alive(self):
-		return self.hp > 0
 	def attack(self, other):
 		""" Inflicts damage on other actor (considering all modifiers on both actors).
 		Returns value of real inflicted damage.
 		"""
 		damage = max(0, self.get_attack_damage() - other.get_protection())
-		other.hp -= damage
+		other.affect_health(-damage)
 		return damage
 	def __setstate__(self, data): # pragma: no cover -- TODO
 		self.inventory = []

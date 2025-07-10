@@ -18,6 +18,8 @@ class MockActor(actors.Actor):
 	_name = 'rogue'
 
 class MockMonster(actors.Monster):
+	_sprite = 'r'
+	_name = 'rat'
 	_max_hp = 10
 
 class ColoredMonster(actors.Monster):
@@ -38,6 +40,30 @@ class TestActors(unittest.TestCase):
 		rogue = MockActor(Point(1, 1))
 		self.assertEqual(str(rogue), 'rogue')
 		self.assertEqual(repr(rogue), 'MockActor(rogue @[1, 1])')
+
+class TestMonsters(unittest.TestCase):
+	def should_str_monster(self):
+		rat = MockMonster(Point(1, 1))
+		self.assertEqual(str(rat), 'rat')
+		self.assertEqual(repr(rat), 'MockMonster(rat @[1, 1] 10/10hp)')
+	def should_detect_alive_monster(self):
+		rat = MockMonster(Point(1, 1))
+		self.assertTrue(rat.is_alive())
+		rat.hp = 0
+		self.assertFalse(rat.is_alive())
+	def should_heal_monster(self):
+		rat = MockMonster(Point(1, 1))
+		rat.hp = 5
+		self.assertEqual(rat.affect_health(1), 1)
+		self.assertEqual(rat.hp, 6)
+		self.assertEqual(rat.affect_health(10), 4)
+		self.assertEqual(rat.hp, 10)
+	def should_hurt_monster(self):
+		rat = MockMonster(Point(1, 1))
+		self.assertEqual(rat.affect_health(-5), -5)
+		self.assertEqual(rat.hp, 5)
+		self.assertEqual(rat.affect_health(-10), -5)
+		self.assertEqual(rat.hp, 0)
 
 class TestActorsSavefile(unittest.TestCase):
 	def should_load_actor(self):
