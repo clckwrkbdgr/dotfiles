@@ -19,6 +19,7 @@ from src.engine import events
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 from src.engine.items import Item
 from src.engine.terrain import Terrain
+from src.engine.actors import Monster
 
 SAVEFILE_VERSION = 7
 
@@ -68,32 +69,10 @@ class Wall(Terrain):
 	_sprite = Sprite('#', 'white')
 	_passable = False
 
-class Monster(src.engine.actors.Monster):
-	max_hp = None
-	def __init__(self, pos):
-		super(Monster, self).__init__(pos)
-		self.hp = self.max_hp
-		self.inventory = []
-	def save(self, stream):
-		super(Monster, self).save(stream)
-		stream.write(self.hp)
-
-		stream.write(len(self.inventory))
-		for item in self.inventory:
-			item.save(stream)
-	def load(self, stream):
-		self.hp = stream.read(int)
-
-		items = stream.read(int)
-		for _ in range(items):
-			item = stream.read(Item)
-			self.inventory.append(item)
-		return self
-
 class ColoredMonster(Monster):
 	def __init__(self, pos, sprite=None, max_hp=None):
 		self._sprite = sprite
-		self.max_hp = max_hp
+		self._max_hp = max_hp
 		super(ColoredMonster, self).__init__(pos)
 	def save(self, stream):
 		super(ColoredMonster, self).save(stream)
@@ -110,7 +89,7 @@ class Player(Monster):
 	_sprite = Sprite('@', 'bold_white')
 	init_max_hp = 10
 	def __init__(self, pos):
-		self.max_hp = self.init_max_hp
+		self._max_hp = self.init_max_hp
 		super(Player, self).__init__(pos)
 		self.regeneration = 0
 	def save(self, stream):
@@ -120,7 +99,7 @@ class Player(Monster):
 	def load(self, stream):
 		super(Player, self).load(stream)
 		self.regeneration = stream.read(int)
-		self.max_hp = stream.read(int)
+		self._max_hp = stream.read(int)
 
 class Dweller(Monster):
 	max_hp = 10
@@ -814,11 +793,11 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 									game.get_player().inventory.remove(item)
 								if game.get_player().hp == game.get_player().max_hp:
 									game.get_player().hp += bounty
-								game.get_player().max_hp += bounty
+								game.get_player()._max_hp += bounty
 								npc.quest = None
 							def _on_no():
 								self.game.fire_event(ChatComeLater())
-							return TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(self.npc.quest)),
+							return TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.quest)),
 										on_yes=_on_yes, on_no=_on_no)
 						else:
 							self.game.fire_event(ChatQuestReminder(*(npc.quest)))

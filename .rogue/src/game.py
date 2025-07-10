@@ -124,9 +124,6 @@ class Game(engine.Game):
 		if reader.version > Version.PERSISTENT_RNG:
 			self.rng = RNG(reader.read_int())
 
-		legacy_player = None
-		if reader.version <= Version.MONSTERS:
-			legacy_player = self.SPECIES['Player'](reader.read_point())
 		self.exit_pos = reader.read_point()
 		self.remembered_exit = reader.read_bool()
 
@@ -136,8 +133,6 @@ class Game(engine.Game):
 		reader.set_meta_info('ItemClass', items.Item)
 		self.strata = reader.read_matrix(Terrain)
 		self.visited = reader.read_matrix(lambda c:c=='1')
-		if legacy_player:
-			self.monsters.append(legacy_player)
 		if reader.version > Version.MONSTERS:
 			self.monsters.extend(reader.read_list(actors.Actor))
 		if reader.version > Version.ITEMS:

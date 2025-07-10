@@ -92,9 +92,6 @@ class Monster(actors.Monster):
 		super(Monster, self).__init__(None)
 		self.wielding = None
 		self.wearing = None
-		self.inventory = []
-		self.hp = self.max_hp
-	max_hp = classfield('_max_hp', 0)
 	base_attack = classfield('_attack', None)
 	drops = classfield('_drops', [])
 	max_inventory = classfield('_max_inventory', [])

@@ -76,17 +76,6 @@ class TestSavefile(unittest.TestCase):
 		self.assertEqual(len(monster.inventory), 1)
 		self.assertEqual(monster.inventory[0].name, 'money')
 		self.assertEqual(monster.wielding.name, 'weapon')
-	def should_load_monster_without_inventory(self):
-		stream = StringIO(str(Version.INVENTORY) + '\x00name\x001\x001\x003')
-		reader = savefile.Reader(stream)
-		reader.set_meta_info('Actors', mock_dungeon.MockGame.SPECIES)
-		reader.set_meta_info('Items', mock_dungeon.MockGame.ITEMS)
-		monster = reader.read(actors.Actor)
-		self.assertEqual(type(monster), mock_dungeon.MockGame.SPECIES['name'])
-		self.assertEqual(monster.pos, Point(1, 1))
-		self.assertEqual(monster.hp, 3)
-		self.assertEqual(len(monster.inventory), 1)
-		self.assertEqual(monster.inventory[0].name, 'money')
 	def should_load_monster_without_wielding_equipment(self):
 		stream = StringIO(str(Version.WIELDING) + '\x00name\x001\x001\x003\x000')
 		reader = savefile.Reader(stream)

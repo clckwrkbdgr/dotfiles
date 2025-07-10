@@ -1,5 +1,6 @@
 from clckwrkbdgr.math import Point
 from clckwrkbdgr.utils import classfield
+from . import items
 import inspect
 import six
 
@@ -49,4 +50,26 @@ class Actor(object):
 		writer.write(self.pos)
 
 class Monster(Actor):
-	pass
+	""" Monster is a perishable Actor (has hp and can be hit)
+	and inventory of Items (can carry/drop items).
+	"""
+	max_hp = classfield('_max_hp', 1)
+	def __init__(self, pos):
+		super(Monster, self).__init__(pos)
+		self.hp = self.max_hp
+		self.inventory = []
+	def save(self, stream):
+		super(Monster, self).save(stream)
+		stream.write(self.hp)
+
+		stream.write(len(self.inventory))
+		for item in self.inventory:
+			item.save(stream)
+	def load(self, stream):
+		self.hp = stream.read(int)
+
+		num_items = stream.read(int)
+		for _ in range(num_items):
+			item = stream.read(items.Item)
+			self.inventory.append(item)
+		return self

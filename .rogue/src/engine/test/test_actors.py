@@ -5,13 +5,20 @@ except: # pragma: no cover
 	from io import StringIO
 import clckwrkbdgr.serialize.stream as savefile
 from clckwrkbdgr.math import Point
-from .. import actors
+from .. import actors, items
 
 VERSION = 666
+
+class MockPotion(items.Item):
+	_sprite = '!'
+	_name = 'potion'
 
 class MockActor(actors.Actor):
 	_sprite = '@'
 	_name = 'rogue'
+
+class MockMonster(actors.Monster):
+	_max_hp = 10
 
 class ColoredMonster(actors.Monster):
 	def __init__(self, *args, **kwargs):
@@ -20,7 +27,7 @@ class ColoredMonster(actors.Monster):
 			del kwargs['color']
 		super(ColoredMonster, self).__init__(*args, **kwargs)
 	def load(self, stream):
-		#super(ColoredMonster, self).load(stream)
+		super(ColoredMonster, self).load(stream)
 		self.color = stream.read()
 	def save(self, stream):
 		super(ColoredMonster, self).save(stream)
@@ -46,8 +53,24 @@ class TestActorsSavefile(unittest.TestCase):
 		actor = MockActor(Point(1, 2))
 		writer.write(actor)
 		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00MockActor\x001\x002')
+	def should_load_monster(self):
+		stream = StringIO(str(VERSION) + '\x00MockMonster\x001\x002\x0010\x001\x00MockPotion')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Actors', {'MockMonster':MockMonster})
+		reader.set_meta_info('Items', {'MockPotion':MockPotion})
+		actor = reader.read(actors.Actor)
+		self.assertEqual(type(actor), MockMonster)
+		self.assertEqual(actor.pos, Point(1, 2))
+		self.assertEqual(list(map(repr, actor.inventory)), ['MockPotion(potion)'])
+	def should_save_monster(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		actor = MockMonster(Point(1, 2))
+		actor.inventory.append(MockPotion())
+		writer.write(actor)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00MockMonster\x001\x002\x0010\x001\x00MockPotion')
 	def should_load_actor_with_custom_properties(self):
-		stream = StringIO(str(VERSION) + '\x00ColoredMonster\x001\x002\x00red')
+		stream = StringIO(str(VERSION) + '\x00ColoredMonster\x001\x002\x001\x000\x00red')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'ColoredMonster':ColoredMonster})
 		actor = reader.read(actors.Actor)
@@ -59,4 +82,4 @@ class TestActorsSavefile(unittest.TestCase):
 		writer = savefile.Writer(stream, VERSION)
 		actor = ColoredMonster(Point(1, 2), color='red')
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00ColoredMonster\x001\x002\x00red')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00ColoredMonster\x001\x002\x001\x000\x00red')

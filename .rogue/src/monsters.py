@@ -4,43 +4,28 @@ from .engine import actors
 import clckwrkbdgr.math
 from clckwrkbdgr.math import Direction
 
-class Species(actors.Monster):
-	""" Basic fixed stats shared by monsters of the same species.
+class Monster(actors.Monster):
+	""" Base for every living being (including player).
 
 	Vision - radius of field of vision (detection range).
 	Drops - weighted distribution list of items: [(<weight>, <args...>), ...]
 	Args can be None - to support probability that nothing is dropped.
 	"""
-	max_hp = NotImplemented
 	vision = NotImplemented
 	drops = None
-
-class Monster(Species):
-	""" Base for every living being (including player). """
 	def __init__(self, pos):
 		super(Monster, self).__init__(pos)
-		self.hp = self.max_hp
-		self.inventory = []
 		self.wielding = None
 	def __str__(self):
 		return "{0} @{1} {2}/{3}hp".format(self.name, self.pos, self.hp, self.max_hp)
 	def load(self, reader):
-		#super(Monster, self).load(reader)
+		super(Monster, self).load(reader)
 		monster = self
-		monster.hp = reader.read_int()
-		if reader.version > Version.INVENTORY:
-			monster.inventory.extend(reader.read_list(items.Item))
-		else:
-			item_types = reader.get_meta_info('Items')
-			from clckwrkbdgr.pcg import RNG
-			monster.fill_inventory_from_drops(RNG(0), item_types)
 		if reader.version > Version.WIELDING:
 			monster.wielding = reader.read(items.Item, optional=True)
 		return monster
 	def save(self, writer):
 		super(Monster, self).save(writer)
-		writer.write(self.hp)
-		writer.write(self.inventory)
 		writer.write(self.wielding, optional=True)
 	def is_alive(self):
 		return self.hp > 0
