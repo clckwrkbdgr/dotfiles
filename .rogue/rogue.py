@@ -839,10 +839,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				self.game.fire_event(NothingToDrop())
 			else:
 				def _on_select_item(menu_choice):
-					item = game.get_player().inventory.pop(menu_choice)
-					item_pos = game.get_player_coord().values[-1]
-					game.world.get_data(game.get_player_coord())[-1].items.append(src.engine.items.ItemAtPos(item_pos, item))
-					self.game.fire_event(DroppedItem('you', item))
+					item = game.get_player().drop(menu_choice)
+					game.world.get_data(game.get_player_coord())[-1].items.append(item)
+					self.game.fire_event(DroppedItem('you', item.item))
 					self.step_taken = True
 				return InventoryMode(
 						game.get_player().inventory,

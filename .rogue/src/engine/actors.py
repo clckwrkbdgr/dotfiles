@@ -91,3 +91,16 @@ class Monster(Actor):
 			diff = new_hp - self.hp
 		self.hp += diff
 		return diff
+
+	def drop(self, item):
+		""" Removes item from inventory and returns ItemAtPos
+		with monster's current position.
+		Item could be a real item object or a key in the inventory.
+		"""
+		if not isinstance(item, items.Item):
+			item = self.inventory.pop(item)
+		else:
+			assert item in self.inventory
+			self.inventory.remove(item)
+		result = items.ItemAtPos(self.pos, item)
+		return result

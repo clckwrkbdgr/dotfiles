@@ -404,11 +404,10 @@ class Game(engine.Game):
 		""" Drops item from inventory (item is removed).
 		Produces events.
 		"""
-		assert item in monster.inventory
-		monster.inventory.remove(item)
-		self.items.append(items.ItemAtPos(monster.pos, item))
-		self.visible_items.append(item)
-		self.fire_event(DropItemEvent(monster, item))
+		item = monster.drop(item)
+		self.items.append(item)
+		self.visible_items.append(item.item)
+		self.fire_event(DropItemEvent(monster, item.item))
 	def wield_item(self, monster, item):
 		""" Monster equips item from inventory.
 		Produces events.

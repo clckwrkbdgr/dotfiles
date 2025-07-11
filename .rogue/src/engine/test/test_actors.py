@@ -64,6 +64,18 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(rat.hp, 5)
 		self.assertEqual(rat.affect_health(-10), -5)
 		self.assertEqual(rat.hp, 0)
+	def should_drop_item(self):
+		rat = MockMonster(Point(1, 1))
+		potion = MockPotion()
+		rat.inventory.append(potion)
+		self.assertEqual(rat.drop(potion), items.ItemAtPos(Point(1, 1), potion))
+		self.assertFalse(rat.inventory)
+	def should_drop_item_by_key(self):
+		rat = MockMonster(Point(1, 1))
+		potion = MockPotion()
+		rat.inventory.append(potion)
+		self.assertEqual(rat.drop(0), items.ItemAtPos(Point(1, 1), potion))
+		self.assertFalse(rat.inventory)
 
 class TestActorsSavefile(unittest.TestCase):
 	def should_load_actor(self):

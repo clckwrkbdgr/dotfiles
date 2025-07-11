@@ -6,6 +6,7 @@ from ..game import Item, Wearable, Consumable, LevelPassage
 from ..game import Monster
 from ..game import Tunnel, Room, GridRoomMap, Dungeon
 from ...engine import events
+from ...engine import items
 
 class Elevator(LevelPassage):
 	_sprite = '>'
@@ -148,6 +149,7 @@ class TestMonster(unittest.TestCase):
 		hazmat = HazmatSuit()
 
 		jc = UNATCOAgent()
+		jc.pos = Point(1, 2)
 		jc.inventory.append(key)
 		jc.inventory.append(pistol)
 		jc.inventory.append(armor)
@@ -156,17 +158,17 @@ class TestMonster(unittest.TestCase):
 		jc.wield(pistol)
 
 		self.assertEqual(_R(jc.drop(key)), _R([
-			game.Event.MonsterDroppedItem(jc, key),
+			items.ItemAtPos(Point(1, 2), key), [],
 			]))
 		self.assertFalse(jc.has_item(NanoKey))
 		self.assertEqual(_R(jc.drop(pistol)), _R([
-			game.Event.Unwielding(jc, pistol),
-			game.Event.MonsterDroppedItem(jc, pistol),
+			items.ItemAtPos(Point(1, 2), pistol),
+			[game.Event.Unwielding(jc, pistol)],
 			]))
 		self.assertFalse(jc.has_item(StealthPistol))
 		self.assertEqual(_R(jc.drop(armor)), _R([
-			game.Event.TakingOff(jc, armor),
-			game.Event.MonsterDroppedItem(jc, armor),
+			items.ItemAtPos(Point(1, 2), armor),
+			[game.Event.TakingOff(jc, armor)],
 			]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
 	def should_consumeItems(self):

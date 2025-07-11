@@ -165,9 +165,8 @@ class Monster(actors.Monster):
 		Returns list of happened events.
 		"""
 		events = self._unequip(item)
-		self.inventory.remove(item)
-		events.append(Event.MonsterDroppedItem(self, item))
-		return events
+		item = super(Monster, self).drop(item)
+		return item, events
 	def consume(self, item):
 		""" Tries to consume item.
 		Returns list of happened events.
@@ -354,8 +353,9 @@ class GridRoomMap(object):
 		self.items.pop(index)
 		return [Event.GrabbedItem(who, item)]
 	def drop_item(self, who, item):
-		events = who.drop(item)
-		self.items.append( (who.pos, item) )
+		item, events = who.drop(item)
+		events.append(Event.MonsterDroppedItem(who, item.item))
+		self.items.append(item)
 		return events
 	def visit(self, pos):
 		""" Marks all objects (rooms, tunnels) related to pos as visited. """
