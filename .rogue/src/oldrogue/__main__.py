@@ -317,11 +317,7 @@ class _Builder(builders.Builder):
 			pos = self.pos_in_rect(room)
 			monster = monster()
 			monster.pos = pos
-			drop_distributions = monster.drops
-			if drop_distributions and drop_distributions[0] and not utils.is_collection(drop_distributions[0][0]):
-				drop_distributions = [drop_distributions]
-			for distribution in drop_distributions:
-				monster.inventory.extend(self.rng.choice(distribution))
+			monster.fill_drops(self.rng)
 			yield monster
 
 class RogueDungeonGenerator(pcg.Generator):

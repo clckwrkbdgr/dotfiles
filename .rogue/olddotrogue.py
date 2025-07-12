@@ -21,23 +21,21 @@ class DungeonSquatters(src.pcg.WeightedSquatters):
 class Player(src.game.Player):
 	_name = 'player'
 	_sprite = '@'
-	max_hp = 10
+	_max_hp = 10
 	vision = 10
-	drops = None
 
 class Monster(src.monsters.Monster):
 	_name = 'monster'
 	_sprite = 'M'
-	max_hp = 3
+	_max_hp = 3
 	vision = 10
-	drops = None
 
 class Plant(src.monsters.Monster):
 	_name = 'plant'
 	_sprite = 'P'
-	max_hp = 1
+	_max_hp = 1
 	vision = 1
-	drops = [
+	_drops = [
 			(1, None),
 			(5, 'healing potion'),
 			]
@@ -45,9 +43,9 @@ class Plant(src.monsters.Monster):
 class Slime(src.monsters.Inert):
 	_name = 'slime'
 	_sprite = 'o'
-	max_hp = 5
+	_max_hp = 5
 	vision = 3
-	drops = [
+	_drops = [
 			(1, None),
 			(1, 'healing potion'),
 			]
@@ -55,9 +53,9 @@ class Slime(src.monsters.Inert):
 class Rodent(src.monsters.Angry):
 	_name = 'rodent'
 	_sprite = 'r'
-	max_hp = 3
+	_max_hp = 3
 	vision = 8
-	drops = [
+	_drops = [
 			(5, None),
 			(1, 'healing potion'),
 			]

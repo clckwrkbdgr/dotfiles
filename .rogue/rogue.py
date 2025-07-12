@@ -870,11 +870,9 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					if not monster.is_alive():
 						dest_field_data.monsters.remove(monster)
 						self.game.fire_event(MonsterDead('monster'))
-						for item in monster.inventory:
-							item_pos = monster.pos
-							monster.inventory.remove(item)
-							dest_field_data.items.append(src.engine.items.ItemAtPos(item_pos, item))
-							self.game.fire_event(DroppedItem('monster', item))
+						for item in monster.drop_all():
+							dest_field_data.items.append(item)
+							self.game.fire_event(DroppedItem('monster', item.item))
 			elif dest_cell is None:
 				self.game.fire_event(StareIntoVoid())
 			elif dest_cell.passable:

@@ -297,10 +297,10 @@ class Game(engine.Game):
 			player.pos = start_pos
 		else:
 			player = self.SPECIES['Player'](start_pos)
-			player.fill_inventory_from_drops(self.rng, self.ITEMS)
+			player.fill_drops(self.rng)
 		self.monsters[:] = [player]
 		for monster in settler.make_actors():
-			monster.fill_inventory_from_drops(self.rng, self.ITEMS)
+			monster.fill_drops(self.rng)
 			self.monsters.append(monster)
 		self.items[:] = []
 		for item in settler.make_items():
@@ -354,9 +354,10 @@ class Game(engine.Game):
 		self.fire_event(HealthEvent(target, diff))
 		if not target.is_alive():
 			self.fire_event(DeathEvent(target))
-			drops = target.drop_loot()
-			for item in drops:
-				self.drop_item(target, item)
+			for item in target.drop_all():
+				self.items.append(item)
+				self.visible_items.append(item.item)
+				self.fire_event(DropItemEvent(target, item.item))
 			self.monsters.remove(target)
 	def attack(self, actor, target):
 		""" Attacks target monster.

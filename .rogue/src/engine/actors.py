@@ -1,5 +1,7 @@
 from clckwrkbdgr.math import Point
 from clckwrkbdgr.utils import classfield
+from clckwrkbdgr import pcg
+from clckwrkbdgr import utils
 from . import items
 import inspect
 import six
@@ -54,6 +56,7 @@ class Monster(Actor):
 	and inventory of Items (can carry/drop items).
 	"""
 	max_hp = classfield('_max_hp', 1)
+	drops = classfield('_drops', None) # See .fill_drops() for details
 	def __init__(self, pos):
 		super(Monster, self).__init__(pos)
 		self.hp = self.max_hp
@@ -92,6 +95,23 @@ class Monster(Actor):
 		self.hp += diff
 		return diff
 
+	def fill_drops(self, rng):
+		""" Generates and adds random items that monsters usually drop upon death.
+		Drops is either a list of weighted choices (<weight>, <item type>),
+		or a list of such lists. In latter case add several items (one for each sublist).
+		Item type may be None - as an option to drop nothing.
+		"""
+		if not self.drops:
+			return
+		drops = self.drops
+		if drops and drops[0] and not utils.is_collection(drops[0][0]):
+			drops = [drops]
+		for drop_distribution in drops:
+			item_type = pcg.weighted_choices(rng, drop_distribution)[0]
+			if item_type is None:
+				continue
+			self.inventory.append(item_type())
+		self._drops = [] # Reset drops for this instance.
 	def drop(self, item):
 		""" Removes item from inventory and returns ItemAtPos
 		with monster's current position.
@@ -104,3 +124,10 @@ class Monster(Actor):
 			self.inventory.remove(item)
 		result = items.ItemAtPos(self.pos, item)
 		return result
+	def drop_all(self):
+		""" Drops all inventory (usually in case of death).
+		Yields ItemAtPos entries with monster's current position.
+		"""
+		while self.inventory:
+			item = self.inventory.pop()
+			yield items.ItemAtPos(self.pos, item)

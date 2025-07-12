@@ -13,53 +13,6 @@ from ..defs import Version
 from . import mock_dungeon
 from ..engine import actors
 
-class MockSpecies(monsters.Monster):
-	name = 'name'
-	sprite = '@'
-	max_hp = 100
-	vision = 10
-	drops = None
-
-class MockSpeciesWithDrops(MockSpecies):
-	drops = [
-			(1, 'potion'),
-			(2, 'money'),
-			(3, 'rags'),
-			]
-
-class MockSpeciesWithPoorDrops(MockSpecies):
-	drops = [
-			(1, None),
-			(2, 'money'),
-			(3, None),
-			]
-
-class TestMonsters(unittest.TestCase):
-	def should_not_drop_items(self):
-		rng = RNG(0)
-		monster = MockSpecies(Point(1, 1))
-		self.assertEqual(monster._generate_drops(rng), [])
-	def should_drop_items(self):
-		rng = RNG(0)
-		monster = MockSpeciesWithDrops(Point(1, 1))
-		self.assertEqual(monster._generate_drops(rng), [('potion',)])
-		self.assertEqual(monster._generate_drops(rng), [('rags',)])
-		self.assertEqual(monster._generate_drops(rng), [('money',)])
-		self.assertEqual(monster._generate_drops(rng), [('rags',)])
-
-		monster.fill_inventory_from_drops(rng, mock_dungeon.MockGame.ITEMS)
-		drops = monster.drop_loot()
-		self.assertEqual(len(drops), 1)
-		self.assertEqual(drops[0].name, 'potion')
-	def should_drop_nothing_sometimes(self):
-		rng = RNG(0)
-		monster = MockSpeciesWithPoorDrops(Point(1, 1))
-		self.assertEqual(monster._generate_drops(rng), [])
-		self.assertEqual(monster._generate_drops(rng), [])
-		self.assertEqual(monster._generate_drops(rng), [('money',)])
-		self.assertEqual(monster._generate_drops(rng), [])
-		self.assertEqual(monster._generate_drops(rng), [])
-
 class TestSavefile(unittest.TestCase):
 	def should_load_monster(self):
 		stream = StringIO(str(Version.CURRENT) + '\x00name\x001\x001\x003\x001\x00money\x001\x00weapon')
@@ -90,7 +43,7 @@ class TestSavefile(unittest.TestCase):
 		writer = savefile.Writer(stream, Version.CURRENT)
 		monster = mock_dungeon.MockGame.SPECIES['name'](Point(1, 1))
 		monster.wielding = mock_dungeon.MockGame.ITEMS['weapon']()
-		monster.fill_inventory_from_drops(RNG(0), mock_dungeon.MockGame.ITEMS)
+		monster.fill_drops(RNG(0))
 		monster.hp = 3
 		writer.write(monster)
 		self.assertEqual(stream.getvalue(), str(Version.CURRENT) + '\x00Name\x001\x001\x003\x001\x00Money\x001\x00Weapon')

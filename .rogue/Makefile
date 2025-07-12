@@ -1,5 +1,5 @@
 test:
-	python rogue.py test
+	unittest -p py3
 
 run:
 	screen python rogue.py

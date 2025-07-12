@@ -712,4 +712,4 @@ class TestDungeon(unittest.TestCase):
 			game.Event.MonsterDroppedItem(player, pistol),
 			]))
 		self.assertTrue(dungeon.is_finished())
-		self.assertEqual(dungeon.current_level.items, [(Point(9, 3), pistol)])
+		self.assertEqual(dungeon.current_level.items, [items.ItemAtPos(Point(9, 3), pistol)])

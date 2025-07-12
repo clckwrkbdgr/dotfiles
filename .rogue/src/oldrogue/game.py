@@ -93,7 +93,6 @@ class Monster(actors.Monster):
 		self.wielding = None
 		self.wearing = None
 	base_attack = classfield('_attack', None)
-	drops = classfield('_drops', [])
 	max_inventory = classfield('_max_inventory', [])
 	hostile_to = classfield('_hostile_to', [])
 	def is_hostile_to(self, other):
@@ -337,10 +336,9 @@ class GridRoomMap(object):
 		"""
 		if who.is_alive():
 			raise RuntimeError("Trying to bury someone alive: {0}".format(who))
-		while who.inventory:
-			item = who.inventory.pop()
-			self.items.append( (who.pos, item) )
-			yield item
+		for item in who.drop_all():
+			self.items.append(item)
+			yield item.item
 		try:
 			self.monsters.remove(who)
 		except ValueError: # pragma: no cover -- TODO rogue is not stored in the list.
