@@ -132,3 +132,21 @@ class Monster(Actor):
 		while self.inventory:
 			item = self.inventory.pop()
 			yield items.ItemAtPos(self.pos, item)
+
+class EquippedMonster(Monster):
+	""" Monster with ability to equip items:
+	arm themselves, wear outfits etc.
+	Equipped items are removed from inventory and thus saved separately.
+	"""
+	def __init__(self, pos):
+		super(EquippedMonster, self).__init__(pos)
+		self.wielding = None
+		self.wearing = None
+	def save(self, stream):
+		super(EquippedMonster, self).save(stream)
+		stream.write(self.wielding, optional=True)
+		stream.write(self.wearing, optional=True)
+	def load(self, stream):
+		super(EquippedMonster, self).load(stream)
+		self.wielding = stream.read(items.Item, optional=True)
+		self.wearing = stream.read(items.Item, optional=True)

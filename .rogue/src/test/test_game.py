@@ -952,8 +952,8 @@ class TestGameSerialization(AbstractTestDungeon):
 			0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
 
 			2,
-				'Player', 9, 6, 10, 0, 0,
-				'Monster', 2, 5, 3, 0, 0,
+				'Player', 9, 6, 10, 0, 0, 0,
+				'Monster', 2, 5, 3, 0, 0, 0,
 			1,
 				'Potion', 10, 6,
 			])))

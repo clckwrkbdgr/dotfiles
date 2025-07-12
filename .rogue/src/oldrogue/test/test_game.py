@@ -72,21 +72,21 @@ class TestUtils(unittest.TestCase):
 
 class TestMonster(unittest.TestCase):
 	def should_heal(self):
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.hp = 50
 		jc.affect_health(70)
 		self.assertEqual(jc.hp, 100)
 	def should_detect_hostiles(self):
-		jc = UNATCOAgent()
-		nsf = NSFTerrorist()
-		mj12 = MJ12Trooper()
+		jc = UNATCOAgent(None)
+		nsf = NSFTerrorist(None)
+		mj12 = MJ12Trooper(None)
 		self.assertTrue(mj12.is_hostile_to(nsf))
 		self.assertTrue(mj12.is_hostile_to(jc))
 		self.assertFalse(jc.is_hostile_to(nsf))
 	def should_detect_items_in_inventory(self):
 		key = NanoKey()
 		key.value = '0451'
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.inventory.append(key)
 		self.assertTrue(jc.has_item(NanoKey, value='0451'))
 		self.assertFalse(jc.has_item(NanoKey, value='666'))
@@ -99,7 +99,7 @@ class TestMonster(unittest.TestCase):
 		armor = ThermopticCamo()
 		hazmat = HazmatSuit()
 
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.inventory.append(key)
 		jc.inventory.append(pistol)
 		jc.inventory.append(armor)
@@ -148,7 +148,7 @@ class TestMonster(unittest.TestCase):
 		armor = ThermopticCamo()
 		hazmat = HazmatSuit()
 
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.pos = Point(1, 2)
 		jc.inventory.append(key)
 		jc.inventory.append(pistol)
@@ -177,7 +177,7 @@ class TestMonster(unittest.TestCase):
 		stimpack = StimPack()
 		smart_stimpack = SmartStimPack()
 
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.inventory.append(key)
 		jc.inventory.append(stimpack)
 		jc.inventory.append(smart_stimpack)
@@ -204,7 +204,7 @@ class TestMonster(unittest.TestCase):
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.inventory.append(pistol)
 		jc.inventory.append(armor)
 
@@ -214,13 +214,13 @@ class TestMonster(unittest.TestCase):
 		jc.wield(pistol)
 		self.assertEqual(jc.get_attack_damage(), 7)
 
-		vacuum = VacuumCleaner()
+		vacuum = VacuumCleaner(None)
 		self.assertEqual(vacuum.get_attack_damage(), 0)
 	def should_calc_protection(self):
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.inventory.append(pistol)
 		jc.inventory.append(armor)
 
@@ -231,10 +231,10 @@ class TestMonster(unittest.TestCase):
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.inventory.append(pistol)
 
-		mj12 = MJ12Trooper()
+		mj12 = MJ12Trooper(None)
 		mj12.inventory.append(armor)
 
 		self.assertEqual(jc.attack(mj12), 2)
@@ -429,9 +429,9 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertFalse(gridmap.can_move_to(Point(7, 3), with_tunnels=True, from_pos=Point(8, 2)))
 	def should_detect_objects_on_map(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 
-		mj12 = MJ12Trooper()
+		mj12 = MJ12Trooper(None)
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
@@ -450,12 +450,12 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(dungeon.iter_actors_at(Point(9, 2))), [mj12])
 	def should_rip_monster(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
-		mj12 = MJ12Trooper()
+		mj12 = MJ12Trooper(None)
 		mj12.inventory.append(pistol)
 		mj12.inventory.append(armor)
 
@@ -474,12 +474,12 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(dungeon.iter_actors_at(Point(9, 2))), [])
 	def should_grab_item(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 
 		gridmap = dungeon.current_level
 		key = NanoKey()
@@ -504,10 +504,10 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(dungeon.iter_items_at(Point(1, 1))), [armor])
 	def should_drop_item(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 
 		pistol = StealthPistol()
-		jc = UNATCOAgent()
+		jc = UNATCOAgent(None)
 		jc.inventory.append(pistol)
 		jc.pos = Point(1, 1)
 
@@ -541,7 +541,7 @@ class TestDungeon(unittest.TestCase):
 		PLAYER_TYPE = UNATCOAgent
 	def should_iter_dungeon_cells(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		dungeon.get_player().pos = Point(3, 1)
 		dungeon.current_level.visit(dungeon.get_player().pos)
 		dungeon.get_player().pos = Point(5, 1)
@@ -550,7 +550,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.current_level.visit(dungeon.get_player().pos)
 		dungeon.get_player().pos = Point(7, 3)
 		dungeon.current_level.visit(dungeon.get_player().pos)
-		mj12 = MJ12Trooper()
+		mj12 = MJ12Trooper(None)
 		mj12.pos = Point(8, 3)
 		dungeon.current_level.monsters.append(mj12)
 		pistol = StealthPistol()
@@ -597,18 +597,18 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(view.tostring(), expected)
 	def should_move_to_level(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 	def should_use_stairs(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		dungeon.use_stairs(dungeon.get_player(), dungeon.current_level.objects[1][1])
 		self.assertEqual(dungeon.current_level, dungeon.levels['roof'])
 		self.assertEqual(dungeon.get_player().pos, Point(1, 1))
 	def should_locate_in_maze(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
 		dungeon.get_player().pos = Point(1, 1)
@@ -624,7 +624,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.current_tunnel, dungeon.current_level.tunnels[0])
 	def should_detect_visible_objects(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
 		dungeon.get_player().pos = Point(1, 1)
@@ -645,7 +645,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_visible(Point(8, 2)))
 	def should_remember_objects(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.current_level, dungeon.levels['top'])
 
 		dungeon.get_player().pos = Point(1, 1)
@@ -668,16 +668,16 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_remembered(Point(8, 2)))
 	def should_move_monster(self):
 		dungeon = self.UNATCO()
-		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(), 'top', connected_passage='basement')
+		dungeon.go_to_level(self.UNATCO.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		dungeon.get_player().pos = Point(9, 3)
 		pistol = StealthPistol()
 		dungeon.get_player().inventory.append(pistol)
 
-		mj12 = MJ12Trooper()
+		mj12 = MJ12Trooper(None)
 		mj12.pos = Point(8, 3)
 		dungeon.current_level.monsters.append(mj12)
 
-		vacuum = VacuumCleaner()
+		vacuum = VacuumCleaner(None)
 		vacuum.pos = Point(8, 2)
 		dungeon.current_level.monsters.append(vacuum)
 

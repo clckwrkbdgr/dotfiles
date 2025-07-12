@@ -87,11 +87,7 @@ class LevelPassage(Furniture):
 		"""
 		pass
 
-class Monster(actors.Monster):
-	def __init__(self):
-		super(Monster, self).__init__(None)
-		self.wielding = None
-		self.wearing = None
+class Monster(actors.EquippedMonster):
 	base_attack = classfield('_attack', None)
 	max_inventory = classfield('_max_inventory', [])
 	hostile_to = classfield('_hostile_to', [])

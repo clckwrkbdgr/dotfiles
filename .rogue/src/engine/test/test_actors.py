@@ -14,6 +14,14 @@ class MockPotion(items.Item):
 	_sprite = '!'
 	_name = 'potion'
 
+class Dagger(items.Item):
+	_sprite = '('
+	_name = 'dagger'
+
+class Rags(items.Item):
+	_sprite = '['
+	_name = 'rags'
+
 class McGuffin(items.Item):
 	_sprite = '*'
 	_name = 'mcguffin'
@@ -42,6 +50,11 @@ class PackRat(Rat):
 				],
 			]
 
+class Goblin(actors.EquippedMonster):
+	_sprite = 'g'
+	_name = 'goblin'
+	_max_hp = 10
+
 class ColoredMonster(actors.Monster):
 	def __init__(self, *args, **kwargs):
 		self.color = kwargs.get('color')
@@ -60,12 +73,55 @@ class TestActors(unittest.TestCase):
 		rogue = MockActor(Point(1, 1))
 		self.assertEqual(str(rogue), 'rogue')
 		self.assertEqual(repr(rogue), 'MockActor(rogue @[1, 1])')
+	def should_load_actor(self):
+		stream = StringIO(str(VERSION) + '\x00MockActor\x001\x002')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Actors', {'MockActor':MockActor})
+		actor = reader.read(actors.Actor)
+		self.assertEqual(type(actor), MockActor)
+		self.assertEqual(actor.pos, Point(1, 2))
+	def should_save_actor(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		actor = MockActor(Point(1, 2))
+		writer.write(actor)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00MockActor\x001\x002')
+	def should_load_actor_with_custom_properties(self):
+		stream = StringIO(str(VERSION) + '\x00ColoredMonster\x001\x002\x001\x000\x00red')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Actors', {'ColoredMonster':ColoredMonster})
+		actor = reader.read(actors.Actor)
+		self.assertEqual(type(actor), ColoredMonster)
+		self.assertEqual(actor.pos, Point(1, 2))
+		self.assertEqual(actor.color, 'red')
+	def should_save_actor_with_custom_properties(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		actor = ColoredMonster(Point(1, 2), color='red')
+		writer.write(actor)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00ColoredMonster\x001\x002\x001\x000\x00red')
 
 class TestMonsters(unittest.TestCase):
 	def should_str_monster(self):
 		rat = Rat(Point(1, 1))
 		self.assertEqual(str(rat), 'rat')
 		self.assertEqual(repr(rat), 'Rat(rat @[1, 1] 10/10hp)')
+	def should_load_monster(self):
+		stream = StringIO(str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00MockPotion')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Actors', {'Rat':Rat})
+		reader.set_meta_info('Items', {'MockPotion':MockPotion})
+		actor = reader.read(actors.Actor)
+		self.assertEqual(type(actor), Rat)
+		self.assertEqual(actor.pos, Point(1, 2))
+		self.assertEqual(list(map(repr, actor.inventory)), ['MockPotion(potion)'])
+	def should_save_monster(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		actor = Rat(Point(1, 2))
+		actor.inventory.append(MockPotion())
+		writer.write(actor)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00MockPotion')
 	def should_detect_alive_monster(self):
 		rat = Rat(Point(1, 1))
 		self.assertTrue(rat.is_alive())
@@ -125,47 +181,22 @@ class TestMonsters(unittest.TestCase):
 			])))
 		self.assertEqual(rat.drops, [])
 
-class TestActorsSavefile(unittest.TestCase):
-	def should_load_actor(self):
-		stream = StringIO(str(VERSION) + '\x00MockActor\x001\x002')
+class TestEquippedMonsters(unittest.TestCase):
+	def should_load_equpped_monster(self):
+		stream = StringIO(str(VERSION) + '\x00Goblin\x001\x002\x0010\x000\x001\x00Dagger\x001\x00Rags')
 		reader = savefile.Reader(stream)
-		reader.set_meta_info('Actors', {'MockActor':MockActor})
+		reader.set_meta_info('Actors', {'Goblin':Goblin})
+		reader.set_meta_info('Items', {'Dagger':Dagger,'Rags':Rags})
 		actor = reader.read(actors.Actor)
-		self.assertEqual(type(actor), MockActor)
+		self.assertEqual(type(actor), Goblin)
 		self.assertEqual(actor.pos, Point(1, 2))
-	def should_save_actor(self):
+		self.assertEqual(repr(actor.wielding), repr(Dagger()))
+		self.assertEqual(repr(actor.wearing), repr(Rags()))
+	def should_save_equpped_monster(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, VERSION)
-		actor = MockActor(Point(1, 2))
-		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00MockActor\x001\x002')
-	def should_load_monster(self):
-		stream = StringIO(str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00MockPotion')
-		reader = savefile.Reader(stream)
-		reader.set_meta_info('Actors', {'Rat':Rat})
-		reader.set_meta_info('Items', {'MockPotion':MockPotion})
-		actor = reader.read(actors.Actor)
-		self.assertEqual(type(actor), Rat)
-		self.assertEqual(actor.pos, Point(1, 2))
-		self.assertEqual(list(map(repr, actor.inventory)), ['MockPotion(potion)'])
-	def should_save_monster(self):
-		stream = StringIO()
-		writer = savefile.Writer(stream, VERSION)
-		actor = Rat(Point(1, 2))
-		actor.inventory.append(MockPotion())
-		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00MockPotion')
-	def should_load_actor_with_custom_properties(self):
-		stream = StringIO(str(VERSION) + '\x00ColoredMonster\x001\x002\x001\x000\x00red')
-		reader = savefile.Reader(stream)
-		reader.set_meta_info('Actors', {'ColoredMonster':ColoredMonster})
-		actor = reader.read(actors.Actor)
-		self.assertEqual(type(actor), ColoredMonster)
-		self.assertEqual(actor.pos, Point(1, 2))
-		self.assertEqual(actor.color, 'red')
-	def should_save_actor_with_custom_properties(self):
-		stream = StringIO()
-		writer = savefile.Writer(stream, VERSION)
-		actor = ColoredMonster(Point(1, 2), color='red')
-		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00ColoredMonster\x001\x002\x001\x000\x00red')
+		goblin = Goblin(Point(1, 2))
+		goblin.wielding = Dagger()
+		goblin.wearing = Rags()
+		writer.write(goblin)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Goblin\x001\x002\x0010\x000\x001\x00Dagger\x001\x00Rags')

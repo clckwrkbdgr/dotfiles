@@ -4,25 +4,7 @@ from .engine import actors
 import clckwrkbdgr.math
 from clckwrkbdgr.math import Direction
 
-class Monster(actors.Monster):
-	""" Base for every living being (including player).
-
-	Vision - radius of field of vision (detection range).
-	Drops - weighted distribution list of items: [(<weight>, <args...>), ...]
-	Args can be None - to support probability that nothing is dropped.
-	"""
-	def __init__(self, pos):
-		super(Monster, self).__init__(pos)
-		self.wielding = None
-	def load(self, reader):
-		super(Monster, self).load(reader)
-		monster = self
-		if reader.version > Version.WIELDING:
-			monster.wielding = reader.read(items.Item, optional=True)
-		return monster
-	def save(self, writer):
-		super(Monster, self).save(writer)
-		writer.write(self.wielding, optional=True)
+class Monster(actors.EquippedMonster):
 	def __eq__(self, other):
 		if not isinstance(other, Monster):
 			return False
