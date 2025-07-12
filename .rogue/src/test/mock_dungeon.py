@@ -40,7 +40,7 @@ class Name(monsters.Monster):
 	_name = 'name'
 	_sprite = 'M'
 	_max_hp = 100
-	vision = 10
+	_vision = 10
 	_drops = [
 			(1, Money),
 			(2, Potion),
@@ -50,35 +50,35 @@ class Player(game.Player):
 	_name = 'player'
 	_sprite = '@'
 	_max_hp = 10
-	vision = 10
+	_vision = 10
 	_drops = None
 
 class Monster(monsters.Monster):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
-	vision = 10
+	_vision = 10
 	_drops = None
 
 class AngryMonster(monsters.Angry):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
-	vision = 10
+	_vision = 10
 	_drops = None
 
 class InertMonster(monsters.Inert):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
-	vision = 10
+	_vision = 10
 	_drops = None
 
 class DummyThief(monsters.Monster):
 	_name = 'thief'
 	_sprite = 'T'
 	_max_hp = 3
-	vision = 10
+	_vision = 10
 	_drops = [
 			(1, Money),
 			]
@@ -87,7 +87,7 @@ class Thief(monsters.Angry):
 	_name = 'thief'
 	_sprite = 'T'
 	_max_hp = 3
-	vision = 10
+	_vision = 10
 	_drops = [
 			(1, Money),
 			]

@@ -8,10 +8,11 @@ import six
 
 class Actor(object):
 	""" Basic actor.
-	Has no properties except for sprite/name/position.
+	Supports no properties/behaviour except movement.
 	"""
 	sprite = classfield('_sprite', '?')
 	name = classfield('_name', 'unknown creature')
+	vision = classfield('_vision', 0) # Radius of field of vision.
 
 	def __init__(self, pos):
 		self.pos = Point(pos) if pos else None

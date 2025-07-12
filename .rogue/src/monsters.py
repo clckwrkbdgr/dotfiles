@@ -11,7 +11,6 @@ class Monster(actors.Monster):
 	Drops - weighted distribution list of items: [(<weight>, <args...>), ...]
 	Args can be None - to support probability that nothing is dropped.
 	"""
-	vision = NotImplemented
 	def __init__(self, pos):
 		super(Monster, self).__init__(pos)
 		self.wielding = None

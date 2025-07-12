@@ -22,19 +22,19 @@ class Player(src.game.Player):
 	_name = 'player'
 	_sprite = '@'
 	_max_hp = 10
-	vision = 10
+	_vision = 10
 
 class Monster(src.monsters.Monster):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
-	vision = 10
+	_vision = 10
 
 class Plant(src.monsters.Monster):
 	_name = 'plant'
 	_sprite = 'P'
 	_max_hp = 1
-	vision = 1
+	_vision = 1
 	_drops = [
 			(1, None),
 			(5, 'healing potion'),
@@ -44,7 +44,7 @@ class Slime(src.monsters.Inert):
 	_name = 'slime'
 	_sprite = 'o'
 	_max_hp = 5
-	vision = 3
+	_vision = 3
 	_drops = [
 			(1, None),
 			(1, 'healing potion'),
@@ -54,7 +54,7 @@ class Rodent(src.monsters.Angry):
 	_name = 'rodent'
 	_sprite = 'r'
 	_max_hp = 3
-	vision = 8
+	_vision = 8
 	_drops = [
 			(5, None),
 			(1, 'healing potion'),

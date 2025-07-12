@@ -84,7 +84,10 @@ class ColoredMonster(Monster):
 		self._sprite = Sprite(stream.read(), stream.read())
 		self._max_hp = stream.read_int()
 
+MAX_MONSTER_ACTION_LENGTH = 10
+
 class AggressiveColoredMonster(ColoredMonster):
+	_vision = 10
 	pass
 
 class Player(Monster):
@@ -905,8 +908,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 
 			game.passed_time += 1
 
-			monster_action_length = 10
-			monster_action_range = Point(monster_action_length, monster_action_length)
+			monster_action_range = Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH)
 			monster_zone_topleft = NestedGrid.Coord.from_global(player_pos - monster_action_range, game.world)
 			monster_zone_bottomright = NestedGrid.Coord.from_global(player_pos + monster_action_range, game.world)
 			monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
@@ -924,7 +926,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					self.game.fire_event(HitMonster('monster', 'you'))
 					if not game.get_player().is_alive():
 						self.game.fire_event(MonsterDead('you'))
-				elif isinstance(monster, AggressiveColoredMonster) and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster_action_length:
+				elif isinstance(monster, AggressiveColoredMonster) and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster.vision:
 					shift = Point(
 							sign(player_pos.x - monster_pos.x),
 							sign(player_pos.y - monster_pos.y),
