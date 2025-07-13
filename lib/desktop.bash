@@ -45,7 +45,7 @@ xfce4::get_wallpaper() {
 xfce4::set_wallpaper() {
 	# Sets wallpaper for XFCE DE.
 	wallpfile="$1"
-	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor${_monitor_name}/workspace0/last-image -s "$wallpfile"
+	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor${_monitor_name}/workspace0/last-image -s "$wallpfile" --create -t string
 	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor${_monitor_name}/workspace0/image-style -s 4 # Scaled
 }
 
