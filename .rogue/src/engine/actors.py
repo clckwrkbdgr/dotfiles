@@ -80,6 +80,22 @@ class Monster(Actor):
 			self.inventory.append(item)
 		return self
 
+	def _resolve_item(self, item_or_key, remove=False):
+		""" Returns real item.
+		Item could be a real item object or a key in the inventory.
+		Checks that item is present in the inventory.
+		If remove=True, additionally removes item from the inventory.
+		"""
+		if not isinstance(item_or_key, items.Item):
+			if remove:
+				return self.inventory.pop(item_or_key)
+			return self.inventory[item_or_key]
+		assert item_or_key in self.inventory
+		if remove:
+			self.inventory.remove(item_or_key)
+			return item_or_key
+		return item_or_key
+
 	def is_alive(self):
 		return self.hp > 0
 	def affect_health(self, diff):
@@ -118,13 +134,8 @@ class Monster(Actor):
 		with monster's current position.
 		Item could be a real item object or a key in the inventory.
 		"""
-		if not isinstance(item, items.Item):
-			item = self.inventory.pop(item)
-		else:
-			assert item in self.inventory
-			self.inventory.remove(item)
-		result = items.ItemAtPos(self.pos, item)
-		return result
+		item = self._resolve_item(item, remove=True)
+		return items.ItemAtPos(self.pos, item)
 	def drop_all(self):
 		""" Drops all inventory (usually in case of death).
 		Yields ItemAtPos entries with monster's current position.
@@ -138,6 +149,11 @@ class EquippedMonster(Monster):
 	arm themselves, wear outfits etc.
 	Equipped items are removed from inventory and thus saved separately.
 	"""
+	class SlotIsTaken(RuntimeError): pass
+	class ItemNotFit(RuntimeError):
+		def __init__(self, required_trait):
+			self.required_trait = required_trait
+
 	def __init__(self, pos):
 		super(EquippedMonster, self).__init__(pos)
 		self.wielding = None
@@ -150,3 +166,47 @@ class EquippedMonster(Monster):
 		super(EquippedMonster, self).load(stream)
 		self.wielding = stream.read(items.Item, optional=True)
 		self.wearing = stream.read(items.Item, optional=True)
+
+	def wield(self, item):
+		""" Wields item from inventory.
+		This removes item from the inventory.
+		If already wielding something else, SlotIsTaken is raised.
+		Item could be a real item object or a key in the inventory.
+		"""
+		item = self._resolve_item(item)
+		if self.wielding:
+			raise self.SlotIsTaken()
+		self.wielding = self._resolve_item(item, remove=True)
+	def unwield(self):
+		""" Unwields currently wielded item.
+		Appends item back to the inventory.
+		Returns the item if some item was actually wielded, or None.
+		"""
+		if not self.wielding:
+			return None
+		item, self.wielding = self.wielding, None
+		self.inventory.append(item)
+		return item
+	def wear(self, item):
+		""" Wears item from inventory.
+		This removes item from the inventory.
+		If item is not Wearable, raises ItemNotFit.
+		If already wearing something else, SlotIsTaken is raised.
+		Item could be a real item object or a key in the inventory.
+		"""
+		item = self._resolve_item(item)
+		if not isinstance(item, items.Wearable):
+			raise self.ItemNotFit(items.Wearable)
+		if self.wearing:
+			raise self.SlotIsTaken()
+		self.wearing = self._resolve_item(item, remove=True)
+	def take_off(self):
+		""" Takes off currently worn item.
+		Appends item back to the inventory.
+		Returns the item if some item was actually worn, or None.
+		"""
+		if not self.wearing:
+			return None
+		item, self.wearing = self.wearing, None
+		self.inventory.append(item)
+		return item

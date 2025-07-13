@@ -413,22 +413,21 @@ class Game(engine.Game):
 		""" Monster equips item from inventory.
 		Produces events.
 		"""
-		assert item in monster.inventory
-		if monster.wielding:
-			self.unwield_item(monster)
-		monster.inventory.remove(item)
-		monster.wielding = item
+		try:
+			monster.wield(item)
+		except monster.SlotIsTaken:
+			old_item = monster.unwield()
+			if old_item:
+				self.fire_event(UnequipItemEvent(monster, old_item))
+			monster.wield(item)
 		self.fire_event(EquipItemEvent(monster, item))
 	def unwield_item(self, monster):
 		""" Monster unequips item and puts back to the inventory.
 		Produces events.
 		"""
-		if not monster.wielding:
-			return
-		item = monster.wielding
-		monster.inventory.append(item)
-		monster.wielding = None
-		self.fire_event(UnequipItemEvent(monster, item))
+		item = monster.unwield()
+		if item:
+			self.fire_event(UnequipItemEvent(monster, item))
 	def jump_to(self, new_pos):
 		""" Teleports player to new pos. """
 		self.get_player().pos = new_pos

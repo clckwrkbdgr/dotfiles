@@ -71,11 +71,6 @@ class TestUtils(unittest.TestCase):
 		self.assertFalse(game.is_diagonal_movement(Point(0, 0), Point(0, 1)))
 
 class TestMonster(unittest.TestCase):
-	def should_heal(self):
-		jc = UNATCOAgent(None)
-		jc.hp = 50
-		jc.affect_health(70)
-		self.assertEqual(jc.hp, 100)
 	def should_detect_hostiles(self):
 		jc = UNATCOAgent(None)
 		nsf = NSFTerrorist(None)
@@ -92,85 +87,6 @@ class TestMonster(unittest.TestCase):
 		self.assertFalse(jc.has_item(NanoKey, value='666'))
 		self.assertTrue(jc.has_item(NanoKey))
 		self.assertFalse(jc.has_item(StealthPistol))
-	def should_equip_items(self):
-		key = NanoKey()
-		key.value = '0451'
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
-		hazmat = HazmatSuit()
-
-		jc = UNATCOAgent(None)
-		jc.inventory.append(key)
-		jc.inventory.append(pistol)
-		jc.inventory.append(armor)
-
-		self.assertEqual(_R(jc.wield(pistol)), _R([
-			game.Event.Wielding(jc, pistol),
-			]))
-		self.assertEqual(_R(jc.wield(key)), _R([
-			game.Event.Unwielding(jc, pistol),
-			game.Event.Wielding(jc, key),
-			]))
-		self.assertEqual(_R(jc.wear(armor)), _R([
-			game.Event.Wearing(jc, armor),
-			]))
-		self.assertEqual(_R(jc.wear(hazmat)), _R([
-			game.Event.TakingOff(jc, armor),
-			game.Event.Wearing(jc, hazmat),
-			]))
-		self.assertEqual(_R(jc.wield(hazmat)), _R([
-			game.Event.TakingOff(jc, hazmat),
-			game.Event.Unwielding(jc, key),
-			game.Event.Wielding(jc, hazmat),
-			]))
-		self.assertEqual(_R(jc.wear(pistol)), _R([
-			game.Event.NotWearable(pistol),
-			]))
-		self.assertEqual(_R(jc.wear(armor)), _R([
-			game.Event.Wearing(jc, armor),
-			]))
-		self.assertEqual(_R(jc.wear(hazmat)), _R([
-			game.Event.Unwielding(jc, hazmat),
-			game.Event.TakingOff(jc, armor),
-			game.Event.Wearing(jc, hazmat),
-			]))
-		jc.wield(pistol)
-		self.assertEqual(_R(jc.wield(None)), _R([
-			game.Event.Unwielding(jc, pistol),
-			]))
-		self.assertEqual(_R(jc.wear(None)), _R([
-			game.Event.TakingOff(jc, hazmat),
-			]))
-	def should_drop_items(self):
-		key = NanoKey()
-		key.value = '0451'
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
-		hazmat = HazmatSuit()
-
-		jc = UNATCOAgent(None)
-		jc.pos = Point(1, 2)
-		jc.inventory.append(key)
-		jc.inventory.append(pistol)
-		jc.inventory.append(armor)
-
-		jc.wear(armor)
-		jc.wield(pistol)
-
-		self.assertEqual(_R(jc.drop(key)), _R([
-			items.ItemAtPos(Point(1, 2), key), [],
-			]))
-		self.assertFalse(jc.has_item(NanoKey))
-		self.assertEqual(_R(jc.drop(pistol)), _R([
-			items.ItemAtPos(Point(1, 2), pistol),
-			[game.Event.Unwielding(jc, pistol)],
-			]))
-		self.assertFalse(jc.has_item(StealthPistol))
-		self.assertEqual(_R(jc.drop(armor)), _R([
-			items.ItemAtPos(Point(1, 2), armor),
-			[game.Event.TakingOff(jc, armor)],
-			]))
-		self.assertFalse(jc.has_item(ThermopticCamo))
 	def should_consumeItems(self):
 		key = NanoKey()
 		key.value = '0451'
@@ -187,17 +103,13 @@ class TestMonster(unittest.TestCase):
 			]))
 		self.assertTrue(jc.has_item(NanoKey))
 
-		jc.wield(stimpack)
 		self.assertEqual(_R(jc.consume(stimpack)), _R([
-			game.Event.Unwielding(jc, stimpack),
 			game.Event.MonsterConsumedItem(jc, stimpack),
 			]))
 		self.assertFalse(jc.has_item(StimPack))
 		self.assertEqual(jc.hp, jc.max_hp)
 
-		jc.wield(smart_stimpack)
 		self.assertEqual(_R(jc.consume(smart_stimpack)), _R([
-			game.Event.Unwielding(jc, smart_stimpack),
 			]))
 		self.assertTrue(jc.has_item(SmartStimPack))
 	def should_calc_attack_damage(self):
@@ -211,6 +123,7 @@ class TestMonster(unittest.TestCase):
 		self.assertEqual(jc.get_attack_damage(), 2)
 		jc.wield(armor)
 		self.assertEqual(jc.get_attack_damage(), 2)
+		jc.unwield()
 		jc.wield(pistol)
 		self.assertEqual(jc.get_attack_damage(), 7)
 

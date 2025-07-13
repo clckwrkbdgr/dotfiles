@@ -55,7 +55,7 @@ class Consumable(object):
 	def consume_by(self, who): # pragma: no cover
 		return NotImplemented
 
-class Wearable(object):
+class Wearable(items.Wearable):
 	protection = classfield('_protection', 0)
 
 class Furniture(appliances.Appliance):
@@ -110,65 +110,13 @@ class Monster(actors.EquippedMonster):
 			else:
 				return True
 		return False
-	def _unequip(self, item):
-		events = []
-		if self.wielding == item:
-			self.wielding = None
-			events.append(Event.Unwielding(self, item))
-		if self.wearing == item:
-			self.wearing = None
-			events.append(Event.TakingOff(self, item))
-		return events
-	def wield(self, item):
-		""" Tries to wield item.
-		Returns list of happened events.
-		"""
-		if item is None:
-			events = []
-			if self.wielding:
-				events.append(Event.Unwielding(self, self.wielding))
-			self.wielding = None
-			return events
-		events = self._unequip(item)
-		if self.wielding:
-			events.append(Event.Unwielding(self, self.wielding))
-			self.wielding = None
-		self.wielding = item
-		events.append(Event.Wielding(self, item))
-		return events
-	def wear(self, item):
-		""" Tries to wear item.
-		Returns list of happened events.
-		"""
-		if item is None:
-			events = []
-			if self.wearing:
-				events.append(Event.TakingOff(self, self.wearing))
-			self.wearing = None
-			return events
-		if not isinstance(item, Wearable):
-			return [Event.NotWearable(item)]
-		events = self._unequip(item)
-		if self.wearing:
-			events.append(Event.TakingOff(self, self.wearing))
-			self.wearing = None
-		self.wearing = item
-		events.append(Event.Wearing(self, item))
-		return events
-	def drop(self, item):
-		""" Tries to drop item from inventory.
-		Returns list of happened events.
-		"""
-		events = self._unequip(item)
-		item = super(Monster, self).drop(item)
-		return item, events
 	def consume(self, item):
 		""" Tries to consume item.
 		Returns list of happened events.
 		"""
 		if not isinstance(item, Consumable):
 			return [Event.NotConsumable(item)]
-		events = self._unequip(item)
+		events = []
 		consume_events = item.consume_by(self)
 		if consume_events is None:
 			return events
@@ -347,10 +295,9 @@ class GridRoomMap(object):
 		self.items.pop(index)
 		return [Event.GrabbedItem(who, item)]
 	def drop_item(self, who, item):
-		item, events = who.drop(item)
-		events.append(Event.MonsterDroppedItem(who, item.item))
+		item = who.drop(item)
 		self.items.append(item)
-		return events
+		return [Event.MonsterDroppedItem(who, item.item)]
 	def visit(self, pos):
 		""" Marks all objects (rooms, tunnels) related to pos as visited. """
 		room = self.room_of(pos)

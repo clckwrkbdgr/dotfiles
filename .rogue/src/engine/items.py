@@ -39,6 +39,11 @@ class Item(object):
 		"""
 		writer.write(type(self).__name__)
 
+class Wearable(object):
+	""" Trait for items that can be worn as outfit.
+	"""
+	pass
+
 class ItemAtPos(object): # pragma: no cover -- TODO
 	def __init__(self, pos, item):
 		self.pos = pos

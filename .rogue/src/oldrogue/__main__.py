@@ -504,8 +504,8 @@ class MainGame(tui.app.MVC):
 		if not dungeon.get_player().wielding:
 			dungeon.fire_event(NothingToUnwield())
 		else:
-			for _ in dungeon.get_player().wield(None):
-				self.data.fire_event(_)
+			item = dungeon.get_player().unwield()
+			self.data.fire_event(Event.Unwielding(self, item))
 	@Controls('W')
 	def wear(self):
 		""" Wear item. """
@@ -521,8 +521,8 @@ class MainGame(tui.app.MVC):
 		if not dungeon.get_player().wearing:
 			dungeon.fire_event(NothingToTakeOff())
 		else:
-			for _ in dungeon.get_player().wear(None):
-				self.data.fire_event(_)
+			item = dungeon.get_player().take_off()
+			self.data.fire_event(Event.TakingOff(self, item))
 	@Controls('i')
 	def inventory(self):
 		""" Toggle inventory. """
@@ -624,8 +624,13 @@ class WieldItem:
 	def prompt(self): return "Which item to wield?"
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
-		for _ in self.data.get_player().wield(item):
-			self.data.fire_event(_)
+		try:
+			self.data.get_player().wield(item)
+		except EquippedMonster.SlotIsTaken:
+			item = dungeon.get_player().unwield()
+			self.data.fire_event(Event.Unwielding(self.data.get_player(), item))
+			self.data.get_player().wield(item)
+			events.append(Event.Wielding(self.data.get_player(), item))
 
 class WearItem:
 	def prompt(self): return "Which item to wear?"
@@ -633,6 +638,15 @@ class WearItem:
 		item = self.data.get_player().inventory[index]
 		for _ in self.data.get_player().wear(item):
 			self.data.fire_event(_)
+		try:
+			self.data.get_player().wear(item)
+		except EquippedMonster.ItemNotFit as e:
+			self.data.fire_event(Event.NotWearable(item))
+		except EquippedMonster.SlotIsTaken:
+			item = dungeon.get_player().take_off()
+			self.data.fire_event(Event.TakingOff(self.data.get_player(), item))
+			self.data.get_player().wear(item)
+			events.append(Event.Wielding(self.data.get_player(), item))
 
 class QuickItemSelection(tui.widgets.Prompt):
 	def extended_mode(self):

@@ -18,7 +18,7 @@ class Dagger(items.Item):
 	_sprite = '('
 	_name = 'dagger'
 
-class Rags(items.Item):
+class Rags(items.Item, items.Wearable):
 	_sprite = '['
 	_name = 'rags'
 
@@ -140,6 +140,20 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(rat.hp, 5)
 		self.assertEqual(rat.affect_health(-10), -5)
 		self.assertEqual(rat.hp, 0)
+	def should_resolve_item(self):
+		rat = Rat(Point(1, 1))
+		potion = MockPotion()
+		rat.inventory.append(potion)
+		mcguffin = McGuffin()
+		rat.inventory.append(mcguffin)
+		self.assertEqual(rat._resolve_item(potion), potion)
+		self.assertEqual(len(rat.inventory), 2)
+		self.assertEqual(rat._resolve_item(1), mcguffin)
+		self.assertEqual(len(rat.inventory), 2)
+		self.assertEqual(rat._resolve_item(1, remove=True), mcguffin)
+		self.assertEqual(len(rat.inventory), 1)
+		self.assertEqual(rat._resolve_item(potion, remove=True), potion)
+		self.assertEqual(len(rat.inventory), 0)
 	def should_drop_item(self):
 		rat = Rat(Point(1, 1))
 		potion = MockPotion()
@@ -200,3 +214,53 @@ class TestEquippedMonsters(unittest.TestCase):
 		goblin.wearing = Rags()
 		writer.write(goblin)
 		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Goblin\x001\x002\x0010\x000\x001\x00Dagger\x001\x00Rags')
+	
+	def should_wield_items(self):
+		goblin = Goblin(Point(1, 2))
+		dagger = Dagger()
+		rags = Rags()
+		goblin.inventory.append(dagger)
+		goblin.inventory.append(rags)
+		goblin.wield(dagger)
+		self.assertEqual(goblin.wielding, dagger)
+		self.assertFalse(dagger in goblin.inventory)
+		with self.assertRaises(Goblin.SlotIsTaken):
+			goblin.wield(rags)
+		self.assertEqual(goblin.wielding, dagger)
+	def should_unwield_items(self):
+		goblin = Goblin(Point(1, 2))
+		dagger = Dagger()
+		goblin.inventory.append(dagger)
+		self.assertIsNone(goblin.unwield())
+		goblin.wield(dagger)
+		self.assertEqual(goblin.wielding, dagger)
+		self.assertEqual(goblin.unwield(), dagger)
+		self.assertIsNone(goblin.wielding)
+		self.assertTrue(dagger in goblin.inventory)
+	def should_wear_items(self):
+		goblin = Goblin(Point(1, 2))
+		dagger = Dagger()
+		rags = Rags()
+		rags_2 = Rags()
+		goblin.inventory.append(dagger)
+		goblin.inventory.append(rags)
+		goblin.inventory.append(rags_2)
+		with self.assertRaises(Goblin.ItemNotFit):
+			goblin.wear(dagger)
+		self.assertIsNone(goblin.wearing)
+		goblin.wear(rags)
+		self.assertEqual(goblin.wearing, rags)
+		self.assertFalse(rags in goblin.inventory)
+		with self.assertRaises(Goblin.SlotIsTaken):
+			goblin.wear(rags_2)
+		self.assertEqual(goblin.wearing, rags)
+	def should_take_off_items(self):
+		goblin = Goblin(Point(1, 2))
+		rags = Rags()
+		goblin.inventory.append(rags)
+		self.assertIsNone(goblin.take_off())
+		goblin.wear(rags)
+		self.assertEqual(goblin.wearing, rags)
+		self.assertEqual(goblin.take_off(), rags)
+		self.assertIsNone(goblin.wearing)
+		self.assertTrue(rags in goblin.inventory)
