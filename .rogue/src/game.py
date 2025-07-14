@@ -1,4 +1,3 @@
-from .defs import *
 from . import pcg
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
@@ -9,6 +8,18 @@ from . import engine
 from .engine.terrain import Terrain
 from .engine.events import Event
 import clckwrkbdgr.math
+from clckwrkbdgr.collections import DocstringEnum as Enum
+
+class Version(Enum):
+	""" INITIAL
+	PERSISTENT_RNG
+	TERRAIN_TYPES
+	MONSTERS
+	MONSTER_BEHAVIOR
+	ITEMS
+	INVENTORY
+	WIELDING
+	"""
 
 class Consumable(object):
 	def apply_effect(self, game, monster): # pragma: no cover
