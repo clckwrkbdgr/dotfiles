@@ -112,6 +112,20 @@ class Rogue(Monster):
 class RealMonster(Monster):
 	_hostile_to = [Rogue]
 
+	def act(self, dungeon):
+		if not dungeon.current_room:
+			return
+		sees_rogue = dungeon.current_room.contains(self.pos)
+		if not sees_rogue:
+			return
+		shift = Point(
+				clckwrkbdgr.math.sign(dungeon.get_player().pos.x - self.pos.x),
+				clckwrkbdgr.math.sign(dungeon.get_player().pos.y - self.pos.y),
+				)
+		new_pos = self.pos + shift
+		for _ in dungeon.move_monster(self, new_pos, with_tunnels=False):
+			dungeon.fire_event(_)
+
 animal_drops = [
 			(70, None),
 			(20, HealingPotion),
@@ -576,18 +590,7 @@ class MainGame(tui.app.MVC):
 		for monster in dungeon.current_level.monsters:
 			if isinstance(monster, self.PLAYER_TYPE):
 				continue
-			if not dungeon.current_room:
-				continue
-			sees_rogue = dungeon.current_room.contains(monster.pos)
-			if not sees_rogue:
-				continue
-			shift = Point(
-					clckwrkbdgr.math.sign(dungeon.get_player().pos.x - monster.pos.x),
-					clckwrkbdgr.math.sign(dungeon.get_player().pos.y - monster.pos.y),
-					)
-			new_pos = monster.pos + shift
-			for _ in dungeon.move_monster(monster, new_pos, with_tunnels=False):
-				self.data.fire_event(_)
+			monster.act(dungeon)
 
 		if not dungeon.get_player().is_alive():
 			return MessageView(Grave, self.data)

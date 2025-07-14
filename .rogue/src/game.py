@@ -4,7 +4,6 @@ from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
-from . import monsters
 from .engine import items, actors
 from . import engine
 from .engine.terrain import Terrain
@@ -52,8 +51,29 @@ class UnequipItemEvent(Event):
 	""" Unequips item. """
 	FIELDS = 'actor item'
 
-class Player(monsters.Monster):
+class Player(actors.EquippedMonster):
 	pass
+
+class Angry(actors.EquippedMonster):
+	def act(self, game):
+		player = game.get_player()
+		if not player: # pragma: no cover
+			return
+		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
+			game.attack(self, player)
+		elif clckwrkbdgr.math.distance(self.pos, player.pos) <= self.vision:
+			is_transparent = lambda p: game.is_transparent_to_monster(p, self)
+			if clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(self.pos, player.pos, is_transparent):
+				direction = Direction.from_points(self.pos, player.pos)
+				game.move(self, direction)
+
+class Inert(actors.EquippedMonster):
+	def act(self, game):
+		player = game.get_player()
+		if not player: # pragma: no cover
+			return
+		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
+			game.attack(self, player)
 
 class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	def __init__(self, *args, **kwargs):
@@ -167,7 +187,7 @@ class Game(engine.Game):
 			for monster in self.monsters:
 				if isinstance(monster, Player):
 					continue
-				self._perform_monster_actions(monster)
+				monster.act(self)
 			self.player_turn = True
 	def autostop(self):
 		try:
@@ -182,9 +202,6 @@ class Game(engine.Game):
 		self.god.noclip = not self.god.noclip
 	def wait(self):
 		pass
-	def _perform_monster_actions(self, monster):
-		""" Controller for monster actions (depends on behavior). """
-		monster.perform_action(self)
 	def get_viewport(self):
 		""" Returns current viewport size (for UI purposes). """
 		return self.strata.size

@@ -8,7 +8,6 @@ except: # pragma: no cover
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from ..pcg import builders
-from .. import monsters
 from ..engine import items
 from .. import pcg
 from .. import game
@@ -752,7 +751,7 @@ class TestFight(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True))
 		
 		monster = next(dungeon.iter_actors_at((10, 6)), None)
-		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		dungeon.monsters[-1].act(dungeon)
 		self.assertEqual(dungeon.get_player().hp, 9)
 		self.assertEqual(len(dungeon.events), 2)
 		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
@@ -768,7 +767,7 @@ class TestFight(AbstractTestDungeon):
 		
 		monster = next(dungeon.iter_actors_at((10, 6)), None)
 		player = dungeon.get_player()
-		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		dungeon.monsters[-1].act(dungeon)
 		self.assertIsNone(dungeon.get_player())
 		self.assertEqual(len(dungeon.events), 3)
 		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
@@ -784,7 +783,7 @@ class TestFight(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True))
 
 		monster = dungeon.monsters[-1]
-		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		dungeon.monsters[-1].act(dungeon)
 		self.assertEqual(dungeon.monsters[-1].pos, Point(10, 6))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), game.MoveEvent)
@@ -792,7 +791,7 @@ class TestFight(AbstractTestDungeon):
 		self.assertEqual(dungeon.events[0].dest, Point(10, 6))
 		list(dungeon.process_events(raw=True))
 
-		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		dungeon.monsters[-1].act(dungeon)
 		self.assertEqual(len(dungeon.events), 2)
 		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
 		self.assertEqual(dungeon.events[0].actor, monster)
@@ -804,7 +803,7 @@ class TestFight(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('close angry monster 2')
 		list(dungeon.process_events(raw=True))
 
-		dungeon._perform_monster_actions(dungeon.monsters[-1])
+		dungeon.monsters[-1].act(dungeon)
 		self.assertEqual(dungeon.monsters[-1].pos, Point(4, 4))
 		self.assertEqual(len(dungeon.events), 0)
 

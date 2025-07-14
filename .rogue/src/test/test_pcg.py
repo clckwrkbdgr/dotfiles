@@ -3,7 +3,6 @@ unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
 from .. import pcg as builders
 from ..engine.builders import Builder
-from .. import monsters
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr import pcg

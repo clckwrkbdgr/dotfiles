@@ -1,10 +1,9 @@
 from clckwrkbdgr.math import Point
 from .. import pcg as builders
 from .. import pcg as settlers
-from .. import monsters
 from .. import game
 from ..engine.terrain import Terrain
-from ..engine import items
+from ..engine import items, actors
 
 class NameItem(items.Item):
 	_name = 'name'
@@ -36,7 +35,7 @@ class Rags(items.Item):
 	_name = 'rags'
 	_sprite = '['
 
-class Name(monsters.Monster):
+class Name(actors.EquippedMonster):
 	_name = 'name'
 	_sprite = 'M'
 	_max_hp = 100
@@ -53,28 +52,28 @@ class Player(game.Player):
 	_vision = 10
 	_drops = None
 
-class Monster(monsters.Monster):
+class Monster(actors.EquippedMonster):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
 	_vision = 10
 	_drops = None
 
-class AngryMonster(monsters.Angry):
+class AngryMonster(game.Angry):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
 	_vision = 10
 	_drops = None
 
-class InertMonster(monsters.Inert):
+class InertMonster(game.Inert):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
 	_vision = 10
 	_drops = None
 
-class DummyThief(monsters.Monster):
+class DummyThief(actors.EquippedMonster):
 	_name = 'thief'
 	_sprite = 'T'
 	_max_hp = 3
@@ -83,7 +82,7 @@ class DummyThief(monsters.Monster):
 			(1, Money),
 			]
 
-class Thief(monsters.Angry):
+class Thief(game.Angry):
 	_name = 'thief'
 	_sprite = 'T'
 	_max_hp = 3

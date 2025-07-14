@@ -52,6 +52,12 @@ class Actor(object):
 		writer.write(type(self).__name__)
 		writer.write(self.pos)
 
+	def act(self, game): # pragma: no cover
+		""" Custom actions for the actor on the given game state.
+		Default implementation does nothing (dummy).
+		"""
+		pass
+
 class Monster(Actor):
 	""" Monster is a perishable Actor (has hp and can be hit)
 	and inventory of Items (can carry/drop items).

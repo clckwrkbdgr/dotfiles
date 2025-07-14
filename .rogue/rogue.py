@@ -84,11 +84,45 @@ class ColoredMonster(Monster):
 		self._sprite = Sprite(stream.read(), stream.read())
 		self._max_hp = stream.read_int()
 
+	def act(self, game):
+		monster_pos = self.coord.get_global(game.world)
+		player_pos = game.get_player_coord().get_global(game.world)
+		if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
+			game.get_player().affect_health(-1)
+			game.fire_event(HitMonster('monster', 'you'))
+			if not game.get_player().is_alive():
+				game.fire_event(MonsterDead('you'))
+
 MAX_MONSTER_ACTION_LENGTH = 10
 
 class AggressiveColoredMonster(ColoredMonster):
 	_vision = 10
-	pass
+	def act(self, game):
+		monster_pos = self.coord.get_global(game.world)
+		player_pos = game.get_player_coord().get_global(game.world)
+		if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
+			game.get_player().affect_health(-1)
+			game.fire_event(HitMonster('monster', 'you'))
+			if not game.get_player().is_alive():
+				game.fire_event(MonsterDead('you'))
+		elif isinstance(self, AggressiveColoredMonster) and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= self.vision:
+			shift = Point(
+					sign(player_pos.x - monster_pos.x),
+					sign(player_pos.y - monster_pos.y),
+					)
+			new_pos = monster_pos + shift
+			dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
+			dest_field_data = game.world.get_data(dest_pos)[-1]
+			dest_cell = game.world.cell(dest_pos)
+			if any(True for _ in game.iter_actors_at(dest_pos)):
+				game.fire_event(Bump('monster', 'monster.'))
+			elif dest_cell.passable:
+				current_field_data = game.world.get_data(self.coord)[-1]
+				if current_field_data != dest_field_data:
+					current_field_data.monsters.remove(self)
+					dest_field_data.monsters.append(self)
+					game.already_acted_monsters_from_previous_fields.append(self)
+				self.pos = dest_pos.values[-1]
 
 class Player(Monster):
 	_sprite = Sprite('@', 'bold_white')
@@ -912,38 +946,14 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			monster_zone_topleft = NestedGrid.Coord.from_global(player_pos - monster_action_range, game.world)
 			monster_zone_bottomright = NestedGrid.Coord.from_global(player_pos + monster_action_range, game.world)
 			monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
-			already_acted_monsters_from_previous_fields = []
+			self.game.already_acted_monsters_from_previous_fields = []
 			for monster_coord, monster in all_monsters(game.world, raw=True, zone_range=monster_zone_range):
-				if monster in already_acted_monsters_from_previous_fields:
-					continue
-				if isinstance(monster, Dweller):
+				if monster in self.game.already_acted_monsters_from_previous_fields:
 					continue
 				if isinstance(monster, Player):
 					continue
-				monster_pos = monster_coord.get_global(game.world)
-				if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-					game.get_player().affect_health(-1)
-					self.game.fire_event(HitMonster('monster', 'you'))
-					if not game.get_player().is_alive():
-						self.game.fire_event(MonsterDead('you'))
-				elif isinstance(monster, AggressiveColoredMonster) and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= monster.vision:
-					shift = Point(
-							sign(player_pos.x - monster_pos.x),
-							sign(player_pos.y - monster_pos.y),
-							)
-					new_pos = monster_pos + shift
-					dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
-					dest_field_data = game.world.get_data(dest_pos)[-1]
-					dest_cell = game.world.cell(dest_pos)
-					if any(True for _ in game.iter_actors_at(dest_pos)):
-						self.game.fire_event(Bump('monster', 'monster.'))
-					elif dest_cell.passable:
-						current_field_data = game.world.get_data(monster_coord)[-1]
-						if current_field_data != dest_field_data:
-							current_field_data.monsters.remove(monster)
-							dest_field_data.monsters.append(monster)
-							already_acted_monsters_from_previous_fields.append(monster)
-						monster.pos = dest_pos.values[-1]
+				monster.coord = monster_coord
+				monster.act(game)
 		return True
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()
