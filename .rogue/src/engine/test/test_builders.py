@@ -78,6 +78,86 @@ class TestUtilities(unittest.TestCase):
 		self.assertEqual(gen_amount(), 7)
 		self.assertEqual(gen_amount(), 8)
 
+class TestDistribution(unittest.TestCase):
+	class _MockSquatters(MockBuilder):
+		class Mapping:
+			rodent = staticmethod(lambda pos,*data: ('rodent',) + data + (pos,))
+			plant = staticmethod(lambda pos,*data: ('plant',) + data + (pos,))
+			slime = staticmethod(lambda pos,*data: ('slime',) + data + (pos,))
+			healing_potion = staticmethod(lambda *data: ('healing potion',) + data)
+		CELLS_PER_MONSTER = 60 # One monster for every 60 cells.
+		CELLS_PER_ITEM = 180 # One item for every 180 cells.
+		PASSABLE = ('floor',)
+		DISTRIBUTION = None
+		def generate_actors(self):
+			""" Places random population of different types of monsters.
+			"""
+			for _ in self.distribute(self.DISTRIBUTION, self.MONSTERS, self.amount_by_free_cells(self.CELLS_PER_MONSTER)):
+				yield _
+		def generate_items(self):
+			""" Drops items in random locations. """
+			for _ in self.distribute(self.DISTRIBUTION, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
+				yield _
+
+	def should_distribute_entities_in_uniform_manner(self):
+		class _UniformSquatters(self._MockSquatters):
+			MONSTERS = [
+					('plant',),
+					('slime',),
+					('rodent',),
+					]
+			ITEMS = [
+					('healing_potion',),
+					]
+			DISTRIBUTION = builders.UniformDistribution
+
+		rng = RNG(0)
+		builder = _UniformSquatters(rng, Size(20, 20))
+		builder.generate()
+		_monsters = list(builder.make_actors())
+		_items = list(builder.make_items())
+
+		self.maxDiff = None
+		self.assertEqual(sorted(_monsters), sorted([
+			('slime', Point(7, 5)),
+			('plant',  Point(16, 3)),
+			('rodent', Point(12, 15)),
+			('slime',  Point(16, 9)),
+			('rodent', Point(12, 4)),
+			]))
+		self.assertEqual(sorted(_items), sorted([
+			items.ItemAtPos(Point(6, 8), ('healing potion',)),
+			]))
+	def should_distribute_entities_by_weights(self):
+		class _WeightedSquatters(self._MockSquatters):
+			MONSTERS = [
+					(1, ('plant',)),
+					(5, ('slime',)),
+					(10, ('rodent',)),
+					]
+			ITEMS = [
+					(1, ('healing_potion',)),
+					]
+			DISTRIBUTION = builders.WeightedDistribution
+
+		rng = RNG(0)
+		builder = _WeightedSquatters(rng, Size(20, 20))
+		builder.generate()
+		_monsters = list(builder.make_actors())
+		_items = list(builder.make_items())
+
+		self.maxDiff = None
+		self.assertEqual(sorted(_monsters), sorted([
+			('slime', Point(7, 5)),
+			('slime',  Point(16, 3)),
+			('rodent', Point(12, 15)),
+			('rodent',  Point(16, 9)),
+			('rodent', Point(12, 4)),
+			]))
+		self.assertEqual(sorted(_items), sorted([
+			items.ItemAtPos(Point(6, 8), ('healing potion',)),
+			]))
+
 class TestBuilder(unittest.TestCase):
 	def should_generate_dungeon(self):
 		rng = RNG(0)

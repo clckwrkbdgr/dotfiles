@@ -230,7 +230,7 @@ class MockMapping:
 	def healing_potion(*data):
 		return HealingPotion(*data)
 
-class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
+class _MockBuilderSingleMockThief(settlers.CustomMap):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -244,10 +244,10 @@ class _MockBuilderSingleMockThief(settlers.CustomMapSingleMonster):
 		#..................#
 		####################
 		"""
-	PASSABLE = ('.',)
-	MONSTER = ('thief',)
+	def is_open(self, pos): return self.grid.cell(pos) == '.'
+	def generate_actors(self): yield (self.point(self.is_free), 'thief')
 
-class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
+class _MockBuilderSingleMockMonster(settlers.CustomMap):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -261,10 +261,27 @@ class _MockBuilderSingleMockMonster(settlers.CustomMapSingleMonster):
 		#..................#
 		####################
 		"""
-	PASSABLE = ('.',)
-	MONSTER = ('angry_monster',)
+	def is_open(self, pos): return self.grid.cell(pos) == '.'
+	def generate_actors(self): yield (self.point(self.is_free), 'angry_monster')
 
-class _MockBuilder_PotionsLyingAround(settlers.CustomSettler):
+class CustomSettler(settlers.CustomMap):
+	""" Fills map with predetermined monsters and items.
+	Data should be provided as list of raw parameters:
+	(<item/monster data>, <pos>)
+	"""
+	MONSTERS = [
+			]
+	ITEMS = [
+			]
+	def generate_actors(self):
+		self.rng.choice([1]) # FIXME mock action just to shift RNG
+		for _ in self.MONSTERS:
+			yield _
+	def generate_items(self):
+		for _ in self.ITEMS:
+			yield _
+
+class _MockBuilder_PotionsLyingAround(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -283,7 +300,7 @@ class _MockBuilder_PotionsLyingAround(settlers.CustomSettler):
 		(Point(11, 6), 'healing_potion'),
 		]
 
-class _MockBuilder_MockSettler(settlers.CustomSettler):
+class _MockBuilder_MockSettler(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -304,7 +321,7 @@ class _MockBuilder_MockSettler(settlers.CustomSettler):
 			(Point(10, 6), 'potion'),
 			]
 
-class _MockBuilderUnSettler(settlers.CustomSettler):
+class _MockBuilderUnSettler(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -319,7 +336,7 @@ class _MockBuilderUnSettler(settlers.CustomSettler):
 		####################
 		"""
 
-class _MockBuilder_NowYouSeeMe(settlers.CustomSettler):
+class _MockBuilder_NowYouSeeMe(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -338,7 +355,7 @@ class _MockBuilder_NowYouSeeMe(settlers.CustomSettler):
 		(Point(1, 6), 'monster',),
 		]
 
-class _MockMiniRogueBuilderUnSettler(settlers.CustomSettler):
+class _MockMiniRogueBuilderUnSettler(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		  +--+ % 
@@ -348,7 +365,7 @@ class _MockMiniRogueBuilderUnSettler(settlers.CustomSettler):
 		  +--+   
 		"""
 
-class _MockMiniBuilderUnSettler(settlers.CustomSettler):
+class _MockMiniBuilderUnSettler(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		@#..#
@@ -357,7 +374,7 @@ class _MockMiniBuilderUnSettler(settlers.CustomSettler):
 		#####
 		"""
 
-class _MockBuilder_MonstersOnTopOfItems(settlers.CustomSettler):
+class _MockBuilder_MonstersOnTopOfItems(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -380,7 +397,7 @@ class _MockBuilder_MonstersOnTopOfItems(settlers.CustomSettler):
 		(Point(1, 6), 'potion'),
 		]
 
-class _MockBuilder_CloseMonster(settlers.CustomSettler):
+class _MockBuilder_CloseMonster(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -398,7 +415,7 @@ class _MockBuilder_CloseMonster(settlers.CustomSettler):
 		(Point(10, 6), 'monster',),
 		]
 
-class _MockBuilder_CloseThief(settlers.CustomSettler):
+class _MockBuilder_CloseThief(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -416,7 +433,7 @@ class _MockBuilder_CloseThief(settlers.CustomSettler):
 		(Point(10, 6), 'dummy_thief'),
 		]
 
-class _MockBuilder_CloseInertMonster(settlers.CustomSettler):
+class _MockBuilder_CloseInertMonster(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -434,7 +451,7 @@ class _MockBuilder_CloseInertMonster(settlers.CustomSettler):
 		(Point(10, 6), 'inert_monster',),
 		]
 
-class _MockBuilder_CloseAngryMonster(settlers.CustomSettler):
+class _MockBuilder_CloseAngryMonster(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -452,7 +469,7 @@ class _MockBuilder_CloseAngryMonster(settlers.CustomSettler):
 		(Point(11, 6), 'angry_monster',),
 		]
 
-class _MockBuilder_CloseAngryMonster2(settlers.CustomSettler):
+class _MockBuilder_CloseAngryMonster2(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -470,7 +487,7 @@ class _MockBuilder_CloseAngryMonster2(settlers.CustomSettler):
 		(Point(4, 4), 'angry_monster',),
 		]
 
-class _MockBuilder_FightingGround(settlers.CustomSettler):
+class _MockBuilder_FightingGround(CustomSettler):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################

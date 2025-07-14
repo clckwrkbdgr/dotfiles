@@ -2,21 +2,45 @@ from __future__ import print_function
 import os, sys
 import logging
 Log = logging.getLogger('rogue')
-import src.game, src.engine.items, src.monsters, src.engine.terrain
+import src.game, src.engine.items, src.engine.actors, src.engine.terrain
 import src.ui
 import src.pcg
 import clckwrkbdgr.fs
 import clckwrkbdgr.serialize.stream
 
 class DungeonSquatters(src.pcg.WeightedSquatters):
+	""" Set of squatters, randomly distributed throughout the map
+	based on their relative weights (int or float) within corresponding
+	distribution list.
+
+	Data should be defined in class fields MONSTERS and ITEMS as lists of tuples:
+	MONSTERS = (<weight>, 'monster_type_id', <args...>)
+	ITEMS = (<weight>, 'item_type_id', <args...>)
+
+	Distribution is controlled by corresponding CELLS_PER_* fields, which should
+	set amount of _free_ (i.e. passable) cells that support one monster/item.
+	"""
+	CELLS_PER_MONSTER = 60 # One monster for every 60 cells.
 	MONSTERS = [
 			(1, ('plant',)),
 			(3, ('slime',)),
 			(10, ('rodent',)),
 			]
+	CELLS_PER_ITEM = 180 # One item for every 180 cells.
 	ITEMS = [
 			(1, ('healing_potion',)),
 			]
+	def is_open(self, pos):
+		return self.grid.cell(pos) == 'floor'
+	def generate_actors(self):
+		""" Places random population of different types of monsters.
+		"""
+		for _ in self.distribute(builders.WeightedDistribution, self.MONSTERS, self.amount_by_free_cells(self.CELLS_PER_MONSTER)):
+			yield _
+	def generate_items(self):
+		""" Drops items in random locations. """
+		for _ in self.distribute(builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
+			yield _
 
 class Player(src.game.Player):
 	_name = 'player'
@@ -24,13 +48,13 @@ class Player(src.game.Player):
 	_max_hp = 10
 	_vision = 10
 
-class Monster(src.monsters.Monster):
+class Monster(src.engine.actors.Monster):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
 	_vision = 10
 
-class Plant(src.monsters.Monster):
+class Plant(src.engine.actors.Monster):
 	_name = 'plant'
 	_sprite = 'P'
 	_max_hp = 1
@@ -40,7 +64,7 @@ class Plant(src.monsters.Monster):
 			(5, 'healing potion'),
 			]
 
-class Slime(src.monsters.Inert):
+class Slime(src.game.Inert):
 	_name = 'slime'
 	_sprite = 'o'
 	_max_hp = 5
@@ -50,7 +74,7 @@ class Slime(src.monsters.Inert):
 			(1, 'healing potion'),
 			]
 
-class Rodent(src.monsters.Angry):
+class Rodent(src.game.Angry):
 	_name = 'rodent'
 	_sprite = 'r'
 	_max_hp = 3
@@ -168,28 +192,16 @@ class DungeonMapping:
 
 class BSPDungeon(src.pcg.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
-	PASSABLE = ('floor',)
-	pass
 class CityBuilder(src.pcg.CityBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
-	PASSABLE = ('floor',)
-	pass
 class Sewers(src.pcg.Sewers, DungeonSquatters):
 	Mapping = DungeonMapping
-	PASSABLE = ('floor',)
-	pass
 class RogueDungeon(src.pcg.RogueDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
-	PASSABLE = ('floor',)
-	pass
 class CaveBuilder(src.pcg.CaveBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
-	PASSABLE = ('floor',)
-	pass
 class MazeBuilder(src.pcg.MazeBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
-	PASSABLE = ('floor',)
-	pass
 
 class Game(src.game.Game):
 	BUILDERS = [
