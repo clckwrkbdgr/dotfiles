@@ -31,34 +31,9 @@ class SubMode(clckwrkbdgr.tui.Mode):
 	def __init__(self, game):
 		self.game = game
 		self.done = False
-	def redraw(self, ui): # pragma: no cover
-		""" Redefine to draw mode-related features on screen.
-		May not affect the whole screen, see class field TRANSPARENT.
-		"""
-		raise NotImplementedError()
-	def on_any_key(self): # pragma: no cover
-		""" Redefine to process "any other key" action (not defined in the main
-		keymapping). E.g. can set .done=True for one-time screens (Press Any Key).
-		"""
-		pass
-	def pre_action(self):
-		return self.game._pre_action()
 	def get_bind_callback_args(self):
 		return (self.game,)
-	def get_keymapping(self):
-		return None if self.nodelay() else self.KEYMAPPING
 	def action(self, control):
-		""" Performs user action in current mode.
-		May start or quit sub-modes as a result.
-		Note that every sub-mode action will still go to the game,
-		so it has to explicitly return Action.NONE in case of some internal
-		sub-mode operations that do not affect the game.
-		If keymapping is not set, every action will close the mode.
-		See also: on_any_key()
-		"""
-		self.on_any_key()
-		if isinstance(control, clckwrkbdgr.tui.Key):
-			self.game.autostop()
 		return not self.done
 
 Keys = Keymapping()
@@ -139,6 +114,14 @@ class MainGame(SubMode):
 
 		if self.aim:
 			ui.cursor().move(self.aim.x, 1+self.aim.y)
+	def pre_action(self):
+		return self.game._pre_action()
+	def get_keymapping(self):
+		return None if self.nodelay() else self.KEYMAPPING
+	def action(self, control):
+		if isinstance(control, clckwrkbdgr.tui.Key):
+			self.game.autostop()
+		return not self.done
 	@Events.on(game.DiscoverEvent)
 	def on_discovering(self, game, event):
 		if event.obj == '>':
@@ -276,9 +259,8 @@ class HelpScreen(SubMode):
 				keys = str(binding.key)
 			ui.print_line(row, 0, '{0} - {1}'.format(keys, binding.help))
 		ui.print_line(row + 1, 0, '[Press Any Key...]')
-	def on_any_key(self):
-		self.done = True
-		return True
+	def action(self, control):
+		return False
 
 GodModeKeys = Keymapping()
 class GodModeMenu(SubMode):
@@ -288,18 +270,15 @@ class GodModeMenu(SubMode):
 	def redraw(self, ui):
 		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
 		ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
-	def on_any_key(self):
-		self.done = True
-		return True
+	def action(self, control):
+		return False
 	@GodModeKeys.bind('v')
 	def vision(self, game):
 		""" See all. """
-		self.done = True
 		game.toggle_god_vision()
 	@GodModeKeys.bind('c')
 	def noclip(self, game):
 		""" Walk through walls. """
-		self.done = True
 		game.toggle_god_noclip()
 
 InventoryKeys = Keymapping()
