@@ -23,24 +23,11 @@ DIRECTION = {
 	'n' : Direction.DOWN_RIGHT,
 	}
 
-class SubMode(clckwrkbdgr.tui.Mode):
-	""" Base class for sub mode for the main game (menus, dialogs, some
-	other additional screens).
-	Set .done=True when done and ready to quit sub-mode.
-	"""
+Keys = Keymapping()
+class MainGame(clckwrkbdgr.tui.Mode):
+	KEYMAPPING = Keys
 	def __init__(self, game):
 		self.game = game
-		self.done = False
-	def get_bind_callback_args(self):
-		return (self.game,)
-	def action(self, control):
-		return not self.done
-
-Keys = Keymapping()
-class MainGame(SubMode):
-	KEYMAPPING = Keys
-	def __init__(self, *args, **kwargs):
-		super(MainGame, self).__init__(*args, **kwargs)
 		self.aim = None
 		self.messages = []
 
@@ -121,7 +108,8 @@ class MainGame(SubMode):
 	def action(self, control):
 		if isinstance(control, clckwrkbdgr.tui.Key):
 			self.game.autostop()
-		return not self.done
+			return True
+		return not control
 	@Events.on(game.DiscoverEvent)
 	def on_discovering(self, game, event):
 		if event.obj == '>':
@@ -167,89 +155,89 @@ class MainGame(SubMode):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
 	@Keys.bind(None)
-	def on_idle(self, game): # pragma: no cover -- TODO why is this needed?
+	def on_idle(self): # pragma: no cover -- TODO why is this needed?
 		""" Show this help. """
 		return None
 	@Keys.bind('?')
-	def help(self, game):
+	def help(self):
 		""" Show this help. """
-		return HelpScreen(game)
+		return HelpScreen()
 	@Keys.bind('q')
-	def quit(self, game):
+	def quit(self):
 		""" Save and quit. """
 		Log.debug('Exiting the game.')
-		self.done = True
+		return True
 	@Keys.bind('x')
-	def examine(self, game):
+	def examine(self):
 		""" Examine surroundings (cursor mode). """
 		if self.aim:
 			self.aim = None
 		else:
-			self.aim = game.get_player().pos
+			self.aim = self.game.get_player().pos
 	@Keys.bind('.')
-	def autowalk(self, game):
+	def autowalk(self):
 		""" Wait. """
 		if self.aim:
 			dest = self.aim
 			self.aim = None
 			self.game.walk_to(dest)
 		else:
-			game.wait()
-			game.end_turn()
+			self.game.wait()
+			self.game.end_turn()
 	@Keys.bind('o')
-	def autoexplore(self, game):
+	def autoexplore(self):
 		""" Autoexplore. """
-		game.start_autoexploring()
+		self.game.start_autoexploring()
 	@Keys.bind('~')
-	def god_mode(self, game):
+	def god_mode(self):
 		""" God mode options. """
-		return GodModeMenu(game)
+		return GodModeMenu(self.game)
 	@Keys.bind('Q')
-	def suicide(self, game):
+	def suicide(self):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
-		self.game.suicide(game.get_player())
+		self.game.suicide(self.game.get_player())
 		self.game.end_turn()
 	@Keys.bind('>')
-	def descend(self, game):
+	def descend(self):
 		""" Descend. """
 		if not self.aim:
-			game.descend()
+			self.game.descend()
 	@Keys.bind('g')
-	def grab(self, game):
+	def grab(self):
 		""" Grab item. """
-		self.game.grab_item_at(self.game.get_player(), game.get_player().pos)
+		self.game.grab_item_at(self.game.get_player(), self.game.get_player().pos)
 		self.game.end_turn()
 	@Keys.bind('d')
-	def drop(self, game):
+	def drop(self):
 		""" Drop item. """
-		return DropSelection(game)
+		return DropSelection(self.game)
 	@Keys.bind('e')
-	def consume(self, game):
+	def consume(self):
 		""" Consume item. """
-		return ConsumeSelection(game)
+		return ConsumeSelection(self.game)
 	@Keys.bind('i')
-	def show_inventory(self, game):
+	def show_inventory(self):
 		""" Show inventory. """
-		return Inventory(game)
+		return Inventory(self.game)
 	@Keys.bind('E')
-	def show_equipment(self, game):
+	def show_equipment(self):
 		""" Show equipment. """
-		return Equipment(game)
+		return Equipment(self.game)
 	@Keys.bind(list('hjklyubn'), param=lambda key: DIRECTION[str(key)])
-	def move(self, game, direction):
+	def move(self, direction):
 		""" Move. """
 		Log.debug('Moving.')
 		if self.aim:
 			shift = direction
 			new_pos = self.aim + shift
-			if game.strata.valid(new_pos):
+			if self.game.strata.valid(new_pos):
 				self.aim = new_pos
 		else:
-			game.move(game.get_player(), direction)
-			game.end_turn()
+			self.game.move(self.game.get_player(), direction)
+			self.game.end_turn()
 
-class HelpScreen(SubMode):
+class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """
 	def redraw(self, ui):
 		for row, (_, binding) in enumerate(Keys.list_all()):
@@ -263,34 +251,36 @@ class HelpScreen(SubMode):
 		return False
 
 GodModeKeys = Keymapping()
-class GodModeMenu(SubMode):
+class GodModeMenu(clckwrkbdgr.tui.Mode):
 	""" God mode options. """
 	TRANSPARENT = True
 	KEYMAPPING = GodModeKeys
+	def __init__(self, game):
+		self.game = game
 	def redraw(self, ui):
 		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
 		ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
 	def action(self, control):
 		return False
 	@GodModeKeys.bind('v')
-	def vision(self, game):
+	def vision(self):
 		""" See all. """
-		game.toggle_god_vision()
+		self.game.toggle_god_vision()
 	@GodModeKeys.bind('c')
-	def noclip(self, game):
+	def noclip(self):
 		""" Walk through walls. """
-		game.toggle_god_noclip()
+		self.game.toggle_god_noclip()
 
 InventoryKeys = Keymapping()
-class Inventory(SubMode):
+class Inventory(clckwrkbdgr.tui.Mode):
 	""" Inventory menu.
 	Supports prompting message.
 	Initial prompt can be set via INITIAL_PROMPT.
 	"""
 	KEYMAPPING = InventoryKeys
 	INITIAL_PROMPT = None
-	def __init__(self, *args, **kwargs):
-		super(Inventory, self).__init__(*args, **kwargs)
+	def __init__(self, game):
+		self.game = game
 		self.prompt = self.INITIAL_PROMPT
 	def redraw(self, ui):
 		game = self.game
@@ -305,92 +295,75 @@ class Inventory(SubMode):
 					chr(ord('a') + row),
 					item.name,
 					))
+	def action(self, done):
+		return not done
+	def _use(self, monster, item): # pragma: no cover
+		return False
+	@InventoryKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
+	def select(self, param):
+		""" Select item and close inventory. """
+		if not self.game.get_player().inventory:
+			return None
+		index = ord(param) - ord('a')
+		if index >= len(self.game.get_player().inventory):
+			self.prompt = "No such item ({0})".format(param)
+			return None
+		if self._use(self.game.get_player(), self.game.get_player().inventory[index]):
+			self.game.end_turn()
+			return True
 	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
-	def close(self, game):
+	def close(self):
 		""" Close by Escape. """
-		self.done = True
+		return True
 
 EquipmentKeys = Keymapping()
-class Equipment(SubMode):
+class Equipment(clckwrkbdgr.tui.Mode):
 	""" Equipment menu.
 	"""
 	KEYMAPPING = EquipmentKeys
+	def __init__(self, game):
+		self.game = game
+		self.done = False
 	def redraw(self, ui):
 		game = self.game
 		wielding = game.get_player().wielding
 		if wielding:
 			wielding = wielding.name
 		ui.print_line(0, 0, 'wielding [a] - {0}'.format(wielding))
+	def action(self, done):
+		return not (done or self.done)
 	@EquipmentKeys.bind('a')
-	def wield(self, game):
+	def wield(self):
 		""" Wield or unwield item. """
+		if self.game.get_player().wielding:
+			self.game.unwield_item(self.game.get_player())
+			self.game.end_turn()
+			return True
 		self.done = True
-		if game.get_player().wielding:
-			game.unwield_item(game.get_player())
-			game.end_turn()
-			return
-		return WieldSelection(game)
+		return WieldSelection(self.game)
 	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
-	def close(self, game):
+	def close(self):
 		""" Close by Escape. """
-		self.done = True
+		return True
 
-ConsumeSelectionKeys = Keymapping()
 class ConsumeSelection(Inventory):
 	""" Select item to consume from inventory. """
-	KEYMAPPING = ConsumeSelectionKeys
 	INITIAL_PROMPT = "Select item to consume:"
-	@ConsumeSelectionKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
-	def select(self, game, param):
-		""" Select item and close inventory. """
-		index = ord(param) - ord('a')
-		if index >= len(game.get_player().inventory):
-			self.prompt = "No such item ({0})".format(param)
-			return None
-		self.done = True
-		game.consume_item(game.get_player(), game.get_player().inventory[index])
-		game.end_turn()
-	@ConsumeSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
-	def cancel(self, game):
-		""" Cancel selection. """
-		self.done = True
+	def _use(self, monster, item):
+		self.game.consume_item(monster, item)
+		return True
 
-DropSelectionKeys = Keymapping()
 class DropSelection(Inventory):
 	""" Select item to drop from inventory. """
-	KEYMAPPING = DropSelectionKeys
 	INITIAL_PROMPT = "Select item to drop:"
-	@DropSelectionKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
-	def select(self, game, param):
+	def _use(self, monster, item):
 		""" Select item and close inventory. """
-		index = ord(param) - ord('a')
-		if index >= len(game.get_player().inventory):
-			self.prompt = "No such item ({0})".format(param)
-			return None
-		self.done = True
-		game.drop_item(game.get_player(), game.get_player().inventory[index])
-		game.end_turn()
-	@DropSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
-	def cancel(self, game):
-		""" Cancel selection. """
-		self.done = True
+		self.game.drop_item(monster, item)
+		return True
 
-WieldSelectionKeys = Keymapping()
 class WieldSelection(Inventory):
 	""" Select item to wield from inventory. """
-	KEYMAPPING = WieldSelectionKeys
 	INITIAL_PROMPT = "Select item to wield:"
-	@WieldSelectionKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
-	def select(self, game, param):
-		""" Select item and close inventory. """
-		index = ord(param) - ord('a')
-		if index >= len(game.get_player().inventory):
-			self.prompt = "No such item ({0})".format(param)
-			return None
-		self.done = True
-		game.wield_item(game.get_player(), game.get_player().inventory[index])
-		game.end_turn()
-	@WieldSelectionKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
-	def cancel(self, game):
-		""" Cancel selection. """
-		self.done = True
+	def _use(self, monster, item):
+		self.game.wield_item(monster, item)
+		return True
