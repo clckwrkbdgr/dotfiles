@@ -149,7 +149,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
 		self.assertEqual(dungeon.get_player().hp, 7)
-		self.assertEqual(dungeon.monsters[2].hp, 2)
+		self.assertEqual(dungeon.scene.monsters[2].hp, 2)
 	def should_die_after_monster_attack(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
 		self.assertTrue(dungeon._pre_action())
@@ -182,7 +182,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.is_finished())
 		self.maxDiff = None
 		self.assertIsNone(dungeon.get_player())
-		self.assertEqual(dungeon.monsters[1].hp, 3)
+		self.assertEqual(dungeon.scene.monsters[1].hp, 3)
 	def should_suicide_out_of_main_loop(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertTrue(dungeon._pre_action())
@@ -292,13 +292,13 @@ class TestEvents(AbstractTestDungeon):
 		# At start we see just the one monster.
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
-		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 6)))
+		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.scene.monsters if monster.pos == Point(1, 6)))
 		list(dungeon.process_events(raw=True))
 
 		# Now we see both, but reporting only the new one.
 		dungeon.jump_to(Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 1)))
+		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.scene.monsters if monster.pos == Point(1, 1)))
 		list(dungeon.process_events(raw=True))
 
 		# Now we see just the original one - visibility did not change.
@@ -308,13 +308,13 @@ class TestEvents(AbstractTestDungeon):
 		# Now we see both, but reporting only the new one again.
 		dungeon.jump_to(Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.monsters if monster.pos == Point(1, 1)))
+		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.scene.monsters if monster.pos == Point(1, 1)))
 		list(dungeon.process_events(raw=True))
 
 class TestVisibility(AbstractTestDungeon):
 	def get_sprite(self, game, pos):
 		pos = Point(pos)
-		cell_info = game.get_cell_info(pos)
+		cell_info = game.scene.get_cell_info(pos)
 		return game.get_cell_repr(pos, cell_info)
 	def should_get_visible_surroundings(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
@@ -454,7 +454,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		self.assertFalse(dungeon.remembered_exit)
+		self.assertFalse(dungeon.scene.remembered_exit)
 		self.maxDiff = None
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				    #####        #  
@@ -469,7 +469,7 @@ class TestMovement(AbstractTestDungeon):
 				 #################  
 				"""))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT) 
-		self.assertFalse(dungeon.remembered_exit)
+		self.assertFalse(dungeon.scene.remembered_exit)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				    #####      #### 
 				     ...   ## ..... 
@@ -486,7 +486,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
-		self.assertTrue(dungeon.remembered_exit)
+		self.assertTrue(dungeon.scene.remembered_exit)
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				   ########    #####
 				         #>##      #
@@ -708,13 +708,13 @@ class TestFight(AbstractTestDungeon):
 
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
-		monster = next(dungeon.iter_actors_at((10, 6)), None)
+		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
 		self.assertEqual(monster.hp, 2)
 	def should_attack_monster(self):
 		dungeon = self.dungeon = mock_dungeon.build('close monster')
 		list(dungeon.process_events(raw=True))
 		
-		monster = next(dungeon.iter_actors_at((10, 6)), None)
+		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
 		dungeon.attack(dungeon.get_player(), monster)
 		self.assertEqual(monster.hp, 2)
 		self.assertEqual(len(dungeon.events), 2)
@@ -727,21 +727,21 @@ class TestFight(AbstractTestDungeon):
 	def should_kill_monster(self):
 		dungeon = self.dungeon = mock_dungeon.build('close monster')
 
-		monster = next(dungeon.iter_actors_at((10, 6)), None)
+		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
 		monster.hp = 1
 		dungeon.attack(dungeon.get_player(), monster)
 		self.assertEqual(type(dungeon.events[-1]), game.DeathEvent)
 		self.assertEqual(dungeon.events[-1].target, monster)
-		monster = next(dungeon.iter_actors_at((10, 6)), None)
+		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
 		self.assertIsNone(monster)
 	def should_drop_loot_from_monster(self):
 		dungeon = self.dungeon = mock_dungeon.build('close thief')
 
-		monster = next(dungeon.iter_actors_at((10, 6)), None)
+		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
 		monster.hp = 1
 		dungeon.attack(dungeon.get_player(), monster)
 
-		item = next(dungeon.iter_items_at((10, 6)))
+		item = next(dungeon.scene.iter_items_at((10, 6)))
 		self.assertEqual(item.name, 'money')
 		self.assertEqual(type(dungeon.events[-1]), game.DropItemEvent)
 		self.assertEqual(dungeon.events[-1].actor, monster)
@@ -750,8 +750,8 @@ class TestFight(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('close inert monster')
 		list(dungeon.process_events(raw=True))
 		
-		monster = next(dungeon.iter_actors_at((10, 6)), None)
-		dungeon.monsters[-1].act(dungeon)
+		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
+		dungeon.scene.monsters[-1].act(dungeon)
 		self.assertEqual(dungeon.get_player().hp, 9)
 		self.assertEqual(len(dungeon.events), 2)
 		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
@@ -765,9 +765,9 @@ class TestFight(AbstractTestDungeon):
 		dungeon.get_player().hp = 1
 		list(dungeon.process_events(raw=True))
 		
-		monster = next(dungeon.iter_actors_at((10, 6)), None)
+		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
 		player = dungeon.get_player()
-		dungeon.monsters[-1].act(dungeon)
+		dungeon.scene.monsters[-1].act(dungeon)
 		self.assertIsNone(dungeon.get_player())
 		self.assertEqual(len(dungeon.events), 3)
 		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
@@ -782,16 +782,16 @@ class TestFight(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('close angry monster')
 		list(dungeon.process_events(raw=True))
 
-		monster = dungeon.monsters[-1]
-		dungeon.monsters[-1].act(dungeon)
-		self.assertEqual(dungeon.monsters[-1].pos, Point(10, 6))
+		monster = dungeon.scene.monsters[-1]
+		dungeon.scene.monsters[-1].act(dungeon)
+		self.assertEqual(dungeon.scene.monsters[-1].pos, Point(10, 6))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), game.MoveEvent)
 		self.assertEqual(dungeon.events[0].actor, monster)
 		self.assertEqual(dungeon.events[0].dest, Point(10, 6))
 		list(dungeon.process_events(raw=True))
 
-		dungeon.monsters[-1].act(dungeon)
+		dungeon.scene.monsters[-1].act(dungeon)
 		self.assertEqual(len(dungeon.events), 2)
 		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
 		self.assertEqual(dungeon.events[0].actor, monster)
@@ -803,8 +803,8 @@ class TestFight(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('close angry monster 2')
 		list(dungeon.process_events(raw=True))
 
-		dungeon.monsters[-1].act(dungeon)
-		self.assertEqual(dungeon.monsters[-1].pos, Point(4, 4))
+		dungeon.scene.monsters[-1].act(dungeon)
+		self.assertEqual(dungeon.scene.monsters[-1].pos, Point(4, 4))
 		self.assertEqual(len(dungeon.events), 0)
 
 class TestAutoMode(AbstractTestDungeon):
@@ -903,8 +903,8 @@ class TestAutoMode(AbstractTestDungeon):
 class TestGameSerialization(AbstractTestDungeon):
 	def should_load_game_or_start_new_one(self):
 		dungeon = self.dungeon = mock_dungeon.build('mock settler')
-		self.assertEqual(dungeon.monsters[0].pos, Point(9, 6))
-		dungeon.monsters[0].pos = Point(2, 2)
+		self.assertEqual(dungeon.scene.monsters[0].pos, Point(9, 6))
+		dungeon.scene.monsters[0].pos = Point(2, 2)
 		writer = savefile.Writer(MockWriterStream(), game.Version.CURRENT)
 		dungeon.save(writer)
 		dump = writer.f.dump
@@ -913,10 +913,10 @@ class TestGameSerialization(AbstractTestDungeon):
 		restored_dungeon = MockGame()
 		restored_dungeon.load(reader)
 
-		self.assertEqual(restored_dungeon.monsters[0].pos, Point(2, 2))
+		self.assertEqual(restored_dungeon.scene.monsters[0].pos, Point(2, 2))
 
 		restored_dungeon = self.dungeon = mock_dungeon.build('mock settler restored')
-		self.assertEqual(restored_dungeon.monsters[0].pos, Point(9, 6))
+		self.assertEqual(restored_dungeon.scene.monsters[0].pos, Point(9, 6))
 
 	def should_serialize_and_deserialize_game(self):
 		dungeon = self.dungeon = mock_dungeon.build('mock settler')
@@ -962,22 +962,22 @@ class TestGameSerialization(AbstractTestDungeon):
 		reader = savefile.Reader(iter(dump))
 		restored_dungeon.load(reader)
 		self.assertEqual(
-				[(_.name, _.pos) for _ in dungeon.monsters],
-				[(_.name, _.pos) for _ in restored_dungeon.monsters],
+				[(_.name, _.pos) for _ in dungeon.scene.monsters],
+				[(_.name, _.pos) for _ in restored_dungeon.scene.monsters],
 				)
-		self.assertEqual(dungeon.exit_pos, restored_dungeon.exit_pos)
-		for pos in dungeon.strata.size.iter_points():
-			self.assertEqual(dungeon.strata.cell(pos).sprite, restored_dungeon.strata.cell(pos).sprite, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos).passable, restored_dungeon.strata.cell(pos).passable, str(pos))
-			self.assertEqual(dungeon.strata.cell(pos).remembered, restored_dungeon.strata.cell(pos).remembered, str(pos))
-			self.assertEqual(dungeon.visited.cell(pos), restored_dungeon.visited.cell(pos), str(pos))
-		self.assertEqual(len(dungeon.monsters), len(restored_dungeon.monsters))
-		for monster, restored_monster in zip(dungeon.monsters, restored_dungeon.monsters):
+		self.assertEqual(dungeon.scene.exit_pos, restored_dungeon.scene.exit_pos)
+		for pos in dungeon.scene.strata.size.iter_points():
+			self.assertEqual(dungeon.scene.strata.cell(pos).sprite, restored_dungeon.scene.strata.cell(pos).sprite, str(pos))
+			self.assertEqual(dungeon.scene.strata.cell(pos).passable, restored_dungeon.scene.strata.cell(pos).passable, str(pos))
+			self.assertEqual(dungeon.scene.strata.cell(pos).remembered, restored_dungeon.scene.strata.cell(pos).remembered, str(pos))
+			self.assertEqual(dungeon.scene.visited.cell(pos), restored_dungeon.scene.visited.cell(pos), str(pos))
+		self.assertEqual(len(dungeon.scene.monsters), len(restored_dungeon.scene.monsters))
+		for monster, restored_monster in zip(dungeon.scene.monsters, restored_dungeon.scene.monsters):
 			self.assertEqual(monster.name, restored_monster.name)
 			self.assertEqual(monster.pos, restored_monster.pos)
 			self.assertEqual(monster.hp, restored_monster.hp)
-		self.assertEqual(dungeon.remembered_exit, restored_dungeon.remembered_exit)
-		self.assertEqual(len(dungeon.items), len(restored_dungeon.items))
-		for item, restored_item in zip(dungeon.items, restored_dungeon.items):
+		self.assertEqual(dungeon.scene.remembered_exit, restored_dungeon.scene.remembered_exit)
+		self.assertEqual(len(dungeon.scene.items), len(restored_dungeon.scene.items))
+		for item, restored_item in zip(dungeon.scene.items, restored_dungeon.scene.items):
 			self.assertEqual(item.item.name, restored_item.item.name)
 			self.assertEqual(item.pos, restored_item.pos)

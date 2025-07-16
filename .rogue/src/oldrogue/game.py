@@ -10,7 +10,7 @@ trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
 from clckwrkbdgr import xdg
 from .. import engine
-from ..engine import events
+from ..engine import events, scene
 from ..engine import actors, items, appliances
 
 def is_diagonal_movement(point_from, point_to):
@@ -214,14 +214,18 @@ class Tunnel(clckwrkbdgr.math.geometry.RectConnection):
 			if self.contains(p):
 				self.visited.add(p)
 
-class GridRoomMap(object):
+class GridRoomMap(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
 	Items, monsters, fitment objects are supplied.
 	"""
+	PLAYER_TYPE = None
+
 	def __init__(self, level_id=None,
 			rooms=None, tunnels=None,
 			items=None, monsters=None, objects=None,
+				  god=None,
 			): # pragma: no cover
+		self.god = god or GodMode()
 		self.level_id = level_id
 		self.rooms = rooms or Matrix( (3, 3) )
 		self.tunnels = tunnels or []
@@ -332,47 +336,12 @@ class GridRoomMap(object):
 		data.monsters = self.monsters
 		return data
 
-class GodMode(object):
-	""" God mode options.
-	Vision: allows to see everything regardless of obstacles.
-	"""
-	def __init__(self):
-		self.vision = False
-
-class Dungeon(engine.Game):
-	""" Set of connected PCG levels with player. """
-	GENERATOR = None
-	PLAYER_TYPE = None
-	def __init__(self):
-		super(Dungeon, self).__init__()
-		self.levels = {}
-		self.current_level_id = None
-		self.generator = self.GENERATOR()
-		self.god = GodMode()
-	def generate(self): # pragma: no cover -- TODO
-		rogue = self.PLAYER_TYPE()
-		rogue.inventory.append(Dagger())
-		self.go_to_level(rogue, 0)
-	def load(self, reader): # pragma: no cover -- TODO
-		self.levels = data.levels
-		self.current_level_id = data.current_level
-		self.fire_event(Event.WelcomeBack(dungeon.get_player()))
-	def save(self, data): # pragma: no cover -- TODO
-		data.levels = self.levels
-		data.current_level = self.current_level_id
-	@property
-	def current_level(self):
-		return self.levels[self.current_level_id]
 	@property
 	def current_room(self):
-		return self.current_level.room_of(self.get_player().pos)
+		return self.room_of(self.get_player().pos)
 	@property
 	def current_tunnel(self):
-		return self.current_level.tunnel_of(self.get_player().pos)
-	def is_finished(self):
-		return not (self.get_player() and self.get_player().is_alive())
-	def get_player(self):
-		return next((monster for monster in self.current_level.monsters if isinstance(monster, self.PLAYER_TYPE)), None)
+		return self.tunnel_of(self.get_player().pos)
 	def is_visible(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) is visible for player.
 		Additional data depends on type of primary object.
@@ -385,10 +354,10 @@ class Dungeon(engine.Game):
 		if isinstance(obj, Tunnel):
 			return additional in obj.visited
 		if isinstance(obj, Point):
-			for room in self.current_level.rooms.values():
+			for room in self.rooms.values():
 				if room.contains(obj) and self.is_visible(room):
 					return True
-			for tunnel in self.current_level.tunnels:
+			for tunnel in self.tunnels:
 				if self.is_visible(tunnel, obj):
 					return True
 		return False
@@ -404,19 +373,18 @@ class Dungeon(engine.Game):
 		if isinstance(obj, Tunnel):
 			return additional in obj.visited
 		if isinstance(obj, Point):
-			for room in self.current_level.rooms.values():
+			for room in self.rooms.values():
 				if room.contains(obj) and self.is_remembered(room):
 					return True
-			for tunnel in self.current_level.tunnels:
+			for tunnel in self.tunnels:
 				if self.is_remembered(tunnel, obj):
 					return True
 		return False
 	def iter_cells(self, view_rect):
-		dungeon = self
-		trace.debug(list(dungeon.current_level.rooms.keys()))
+		trace.debug(list(self.rooms.keys()))
 		terrain = []
-		for room in dungeon.current_level.rooms.values():
-			if not dungeon.is_remembered(room):
+		for room in self.rooms.values():
+			if not self.is_remembered(room):
 				continue
 			terrain.append((room.top, room.top, "+"))
 			terrain.append((room.top, room.left, "+"))
@@ -429,7 +397,7 @@ class Dungeon(engine.Game):
 			for y in range(room.top+1, room.bottom):
 				terrain.append((y, room.left, "|"))
 				terrain.append((y, room.right, "|"))
-			if dungeon.is_visible(room):
+			if self.is_visible(room):
 				for y in range(room.top+1, room.bottom):
 					for x in range(room.left+1, room.right):
 						terrain.append((y, x, "."))
@@ -437,53 +405,89 @@ class Dungeon(engine.Game):
 				for y in range(room.top+1, room.bottom):
 					for x in range(room.left+1, room.right):
 						terrain.append((y, x, " "))
-		for tunnel in dungeon.current_level.tunnels:
+		for tunnel in self.tunnels:
 			for cell in tunnel.iter_points():
-				if dungeon.is_visible(tunnel, cell):
+				if self.is_visible(tunnel, cell):
 					terrain.append((cell.y, cell.x, "#"))
-			if dungeon.is_visible(tunnel, tunnel.start):
+			if self.is_visible(tunnel, tunnel.start):
 				terrain.append((tunnel.start.y, tunnel.start.x, "+"))
-			if dungeon.is_visible(tunnel, tunnel.stop):
+			if self.is_visible(tunnel, tunnel.stop):
 				terrain.append((tunnel.stop.y, tunnel.stop.x, "+"))
 
 		for y, x, sprite in terrain:
 			pos = Point(x, y)
 			objects = list(self.iter_appliances_at(pos))
 			items = list(self.iter_items_at(pos))
-			monsters = list(dungeon.iter_actors_at(pos, with_player=True))
+			monsters = list(self.iter_actors_at(pos, with_player=True))
 			yield pos, (sprite, objects, items, monsters)
 	def iter_items_at(self, pos):
 		""" Yield items at pos in reverse order (from top to bottom). """
-		for item_pos, item in reversed(self.current_level.items):
+		for item_pos, item in reversed(self.items):
 			if item_pos == pos:
 				yield item
 	def iter_actors_at(self, pos, with_player=False):
 		""" Yield monsters at pos in reverse order (from top to bottom). """
-		for monster in reversed(self.current_level.monsters):
+		for monster in reversed(self.monsters):
 			if not with_player and isinstance(monster, self.PLAYER_TYPE):
 				continue
 			if monster.pos == pos:
 				yield monster
 	def iter_appliances_at(self, pos):
 		""" Yield objects at pos in reverse order (from top to bottom). """
-		for obj_pos, obj in reversed(self.current_level.objects):
+		for obj_pos, obj in reversed(self.objects):
 			if obj_pos == pos:
 				yield obj
+	def get_player(self):
+		return next((monster for monster in self.monsters if isinstance(monster, self.PLAYER_TYPE)), None)
+
+class GodMode(object):
+	""" God mode options.
+	Vision: allows to see everything regardless of obstacles.
+	"""
+	def __init__(self):
+		self.vision = False
+
+class Dungeon(engine.Game):
+	""" Set of connected PCG levels with player. """
+	GENERATOR = None
+	def __init__(self):
+		super(Dungeon, self).__init__()
+		self.levels = {}
+		self.current_level_id = None
+		self.generator = self.GENERATOR()
+		self.god = GodMode()
+	def generate(self): # pragma: no cover -- TODO
+		rogue = self.scene.PLAYER_TYPE()
+		rogue.inventory.append(Dagger())
+		self.go_to_level(rogue, 0)
+	def load(self, reader): # pragma: no cover -- TODO
+		self.levels = data.levels
+		self.current_level_id = data.current_level
+		self.scene = self.levels[self.current_level_id]
+		self.scene.god = self.god
+		self.fire_event(Event.WelcomeBack(dungeon.scene.get_player()))
+	def save(self, data): # pragma: no cover -- TODO
+		data.levels = self.levels
+		data.current_level = self.current_level_id
+	def is_finished(self):
+		return not (self.scene.get_player() and self.scene.get_player().is_alive())
 	def go_to_level(self, monster, level_id, connected_passage='enter'):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
 		"""
 		if self.current_level_id is not None:
-			self.current_level.monsters.remove(monster)
+			self.scene.monsters.remove(monster)
 		if level_id not in self.levels:
 			self.levels[level_id] = self.generator.build_level(level_id)
 		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, LevelPassage) and obj.id == connected_passage), None)
 		assert stairs is not None, "No stairs with id {0}".format(repr(connected_passage))
 		self.current_level_id = level_id
+		self.scene = self.levels[self.current_level_id]
+		self.scene.god = self.god
 
-		self.current_level.monsters.append(monster)
+		self.scene.monsters.append(monster)
 		monster.pos = stairs
-		self.current_level.visit(monster.pos)
+		self.scene.visit(monster.pos)
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """
 		stairs.use(monster)
@@ -498,10 +502,10 @@ class Dungeon(engine.Game):
 		- Item: other monster dropped an item.
 		Empty list means the monster is successfully moved.
 		"""
-		can_move = self.current_level.can_move_to(new_pos, with_tunnels=with_tunnels, from_pos=monster.pos)
+		can_move = self.scene.can_move_to(new_pos, with_tunnels=with_tunnels, from_pos=monster.pos)
 		if not can_move:
 			return [Event.BumpIntoTerrain(monster, new_pos)]
-		others = [other for other in self.iter_actors_at(new_pos, with_player=True) if other != monster]
+		others = [other for other in self.scene.iter_actors_at(new_pos, with_player=True) if other != monster]
 		if not others:
 			monster.pos = new_pos
 			return []
@@ -513,6 +517,6 @@ class Dungeon(engine.Game):
 		events = [Event.AttackMonster(monster, other, damage)]
 		if not other.is_alive():
 			events.append(Event.MonsterDied(other))
-			for item in self.current_level.rip(other):
+			for item in self.scene.rip(other):
 				events.append(Event.MonsterDroppedItem(other, item))
 		return events

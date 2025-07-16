@@ -22,7 +22,7 @@ from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 from . import game
-from .game import Version, Item, Consumable, Wearable, Monster, Room, Tunnel, GridRoomMap, GridRoomMap as Map, Furniture, LevelPassage, GodMode, Dungeon, Event
+from .game import Version, Item, Consumable, Wearable, Monster, Room, Tunnel, GridRoomMap, Furniture, LevelPassage, GodMode, Dungeon, Event
 from . import pcg
 from ..engine import events
 
@@ -113,9 +113,9 @@ class RealMonster(Monster):
 	_hostile_to = [Rogue]
 
 	def act(self, dungeon):
-		if not dungeon.current_room:
+		if not dungeon.scene.current_room:
 			return
-		sees_rogue = dungeon.current_room.contains(self.pos)
+		sees_rogue = dungeon.scene.current_room.contains(self.pos)
 		if not sees_rogue:
 			return
 		shift = Point(
@@ -352,7 +352,7 @@ class RogueDungeonGenerator(pcg.Generator):
 		else:
 			builder.map_key(exit=StairsDown(next_level_id, 'enter'))
 		builder.generate()
-		return GridRoomMap(
+		return Scene(
 				rooms = builder.dungeon.grid,
 				tunnels = builder.dungeon.tunnels,
 				objects = list(builder.make_appliances()),
@@ -397,7 +397,7 @@ class StatusLine(tui.widgets.StatusLine):
 					))),
 			StatusSection("Wld", 7, lambda dungeon: dungeon.get_player().wielding.name if dungeon.get_player().wielding else None),
 			StatusSection("Wear", 7, lambda dungeon: dungeon.get_player().wearing.name if dungeon.get_player().wearing else None),
-			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.current_level.iter_items_at(dungeon.get_player().pos), next(dungeon.current_level.iter_appliances_at(dungeon.get_player().pos), None)), 'sprite', None)),
+			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.scene.iter_items_at(dungeon.get_player().pos), next(dungeon.scene.iter_appliances_at(dungeon.get_player().pos), None)), 'sprite', None)),
 			]
 
 Controls = AutoRegistry()
@@ -405,7 +405,7 @@ Controls = AutoRegistry()
 class MainGame(tui.app.MVC):
 	_full_redraw = True
 	def _view(self, window):
-		for pos, (terrain, objects, items, monsters) in self.data.iter_cells(None):
+		for pos, (terrain, objects, items, monsters) in self.data.scene.iter_cells(None):
 			if monsters and dungeon.is_visible(pos):
 				window.addstr(1 + pos.y, pos.x, monsters[-1].sprite)
 			elif items and (dungeon.is_remembered(pos) or dungeon.is_visible(pos)):
@@ -446,7 +446,7 @@ class MainGame(tui.app.MVC):
 	def descend(self):
 		""" Go down. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.current_level.iter_appliances_at(dungeon.get_player().pos)), None)
+		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			dungeon.use_stairs(dungeon.get_player(), stairs_here)
 			dungeon.fire_event(GoingDown())
@@ -457,7 +457,7 @@ class MainGame(tui.app.MVC):
 	def ascend(self):
 		""" Go up. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_up, dungeon.current_level.iter_appliances_at(dungeon.get_player().pos)), None)
+		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_up, dungeon.scene.iter_appliances_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			try:
 				dungeon.use_stairs(dungeon.get_player(), stairs_here)
@@ -473,16 +473,16 @@ class MainGame(tui.app.MVC):
 	def grab(self):
 		""" Grab item. """
 		dungeon = self.data
-		item_here = next( (index for index, (pos, item) in enumerate(reversed(dungeon.current_level.items)) if pos == dungeon.get_player().pos), None)
-		trace.debug("Items: {0}".format(dungeon.current_level.items))
+		item_here = next( (index for index, (pos, item) in enumerate(reversed(dungeon.scene.items)) if pos == dungeon.get_player().pos), None)
+		trace.debug("Items: {0}".format(dungeon.scene.items))
 		trace.debug("Rogue: {0}".format(dungeon.get_player().pos))
-		trace.debug("Items here: {0}".format([(index, pos, item) for index, (pos, item) in enumerate(reversed(dungeon.current_level.items)) if pos == dungeon.get_player().pos]))
+		trace.debug("Items here: {0}".format([(index, pos, item) for index, (pos, item) in enumerate(reversed(dungeon.scene.items)) if pos == dungeon.get_player().pos]))
 		trace.debug("Item here: {0}".format(item_here))
 		if item_here is not None:
-			item_here = len(dungeon.current_level.items) - 1 - item_here # Index is from reversed list.
+			item_here = len(dungeon.scene.items) - 1 - item_here # Index is from reversed list.
 			trace.debug("Unreversed item here: {0}".format(item_here))
-			_, item = dungeon.current_level.items[item_here]
-			for _ in dungeon.current_level.grab_item(dungeon.get_player(), item):
+			_, item = dungeon.scene.items[item_here]
+			for _ in dungeon.scene.grab_item(dungeon.get_player(), item):
 				self.data.fire_event(_)
 			self.step_is_over = True
 		else:
@@ -582,13 +582,13 @@ class MainGame(tui.app.MVC):
 		dungeon = self.data
 		for _ in dungeon.move_monster(dungeon.get_player(), dungeon.get_player().pos + shift):
 			self.data.fire_event(_)
-		dungeon.current_level.visit(dungeon.get_player().pos)
+		dungeon.scene.visit(dungeon.get_player().pos)
 		self.step_is_over = True
 
 	def process_others(self):
 		dungeon = self.data
-		for monster in dungeon.current_level.monsters:
-			if isinstance(monster, self.PLAYER_TYPE):
+		for monster in dungeon.scene.monsters:
+			if isinstance(monster, self.scene.PLAYER_TYPE):
 				continue
 			monster.act(dungeon)
 
@@ -620,7 +620,7 @@ class DropItem:
 	def prompt(self): return "Which item to drop?"
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
-		for _ in self.data.current_level.drop_item(self.data.get_player(), item):
+		for _ in self.data.scene.drop_item(self.data.get_player(), item):
 			self.data.fire_event(_)
 
 class WieldItem:
@@ -747,9 +747,11 @@ class Greetings(tui.widgets.TextScreen):
 class Game(tui.app.App):
 	pass
 
+class Scene(GridRoomMap):
+	PLAYER_TYPE = Rogue
+
 class RogueDungeon(Dungeon):
 	GENERATOR = RogueDungeonGenerator
-	PLAYER_TYPE = Rogue
 
 def main(stdscr):
 	curses.curs_set(0)

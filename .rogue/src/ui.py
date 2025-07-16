@@ -38,10 +38,10 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		game = self.game
 		ui.cursor(bool(self.aim))
 		Log.debug('Redrawing interface.')
-		for pos, cell_info in game.iter_cells(Rect(Point(0, 0), game.get_viewport())):
+		for pos, cell_info in game.scene.iter_cells(Rect(Point(0, 0), game.get_viewport())):
 			cell, objects, items, monsters = cell_info
 			sprite = ' '
-			if game.god.vision or game.field_of_view.is_visible(pos.x, pos.y):
+			if game.god.vision or game.scene.field_of_view.is_visible(pos.x, pos.y):
 				if monsters:
 					sprite = monsters[-1].sprite
 				elif items:
@@ -50,9 +50,9 @@ class MainGame(clckwrkbdgr.tui.Mode):
 					sprite = objects[-1]
 				else:
 					sprite = cell.sprite
-			elif objects and game.remembered_exit:
+			elif objects and game.scene.remembered_exit:
 				sprite = '>'
-			elif game.visited.cell(pos) and cell.remembered:
+			elif game.scene.visited.cell(pos) and cell.remembered:
 				sprite = cell.remembered
 			ui.print_char(pos.x, 1+pos.y, sprite or ' ')
 
@@ -80,7 +80,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		player = game.get_player()
 		if player:
 			status.append('hp: {0:>{1}}/{2}'.format(player.hp, len(str(player.max_hp)), player.max_hp))
-			item = next(game.iter_items_at(player.pos), None)
+			item = next(game.scene.iter_items_at(player.pos), None)
 			if item:
 				status.append('here: {0}'.format(item.sprite))
 			if player.inventory:
@@ -231,7 +231,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		if self.aim:
 			shift = direction
 			new_pos = self.aim + shift
-			if self.game.strata.valid(new_pos):
+			if self.game.scene.strata.valid(new_pos):
 				self.aim = new_pos
 		else:
 			self.game.move(self.game.get_player(), direction)

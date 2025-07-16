@@ -14,7 +14,7 @@ from clckwrkbdgr import xdg, utils
 import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.tui
 from src import engine
-from src.engine import builders
+from src.engine import builders, scene
 from src.engine import events
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 from src.engine.items import Item
@@ -85,12 +85,12 @@ class ColoredMonster(Monster):
 		self._max_hp = stream.read_int()
 
 	def act(self, game):
-		monster_pos = self.coord.get_global(game.world)
-		player_pos = game.get_player_coord().get_global(game.world)
+		monster_pos = self.coord.get_global(game.scene.world)
+		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
 		if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-			game.get_player().affect_health(-1)
+			game.scene.get_player().affect_health(-1)
 			game.fire_event(HitMonster('monster', 'you'))
-			if not game.get_player().is_alive():
+			if not game.scene.get_player().is_alive():
 				game.fire_event(MonsterDead('you'))
 
 MAX_MONSTER_ACTION_LENGTH = 10
@@ -98,12 +98,12 @@ MAX_MONSTER_ACTION_LENGTH = 10
 class AggressiveColoredMonster(ColoredMonster):
 	_vision = 10
 	def act(self, game):
-		monster_pos = self.coord.get_global(game.world)
-		player_pos = game.get_player_coord().get_global(game.world)
+		monster_pos = self.coord.get_global(game.scene.world)
+		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
 		if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-			game.get_player().affect_health(-1)
+			game.scene.get_player().affect_health(-1)
 			game.fire_event(HitMonster('monster', 'you'))
-			if not game.get_player().is_alive():
+			if not game.scene.get_player().is_alive():
 				game.fire_event(MonsterDead('you'))
 		elif isinstance(self, AggressiveColoredMonster) and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= self.vision:
 			shift = Point(
@@ -111,13 +111,13 @@ class AggressiveColoredMonster(ColoredMonster):
 					sign(player_pos.y - monster_pos.y),
 					)
 			new_pos = monster_pos + shift
-			dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
-			dest_field_data = game.world.get_data(dest_pos)[-1]
-			dest_cell = game.world.cell(dest_pos)
-			if any(True for _ in game.iter_actors_at(dest_pos)):
+			dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
+			dest_field_data = game.scene.world.get_data(dest_pos)[-1]
+			dest_cell = game.scene.world.cell(dest_pos)
+			if any(True for _ in game.scene.iter_actors_at(dest_pos)):
 				game.fire_event(Bump('monster', 'monster.'))
 			elif dest_cell.passable:
-				current_field_data = game.world.get_data(self.coord)[-1]
+				current_field_data = game.scene.world.get_data(self.coord)[-1]
 				if current_field_data != dest_field_data:
 					current_field_data.monsters.remove(self)
 					dest_field_data.monsters.append(self)
@@ -437,27 +437,23 @@ class Game(engine.Game):
 			}
 	def __init__(self):
 		super(Game, self).__init__()
-		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
+		self.scene = Scene()
 		self.passed_time = 0
 		self.colors = {}
-		self._cached_player_pos = None
 	def save(self, stream):
-		self.world.save(stream)
+		self.scene.save(stream)
 		stream.write(self.passed_time)
 	def load(self, stream):
-		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(src.engine.terrain.Terrain)})
-		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(src.engine.items.Item)})
-		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(src.engine.actors.Actor)})
-		self.world.load(stream)
+		self.scene.load(stream)
 		self.passed_time = stream.read(int)
 	def is_finished(self):
-		return not self.get_player().is_alive()
+		return not self.scene.get_player().is_alive()
 	def generate(self):
 		zone_pos = Point(
-				random.randrange(self.world.cells.size.width),
-				random.randrange(self.world.cells.size.height),
+				random.randrange(self.scene.world.cells.size.width),
+				random.randrange(self.scene.world.cells.size.height),
 				)
-		zone = self.generate_zone(zone_pos)
+		zone = self.scene.generate_zone(zone_pos)
 
 		player_pos = NestedGrid.Coord(
 				zone_pos,
@@ -471,7 +467,19 @@ class Game(engine.Game):
 					),
 				)
 		player = Player(player_pos.values[-1])
-		self.world.get_data(player_pos)[-1].monsters.append(player)
+		self.scene.world.get_data(player_pos)[-1].monsters.append(player)
+
+class Scene(scene.Scene):
+	def __init__(self):
+		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
+		self._cached_player_pos = None
+	def save(self, stream):
+		self.world.save(stream)
+	def load(self, stream):
+		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(src.engine.terrain.Terrain)})
+		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(src.engine.items.Item)})
+		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(src.engine.actors.Actor)})
+		self.world.load(stream)
 	def autoexpand(self, coord, margin):
 		pos = coord.get_global(self.world)
 		within_zone = Point(
@@ -705,10 +713,10 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 	def redraw(self, ui):
 		game = self.game
 		view_rect = Rect(
-				game.get_player_coord().get_global(game.world) + self.centered_viewport.topleft,
+				game.scene.get_player_coord().get_global(game.scene.world) + self.centered_viewport.topleft,
 				self.centered_viewport.size,
 				)
-		for _pos, (_terrain, _objects, _items, _monsters) in game.iter_cells(view_rect):
+		for _pos, (_terrain, _objects, _items, _monsters) in game.scene.iter_cells(view_rect):
 			if _monsters:
 				entity = _monsters[-1]
 			elif _items:
@@ -725,17 +733,17 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		for row in range(5):
 			ui.print_line(row, hud_pos, " " * (80 - hud_pos))
 		ui.print_line(0, hud_pos, "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
-			game.get_player_coord().values[0].x,
-			game.get_player_coord().values[1].x,
-			game.get_player_coord().values[2].x,
-			game.get_player_coord().values[0].y,
-			game.get_player_coord().values[1].y,
-			game.get_player_coord().values[2].y,
+			game.scene.get_player_coord().values[0].x,
+			game.scene.get_player_coord().values[1].x,
+			game.scene.get_player_coord().values[2].x,
+			game.scene.get_player_coord().values[0].y,
+			game.scene.get_player_coord().values[1].y,
+			game.scene.get_player_coord().values[2].y,
 			))
 		ui.print_line(1, hud_pos, "T:{0}".format(game.passed_time))
-		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.get_player().hp, game.get_player().max_hp))
-		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.get_player().inventory)))
-		item_here = next(game.iter_items_at(game.get_player_coord()), None)
+		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.scene.get_player().hp, game.scene.get_player().max_hp))
+		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.scene.get_player().inventory)))
+		item_here = next(game.scene.iter_items_at(game.scene.get_player_coord()), None)
 		if item_here:
 			ui.print_line(4, hud_pos, "here:{0}".format(item_here.sprite.sprite))
 
@@ -754,7 +762,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		self.step_taken = False
 		return True
 	def get_keymapping(self):
-		if self.messages or not self.game.get_player().is_alive():
+		if self.messages or not self.game.scene.get_player().is_alive():
 			return None
 		return super().get_keymapping()
 	@Keys.bind('S')
@@ -768,29 +776,29 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 	def grab_item(self):
 		game = self.game
 		if True:
-			item = next(game.iter_items_at(game.get_player_coord()), None)
+			item = next(game.scene.iter_items_at(game.scene.get_player_coord()), None)
 			if not item:
 				self.game.fire_event(NothingToPickUp())
-			elif len(game.get_player().inventory) >= 26:
+			elif len(game.scene.get_player().inventory) >= 26:
 				self.game.fire_event(InventoryIsFull())
 			else:
-				game.get_player().inventory.append(item)
-				game.world.get_data(game.get_player_coord())[-1].items.remove(item)
+				game.scene.get_player().inventory.append(item)
+				game.scene.world.get_data(game.scene.get_player_coord())[-1].items.remove(item)
 				self.game.fire_event(PickedUpItem(item))
 				self.step_taken = True
 	@Keys.bind('C')
 	def char(self):
 		game = self.game
-		player_pos = game.get_player_coord().get_global(game.world)
+		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
 		if True:
 			npcs = [
 					monster for monster_pos, monster
-					in all_monsters(game.world)
+					in all_monsters(game.scene.world)
 					if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1
 					and isinstance(monster, Dweller)
 					]
 			questing = [
-					npc for _, npc in all_monsters(game.world)
+					npc for _, npc in all_monsters(game.scene.world)
 					if isinstance(npc, Dweller)
 					and npc.quest
 					]
@@ -822,17 +830,17 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 					if npc.quest:
 						required_amount, required_name, bounty = npc.quest
 						have_required_items = [
-								item for item in game.get_player().inventory
+								item for item in game.scene.get_player().inventory
 								if item.name == required_name
 								][:required_amount]
 						if len(have_required_items) >= required_amount:
 							def _on_yes():
 								self.game.fire_event(ChatThanks())
 								for item in have_required_items:
-									game.get_player().inventory.remove(item)
-								if game.get_player().hp == game.get_player().max_hp:
-									game.get_player().hp += bounty
-								game.get_player()._max_hp += bounty
+									game.scene.get_player().inventory.remove(item)
+								if game.scene.get_player().hp == game.scene.get_player().max_hp:
+									game.scene.get_player().hp += bounty
+								game.scene.get_player()._max_hp += bounty
 								npc.quest = None
 							def _on_no():
 								self.game.fire_event(ChatComeLater())
@@ -859,7 +867,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 		game = self.game
 		if True:
 			questing = [
-					(coord, npc) for coord, npc in all_monsters(game.world, raw=True)
+					(coord, npc) for coord, npc in all_monsters(game.scene.world, raw=True)
 					if isinstance(npc, Dweller)
 					and npc.quest
 					]
@@ -867,37 +875,37 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			return quest_log
 	@Keys.bind('i')
 	def display_inventory(self):
-		return InventoryMode(self.game.get_player().inventory)
+		return InventoryMode(self.game.scene.get_player().inventory)
 	@Keys.bind('d')
 	def drop_item(self):
 		game = self.game
 		if True:
-			if not game.get_player().inventory:
+			if not game.scene.get_player().inventory:
 				self.game.fire_event(NothingToDrop())
 			else:
 				def _on_select_item(menu_choice):
-					item = game.get_player().drop(menu_choice)
-					game.world.get_data(game.get_player_coord())[-1].items.append(item)
+					item = game.scene.get_player().drop(menu_choice)
+					game.scene.world.get_data(game.scene.get_player_coord())[-1].items.append(item)
 					self.game.fire_event(DroppedItem('you', item.item))
 					self.step_taken = True
 				return InventoryMode(
-						game.get_player().inventory,
+						game.scene.get_player().inventory,
 						caption="Select item to drop (a-z/ESC):",
 						on_select=_on_select_item
 					)
 	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 	def move_player(self, control):
 		game = self.game
-		player_pos = game.get_player_coord().get_global(game.world)
+		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
 		if True:
 			new_pos = player_pos + control
-			dest_pos = NestedGrid.Coord.from_global(new_pos, game.world)
+			dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
 			dest_field_data = None
 			dest_cell = None
-			if game.world.valid(dest_pos):
-				dest_field_data = game.world.get_data(dest_pos)[-1]
-				dest_cell = game.world.cell(dest_pos)
-			monster = next(game.iter_actors_at(dest_pos), None)
+			if game.scene.world.valid(dest_pos):
+				dest_field_data = game.scene.world.get_data(dest_pos)[-1]
+				dest_cell = game.scene.world.cell(dest_pos)
+			monster = next(game.scene.iter_actors_at(dest_pos), None)
 			if monster:
 				if isinstance(monster, Dweller):
 					self.game.fire_event(Bump('you', 'dweller'))
@@ -913,41 +921,41 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			elif dest_cell is None:
 				self.game.fire_event(StareIntoVoid())
 			elif dest_cell.passable:
-				player = game.get_player()
-				current_field_data = game.world.get_data(self.game.get_player_coord())[-1]
+				player = game.scene.get_player()
+				current_field_data = game.scene.world.get_data(self.game.scene.get_player_coord())[-1]
 				if current_field_data != dest_field_data:
 					current_field_data.monsters.remove(player)
 					dest_field_data.monsters.append(player)
 				player.pos = dest_pos.values[-1]
-				game.autoexpand(self.game.get_player_coord(), Size(40, 40))
+				game.scene.autoexpand(self.game.scene.get_player_coord(), Size(40, 40))
 			self.step_taken = True
 	def action(self, control):
 		if isinstance(control, clckwrkbdgr.tui.Key):
 			if self.messages:
 				return True
-			if not self.game.get_player().is_alive():
+			if not self.game.scene.get_player().is_alive():
 				return False
 		if control == 'quit':
 			return False
 		game = self.game
 		if self.step_taken:
-			player_pos = game.get_player_coord().get_global(game.world)
-			if game.get_player().hp < game.get_player().max_hp:
-				game.get_player().regeneration += 1
-				while game.get_player().regeneration >= 10:
-					game.get_player().regeneration -= 10
-					game.get_player().hp += 1
-					if game.get_player().hp >= game.get_player().max_hp:
-						game.get_player().hp = game.get_player().max_hp
+			player_pos = game.scene.get_player_coord().get_global(game.scene.world)
+			if game.scene.get_player().hp < game.scene.get_player().max_hp:
+				game.scene.get_player().regeneration += 1
+				while game.scene.get_player().regeneration >= 10:
+					game.scene.get_player().regeneration -= 10
+					game.scene.get_player().hp += 1
+					if game.scene.get_player().hp >= game.scene.get_player().max_hp:
+						game.scene.get_player().hp = game.scene.get_player().max_hp
 
 			game.passed_time += 1
 
 			monster_action_range = Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH)
-			monster_zone_topleft = NestedGrid.Coord.from_global(player_pos - monster_action_range, game.world)
-			monster_zone_bottomright = NestedGrid.Coord.from_global(player_pos + monster_action_range, game.world)
+			monster_zone_topleft = NestedGrid.Coord.from_global(player_pos - monster_action_range, game.scene.world)
+			monster_zone_bottomright = NestedGrid.Coord.from_global(player_pos + monster_action_range, game.scene.world)
 			monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
 			self.game.already_acted_monsters_from_previous_fields = []
-			for monster_coord, monster in all_monsters(game.world, raw=True, zone_range=monster_zone_range):
+			for monster_coord, monster in all_monsters(game.scene.world, raw=True, zone_range=monster_zone_range):
 				if monster in self.game.already_acted_monsters_from_previous_fields:
 					continue
 				if isinstance(monster, Player):

@@ -6,9 +6,10 @@ import src.game, src.engine.items, src.engine.actors, src.engine.terrain
 import src.ui
 import src.pcg
 import clckwrkbdgr.fs
+import src.engine.builders
 import clckwrkbdgr.serialize.stream
 
-class DungeonSquatters(src.pcg.WeightedSquatters):
+class DungeonSquatters(src.engine.builders.Builder):
 	""" Set of squatters, randomly distributed throughout the map
 	based on their relative weights (int or float) within corresponding
 	distribution list.
@@ -35,12 +36,26 @@ class DungeonSquatters(src.pcg.WeightedSquatters):
 	def generate_actors(self):
 		""" Places random population of different types of monsters.
 		"""
-		for _ in self.distribute(builders.WeightedDistribution, self.MONSTERS, self.amount_by_free_cells(self.CELLS_PER_MONSTER)):
+		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.MONSTERS, self.amount_by_free_cells(self.CELLS_PER_MONSTER)):
 			yield _
 	def generate_items(self):
 		""" Drops items in random locations. """
-		for _ in self.distribute(builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
+		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
 			yield _
+
+class Potion(src.engine.items.Item):
+	_name = 'potion'
+	_sprite = '!'
+
+class Healing(src.game.Consumable):
+	healing = 0
+	def apply_effect(self, game, monster):
+		game.affect_health(monster, self.healing)
+
+class HealingPotion(src.engine.items.Item, Healing):
+	_name = 'healing potion'
+	_sprite = '!'
+	healing = +5
 
 class Player(src.game.Player):
 	_name = 'player'
@@ -61,7 +76,7 @@ class Plant(src.engine.actors.Monster):
 	_vision = 1
 	_drops = [
 			(1, None),
-			(5, 'healing potion'),
+			(5, HealingPotion),
 			]
 
 class Slime(src.game.Inert):
@@ -71,7 +86,7 @@ class Slime(src.game.Inert):
 	_vision = 3
 	_drops = [
 			(1, None),
-			(1, 'healing potion'),
+			(1, HealingPotion),
 			]
 
 class Rodent(src.game.Angry):
@@ -81,22 +96,8 @@ class Rodent(src.game.Angry):
 	_vision = 8
 	_drops = [
 			(5, None),
-			(1, 'healing potion'),
+			(1, HealingPotion),
 			]
-
-class Potion(src.engine.items.Item):
-	_name = 'potion'
-	_sprite = '!'
-
-class Healing(src.game.Consumable):
-	healing = 0
-	def apply_effect(self, game, monster):
-		game.affect_health(monster, self.healing)
-
-class HealingPotion(src.engine.items.Item, Healing):
-	_name = 'healing potion'
-	_sprite = '!'
-	healing = +5
 
 class Void(src.engine.terrain.Terrain):
 	_name = 'void'
