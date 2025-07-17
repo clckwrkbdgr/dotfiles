@@ -248,8 +248,6 @@ class Game(engine.Game):
 		self.movement_queue = []
 		self.player_turn = True
 		self.scene = Scene()
-	def get_player(self): # FIXME temp.workaround
-		return self.scene.get_player()
 	def generate(self):
 		self.build_new_strata()
 	def load(self, reader):

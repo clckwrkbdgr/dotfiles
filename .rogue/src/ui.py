@@ -77,7 +77,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			ui.print_line(0, 0, " " * 80)
 
 		status = []
-		player = game.get_player()
+		player = game.scene.get_player()
 		if player:
 			status.append('hp: {0:>{1}}/{2}'.format(player.hp, len(str(player.max_hp)), player.max_hp))
 			item = next(game.scene.iter_items_at(player.pos), None)
@@ -129,14 +129,14 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		return '{0} dies.'.format(event.target.name)
 	@Events.on(game.MoveEvent)
 	def on_movement(self, game, event):
-		if event.actor != game.get_player():
+		if event.actor != game.scene.get_player():
 			return '{0}...'.format(event.actor.name)
 	@Events.on(game.DescendEvent)
 	def on_descending(self, game, event):
 		return '{0} V...'.format(event.actor.name)
 	@Events.on(game.BumpEvent)
 	def on_bumping(self, game, event):
-		if event.actor != game.get_player():
+		if event.actor != game.scene.get_player():
 			return '{0} bumps.'.format(event.actor.name)
 	@Events.on(game.GrabItemEvent)
 	def on_grabbing(self, game, event):
@@ -173,7 +173,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		if self.aim:
 			self.aim = None
 		else:
-			self.aim = self.game.get_player().pos
+			self.aim = self.game.scene.get_player().pos
 	@Keys.bind('.')
 	def autowalk(self):
 		""" Wait. """
@@ -196,7 +196,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	def suicide(self):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
-		self.game.suicide(self.game.get_player())
+		self.game.suicide(self.game.scene.get_player())
 		self.game.end_turn()
 	@Keys.bind('>')
 	def descend(self):
@@ -206,7 +206,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	@Keys.bind('g')
 	def grab(self):
 		""" Grab item. """
-		self.game.grab_item_at(self.game.get_player(), self.game.get_player().pos)
+		self.game.grab_item_at(self.game.scene.get_player(), self.game.scene.get_player().pos)
 		self.game.end_turn()
 	@Keys.bind('d')
 	def drop(self):
@@ -234,7 +234,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			if self.game.scene.strata.valid(new_pos):
 				self.aim = new_pos
 		else:
-			self.game.move(self.game.get_player(), direction)
+			self.game.move(self.game.scene.get_player(), direction)
 			self.game.end_turn()
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
@@ -284,7 +284,7 @@ class Inventory(clckwrkbdgr.tui.Mode):
 		self.prompt = self.INITIAL_PROMPT
 	def redraw(self, ui):
 		game = self.game
-		inventory = game.get_player().inventory
+		inventory = game.scene.get_player().inventory
 		if self.prompt:
 			ui.print_line(0, 0, self.prompt)
 		if not inventory:
@@ -302,13 +302,13 @@ class Inventory(clckwrkbdgr.tui.Mode):
 	@InventoryKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
 	def select(self, param):
 		""" Select item and close inventory. """
-		if not self.game.get_player().inventory:
+		if not self.game.scene.get_player().inventory:
 			return None
 		index = ord(param) - ord('a')
-		if index >= len(self.game.get_player().inventory):
+		if index >= len(self.game.scene.get_player().inventory):
 			self.prompt = "No such item ({0})".format(param)
 			return None
-		if self._use(self.game.get_player(), self.game.get_player().inventory[index]):
+		if self._use(self.game.scene.get_player(), self.game.scene.get_player().inventory[index]):
 			self.game.end_turn()
 			return True
 	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
@@ -326,7 +326,7 @@ class Equipment(clckwrkbdgr.tui.Mode):
 		self.done = False
 	def redraw(self, ui):
 		game = self.game
-		wielding = game.get_player().wielding
+		wielding = game.scene.get_player().wielding
 		if wielding:
 			wielding = wielding.name
 		ui.print_line(0, 0, 'wielding [a] - {0}'.format(wielding))
@@ -335,8 +335,8 @@ class Equipment(clckwrkbdgr.tui.Mode):
 	@EquipmentKeys.bind('a')
 	def wield(self):
 		""" Wield or unwield item. """
-		if self.game.get_player().wielding:
-			self.game.unwield_item(self.game.get_player())
+		if self.game.scene.get_player().wielding:
+			self.game.unwield_item(self.game.scene.get_player())
 			self.game.end_turn()
 			return True
 		self.done = True

@@ -201,6 +201,8 @@ class MockGame(game.Game):
 		'WallV' : WallV,
 		'DarkFloor' : DarkFloor,
 		}
+	def get_player(self): # TODO shortcut for testing purposes.
+		return self.scene.get_player()
 
 class MockMapping:
 	_ = {_key:_item() for (_key, _item) in MockGame.TERRAIN.items()}
