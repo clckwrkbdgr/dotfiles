@@ -952,7 +952,7 @@ class TestGameSerialization(AbstractTestDungeon):
 
 			2,
 				'Player', 9, 6, 10, 0, 0, 0,
-				'Monster', 2, 5, 3, 0, 0, 0,
+				'MockMonster', 2, 5, 3, 0, 0, 0,
 			1,
 				'Potion', 10, 6,
 			])))

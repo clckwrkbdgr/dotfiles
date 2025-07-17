@@ -1,6 +1,15 @@
+from . import items, actors, terrain
+from clckwrkbdgr import utils
+
 class Scene(object):
 	""" Current physical map of terrain, objects, actors, etc.
 	"""
+
+	def load(self, stream):
+		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(terrain.Terrain)})
+		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(items.Item)})
+		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(actors.Actor)})
+
 	def get_cell_info(self, pos, context=None): # pragma: no cover
 		""" Should return cell info in form of tuples for given world position:
 		(terrain, [objects on that cell], [items on that cell], [monsters on that cell]).

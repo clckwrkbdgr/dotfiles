@@ -119,13 +119,9 @@ class Scene(scene.Scene):
 		self.exit_pos = None
 		self.remembered_exit = False
 	def load(self, reader):
+		super(Scene, self).load(reader)
 		self.exit_pos = reader.read_point()
 		self.remembered_exit = reader.read_bool()
-
-		reader.set_meta_info('Items', self.ITEMS)
-		reader.set_meta_info('Actors', self.SPECIES)
-		reader.set_meta_info('Terrain', self.TERRAIN)
-		reader.set_meta_info('ItemClass', items.Item)
 		self.strata = reader.read_matrix(Terrain)
 		self.visited = reader.read_matrix(lambda c:c=='1')
 		if reader.version > Version.MONSTERS:
@@ -252,9 +248,6 @@ class Game(engine.Game):
 		self.movement_queue = []
 		self.player_turn = True
 		self.scene = Scene()
-		self.scene.ITEMS = self.ITEMS # FIXME temp. workaround - use subclasses
-		self.scene.SPECIES = self.SPECIES # FIXME temp. workaround - use subclasses
-		self.scene.TERRAIN = self.TERRAIN # FIXME temp. workaround - use subclasses
 	def get_player(self): # FIXME temp.workaround
 		return self.scene.get_player()
 	def generate(self):

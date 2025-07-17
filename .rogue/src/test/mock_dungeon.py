@@ -52,7 +52,7 @@ class Player(game.Player):
 	_vision = 10
 	_drops = None
 
-class Monster(actors.EquippedMonster):
+class MockMonster(actors.EquippedMonster):
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
@@ -152,11 +152,11 @@ class MockGame(game.Game):
 	SPECIES = {
 			'name' : Name,
 			'player' : Player,
-			'monster' : Monster,
+			'monster' : MockMonster,
 			'thief' : Thief,
 			'Name' : Name,
 			'Player' : Player,
-			'Monster' : Monster,
+			'MockMonster' : MockMonster,
 			'Thief' : Thief,
 			}
 	ITEMS = {
@@ -210,7 +210,7 @@ class MockMapping:
 	def exit(): return 'exit'
 	@staticmethod
 	def monster(pos,*data):
-		return Monster(*(data + (pos,)))
+		return MockMonster(*(data + (pos,)))
 	@staticmethod
 	def angry_monster(pos,*data):
 		return AngryMonster(*(data + (pos,)))

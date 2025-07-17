@@ -476,9 +476,7 @@ class Scene(scene.Scene):
 	def save(self, stream):
 		self.world.save(stream)
 	def load(self, stream):
-		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(src.engine.terrain.Terrain)})
-		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(src.engine.items.Item)})
-		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(src.engine.actors.Actor)})
+		super(Scene, self).load(reader)
 		self.world.load(stream)
 	def autoexpand(self, coord, margin):
 		pos = coord.get_global(self.world)
