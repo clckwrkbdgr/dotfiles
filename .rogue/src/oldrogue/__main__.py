@@ -22,7 +22,7 @@ from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 from . import game
-from .game import Version, Item, Consumable, Wearable, Monster, Room, Tunnel, GridRoomMap, Furniture, LevelPassage, GodMode, Dungeon, Event
+from .game import Version, Item, Consumable, Wearable, Monster, Player, Room, Tunnel, Scene, Furniture, LevelPassage, GodMode, Dungeon, Event
 from . import pcg
 from ..engine import events
 
@@ -101,7 +101,7 @@ make_armor('Leather', "[", "leather", 2)
 make_armor('ChainMail', "[", "chain mail", 3)
 make_armor('PlateArmor', "[", "plate armor", 4)
 
-class Rogue(Monster):
+class Rogue(Player):
 	_hostile_to = [Monster]
 	_sprite = "@"
 	_name = "rogue"
@@ -588,7 +588,7 @@ class MainGame(tui.app.MVC):
 	def process_others(self):
 		dungeon = self.data
 		for monster in dungeon.scene.monsters:
-			if isinstance(monster, self.scene.PLAYER_TYPE):
+			if isinstance(monster, self.PLAYER_TYPE):
 				continue
 			monster.act(dungeon)
 
@@ -747,11 +747,9 @@ class Greetings(tui.widgets.TextScreen):
 class Game(tui.app.App):
 	pass
 
-class Scene(GridRoomMap):
-	PLAYER_TYPE = Rogue
-
 class RogueDungeon(Dungeon):
 	GENERATOR = RogueDungeonGenerator
+	PLAYER_TYPE = Rogue
 
 def main(stdscr):
 	curses.curs_set(0)

@@ -257,7 +257,7 @@ class Game(engine.Game):
 
 		self.scene.load(reader)
 
-		for obj in self.scene.update_vision():
+		for obj in self.scene.update_vision(): # pragma: no cover
 			self.fire_event(DiscoverEvent(obj))
 		Log.debug('Loaded.')
 		Log.debug(repr(self.scene.strata))

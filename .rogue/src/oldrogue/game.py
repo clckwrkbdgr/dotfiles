@@ -172,6 +172,9 @@ class Monster(actors.EquippedMonster):
 		data.wearing = self.inventory.index(self.wearing) if self.wearing else None
 		return data
 
+class Player(Monster):
+	_name = 'player'
+
 class Room(Rect):
 	def __init__(self, topleft, size):
 		super(Room, self).__init__(topleft, size)
@@ -214,12 +217,10 @@ class Tunnel(clckwrkbdgr.math.geometry.RectConnection):
 			if self.contains(p):
 				self.visited.add(p)
 
-class GridRoomMap(scene.Scene):
+class Scene(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
 	Items, monsters, fitment objects are supplied.
 	"""
-	PLAYER_TYPE = None
-
 	def __init__(self, level_id=None,
 			rooms=None, tunnels=None,
 			items=None, monsters=None, objects=None,
@@ -428,7 +429,7 @@ class GridRoomMap(scene.Scene):
 	def iter_actors_at(self, pos, with_player=False):
 		""" Yield monsters at pos in reverse order (from top to bottom). """
 		for monster in reversed(self.monsters):
-			if not with_player and isinstance(monster, self.PLAYER_TYPE):
+			if not with_player and isinstance(monster, Player):
 				continue
 			if monster.pos == pos:
 				yield monster
@@ -438,7 +439,7 @@ class GridRoomMap(scene.Scene):
 			if obj_pos == pos:
 				yield obj
 	def get_player(self):
-		return next((monster for monster in self.monsters if isinstance(monster, self.PLAYER_TYPE)), None)
+		return next((monster for monster in self.monsters if isinstance(monster, Player)), None)
 
 class GodMode(object):
 	""" God mode options.
@@ -450,6 +451,7 @@ class GodMode(object):
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
 	GENERATOR = None
+	PLAYER_TYPE = None
 	def __init__(self):
 		super(Dungeon, self).__init__()
 		self.levels = {}
@@ -457,7 +459,7 @@ class Dungeon(engine.Game):
 		self.generator = self.GENERATOR()
 		self.god = GodMode()
 	def generate(self): # pragma: no cover -- TODO
-		rogue = self.scene.PLAYER_TYPE()
+		rogue = self.PLAYER_TYPE()
 		rogue.inventory.append(Dagger())
 		self.go_to_level(rogue, 0)
 	def load(self, reader): # pragma: no cover -- TODO
