@@ -113,12 +113,9 @@ class Vision(object):
 		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
 		self.visible_monsters = []
 		self.visible_items = []
-		self.remembered_exit = False
 	def load(self, reader):
-		self.remembered_exit = reader.read_bool()
 		self.visited = reader.read_matrix(lambda c:c=='1')
 	def save(self, writer):
-		writer.write(self.remembered_exit)
 		writer.write(self.visited)
 	def update(self, monster, scene):
 		""" Recalculates visibility/FOV for the player.
@@ -151,8 +148,6 @@ class Vision(object):
 			self.visited.set_cell(p, True)
 		self.visible_monsters = current_visible_monsters
 		self.visible_items = current_visible_items
-		if self.field_of_view.is_visible(scene.exit_pos.x, scene.exit_pos.y):
-			self.remembered_exit = True
 
 class Scene(scene.Scene):
 	def __init__(self):
@@ -332,7 +327,7 @@ class Game(engine.Game):
 				return '>'
 			return cell.sprite
 		if objects:
-			if self.vision.remembered_exit:
+			if self.vision.visited.cell(self.scene.exit_pos):
 				return '>'
 		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered
@@ -370,7 +365,6 @@ class Game(engine.Game):
 
 		Log.debug("Finalizing dungeon...")
 		self.scene.exit_pos = next(_pos for _pos, _name in appliances if _name == 'exit')
-		self.vision.remembered_exit = False
 		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
 		Log.debug("Dungeon is ready.")

@@ -454,7 +454,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		self.assertFalse(dungeon.vision.remembered_exit)
+		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.exit_pos))
 		self.maxDiff = None
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				    #####        #  
@@ -469,7 +469,7 @@ class TestMovement(AbstractTestDungeon):
 				 #################  
 				"""))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT) 
-		self.assertFalse(dungeon.vision.remembered_exit)
+		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.exit_pos))
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				    #####      #### 
 				     ...   ## ..... 
@@ -486,7 +486,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
-		self.assertTrue(dungeon.vision.remembered_exit)
+		self.assertTrue(dungeon.vision.visited.cell(dungeon.scene.exit_pos))
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				   ########    #####
 				         #>##      #
@@ -944,7 +944,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			1,
 				'Potion', 10, 6,
 
-			0, 20, 10,
+			20, 10,
 			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
 			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0,
 			0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0,
@@ -976,7 +976,6 @@ class TestGameSerialization(AbstractTestDungeon):
 			self.assertEqual(monster.name, restored_monster.name)
 			self.assertEqual(monster.pos, restored_monster.pos)
 			self.assertEqual(monster.hp, restored_monster.hp)
-		self.assertEqual(dungeon.vision.remembered_exit, restored_dungeon.vision.remembered_exit)
 		self.assertEqual(len(dungeon.scene.items), len(restored_dungeon.scene.items))
 		for item, restored_item in zip(dungeon.scene.items, restored_dungeon.scene.items):
 			self.assertEqual(item.item.name, restored_item.item.name)

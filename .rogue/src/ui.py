@@ -50,7 +50,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 					sprite = objects[-1]
 				else:
 					sprite = cell.sprite
-			elif objects and game.vision.remembered_exit:
+			elif objects and game.vision.visited.cell(game.scene.exit_pos):
 				sprite = '>'
 			elif game.vision.visited.cell(pos) and cell.remembered:
 				sprite = cell.remembered
