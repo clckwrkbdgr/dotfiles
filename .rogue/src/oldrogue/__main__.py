@@ -358,7 +358,6 @@ class RogueDungeonGenerator(pcg.Generator):
 				objects = list(builder.make_appliances()),
 				items = list(builder.make_items()),
 				monsters = list(builder.make_actors()),
-				level_id = level_id,
 				)
 
 class ExitWithoutSave(tui.app.AppExit):
@@ -406,11 +405,12 @@ class MainGame(tui.app.MVC):
 	_full_redraw = True
 	def _view(self, window):
 		for pos, (terrain, objects, items, monsters) in self.data.scene.iter_cells(None):
-			if monsters and dungeon.is_visible(pos):
+			is_visible = dungeon.is_visible(pos) or dungeon.god.vision
+			if monsters and is_visible:
 				window.addstr(1 + pos.y, pos.x, monsters[-1].sprite)
-			elif items and (dungeon.is_remembered(pos) or dungeon.is_visible(pos)):
+			elif items and (dungeon.is_remembered(pos) or is_visible):
 				window.addstr(1 + pos.y, pos.x, items[-1].sprite)
-			elif objects and (dungeon.is_remembered(pos) or dungeon.is_visible(pos)):
+			elif objects and (dungeon.is_remembered(pos) or is_visible):
 				window.addstr(1 + pos.y, pos.x, objects[-1].sprite)
 			else:
 				window.addstr(1 + pos.y, pos.x, terrain)

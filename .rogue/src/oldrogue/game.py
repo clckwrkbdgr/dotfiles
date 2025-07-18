@@ -221,13 +221,12 @@ class Scene(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
 	Items, monsters, fitment objects are supplied.
 	"""
-	def __init__(self, level_id=None,
+	def __init__(self,
 			rooms=None, tunnels=None,
 			items=None, monsters=None, objects=None,
 				  god=None,
 			): # pragma: no cover
 		self.god = god or GodMode()
-		self.level_id = level_id
 		self.rooms = rooms or Matrix( (3, 3) )
 		self.tunnels = tunnels or []
 		self.items = items or []
@@ -320,14 +319,12 @@ class Scene(scene.Scene):
 	def __setstate__(self, data): # pragma: no cover -- TODO
 		self.rooms = data.rooms
 		self.tunnels = data.tunnels
-		self.level_id = data.level_id
 
 		self.objects = data.objects
 		self.items = data.map_items
 		self.monsters = data.monsters
 	def __getstate__(self): # pragma: no cover -- TODO
 		data = dotdict()
-		data.level_id = self.level_id
 		data.rooms = self.rooms
 		data.tunnels = self.tunnels
 		data.objects = self.objects
