@@ -176,46 +176,12 @@ class Player(Monster):
 	_name = 'player'
 
 class Room(Rect):
-	def __init__(self, topleft, size):
-		super(Room, self).__init__(topleft, size)
-		self.visited = False
 	def __hash__(self):
 		return hash( (self.topleft, self.size) )
-	def __setstate__(self, data): # pragma: no cover -- TODO
-		super(Room, self).__setstate__(data)
-		self.visited = data.visited
-	def __getstate__(self): # pragma: no cover -- TODO
-		data = dotdict(super(Room, self).__getstate__())
-		data.visited = self.visited
-		return data
 
 class Tunnel(clckwrkbdgr.math.geometry.RectConnection):
-	def __init__(self, *args, **kwargs):
-		super(Tunnel, self).__init__(*args, **kwargs)
-		self.visited = set()
 	def __hash__(self):
 		return hash( (self.start, self.stop, self.bending_point) )
-	def __setstate__(self, data): # pragma: no cover -- TODO
-		super(Tunnel, self).__setstate__(data)
-		self.visited = set(data.visited)
-	def __getstate__(self): # pragma: no cover -- TODO
-		data = dotdict(super(Tunnel, self).__getstate__())
-		data.visited = list(self.visited)
-		return data
-	def visit(self, pos, adjacent=True):
-		""" Marks cell as visited. If adjacent is True, marks all neighbouring cells too. """
-		shifts = [Point(0, 0)]
-		if adjacent:
-			shifts += [
-				Point(-1, 0),
-				Point(0, -1),
-				Point(+1, 0),
-				Point(0, +1),
-				]
-		for shift in shifts:
-			p = pos + shift
-			if self.contains(p):
-				self.visited.add(p)
 
 class Scene(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
@@ -224,9 +190,7 @@ class Scene(scene.Scene):
 	def __init__(self,
 			rooms=None, tunnels=None,
 			items=None, monsters=None, objects=None,
-				  god=None,
 			): # pragma: no cover
-		self.god = god or GodMode()
 		self.rooms = rooms or Matrix( (3, 3) )
 		self.tunnels = tunnels or []
 		self.items = items or []
@@ -238,6 +202,9 @@ class Scene(scene.Scene):
 	@functools.lru_cache()
 	def tunnel_of(self, pos):
 		return next((tunnel for tunnel in self.tunnels if tunnel.contains(pos)), None)
+	@functools.lru_cache()
+	def index_room_of(self, pos):
+		return next((key for key in self.rooms.keys() if self.rooms.cell(key).contains(pos, with_border=True)), None)
 	@functools.lru_cache()
 	def get_tunnels(self, room):
 		""" Returns all tunnels connected to the room. """
@@ -276,45 +243,6 @@ class Scene(scene.Scene):
 					return False
 				return True
 		return False
-	def rip(self, who):
-		""" Processes monster's death (it should be actually not is_alive() for that).
-		Drops all items from inventory to the ground at the same pos.
-		Yields all dropped items.
-		Removes monster from the level.
-		"""
-		if who.is_alive():
-			raise RuntimeError("Trying to bury someone alive: {0}".format(who))
-		for item in who.drop_all():
-			self.items.append(item)
-			yield item.item
-		try:
-			self.monsters.remove(who)
-		except ValueError: # pragma: no cover -- TODO rogue is not stored in the list.
-			pass
-	def grab_item(self, who, item):
-		if len(who.inventory) >= who.max_inventory:
-			return [Event.InventoryFull(item)]
-		index, = [index for index, (pos, i) in enumerate(self.items) if i == item]
-		who.inventory.append(item)
-		self.items.pop(index)
-		return [Event.GrabbedItem(who, item)]
-	def drop_item(self, who, item):
-		item = who.drop(item)
-		self.items.append(item)
-		return [Event.MonsterDroppedItem(who, item.item)]
-	def visit(self, pos):
-		""" Marks all objects (rooms, tunnels) related to pos as visited. """
-		room = self.room_of(pos)
-		if room:
-			room.visited = True
-			for tunnel in self.get_tunnels(room):
-				if room.contains(tunnel.start, with_border=True):
-					tunnel.visit(tunnel.start, adjacent=False)
-				if room.contains(tunnel.stop, with_border=True):
-					tunnel.visit(tunnel.stop, adjacent=False)
-		tunnel = self.tunnel_of(pos)
-		if tunnel:
-			tunnel.visit(pos)
 
 	def __setstate__(self, data): # pragma: no cover -- TODO
 		self.rooms = data.rooms
@@ -340,50 +268,10 @@ class Scene(scene.Scene):
 	@property
 	def current_tunnel(self):
 		return self.tunnel_of(self.get_player().pos)
-	def is_visible(self, obj, additional=None):
-		""" Returns true if object (Room, Tunnel, Point) is visible for player.
-		Additional data depends on type of primary object.
-		Currently only Tunnel Points are considered.
-		"""
-		if self.god.vision:
-			return True
-		if isinstance(obj, Room):
-			return obj == self.current_room
-		if isinstance(obj, Tunnel):
-			return additional in obj.visited
-		if isinstance(obj, Point):
-			for room in self.rooms.values():
-				if room.contains(obj) and self.is_visible(room):
-					return True
-			for tunnel in self.tunnels:
-				if self.is_visible(tunnel, obj):
-					return True
-		return False
-	def is_remembered(self, obj, additional=None):
-		""" Returns true if object (Room, Tunnel, Point) was visible for player at some point and now can be remembered.
-		Additional data depends on type of primary object.
-		Currently only Tunnel Points are considered.
-		"""
-		if self.god.vision:
-			return True
-		if isinstance(obj, Room):
-			return obj.visited
-		if isinstance(obj, Tunnel):
-			return additional in obj.visited
-		if isinstance(obj, Point):
-			for room in self.rooms.values():
-				if room.contains(obj) and self.is_remembered(room):
-					return True
-			for tunnel in self.tunnels:
-				if self.is_remembered(tunnel, obj):
-					return True
-		return False
 	def iter_cells(self, view_rect):
 		trace.debug(list(self.rooms.keys()))
 		terrain = []
 		for room in self.rooms.values():
-			if not self.is_remembered(room):
-				continue
 			terrain.append((room.top, room.top, "+"))
 			terrain.append((room.top, room.left, "+"))
 			terrain.append((room.bottom, room.left, "+"))
@@ -395,24 +283,18 @@ class Scene(scene.Scene):
 			for y in range(room.top+1, room.bottom):
 				terrain.append((y, room.left, "|"))
 				terrain.append((y, room.right, "|"))
-			if self.is_visible(room):
-				for y in range(room.top+1, room.bottom):
-					for x in range(room.left+1, room.right):
-						terrain.append((y, x, "."))
-			else:
-				for y in range(room.top+1, room.bottom):
-					for x in range(room.left+1, room.right):
-						terrain.append((y, x, " "))
+			for y in range(room.top+1, room.bottom):
+				for x in range(room.left+1, room.right):
+					terrain.append((y, x, (".", ' ')))
 		for tunnel in self.tunnels:
 			for cell in tunnel.iter_points():
-				if self.is_visible(tunnel, cell):
-					terrain.append((cell.y, cell.x, "#"))
-			if self.is_visible(tunnel, tunnel.start):
-				terrain.append((tunnel.start.y, tunnel.start.x, "+"))
-			if self.is_visible(tunnel, tunnel.stop):
-				terrain.append((tunnel.stop.y, tunnel.stop.x, "+"))
+				terrain.append((cell.y, cell.x, "#"))
+			terrain.append((tunnel.start.y, tunnel.start.x, "+"))
+			terrain.append((tunnel.stop.y, tunnel.stop.x, "+"))
 
 		for y, x, sprite in terrain:
+			if len(sprite) == 1:
+				sprite = (sprite, sprite)
 			pos = Point(x, y)
 			objects = list(self.iter_appliances_at(pos))
 			items = list(self.iter_items_at(pos))
@@ -452,6 +334,8 @@ class Dungeon(engine.Game):
 	def __init__(self):
 		super(Dungeon, self).__init__()
 		self.levels = {}
+		self.visited_rooms = {}
+		self.visited_tunnels = {}
 		self.current_level_id = None
 		self.generator = self.GENERATOR()
 		self.god = GodMode()
@@ -461,12 +345,15 @@ class Dungeon(engine.Game):
 		self.go_to_level(rogue, 0)
 	def load(self, reader): # pragma: no cover -- TODO
 		self.levels = data.levels
+		self.visited_rooms = data.visited_rooms
+		self.visited_tunnels = data.visited_tunnels
 		self.current_level_id = data.current_level
 		self.scene = self.levels[self.current_level_id]
-		self.scene.god = self.god
 		self.fire_event(Event.WelcomeBack(dungeon.scene.get_player()))
 	def save(self, data): # pragma: no cover -- TODO
 		data.levels = self.levels
+		data.visited_rooms = self.visited_rooms
+		data.visited_tunnels = self.visited_tunnels
 		data.current_level = self.current_level_id
 	def is_finished(self):
 		return not (self.scene.get_player() and self.scene.get_player().is_alive())
@@ -478,19 +365,46 @@ class Dungeon(engine.Game):
 			self.scene.monsters.remove(monster)
 		if level_id not in self.levels:
 			self.levels[level_id] = self.generator.build_level(level_id)
+			self.visited_rooms[level_id] = Matrix((3, 3), False)
+			self.visited_tunnels[level_id] = [set() for tunnel in self.levels[level_id].tunnels]
 		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, LevelPassage) and obj.id == connected_passage), None)
 		assert stairs is not None, "No stairs with id {0}".format(repr(connected_passage))
 		self.current_level_id = level_id
 		self.scene = self.levels[self.current_level_id]
-		self.scene.god = self.god
 
 		self.scene.monsters.append(monster)
 		monster.pos = stairs
-		self.scene.visit(monster.pos)
+		self.visit(monster.pos)
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """
 		stairs.use(monster)
 		self.go_to_level(monster, stairs.level_id, stairs.connected_passage)
+	def rip(self, who):
+		""" Processes monster's death (it should be actually not is_alive() for that).
+		Drops all items from inventory to the ground at the same pos.
+		Yields all dropped items.
+		Removes monster from the level.
+		"""
+		if who.is_alive():
+			raise RuntimeError("Trying to bury someone alive: {0}".format(who))
+		for item in who.drop_all():
+			self.scene.items.append(item)
+			yield item.item
+		try:
+			self.scene.monsters.remove(who)
+		except ValueError: # pragma: no cover -- TODO rogue is not stored in the list.
+			pass
+	def grab_item(self, who, item):
+		if len(who.inventory) >= who.max_inventory:
+			return [Event.InventoryFull(item)]
+		index, = [index for index, (pos, i) in enumerate(self.scene.items) if i == item]
+		who.inventory.append(item)
+		self.scene.items.pop(index)
+		return [Event.GrabbedItem(who, item)]
+	def drop_item(self, who, item):
+		item = who.drop(item)
+		self.scene.items.append(item)
+		return [Event.MonsterDroppedItem(who, item.item)]
 	def move_monster(self, monster, new_pos, with_tunnels=True):
 		""" Tries to move monster to a new position.
 		May attack hostile other monster there.
@@ -516,6 +430,79 @@ class Dungeon(engine.Game):
 		events = [Event.AttackMonster(monster, other, damage)]
 		if not other.is_alive():
 			events.append(Event.MonsterDied(other))
-			for item in self.scene.rip(other):
+			for item in self.rip(other):
 				events.append(Event.MonsterDroppedItem(other, item))
 		return events
+	def is_visible(self, obj, additional=None):
+		""" Returns true if object (Room, Tunnel, Point) is visible for player.
+		Additional data depends on type of primary object.
+		Currently only Tunnel Points are considered.
+		"""
+		if self.god.vision:
+			return True
+		if isinstance(obj, Room):
+			return obj == self.scene.current_room
+		if isinstance(obj, Tunnel):
+			tunnel_visited = self.scene.tunnels.index(obj)
+			tunnel_visited = self.visited_tunnels[self.current_level_id][tunnel_visited]
+			return additional in tunnel_visited
+		if isinstance(obj, Point):
+			for room in self.scene.rooms.values():
+				if room.contains(obj, with_border=True) and self.is_visible(room):
+					return True
+			for tunnel in self.scene.tunnels:
+				if self.is_visible(tunnel, obj):
+					return True
+		return False
+	def is_remembered(self, obj, additional=None):
+		""" Returns true if object (Room, Tunnel, Point) was visible for player at some point and now can be remembered.
+		Additional data depends on type of primary object.
+		Currently only Tunnel Points are considered.
+		"""
+		if self.god.vision:
+			return True
+		if isinstance(obj, Room):
+			room_index = self.scene.index_room_of(obj.topleft)
+			return self.visited_rooms[self.current_level_id].cell(room_index)
+		if isinstance(obj, Tunnel):
+			tunnel_visited = self.scene.tunnels.index(obj)
+			tunnel_visited = self.visited_tunnels[self.current_level_id][tunnel_visited]
+			return additional in tunnel_visited
+		if isinstance(obj, Point):
+			for room in self.scene.rooms.values():
+				if room.contains(obj, with_border=True) and self.is_remembered(room):
+					return True
+			for tunnel in self.scene.tunnels:
+				if self.is_remembered(tunnel, obj): # pragma: no covered -- TODO
+					return True
+		return False
+	def visit_tunnel(self, tunnel, pos, adjacent=True):
+		""" Marks cell as visited. If adjacent is True, marks all neighbouring cells too. """
+		shifts = [Point(0, 0)]
+		if adjacent:
+			shifts += [
+				Point(-1, 0),
+				Point(0, -1),
+				Point(+1, 0),
+				Point(0, +1),
+				]
+		tunnel_visited = self.scene.tunnels.index(tunnel)
+		tunnel_visited = self.visited_tunnels[self.current_level_id][tunnel_visited]
+		for shift in shifts:
+			p = pos + shift
+			if tunnel.contains(p):
+				tunnel_visited.add(p)
+	def visit(self, pos):
+		""" Marks all objects (rooms, tunnels) related to pos as visited. """
+		room = self.scene.room_of(pos)
+		if room:
+			room_index = self.scene.index_room_of(pos)
+			self.visited_rooms[self.current_level_id].set_cell(room_index, True)
+			for tunnel in self.scene.get_tunnels(room):
+				if room.contains(tunnel.start, with_border=True):
+					self.visit_tunnel(tunnel, tunnel.start, adjacent=False)
+				if room.contains(tunnel.stop, with_border=True):
+					self.visit_tunnel(tunnel, tunnel.stop, adjacent=False)
+		tunnel = self.scene.tunnel_of(pos)
+		if tunnel:
+			self.visit_tunnel(tunnel, pos)

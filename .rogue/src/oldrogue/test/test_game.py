@@ -161,17 +161,6 @@ class TestMonster(unittest.TestCase):
 		self.assertEqual(jc.attack(mj12), 4)
 		self.assertEqual(mj12.hp, 187)
 
-class TestTerrain(unittest.TestCase):
-	def should_visit_tunnel(self):
-		tunnel = game.Tunnel(Point(2, 2), Point(6, 12), 'H', bending_point=2)
-		tunnel.visit(Point(2, 2), adjacent=False)
-		self.assertEqual(tunnel.visited, {Point(2, 2)})
-		tunnel.visit(Point(4, 2), adjacent=True)
-		self.assertEqual(tunnel.visited, {
-			Point(2, 2),
-			Point(3, 2), Point(4, 2), Point(4, 3),
-			})
-
 class MockGenerator:
 	MAIN_LEVEL = textwrap.dedent("""\
 			####          
@@ -377,12 +366,12 @@ class TestGridRoomMap(unittest.TestCase):
 		gridmap.monsters.append(mj12)
 		self.assertTrue(mj12.is_alive())
 		with self.assertRaises(RuntimeError):
-			list(gridmap.rip(mj12))
+			list(dungeon.rip(mj12))
 		self.assertTrue(mj12.is_alive())
 		self.assertEqual(list(dungeon.scene.iter_actors_at(Point(9, 2))), [mj12])
 
 		mj12.hp = 0
-		loot = list(gridmap.rip(mj12))
+		loot = list(dungeon.rip(mj12))
 		self.assertEqual(loot, [armor, pistol])
 		self.assertEqual(list(dungeon.scene.iter_actors_at(Point(9, 2))), [])
 	def should_grab_item(self):
@@ -401,17 +390,17 @@ class TestGridRoomMap(unittest.TestCase):
 		gridmap.items.append( (Point(1, 1), armor) )
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor, pistol, key])
 
-		events = gridmap.grab_item(jc, key)
+		events = dungeon.grab_item(jc, key)
 		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, key)]))
 		self.assertTrue(jc.has_item(NanoKey))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor, pistol])
 
-		events = gridmap.grab_item(jc, pistol)
+		events = dungeon.grab_item(jc, pistol)
 		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, pistol)]))
 		self.assertTrue(jc.has_item(StealthPistol))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor])
 
-		events = gridmap.grab_item(jc, armor)
+		events = dungeon.grab_item(jc, armor)
 		self.assertEqual(_R(events), _R([game.Event.InventoryFull(armor)]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor])
@@ -426,23 +415,38 @@ class TestGridRoomMap(unittest.TestCase):
 
 		gridmap = dungeon.scene
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [])
-		events = gridmap.drop_item(jc, pistol)
+		events = dungeon.drop_item(jc, pistol)
 		self.assertEqual(_R(events), _R([game.Event.MonsterDroppedItem(jc, pistol)]))
 		self.assertFalse(jc.has_item(StealthPistol))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [pistol])
+	def should_visit_tunnel(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+		tunnel = game.Tunnel(Point(2, 2), Point(6, 12), 'H', bending_point=2)
+		dungeon.scene.tunnels.append(tunnel)
+		dungeon.visited_tunnels['top'].append(set())
+		dungeon.visit_tunnel(tunnel, Point(2, 2), adjacent=False)
+		self.assertEqual(dungeon.visited_tunnels['top'][-1], {Point(2, 2)})
+		dungeon.visit_tunnel(tunnel, Point(4, 2), adjacent=True)
+		self.assertEqual(dungeon.visited_tunnels['top'][-1], {
+			Point(2, 2),
+			Point(3, 2), Point(4, 2), Point(4, 3),
+			})
 	def should_visit_places(self):
-		gridmap = self._map()
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+		gridmap = dungeon.scene
 
-		gridmap.visit(Point(1, 1))
-		self.assertTrue(gridmap.rooms.cell((0, 0)).visited)
-		self.assertEqual(gridmap.tunnels[0].visited, {Point(3, 1)})
+		dungeon.visit(Point(1, 1))
+		self.assertTrue(dungeon.visited_rooms['top'].cell((0, 0)))
+		self.assertEqual(dungeon.visited_tunnels['top'][0], {Point(3, 1)})
 
-		gridmap.visit(Point(9, 2))
-		self.assertTrue(gridmap.rooms.cell((1, 0)).visited)
-		self.assertEqual(gridmap.tunnels[0].visited, {Point(3, 1), Point(7, 3)})
+		dungeon.visit(Point(9, 2))
+		self.assertTrue(dungeon.visited_rooms['top'].cell((1, 0)))
+		self.assertEqual(dungeon.visited_tunnels['top'][0], {Point(3, 1), Point(7, 3)})
 
-		gridmap.visit(Point(5, 1))
-		self.assertEqual(gridmap.tunnels[0].visited, {Point(3, 1),
+		dungeon.visit(Point(5, 1))
+		self.assertEqual(dungeon.visited_tunnels['top'][0], {Point(3, 1),
 			Point(4, 1), Point(5, 1),
 			Point(5, 2),
 			Point(7, 3),
@@ -456,13 +460,13 @@ class TestDungeon(unittest.TestCase):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		dungeon.scene.get_player().pos = Point(3, 1)
-		dungeon.scene.visit(dungeon.scene.get_player().pos)
+		dungeon.visit(dungeon.scene.get_player().pos)
 		dungeon.scene.get_player().pos = Point(5, 1)
-		dungeon.scene.visit(dungeon.scene.get_player().pos)
+		dungeon.visit(dungeon.scene.get_player().pos)
 		dungeon.scene.get_player().pos = Point(5, 3)
-		dungeon.scene.visit(dungeon.scene.get_player().pos)
+		dungeon.visit(dungeon.scene.get_player().pos)
 		dungeon.scene.get_player().pos = Point(7, 3)
-		dungeon.scene.visit(dungeon.scene.get_player().pos)
+		dungeon.visit(dungeon.scene.get_player().pos)
 		mj12 = MJ12Trooper(None)
 		mj12.pos = Point(8, 3)
 		dungeon.scene.monsters.append(mj12)
@@ -471,14 +475,19 @@ class TestDungeon(unittest.TestCase):
 
 		view = Matrix((80, 25), '_')
 		for pos, (terrain, objects, items, monsters) in dungeon.scene.iter_cells(None):
-			if monsters:
+			is_visible = dungeon.is_visible(pos) or dungeon.god.vision
+			if monsters and is_visible:
 				view.set_cell(pos, monsters[-1].sprite)
-			elif items:
+			elif items and (dungeon.is_remembered(pos) or is_visible):
 				view.set_cell(pos, items[-1].sprite)
-			elif objects:
+			elif objects and (dungeon.is_remembered(pos) or is_visible):
 				view.set_cell(pos, objects[-1].sprite)
 			else:
-				view.set_cell(pos, terrain)
+				terrain, remembered = terrain
+				if is_visible:
+					view.set_cell(pos, terrain)
+				elif dungeon.is_remembered(pos):
+					view.set_cell(pos, remembered)
 		expected = textwrap.dedent("""\
 				+--+____________________________________________________________________________
 				|> +##_+----+___________________________________________________________________
@@ -541,44 +550,44 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.scene, dungeon.levels['top'])
 
 		dungeon.scene.get_player().pos = Point(1, 1)
-		dungeon.scene.visit(dungeon.scene.get_player().pos)
-		self.assertTrue(dungeon.scene.is_visible(dungeon.scene.rooms.cell((0, 0))))
-		self.assertFalse(dungeon.scene.is_visible(dungeon.scene.rooms.cell((1, 0))))
-		self.assertTrue(dungeon.scene.is_visible(dungeon.scene.tunnels[0], additional=Point(3, 1)))
-		self.assertFalse(dungeon.scene.is_visible(dungeon.scene.tunnels[1], additional=Point(11, 4)))
-		self.assertTrue(dungeon.scene.is_visible(Point(2, 1)))
-		self.assertTrue(dungeon.scene.is_visible(Point(3, 1)))
-		self.assertFalse(dungeon.scene.is_visible(Point(5, 1)))
-		self.assertFalse(dungeon.scene.is_visible(Point(8, 2)))
+		dungeon.visit(dungeon.scene.get_player().pos)
+		self.assertTrue(dungeon.is_visible(dungeon.scene.rooms.cell((0, 0))))
+		self.assertFalse(dungeon.is_visible(dungeon.scene.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_visible(dungeon.scene.tunnels[0], additional=Point(3, 1)))
+		self.assertFalse(dungeon.is_visible(dungeon.scene.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_visible(Point(2, 1)))
+		self.assertTrue(dungeon.is_visible(Point(3, 1)))
+		self.assertFalse(dungeon.is_visible(Point(5, 1)))
+		self.assertFalse(dungeon.is_visible(Point(8, 2)))
 
 		dungeon.god.vision = True
-		self.assertTrue(dungeon.scene.is_visible(dungeon.scene.rooms.cell((1, 0))))
-		self.assertTrue(dungeon.scene.is_visible(dungeon.scene.tunnels[1], additional=Point(11, 4)))
-		self.assertTrue(dungeon.scene.is_visible(Point(5, 1)))
-		self.assertTrue(dungeon.scene.is_visible(Point(8, 2)))
+		self.assertTrue(dungeon.is_visible(dungeon.scene.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_visible(dungeon.scene.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_visible(Point(5, 1)))
+		self.assertTrue(dungeon.is_visible(Point(8, 2)))
 	def should_remember_objects(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
 		self.assertEqual(dungeon.scene, dungeon.levels['top'])
 
 		dungeon.scene.get_player().pos = Point(1, 1)
-		dungeon.scene.visit(dungeon.scene.get_player().pos)
+		dungeon.visit(dungeon.scene.get_player().pos)
 		dungeon.scene.get_player().pos = Point(2, 6)
 
-		self.assertTrue(dungeon.scene.is_remembered(dungeon.scene.rooms.cell((0, 0))))
-		self.assertFalse(dungeon.scene.is_remembered(dungeon.scene.rooms.cell((1, 0))))
-		self.assertTrue(dungeon.scene.is_remembered(dungeon.scene.tunnels[0], additional=Point(3, 1)))
-		self.assertFalse(dungeon.scene.is_remembered(dungeon.scene.tunnels[1], additional=Point(11, 4)))
-		self.assertTrue(dungeon.scene.is_remembered(Point(2, 1)))
-		self.assertTrue(dungeon.scene.is_remembered(Point(3, 1)))
-		self.assertFalse(dungeon.scene.is_remembered(Point(5, 1)))
-		self.assertFalse(dungeon.scene.is_remembered(Point(8, 2)))
+		self.assertTrue(dungeon.is_remembered(dungeon.scene.rooms.cell((0, 0))))
+		self.assertFalse(dungeon.is_remembered(dungeon.scene.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_remembered(dungeon.scene.tunnels[0], additional=Point(3, 1)))
+		self.assertFalse(dungeon.is_remembered(dungeon.scene.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_remembered(Point(2, 1)))
+		self.assertTrue(dungeon.is_remembered(Point(3, 1)))
+		self.assertFalse(dungeon.is_remembered(Point(5, 1)))
+		self.assertFalse(dungeon.is_remembered(Point(8, 2)))
 
 		dungeon.god.vision = True
-		self.assertTrue(dungeon.scene.is_remembered(dungeon.scene.rooms.cell((1, 0))))
-		self.assertTrue(dungeon.scene.is_remembered(dungeon.scene.tunnels[1], additional=Point(11, 4)))
-		self.assertTrue(dungeon.scene.is_remembered(Point(5, 1)))
-		self.assertTrue(dungeon.scene.is_remembered(Point(8, 2)))
+		self.assertTrue(dungeon.is_remembered(dungeon.scene.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_remembered(dungeon.scene.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_remembered(Point(5, 1)))
+		self.assertTrue(dungeon.is_remembered(Point(8, 2)))
 	def should_move_monster(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')

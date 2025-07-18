@@ -413,7 +413,11 @@ class MainGame(tui.app.MVC):
 			elif objects and (dungeon.is_remembered(pos) or is_visible):
 				window.addstr(1 + pos.y, pos.x, objects[-1].sprite)
 			else:
-				window.addstr(1 + pos.y, pos.x, terrain)
+				terrain, remembered = terrain
+				if is_visible:
+					window.addstr(1 + pos.y, pos.x, terrain)
+				elif dungeon.is_remembered(pos):
+					window.addstr(1 + pos.y, pos.x, remembered)
 	def _control(self, ch):
 		self.step_is_over = False
 		try:
@@ -482,7 +486,7 @@ class MainGame(tui.app.MVC):
 			item_here = len(dungeon.scene.items) - 1 - item_here # Index is from reversed list.
 			trace.debug("Unreversed item here: {0}".format(item_here))
 			_, item = dungeon.scene.items[item_here]
-			for _ in dungeon.scene.grab_item(dungeon.get_player(), item):
+			for _ in dungeon.grab_item(dungeon.get_player(), item):
 				self.data.fire_event(_)
 			self.step_is_over = True
 		else:
@@ -620,7 +624,7 @@ class DropItem:
 	def prompt(self): return "Which item to drop?"
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
-		for _ in self.data.scene.drop_item(self.data.get_player(), item):
+		for _ in self.data.drop_item(self.data.get_player(), item):
 			self.data.fire_event(_)
 
 class WieldItem:

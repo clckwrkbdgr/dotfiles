@@ -41,7 +41,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		for pos, cell_info in game.scene.iter_cells(Rect(Point(0, 0), game.get_viewport())):
 			cell, objects, items, monsters = cell_info
 			sprite = ' '
-			if game.god.vision or game.scene.field_of_view.is_visible(pos.x, pos.y):
+			if game.god.vision or game.vision.field_of_view.is_visible(pos.x, pos.y):
 				if monsters:
 					sprite = monsters[-1].sprite
 				elif items:
@@ -50,9 +50,9 @@ class MainGame(clckwrkbdgr.tui.Mode):
 					sprite = objects[-1]
 				else:
 					sprite = cell.sprite
-			elif objects and game.scene.remembered_exit:
+			elif objects and game.vision.remembered_exit:
 				sprite = '>'
-			elif game.scene.visited.cell(pos) and cell.remembered:
+			elif game.vision.visited.cell(pos) and cell.remembered:
 				sprite = cell.remembered
 			ui.print_char(pos.x, 1+pos.y, sprite or ' ')
 

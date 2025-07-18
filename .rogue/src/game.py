@@ -107,69 +107,72 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	def is_passable(self, p, from_point):
 		return self.matrix.cell(p).passable and self.visited.cell(p) and self.allow_movement_direction(self.matrix, from_point, p)
 
-class Scene(scene.Scene):
+class Vision(object):
 	def __init__(self):
-		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
 		self.visited = None
-		self.monsters = []
-		self.items = []
+		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
 		self.visible_monsters = []
 		self.visible_items = []
-		self.strata = None
-		self.exit_pos = None
 		self.remembered_exit = False
 	def load(self, reader):
-		super(Scene, self).load(reader)
-		self.exit_pos = reader.read_point()
 		self.remembered_exit = reader.read_bool()
-		self.strata = reader.read_matrix(Terrain)
 		self.visited = reader.read_matrix(lambda c:c=='1')
-		if reader.version > Version.MONSTERS:
-			self.monsters.extend(reader.read_list(actors.Actor))
-		if reader.version > Version.ITEMS:
-			self.items.extend(reader.read_list(items.ItemAtPos))
 	def save(self, writer):
-		writer.write(self.exit_pos)
 		writer.write(self.remembered_exit)
-		writer.write(self.strata)
 		writer.write(self.visited)
-		writer.write(self.monsters)
-		writer.write(self.items)
-	def update_vision(self):
+	def update(self, monster, scene):
 		""" Recalculates visibility/FOV for the player.
 		May produce Discover events, if some objects come into vision.
 		Remembers already seen objects.
 		"""
-		if not self.get_player():
-			return
 		current_visible_monsters = []
 		current_visible_items = []
-		is_transparent = lambda p: self.is_transparent_to_monster(p, self.get_player())
+		is_transparent = lambda p: scene.is_transparent_to_monster(p, monster)
 		for p in self.field_of_view.update(
-				self.get_player().pos,
+				monster.pos,
 				is_transparent=is_transparent,
 				):
-			cell = self.strata.cell(p)
+			cell = scene.strata.cell(p)
 
-			for monster in self.iter_actors_at(p):
+			for monster in scene.iter_actors_at(p):
 				if monster not in self.visible_monsters:
 					yield monster
 				current_visible_monsters.append(monster)
 
-			for item in self.iter_items_at(p):
+			for item in scene.iter_items_at(p):
 				if item not in self.visible_items:
 					yield item
 				current_visible_items.append(item)
 
 			if self.visited.cell(p):
 				continue
-			for appliance in self.iter_appliances_at(p):
+			for appliance in scene.iter_appliances_at(p):
 				yield appliance
 			self.visited.set_cell(p, True)
 		self.visible_monsters = current_visible_monsters
 		self.visible_items = current_visible_items
-		if self.field_of_view.is_visible(self.exit_pos.x, self.exit_pos.y):
+		if self.field_of_view.is_visible(scene.exit_pos.x, scene.exit_pos.y):
 			self.remembered_exit = True
+
+class Scene(scene.Scene):
+	def __init__(self):
+		self.monsters = []
+		self.items = []
+		self.strata = None
+		self.exit_pos = None
+	def load(self, reader):
+		super(Scene, self).load(reader)
+		self.exit_pos = reader.read_point()
+		self.strata = reader.read_matrix(Terrain)
+		if reader.version > Version.MONSTERS:
+			self.monsters.extend(reader.read_list(actors.Actor))
+		if reader.version > Version.ITEMS:
+			self.items.extend(reader.read_list(items.ItemAtPos))
+	def save(self, writer):
+		writer.write(self.exit_pos)
+		writer.write(self.strata)
+		writer.write(self.monsters)
+		writer.write(self.items)
 	def is_transparent_to_monster(self, p, monster):
 		""" True if cell at position p is transparent/visible to a monster. """
 		if not self.strata.valid(p):
@@ -248,6 +251,7 @@ class Game(engine.Game):
 		self.movement_queue = []
 		self.player_turn = True
 		self.scene = Scene()
+		self.vision = Vision()
 	def generate(self):
 		self.build_new_strata()
 	def load(self, reader):
@@ -256,9 +260,11 @@ class Game(engine.Game):
 			self.rng = RNG(reader.read_int())
 
 		self.scene.load(reader)
+		self.vision.load(reader)
 
-		for obj in self.scene.update_vision(): # pragma: no cover
-			self.fire_event(DiscoverEvent(obj))
+		if self.scene.get_player(): # pragma: no cover
+			for obj in self.vision.update(self.scene.get_player(), self.scene):
+				self.fire_event(DiscoverEvent(obj))
 		Log.debug('Loaded.')
 		Log.debug(repr(self.scene.strata))
 		Log.debug('Player: {0}'.format(self.scene.get_player()))
@@ -266,6 +272,7 @@ class Game(engine.Game):
 		""" Saves game using writer. """
 		writer.write(self.rng.value)
 		writer.write(self.scene)
+		self.vision.save(writer)
 	def is_finished(self):
 		return not (self.scene.get_player() and self.scene.get_player().is_alive())
 	def _pre_action(self):
@@ -316,7 +323,7 @@ class Game(engine.Game):
 		return result.tostring()
 	def get_cell_repr(self, pos, cell_info):
 		cell, objects, items, monsters = cell_info
-		if self.god.vision or self.scene.field_of_view.is_visible(pos.x, pos.y):
+		if self.god.vision or self.vision.field_of_view.is_visible(pos.x, pos.y):
 			if monsters:
 				return monsters[-1].sprite
 			if items:
@@ -325,9 +332,9 @@ class Game(engine.Game):
 				return '>'
 			return cell.sprite
 		if objects:
-			if self.scene.remembered_exit:
+			if self.vision.remembered_exit:
 				return '>'
-		if self.scene.visited.cell(pos) and cell.remembered:
+		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered
 		return None
 	def build_new_strata(self):
@@ -343,7 +350,7 @@ class Game(engine.Game):
 		Log.debug("Populating dungeon: {0}".format(settler))
 		builder.generate()
 		self.scene.strata = builder.make_grid()
-		self.scene.visited = Matrix(self.scene.strata.size, False)
+		self.vision.visited = Matrix(self.scene.strata.size, False)
 
 		appliances = list(builder.make_appliances())
 		start_pos = next(_pos for _pos, _name in appliances if _name == 'start')
@@ -363,8 +370,8 @@ class Game(engine.Game):
 
 		Log.debug("Finalizing dungeon...")
 		self.scene.exit_pos = next(_pos for _pos, _name in appliances if _name == 'exit')
-		self.scene.remembered_exit = False
-		for obj in self.scene.update_vision():
+		self.vision.remembered_exit = False
+		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
 		Log.debug("Dungeon is ready.")
 	def move(self, actor, direction):
@@ -396,7 +403,7 @@ class Game(engine.Game):
 		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
 		self.fire_event(MoveEvent(actor, new_pos))
 		actor.pos = new_pos
-		for obj in self.scene.update_vision():
+		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
 		return True
 	def affect_health(self, target, diff):
@@ -410,7 +417,7 @@ class Game(engine.Game):
 			self.fire_event(DeathEvent(target))
 			for item in target.drop_all():
 				self.scene.items.append(item)
-				self.scene.visible_items.append(item.item)
+				self.vision.visible_items.append(item.item)
 				self.fire_event(DropItemEvent(target, item.item))
 			self.scene.monsters.remove(target)
 	def attack(self, actor, target):
@@ -419,8 +426,9 @@ class Game(engine.Game):
 		"""
 		self.fire_event(AttackEvent(actor, target))
 		self.affect_health(target, -1)
-		for obj in self.scene.update_vision(): # pragma: no cover -- TODO
-			self.fire_event(DiscoverEvent(obj))
+		if self.get_player():
+			for obj in self.vision.update(self.scene.get_player(), self.scene): # pragma: no cover -- TODO
+				self.fire_event(DiscoverEvent(obj))
 	def grab_item_at(self, actor, pos):
 		""" Grabs topmost item at given cell and puts to the inventory.
 		Produces events.
@@ -447,7 +455,7 @@ class Game(engine.Game):
 		"""
 		item = monster.drop(item)
 		self.scene.items.append(item)
-		self.scene.visible_items.append(item.item)
+		self.vision.visible_items.append(item.item)
 		self.fire_event(DropItemEvent(monster, item.item))
 	def wield_item(self, monster, item):
 		""" Monster equips item from inventory.
@@ -471,7 +479,7 @@ class Game(engine.Game):
 	def jump_to(self, new_pos):
 		""" Teleports player to new pos. """
 		self.scene.get_player().pos = new_pos
-		for obj in self.scene.update_vision():
+		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
 	def descend(self):
 		""" Descends onto new level, when standing on exit pos.
@@ -486,7 +494,7 @@ class Game(engine.Game):
 		""" Find free path from start and until find_target() returns suitable target.
 		Otherwise return None.
 		"""
-		wave = Pathfinder(self.scene.strata, visited=self.scene.visited)
+		wave = Pathfinder(self.scene.strata, visited=self.vision.visited)
 		path = wave.run(start, find_target)
 		if not path:
 			return None
@@ -497,7 +505,7 @@ class Game(engine.Game):
 		""" Starts auto-walking towards dest, if possible.
 		Does not start when monsters are around and produces event.
 		"""
-		if self.scene.visible_monsters:
+		if self.vision.visible_monsters:
 			self.fire_event(DiscoverEvent('monsters'))
 			return
 		path = self.find_path(self.scene.get_player().pos,
@@ -509,13 +517,13 @@ class Game(engine.Game):
 		""" Starts auto-exploring, if there are unknown places.
 		Does not start when monsters are around and produces event.
 		"""
-		if self.scene.visible_monsters:
+		if self.vision.visible_monsters:
 			self.fire_event(DiscoverEvent('monsters'))
 			return False
 		path = self.find_path(self.scene.get_player().pos,
 			find_target=lambda wave: next((target for target in sorted(wave)
 			if any(
-				not self.scene.visited.cell(p)
+				not self.vision.visited.cell(p)
 				for p in clckwrkbdgr.math.get_neighbours(self.scene.strata, target, with_diagonal=True)
 				)
 			), None),
