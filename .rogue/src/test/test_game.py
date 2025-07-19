@@ -61,7 +61,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.in_automovement()) # walking...
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[ # NONE AUTOEXPLORE
-			'DiscoverEvent(obj=>)',
+			'DiscoverEvent(obj=stairs)',
 			]])
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[ # exploring...
@@ -281,7 +281,7 @@ class TestEvents(AbstractTestDungeon):
 		dungeon.jump_to(Point(11, 2))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
-		self.assertEqual(dungeon.events[0].obj, '>')
+		self.assertEqual(repr(dungeon.events[0].obj), 'MockStairs(stairs)')
 		list(dungeon.process_events(raw=True))
 		dungeon.jump_to(Point(9, 6))
 		self.assertEqual(dungeon.events, [])
@@ -454,7 +454,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.exit_pos))
+		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
 		self.maxDiff = None
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				    #####        #  
@@ -469,7 +469,7 @@ class TestMovement(AbstractTestDungeon):
 				 #################  
 				"""))
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT) 
-		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.exit_pos))
+		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				    #####      #### 
 				     ...   ## ..... 
@@ -486,7 +486,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
 		dungeon.move(dungeon.get_player(), game.Direction.UP) 
-		self.assertTrue(dungeon.vision.visited.cell(dungeon.scene.exit_pos))
+		self.assertTrue(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				   ########    #####
 				         #>##      #
@@ -926,7 +926,6 @@ class TestGameSerialization(AbstractTestDungeon):
 		Wall = mock_dungeon.MockGame.TERRAIN['Wall'].__name__
 		Floor = mock_dungeon.MockGame.TERRAIN['Floor'].__name__
 		self.assertEqual(dump, list(map(str, [1406932606,
-			10, 1,
 			20, 10,
 			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
 			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall, Floor, Wall, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
@@ -943,6 +942,8 @@ class TestGameSerialization(AbstractTestDungeon):
 				'MockMonster', 2, 5, 3, 0, 0, 0,
 			1,
 				'Potion', 10, 6,
+			1,
+				'MockStairs', 10, 1,
 
 			20, 10,
 			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
@@ -965,7 +966,7 @@ class TestGameSerialization(AbstractTestDungeon):
 				[(_.name, _.pos) for _ in dungeon.scene.monsters],
 				[(_.name, _.pos) for _ in restored_dungeon.scene.monsters],
 				)
-		self.assertEqual(dungeon.scene.exit_pos, restored_dungeon.scene.exit_pos)
+		self.assertEqual(dungeon.scene.appliances[0].pos, restored_dungeon.scene.appliances[0].pos)
 		for pos in dungeon.scene.strata.size.iter_points():
 			self.assertEqual(dungeon.scene.strata.cell(pos).sprite, restored_dungeon.scene.strata.cell(pos).sprite, str(pos))
 			self.assertEqual(dungeon.scene.strata.cell(pos).passable, restored_dungeon.scene.strata.cell(pos).passable, str(pos))

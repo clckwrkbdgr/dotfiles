@@ -212,7 +212,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster! monsters! exit! Unknown event {0}!                             '.format(repr('GIBBERISH'))),
+			('addstr', 0, 0, 'monster! monsters! stairs! Unknown event {0}!                           '.format(repr('GIBBERISH'))),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])
@@ -259,7 +259,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_REMEMBERED_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster! monsters! exit!                                                        '),
+			('addstr', 0, 0, 'monster! monsters! stairs!                                                      '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])
@@ -324,7 +324,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'exit! monster bumps.                                                            '),
+			('addstr', 0, 0, 'stairs! monster bumps.                                                          '),
 			('addstr', 24, 0, 'hp: 10/10 [vis]                                                              [?]'),
 			('refresh',),
 			])
@@ -533,7 +533,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.NEXT_DUNGEON[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster! exit! player V... monster!                                             '),
+			('addstr', 0, 0, 'monster! stairs! player V... monster!                                           '),
 			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
 			('refresh',),
 			])

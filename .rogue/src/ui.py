@@ -47,11 +47,11 @@ class MainGame(clckwrkbdgr.tui.Mode):
 				elif items:
 					sprite = items[-1].sprite
 				elif objects:
-					sprite = objects[-1]
+					sprite = objects[-1].sprite
 				else:
 					sprite = cell.sprite
-			elif objects and game.vision.visited.cell(game.scene.exit_pos):
-				sprite = '>'
+			elif objects and game.vision.visited.cell(pos):
+				sprite = objects[-1].sprite
 			elif game.vision.visited.cell(pos) and cell.remembered:
 				sprite = cell.remembered
 			ui.print_char(pos.x, 1+pos.y, sprite or ' ')
@@ -112,9 +112,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		return not control
 	@Events.on(game.DiscoverEvent)
 	def on_discovering(self, game, event):
-		if event.obj == '>':
-			return 'exit!'
-		elif hasattr(event.obj, 'name'):
+		if hasattr(event.obj, 'name'):
 			return '{0}!'.format(event.obj.name)
 		else:
 			return '{0}!'.format(event.obj)

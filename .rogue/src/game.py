@@ -3,7 +3,7 @@ from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
-from .engine import items, actors, scene
+from .engine import items, actors, scene, appliances
 from . import engine
 from .engine.terrain import Terrain
 from .engine.events import Event
@@ -63,6 +63,9 @@ class UnequipItemEvent(Event):
 	FIELDS = 'actor item'
 
 class Player(actors.EquippedMonster):
+	pass
+
+class LevelExit(appliances.Appliance):
 	pass
 
 class Angry(actors.EquippedMonster):
@@ -151,23 +154,23 @@ class Vision(object):
 
 class Scene(scene.Scene):
 	def __init__(self):
+		self.strata = None
 		self.monsters = []
 		self.items = []
-		self.strata = None
-		self.exit_pos = None
+		self.appliances = []
 	def load(self, reader):
 		super(Scene, self).load(reader)
-		self.exit_pos = reader.read_point()
 		self.strata = reader.read_matrix(Terrain)
 		if reader.version > Version.MONSTERS:
 			self.monsters.extend(reader.read_list(actors.Actor))
 		if reader.version > Version.ITEMS:
 			self.items.extend(reader.read_list(items.ItemAtPos))
+		self.appliances.extend(reader.read_list(appliances.ObjectAtPos))
 	def save(self, writer):
-		writer.write(self.exit_pos)
 		writer.write(self.strata)
 		writer.write(self.monsters)
 		writer.write(self.items)
+		writer.write(self.appliances)
 	def is_transparent_to_monster(self, p, monster):
 		""" True if cell at position p is transparent/visible to a monster. """
 		if not self.strata.valid(p):
@@ -206,8 +209,9 @@ class Scene(scene.Scene):
 			if item_pos == pos:
 				yield item
 	def iter_appliances_at(self, pos):
-		if self.exit_pos == pos:
-			yield '>'
+		for obj_pos, obj in self.appliances:
+			if obj_pos == pos:
+				yield obj
 
 class Game(engine.Game):
 	""" Main game object.
@@ -324,11 +328,10 @@ class Game(engine.Game):
 			if items:
 				return items[-1].sprite
 			if objects:
-				return '>'
+				return objects[-1].sprite
 			return cell.sprite
-		if objects:
-			if self.vision.visited.cell(self.scene.exit_pos):
-				return '>'
+		if objects and self.vision.visited.cell(pos):
+			return objects[-1].sprite
 		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered
 		return None
@@ -349,6 +352,7 @@ class Game(engine.Game):
 
 		appliances = list(builder.make_appliances())
 		start_pos = next(_pos for _pos, _name in appliances if _name == 'start')
+		self.scene.appliances = [_entry for _entry in appliances if _entry.obj != 'start']
 		player = self.scene.get_player()
 		if player:
 			player.pos = start_pos
@@ -364,7 +368,6 @@ class Game(engine.Game):
 			self.scene.items.append(item)
 
 		Log.debug("Finalizing dungeon...")
-		self.scene.exit_pos = next(_pos for _pos, _name in appliances if _name == 'exit')
 		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
 		Log.debug("Dungeon is ready.")
@@ -480,10 +483,11 @@ class Game(engine.Game):
 		Generates new level.
 		Otherwise does nothing.
 		"""
-		if self.scene.get_player().pos != self.scene.exit_pos:
-			return
-		self.fire_event(DescendEvent(self.scene.get_player()))
-		self.build_new_strata()
+		for obj in self.scene.iter_appliances_at(self.scene.get_player().pos):
+			if isinstance(obj, LevelExit):
+				self.fire_event(DescendEvent(self.scene.get_player()))
+				self.build_new_strata()
+				break
 	def find_path(self, start, find_target):
 		""" Find free path from start and until find_target() returns suitable target.
 		Otherwise return None.

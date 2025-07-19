@@ -148,6 +148,10 @@ class DarkFloor(Terrain):
 	_allow_diagonal=False
 	_dark=True
 
+class MockStairs(game.LevelExit):
+	_name = 'stairs'
+	_sprite = '>'
+
 class MockGame(game.Game):
 	SPECIES = {
 			'name' : Name,
@@ -209,7 +213,7 @@ class MockMapping:
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod
-	def exit(): return 'exit'
+	def exit(): return MockStairs()
 	@staticmethod
 	def monster(pos,*data):
 		return MockMonster(*(data + (pos,)))
