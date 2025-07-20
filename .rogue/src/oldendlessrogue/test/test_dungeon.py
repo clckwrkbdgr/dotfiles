@@ -1,7 +1,8 @@
-from clckwrkbdgr.math import Point, Size, Matrix
+from clckwrkbdgr.math import Point, Size, Matrix, Rect
 from clckwrkbdgr import unittest
 from clckwrkbdgr.collections import dotdict
 from ..dungeon import Dungeon, Scene
+from ..builders import EndlessFloor, EndlessWall
 
 class MockScene(Scene):
 	BLOCK_SIZE = Size(3, 3)
@@ -16,41 +17,26 @@ class MockBuilder:
 		self.rogue_pos = rogue_pos or (0, 0)
 		self.walls = walls or []
 	def build_block(self, block):
-		block.clear('.')
+		block.clear(EndlessFloor())
 		if not self.walls:
 			return
 		walls = self.walls.pop(0)
 		for wall in walls:
-			block.set_cell(wall, '#')
+			block.set_cell(wall, EndlessWall())
 	def place_rogue(self, terrain):
 		return self.rogue_pos
 
 class TestDungeon(unittest.TestCase):
-	@staticmethod
-	def to_string(dungeon):
-		result = []
-		for y in range(-4, 5):
-			result.append('')
-			for x in range(-4, 5):
-				result[-1] += (dungeon.get_sprite((x, y)) or ' ')
-		return '\n'.join(result) + '\n'
+	VIEW_RECT = Rect((-4, -4), (9, 9))
 	def should_generate_random_dungeon(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
-		self.assertEqual(dungeon.scene.terrain.cell((0, 0)), '.')
-		self.assertEqual(dungeon.scene.terrain.cell((1, 0)), '#')
-		self.assertEqual(dungeon.scene.terrain.cell((0, 1)), '#')
-		self.assertEqual(dungeon.scene.terrain.cell((1, 1)), '.')
+		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite, '.')
+		self.assertEqual(dungeon.scene.terrain.cell((1, 0)).sprite, '#')
+		self.assertEqual(dungeon.scene.terrain.cell((0, 1)).sprite, '#')
+		self.assertEqual(dungeon.scene.terrain.cell((1, 1)).sprite, '.')
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
-	def should_get_dungeon_sprites_for_view(self):
-		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
-		dungeon = MockDungeon(builder=builder)
-		dungeon.generate()
-		self.assertEqual(dungeon.get_sprite((0, 0)), '.')
-		self.assertEqual(dungeon.get_sprite((1, 1)), '@')
-		self.assertEqual(dungeon.get_sprite((0, 1)), '#')
-		self.assertEqual(dungeon.get_sprite((1, 0)), '#')
 	def should_move_player(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
@@ -73,7 +59,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
-		self.assertEqual(self.to_string(dungeon), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_........
 		_........
@@ -89,7 +75,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.finish_action()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
-		self.assertEqual(self.to_string(dungeon), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_........
 		_........
@@ -105,7 +91,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.finish_action()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 3))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, 0))
-		self.assertEqual(self.to_string(dungeon), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_________
 		_________
@@ -120,7 +106,7 @@ class TestDungeon(unittest.TestCase):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
-		self.assertEqual(dungeon.scene.terrain.cell((0, 0)), '.')
+		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite, '.')
 		self.assertTrue(dungeon.scene.is_passable((0, 0)))
 		self.assertFalse(dungeon.scene.is_passable((1, 0)))
 		self.assertFalse(dungeon.scene.is_passable((-10, -10)))
@@ -139,7 +125,11 @@ class TestSerialization(unittest.TestCase):
 		other_data = pickle.loads(pickle.dumps(data))
 		other = MockDungeon(builder=builder)
 		other.load(other_data)
-		self.assertEqual(dungeon.scene.terrain, other.scene.terrain)
+		self.maxDiff = None
+		self.assertEqual(
+				'\n'.join(dungeon.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite) for c in dungeon.scene.terrain.blocks),
+				'\n'.join(other.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite) for c in other.scene.terrain.blocks),
+				)
 		self.assertEqual(dungeon.scene.get_player().pos, other.scene.get_player().pos)
 		self.assertEqual(dungeon.time, other.time)
 	def should_deserialize_dungeons_from_previous_versions(self):

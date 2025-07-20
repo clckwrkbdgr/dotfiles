@@ -3,6 +3,7 @@ from clckwrkbdgr import unittest
 from clckwrkbdgr.math import Point, Size, Rect, Matrix
 from ..game import Game
 from ..dungeon import Dungeon
+from ..builders import EndlessFloor, EndlessWall
 
 class MockUI:
 	def __init__(self, scheduled_controls):
@@ -30,12 +31,12 @@ class MockBuilder:
 		self.rogue_pos = rogue_pos or (0, 0)
 		self.walls = walls or []
 	def build_block(self, block):
-		block.clear('.')
+		block.clear(EndlessFloor())
 		if not self.walls:
 			return
 		walls = self.walls.pop(0)
 		for wall in walls:
-			block.set_cell(wall, '#')
+			block.set_cell(wall, EndlessWall())
 	def place_rogue(self, terrain):
 		return self.rogue_pos
 

@@ -16,7 +16,7 @@ class Dungeon(engine.Game):
 	def is_finished(self): # pragma: no cover -- TODO
 		return False
 	def generate(self):
-		self.scene.terrain = EndlessMatrix(block_size=self.scene.BLOCK_SIZE, builder=self.builder.build_block)
+		self.scene.terrain = EndlessMatrix(block_size=self.scene.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
 		self.scene.monsters.append(Player(self.builder.place_rogue(self.scene.terrain)))
 	def load(self, state):
 		self.__dict__.update(state)
@@ -28,11 +28,6 @@ class Dungeon(engine.Game):
 		data.update(self.__dict__)
 		del data['rng']
 		state.update(data)
-	def get_sprite(self, pos):
-		terrain, objects, items, monsters = self.scene.get_cell_info(pos)
-		if monsters:
-			return monsters[-1].sprite
-		return terrain
 	def shift_monster(self, monster, shift):
 		new_pos = monster.pos + shift
 		if self.scene.is_passable(new_pos):
@@ -47,7 +42,8 @@ class Scene(scene.Scene):
 		self.terrain = None
 		self.monsters = []
 	def get_cell_info(self, pos):
-		return self.terrain.cell(pos), [], [], list(self.iter_actors_at(pos))
+		cell = self.terrain.cell(pos) or builders.EndlessVoid()
+		return cell, [], [], list(self.iter_actors_at(pos))
 	def iter_actors_at(self, pos, with_player=False):
 		for monster in self.monsters:
 			if monster.pos == pos:
@@ -60,4 +56,4 @@ class Scene(scene.Scene):
 	def get_player(self):
 		return next(iter(self.monsters))
 	def is_passable(self, pos):
-		return self.terrain.cell(pos) == '.'
+		return self.terrain.cell(pos) and self.terrain.cell(pos).passable

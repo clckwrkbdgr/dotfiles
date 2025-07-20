@@ -4,6 +4,20 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr import utils
 from clckwrkbdgr.collections import AutoRegistry
 from src.engine import builders
+from src.engine import terrain
+
+class EndlessFloor(terrain.Terrain):
+	_sprite = '.'
+	_name = '.'
+	_passable = True
+class EndlessWall(terrain.Terrain):
+	_sprite = '#'
+	_name = '#'
+	_passable = False
+class EndlessVoid(terrain.Terrain):
+	_sprite = ' '
+	_name = ' '
+	_passable = False
 
 def place_square_tank(grid, topleft_pos, size):
 	size = Size(size)
@@ -36,8 +50,8 @@ def place_broken_tank(grid, topleft_pos, size):
 
 class Builder(builders.Builder):
 	class Mapping:
-		floor = '.'
-		wall = '#'
+		floor = EndlessFloor()
+		wall = EndlessWall()
 
 class FilledWithGarbage(Builder):
 	def fill_grid(self, grid):

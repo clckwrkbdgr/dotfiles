@@ -47,7 +47,7 @@ class Game(clckwrkbdgr.tui.Mode):
 	def redraw(self, ui):
 		view_rect = Rect(self.dungeon.scene.get_player().pos - self.VIEW_CENTER, Size(25, 25))
 		for pos, (terrain, _1, _2, monsters) in self.dungeon.scene.iter_cells(view_rect):
-			sprite = terrain
+			sprite = terrain.sprite
 			if monsters:
 				sprite = monsters[-1].sprite
 			ui.print_char(

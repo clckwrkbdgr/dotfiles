@@ -27,7 +27,7 @@ class Scene(object):
 			return items[-1].sprite
 		if objects:
 			return objects[-1].sprite
-		return cell.sprite
+		return cell.sprite if cell is not None else None
 
 	def get_cell_info(self, pos, context=None): # pragma: no cover
 		""" Should return cell info in form of tuples for given world position:

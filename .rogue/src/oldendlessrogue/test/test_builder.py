@@ -14,9 +14,9 @@ class TestMainBuilder(unittest.TestCase):
 		block = Matrix((3, 3), '.')
 		builder = Builders()
 		builder.build_block(block)
-		self.assertEqual(block.tostring(), '.#.\n#..\n..#\n')
+		self.assertEqual(block.tostring(lambda c: c.sprite), '.#.\n#..\n..#\n')
 	def should_place_rogue(self):
-		terrain = Strata(block_size=(3, 3), builder=MockBuilder().build_block)
+		terrain = Strata(block_size=(3, 3), builder=MockBuilder().build_block, default_value=EndlessVoid())
 		builder = Builders()
 		pos = builder.place_rogue(terrain)
 		self.assertEqual(pos, (1, 1))
@@ -68,14 +68,14 @@ class TestBuilders(unittest.TestCase):
 		builder = FilledWithGarbage(random, field)
 		builder.generate()
 		builder.make_grid()
-		self.assertEqual(field.tostring(), '.#.\n#..\n..#\n')
+		self.assertEqual(field.tostring(lambda c: c.sprite), '.#.\n#..\n..#\n')
 	@unittest.mock.patch('random.randrange', side_effect=[1, 1])
 	def should_build_empty_square(self, random_randrange):
 		field = Matrix((3, 3), '.')
 		builder = EmptySquare(random, field)
 		builder.generate()
 		builder.make_grid()
-		self.assertEqual(field.tostring(), '...\n.#.\n...\n')
+		self.assertEqual(field.tostring(lambda c: c.sprite), '...\n.#.\n...\n')
 	@unittest.mock.patch('random.choice', side_effect=[place_square_tank]*4)
 	@unittest.mock.patch('random.randrange', side_effect=[1, 2])
 	def should_build_field_of_tanks(self, random_randrange, random_choice):
@@ -83,7 +83,7 @@ class TestBuilders(unittest.TestCase):
 		builder = FieldOfTanks(random, field)
 		builder.generate()
 		builder.make_grid()
-		self.assertEqual(field.tostring(), unittest.dedent("""\
+		self.assertEqual(field.tostring(lambda c: c.sprite), unittest.dedent("""\
 		.............
 		.............
 		.............
