@@ -5,7 +5,7 @@ try:
 	from cStringIO import StringIO
 except: # pragma: no cover
 	from io import StringIO
-from clckwrkbdgr.math import Point, Size
+from clckwrkbdgr.math import Point, Size, Rect
 from clckwrkbdgr.pcg import RNG
 from ..pcg import builders
 from ..engine import items
@@ -318,7 +318,7 @@ class TestVisibility(AbstractTestDungeon):
 		return game.get_cell_repr(pos, cell_info)
 	def should_get_visible_surroundings(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		self.assertEqual(dungeon.get_viewport(), Size(20, 10))
+		self.assertEqual(dungeon.get_viewport(), Rect(Point(0, 0), Size(20, 10)))
 		self.assertEqual(self.get_sprite(dungeon, (9, 6)), '@')
 		self.assertEqual(self.get_sprite(dungeon, (5, 6)), '.')
 		self.assertEqual(self.get_sprite(dungeon, (5, 5)), '#')

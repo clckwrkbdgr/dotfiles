@@ -1,5 +1,6 @@
 from . import items, appliances, actors, terrain
 from clckwrkbdgr import utils
+from clckwrkbdgr.math.grid import Matrix
 
 class Scene(object):
 	""" Current physical map of terrain, objects, actors, etc.
@@ -10,6 +11,23 @@ class Scene(object):
 		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(items.Item)})
 		stream.set_meta_info('Appliances', {_.__name__:_ for _ in utils.all_subclasses(appliances.Appliance)})
 		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(actors.Actor)})
+
+	def tostring(self, view_rect):
+		result = Matrix(view_rect.size)
+		for pos, cell_info in self.iter_cells(view_rect):
+			result.set_cell(pos - view_rect.topleft, self.str_cell(pos, cell_info))
+		return result.tostring()
+	def str_cell(self, pos, cell_info=None):
+		if not cell_info:
+			cell_info = self.get_cell_info(pos)
+		cell, objects, items, monsters = cell_info
+		if monsters:
+			return monsters[-1].sprite
+		if items:
+			return items[-1].sprite
+		if objects:
+			return objects[-1].sprite
+		return cell.sprite
 
 	def get_cell_info(self, pos, context=None): # pragma: no cover
 		""" Should return cell info in form of tuples for given world position:

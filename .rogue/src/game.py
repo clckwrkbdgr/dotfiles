@@ -304,25 +304,22 @@ class Game(engine.Game):
 	def wait(self):
 		pass
 	def get_viewport(self):
-		""" Returns current viewport size (for UI purposes). """
-		return self.scene.strata.size
+		""" Returns current viewport rect. """
+		return Rect(Point(0, 0), self.scene.strata.size)
 	def tostring(self, with_fov=False):
 		""" Creates string representation of the current viewport.
 		If with_fov=True, considers transparency/lighting, otherwise everything is visible.
 		If strcell is given, it is lambda that takes pair (x, y) and returns single-char representation of that cell. By default get_sprite(x, y) is used.
 		"""
 		if not with_fov:
-			old_god_vision = self.god.vision
-			self.god.vision = True
-		result = Matrix(self.get_viewport())
-		for pos, cell_info in self.scene.iter_cells(Rect(Point(0, 0), self.get_viewport())):
+			return self.scene.tostring(self.get_viewport())
+		result = Matrix(self.get_viewport().size)
+		for pos, cell_info in self.scene.iter_cells(self.get_viewport()):
 			result.set_cell(pos, self.get_cell_repr(pos, cell_info) or ' ')
-		if not with_fov:
-			self.god.vision = old_god_vision
 		return result.tostring()
 	def get_cell_repr(self, pos, cell_info):
 		cell, objects, items, monsters = cell_info
-		if self.god.vision or self.vision.field_of_view.is_visible(pos.x, pos.y):
+		if self.vision.field_of_view.is_visible(pos.x, pos.y):
 			if monsters:
 				return monsters[-1].sprite
 			if items:

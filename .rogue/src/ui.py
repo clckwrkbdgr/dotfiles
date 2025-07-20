@@ -38,7 +38,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		game = self.game
 		ui.cursor(bool(self.aim))
 		Log.debug('Redrawing interface.')
-		for pos, cell_info in game.scene.iter_cells(Rect(Point(0, 0), game.get_viewport())):
+		for pos, cell_info in game.scene.iter_cells(game.get_viewport()):
 			cell, objects, items, monsters = cell_info
 			sprite = ' '
 			if game.god.vision or game.vision.field_of_view.is_visible(pos.x, pos.y):
