@@ -4,42 +4,38 @@ from . import terrain, actors, items, appliances
 from . import builders
 from . import scene, events
 
+### Terrain. ###################################################################
+
 class Floor(terrain.Terrain):
 	_sprite = '.'
 	_name = 'floor'
+	_passable = True
 
-class SoftFloor(terrain.Terrain):
-	_sprite = '.'
-	_name = 'soft floor'
-	def __init__(self, softness=0):
-		self.softness = softness
+class ToxicWaste(terrain.Terrain):
+	_sprite = '~'
+	_name = 'toxic waste'
+	_passable = True
+	def __init__(self, damage=0):
+		self.damage = damage
 	def load(self, stream):
-		self.softness = stream.read_int()
+		self.damage = stream.read_int()
 	def save(self, stream):
-		super(SoftFloor, self).save(stream)
-		stream.write(self.softness)
+		super(ToxicWaste, self).save(stream)
+		stream.write(self.damage)
 
-class MockFloor(terrain.Terrain):
-	_sprite = '.'
-	_name = 'floor'
-
-class MockWall(terrain.Terrain):
+class Wall(terrain.Terrain):
 	_sprite = '#'
 	_name = 'wall'
+	_passable = False
+	_remembered = '#'
 
-class MockGoblin(actors.Monster):
-	_sprite = 'g'
-	_name = 'goblin'
+### Items. #####################################################################
 
-class MockGold(items.Item):
+class Gold(items.Item):
 	_sprite = '*'
 	_name = 'gold'
 
-class MockDoor(appliances.Appliance):
-	_sprite = '+'
-	_name = 'door'
-
-class MockPotion(items.Item):
+class Potion(items.Item):
 	_sprite = '!'
 	_name = 'potion'
 
@@ -51,28 +47,56 @@ class Rags(items.Item, items.Wearable):
 	_sprite = '['
 	_name = 'rags'
 
-class McGuffin(items.Item):
-	_sprite = '*'
-	_name = 'mcguffin'
-
-class MockPotion(items.Item):
-	_sprite = '!'
-	_name = 'potion'
-
-class ColoredPotion(items.Item):
-	_sprite = '.'
-	_name = 'potion'
-	def __init__(self, color='transparent'):
-		self.color = color
+class ScribbledNote(items.Item):
+	_sprite = '?'
+	_name = 'note'
+	def __init__(self, text='turn around'):
+		self.text = text
 	def load(self, stream):
+		self.text = stream.read()
+	def save(self, stream):
+		super(ScribbledNote, self).save(stream)
+		stream.write(self.text)
+
+### Appliances. ################################################################
+
+class Door(appliances.Appliance):
+	_sprite = '+'
+	_name = 'door'
+
+class Tree(appliances.Appliance):
+	_sprite = '&'
+	_name = 'tree'
+
+class Statue(appliances.Appliance):
+	_sprite = '&'
+	_name = 'statue'
+	def __init__(self, likeness='dummy'):
+		self.likeness = likeness
+	def load(self, stream):
+		self.likeness = stream.read()
+	def save(self, stream):
+		super(Statue, self).save(stream)
+		stream.write(self.likeness)
+
+### Actors. ####################################################################
+
+class Dragonfly(actors.Actor):
+	_sprite = 'd'
+	_name = 'dragonfly'
+
+class Butterfly(actors.Monster):
+	def __init__(self, *args, **kwargs):
+		self.color = kwargs.get('color', 'black')
+		if 'color' in kwargs:
+			del kwargs['color']
+		super(Butterfly, self).__init__(*args, **kwargs)
+	def load(self, stream):
+		super(Butterfly, self).load(stream)
 		self.color = stream.read()
 	def save(self, stream):
-		super(ColoredPotion, self).save(stream)
+		super(Butterfly, self).save(stream)
 		stream.write(self.color)
-
-class MockActor(actors.Actor):
-	_sprite = '@'
-	_name = 'rogue'
 
 class Rat(actors.Monster):
 	_sprite = 'r'
@@ -80,17 +104,17 @@ class Rat(actors.Monster):
 	_max_hp = 10
 	_drops = [
 			(1, None),
-			(5, MockPotion),
+			(5, Potion),
 			]
 
 class PackRat(Rat):
 	_drops = [
 			[
 				(6, None),
-				(1, MockPotion),
+				(1, Potion),
 				],
 			[
-				(1, McGuffin),
+				(1, Gold),
 				],
 			]
 
@@ -99,33 +123,7 @@ class Goblin(actors.EquippedMonster):
 	_name = 'goblin'
 	_max_hp = 10
 
-class ColoredMonster(actors.Monster):
-	def __init__(self, *args, **kwargs):
-		self.color = kwargs.get('color')
-		if 'color' in kwargs:
-			del kwargs['color']
-		super(ColoredMonster, self).__init__(*args, **kwargs)
-	def load(self, stream):
-		super(ColoredMonster, self).load(stream)
-		self.color = stream.read()
-	def save(self, stream):
-		super(ColoredMonster, self).save(stream)
-		stream.write(self.color)
-
-class MockStairs(appliances.Appliance):
-	_sprite = '>'
-	_name = 'stairs'
-
-class ColoredDoor(appliances.Appliance):
-	_sprite = '+'
-	_name = 'door'
-	def __init__(self, color='transparent'):
-		self.color = color
-	def load(self, stream):
-		self.color = stream.read()
-	def save(self, stream):
-		super(ColoredDoor, self).save(stream)
-		stream.write(self.color)
+### Events. ####################################################################
 
 class EmptyEvent(events.Event):
 	FIELDS = ''
@@ -141,18 +139,20 @@ class Handler(object):
 	def handle_other_event(self, event):
 		return '{0} -> {1}'.format(event.actor, event.target)
 
+### Map. #######################################################################
+
 class MockScene(scene.Scene):
 	def __init__(self):
-		self.cells = Matrix((10, 10), MockFloor())
+		self.cells = Matrix((10, 10), Floor())
 		for x in range(10):
-			self.cells.set_cell((x, 0), MockWall())
-			self.cells.set_cell((x, 9), MockWall())
+			self.cells.set_cell((x, 0), Wall())
+			self.cells.set_cell((x, 9), Wall())
 		for y in range(10):
-			self.cells.set_cell((0, y), MockWall())
-			self.cells.set_cell((9, y), MockWall())
-		self.appliances = [appliances.ObjectAtPos(Point(5, 5), MockDoor())]
-		self.items = [items.ItemAtPos(Point(5, 6), MockGold())]
-		self.monsters = [MockGoblin(Point(6, 5))]
+			self.cells.set_cell((0, y), Wall())
+			self.cells.set_cell((9, y), Wall())
+		self.appliances = [appliances.ObjectAtPos(Point(5, 5), Door())]
+		self.items = [items.ItemAtPos(Point(5, 6), Gold())]
+		self.monsters = [Goblin(Point(6, 5))]
 	def get_cell_info(self, pos, context=None):
 		return (
 				self.cells.cell(pos),
@@ -178,6 +178,8 @@ class MockScene(scene.Scene):
 		for obj_pos, obj in self.appliances:
 			if obj_pos == pos:
 				yield obj
+
+### Builders. ##################################################################
 
 class MockBuilder(builders.Builder):
 	class Mapping:

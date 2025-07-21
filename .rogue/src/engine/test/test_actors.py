@@ -13,36 +13,36 @@ VERSION = 666
 
 class TestActors(unittest.TestCase):
 	def should_str_actor(self):
-		rogue = MockActor(Point(1, 1))
-		self.assertEqual(str(rogue), 'rogue')
-		self.assertEqual(repr(rogue), 'MockActor(rogue @[1, 1])')
+		dragonfly = Dragonfly(Point(1, 1))
+		self.assertEqual(str(dragonfly), 'dragonfly')
+		self.assertEqual(repr(dragonfly), 'Dragonfly(dragonfly @[1, 1])')
 	def should_load_actor(self):
-		stream = StringIO(str(VERSION) + '\x00MockActor\x001\x002')
+		stream = StringIO(str(VERSION) + '\x00Dragonfly\x001\x002')
 		reader = savefile.Reader(stream)
-		reader.set_meta_info('Actors', {'MockActor':MockActor})
+		reader.set_meta_info('Actors', {'Dragonfly':Dragonfly})
 		actor = reader.read(actors.Actor)
-		self.assertEqual(type(actor), MockActor)
+		self.assertEqual(type(actor), Dragonfly)
 		self.assertEqual(actor.pos, Point(1, 2))
 	def should_save_actor(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, VERSION)
-		actor = MockActor(Point(1, 2))
+		actor = Dragonfly(Point(1, 2))
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00MockActor\x001\x002')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Dragonfly\x001\x002')
 	def should_load_actor_with_custom_properties(self):
-		stream = StringIO(str(VERSION) + '\x00ColoredMonster\x001\x002\x001\x000\x00red')
+		stream = StringIO(str(VERSION) + '\x00Butterfly\x001\x002\x001\x000\x00red')
 		reader = savefile.Reader(stream)
-		reader.set_meta_info('Actors', {'ColoredMonster':ColoredMonster})
+		reader.set_meta_info('Actors', {'Butterfly':Butterfly})
 		actor = reader.read(actors.Actor)
-		self.assertEqual(type(actor), ColoredMonster)
+		self.assertEqual(type(actor), Butterfly)
 		self.assertEqual(actor.pos, Point(1, 2))
 		self.assertEqual(actor.color, 'red')
 	def should_save_actor_with_custom_properties(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, VERSION)
-		actor = ColoredMonster(Point(1, 2), color='red')
+		actor = Butterfly(Point(1, 2), color='red')
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00ColoredMonster\x001\x002\x001\x000\x00red')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Butterfly\x001\x002\x001\x000\x00red')
 
 class TestMonsters(unittest.TestCase):
 	def should_str_monster(self):
@@ -50,21 +50,21 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(str(rat), 'rat')
 		self.assertEqual(repr(rat), 'Rat(rat @[1, 1] 10/10hp)')
 	def should_load_monster(self):
-		stream = StringIO(str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00MockPotion')
+		stream = StringIO(str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00Potion')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'Rat':Rat})
-		reader.set_meta_info('Items', {'MockPotion':MockPotion})
+		reader.set_meta_info('Items', {'Potion':Potion})
 		actor = reader.read(actors.Actor)
 		self.assertEqual(type(actor), Rat)
 		self.assertEqual(actor.pos, Point(1, 2))
-		self.assertEqual(list(map(repr, actor.inventory)), ['MockPotion(potion)'])
+		self.assertEqual(list(map(repr, actor.inventory)), ['Potion(potion)'])
 	def should_save_monster(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, VERSION)
 		actor = Rat(Point(1, 2))
-		actor.inventory.append(MockPotion())
+		actor.inventory.append(Potion())
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00MockPotion')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00Potion')
 	def should_detect_alive_monster(self):
 		rat = Rat(Point(1, 1))
 		self.assertTrue(rat.is_alive())
@@ -85,9 +85,9 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(rat.hp, 0)
 	def should_resolve_item(self):
 		rat = Rat(Point(1, 1))
-		potion = MockPotion()
+		potion = Potion()
 		rat.inventory.append(potion)
-		mcguffin = McGuffin()
+		mcguffin = Gold()
 		rat.inventory.append(mcguffin)
 		self.assertEqual(rat._resolve_item(potion), potion)
 		self.assertEqual(len(rat.inventory), 2)
@@ -99,21 +99,21 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(len(rat.inventory), 0)
 	def should_drop_item(self):
 		rat = Rat(Point(1, 1))
-		potion = MockPotion()
+		potion = Potion()
 		rat.inventory.append(potion)
 		self.assertEqual(rat.drop(potion), items.ItemAtPos(Point(1, 1), potion))
 		self.assertFalse(rat.inventory)
 	def should_drop_item_by_key(self):
 		rat = Rat(Point(1, 1))
-		potion = MockPotion()
+		potion = Potion()
 		rat.inventory.append(potion)
 		self.assertEqual(rat.drop(0), items.ItemAtPos(Point(1, 1), potion))
 		self.assertFalse(rat.inventory)
 	def should_drop_all_item(self):
 		rat = Rat(Point(1, 1))
-		potion_1 = MockPotion()
-		potion_2 = MockPotion()
-		mcguffin = McGuffin()
+		potion_1 = Potion()
+		potion_2 = Potion()
+		mcguffin = Gold()
 		rat.inventory.append(potion_1)
 		rat.inventory.append(mcguffin)
 		rat.inventory.append(potion_2)
@@ -127,14 +127,14 @@ class TestMonsters(unittest.TestCase):
 		rat = Rat(Point(1, 1))
 		rat.fill_drops(pcg.RNG(1))
 		self.assertEqual(list(map(repr, rat.inventory)), list(map(repr, [
-			MockPotion(),
+			Potion(),
 			])))
 		self.assertEqual(rat.drops, [])
 	def should_fill_random_drops_with_multiple_items(self):
 		rat = PackRat(Point(1, 1))
 		rat.fill_drops(pcg.RNG(0))
 		self.assertEqual(list(map(repr, rat.inventory)), list(map(repr, [
-			McGuffin(),
+			Gold(),
 			])))
 		self.assertEqual(rat.drops, [])
 
