@@ -6,23 +6,9 @@ except: # pragma: no cover
 import clckwrkbdgr.serialize.stream as savefile
 from clckwrkbdgr.math import Point
 from .. import items
+from ..mock import *
 
 VERSION = 666
-
-class MockPotion(items.Item):
-	_sprite = '!'
-	_name = 'potion'
-
-class ColoredPotion(items.Item):
-	_sprite = '.'
-	_name = 'potion'
-	def __init__(self, color='transparent'):
-		self.color = color
-	def load(self, stream):
-		self.color = stream.read()
-	def save(self, stream):
-		super(ColoredPotion, self).save(stream)
-		stream.write(self.color)
 
 class TestItems(unittest.TestCase):
 	def should_str_item(self):

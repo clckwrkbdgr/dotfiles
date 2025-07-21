@@ -6,23 +6,9 @@ except: # pragma: no cover
 import clckwrkbdgr.serialize.stream as savefile
 from clckwrkbdgr.math import Point
 from .. import appliances
+from ..mock import *
 
 VERSION = 666
-
-class MockStairs(appliances.Appliance):
-	_sprite = '>'
-	_name = 'stairs'
-
-class ColoredDoor(appliances.Appliance):
-	_sprite = '+'
-	_name = 'door'
-	def __init__(self, color='transparent'):
-		self.color = color
-	def load(self, stream):
-		self.color = stream.read()
-	def save(self, stream):
-		super(ColoredDoor, self).save(stream)
-		stream.write(self.color)
 
 class TestAppliances(unittest.TestCase):
 	def should_str_appliance(self):

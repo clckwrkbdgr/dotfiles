@@ -5,23 +5,9 @@ except: # pragma: no cover
 	from io import StringIO
 from .. import terrain
 import clckwrkbdgr.serialize.stream as savefile
+from ..mock import *
 
 VERSION = 666
-
-class Floor(terrain.Terrain):
-	_sprite = '.'
-	_name = 'floor'
-
-class SoftFloor(terrain.Terrain):
-	_sprite = '.'
-	_name = 'soft floor'
-	def __init__(self, softness=0):
-		self.softness = softness
-	def load(self, stream):
-		self.softness = stream.read_int()
-	def save(self, stream):
-		super(SoftFloor, self).save(stream)
-		stream.write(self.softness)
 
 class TestTerrainSavefile(unittest.TestCase):
 	def should_load_terrain(self):

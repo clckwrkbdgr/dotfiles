@@ -6,67 +6,10 @@ except: # pragma: no cover
 import clckwrkbdgr.serialize.stream as savefile
 from clckwrkbdgr.math import Point
 from .. import actors, items
+from ..mock import *
 from clckwrkbdgr import pcg
 
 VERSION = 666
-
-class MockPotion(items.Item):
-	_sprite = '!'
-	_name = 'potion'
-
-class Dagger(items.Item):
-	_sprite = '('
-	_name = 'dagger'
-
-class Rags(items.Item, items.Wearable):
-	_sprite = '['
-	_name = 'rags'
-
-class McGuffin(items.Item):
-	_sprite = '*'
-	_name = 'mcguffin'
-
-class MockActor(actors.Actor):
-	_sprite = '@'
-	_name = 'rogue'
-
-class Rat(actors.Monster):
-	_sprite = 'r'
-	_name = 'rat'
-	_max_hp = 10
-	_drops = [
-			(1, None),
-			(5, MockPotion),
-			]
-
-class PackRat(Rat):
-	_drops = [
-			[
-				(6, None),
-				(1, MockPotion),
-				],
-			[
-				(1, McGuffin),
-				],
-			]
-
-class Goblin(actors.EquippedMonster):
-	_sprite = 'g'
-	_name = 'goblin'
-	_max_hp = 10
-
-class ColoredMonster(actors.Monster):
-	def __init__(self, *args, **kwargs):
-		self.color = kwargs.get('color')
-		if 'color' in kwargs:
-			del kwargs['color']
-		super(ColoredMonster, self).__init__(*args, **kwargs)
-	def load(self, stream):
-		super(ColoredMonster, self).load(stream)
-		self.color = stream.read()
-	def save(self, stream):
-		super(ColoredMonster, self).save(stream)
-		stream.write(self.color)
 
 class TestActors(unittest.TestCase):
 	def should_str_actor(self):

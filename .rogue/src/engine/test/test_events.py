@@ -1,20 +1,7 @@
 from clckwrkbdgr import unittest
 from .. import events
 from clckwrkbdgr import utils
-
-class EmptyEvent(events.Event):
-	FIELDS = ''
-class MockEvent(events.Event):
-	FIELDS = 'who where what'
-class MockOtherEvent(events.Event):
-	FIELDS = ('actor', 'target')
-
-events.Events.on(EmptyEvent)(lambda event: '...')
-events.Events.on(MockEvent)(lambda event: '{0} stands {1} wielding {2}'.format(event.who, event.where, event.what))
-class Handler(object):
-	@events.Events.on(MockOtherEvent)
-	def handle_other_event(self, event):
-		return '{0} -> {1}'.format(event.actor, event.target)
+from ..mock import *
 
 class TestEvent(unittest.TestCase):
 	def should_create_event_with_fields(self):
