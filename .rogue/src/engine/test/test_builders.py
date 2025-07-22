@@ -8,13 +8,13 @@ from .. import items, appliances
 from ..mock import *
 
 def make_builder(rng, grid_or_size):
-	builder = MockBuilder(rng, grid_or_size)
+	builder = DungeonFloor(rng, grid_or_size)
 	builder.map_key(**({
 		'exit':lambda: 'exit',
 		}))
 	builder.map_key(
-			monster = lambda pos,*data: ('monster',) + data + (pos,),
-			item = lambda *data: ('item',) + data,
+			butterfly = lambda pos, color: Butterfly(pos, color=color),
+			note = lambda text: ScribbledNote(text),
 			)
 	return builder
 
@@ -24,7 +24,8 @@ class TestUtilities(unittest.TestCase):
 		grid = Matrix((10, 5), 'X')
 		builder = make_builder(rng, grid)
 		builder.generate()
-		self.assertTrue(builder.has_actor(Point(1, 1)))
+
+		self.assertTrue(builder.has_actor(Point(6, 3)))
 		self.assertFalse(builder.has_actor(Point(1, 2)))
 	def should_generate_amount_by_free_cells(self):
 		builder = make_builder(RNG(0), (10, 10))
@@ -39,48 +40,48 @@ class TestUtilities(unittest.TestCase):
 		self.assertEqual(gen_amount(), 4)
 		self.assertEqual(gen_amount(), 4)
 		gen_amount = builder.amount_fixed((4, 10))
-		self.assertEqual(gen_amount(), 5)
-		self.assertEqual(gen_amount(), 5)
-		gen_amount = builder.amount_fixed(4, 10)
 		self.assertEqual(gen_amount(), 7)
+		self.assertEqual(gen_amount(), 8)
+		gen_amount = builder.amount_fixed(4, 10)
+		self.assertEqual(gen_amount(), 9)
 		self.assertEqual(gen_amount(), 8)
 
 class TestDistribution(unittest.TestCase):
 	def should_distribute_entities_in_uniform_manner(self):
 		rng = RNG(0)
-		builder = UniformSquatters(rng, Size(20, 20))
+		builder = UniformSquat(rng, Size(20, 20))
 		builder.generate()
 		_monsters = list(builder.make_actors())
 		_items = list(builder.make_items())
 
 		self.maxDiff = None
-		self.assertEqual(sorted(_monsters), sorted([
-			('slime', Point(7, 5)),
-			('plant',  Point(16, 3)),
-			('rodent', Point(12, 15)),
-			('slime',  Point(16, 9)),
-			('rodent', Point(12, 4)),
+		self.assertEqual(sorted(map(lambda c:(c.name, c.pos), _monsters)), sorted([
+			('goblin', Point(9, 10)),
+			('dragonfly',  Point(7, 16)),
+			('rat', Point(4, 14)),
+			('rat', Point(5, 12)),
+			('rat',  Point(8, 14)),
 			]))
-		self.assertEqual(sorted(_items), sorted([
-			items.ItemAtPos(Point(6, 8), ('healing potion',)),
+		self.assertEqual(sorted(map(lambda c:(c.pos, c.item.name), _items)), sorted([
+			(Point(11, 4), 'potion'),
 			]))
 	def should_distribute_entities_by_weights(self):
 		rng = RNG(0)
-		builder = WeightedSquatters(rng, Size(20, 20))
+		builder = WeightedSquat(rng, Size(20, 20))
 		builder.generate()
 		_monsters = list(builder.make_actors())
 		_items = list(builder.make_items())
 
 		self.maxDiff = None
-		self.assertEqual(sorted(_monsters), sorted([
-			('slime', Point(7, 5)),
-			('slime',  Point(16, 3)),
-			('rodent', Point(12, 15)),
-			('rodent',  Point(16, 9)),
-			('rodent', Point(12, 4)),
+		self.assertEqual(sorted(map(lambda c:(c.name, c.pos), _monsters)), sorted([
+			('goblin', Point(7, 16)),
+			('rat',  Point(4, 14)),
+			('rat', Point(5, 12)),
+			('rat',  Point(8, 14)),
+			('rat', Point(9, 10)),
 			]))
-		self.assertEqual(sorted(_items), sorted([
-			items.ItemAtPos(Point(6, 8), ('healing potion',)),
+		self.assertEqual(sorted(map(lambda c:(c.pos, c.item.name), _items)), sorted([
+			(Point(11, 4), 'potion'),
 			]))
 
 class TestBuilder(unittest.TestCase):
@@ -89,11 +90,12 @@ class TestBuilder(unittest.TestCase):
 		builder = make_builder(rng, Size(20, 20))
 		builder.generate()
 		self.maxDiff = None
-		_appliances = sorted(builder.make_appliances())
-		self.assertEqual(_appliances, sorted([
+		_appliances = sorted(map(repr, builder.make_appliances()))
+		self.assertEqual(_appliances, sorted(map(repr, [
 			appliances.ObjectAtPos(Point(2, 10), 'start'),
+			appliances.ObjectAtPos(Point(7, 5), Statue('goddess')),
 			appliances.ObjectAtPos(Point(9, 12), 'exit'),
-			]))
+			])))
 		grid = builder.make_grid()
 		expected = textwrap.dedent("""\
 				####################
@@ -117,20 +119,20 @@ class TestBuilder(unittest.TestCase):
 				#..................#
 				####################
 				""")
-		self.assertEqual(grid.tostring(), expected)
+		self.assertEqual(grid.tostring(lambda c:c.sprite), expected)
 
 		_monsters = list(builder.make_actors())
-		self.assertEqual(_monsters, [
-			('monster', 'angry', Point(7, 5)),
-			])
+		self.assertEqual(sorted(map(lambda c:(c.name, c.pos, c.color), _monsters)), sorted([
+			('butterfly', Point(7, 16), 'red'),
+			]))
 
 		_items = list(builder.make_items())
-		self.assertEqual(_items, [
-			items.ItemAtPos(Point(7, 16), ('item', 'mcguffin')),
-			])
+		self.assertEqual(sorted(map(lambda c:(c.pos, c.item.name, c.item.text), _items)), sorted([
+			(Point(3, 5), 'note', 'welcome'),
+			]))
 	def should_generate_dungeon_on_existing_grid(self):
 		rng = RNG(0)
-		grid = Matrix((10, 5), 'X')
+		grid = Matrix((10, 5), None)
 		builder = make_builder(rng, grid)
 		builder.generate()
 		builder.make_grid()
@@ -141,4 +143,4 @@ class TestBuilder(unittest.TestCase):
 				#..~.....#
 				##########
 				""")
-		self.assertEqual(grid.tostring(), expected)
+		self.assertEqual(grid.tostring(lambda c:c.sprite), expected)

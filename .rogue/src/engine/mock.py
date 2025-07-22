@@ -86,6 +86,8 @@ class Dragonfly(actors.Actor):
 	_name = 'dragonfly'
 
 class Butterfly(actors.Monster):
+	_sprite = 'b'
+	_name = 'butterfly'
 	def __init__(self, *args, **kwargs):
 		self.color = kwargs.get('color', 'black')
 		if 'color' in kwargs:
@@ -125,34 +127,28 @@ class Goblin(actors.EquippedMonster):
 
 ### Events. ####################################################################
 
-class EmptyEvent(events.Event):
+class NothingToDrop(events.Event):
 	FIELDS = ''
-class MockEvent(events.Event):
+class DropItem(events.Event):
 	FIELDS = 'who where what'
-class MockOtherEvent(events.Event):
+class Hit(events.Event):
 	FIELDS = ('actor', 'target')
 
-events.Events.on(EmptyEvent)(lambda event: '...')
-events.Events.on(MockEvent)(lambda event: '{0} stands {1} wielding {2}'.format(event.who, event.where, event.what))
+events.Events.on(NothingToDrop)(lambda event: 'Nothing to drop.')
+events.Events.on(DropItem)(lambda event: '{0} drops {2} on {1}'.format(event.who, event.where, event.what))
 class Handler(object):
-	@events.Events.on(MockOtherEvent)
-	def handle_other_event(self, event):
+	@events.Events.on(Hit)
+	def handle_hits(self, event):
 		return '{0} -> {1}'.format(event.actor, event.target)
 
 ### Map. #######################################################################
 
-class MockScene(scene.Scene):
+class Dungeon(scene.Scene):
 	def __init__(self):
-		self.cells = Matrix((10, 10), Floor())
-		for x in range(10):
-			self.cells.set_cell((x, 0), Wall())
-			self.cells.set_cell((x, 9), Wall())
-		for y in range(10):
-			self.cells.set_cell((0, y), Wall())
-			self.cells.set_cell((9, y), Wall())
-		self.appliances = [appliances.ObjectAtPos(Point(5, 5), Door())]
-		self.items = [items.ItemAtPos(Point(5, 6), Gold())]
-		self.monsters = [Goblin(Point(6, 5))]
+		self.cells = None
+		self.appliances = []
+		self.items = []
+		self.monsters = []
 	def get_cell_info(self, pos, context=None):
 		return (
 				self.cells.cell(pos),
@@ -181,15 +177,23 @@ class MockScene(scene.Scene):
 
 ### Builders. ##################################################################
 
-class MockBuilder(builders.Builder):
+class DungeonFloor(builders.Builder):
 	class Mapping:
-		wall = '#'
+		wall = Wall()
 		_ = {
-			'floor': '.',
-			'water': '~',
+			'floor': Floor(),
+			'water': ToxicWaste(),
 			}
 		@staticmethod
 		def start(): return 'start'
+		@staticmethod
+		def statue(likeness): return Statue(likeness)
+
+		rat = Rat
+		dragonfly = Dragonfly
+		goblin = Goblin
+		healing_potion = Potion
+
 	def is_open(self, pos):
 		return self.grid.cell(pos) == 'floor'
 
@@ -210,17 +214,13 @@ class MockBuilder(builders.Builder):
 	def generate_appliances(self):
 		yield self.point(self.is_accessible), 'start'
 		yield self.point(self.is_accessible), 'exit'
+		yield self.point(self.is_accessible), 'statue', 'goddess'
 	def generate_actors(self):
-		yield self.point(self.is_free), 'monster', 'angry'
+		yield self.point(self.is_free), 'butterfly', 'red'
 	def generate_items(self):
-		yield self.point(self.is_accessible), 'item', 'mcguffin'
+		yield self.point(self.is_accessible), 'note', 'welcome'
 
-class MockSquatters(MockBuilder):
-	class Mapping:
-		rodent = staticmethod(lambda pos,*data: ('rodent',) + data + (pos,))
-		plant = staticmethod(lambda pos,*data: ('plant',) + data + (pos,))
-		slime = staticmethod(lambda pos,*data: ('slime',) + data + (pos,))
-		healing_potion = staticmethod(lambda *data: ('healing potion',) + data)
+class Squat(DungeonFloor):
 	CELLS_PER_MONSTER = 60 # One monster for every 60 cells.
 	CELLS_PER_ITEM = 180 # One item for every 180 cells.
 	PASSABLE = ('floor',)
@@ -235,22 +235,22 @@ class MockSquatters(MockBuilder):
 		for _ in self.distribute(self.DISTRIBUTION, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
 			yield _
 
-class UniformSquatters(MockSquatters):
+class UniformSquat(Squat):
 	MONSTERS = [
-			('plant',),
-			('slime',),
-			('rodent',),
+			('dragonfly',),
+			('goblin',),
+			('rat',),
 			]
 	ITEMS = [
 			('healing_potion',),
 			]
 	DISTRIBUTION = builders.UniformDistribution
 
-class WeightedSquatters(MockSquatters):
+class WeightedSquat(Squat):
 	MONSTERS = [
-			(1, ('plant',)),
-			(5, ('slime',)),
-			(10, ('rodent',)),
+			(1, ('dragonfly',)),
+			(5, ('goblin',)),
+			(10, ('rat',)),
 			]
 	ITEMS = [
 			(1, ('healing_potion',)),

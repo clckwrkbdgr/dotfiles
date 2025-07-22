@@ -5,18 +5,18 @@ from ..mock import *
 
 class TestEvent(unittest.TestCase):
 	def should_create_event_with_fields(self):
-		event = MockEvent('me', 'here', what='something')
-		self.assertEqual(repr(event), 'MockEvent(who=me, where=here, what=something)')
+		event = DropItem('me', 'floor', what='something')
+		self.assertEqual(repr(event), 'DropItem(who=me, where=floor, what=something)')
 	def should_create_event_without_fields(self):
-		event = EmptyEvent()
-		self.assertEqual(repr(event), 'EmptyEvent()')
+		event = NothingToDrop()
+		self.assertEqual(repr(event), 'NothingToDrop()')
 
 class TestEvents(unittest.TestCase):
 	def should_handle_event_with_function_callback(self):
-		event = MockEvent('me', 'here', 'something')
+		event = DropItem('me', 'grass', 'something')
 		callback = events.Events.get(event)
-		self.assertEqual(callback(event), 'me stands here wielding something')
+		self.assertEqual(callback(event), 'me drops something on grass')
 	def should_handle_event_with_object_method(self):
 		handler = Handler()
-		message = events.Events.process(MockOtherEvent('player', 'monster'), bind_self=handler)
+		message = events.Events.process(Hit('player', 'monster'), bind_self=handler)
 		self.assertEqual(message, 'player -> monster')
