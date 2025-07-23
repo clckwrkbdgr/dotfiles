@@ -5,6 +5,7 @@ import inspect
 class Item(object):
 	sprite = classfield('_sprite', '?')
 	name = classfield('_name', 'unknown item')
+	attack = classfield('_attack', 0) # Base attack damage.
 	def __str__(self):
 		return self.name
 	def __repr__(self):
@@ -42,7 +43,7 @@ class Item(object):
 class Wearable(object):
 	""" Trait for items that can be worn as outfit.
 	"""
-	pass
+	protection = classfield('_protection', 0) # Base protection from incoming attacks.
 
 class ItemAtPos(object): # pragma: no cover -- TODO
 	def __init__(self, pos, item):

@@ -50,6 +50,7 @@ class Player(game.Player):
 	_sprite = '@'
 	_max_hp = 10
 	_vision = 10
+	_attack = 1
 	_drops = None
 
 class MockMonster(actors.EquippedMonster):
@@ -57,6 +58,7 @@ class MockMonster(actors.EquippedMonster):
 	_sprite = 'M'
 	_max_hp = 3
 	_vision = 10
+	_attack = 1
 	_drops = None
 
 class AngryMonster(game.Angry):
@@ -64,6 +66,7 @@ class AngryMonster(game.Angry):
 	_sprite = 'M'
 	_max_hp = 3
 	_vision = 10
+	_attack = 1
 	_drops = None
 
 class InertMonster(game.Inert):
@@ -71,6 +74,7 @@ class InertMonster(game.Inert):
 	_sprite = 'M'
 	_max_hp = 3
 	_vision = 10
+	_attack = 1
 	_drops = None
 
 class DummyThief(actors.EquippedMonster):
@@ -78,6 +82,7 @@ class DummyThief(actors.EquippedMonster):
 	_sprite = 'T'
 	_max_hp = 3
 	_vision = 10
+	_attack = 1
 	_drops = [
 			(1, Money),
 			]
@@ -87,6 +92,7 @@ class Thief(game.Angry):
 	_sprite = 'T'
 	_max_hp = 3
 	_vision = 10
+	_attack = 1
 	_drops = [
 			(1, Money),
 			]

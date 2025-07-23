@@ -12,6 +12,7 @@ from clckwrkbdgr import xdg
 from .. import engine
 from ..engine import events, scene
 from ..engine import actors, items, appliances
+from ..engine.items import Item, Wearable
 
 def is_diagonal_movement(point_from, point_to):
 	shift = abs(point_to - point_from)
@@ -47,16 +48,9 @@ class Event:
 	class InventoryFull(events.Event): FIELDS = 'item'
 	class GrabbedItem(events.Event): FIELDS = 'who item'
 
-class Item(items.Item):
-	""" Basic pickable and carryable item. """
-	attack = classfield('_attack', 0)
-
 class Consumable(object):
 	def consume_by(self, who): # pragma: no cover
 		return NotImplemented
-
-class Wearable(items.Wearable):
-	protection = classfield('_protection', 0)
 
 class Furniture(appliances.Appliance):
 	""" Any object placed on map that is not a part of the terrain.
@@ -88,7 +82,6 @@ class LevelPassage(Furniture):
 		pass
 
 class Monster(actors.EquippedMonster):
-	base_attack = classfield('_attack', None)
 	max_inventory = classfield('_max_inventory', [])
 	hostile_to = classfield('_hostile_to', [])
 	def is_hostile_to(self, other):
@@ -124,26 +117,6 @@ class Monster(actors.EquippedMonster):
 		self.inventory.remove(item)
 		events.append(Event.MonsterConsumedItem(self, item))
 		return events
-	def get_attack_damage(self):
-		""" Final attack damage with all modifiers. """
-		if self.base_attack is None:
-			return 0
-		result = self.base_attack
-		if self.wielding:
-			result += self.wielding.attack
-		return result
-	def get_protection(self):
-		""" Final protection from damage with all modifiers. """
-		if self.wearing:
-			return self.wearing.protection
-		return 0
-	def attack(self, other):
-		""" Inflicts damage on other actor (considering all modifiers on both actors).
-		Returns value of real inflicted damage.
-		"""
-		damage = max(0, self.get_attack_damage() - other.get_protection())
-		other.affect_health(-damage)
-		return damage
 	def __setstate__(self, data): # pragma: no cover -- TODO
 		self.inventory = []
 		self.pos = data.pos
@@ -175,18 +148,13 @@ class Monster(actors.EquippedMonster):
 class Player(Monster):
 	_name = 'player'
 
-class Room(Rect):
-	def __hash__(self):
-		return hash( (self.topleft, self.size) )
-
-class Tunnel(clckwrkbdgr.math.geometry.RectConnection):
-	def __hash__(self):
-		return hash( (self.start, self.stop, self.bending_point) )
-
 class Scene(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
 	Items, monsters, fitment objects are supplied.
 	"""
+	Room = Rect
+	Tunnel = clckwrkbdgr.math.geometry.RectConnection
+
 	def __init__(self,
 			rooms=None, tunnels=None,
 			items=None, monsters=None, objects=None,
@@ -426,7 +394,8 @@ class Dungeon(engine.Game):
 		if not hostiles:
 			return [Event.BumpIntoMonster(monster, others[0])]
 		other = hostiles[0]
-		damage = monster.attack(other)
+		damage = max(0, monster.get_attack_damage() - other.get_protection())
+		other.affect_health(-damage)
 		events = [Event.AttackMonster(monster, other, damage)]
 		if not other.is_alive():
 			events.append(Event.MonsterDied(other))
@@ -440,9 +409,9 @@ class Dungeon(engine.Game):
 		"""
 		if self.god.vision:
 			return True
-		if isinstance(obj, Room):
+		if isinstance(obj, Scene.Room):
 			return obj == self.scene.current_room
-		if isinstance(obj, Tunnel):
+		if isinstance(obj, Scene.Tunnel):
 			tunnel_visited = self.scene.tunnels.index(obj)
 			tunnel_visited = self.visited_tunnels[self.current_level_id][tunnel_visited]
 			return additional in tunnel_visited
@@ -461,10 +430,10 @@ class Dungeon(engine.Game):
 		"""
 		if self.god.vision:
 			return True
-		if isinstance(obj, Room):
+		if isinstance(obj, Scene.Room):
 			room_index = self.scene.index_room_of(obj.topleft)
 			return self.visited_rooms[self.current_level_id].cell(room_index)
-		if isinstance(obj, Tunnel):
+		if isinstance(obj, Scene.Tunnel):
 			tunnel_visited = self.scene.tunnels.index(obj)
 			tunnel_visited = self.visited_tunnels[self.current_level_id][tunnel_visited]
 			return additional in tunnel_visited

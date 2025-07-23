@@ -419,7 +419,8 @@ class Game(engine.Game):
 		Raises attack event.
 		"""
 		self.fire_event(AttackEvent(actor, target))
-		self.affect_health(target, -1)
+		damage = max(0, actor.get_attack_damage() - target.get_protection())
+		self.affect_health(target, -damage)
 		if self.get_player():
 			for obj in self.vision.update(self.scene.get_player(), self.scene): # pragma: no cover -- TODO
 				self.fire_event(DiscoverEvent(obj))

@@ -64,6 +64,8 @@ class Monster(Actor):
 	"""
 	max_hp = classfield('_max_hp', 1)
 	drops = classfield('_drops', None) # See .fill_drops() for details
+	base_attack = classfield('_attack', 0) # Base unarmed attack.
+	base_protection = classfield('_protection', 0) # Base protection.
 	def __init__(self, pos):
 		super(Monster, self).__init__(pos)
 		self.hp = self.max_hp
@@ -117,6 +119,12 @@ class Monster(Actor):
 			diff = new_hp - self.hp
 		self.hp += diff
 		return diff
+	def get_attack_damage(self):
+		""" Final attack damage with all modifiers. """
+		return self.base_attack
+	def get_protection(self):
+		""" Final protection from damage with all modifiers. """
+		return self.base_protection
 
 	def fill_drops(self, rng):
 		""" Generates and adds random items that monsters usually drop upon death.
@@ -172,6 +180,19 @@ class EquippedMonster(Monster):
 		super(EquippedMonster, self).load(stream)
 		self.wielding = stream.read(items.Item, optional=True)
 		self.wearing = stream.read(items.Item, optional=True)
+
+	def get_attack_damage(self):
+		""" Final attack damage with all modifiers. """
+		result = self.base_attack
+		if self.wielding:
+			result += self.wielding.attack
+		return result
+	def get_protection(self):
+		""" Final protection from damage with all modifiers. """
+		result = self.base_protection
+		if self.wearing:
+			return self.wearing.protection
+		return result
 
 	def wield(self, item):
 		""" Wields item from inventory.

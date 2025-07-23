@@ -42,10 +42,12 @@ class Potion(items.Item):
 class Dagger(items.Item):
 	_sprite = '('
 	_name = 'dagger'
+	_attack = 1
 
 class Rags(items.Item, items.Wearable):
 	_sprite = '['
 	_name = 'rags'
+	_protection = 1
 
 class ScribbledNote(items.Item):
 	_sprite = '?'
@@ -85,7 +87,7 @@ class Dragonfly(actors.Actor):
 	_sprite = 'd'
 	_name = 'dragonfly'
 
-class Butterfly(actors.Monster):
+class Butterfly(actors.Actor):
 	_sprite = 'b'
 	_name = 'butterfly'
 	def __init__(self, *args, **kwargs):
@@ -94,7 +96,6 @@ class Butterfly(actors.Monster):
 			del kwargs['color']
 		super(Butterfly, self).__init__(*args, **kwargs)
 	def load(self, stream):
-		super(Butterfly, self).load(stream)
 		self.color = stream.read()
 	def save(self, stream):
 		super(Butterfly, self).save(stream)
@@ -104,12 +105,14 @@ class Rat(actors.Monster):
 	_sprite = 'r'
 	_name = 'rat'
 	_max_hp = 10
+	_attack = 1
 	_drops = [
 			(1, None),
 			(5, Potion),
 			]
 
 class PackRat(Rat):
+	_protection = 1
 	_drops = [
 			[
 				(6, None),
@@ -123,6 +126,7 @@ class PackRat(Rat):
 class Goblin(actors.EquippedMonster):
 	_sprite = 'g'
 	_name = 'goblin'
+	_attack = 1
 	_max_hp = 10
 
 ### Events. ####################################################################

@@ -30,7 +30,7 @@ class TestActors(unittest.TestCase):
 		writer.write(actor)
 		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Dragonfly\x001\x002')
 	def should_load_actor_with_custom_properties(self):
-		stream = StringIO(str(VERSION) + '\x00Butterfly\x001\x002\x001\x000\x00red')
+		stream = StringIO(str(VERSION) + '\x00Butterfly\x001\x002\x00red')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'Butterfly':Butterfly})
 		actor = reader.read(actors.Actor)
@@ -42,7 +42,7 @@ class TestActors(unittest.TestCase):
 		writer = savefile.Writer(stream, VERSION)
 		actor = Butterfly(Point(1, 2), color='red')
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Butterfly\x001\x002\x001\x000\x00red')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Butterfly\x001\x002\x00red')
 
 class TestMonsters(unittest.TestCase):
 	def should_str_monster(self):
@@ -77,6 +77,14 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(rat.hp, 6)
 		self.assertEqual(rat.affect_health(10), 4)
 		self.assertEqual(rat.hp, 10)
+	def should_calculate_attack_damage(self):
+		rat = Rat(Point(1, 1))
+		self.assertEqual(rat.get_attack_damage(), 1)
+	def should_calculate_protection(self):
+		rat = Rat(Point(1, 1))
+		self.assertEqual(rat.get_protection(), 0)
+		rat = PackRat(Point(1, 1))
+		self.assertEqual(rat.get_protection(), 1)
 	def should_hurt_monster(self):
 		rat = Rat(Point(1, 1))
 		self.assertEqual(rat.affect_health(-5), -5)
@@ -207,3 +215,22 @@ class TestEquippedMonsters(unittest.TestCase):
 		self.assertEqual(goblin.take_off(), rags)
 		self.assertIsNone(goblin.wearing)
 		self.assertTrue(rags in goblin.inventory)
+	def should_calculate_attack_damage(self):
+		goblin = Goblin(Point(1, 1))
+		self.assertEqual(goblin.get_attack_damage(), 1)
+		dagger = Dagger()
+		rags = Rags()
+		goblin.inventory.append(rags)
+		goblin.inventory.append(dagger)
+		goblin.wield(dagger)
+		self.assertEqual(goblin.get_attack_damage(), 2)
+		goblin.unwield()
+		goblin.wield(rags)
+		self.assertEqual(goblin.get_attack_damage(), 1)
+	def should_calculate_protection(self):
+		goblin = Goblin(Point(1, 1))
+		self.assertEqual(goblin.get_protection(), 0)
+		rags = Rags()
+		goblin.inventory.append(rags)
+		goblin.wear(rags)
+		self.assertEqual(goblin.get_protection(), 1)

@@ -4,7 +4,7 @@ from clckwrkbdgr.math import Point, Matrix, get_neighbours
 from .. import game
 from ..game import Item, Wearable, Consumable, LevelPassage
 from ..game import Monster, Player
-from ..game import Tunnel, Room, Scene, Dungeon
+from ..game import Scene, Dungeon
 from ...engine import events
 from ...engine import items
 
@@ -112,54 +112,6 @@ class TestMonster(unittest.TestCase):
 		self.assertEqual(_R(jc.consume(smart_stimpack)), _R([
 			]))
 		self.assertTrue(jc.has_item(SmartStimPack))
-	def should_calc_attack_damage(self):
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
-
-		jc = UNATCOAgent(None)
-		jc.inventory.append(pistol)
-		jc.inventory.append(armor)
-
-		self.assertEqual(jc.get_attack_damage(), 2)
-		jc.wield(armor)
-		self.assertEqual(jc.get_attack_damage(), 2)
-		jc.unwield()
-		jc.wield(pistol)
-		self.assertEqual(jc.get_attack_damage(), 7)
-
-		vacuum = VacuumCleaner(None)
-		self.assertEqual(vacuum.get_attack_damage(), 0)
-	def should_calc_protection(self):
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
-
-		jc = UNATCOAgent(None)
-		jc.inventory.append(pistol)
-		jc.inventory.append(armor)
-
-		self.assertEqual(jc.get_protection(), 0)
-		jc.wear(armor)
-		self.assertEqual(jc.get_protection(), 3)
-	def should_attack_other_monster(self):
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
-
-		jc = UNATCOAgent(None)
-		jc.inventory.append(pistol)
-
-		mj12 = MJ12Trooper(None)
-		mj12.inventory.append(armor)
-
-		self.assertEqual(jc.attack(mj12), 2)
-		self.assertEqual(mj12.hp, 198)
-
-		jc.wield(pistol)
-		self.assertEqual(jc.attack(mj12), 7)
-		self.assertEqual(mj12.hp, 191)
-
-		mj12.wear(armor)
-		self.assertEqual(jc.attack(mj12), 4)
-		self.assertEqual(mj12.hp, 187)
 
 class MockGenerator:
 	MAIN_LEVEL = textwrap.dedent("""\
@@ -215,13 +167,13 @@ class MockGenerator:
 		rects = sorted(rects, key=lambda rect: (rect[0][1], rect[0][0]))
 		if len(rects) == 4:
 			rooms = Matrix((2, 2))
-			rooms.set_cell((0, 0), Room(*(rects[0])))
-			rooms.set_cell((1, 0), Room(*(rects[1])))
-			rooms.set_cell((0, 1), Room(*(rects[2])))
-			rooms.set_cell((1, 1), Room(*(rects[3])))
+			rooms.set_cell((0, 0), Scene.Room(*(rects[0])))
+			rooms.set_cell((1, 0), Scene.Room(*(rects[1])))
+			rooms.set_cell((0, 1), Scene.Room(*(rects[2])))
+			rooms.set_cell((1, 1), Scene.Room(*(rects[3])))
 		else:
 			rooms = Matrix((1, 1))
-			rooms.set_cell((0, 0), Room(*(rects[0])))
+			rooms.set_cell((0, 0), Scene.Room(*(rects[0])))
 
 		tunnels = []
 		for y in range(layout.height):
@@ -251,7 +203,7 @@ class MockGenerator:
 									abs(current.x - path[0].x),
 									abs(current.y - path[0].y),
 									)
-				tunnels.append(Tunnel(path[0], path[-1], direction, bending or 1))
+				tunnels.append(Scene.Tunnel(path[0], path[-1], direction, bending or 1))
 
 		objects = []
 		for y in range(layout.height):
@@ -422,7 +374,7 @@ class TestGridRoomMap(unittest.TestCase):
 	def should_visit_tunnel(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
-		tunnel = game.Tunnel(Point(2, 2), Point(6, 12), 'H', bending_point=2)
+		tunnel = Scene.Tunnel(Point(2, 2), Point(6, 12), 'H', bending_point=2)
 		dungeon.scene.tunnels.append(tunnel)
 		dungeon.visited_tunnels['top'].append(set())
 		dungeon.visit_tunnel(tunnel, Point(2, 2), adjacent=False)

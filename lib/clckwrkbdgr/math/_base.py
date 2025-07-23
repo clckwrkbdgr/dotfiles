@@ -157,6 +157,8 @@ class Rect(object):
 		return str((self._topleft, self._size))
 	def __repr__(self): # pragma: no cover
 		return str(type(self)) + str(self)
+	def __hash__(self):
+		return hash( (self.topleft, self.size) )
 	def __setstate__(self, data): # pragma: no cover
 		self._topleft = data['topleft']
 		self._size = data['size']

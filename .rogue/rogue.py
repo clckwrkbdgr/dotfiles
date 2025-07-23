@@ -70,6 +70,7 @@ class Wall(Terrain):
 	_passable = False
 
 class ColoredMonster(Monster):
+	_attack = 1
 	def __init__(self, pos, sprite=None, max_hp=None):
 		self._sprite = sprite
 		self._max_hp = max_hp
@@ -88,7 +89,8 @@ class ColoredMonster(Monster):
 		monster_pos = self.coord.get_global(game.scene.world)
 		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
 		if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-			game.scene.get_player().affect_health(-1)
+			damage = max(0, self.get_attack_damage() - game.scene.get_player().get_protection())
+			game.scene.get_player().affect_health(-damage)
 			game.fire_event(HitMonster('monster', 'you'))
 			if not game.scene.get_player().is_alive():
 				game.fire_event(MonsterDead('you'))
@@ -101,7 +103,8 @@ class AggressiveColoredMonster(ColoredMonster):
 		monster_pos = self.coord.get_global(game.scene.world)
 		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
 		if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-			game.scene.get_player().affect_health(-1)
+			damage = max(0, self.get_attack_damage() - game.scene.get_player().get_protection())
+			game.scene.get_player().affect_health(-damage)
 			game.fire_event(HitMonster('monster', 'you'))
 			if not game.scene.get_player().is_alive():
 				game.fire_event(MonsterDead('you'))
@@ -126,6 +129,7 @@ class AggressiveColoredMonster(ColoredMonster):
 
 class Player(Monster):
 	_sprite = Sprite('@', 'bold_white')
+	_attack = 1
 	init_max_hp = 10
 	def __init__(self, pos):
 		self._max_hp = self.init_max_hp
@@ -476,7 +480,7 @@ class Scene(scene.Scene):
 	def save(self, stream):
 		self.world.save(stream)
 	def load(self, stream):
-		super(Scene, self).load(reader)
+		super(Scene, self).load(stream)
 		self.world.load(stream)
 	def autoexpand(self, coord, margin):
 		pos = coord.get_global(self.world)
@@ -908,7 +912,8 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				if isinstance(monster, Dweller):
 					self.game.fire_event(Bump('you', 'dweller'))
 				else:
-					monster.affect_health(-1)
+					damage = max(0, game.scene.get_player().get_attack_damage() - monster.get_protection())
+					monster.affect_health(-damage)
 					self.game.fire_event(HitMonster('you', 'monster'))
 					if not monster.is_alive():
 						dest_field_data.monsters.remove(monster)
@@ -942,7 +947,7 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				game.scene.get_player().regeneration += 1
 				while game.scene.get_player().regeneration >= 10:
 					game.scene.get_player().regeneration -= 10
-					game.scene.get_player().hp += 1
+					game.scene.get_player().affect_health(+1)
 					if game.scene.get_player().hp >= game.scene.get_player().max_hp:
 						game.scene.get_player().hp = game.scene.get_player().max_hp
 
