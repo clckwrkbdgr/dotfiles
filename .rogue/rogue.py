@@ -71,6 +71,7 @@ class Wall(Terrain):
 
 class ColoredMonster(Monster):
 	_attack = 1
+	_max_inventory = 1
 	def __init__(self, pos, sprite=None, max_hp=None):
 		self._sprite = sprite
 		self._max_hp = max_hp
@@ -131,6 +132,7 @@ class Player(Monster):
 	_sprite = Sprite('@', 'bold_white')
 	_attack = 1
 	init_max_hp = 10
+	_max_inventory = 26
 	def __init__(self, pos):
 		self._max_hp = self.init_max_hp
 		super(Player, self).__init__(pos)
@@ -255,7 +257,7 @@ class Builder(builders.Builder):
 		@classmethod
 		def monster_carrying(cls, pos, sprite, color, strong, aggressive):
 			result = cls.monster(pos, sprite, color, strong, aggressive)
-			result.inventory.append(ColoredSkin(
+			result.grab(ColoredSkin(
 				Sprite('*', color),
 				'{0} skin'.format(color.replace('_', ' ')),
 				))
@@ -781,13 +783,14 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 			item = next(game.scene.iter_items_at(game.scene.get_player_coord()), None)
 			if not item:
 				self.game.fire_event(NothingToPickUp())
-			elif len(game.scene.get_player().inventory) >= 26:
-				self.game.fire_event(InventoryIsFull())
-			else:
-				game.scene.get_player().inventory.append(item)
+				return
+			try:
+				game.scene.get_player().grab(item)
 				game.scene.world.get_data(game.scene.get_player_coord())[-1].items.remove(item)
 				self.game.fire_event(PickedUpItem(item))
 				self.step_taken = True
+			except Monster.InventoryFull:
+				self.game.fire_event(InventoryIsFull())
 	@Keys.bind('C')
 	def char(self):
 		game = self.game
@@ -831,15 +834,14 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				if True:
 					if npc.quest:
 						required_amount, required_name, bounty = npc.quest
-						have_required_items = [
-								item for item in game.scene.get_player().inventory
-								if item.name == required_name
-								][:required_amount]
+						have_required_items = list(
+								game.scene.get_player().iter_items(ColoredSkin, name=required_name),
+								)[:required_amount]
 						if len(have_required_items) >= required_amount:
 							def _on_yes():
 								self.game.fire_event(ChatThanks())
 								for item in have_required_items:
-									game.scene.get_player().inventory.remove(item)
+									game.scene.get_player().drop(item)
 								if game.scene.get_player().hp == game.scene.get_player().max_hp:
 									game.scene.get_player().hp += bounty
 								game.scene.get_player()._max_hp += bounty

@@ -106,6 +106,7 @@ class Rat(actors.Monster):
 	_name = 'rat'
 	_max_hp = 10
 	_attack = 1
+	_max_inventory = 1
 	_drops = [
 			(1, None),
 			(5, Potion),
@@ -113,6 +114,7 @@ class Rat(actors.Monster):
 
 class PackRat(Rat):
 	_protection = 1
+	_max_inventory = 10
 	_drops = [
 			[
 				(6, None),
@@ -128,6 +130,7 @@ class Goblin(actors.EquippedMonster):
 	_name = 'goblin'
 	_attack = 1
 	_max_hp = 10
+	_max_inventory = 10
 
 ### Events. ####################################################################
 

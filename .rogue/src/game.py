@@ -433,14 +433,14 @@ class Game(engine.Game):
 			return
 		self.fire_event(GrabItemEvent(actor, item))
 		self.scene.items.remove(item)
-		actor.inventory.append(item)
+		actor.grab(item)
 	def consume_item(self, monster, item):
 		""" Consumes item from inventory (item is removed).
 		Applies corresponding effects, if item has any.
 		Produces events.
 		"""
 		assert item in monster.inventory
-		monster.inventory.remove(item)
+		monster.drop(item)
 		self.fire_event(ConsumeItemEvent(monster, item))
 		if isinstance(item, Consumable):
 			item.apply_effect(self, monster)

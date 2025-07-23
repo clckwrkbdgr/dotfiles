@@ -51,6 +51,7 @@ class Player(game.Player):
 	_max_hp = 10
 	_vision = 10
 	_attack = 1
+	_max_inventory = 26
 	_drops = None
 
 class MockMonster(actors.EquippedMonster):
@@ -59,6 +60,7 @@ class MockMonster(actors.EquippedMonster):
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
+	_max_inventory = 5
 	_drops = None
 
 class AngryMonster(game.Angry):
@@ -67,6 +69,7 @@ class AngryMonster(game.Angry):
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
+	_max_inventory = 5
 	_drops = None
 
 class InertMonster(game.Inert):
@@ -75,6 +78,7 @@ class InertMonster(game.Inert):
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
+	_max_inventory = 5
 	_drops = None
 
 class DummyThief(actors.EquippedMonster):
@@ -83,6 +87,7 @@ class DummyThief(actors.EquippedMonster):
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
+	_max_inventory = 5
 	_drops = [
 			(1, Money),
 			]
@@ -93,6 +98,7 @@ class Thief(game.Angry):
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
+	_max_inventory = 5
 	_drops = [
 			(1, Money),
 			]

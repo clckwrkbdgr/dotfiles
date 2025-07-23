@@ -82,25 +82,11 @@ class LevelPassage(Furniture):
 		pass
 
 class Monster(actors.EquippedMonster):
-	max_inventory = classfield('_max_inventory', [])
 	hostile_to = classfield('_hostile_to', [])
 	def is_hostile_to(self, other):
 		""" Return True if this monster is hostile towards other monster and can attack it. """
 		for monster_class in self.hostile_to:
 			if isinstance(other, monster_class):
-				return True
-		return False
-	def has_item(self, item_class, **properties):
-		""" Returns True if inventory contains an item of specified class
-		with exact values for given properties.
-		"""
-		for item in self.inventory:
-			if not isinstance(item, item_class):
-				continue
-			for name, expected_value in properties.items():
-				if not hasattr(item, name) or getattr(item, name) != expected_value:
-					break
-			else:
 				return True
 		return False
 	def consume(self, item):
@@ -114,7 +100,7 @@ class Monster(actors.EquippedMonster):
 		if consume_events is None:
 			return events
 		events.extend(consume_events)
-		self.inventory.remove(item)
+		self.drop(item)
 		events.append(Event.MonsterConsumedItem(self, item))
 		return events
 	def __setstate__(self, data): # pragma: no cover -- TODO
@@ -309,7 +295,7 @@ class Dungeon(engine.Game):
 		self.god = GodMode()
 	def generate(self): # pragma: no cover -- TODO
 		rogue = self.PLAYER_TYPE()
-		rogue.inventory.append(Dagger())
+		rogue.grab(Dagger())
 		self.go_to_level(rogue, 0)
 	def load(self, reader): # pragma: no cover -- TODO
 		self.levels = data.levels
@@ -363,10 +349,11 @@ class Dungeon(engine.Game):
 		except ValueError: # pragma: no cover -- TODO rogue is not stored in the list.
 			pass
 	def grab_item(self, who, item):
-		if len(who.inventory) >= who.max_inventory:
-			return [Event.InventoryFull(item)]
 		index, = [index for index, (pos, i) in enumerate(self.scene.items) if i == item]
-		who.inventory.append(item)
+		try:
+			who.grab(item)
+		except Monster.InventoryFull:
+			return [Event.InventoryFull(item)]
 		self.scene.items.pop(index)
 		return [Event.GrabbedItem(who, item)]
 	def drop_item(self, who, item):

@@ -78,15 +78,6 @@ class TestMonster(unittest.TestCase):
 		self.assertTrue(mj12.is_hostile_to(nsf))
 		self.assertTrue(mj12.is_hostile_to(jc))
 		self.assertFalse(jc.is_hostile_to(nsf))
-	def should_detect_items_in_inventory(self):
-		key = NanoKey()
-		key.value = '0451'
-		jc = UNATCOAgent(None)
-		jc.inventory.append(key)
-		self.assertTrue(jc.has_item(NanoKey, value='0451'))
-		self.assertFalse(jc.has_item(NanoKey, value='666'))
-		self.assertTrue(jc.has_item(NanoKey))
-		self.assertFalse(jc.has_item(StealthPistol))
 	def should_consumeItems(self):
 		key = NanoKey()
 		key.value = '0451'

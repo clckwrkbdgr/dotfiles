@@ -63,6 +63,7 @@ class Player(src.game.Player):
 	_max_hp = 10
 	_vision = 10
 	_attack = 1
+	_max_inventory = 26
 
 class Monster(src.engine.actors.Monster):
 	_name = 'monster'
@@ -70,6 +71,7 @@ class Monster(src.engine.actors.Monster):
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
+	_max_inventory = 5
 
 class Plant(src.engine.actors.Monster):
 	_name = 'plant'
@@ -77,6 +79,7 @@ class Plant(src.engine.actors.Monster):
 	_max_hp = 1
 	_vision = 1
 	_attack = 1
+	_max_inventory = 5
 	_drops = [
 			(1, None),
 			(5, HealingPotion),
@@ -88,6 +91,7 @@ class Slime(src.game.Inert):
 	_max_hp = 5
 	_vision = 3
 	_attack = 1
+	_max_inventory = 5
 	_drops = [
 			(1, None),
 			(1, HealingPotion),
@@ -99,6 +103,7 @@ class Rodent(src.game.Angry):
 	_max_hp = 3
 	_vision = 8
 	_attack = 1
+	_max_inventory = 5
 	_drops = [
 			(5, None),
 			(1, HealingPotion),

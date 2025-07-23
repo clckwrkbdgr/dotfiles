@@ -62,7 +62,10 @@ class Monster(Actor):
 	""" Monster is a perishable Actor (has hp and can be hit)
 	and inventory of Items (can carry/drop items).
 	"""
+	class InventoryFull(RuntimeError): pass
+
 	max_hp = classfield('_max_hp', 1)
+	max_inventory = classfield('_max_inventory', 1)
 	drops = classfield('_drops', None) # See .fill_drops() for details
 	base_attack = classfield('_attack', 0) # Base unarmed attack.
 	base_protection = classfield('_protection', 0) # Base protection.
@@ -126,6 +129,37 @@ class Monster(Actor):
 		""" Final protection from damage with all modifiers. """
 		return self.base_protection
 
+	def grab(self, *items):
+		""" Adds items to the inventory.
+		If total size of inventory will overflow max_inventory,
+		does not add any item and raises InventoryFull.
+		"""
+		if len(self.inventory) + len(items) > self.max_inventory:
+			raise self.InventoryFull()
+		self.inventory.extend(items)
+	def iter_items(self, item_class, **properties):
+		""" Iterates over items in the inventory of specified class
+		with exact values for given properties.
+		"""
+		for item in self.inventory:
+			if not isinstance(item, item_class):
+				continue
+			for name, expected_value in properties.items():
+				if not hasattr(item, name) or getattr(item, name) != expected_value:
+					break
+			else:
+				yield item
+	def find_item(self, item_class, **properties):
+		""" Returns first found item from the inventory of specified class
+		with exact values for given properties.
+		Returns None if no such item is found.
+		"""
+		return next(self.iter_items(item_class, **properties), None)
+	def has_item(self, item_class, **properties):
+		""" Returns True if inventory contains an item of specified class
+		with exact values for given properties.
+		"""
+		return bool(self.find_item(item_class, **properties))
 	def fill_drops(self, rng):
 		""" Generates and adds random items that monsters usually drop upon death.
 		Drops is either a list of weighted choices (<weight>, <item type>),
