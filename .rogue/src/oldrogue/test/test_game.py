@@ -3,10 +3,10 @@ import textwrap, functools
 from clckwrkbdgr.math import Point, Matrix, get_neighbours
 from .. import game
 from ..game import Item, Wearable, Consumable, LevelPassage
-from ..game import Monster, Player
+from ..game import Player
 from ..game import Scene, Dungeon
 from ...engine import events
-from ...engine import items
+from ...engine import items, actors
 
 class Elevator(LevelPassage):
 	_sprite = '>'
@@ -50,14 +50,14 @@ class UNATCOAgent(Player):
 	_max_inventory = 2
 	_sprite = '@'
 
-class VacuumCleaner(Monster):
+class VacuumCleaner(actors.EquippedMonster):
 	_max_hp = 5
 
-class NSFTerrorist(Monster):
+class NSFTerrorist(actors.EquippedMonster):
 	_attack = 1
 	_max_hp = 50
 
-class MJ12Trooper(Monster):
+class MJ12Trooper(actors.EquippedMonster):
 	_attack = 3
 	_max_hp = 200
 	_hostile_to = [UNATCOAgent, NSFTerrorist]
@@ -71,7 +71,12 @@ class TestUtils(unittest.TestCase):
 		self.assertFalse(game.is_diagonal_movement(Point(0, 0), Point(0, 1)))
 
 class TestMonster(unittest.TestCase):
+	class UNATCO(game.Dungeon):
+		GENERATOR = lambda *_:None
+		PLAYER_TYPE = UNATCOAgent
 	def should_consumeItems(self):
+		dungeon = self.UNATCO()
+
 		key = NanoKey()
 		key.value = '0451'
 		stimpack = StimPack()
@@ -82,18 +87,18 @@ class TestMonster(unittest.TestCase):
 		jc.inventory.append(stimpack)
 		jc.inventory.append(smart_stimpack)
 
-		self.assertEqual(_R(jc.consume(key)), _R([
+		self.assertEqual(_R(dungeon.consume_item(jc, key)), _R([
 			game.Event.NotConsumable(key),
 			]))
 		self.assertTrue(jc.has_item(NanoKey))
 
-		self.assertEqual(_R(jc.consume(stimpack)), _R([
+		self.assertEqual(_R(dungeon.consume_item(jc, stimpack)), _R([
 			game.Event.MonsterConsumedItem(jc, stimpack),
 			]))
 		self.assertFalse(jc.has_item(StimPack))
 		self.assertEqual(jc.hp, jc.max_hp)
 
-		self.assertEqual(_R(jc.consume(smart_stimpack)), _R([
+		self.assertEqual(_R(dungeon.consume_item(jc, smart_stimpack)), _R([
 			]))
 		self.assertTrue(jc.has_item(SmartStimPack))
 

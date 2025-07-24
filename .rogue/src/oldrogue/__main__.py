@@ -22,7 +22,7 @@ from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 from . import game
-from .game import Version, Item, Consumable, Wearable, Monster, Player, Room, Tunnel, Scene, Furniture, LevelPassage, GodMode, Dungeon, Event
+from .game import Version, Item, Consumable, Wearable, Player, Room, Tunnel, Scene, Furniture, LevelPassage, GodMode, Dungeon, Event
 from . import pcg
 from ..engine import events
 
@@ -101,16 +101,8 @@ make_armor('Leather', "[", "leather", 2)
 make_armor('ChainMail', "[", "chain mail", 3)
 make_armor('PlateArmor', "[", "plate armor", 4)
 
-class Rogue(Player):
-	_hostile_to = [Monster]
-	_sprite = "@"
-	_name = "rogue"
-	_max_hp = 25
-	_attack = 1
-	_max_inventory = 26
-
-class RealMonster(Monster):
-	_hostile_to = [Rogue]
+class RealMonster(actors.EquippedMonster):
+	_hostile_to = [Player]
 
 	def act(self, dungeon):
 		if not dungeon.scene.current_room:
@@ -125,6 +117,14 @@ class RealMonster(Monster):
 		new_pos = self.pos + shift
 		for _ in dungeon.move_monster(self, new_pos, with_tunnels=False):
 			dungeon.fire_event(_)
+
+class Rogue(Player):
+	_hostile_to = [RealMonster]
+	_sprite = "@"
+	_name = "rogue"
+	_max_hp = 25
+	_attack = 1
+	_max_inventory = 26
 
 animal_drops = [
 			(70, None),
@@ -617,7 +617,7 @@ class ConsumeItem:
 	def prompt(self): return "Which item to consume?"
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
-		for _ in self.data.get_player().consume(item):
+		for _ in self.data.consume_item(self.data.get_player(), item):
 			self.data.fire_event(_)
 
 class DropItem:

@@ -81,50 +81,7 @@ class LevelPassage(Furniture):
 		"""
 		pass
 
-class Monster(actors.EquippedMonster):
-	def consume(self, item):
-		""" Tries to consume item.
-		Returns list of happened events.
-		"""
-		if not isinstance(item, Consumable):
-			return [Event.NotConsumable(item)]
-		events = []
-		consume_events = item.consume_by(self)
-		if consume_events is None:
-			return events
-		events.extend(consume_events)
-		self.drop(item)
-		events.append(Event.MonsterConsumedItem(self, item))
-		return events
-	def __setstate__(self, data): # pragma: no cover -- TODO
-		self.inventory = []
-		self.pos = data.pos
-		self.inventory = data.inventory
-		self.wielding = None
-		if 'wielding' in data:
-			wielding = data.wielding
-			if wielding is not None:
-				self.wielding = self.inventory[wielding]
-		self.wearing = None
-		if 'wearing' in data:
-			wearing = data.wearing
-			if wearing is not None:
-				self.wearing = self.inventory[wearing]
-		if data.get('hp'):
-			self.hp = data.hp
-		else:
-			self.hp = self.max_hp
-	def __getstate__(self): # pragma: no cover -- TODO
-		data = dotdict()
-		data._class = self.__class__.__name__
-		data.pos = self.pos
-		data.inventory = self.inventory
-		data.hp = self.hp
-		data.wielding = self.inventory.index(self.wielding) if self.wielding else None
-		data.wearing = self.inventory.index(self.wearing) if self.wearing else None
-		return data
-
-class Player(Monster):
+class Player(actors.EquippedMonster):
 	_name = 'player'
 
 class Scene(scene.Scene):
@@ -345,10 +302,24 @@ class Dungeon(engine.Game):
 		index, = [index for index, (pos, i) in enumerate(self.scene.items) if i == item]
 		try:
 			who.grab(item)
-		except Monster.InventoryFull:
+		except actors.EquippedMonster.InventoryFull:
 			return [Event.InventoryFull(item)]
 		self.scene.items.pop(index)
 		return [Event.GrabbedItem(who, item)]
+	def consume_item(self, actor, item):
+		""" Tries to consume item.
+		Returns list of happened events.
+		"""
+		if not isinstance(item, Consumable):
+			return [Event.NotConsumable(item)]
+		events = []
+		consume_events = item.consume_by(actor)
+		if consume_events is None:
+			return events
+		events.extend(consume_events)
+		actor.drop(item)
+		events.append(Event.MonsterConsumedItem(actor, item))
+		return events
 	def drop_item(self, who, item):
 		item = who.drop(item)
 		self.scene.items.append(item)
