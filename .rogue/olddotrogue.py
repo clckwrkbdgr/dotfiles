@@ -58,6 +58,7 @@ class HealingPotion(src.engine.items.Item, Healing):
 	healing = +5
 
 class Player(src.game.Player):
+	_hostile_to = [src.engine.actors.Monster]
 	_name = 'player'
 	_sprite = '@'
 	_max_hp = 10
@@ -66,6 +67,7 @@ class Player(src.game.Player):
 	_max_inventory = 26
 
 class Monster(src.engine.actors.Monster):
+	_hostile_to = [Player]
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
@@ -74,6 +76,7 @@ class Monster(src.engine.actors.Monster):
 	_max_inventory = 5
 
 class Plant(src.engine.actors.Monster):
+	_hostile_to = [Player]
 	_name = 'plant'
 	_sprite = 'P'
 	_max_hp = 1
@@ -86,6 +89,7 @@ class Plant(src.engine.actors.Monster):
 			]
 
 class Slime(src.game.Inert):
+	_hostile_to = [Player]
 	_name = 'slime'
 	_sprite = 'o'
 	_max_hp = 5
@@ -98,6 +102,7 @@ class Slime(src.game.Inert):
 			]
 
 class Rodent(src.game.Angry):
+	_hostile_to = [Player]
 	_name = 'rodent'
 	_sprite = 'r'
 	_max_hp = 3

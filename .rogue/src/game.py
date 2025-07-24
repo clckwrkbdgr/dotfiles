@@ -70,7 +70,15 @@ class LevelExit(appliances.Appliance):
 
 class Angry(actors.EquippedMonster):
 	def act(self, game):
-		player = game.scene.get_player()
+		closest = []
+		for monster in game.scene.monsters:
+			if not self.is_hostile_to(monster):
+				continue
+			closest.append((clckwrkbdgr.math.distance(self.pos, monster.pos), monster))
+		if not closest:
+			return
+		_, player = sorted(closest)[0]
+
 		if not player: # pragma: no cover
 			return
 		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
@@ -83,7 +91,15 @@ class Angry(actors.EquippedMonster):
 
 class Inert(actors.EquippedMonster):
 	def act(self, game):
-		player = game.scene.get_player()
+		closest = []
+		for monster in game.scene.monsters:
+			if not self.is_hostile_to(monster):
+				continue
+			closest.append((clckwrkbdgr.math.distance(self.pos, monster.pos), monster))
+		if not closest: # pragma: no cover
+			return
+		_, player = sorted(closest)[0]
+
 		if not player: # pragma: no cover
 			return
 		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:

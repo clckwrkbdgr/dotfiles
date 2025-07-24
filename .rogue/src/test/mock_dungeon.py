@@ -46,6 +46,7 @@ class Name(actors.EquippedMonster):
 			]
 
 class Player(game.Player):
+	_hostile_to = [actors.Monster]
 	_name = 'player'
 	_sprite = '@'
 	_max_hp = 10
@@ -55,6 +56,7 @@ class Player(game.Player):
 	_drops = None
 
 class MockMonster(actors.EquippedMonster):
+	_hostile_to = [Player]
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
@@ -64,6 +66,7 @@ class MockMonster(actors.EquippedMonster):
 	_drops = None
 
 class AngryMonster(game.Angry):
+	_hostile_to = [Player]
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
@@ -73,6 +76,7 @@ class AngryMonster(game.Angry):
 	_drops = None
 
 class InertMonster(game.Inert):
+	_hostile_to = [Player]
 	_name = 'monster'
 	_sprite = 'M'
 	_max_hp = 3
@@ -82,6 +86,7 @@ class InertMonster(game.Inert):
 	_drops = None
 
 class DummyThief(actors.EquippedMonster):
+	_hostile_to = [Player]
 	_name = 'thief'
 	_sprite = 'T'
 	_max_hp = 3
@@ -93,6 +98,7 @@ class DummyThief(actors.EquippedMonster):
 			]
 
 class Thief(game.Angry):
+	_hostile_to = [Player]
 	_name = 'thief'
 	_sprite = 'T'
 	_max_hp = 3

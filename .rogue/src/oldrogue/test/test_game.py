@@ -71,13 +71,6 @@ class TestUtils(unittest.TestCase):
 		self.assertFalse(game.is_diagonal_movement(Point(0, 0), Point(0, 1)))
 
 class TestMonster(unittest.TestCase):
-	def should_detect_hostiles(self):
-		jc = UNATCOAgent(None)
-		nsf = NSFTerrorist(None)
-		mj12 = MJ12Trooper(None)
-		self.assertTrue(mj12.is_hostile_to(nsf))
-		self.assertTrue(mj12.is_hostile_to(jc))
-		self.assertFalse(jc.is_hostile_to(nsf))
 	def should_consumeItems(self):
 		key = NanoKey()
 		key.value = '0451'

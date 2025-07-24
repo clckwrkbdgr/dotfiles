@@ -82,13 +82,6 @@ class LevelPassage(Furniture):
 		pass
 
 class Monster(actors.EquippedMonster):
-	hostile_to = classfield('_hostile_to', [])
-	def is_hostile_to(self, other):
-		""" Return True if this monster is hostile towards other monster and can attack it. """
-		for monster_class in self.hostile_to:
-			if isinstance(other, monster_class):
-				return True
-		return False
 	def consume(self, item):
 		""" Tries to consume item.
 		Returns list of happened events.

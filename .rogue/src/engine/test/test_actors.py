@@ -91,6 +91,27 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(rat.hp, 5)
 		self.assertEqual(rat.affect_health(-10), -5)
 		self.assertEqual(rat.hp, 0)
+	def should_detect_hostiles(self):
+		rogue = Rogue(None)
+		rat = Rat(None)
+		goblin = Goblin(None)
+		pack_rat = PackRat(None)
+
+		self.assertTrue(rogue.is_hostile_to(rat))
+		self.assertTrue(rogue.is_hostile_to(goblin))
+		self.assertTrue(rogue.is_hostile_to(pack_rat))
+
+		self.assertTrue(rat.is_hostile_to(rogue))
+		self.assertFalse(rat.is_hostile_to(goblin))
+		self.assertFalse(rat.is_hostile_to(pack_rat))
+
+		self.assertTrue(pack_rat.is_hostile_to(rogue))
+		self.assertFalse(pack_rat.is_hostile_to(rat))
+		self.assertFalse(pack_rat.is_hostile_to(goblin))
+
+		self.assertTrue(goblin.is_hostile_to(rogue))
+		self.assertFalse(goblin.is_hostile_to(rat))
+		self.assertTrue(goblin.is_hostile_to(pack_rat))
 	def should_resolve_item(self):
 		rat = PackRat(Point(1, 1))
 		potion = Potion()

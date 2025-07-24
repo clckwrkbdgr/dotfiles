@@ -8,7 +8,7 @@ from collections import namedtuple
 import curses
 import clckwrkbdgr.logging
 Log = logging.getLogger('rogue')
-from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign
+from clckwrkbdgr.math import Point, Rect, Size, Matrix, sign, distance
 from clckwrkbdgr.math.grid import NestedGrid
 from clckwrkbdgr import xdg, utils
 import clckwrkbdgr.serialize.stream
@@ -69,9 +69,34 @@ class Wall(Terrain):
 	_sprite = Sprite('#', 'white')
 	_passable = False
 
-class ColoredMonster(Monster):
+class RealMonster(Monster):
+	pass
+
+class Player(Monster):
+	_sprite = Sprite('@', 'bold_white')
+	_name = 'you'
+	_attack = 1
+	_hostile_to = [RealMonster]
+	init_max_hp = 10
+	_max_inventory = 26
+	def __init__(self, pos):
+		self._max_hp = self.init_max_hp
+		super(Player, self).__init__(pos)
+		self.regeneration = 0
+	def save(self, stream):
+		super(Player, self).save(stream)
+		stream.write(self.regeneration)
+		stream.write(self.max_hp)
+	def load(self, stream):
+		super(Player, self).load(stream)
+		self.regeneration = stream.read(int)
+		self._max_hp = stream.read(int)
+
+class ColoredMonster(RealMonster):
 	_attack = 1
 	_max_inventory = 1
+	_hostile_to = [Player]
+	_name = 'monster'
 	def __init__(self, pos, sprite=None, max_hp=None):
 		self._sprite = sprite
 		self._max_hp = max_hp
@@ -88,38 +113,58 @@ class ColoredMonster(Monster):
 
 	def act(self, game):
 		monster_pos = self.coord.get_global(game.scene.world)
-		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
-		if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-			damage = max(0, self.get_attack_damage() - game.scene.get_player().get_protection())
-			game.scene.get_player().affect_health(-damage)
-			game.fire_event(HitMonster('monster', 'you'))
-			if not game.scene.get_player().is_alive():
-				game.fire_event(MonsterDead('you'))
+		close_rect = Rect(monster_pos - Point(1, 1), Size(3, 3))
+		for monster_coord, monster in game.iter_monsters_in_rect(close_rect):
+			if not self.is_hostile_to(monster):
+				continue
+			damage = max(0, self.get_attack_damage() - monster.get_protection())
+			monster.affect_health(-damage)
+			game.fire_event(HitMonster(self.name, monster.name))
+			if not monster.is_alive():
+				game.fire_event(MonsterDead(monster.name))
+			break
 
 MAX_MONSTER_ACTION_LENGTH = 10
 
 class AggressiveColoredMonster(ColoredMonster):
 	_vision = 10
 	def act(self, game):
-		monster_pos = self.coord.get_global(game.scene.world)
-		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
-		if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1:
-			damage = max(0, self.get_attack_damage() - game.scene.get_player().get_protection())
-			game.scene.get_player().affect_health(-damage)
-			game.fire_event(HitMonster('monster', 'you'))
-			if not game.scene.get_player().is_alive():
-				game.fire_event(MonsterDead('you'))
-		elif isinstance(self, AggressiveColoredMonster) and math.hypot(monster_pos.x - player_pos.x, monster_pos.y - player_pos.y) <= self.vision:
+		self_pos = self.coord.get_global(game.scene.world)
+		monster_action_range = Rect(
+				self_pos - Point(self.vision, self.vision),
+				Size(1 + self.vision * 2, 1 + self.vision * 2),
+				)
+		closest = []
+		for monster_coord, monster in game.iter_monsters_in_rect(monster_action_range):
+			if not self.is_hostile_to(monster):
+				continue
+			monster_pos = monster_coord.get_global(game.scene.world)
+			closest.append((
+				distance(self_pos, monster_pos),
+				monster_coord, monster,
+				))
+		if not closest:
+			return
+		_, monster_coord, monster = sorted(closest)[0]
+		monster_pos = monster_coord.get_global(game.scene.world)
+		if max(abs(self_pos.x - monster_pos.x), abs(self_pos.y - monster_pos.y)) <= 1:
+			damage = max(0, self.get_attack_damage() - monster.get_protection())
+			monster.affect_health(-damage)
+			game.fire_event(HitMonster(self.name, monster.name))
+			if not monster.is_alive():
+				game.fire_event(MonsterDead(monster.name))
+		elif math.hypot(self_pos.x - monster_pos.x, self_pos.y - monster_pos.y) <= self.vision:
 			shift = Point(
-					sign(player_pos.x - monster_pos.x),
-					sign(player_pos.y - monster_pos.y),
+					sign(monster_pos.x - self_pos.x),
+					sign(monster_pos.y - self_pos.y),
 					)
-			new_pos = monster_pos + shift
+			new_pos = self_pos + shift
 			dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
 			dest_field_data = game.scene.world.get_data(dest_pos)[-1]
 			dest_cell = game.scene.world.cell(dest_pos)
-			if any(True for _ in game.scene.iter_actors_at(dest_pos)):
-				game.fire_event(Bump('monster', 'monster.'))
+			actor_at_dest = next(game.scene.iter_actors_at(dest_pos), None)
+			if actor_at_dest:
+				game.fire_event(Bump(self.name, actor_at_dest.name))
 			elif dest_cell.passable:
 				current_field_data = game.scene.world.get_data(self.coord)[-1]
 				if current_field_data != dest_field_data:
@@ -128,26 +173,9 @@ class AggressiveColoredMonster(ColoredMonster):
 					game.already_acted_monsters_from_previous_fields.append(self)
 				self.pos = dest_pos.values[-1]
 
-class Player(Monster):
-	_sprite = Sprite('@', 'bold_white')
-	_attack = 1
-	init_max_hp = 10
-	_max_inventory = 26
-	def __init__(self, pos):
-		self._max_hp = self.init_max_hp
-		super(Player, self).__init__(pos)
-		self.regeneration = 0
-	def save(self, stream):
-		super(Player, self).save(stream)
-		stream.write(self.regeneration)
-		stream.write(self.max_hp)
-	def load(self, stream):
-		super(Player, self).load(stream)
-		self.regeneration = stream.read(int)
-		self._max_hp = stream.read(int)
-
 class Dweller(Monster):
 	_max_hp = 10
+	_name = 'dweller'
 	def __init__(self, pos, color=None):
 		self._sprite = Sprite('@', color)
 		super(Dweller, self).__init__(pos)
@@ -474,6 +502,15 @@ class Game(engine.Game):
 				)
 		player = Player(player_pos.values[-1])
 		self.scene.world.get_data(player_pos)[-1].monsters.append(player)
+	def iter_monsters_in_rect(self, rect):
+		monster_zone_topleft = NestedGrid.Coord.from_global(rect.topleft, self.scene.world)
+		monster_zone_bottomright = NestedGrid.Coord.from_global(rect.bottomright, self.scene.world)
+		monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
+		for monster_coord, monster in all_monsters(self.scene.world, raw=True, zone_range=monster_zone_range):
+			monster_pos = monster_coord.get_global(self.scene.world)
+			if not rect.contains(monster_pos, with_border=True):
+				continue
+			yield monster_coord, monster
 
 class Scene(scene.Scene):
 	def __init__(self):
@@ -911,18 +948,19 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 				dest_cell = game.scene.world.cell(dest_pos)
 			monster = next(game.scene.iter_actors_at(dest_pos), None)
 			if monster:
-				if isinstance(monster, Dweller):
-					self.game.fire_event(Bump('you', 'dweller'))
+				actor = game.scene.get_player()
+				if not actor.is_hostile_to(monster):
+					self.game.fire_event(Bump(actor.name, monster.name))
 				else:
 					damage = max(0, game.scene.get_player().get_attack_damage() - monster.get_protection())
 					monster.affect_health(-damage)
-					self.game.fire_event(HitMonster('you', 'monster'))
+					self.game.fire_event(HitMonster(actor.name, monster.name))
 					if not monster.is_alive():
 						dest_field_data.monsters.remove(monster)
-						self.game.fire_event(MonsterDead('monster'))
+						self.game.fire_event(MonsterDead(monster.name))
 						for item in monster.drop_all():
 							dest_field_data.items.append(item)
-							self.game.fire_event(DroppedItem('monster', item.item))
+							self.game.fire_event(DroppedItem(monster.name, item.item))
 			elif dest_cell is None:
 				self.game.fire_event(StareIntoVoid())
 			elif dest_cell.passable:
@@ -955,12 +993,12 @@ class MainGameMode(clckwrkbdgr.tui.Mode):
 
 			game.passed_time += 1
 
-			monster_action_range = Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH)
-			monster_zone_topleft = NestedGrid.Coord.from_global(player_pos - monster_action_range, game.scene.world)
-			monster_zone_bottomright = NestedGrid.Coord.from_global(player_pos + monster_action_range, game.scene.world)
-			monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
+			monster_action_range = Rect(
+					player_pos - Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH),
+					Size(1 + MAX_MONSTER_ACTION_LENGTH * 2, 1 + MAX_MONSTER_ACTION_LENGTH * 2),
+					)
 			self.game.already_acted_monsters_from_previous_fields = []
-			for monster_coord, monster in all_monsters(game.scene.world, raw=True, zone_range=monster_zone_range):
+			for monster_coord, monster in self.game.iter_monsters_in_rect(monster_action_range):
 				if monster in self.game.already_acted_monsters_from_previous_fields:
 					continue
 				if isinstance(monster, Player):

@@ -101,7 +101,16 @@ class Butterfly(actors.Actor):
 		super(Butterfly, self).save(stream)
 		stream.write(self.color)
 
+class Rogue(actors.EquippedMonster):
+	_hostile_to = [actors.Monster]
+	_sprite = '@'
+	_name = 'rogue'
+	_attack = 1
+	_max_hp = 10
+	_max_inventory = 26
+
 class Rat(actors.Monster):
+	_hostile_to = [Rogue]
 	_sprite = 'r'
 	_name = 'rat'
 	_max_hp = 10
@@ -113,6 +122,7 @@ class Rat(actors.Monster):
 			]
 
 class PackRat(Rat):
+	_hostile_to = [Rogue]
 	_protection = 1
 	_max_inventory = 10
 	_drops = [
@@ -126,6 +136,7 @@ class PackRat(Rat):
 			]
 
 class Goblin(actors.EquippedMonster):
+	_hostile_to = [Rogue, PackRat]
 	_sprite = 'g'
 	_name = 'goblin'
 	_attack = 1

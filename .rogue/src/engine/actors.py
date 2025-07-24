@@ -69,6 +69,8 @@ class Monster(Actor):
 	drops = classfield('_drops', None) # See .fill_drops() for details
 	base_attack = classfield('_attack', 0) # Base unarmed attack.
 	base_protection = classfield('_protection', 0) # Base protection.
+	hostile_to = classfield('_hostile_to', tuple()) # Classes of monsters to be pursue and/or attack.
+
 	def __init__(self, pos):
 		super(Monster, self).__init__(pos)
 		self.hp = self.max_hp
@@ -128,6 +130,13 @@ class Monster(Actor):
 	def get_protection(self):
 		""" Final protection from damage with all modifiers. """
 		return self.base_protection
+
+	def is_hostile_to(self, other):
+		""" Return True if this monster is hostile towards other monster and can attack it. """
+		for monster_class in self.hostile_to:
+			if isinstance(other, monster_class):
+				return True
+		return False
 
 	def grab(self, *items):
 		""" Adds items to the inventory.
