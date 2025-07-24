@@ -45,6 +45,14 @@ class Wearable(object):
 	"""
 	protection = classfield('_protection', 0) # Base protection from incoming attacks.
 
+class Consumable(object):
+	""" Trait for consumable items that affect consumer.
+	"""
+	def consume(self, actor): # pragma: no cover
+		""" Should affect actor and return list of produced Events.
+		"""
+		raise NotImplementedError()
+
 class ItemAtPos(object): # pragma: no cover -- TODO
 	def __init__(self, pos, item):
 		self.pos = pos

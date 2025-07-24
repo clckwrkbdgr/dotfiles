@@ -227,7 +227,7 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
-			'ConsumeItemEvent(actor=player, item=potion)',
+			'NotConsumable(item=potion)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
@@ -649,19 +649,20 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'ConsumeItemEvent(actor=player, item=potion)',
+			'NotConsumable(item=potion)',
 			])
-		self.assertEqual(len(dungeon.get_player().inventory), 1)
-		self.assertEqual(dungeon.get_player().inventory[0].name, 'healing potion')
+		self.assertEqual(len(dungeon.get_player().inventory), 2)
+		self.assertEqual(dungeon.get_player().inventory[0].name, 'potion')
+		self.assertEqual(dungeon.get_player().inventory[1].name, 'healing potion')
 
 		list(dungeon.process_events(raw=True))
-		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
+		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[1])
 		self.assertEqual(list(map(str, dungeon.events)), [
 			'ConsumeItemEvent(actor=player, item=healing potion)',
 			'HealthEvent(target=player, diff=5)',
 			])
 		self.assertEqual(dungeon.get_player().hp, 6)
-		self.assertEqual(len(dungeon.get_player().inventory), 0)
+		self.assertEqual(len(dungeon.get_player().inventory), 1)
 	def should_equip_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
 		list(dungeon.process_events(raw=True))

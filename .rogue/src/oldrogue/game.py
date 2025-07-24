@@ -48,10 +48,6 @@ class Event:
 	class InventoryFull(events.Event): FIELDS = 'item'
 	class GrabbedItem(events.Event): FIELDS = 'who item'
 
-class Consumable(object):
-	def consume_by(self, who): # pragma: no cover
-		return NotImplemented
-
 class Furniture(appliances.Appliance):
 	""" Any object placed on map that is not a part of the terrain.
 	Like stairs, doors, levers etc or even inert objects like statues.
@@ -310,15 +306,11 @@ class Dungeon(engine.Game):
 		""" Tries to consume item.
 		Returns list of happened events.
 		"""
-		if not isinstance(item, Consumable):
+		try:
+			events = [Event.MonsterConsumedItem(actor, item)]
+			events += actor.consume(item)
+		except actor.ItemNotFit as e:
 			return [Event.NotConsumable(item)]
-		events = []
-		consume_events = item.consume_by(actor)
-		if consume_events is None:
-			return events
-		events.extend(consume_events)
-		actor.drop(item)
-		events.append(Event.MonsterConsumedItem(actor, item))
 		return events
 	def drop_item(self, who, item):
 		item = who.drop(item)

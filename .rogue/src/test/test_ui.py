@@ -796,7 +796,7 @@ class TestCurses(unittest.TestCase):
 	def should_consume_items(self):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')
-		ui, loop = self._init(dungeon, 'le' + chr(Key.ESCAPE) + 'geja')
+		ui, loop = self._init(dungeon, 'le' + chr(Key.ESCAPE) + 'gejaeb')
 
 		self.assertTrue(loop.action())
 		loop.redraw()
@@ -852,6 +852,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.assertTrue(loop.action())
+		dungeon.scene.get_player().grab(mock_dungeon.HealingPotion())
 		loop.redraw()
 		DISPLAYED_LAYOUT = [
 				'    #####      #### ',
@@ -869,7 +870,7 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player ^^ potion.                                                               '),
-			('addstr', 24, 0, 'hp: 10/10 inv:  !                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10 inv: !!                                                            [?]'),
 			('refresh',),
 			])
 
@@ -879,6 +880,7 @@ class TestCurses(unittest.TestCase):
 			('clear',),
 			('addstr', 0, 0, 'Select item to consume:',),
 			('addstr', 1, 0, 'a - potion',),
+			('addstr', 2, 0, 'b - healing potion',),
 			('refresh',),
 			])
 
@@ -888,6 +890,7 @@ class TestCurses(unittest.TestCase):
 			('clear',),
 			('addstr', 0, 0, 'No such item (j)',),
 			('addstr', 1, 0, 'a - potion',),
+			('addstr', 2, 0, 'b - healing potion',),
 			('refresh',),
 			])
 
@@ -909,8 +912,41 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'player <~ potion.                                                               '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 0, 0, 'X potion.                                                                       '),
+			('addstr', 24, 0, 'hp: 10/10 inv: !!                                                            [?]'),
+			('refresh',),
+			])
+
+		self.assertTrue(loop.action())
+		loop.redraw()
+		self.assertEqual(ui.window.get_calls(), [
+			('clear',),
+			('addstr', 0, 0, 'Select item to consume:',),
+			('addstr', 1, 0, 'a - potion',),
+			('addstr', 2, 0, 'b - healing potion',),
+			('refresh',),
+			])
+
+		item = dungeon.scene.get_player().inventory[1]
+		self.assertFalse(loop.action())
+		loop.redraw()
+		DISPLAYED_LAYOUT = [
+				'    #####      #### ',
+				'     ...   ## ..... ',
+				'      ...  .#......#',
+				'     ##..##.#......#',
+				'     #.............#',
+				'#    #.............#',
+				'#.........@........#',
+				'#..................#',
+				'#..................#',
+				' ################## ',
+				]
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
+			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
+			] + [
+			('addstr', 0, 0, 'player <~ healing potion. player+0hp.                                           '),
+			('addstr', 24, 0, 'hp: 10/10 inv:  !                                                            [?]'),
 			('refresh',),
 			])
 	def should_drop_loot_from_monsters(self):

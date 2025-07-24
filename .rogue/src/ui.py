@@ -145,6 +145,9 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	@Events.on(game.ConsumeItemEvent)
 	def on_consuming(self, game, event):
 		return '{0} <~ {1}.'.format(event.actor.name, event.item.name)
+	@Events.on(game.NotConsumable)
+	def on_not_consuming(self, game, event):
+		return 'X {0}.'.format(event.item.name)
 	@Events.on(game.EquipItemEvent)
 	def on_equipping(self, game, event):
 		return '{0} <+ {1}.'.format(event.actor.name, event.item.name)

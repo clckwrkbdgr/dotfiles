@@ -21,10 +21,6 @@ class Version(Enum):
 	WIELDING
 	"""
 
-class Consumable(object):
-	def apply_effect(self, game, monster): # pragma: no cover
-		raise NotImplementedError()
-
 class DiscoverEvent(Event):
 	""" Something new is discovered on the map! """
 	FIELDS = 'obj'
@@ -55,6 +51,9 @@ class DropItemEvent(Event):
 class ConsumeItemEvent(Event):
 	""" Consumes consumable item. """
 	FIELDS = 'actor item'
+class NotConsumable(Event):
+	""" Item is not consumable. """
+	FIELDS = 'item'
 class EquipItemEvent(Event):
 	""" Equips item. """
 	FIELDS = 'actor item'
@@ -423,6 +422,8 @@ class Game(engine.Game):
 		"""
 		diff = target.affect_health(diff)
 		self.fire_event(HealthEvent(target, diff))
+		self.check_alive(target)
+	def check_alive(self, target):
 		if not target.is_alive():
 			self.fire_event(DeathEvent(target))
 			for item in target.drop_all():
@@ -455,11 +456,15 @@ class Game(engine.Game):
 		Applies corresponding effects, if item has any.
 		Produces events.
 		"""
-		assert item in monster.inventory
-		monster.drop(item)
+		try:
+			events = monster.consume(item)
+		except monster.ItemNotFit as e:
+			self.fire_event(NotConsumable(item))
+			return
 		self.fire_event(ConsumeItemEvent(monster, item))
-		if isinstance(item, Consumable):
-			item.apply_effect(self, monster)
+		for event in events:
+			self.fire_event(event)
+		self.check_alive(monster)
 	def drop_item(self, monster, item):
 		""" Drops item from inventory (item is removed).
 		Produces events.

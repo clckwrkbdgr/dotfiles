@@ -2,7 +2,7 @@ from clckwrkbdgr import unittest
 import textwrap, functools
 from clckwrkbdgr.math import Point, Matrix, get_neighbours
 from .. import game
-from ..game import Item, Wearable, Consumable, LevelPassage
+from ..game import Item, Wearable, LevelPassage
 from ..game import Player
 from ..game import Scene, Dungeon
 from ...engine import events
@@ -32,15 +32,15 @@ class ThermopticCamo(Item, Wearable):
 class HazmatSuit(Item, Wearable):
 	_protection = 1
 
-class StimPack(Item, Consumable):
-	def consume_by(self, monster):
+class StimPack(Item, items.Consumable):
+	def consume(self, monster):
 		monster.affect_health(25)
 		return []
 
-class SmartStimPack(Item, Consumable):
-	def consume_by(self, monster):
+class SmartStimPack(Item, items.Consumable):
+	def consume(self, monster):
 		if monster.hp >= monster.max_hp:
-			return None
+			return []
 		else: # pragma: no cover
 			raise RuntimeError("Should never reach here.")
 
@@ -99,8 +99,9 @@ class TestMonster(unittest.TestCase):
 		self.assertEqual(jc.hp, jc.max_hp)
 
 		self.assertEqual(_R(dungeon.consume_item(jc, smart_stimpack)), _R([
+			game.Event.MonsterConsumedItem(jc, smart_stimpack),
 			]))
-		self.assertTrue(jc.has_item(SmartStimPack))
+		self.assertFalse(jc.has_item(SmartStimPack))
 
 class MockGenerator:
 	MAIN_LEVEL = textwrap.dedent("""\

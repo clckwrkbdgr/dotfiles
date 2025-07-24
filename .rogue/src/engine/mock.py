@@ -35,9 +35,12 @@ class Gold(items.Item):
 	_sprite = '*'
 	_name = 'gold'
 
-class Potion(items.Item):
+class Potion(items.Item, items.Consumable):
 	_sprite = '!'
 	_name = 'potion'
+	def consume(self, target):
+		diff = target.affect_health(+5)
+		return [Healed(target, diff)]
 
 class Dagger(items.Item):
 	_sprite = '('
@@ -151,7 +154,10 @@ class DropItem(events.Event):
 	FIELDS = 'who where what'
 class Hit(events.Event):
 	FIELDS = ('actor', 'target')
+class Healed(events.Event):
+	FIELDS = ('target', 'diff')
 
+events.Events.on(Healed)(lambda event: '{0} gains {1}hp.')
 events.Events.on(NothingToDrop)(lambda event: 'Nothing to drop.')
 events.Events.on(DropItem)(lambda event: '{0} drops {2} on {1}'.format(event.who, event.where, event.what))
 class Handler(object):

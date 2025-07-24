@@ -13,11 +13,12 @@ class Potion(items.Item):
 	_name = 'potion'
 	_sprite = '!'
 
-class HealingPotion(items.Item, game.Consumable):
+class HealingPotion(items.Item, items.Consumable):
 	_name = 'healing potion'
 	_sprite = '!'
-	def apply_effect(self, game, monster):
-		game.affect_health(monster, +5)
+	def consume(self, target):
+		diff = target.affect_health(+5)
+		return [game.HealthEvent(target, diff)]
 
 class Money(items.Item):
 	_name = 'money'

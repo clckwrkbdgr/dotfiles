@@ -63,6 +63,9 @@ class Monster(Actor):
 	and inventory of Items (can carry/drop items).
 	"""
 	class InventoryFull(RuntimeError): pass
+	class ItemNotFit(RuntimeError):
+		def __init__(self, required_trait):
+			self.required_trait = required_trait
 
 	max_hp = classfield('_max_hp', 1)
 	max_inventory = classfield('_max_inventory', 1)
@@ -200,6 +203,16 @@ class Monster(Actor):
 		while self.inventory:
 			item = self.inventory.pop()
 			yield items.ItemAtPos(self.pos, item)
+	def consume(self, item):
+		""" Applies effect (by calling item.consume) to the monster.
+		Removes item from inventory.
+		Returns events produced by item.consume()
+		If item is not Consumable, raises ItemNotFit.
+		"""
+		if not isinstance(item, items.Consumable):
+			raise self.ItemNotFit(items.Consumable)
+		item = self._resolve_item(item, remove=True)
+		return item.consume(self)
 
 class EquippedMonster(Monster):
 	""" Monster with ability to equip items:
@@ -207,9 +220,6 @@ class EquippedMonster(Monster):
 	Equipped items are removed from inventory and thus saved separately.
 	"""
 	class SlotIsTaken(RuntimeError): pass
-	class ItemNotFit(RuntimeError):
-		def __init__(self, required_trait):
-			self.required_trait = required_trait
 
 	def __init__(self, pos):
 		super(EquippedMonster, self).__init__(pos)

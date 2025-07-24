@@ -47,10 +47,11 @@ class Potion(src.engine.items.Item):
 	_name = 'potion'
 	_sprite = '!'
 
-class Healing(src.game.Consumable):
+class Healing(src.engine.items.Consumable):
 	healing = 0
-	def apply_effect(self, game, monster):
-		game.affect_health(monster, self.healing)
+	def consume(self, target):
+		diff = target.affect_health(self.healing)
+		return [HealthEvent(target, diff)]
 
 class HealingPotion(src.engine.items.Item, Healing):
 	_name = 'healing potion'

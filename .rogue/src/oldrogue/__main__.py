@@ -22,7 +22,7 @@ from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 from . import game
-from .game import Version, Item, Consumable, Wearable, Player, Room, Tunnel, Scene, Furniture, LevelPassage, GodMode, Dungeon, Event
+from .game import Version, Item, Wearable, Player, Room, Tunnel, Scene, Furniture, LevelPassage, GodMode, Dungeon, Event
 from . import pcg
 from ..engine import events
 
@@ -83,10 +83,10 @@ class McGuffin(Item):
 	_sprite = "*"
 	_name = "mcguffin"
 
-class HealingPotion(Item, Consumable):
+class HealingPotion(Item, items.Consumable):
 	_sprite = "!"
 	_name = "potion"
-	def consume_by(self, who):
+	def consume(self, who):
 		who.affect_health(10)
 		return [DrinksHealingPotion(Who=who.name.title())]
 

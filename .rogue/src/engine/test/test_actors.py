@@ -205,6 +205,14 @@ class TestMonsters(unittest.TestCase):
 			Gold(),
 			])))
 		self.assertEqual(rat.drops, [])
+	def should_consume_item(self):
+		rat = Rat(Point(1, 1))
+		rat.hp = 6
+		potion = Potion()
+		rat.grab(potion)
+		self.assertEqual(repr(rat.consume(potion)), repr([Healed(rat, +4)]))
+		self.assertEqual(rat.hp, 10)
+		self.assertFalse(rat.inventory)
 
 class TestEquippedMonsters(unittest.TestCase):
 	def should_load_equpped_monster(self):
