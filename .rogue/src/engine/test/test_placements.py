@@ -47,6 +47,36 @@ class TestAppliancesSavefile(unittest.TestCase):
 		writer.write(appliance)
 		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Statue\x00goddess')
 
+class TestLevelPassages(unittest.TestCase):
+	def should_load_level_passage(self):
+		stream = StringIO(str(VERSION) + '\x00StairsDown\x00next_level\x00enter')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Appliances', {'StairsDown':StairsDown})
+		stairs = reader.read(appliances.Appliance)
+		self.assertEqual(type(stairs), StairsDown)
+		self.assertEqual(stairs.level_id, 'next_level')
+		self.assertEqual(stairs.connected_passage, 'enter')
+	def should_save_level_passage(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		stairs = StairsDown('next_level', 'enter')
+		writer.write(stairs)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00StairsDown\x00next_level\x00enter')
+	def should_travel_via_level_passage(self):
+		stairs = StairsDown('next_level', 'enter')
+		rogue = Rogue(None)
+		self.assertEqual(stairs.use(rogue), ('next_level', 'enter'))
+	def should_travel_via_locked_level_passage(self):
+		stairs = StairsUp('surface', 'entrance')
+		rogue = Rogue(None)
+
+		with self.assertRaises(StairsUp.Locked) as e:
+			stairs.use(rogue)
+		self.assertEqual(str(e.exception), 'Locked; required Gold to unlock')
+
+		rogue.grab(Gold())
+		self.assertEqual(stairs.use(rogue), ('surface', 'entrance'))
+
 class TestApplianceAtPosSavefile(unittest.TestCase):
 	def should_load_appliance_at_pos(self):
 		stream = StringIO(str(VERSION) + '\x00Statue\x00goddess\x001\x001')

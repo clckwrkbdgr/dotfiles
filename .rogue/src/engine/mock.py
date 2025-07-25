@@ -73,6 +73,19 @@ class Tree(appliances.Appliance):
 	_sprite = '&'
 	_name = 'tree'
 
+class StairsUp(appliances.LevelPassage):
+	_sprite = '>'
+	_name = 'stairs'
+	_id = 'enter'
+	_can_go_up = True
+	_unlocking_item = Gold
+
+class StairsDown(appliances.LevelPassage):
+	_sprite = '>'
+	_name = 'stairs'
+	_id = 'exit'
+	_can_go_up = False
+
 class Statue(appliances.Appliance):
 	_sprite = '&'
 	_name = 'statue'

@@ -48,35 +48,6 @@ class Event:
 	class InventoryFull(events.Event): FIELDS = 'item'
 	class GrabbedItem(events.Event): FIELDS = 'who item'
 
-class Furniture(appliances.Appliance):
-	""" Any object placed on map that is not a part of the terrain.
-	Like stairs, doors, levers etc or even inert objects like statues.
-	"""
-	class Locked(Exception): # pragma: no cover
-		""" Should be thrown when object is locked and requires specific item. """
-		def __init__(self, key_item_type):
-			self.key_item_type = key_item_type
-		def __str__(self):
-			return "Locked; required {0} to unlock".format(self.key_item_type)
-
-class LevelPassage(Furniture):
-	""" Object that allows travel between levels.
-	Each passage should be connected to another passage on target level.
-	Passages on the same level are differentiated by ID.
-	Passage ID can be an arbitrary value.
-	"""
-	id = classfield('_id', 'enter')
-	can_go_down = classfield('_can_go_down', False)
-	can_go_up = classfield('_can_go_up', False)
-	def __init__(self, level_id, connected_passage): # pragma: no cover
-		self.level_id = level_id
-		self.connected_passage = connected_passage
-	def use(self, who): # pragma: no cover
-		""" Additional actions performed before actual travelling.
-		By default there are none.
-		"""
-		pass
-
 class Player(actors.EquippedMonster):
 	_name = 'player'
 
@@ -267,7 +238,7 @@ class Dungeon(engine.Game):
 			self.levels[level_id] = self.generator.build_level(level_id)
 			self.visited_rooms[level_id] = Matrix((3, 3), False)
 			self.visited_tunnels[level_id] = [set() for tunnel in self.levels[level_id].tunnels]
-		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, LevelPassage) and obj.id == connected_passage), None)
+		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, appliances.LevelPassage) and obj.id == connected_passage), None)
 		assert stairs is not None, "No stairs with id {0}".format(repr(connected_passage))
 		self.current_level_id = level_id
 		self.scene = self.levels[self.current_level_id]

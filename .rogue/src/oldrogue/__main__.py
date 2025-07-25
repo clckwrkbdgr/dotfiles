@@ -22,9 +22,9 @@ from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 from . import game
-from .game import Version, Item, Wearable, Player, Room, Tunnel, Scene, Furniture, LevelPassage, GodMode, Dungeon, Event
+from .game import Version, Item, Wearable, Player, Room, Tunnel, Scene, GodMode, Dungeon, Event
 from . import pcg
-from ..engine import events
+from ..engine import events, appliances
 
 class MakeEntity:
 	""" Creates builders for bare-properties-based classes to create subclass in one line. """
@@ -57,23 +57,23 @@ class EntityClassDistribution:
 			value = self.prob
 		return [(value, entity_class) for entity_class in self.classes]
 
-class StairsUp(LevelPassage):
+class StairsUp(appliances.LevelPassage):
 	_sprite = '<'
 	_name = 'stairs up'
 	_id = 'enter'
 	_can_go_up = True
 
-class DungeonGates(LevelPassage):
+class DungeonGates(appliances.LevelPassage):
 	_sprite = '<'
 	_name = 'exit from the dungeon'
 	_id = 'enter'
 	_can_go_up = True
+	_unlocking_item = McGuffin
 	def use(self, who):
-		if who.has_item(McGuffin):
+		if super().use(who):
 			raise GameCompleted()
-		raise Furniture.Locked(McGuffin)
 
-class StairsDown(LevelPassage):
+class StairsDown(appliances.LevelPassage):
 	_sprite = '>'
 	_name = 'stairs down'
 	_id = 'exit'
@@ -450,7 +450,7 @@ class MainGame(tui.app.MVC):
 	def descend(self):
 		""" Go down. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(dungeon.get_player().pos)), None)
+		stairs_here = next(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			dungeon.use_stairs(dungeon.get_player(), stairs_here)
 			dungeon.fire_event(GoingDown())
@@ -461,7 +461,7 @@ class MainGame(tui.app.MVC):
 	def ascend(self):
 		""" Go up. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, LevelPassage) and obj.can_go_up, dungeon.scene.iter_appliances_at(dungeon.get_player().pos)), None)
+		stairs_here = next(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_up, dungeon.scene.iter_appliances_at(dungeon.get_player().pos)), None)
 		if stairs_here:
 			try:
 				dungeon.use_stairs(dungeon.get_player(), stairs_here)

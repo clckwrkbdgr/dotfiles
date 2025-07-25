@@ -2,18 +2,18 @@ from clckwrkbdgr import unittest
 import textwrap, functools
 from clckwrkbdgr.math import Point, Matrix, get_neighbours
 from .. import game
-from ..game import Item, Wearable, LevelPassage
+from ..game import Item, Wearable
 from ..game import Player
 from ..game import Scene, Dungeon
 from ...engine import events
-from ...engine import items, actors
+from ...engine import items, actors, appliances
 
-class Elevator(LevelPassage):
+class Elevator(appliances.LevelPassage):
 	_sprite = '>'
 	_can_go_down = True
 	_id = 'basement'
 
-class Ladder(LevelPassage):
+class Ladder(appliances.LevelPassage):
 	_sprite = '<'
 	_can_go_up = True
 	_id = 'roof'
