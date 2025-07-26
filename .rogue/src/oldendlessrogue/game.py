@@ -3,6 +3,7 @@ trace = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
 from clckwrkbdgr.math.auto import Autoexplorer
+from ..engine import ui
 
 class DungeonExplorer(Autoexplorer): # pragma: no cover
 	def __init__(self, dungeon):
@@ -36,25 +37,25 @@ Keys.map('b', Point(-1, +1))
 Keys.map('n', Point(+1, +1))
 Keys.map(clckwrkbdgr.tui.Key.ESCAPE, 'ESC')
 
-class Game(clckwrkbdgr.tui.Mode):
+class Game(ui.MainGame):
 	KEYMAPPING = Keys
 	VIEW_CENTER = Point(12, 12)
 
 	def __init__(self, dungeon, autoexplorer=None):
-		self.dungeon = dungeon
+		super(Game, self).__init__(dungeon)
+		self.dungeon = self.game
 		self.autoexplore = None
 		self.autoexplorer_class = autoexplorer or DungeonExplorer
+	def get_viewrect(self):
+		return Rect(self.dungeon.scene.get_player().pos - self.VIEW_CENTER, Size(25, 25))
+	def get_sprite(self, pos, cell_info):
+		terrain, _1, _2, monsters = cell_info
+		sprite = terrain.sprite
+		if monsters:
+			sprite = monsters[-1].sprite
+		return ui.Sprite(sprite, None)
 	def redraw(self, ui):
-		view_rect = Rect(self.dungeon.scene.get_player().pos - self.VIEW_CENTER, Size(25, 25))
-		for pos, (terrain, _1, _2, monsters) in self.dungeon.scene.iter_cells(view_rect):
-			sprite = terrain.sprite
-			if monsters:
-				sprite = monsters[-1].sprite
-			ui.print_char(
-					pos.x - view_rect.topleft.x,
-					pos.y - view_rect.topleft.y,
-					sprite,
-					)
+		self.draw_map(ui)
 		ui.print_line(0, 27, 'Time: {0}'.format(self.dungeon.time))
 		ui.print_line(1, 27, 'X:{x} Y:{y}  '.format(x=self.dungeon.scene.get_player().pos.x, y=self.dungeon.scene.get_player().pos.y))
 		ui.print_line(24, 27, '[autoexploring, press ESC...]' if self.autoexplore else '                             ')

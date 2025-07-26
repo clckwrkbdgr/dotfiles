@@ -20,6 +20,8 @@ import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.te
 from src.engine.items import Item
 from src.engine.terrain import Terrain
 from src.engine.actors import Monster
+from src.engine import ui
+from src.engine.ui import Sprite
 
 SAVEFILE_VERSION = 8
 
@@ -33,8 +35,6 @@ MOVEMENT = {
 		'b' : Point(-1, +1),
 		'n' : Point(+1, +1),
 		}
-
-Sprite = namedtuple('Sprite', 'sprite color')
 
 class Bog(Terrain):
 	_sprite = Sprite('~', 'green')
@@ -743,32 +743,32 @@ def main(ui):
 		savefile.unlink()
 
 Keys = clckwrkbdgr.tui.Keymapping()
-class MainGameMode(clckwrkbdgr.tui.Mode):
+class MainGameMode(ui.MainGame):
 	KEYMAPPING = Keys
 	def __init__(self, game):
-		self.game = game
+		super(MainGameMode, self).__init__(game)
 		self.viewport = Rect((0, 0), (61, 23))
 		self.center = Point(*(self.viewport.size // 2))
 		self.centered_viewport = Rect((-self.center.x, -self.center.y), self.viewport.size)
-		self.messages = []
-	def redraw(self, ui):
-		game = self.game
-		view_rect = Rect(
-				game.scene.get_player_coord().get_global(game.scene.world) + self.centered_viewport.topleft,
+	def get_viewrect(self):
+		return Rect(
+				self.game.scene.get_player_coord().get_global(self.game.scene.world) + self.centered_viewport.topleft,
 				self.centered_viewport.size,
 				)
-		for _pos, (_terrain, _objects, _items, _monsters) in game.scene.iter_cells(view_rect):
-			if _monsters:
-				entity = _monsters[-1]
-			elif _items:
-				entity = _items[-1]
-			elif _objects:
-				entity = _objects[-1]
-			else:
-				entity = _terrain
-			sprite = entity.sprite
-			screen_pos = _pos - view_rect.topleft
-			ui.print_char(screen_pos.x, screen_pos.y, sprite.sprite, sprite.color)
+	def get_sprite(self, _pos, cell_info):
+		_terrain, _objects, _items, _monsters = cell_info
+		if _monsters:
+			entity = _monsters[-1]
+		elif _items:
+			entity = _items[-1]
+		elif _objects:
+			entity = _objects[-1]
+		else:
+			entity = _terrain
+		return entity.sprite
+	def redraw(self, ui):
+		game = self.game
+		self.draw_map(ui)
 
 		hud_pos = self.viewport.right + 1
 		for row in range(5):

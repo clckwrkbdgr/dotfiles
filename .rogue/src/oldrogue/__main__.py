@@ -24,7 +24,7 @@ trace = logging.getLogger('rogue')
 from . import game
 from .game import Version, Item, Wearable, Player, Room, Tunnel, Scene, GodMode, Dungeon, Event
 from . import pcg
-from ..engine import events, appliances
+from ..engine import events, appliances, ui
 
 class MakeEntity:
 	""" Creates builders for bare-properties-based classes to create subclass in one line. """
@@ -401,23 +401,30 @@ class StatusLine(tui.widgets.StatusLine):
 
 Controls = AutoRegistry()
 
-class MainGame(tui.app.MVC):
+class MainGame(ui.MainGame):
 	_full_redraw = True
+	def get_viewrect(self):
+		return None
+	def get_map_shift(self):
+		return Point(0, 1)
+	def get_sprite(self, pos, cell_info):
+		dungeon = self.data
+		terrain, objects, items, monsters = cell_info
+		is_visible = dungeon.is_visible(pos) or dungeon.god.vision
+		if monsters and is_visible:
+			return monsters[-1].sprite
+		elif items and (dungeon.is_remembered(pos) or is_visible):
+			return items[-1].sprite
+		elif objects and (dungeon.is_remembered(pos) or is_visible):
+			return objects[-1].sprite
+		terrain, remembered = terrain
+		if is_visible:
+			return terrain
+		elif dungeon.is_remembered(pos):
+			return remembered
+		return None
 	def _view(self, window):
-		for pos, (terrain, objects, items, monsters) in self.data.scene.iter_cells(None):
-			is_visible = dungeon.is_visible(pos) or dungeon.god.vision
-			if monsters and is_visible:
-				window.addstr(1 + pos.y, pos.x, monsters[-1].sprite)
-			elif items and (dungeon.is_remembered(pos) or is_visible):
-				window.addstr(1 + pos.y, pos.x, items[-1].sprite)
-			elif objects and (dungeon.is_remembered(pos) or is_visible):
-				window.addstr(1 + pos.y, pos.x, objects[-1].sprite)
-			else:
-				terrain, remembered = terrain
-				if is_visible:
-					window.addstr(1 + pos.y, pos.x, terrain)
-				elif dungeon.is_remembered(pos):
-					window.addstr(1 + pos.y, pos.x, remembered)
+		self.draw_map(ui)
 	def _control(self, ch):
 		self.step_is_over = False
 		try:

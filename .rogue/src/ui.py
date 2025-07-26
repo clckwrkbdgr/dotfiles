@@ -11,6 +11,7 @@ import clckwrkbdgr.tui
 import clckwrkbdgr.text
 from clckwrkbdgr.tui import Key, Keymapping
 from .engine.events import Events
+from .engine import ui
 
 DIRECTION = {
 	'h' : Direction.LEFT,
@@ -24,37 +25,42 @@ DIRECTION = {
 	}
 
 Keys = Keymapping()
-class MainGame(clckwrkbdgr.tui.Mode):
+class MainGame(ui.MainGame):
 	KEYMAPPING = Keys
 	def __init__(self, game):
-		self.game = game
+		super(MainGame, self).__init__(game)
 		self.aim = None
-		self.messages = []
 
 	def nodelay(self):
 		return self.game.in_automovement()
+	def get_map_shift(self):
+		return Point(0, 1)
+	def get_viewrect(self):
+		return self.game.get_viewport()
+	def get_sprite(self, pos, cell_info):
+		game = self.game
+		cell, objects, items, monsters = cell_info
+		sprite = ' '
+		if game.god.vision or game.vision.field_of_view.is_visible(pos.x, pos.y):
+			if monsters:
+				sprite = monsters[-1].sprite
+			elif items:
+				sprite = items[-1].sprite
+			elif objects:
+				sprite = objects[-1].sprite
+			else:
+				sprite = cell.sprite
+		elif objects and game.vision.visited.cell(pos):
+			sprite = objects[-1].sprite
+		elif game.vision.visited.cell(pos) and cell.remembered:
+			sprite = cell.remembered
+		return ui.Sprite(sprite or ' ', None)
 	def redraw(self, ui):
 		""" Redraws game completely. """
 		game = self.game
 		ui.cursor(bool(self.aim))
 		Log.debug('Redrawing interface.')
-		for pos, cell_info in game.scene.iter_cells(game.get_viewport()):
-			cell, objects, items, monsters = cell_info
-			sprite = ' '
-			if game.god.vision or game.vision.field_of_view.is_visible(pos.x, pos.y):
-				if monsters:
-					sprite = monsters[-1].sprite
-				elif items:
-					sprite = items[-1].sprite
-				elif objects:
-					sprite = objects[-1].sprite
-				else:
-					sprite = cell.sprite
-			elif objects and game.vision.visited.cell(pos):
-				sprite = objects[-1].sprite
-			elif game.vision.visited.cell(pos) and cell.remembered:
-				sprite = cell.remembered
-			ui.print_char(pos.x, 1+pos.y, sprite or ' ')
+		self.draw_map(ui)
 
 		for callback, event in game.process_events(raw=True, bind_self=self):
 			if not callback:

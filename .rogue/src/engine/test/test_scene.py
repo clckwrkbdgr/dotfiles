@@ -7,22 +7,9 @@ from ..mock import *
 
 class TestScene(unittest.TestCase):
 	def _generate(self):
-		rng = RNG(0)
-		builder = DungeonFloor(rng, Size(10, 10))
-		builder.map_key(**({
-			'exit':lambda: 'exit',
-			}))
-		builder.map_key(
-				butterfly = lambda pos, color: Butterfly(pos, color=color),
-				note = lambda text: ScribbledNote(text),
-				)
-		builder.generate()
-		scene = Dungeon()
-		scene.cells = builder.make_grid()
-		scene.appliances = list(_ for _ in builder.make_appliances() if _ not in ('start', 'exit'))
-		scene.monsters = list(builder.make_actors())
-		scene.items = list(builder.make_items())
-		return scene
+		game = NanoDungeon(RNG(0))
+		game.generate()
+		return game.scene
 	def should_str_cells(self):
 		scene = self._generate()
 		self.assertEqual(scene.str_cell((0, 0)), '#')
@@ -40,7 +27,7 @@ class TestScene(unittest.TestCase):
 				#........#
 				#........#
 				##.~.....#
-				#........#
+				#...@....#
 				#..b.....#
 				##########
 				"""))

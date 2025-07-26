@@ -1,8 +1,9 @@
-from clckwrkbdgr.math import Point, Rect
+from clckwrkbdgr.math import Point, Rect, Size
 from clckwrkbdgr.math.grid import Matrix
 from . import terrain, actors, items, appliances
 from . import builders
 from . import scene, events
+from . import _base
 
 ### Terrain. ###################################################################
 
@@ -187,27 +188,33 @@ class Dungeon(scene.Scene):
 		self.items = []
 		self.monsters = []
 	def get_cell_info(self, pos, context=None):
+		if not self.cells.valid(pos): # pragma: no cover
+			return (None, [], [], [])
 		return (
 				self.cells.cell(pos),
 				list(self.iter_appliances_at(pos)),
 				list(self.iter_items_at(pos)),
 				list(self.iter_actors_at(pos, with_player=True)),
 				)
-	def iter_cells(self, view_rect): # pragma: no cover
+	def get_player(self):
+		for monster in self.monsters:
+			if isinstance(monster, Rogue):
+				return monster
+	def iter_cells(self, view_rect):
 		for y in range(view_rect.height):
 			for x in range(view_rect.width):
 				pos = view_rect.topleft + Point(x, y)
 				yield pos, self.get_cell_info(pos)
-	def iter_items_at(self, pos): # pragma: no cover
+	def iter_items_at(self, pos):
 		for item_pos, item in self.items:
 			if item_pos == pos:
 				yield item
-	def iter_actors_at(self, pos, with_player=False): # pragma: no cover
+	def iter_actors_at(self, pos, with_player=False):
 		""" Yield all monsters at given cell. """
 		for monster in self.monsters:
 			if monster.pos == pos:
 				yield monster
-	def iter_appliances_at(self, pos): # pragma: no cover
+	def iter_appliances_at(self, pos):
 		for obj_pos, obj in self.appliances:
 			if obj_pos == pos:
 				yield obj
@@ -293,3 +300,26 @@ class WeightedSquat(Squat):
 			(1, ('healing_potion',)),
 			]
 	DISTRIBUTION = builders.WeightedDistribution
+
+### Game. ######################################################################
+
+class NanoDungeon(_base.Game):
+	def generate(self):
+		builder = DungeonFloor(self.rng, Size(10, 10))
+		builder.map_key(**({
+			'exit':lambda: 'exit',
+			}))
+		builder.map_key(
+				butterfly = lambda pos, color: Butterfly(pos, color=color),
+				note = lambda text: ScribbledNote(text),
+				)
+		builder.generate()
+		scene = Dungeon()
+		scene.cells = builder.make_grid()
+		scene.appliances = list(_ for _ in builder.make_appliances() if _ not in ('start', 'exit'))
+		scene.monsters = list(builder.make_actors())
+		scene.items = list(builder.make_items())
+		for _ in range(6):
+			builder.point() # Skip not interesting position.
+		scene.monsters.append(Rogue(builder.point()))
+		self.scene = scene
