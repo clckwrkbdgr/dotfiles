@@ -70,17 +70,7 @@ class MainGame(ui.MainGame):
 			if not result:
 				continue
 			self.messages.append(result)
-		if self.messages:
-			to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=80)
-			if not to_remove:
-				del self.messages[:]
-			elif to_remove > 0: # pragma: no cover -- TODO
-				self.messages = self.messages[to_remove:]
-			else: # pragma: no cover -- TODO
-				self.messages[0] = self.messages[0][-to_remove:]
-			ui.print_line(0, 0, (message_line + ' '*80)[:80])
-		else:
-			ui.print_line(0, 0, " " * 80)
+		self.print_messages(ui, Point(0, 0))
 
 		status = []
 		player = game.scene.get_player()

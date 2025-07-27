@@ -788,17 +788,8 @@ class MainGameMode(ui.MainGame):
 		if item_here:
 			ui.print_line(4, hud_pos, "here:{0}".format(item_here.sprite.sprite))
 
-		ui.print_line(24, 0, " " * 80)
 		self.messages.extend(game.process_events())
-		if self.messages:
-			to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=80)
-			if not to_remove:
-				del self.messages[:]
-			elif to_remove > 0:
-				self.messages = self.messages[to_remove:]
-			else:
-				self.messages[0] = self.messages[0][-to_remove:]
-			ui.print_line(24, 0, message_line)
+		self.print_messages(ui, Point(24, 0))
 	def pre_action(self):
 		self.step_taken = False
 		return True

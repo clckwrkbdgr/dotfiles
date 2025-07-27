@@ -11,6 +11,9 @@ class MockUI:
 		self.screen = Matrix((30, 7), ' ')
 	def print_char(self, x, y, sprite, color):
 		self.screen.set_cell((x, y), sprite)
+	def print_line(self, y, x, line):
+		for i, c in enumerate(line):
+			self.screen.set_cell((x + i, y), c)
 
 class MockMainGame(ui.MainGame):
 	def get_map_shift(self):
@@ -40,3 +43,36 @@ class TestMainGame(unittest.TestCase):
 		_#####                         _
 		_                              _
 		""").replace('_', ''))
+	def should_print_messages(self):
+		self.maxDiff = None
+		game = NanoDungeon(RNG(0))
+		game.generate()
+		mode = MockMainGame(game)
+		mode.messages = [
+		'Hello, this is the first message and it is long.'
+		'Second, also long...',
+		'Third.',
+		'Last.',
+		]
+		mock_ui = MockUI()
+
+		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
+		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
+			"Hello, this is the first...   \n"
+			]))
+		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
+		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
+			" message and it is long....   \n"
+			]))
+		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
+		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
+			"Second, also long......       \n"
+			]))
+		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
+		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
+			"Third. Last.                  \n"
+			]))
+		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
+		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
+			"                              \n"
+			]))

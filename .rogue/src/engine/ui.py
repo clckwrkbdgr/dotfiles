@@ -40,3 +40,19 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			viewport_pos = world_pos - view_rect.topleft
 			screen_pos = viewport_pos + self.get_map_shift()
 			ui.print_char(screen_pos.x, screen_pos.y, sprite.sprite, sprite.color)
+	def print_messages(self, ui, pos, line_width=80):
+		""" Prints currently collected messages on line at specified pos
+		with specified max. width.
+		Clears line if there are no current messages.
+		"""
+		if not self.messages:
+			ui.print_line(pos.y, pos.x, " " * line_width)
+			return
+		to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=line_width)
+		if not to_remove:
+			del self.messages[:]
+		elif to_remove > 0:
+			self.messages = self.messages[to_remove:]
+		else:
+			self.messages[0] = self.messages[0][-to_remove:]
+		ui.print_line(pos.y, pos.x, message_line.ljust(line_width))
