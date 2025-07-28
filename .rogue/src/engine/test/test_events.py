@@ -16,6 +16,10 @@ class TestEvents(unittest.TestCase):
 		event = DropItem('me', 'grass', 'something')
 		callback = events.Events.get(event)
 		self.assertEqual(callback(event), 'me drops something on grass')
+	def should_handle_unknown_events(self):
+		event = 'UNKNOWN EVENT'
+		callback = events.Events.get(event)
+		self.assertIsNone(callback)
 	def should_handle_event_with_object_method(self):
 		handler = Handler()
 		message = events.Events.process(Hit('player', 'monster'), bind_self=handler)

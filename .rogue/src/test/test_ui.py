@@ -223,14 +223,12 @@ class TestCurses(unittest.TestCase):
 		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
 		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
 
-		dungeon.events.append('GIBBERISH')
-
 		loop.redraw()
 		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
-			('addstr', 0, 0, 'monster! monsters! stairs! Unknown event {0}!                           '.format(repr('GIBBERISH'))),
+			('addstr', 0, 0, 'monster! monsters! stairs!                                                      '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
 			('addstr', 24, 20, '       '),

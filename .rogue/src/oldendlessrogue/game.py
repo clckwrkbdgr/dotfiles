@@ -36,9 +36,8 @@ class Game(ui.MainGame):
 		if monsters:
 			sprite = monsters[-1].sprite
 		return ui.Sprite(sprite, None)
-	def redraw(self, ui):
-		self.draw_map(ui)
-		self.draw_status(ui)
+	def get_message_line_rect(self):
+		return Rect(Point(0, 25), Size(80, 1))
 	def nodelay(self):
 		return self.dungeon.autoexplore
 	def action(self, control):

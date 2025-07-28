@@ -5,7 +5,7 @@ import curses, curses.ascii
 import logging
 Log = logging.getLogger('rogue')
 from . import game
-from clckwrkbdgr.math import Point, Direction, Rect
+from clckwrkbdgr.math import Point, Direction, Rect, Size
 from clckwrkbdgr import utils
 import clckwrkbdgr.tui
 import clckwrkbdgr.text
@@ -46,9 +46,6 @@ class MainGame(ui.MainGame):
 			ui.Indicator((39, 24), 6, lambda self: '[clip]' if self.game.god.noclip else ''),
 			ui.Indicator((77, 24), 3, lambda self: '[?]'),
 			]
-	def __init__(self, game):
-		super(MainGame, self).__init__(game)
-		self.aim = None
 
 	def nodelay(self):
 		return self.game.in_automovement()
@@ -74,27 +71,8 @@ class MainGame(ui.MainGame):
 		elif game.vision.visited.cell(pos) and cell.remembered:
 			sprite = cell.remembered
 		return ui.Sprite(sprite or ' ', None)
-	def redraw(self, ui):
-		""" Redraws game completely. """
-		game = self.game
-		ui.cursor(bool(self.aim))
-		Log.debug('Redrawing interface.')
-		self.draw_map(ui)
-
-		for callback, event in game.process_events(raw=True, bind_self=self):
-			if not callback:
-				self.messages.append('Unknown event {0}!'.format(repr(event)))
-				continue
-			result = callback(game, event)
-			if not result:
-				continue
-			self.messages.append(result)
-		self.print_messages(ui, Point(0, 0))
-
-		self.draw_status(ui)
-
-		if self.aim:
-			ui.cursor().move(self.aim.x, 1+self.aim.y)
+	def get_message_line_rect(self):
+		return Rect(Point(0, 0), Size(80, 1))
 	def pre_action(self):
 		return self.game._pre_action()
 	def get_keymapping(self):
@@ -105,48 +83,48 @@ class MainGame(ui.MainGame):
 			return True
 		return not control
 	@Events.on(game.DiscoverEvent)
-	def on_discovering(self, game, event):
+	def on_discovering(self, event):
 		if hasattr(event.obj, 'name'):
 			return '{0}!'.format(event.obj.name)
 		else:
 			return '{0}!'.format(event.obj)
 	@Events.on(game.AttackEvent)
-	def on_attack(self, game, event):
+	def on_attack(self, event):
 		return '{0} x> {1}.'.format(event.actor.name, event.target.name)
 	@Events.on(game.HealthEvent)
-	def on_health_change(self, game, event):
+	def on_health_change(self, event):
 		return '{0}{1:+}hp.'.format(event.target.name, event.diff)
 	@Events.on(game.DeathEvent)
-	def on_death(self, game, event):
+	def on_death(self, event):
 		return '{0} dies.'.format(event.target.name)
 	@Events.on(game.MoveEvent)
-	def on_movement(self, game, event):
-		if event.actor != game.scene.get_player():
+	def on_movement(self, event):
+		if event.actor != self.game.scene.get_player():
 			return '{0}...'.format(event.actor.name)
 	@Events.on(game.DescendEvent)
-	def on_descending(self, game, event):
+	def on_descending(self, event):
 		return '{0} V...'.format(event.actor.name)
 	@Events.on(game.BumpEvent)
-	def on_bumping(self, game, event):
-		if event.actor != game.scene.get_player():
+	def on_bumping(self, event):
+		if event.actor != self.game.scene.get_player():
 			return '{0} bumps.'.format(event.actor.name)
 	@Events.on(game.GrabItemEvent)
-	def on_grabbing(self, game, event):
+	def on_grabbing(self, event):
 		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(game.DropItemEvent)
-	def on_dropping(self, game, event):
+	def on_dropping(self, event):
 		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(game.ConsumeItemEvent)
-	def on_consuming(self, game, event):
+	def on_consuming(self, event):
 		return '{0} <~ {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(game.NotConsumable)
-	def on_not_consuming(self, game, event):
+	def on_not_consuming(self, event):
 		return 'X {0}.'.format(event.item.name)
 	@Events.on(game.EquipItemEvent)
-	def on_equipping(self, game, event):
+	def on_equipping(self, event):
 		return '{0} <+ {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(game.UnequipItemEvent)
-	def on_unequipping(self, game, event):
+	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
 	@Keys.bind(None)

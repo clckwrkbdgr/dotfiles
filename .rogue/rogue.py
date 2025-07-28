@@ -782,11 +782,8 @@ class MainGameMode(ui.MainGame):
 		return entity.sprite
 	def item_here(self):
 		return next(self.game.scene.iter_items_at(self.game.scene.get_player_coord()), None)
-	def redraw(self, ui):
-		self.draw_map(ui)
-		self.draw_status(ui)
-		self.messages.extend(self.game.process_events())
-		self.print_messages(ui, Point(0, 23))
+	def get_message_line_rect(self):
+		return Rect(Point(0, 23), Size(80, 1))
 	def pre_action(self):
 		self.step_taken = False
 		return True

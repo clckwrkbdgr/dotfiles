@@ -23,6 +23,8 @@ class MockUI:
 		control = _keymapping.get(tui.Key(key), bind_self=bind_self)
 		assert control is not None, key
 		return control()
+	def cursor(self, value=None):
+		pass
 
 class MockExplorer:
 	def __init__(self, controls):
@@ -96,6 +98,7 @@ class TestGame(unittest.TestCase):
 			0: 'Time: 0                      ',
 			1: 'X:0 Y:0                      ',
 			24: '                             ',
+			25: ' '*80,
 			})
 	def should_control_dungeon_via_ui(self):
 		ui = MockUI('jjnlq')
@@ -114,6 +117,7 @@ class TestGame(unittest.TestCase):
 			0: 'Time: 4                      ',
 			1: 'X:1 Y:3                      ',
 			24: '                             ',
+			25: ' '*80,
 			})
 	def should_control_dungeon_via_autoexplorer(self):
 		autoexplorer_controls = [Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0)]
@@ -134,4 +138,5 @@ class TestGame(unittest.TestCase):
 			0: 'Time: 4                      ',
 			1: 'X:1 Y:3                      ',
 			24: '                             ',
+			25: ' '*80,
 			})

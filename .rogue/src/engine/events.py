@@ -1,3 +1,5 @@
+import six, inspect
+
 class Event(object):
 	""" Base class for any game event.
 	Define classfield FIELDS which should list event properties. They will be available as event object's fields.
@@ -37,7 +39,11 @@ class Events:
 		callback = cls._registry.get(type(event))
 		if not callback:
 			return None
-		if bind_self:
+		if six.PY2: # pragma: no cover
+			is_method = inspect.getargspec(callback)
+		else: # pragma: no cover -- TODO very stupid way to distinct functions that should be bound method and non-method functions.
+			is_method = next(iter(inspect.signature(callback).parameters.keys())) == 'self'
+		if is_method and bind_self:
 			callback = callback.__get__(bind_self, type(bind_self))
 		return callback
 	@classmethod
@@ -46,4 +52,5 @@ class Events:
 		Callback should accept single argument: event object.
 		See .get() for details.
 		"""
-		return cls.get(event, bind_self=bind_self)(event)
+		callback = cls.get(event, bind_self=bind_self)
+		return callback(event)

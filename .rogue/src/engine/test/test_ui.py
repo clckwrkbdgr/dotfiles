@@ -9,11 +9,21 @@ from ..mock import *
 class MockUI:
 	def __init__(self):
 		self.screen = Matrix((30, 7), ' ')
+		self._cursor = None
 	def print_char(self, x, y, sprite, color):
 		self.screen.set_cell((x, y), sprite)
 	def print_line(self, y, x, line):
 		for i, c in enumerate(line):
 			self.screen.set_cell((x + i, y), c)
+	def cursor(self, value=None):
+		if value is True:
+			self._cursor = Point(0, 0)
+		elif value is False:
+			self._cursor = None
+		else:
+			return self
+	def move(self, x, y):
+		self._cursor = Point(x, y)
 
 class MockMainGame(ui.MainGame):
 	INDICATORS = [
@@ -22,6 +32,8 @@ class MockMainGame(ui.MainGame):
 			]
 	def get_map_shift(self):
 		return Point(0, 1)
+	def get_message_line_rect(self):
+		return Rect(Point(0, 6), Size(27, 1))
 	def get_viewrect(self):
 		return Rect(
 				self.game.scene.get_player().pos - Point(2, 2),
@@ -95,4 +107,34 @@ class TestMainGame(unittest.TestCase):
 		_                              _
 		_                              _
 		_                              _
+		""").replace('_', ''))
+	def should_show_cursor(self):
+		game = NanoDungeon(RNG(0))
+		game.generate()
+		mode = MockMainGame(game)
+		mock_ui = MockUI()
+		mode.aim = Point(3, 3)
+		mode.redraw(mock_ui)
+		self.assertEqual(mock_ui._cursor, Point(3, 4))
+	def should_draw_everything(self):
+		game = NanoDungeon(RNG(0))
+		game.generate()
+		mode = MockMainGame(game)
+		mock_ui = MockUI()
+		mode.messages = [
+		'Hello, this is the first message and it is long.'
+		'Second, also long...',
+		'Third.',
+		'Last.',
+		]
+		mode.redraw(mock_ui)
+		self.maxDiff = None
+		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [4, 7]                   _
+		_.....    monsters: 2          _
+		_.~...                         _
+		_..@..                         _
+		_.b...                         _
+		_#####                         _
+		_Hello, this is the first...   _
 		""").replace('_', ''))

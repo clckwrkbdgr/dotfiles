@@ -1,5 +1,5 @@
 from collections import namedtuple
-from clckwrkbdgr.math import Point
+from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
 
 Sprite = namedtuple('Sprite', 'sprite color')
@@ -29,6 +29,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	def __init__(self, game):
 		self.game = game
 		self.messages = []
+		self.aim = None
 
 	def get_map_shift(self): # pragma: no cover
 		""" Shift of the topleft point of the map viewport
@@ -37,6 +38,13 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		Map viewport size will always be taken from get_viewrect().size
 		"""
 		return Point(0, 0)
+	def get_message_line_rect(self): # pragma: no cover
+		""" Rect: shift of the topleft point of the message line
+		from the topleft point of the screen,
+		and width of the line (height is ignored).
+		By default starts at the (0;0) and width is 80.
+		"""
+		return Rect(Point(0, 0), Size(80, 1))
 	def get_viewrect(self): # pragma: no cover
 		""" Should return Rect (in world coordinates)
 		that defines what part of the current map is to be displayed
@@ -50,6 +58,17 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		"""
 		raise NotImplementedError()
 	
+	def redraw(self, ui):
+		""" Redraws all parts of UI: map, message line, status line/panel.
+		Also displays cursor if aim mode is enabled.
+		"""
+		ui.cursor(bool(self.aim))
+		self.draw_map(ui)
+		self.print_messages(ui, self.get_message_line_rect().topleft, line_width=self.get_message_line_rect().width)
+		self.draw_status(ui)
+		if self.aim:
+			cursor = self.aim + self.get_map_shift()
+			ui.cursor().move(cursor.x, cursor.y)
 	def draw_map(self, ui):
 		""" Redraws map according to get_viewrect() and get_sprite().
 		"""
@@ -60,10 +79,16 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			screen_pos = viewport_pos + self.get_map_shift()
 			ui.print_char(screen_pos.x, screen_pos.y, sprite.sprite, sprite.color)
 	def print_messages(self, ui, pos, line_width=80):
-		""" Prints currently collected messages on line at specified pos
+		""" Processes unprocessed events and prints
+		currently collected messages on line at specified pos
 		with specified max. width.
 		Clears line if there are no current messages.
 		"""
+		for result in self.game.process_events(bind_self=self): # pragma: no cover -- TODO
+			if not result:
+				continue
+			self.messages.append(result)
+
 		if not self.messages:
 			ui.print_line(pos.y, pos.x, " " * line_width)
 			return
