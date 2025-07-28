@@ -2,10 +2,30 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.math.grid import EndlessMatrix
 from . import builders
 from .. import engine
+from clckwrkbdgr.math.auto import Autoexplorer
 from ..engine import actors, scene
 
 class Player(actors.Monster):
 	_sprite = "@"
+
+class DungeonExplorer(Autoexplorer): # pragma: no cover
+	def __init__(self, dungeon):
+		self.dungeon = dungeon
+		super(DungeonExplorer, self).__init__()
+	def get_current_pos(self):
+		return self.dungeon.scene.get_player().pos
+	def get_matrix(self):
+		return self.dungeon.terrain
+	def is_passable(self, cell):
+		return cell == '.'
+	def is_valid_target(self, target):
+		distance = target - self.get_current_pos()
+		diff = abs(distance)
+		if not (3 < diff.x < 10 or 3 < diff.y < 10):
+			return False
+		return True
+	def target_area_size(self):
+		return Size(21, 21)
 
 class Dungeon(engine.Game):
 	def __init__(self, builder=None):
@@ -13,6 +33,9 @@ class Dungeon(engine.Game):
 		self.builder = builder or builders.Builders()
 		self.scene = Scene()
 		self.time = 0
+		self.autoexplore = None
+	def start_autoexplore(self): # pragma: no cover -- TODO
+		self.autoexplore = DungeonExplorer(self)
 	def is_finished(self): # pragma: no cover -- TODO
 		return False
 	def generate(self):

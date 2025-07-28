@@ -2,40 +2,19 @@ import logging
 trace = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
-from clckwrkbdgr.math.auto import Autoexplorer
 from ..engine import ui
 
-class DungeonExplorer(Autoexplorer): # pragma: no cover
-	def __init__(self, dungeon):
-		self.dungeon = dungeon
-		super(DungeonExplorer, self).__init__()
-	def get_current_pos(self):
-		return self.dungeon.scene.get_player().pos
-	def get_matrix(self):
-		return self.dungeon.terrain
-	def is_passable(self, cell):
-		return cell == '.'
-	def is_valid_target(self, target):
-		distance = target - self.get_current_pos()
-		diff = abs(distance)
-		if not (3 < diff.x < 10 or 3 < diff.y < 10):
-			return False
-		return True
-	def target_area_size(self):
-		return Size(21, 21)
-
 Keys = clckwrkbdgr.tui.Keymapping()
-Keys.map('q', 'quit')
-Keys.map('o', 'autoexplore')
-Keys.map('h', Point(-1,  0))
-Keys.map('j', Point( 0, +1))
-Keys.map('k', Point( 0, -1))
-Keys.map('l', Point(+1,  0))
-Keys.map('y', Point(-1, -1))
-Keys.map('u', Point(+1, -1))
-Keys.map('b', Point(-1, +1))
-Keys.map('n', Point(+1, +1))
-Keys.map(clckwrkbdgr.tui.Key.ESCAPE, 'ESC')
+MOVEMENT = {
+		'h' : Point(-1, 0),
+		'j' : Point(0, 1),
+		'k' : Point(0, -1),
+		'l' : Point(1, 0),
+		'y' : Point(-1, -1),
+		'u' : Point(+1, -1),
+		'b' : Point(-1, +1),
+		'n' : Point(+1, +1),
+		}
 
 class Game(ui.MainGame):
 	KEYMAPPING = Keys
@@ -43,14 +22,12 @@ class Game(ui.MainGame):
 	INDICATORS = [
 			ui.Indicator(Point(27, 0), 29, lambda self:'Time: {0}'.format(self.game.time)),
 			ui.Indicator(Point(27, 1), 29, lambda self:'X:{x} Y:{y}  '.format(x=self.game.scene.get_player().pos.x, y=self.game.scene.get_player().pos.y)),
-			ui.Indicator(Point(27, 24), 29, lambda self:'[autoexploring, press ESC...]' if self.autoexplore else ''),
+			ui.Indicator(Point(27, 24), 29, lambda self:'[autoexploring, press ESC...]' if self.dungeon.autoexplore else ''),
 			]
 
-	def __init__(self, dungeon, autoexplorer=None):
+	def __init__(self, dungeon):
 		super(Game, self).__init__(dungeon)
 		self.dungeon = self.game
-		self.autoexplore = None
-		self.autoexplorer_class = autoexplorer or DungeonExplorer
 	def get_viewrect(self):
 		return Rect(self.dungeon.scene.get_player().pos - self.VIEW_CENTER, Size(25, 25))
 	def get_sprite(self, pos, cell_info):
@@ -63,29 +40,32 @@ class Game(ui.MainGame):
 		self.draw_map(ui)
 		self.draw_status(ui)
 	def nodelay(self):
-		return self.autoexplore
+		return self.dungeon.autoexplore
 	def action(self, control):
-		trace.debug('Control: {0}'.format(repr(control)))
-		trace.debug('Autoexplore={0}'.format(self.autoexplore))
-		if control is None:
-			return True
-		if control == 'autoexplore':
-			if self.autoexplore:
-				control = self.autoexplore.next()
+		if control is False:
+			return False
+		return True
+	@Keys.bind('q')
+	def quit(self):
+		return False
+	@Keys.bind('o')
+	def start_autoexplore(self):
+		if True:
+			if self.dungeon.autoexplore:
+				control = self.dungeon.autoexplore.next()
 				trace.debug('Autoexploring: {0}'.format(repr(control)))
 				self.dungeon.shift_monster(self.dungeon.scene.get_player(), control)
 				self.dungeon.finish_action()
 			else:
 				trace.debug('Starting self.autoexplore.')
-				self.autoexplore = self.autoexplorer_class(self.dungeon)
-				return True
-		elif control == 'ESC':
-			trace.debug('Stopping self.autoexplore.')
-			self.autoexplore = None
-			return True
-		elif control == 'quit':
-			return False
-		elif isinstance(control, Point):
+				self.dungeon.start_autoexplore()
+	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
+	def move_player(self, control):
+		if True:
 			self.dungeon.shift_monster(self.dungeon.scene.get_player(), control)
 			self.dungeon.finish_action()
-		return True
+	@Keys.bind(clckwrkbdgr.tui.Key.ESCAPE)
+	def stop_autoexplore(self):
+		if True:
+			trace.debug('Stopping self.autoexplore.')
+			self.dungeon.autoexplore = None
