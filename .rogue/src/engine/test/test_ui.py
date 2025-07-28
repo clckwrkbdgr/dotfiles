@@ -16,6 +16,10 @@ class MockUI:
 			self.screen.set_cell((x + i, y), c)
 
 class MockMainGame(ui.MainGame):
+	INDICATORS = [
+			ui.Indicator((0, 0), 10, lambda _:'pos: {0}'.format(_.game.scene.get_player().pos)),
+			ui.Indicator((9, 1), 10, lambda _:'monsters: {0}'.format(len(_.game.scene.monsters))),
+			]
 	def get_map_shift(self):
 		return Point(0, 1)
 	def get_viewrect(self):
@@ -76,3 +80,19 @@ class TestMainGame(unittest.TestCase):
 		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
 			"                              \n"
 			]))
+	def should_draw_status(self):
+		game = NanoDungeon(RNG(0))
+		game.generate()
+		mode = MockMainGame(game)
+		mock_ui = MockUI()
+		mode.draw_status(mock_ui)
+		self.maxDiff = None
+		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [4, 7]                   _
+		_         monsters: 2          _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))

@@ -385,18 +385,18 @@ class MessageView(tui.widgets.MessageLineOverlay):
 StatusSection = tui.widgets.StatusLine.LabeledSection
 class StatusLine(tui.widgets.StatusLine):
 	CORNER = "[?]"
-	SECTIONS = [
-			StatusSection('Lvl', 2, lambda dungeon: 1+dungeon.current_level_id),
-			StatusSection("HP", 6, lambda dungeon: "{0}/{1}".format(dungeon.get_player().hp, dungeon.get_player().max_hp)),
-			StatusSection("Items", 2, lambda dungeon:(
+	INDICATORS = [
+			ui.Indicator('Depth', 2, lambda dungeon: 1+dungeon.current_level_id),
+			ui.Indicator("HP", 6, lambda dungeon: "{0}/{1}".format(dungeon.get_player().hp, dungeon.get_player().max_hp)),
+			ui.Indicator("Items", 2, lambda dungeon:(
 				None if not dungeon.get_player().inventory else (
 					''.join(item.sprite for item in dungeon.get_player().inventory)
 					if len(dungeon.get_player().inventory) <= 2
 					else len(dungeon.get_player().inventory)
 					))),
-			StatusSection("Wld", 7, lambda dungeon: dungeon.get_player().wielding.name if dungeon.get_player().wielding else None),
-			StatusSection("Wear", 7, lambda dungeon: dungeon.get_player().wearing.name if dungeon.get_player().wearing else None),
-			StatusSection("Here", 1, lambda dungeon: getattr(next(dungeon.scene.iter_items_at(dungeon.get_player().pos), next(dungeon.scene.iter_appliances_at(dungeon.get_player().pos), None)), 'sprite', None)),
+			ui.Indicator("Wld", 7, lambda dungeon: dungeon.get_player().wielding.name if dungeon.get_player().wielding else None),
+			ui.Indicator("Wear", 7, lambda dungeon: dungeon.get_player().wearing.name if dungeon.get_player().wearing else None),
+			ui.Indicator("Here", 1, lambda dungeon: getattr(next(dungeon.scene.iter_items_at(dungeon.get_player().pos), next(dungeon.scene.iter_appliances_at(dungeon.get_player().pos), None)), 'sprite', None)),
 			]
 
 Controls = AutoRegistry()

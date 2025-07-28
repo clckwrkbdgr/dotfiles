@@ -27,6 +27,25 @@ DIRECTION = {
 Keys = Keymapping()
 class MainGame(ui.MainGame):
 	KEYMAPPING = Keys
+	INDICATORS = [
+			ui.Indicator((0, 24), 11, lambda self: 'hp: {0:>{1}}/{2}'.format(
+				self.game.scene.get_player().hp,
+				len(str(self.game.scene.get_player().max_hp)),
+				self.game.scene.get_player().max_hp) if self.game.scene.get_player() else '[DEAD] Press Any Key...'),
+			ui.Indicator((12, 24), 7, lambda self: 'here: {0}'.format(
+				next(self.game.scene.iter_items_at(self.game.scene.get_player().pos), None).sprite,
+				) if self.game.scene.get_player() and next(self.game.scene.iter_items_at(self.game.scene.get_player().pos), None) else ''),
+			ui.Indicator((20, 24), 7, lambda self: 'inv: {0:>2}'.format(
+				''.join(item.sprite for item in self.game.scene.get_player().inventory)
+				if len(self.game.scene.get_player().inventory) <= 2
+				else len(self.game.scene.get_player().inventory)
+				) if self.game.scene.get_player() and self.game.scene.get_player().inventory else ''
+					 ),
+			ui.Indicator((28, 24), 6, lambda self: '[auto]' if self.game.movement_queue else ''),
+			ui.Indicator((34, 24), 5, lambda self: '[vis]' if self.game.god.vision else ''),
+			ui.Indicator((39, 24), 6, lambda self: '[clip]' if self.game.god.noclip else ''),
+			ui.Indicator((77, 24), 3, lambda self: '[?]'),
+			]
 	def __init__(self, game):
 		super(MainGame, self).__init__(game)
 		self.aim = None
@@ -72,28 +91,7 @@ class MainGame(ui.MainGame):
 			self.messages.append(result)
 		self.print_messages(ui, Point(0, 0))
 
-		status = []
-		player = game.scene.get_player()
-		if player:
-			status.append('hp: {0:>{1}}/{2}'.format(player.hp, len(str(player.max_hp)), player.max_hp))
-			item = next(game.scene.iter_items_at(player.pos), None)
-			if item:
-				status.append('here: {0}'.format(item.sprite))
-			if player.inventory:
-				if len(player.inventory) <= 2:
-					content = ''.join(item.sprite for item in player.inventory)
-				else:
-					content = len(player.inventory)
-				status.append('inv: {0:>2}'.format(content))
-		else:
-			status.append('[DEAD] Press Any Key...')
-		if game.movement_queue:
-			status.append('[auto]')
-		if game.god.vision:
-			status.append('[vis]')
-		if game.god.noclip:
-			status.append('[clip]')
-		ui.print_line(24, 0, (' '.join(status) + " " * 77)[:77] + '[?]')
+		self.draw_status(ui)
 
 		if self.aim:
 			ui.cursor().move(self.aim.x, 1+self.aim.y)

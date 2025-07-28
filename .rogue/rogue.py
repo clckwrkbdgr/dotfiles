@@ -745,6 +745,20 @@ def main(ui):
 Keys = clckwrkbdgr.tui.Keymapping()
 class MainGameMode(ui.MainGame):
 	KEYMAPPING = Keys
+	INDICATORS = [
+			ui.Indicator((62, 0), 18, lambda self: "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
+				self.game.scene.get_player_coord().values[0].x,
+				self.game.scene.get_player_coord().values[1].x,
+				self.game.scene.get_player_coord().values[2].x,
+				self.game.scene.get_player_coord().values[0].y,
+				self.game.scene.get_player_coord().values[1].y,
+				self.game.scene.get_player_coord().values[2].y,
+				)),
+			ui.Indicator((62, 1), 18, lambda self:"T:{0}".format(self.game.passed_time)),
+			ui.Indicator((62, 2), 18, lambda self:"hp:{0}/{1}".format(self.game.scene.get_player().hp, self.game.scene.get_player().max_hp)),
+			ui.Indicator((62, 3), 18, lambda self:"inv:{0}".format(len(self.game.scene.get_player().inventory))),
+			ui.Indicator((62, 4), 18, lambda self:"here:{0}".format(self.item_here().sprite.sprite) if self.item_here() else ""),
+			]
 	def __init__(self, game):
 		super(MainGameMode, self).__init__(game)
 		self.viewport = Rect((0, 0), (61, 23))
@@ -766,30 +780,13 @@ class MainGameMode(ui.MainGame):
 		else:
 			entity = _terrain
 		return entity.sprite
+	def item_here(self):
+		return next(self.game.scene.iter_items_at(self.game.scene.get_player_coord()), None)
 	def redraw(self, ui):
-		game = self.game
 		self.draw_map(ui)
-
-		hud_pos = self.viewport.right + 1
-		for row in range(5):
-			ui.print_line(row, hud_pos, " " * (80 - hud_pos))
-		ui.print_line(0, hud_pos, "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
-			game.scene.get_player_coord().values[0].x,
-			game.scene.get_player_coord().values[1].x,
-			game.scene.get_player_coord().values[2].x,
-			game.scene.get_player_coord().values[0].y,
-			game.scene.get_player_coord().values[1].y,
-			game.scene.get_player_coord().values[2].y,
-			))
-		ui.print_line(1, hud_pos, "T:{0}".format(game.passed_time))
-		ui.print_line(2, hud_pos, "hp:{0}/{1}".format(game.scene.get_player().hp, game.scene.get_player().max_hp))
-		ui.print_line(3, hud_pos, "inv:{0}".format(len(game.scene.get_player().inventory)))
-		item_here = next(game.scene.iter_items_at(game.scene.get_player_coord()), None)
-		if item_here:
-			ui.print_line(4, hud_pos, "here:{0}".format(item_here.sprite.sprite))
-
-		self.messages.extend(game.process_events())
-		self.print_messages(ui, Point(24, 0))
+		self.draw_status(ui)
+		self.messages.extend(self.game.process_events())
+		self.print_messages(ui, Point(0, 23))
 	def pre_action(self):
 		self.step_taken = False
 		return True

@@ -163,7 +163,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_show_state_markers(self):
@@ -177,7 +183,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster!                                                                        '),
-			('addstr', 24, 0, 'hp: 10/10 [auto]                                                             [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '[auto]'),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -191,7 +203,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 [vis] [clip]                                                       [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '[vis]'),
+			('addstr', 24, 39, '[clip]'),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_display_discover_events(self):
@@ -213,7 +231,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster! monsters! stairs! Unknown event {0}!                           '.format(repr('GIBBERISH'))),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 		
@@ -238,7 +262,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster...                                                                      '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_display_remembered_exit(self):
@@ -260,7 +290,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_REMEMBERED_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster! monsters! stairs!                                                      '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_display_attack_events(self):
@@ -277,7 +313,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> monster. monster-1hp.                                                 '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -292,7 +334,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_KILLED_MONSTER[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> monster. monster-1hp. player x> monster. monster-1hp. monster dies.   '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_display_movement_events(self):
@@ -325,7 +373,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'stairs! monster bumps.                                                          '),
-			('addstr', 24, 0, 'hp: 10/10 [vis]                                                              [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '[vis]'),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_wait_user_reaction_after_player_is_dead(self):
@@ -341,7 +395,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_DEAD[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player-10hp. player dies.                                                       '),
-			('addstr', 24, 0, '[DEAD] Press Any Key...                                                      [?]'),
+			('addstr', 24, 0, '[DEAD] Press Any Key...'),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_perform_dungeon_actions(self):
@@ -402,7 +462,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('move', 7, 9),
 			('refresh',),
 			])
@@ -494,7 +560,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 [vis]                                                              [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '[vis]'),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 		self.assertTrue(loop.action()) # ~
@@ -503,7 +575,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 [vis]                                                              [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '[vis]'),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			('addstr', 0, 0, 'Select God option (cv)'),
 			('refresh',),
@@ -514,7 +592,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 [vis] [clip]                                                       [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '[vis]'),
+			('addstr', 24, 39, '[clip]'),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_suicide(self):
@@ -534,7 +618,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.NEXT_DUNGEON[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'monster! stairs! player V... monster!                                           '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_move_character(self):
@@ -601,7 +691,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -623,7 +719,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 here: !                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, 'here: !'),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -645,7 +747,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player ^^ potion.                                                               '),
-			('addstr', 24, 0, 'hp: 10/10 inv:  !                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv:  !'),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -668,7 +776,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 inv:  3                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv:  3'),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -691,7 +805,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 inv: 13                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv: 13'),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_drop_items(self):
@@ -726,7 +846,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -749,7 +875,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player ^^ potion.                                                               '),
-			('addstr', 24, 0, 'hp: 10/10 inv:  !                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv:  !'),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -790,7 +922,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player VV potion.                                                               '),
-			('addstr', 24, 0, 'hp: 10/10 here: !                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, 'here: !'),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_consume_items(self):
@@ -816,7 +954,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 here: !                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, 'here: !'),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -847,7 +991,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 here: !                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, 'here: !'),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -870,7 +1020,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player ^^ potion.                                                               '),
-			('addstr', 24, 0, 'hp: 10/10 inv: !!                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv: !!'),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -913,7 +1069,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'X potion.                                                                       '),
-			('addstr', 24, 0, 'hp: 10/10 inv: !!                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv: !!'),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -946,7 +1108,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player <~ healing potion. player+0hp.                                           '),
-			('addstr', 24, 0, 'hp: 10/10 inv:  !                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv:  !'),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_drop_loot_from_monsters(self):
@@ -963,7 +1131,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT_THIEF[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> thief. thief-1hp.                                                     '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -991,7 +1165,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player x> thief. thief-1hp. thief dies. thief VV money.                         '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 	def should_show_inventory(self):
@@ -1035,7 +1215,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -1081,7 +1267,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 inv:  (                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv:  ('),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -1108,7 +1300,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10 inv:  (                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv:  ('),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -1144,7 +1342,13 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player <+ weapon.                                                               '),
-			('addstr', 24, 0, 'hp: 10/10                                                                    [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, '       '),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
 
@@ -1162,6 +1366,12 @@ class TestCurses(unittest.TestCase):
 			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
 			] + [
 			('addstr', 0, 0, 'player +> weapon.                                                               '),
-			('addstr', 24, 0, 'hp: 10/10 inv:  (                                                            [?]'),
+			('addstr', 24, 0, 'hp: 10/10  '),
+			('addstr', 24, 12, '       '),
+			('addstr', 24, 20, 'inv:  ('),
+			('addstr', 24, 28, '      '),
+			('addstr', 24, 34, '     '),
+			('addstr', 24, 39, '      '),
+			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])

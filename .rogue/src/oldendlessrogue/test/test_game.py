@@ -85,8 +85,8 @@ class TestGame(unittest.TestCase):
 		expected.set_cell((14, 15), '#')
 		self.assertEqual(ui.tiles, expected)
 		self.assertEqual(ui.lines, {
-			0: 'Time: 0',
-			1: 'X:0 Y:0  ',
+			0: 'Time: 0                      ',
+			1: 'X:0 Y:0                      ',
 			24: '                             ',
 			})
 	def should_control_dungeon_via_ui(self):
@@ -103,8 +103,8 @@ class TestGame(unittest.TestCase):
 				self._extract_matrix(expected, Rect((10, 10), (5, 5))),
 				)
 		self.assertEqual(ui.lines, {
-			0: 'Time: 4',
-			1: 'X:1 Y:3  ',
+			0: 'Time: 4                      ',
+			1: 'X:1 Y:3                      ',
 			24: '                             ',
 			})
 	def should_pass_on_unknown_control(self):
@@ -129,7 +129,7 @@ class TestGame(unittest.TestCase):
 				self._extract_matrix(expected, Rect((10, 10), (5, 5))),
 				)
 		self.assertEqual(ui.lines, {
-			0: 'Time: 4',
-			1: 'X:1 Y:3  ',
+			0: 'Time: 4                      ',
+			1: 'X:1 Y:3                      ',
 			24: '                             ',
 			})

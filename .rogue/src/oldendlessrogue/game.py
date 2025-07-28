@@ -40,6 +40,11 @@ Keys.map(clckwrkbdgr.tui.Key.ESCAPE, 'ESC')
 class Game(ui.MainGame):
 	KEYMAPPING = Keys
 	VIEW_CENTER = Point(12, 12)
+	INDICATORS = [
+			ui.Indicator(Point(27, 0), 29, lambda self:'Time: {0}'.format(self.game.time)),
+			ui.Indicator(Point(27, 1), 29, lambda self:'X:{x} Y:{y}  '.format(x=self.game.scene.get_player().pos.x, y=self.game.scene.get_player().pos.y)),
+			ui.Indicator(Point(27, 24), 29, lambda self:'[autoexploring, press ESC...]' if self.autoexplore else ''),
+			]
 
 	def __init__(self, dungeon, autoexplorer=None):
 		super(Game, self).__init__(dungeon)
@@ -56,9 +61,7 @@ class Game(ui.MainGame):
 		return ui.Sprite(sprite, None)
 	def redraw(self, ui):
 		self.draw_map(ui)
-		ui.print_line(0, 27, 'Time: {0}'.format(self.dungeon.time))
-		ui.print_line(1, 27, 'X:{x} Y:{y}  '.format(x=self.dungeon.scene.get_player().pos.x, y=self.dungeon.scene.get_player().pos.y))
-		ui.print_line(24, 27, '[autoexploring, press ESC...]' if self.autoexplore else '                             ')
+		self.draw_status(ui)
 	def nodelay(self):
 		return self.autoexplore
 	def action(self, control):

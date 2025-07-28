@@ -4,9 +4,28 @@ import clckwrkbdgr.tui
 
 Sprite = namedtuple('Sprite', 'sprite color')
 
-class MainGame(clckwrkbdgr.tui.Mode):
-	""" Main game mode: map, status line, messages.
+class Indicator(object):
+	""" Status indicator.
+	Displays updatable value with optional label at specified location
+	and takes fixed width.
 	"""
+	def __init__(self, pos, width, value_getter):
+		""" Value getter should take Mode as parameter
+		and return string value of specified width or less.
+		Result string will be padded automatically.
+		"""
+		self.pos = Point(pos)
+		self.width = width
+		self.value_getter = value_getter
+	def draw(self, ui, mode):
+		value = self.value_getter(mode)
+		ui.print_line(self.pos.y, self.pos.x, value.ljust(self.width))
+
+class MainGame(clckwrkbdgr.tui.Mode):
+	""" Main game mode: map, status line/panel, messages.
+	"""
+	INDICATORS = []
+
 	def __init__(self, game):
 		self.game = game
 		self.messages = []
@@ -56,3 +75,9 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		else:
 			self.messages[0] = self.messages[0][-to_remove:]
 		ui.print_line(pos.y, pos.x, message_line.ljust(line_width))
+	def draw_status(self, ui):
+		""" Draws status line/panel with indicators defined in .INDICATORS.
+		See Indicator for details.
+		"""
+		for indicator in self.INDICATORS:
+			indicator.draw(ui, self)
