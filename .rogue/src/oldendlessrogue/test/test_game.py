@@ -18,6 +18,11 @@ class MockUI:
 	@contextlib.contextmanager
 	def redraw(self, clean=None):
 		yield self
+	def get_keypress(self, nodelay=False):
+		key = self.controls.pop(0)
+		if key == '\x00':
+			return None
+		return tui.Key(key)
 	def get_control(self, _keymapping, nodelay=False, bind_self=None, callback_args=None):
 		key = self.controls.pop(0)
 		control = _keymapping.get(tui.Key(key), bind_self=bind_self)
@@ -121,7 +126,7 @@ class TestGame(unittest.TestCase):
 			})
 	def should_control_dungeon_via_autoexplorer(self):
 		autoexplorer_controls = [Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0)]
-		ui = MockUI('o' + 'o'*(len(autoexplorer_controls)-1) + chr(tui.Key.ESCAPE) + 'q')
+		ui = MockUI('o' + '\x00'*(len(autoexplorer_controls)-1) + chr(tui.Key.ESCAPE) + 'q')
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
 		dungeon.autoexplorer_controls = autoexplorer_controls

@@ -41,7 +41,13 @@ class Game(ui.MainGame):
 	def nodelay(self):
 		return self.dungeon.autoexplore
 	def action(self, control):
+		if isinstance(control, clckwrkbdgr.tui.Key):
+			trace.debug('Stopping self.autoexplore.')
+			self.dungeon.autoexplore = None
+			return True
 		return not control
+	def get_keymapping(self):
+		return None if self.nodelay() else self.KEYMAPPING
 	@Keys.bind('q')
 	def quit(self):
 		return True
@@ -64,8 +70,3 @@ class Game(ui.MainGame):
 		if True:
 			self.dungeon.shift_monster(self.dungeon.scene.get_player(), control)
 			self.dungeon.finish_action()
-	@Keys.bind(clckwrkbdgr.tui.Key.ESCAPE)
-	def stop_autoexplore(self):
-		if True:
-			trace.debug('Stopping self.autoexplore.')
-			self.dungeon.autoexplore = None
