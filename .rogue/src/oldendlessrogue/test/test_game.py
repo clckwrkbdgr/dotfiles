@@ -121,7 +121,7 @@ class TestGame(unittest.TestCase):
 			})
 	def should_control_dungeon_via_autoexplorer(self):
 		autoexplorer_controls = [Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0)]
-		ui = MockUI('o' + 'o'*len(autoexplorer_controls) + chr(tui.Key.ESCAPE) + 'q')
+		ui = MockUI('o' + 'o'*(len(autoexplorer_controls)-1) + chr(tui.Key.ESCAPE) + 'q')
 		dungeon = self._create_dungeon()
 		game = Game(dungeon)
 		dungeon.autoexplorer_controls = autoexplorer_controls

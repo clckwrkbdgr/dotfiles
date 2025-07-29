@@ -41,21 +41,22 @@ class Game(ui.MainGame):
 	def nodelay(self):
 		return self.dungeon.autoexplore
 	def action(self, control):
-		if control is False:
-			return False
-		return True
+		return not control
 	@Keys.bind('q')
 	def quit(self):
-		return False
-	@Keys.bind('o')
-	def start_autoexplore(self):
+		return True
+	def pre_action(self):
 		if True:
 			if self.dungeon.autoexplore:
 				control = self.dungeon.autoexplore.next()
 				trace.debug('Autoexploring: {0}'.format(repr(control)))
 				self.dungeon.shift_monster(self.dungeon.scene.get_player(), control)
 				self.dungeon.finish_action()
-			else:
+		return True
+	@Keys.bind('o')
+	def start_autoexplore(self):
+		if True:
+			if True:
 				trace.debug('Starting self.autoexplore.')
 				self.dungeon.start_autoexplore()
 	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
