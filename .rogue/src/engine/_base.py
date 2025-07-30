@@ -74,3 +74,15 @@ class Game(object):
 		(if currently enabled).
 		"""
 		pass
+	def stop_automovement(self): # pragma: no cover
+		""" Force stop automovement (e.g. because of user interruption).
+		"""
+		pass
+
+	def process_others(self): # pragma: no cover
+		""" Should be called at the end of player's turn
+		to process other monsters and other game mechanics.
+		Should perform check for player turn manually
+		and reset it also manually.
+		"""
+		pass

@@ -38,12 +38,6 @@ class Game(ui.MainGame):
 		return ui.Sprite(sprite, None)
 	def get_message_line_rect(self):
 		return Rect(Point(0, 25), Size(80, 1))
-	def action(self, control):
-		if isinstance(control, clckwrkbdgr.tui.Key):
-			trace.debug('Stopping self.autoexplore.')
-			self.dungeon.autoexplore = None
-			return True
-		return not control
 	@Keys.bind('q')
 	def quit(self):
 		return True

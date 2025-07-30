@@ -786,7 +786,7 @@ class MainGameMode(ui.MainGame):
 		return Rect(Point(0, 23), Size(80, 1))
 	@Keys.bind('S')
 	def exit_game(self):
-		return 'quit'
+		return True
 	@Keys.bind('.')
 	def wait(self):
 		if True:
@@ -950,14 +950,7 @@ class MainGameMode(ui.MainGame):
 				player.pos = dest_pos.values[-1]
 				game.scene.autoexpand(self.game.scene.get_player_coord(), Size(40, 40))
 			self.step_taken = True
-	def action(self, control):
-		if isinstance(control, clckwrkbdgr.tui.Key):
-			if self.messages:
-				return True
-			if not self.game.scene.get_player().is_alive():
-				return False
-		if control == 'quit':
-			return False
+	def process_others(self):
 		game = self.game
 		if self.step_taken:
 			player_pos = game.scene.get_player_coord().get_global(game.scene.world)

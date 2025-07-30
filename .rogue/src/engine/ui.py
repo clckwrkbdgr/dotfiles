@@ -49,6 +49,17 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			return False
 		self.game.perform_automovement()
 		return True
+	def action(self, control):
+		if isinstance(control, clckwrkbdgr.tui.Key):
+			if self.messages:
+				return True
+			player = self.game.scene.get_player()
+			if not (player and player.is_alive()):
+				return False
+			self.game.stop_automovement()
+			return True
+		self.game.process_others()
+		return not control
 
 	# Options for customizations.
 

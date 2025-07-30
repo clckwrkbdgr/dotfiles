@@ -430,9 +430,6 @@ class MainGame(ui.MainGame):
 			new_mode = Controls[str(ch)](self)
 			if new_mode:
 				return new_mode
-			if not self.step_is_over:
-				return
-			self.step_is_over = False
 			return self.process_others()
 		except KeyError:
 			trace.debug("Unknown key: {0}".format(ch))
@@ -597,6 +594,9 @@ class MainGame(ui.MainGame):
 		self.step_is_over = True
 
 	def process_others(self):
+		if not self.step_is_over:
+			return
+		self.step_is_over = False
 		dungeon = self.data
 		for monster in dungeon.scene.monsters:
 			if isinstance(monster, self.PLAYER_TYPE):

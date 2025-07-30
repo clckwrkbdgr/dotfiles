@@ -291,15 +291,16 @@ class Game(engine.Game):
 		return not (self.scene.get_player() and self.scene.get_player().is_alive())
 	def end_turn(self):
 		self.player_turn = False
+	def process_others(self):
 		if not self.player_turn:
 			for monster in self.scene.monsters:
 				if isinstance(monster, Player):
 					continue
 				monster.act(self)
 			self.player_turn = True
-	def autostop(self):
+	def stop_automovement(self):
 		try:
-			self.stop_automovement()
+			self.autostop()
 		except Game.AutoMovementStopped:
 			pass
 	def suicide(self, monster):
@@ -558,7 +559,7 @@ class Game(engine.Game):
 			return False
 		if self.has_unprocessed_events():
 			Log.debug('New events in FOV, aborting auto-moving mode.')
-			return self.stop_automovement()
+			return self.autostop()
 		Log.debug('Performing queued actions.')
 		new_pos = self.movement_queue.pop(0)
 		self.jump_to(new_pos)
@@ -571,7 +572,7 @@ class Game(engine.Game):
 		else:
 			raise Game.AutoMovementStopped()
 		return True
-	def stop_automovement(self):
+	def autostop(self):
 		""" Stops and resets auto-movement. """
 		self.movement_queue[:] = []
 		self.autoexploring = False

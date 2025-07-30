@@ -44,6 +44,8 @@ class Dungeon(engine.Game):
 		control = self.autoexplore.next()
 		self.shift_monster(self.scene.get_player(), control)
 		self.finish_action()
+	def stop_automovement(self):
+		self.autoexplore = None
 	def is_finished(self): # pragma: no cover -- TODO
 		return False
 	def generate(self):

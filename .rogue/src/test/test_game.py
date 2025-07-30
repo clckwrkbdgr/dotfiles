@@ -39,11 +39,13 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[9, 5])',
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.DOWN)
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[9, 6])',
 			]])
@@ -81,7 +83,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.in_automovement()) # exploring...
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement())
-		dungeon.autostop()
+		dungeon.stop_automovement()
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
 			]])
@@ -115,6 +117,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.UP) # Step in.
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[9, 5])',
 			'AttackEvent(actor=monster, target=player)',
@@ -124,6 +127,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.UP) # Attack.
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'AttackEvent(actor=player, target=monster)',
 			'HealthEvent(target=monster, diff=-1)',
@@ -132,6 +136,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			]])
 		dungeon.wait() # Just wait.
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'AttackEvent(actor=monster, target=player)',
 			'HealthEvent(target=player, diff=-1)',
@@ -150,6 +155,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.UP) # Step in.
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[9, 5])',
 			'AttackEvent(actor=monster, target=player)'.format(9),
@@ -157,6 +163,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			]])
 		dungeon.wait()
 		dungeon.end_turn()
+		dungeon.process_others()
 		for i in range(1, 9): # Just wait while monster kills you.
 			self.assertEqual(self._events(), [[
 				'AttackEvent(actor=monster, target=player)'.format(9 - i),
@@ -164,6 +171,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 				]])
 			dungeon.wait()
 			dungeon.end_turn()
+			dungeon.process_others()
 		self.assertTrue(dungeon.is_finished())
 		self.maxDiff = None
 		self.assertIsNone(dungeon.get_player())
@@ -174,6 +182,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			]])
 		dungeon.suicide(dungeon.get_player())
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertTrue(dungeon.is_finished())
 		self.assertIsNone(dungeon.get_player())
 		self.maxDiff = None
@@ -187,11 +196,13 @@ class TestItems(AbstractTestDungeon):
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[10, 6])',
 			]])
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'GrabItemEvent(actor=player, item=potion)',
 			]])
@@ -204,6 +215,7 @@ class TestItems(AbstractTestDungeon):
 			]])
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'NotConsumable(item=potion)',
 			]])
@@ -216,6 +228,7 @@ class TestItems(AbstractTestDungeon):
 			]])
 		dungeon.drop_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'DropItemEvent(actor=player, item=potion)',
 			]])
@@ -228,6 +241,7 @@ class TestItems(AbstractTestDungeon):
 			]])
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'EquipItemEvent(actor=player, item=weapon)',
 			]])
@@ -240,6 +254,7 @@ class TestItems(AbstractTestDungeon):
 			]])
 		dungeon.unwield_item(dungeon.get_player())
 		dungeon.end_turn()
+		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'UnequipItemEvent(actor=player, item=weapon)',
 			]])

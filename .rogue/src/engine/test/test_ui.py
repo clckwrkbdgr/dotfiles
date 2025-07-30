@@ -154,3 +154,14 @@ class TestMainGameCustomizations(MainGameTestCase):
 		self.assertTrue(mode.pre_action())
 		mode.game.scene.monsters.remove(mode.game.scene.get_player())
 		self.assertFalse(mode.pre_action())
+	def should_perform_post_actions(self):
+		mode, mock_ui = self._init()
+		self.assertTrue(mode.action(False))
+		self.assertFalse(mode.action(True))
+
+		mode.messages.append('mock message')
+		self.assertTrue(mode.action(clckwrkbdgr.tui.Key(' ')))
+		mode.messages = []
+
+		mode.game.scene.monsters.remove(mode.game.scene.get_player())
+		self.assertFalse(mode.action(clckwrkbdgr.tui.Key(' ')))

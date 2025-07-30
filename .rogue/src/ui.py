@@ -71,11 +71,6 @@ class MainGame(ui.MainGame):
 		return ui.Sprite(sprite or ' ', None)
 	def get_message_line_rect(self):
 		return Rect(Point(0, 0), Size(80, 1))
-	def action(self, control):
-		if isinstance(control, clckwrkbdgr.tui.Key):
-			self.game.autostop()
-			return True
-		return not control
 	@Events.on(game.DiscoverEvent)
 	def on_discovering(self, event):
 		if hasattr(event.obj, 'name'):
