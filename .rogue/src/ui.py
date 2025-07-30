@@ -47,8 +47,6 @@ class MainGame(ui.MainGame):
 			ui.Indicator((77, 24), 3, lambda self: '[?]'),
 			]
 
-	def nodelay(self):
-		return self.game.in_automovement()
 	def get_map_shift(self):
 		return Point(0, 1)
 	def get_viewrect(self):
@@ -75,8 +73,6 @@ class MainGame(ui.MainGame):
 		return Rect(Point(0, 0), Size(80, 1))
 	def pre_action(self):
 		return self.game._pre_action()
-	def get_keymapping(self):
-		return None if self.nodelay() else self.KEYMAPPING
 	def action(self, control):
 		if isinstance(control, clckwrkbdgr.tui.Key):
 			self.game.autostop()

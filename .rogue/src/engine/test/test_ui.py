@@ -1,6 +1,7 @@
 from clckwrkbdgr import unittest
 from clckwrkbdgr.math.grid import Matrix
 from clckwrkbdgr.math import Point, Size, Rect
+import clckwrkbdgr.tui
 from .. import ui
 from .. import Game
 from clckwrkbdgr.pcg import RNG
@@ -26,6 +27,7 @@ class MockUI:
 		self._cursor = Point(x, y)
 
 class MockMainGame(ui.MainGame):
+	KEYMAPPING = clckwrkbdgr.tui.Keymapping()
 	INDICATORS = [
 			ui.Indicator((0, 0), 10, lambda _:'pos: {0}'.format(_.game.scene.get_player().pos)),
 			ui.Indicator((9, 1), 10, lambda _:'monsters: {0}'.format(len(_.game.scene.monsters))),
@@ -43,11 +45,15 @@ class MockMainGame(ui.MainGame):
 		return ui.Sprite(self.game.scene.str_cell(world_pos) or ' ', None)
 
 class TestMainGame(unittest.TestCase):
-	def should_draw_map(self):
+	def _init(self):
+		self.maxDiff = None
 		game = NanoDungeon(RNG(0))
 		game.generate()
 		mode = MockMainGame(game)
 		mock_ui = MockUI()
+		return mode, mock_ui
+	def should_draw_map(self):
+		mode, mock_ui = self._init()
 		mode.draw_map(mock_ui)
 		self.maxDiff = None
 		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\
@@ -60,17 +66,13 @@ class TestMainGame(unittest.TestCase):
 		_                              _
 		""").replace('_', ''))
 	def should_print_messages(self):
-		self.maxDiff = None
-		game = NanoDungeon(RNG(0))
-		game.generate()
-		mode = MockMainGame(game)
+		mode, mock_ui = self._init()
 		mode.messages = [
 		'Hello, this is the first message and it is long.'
 		'Second, also long...',
 		'Third.',
 		'Last.',
 		]
-		mock_ui = MockUI()
 
 		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
 		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
@@ -93,10 +95,7 @@ class TestMainGame(unittest.TestCase):
 			"                              \n"
 			]))
 	def should_draw_status(self):
-		game = NanoDungeon(RNG(0))
-		game.generate()
-		mode = MockMainGame(game)
-		mock_ui = MockUI()
+		mode, mock_ui = self._init()
 		mode.draw_status(mock_ui)
 		self.maxDiff = None
 		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\
@@ -109,18 +108,12 @@ class TestMainGame(unittest.TestCase):
 		_                              _
 		""").replace('_', ''))
 	def should_show_cursor(self):
-		game = NanoDungeon(RNG(0))
-		game.generate()
-		mode = MockMainGame(game)
-		mock_ui = MockUI()
+		mode, mock_ui = self._init()
 		mode.aim = Point(3, 3)
 		mode.redraw(mock_ui)
 		self.assertEqual(mock_ui._cursor, Point(3, 4))
 	def should_draw_everything(self):
-		game = NanoDungeon(RNG(0))
-		game.generate()
-		mode = MockMainGame(game)
-		mock_ui = MockUI()
+		mode, mock_ui = self._init()
 		mode.messages = [
 		'Hello, this is the first message and it is long.'
 		'Second, also long...',
@@ -138,3 +131,17 @@ class TestMainGame(unittest.TestCase):
 		_#####                         _
 		_Hello, this is the first...   _
 		""").replace('_', ''))
+	def should_disable_keymapping_when_player_does_not_control(self):
+		mode, mock_ui = self._init()
+		self.assertIsNotNone(mode.get_keymapping())
+
+		mode.messages.append('mock message')
+		self.assertIsNone(mode.get_keymapping())
+		mode.messages = []
+
+		mode.game.automovement = True
+		self.assertIsNone(mode.get_keymapping())
+		mode.game.automovement = False
+
+		mode.game.scene.get_player().hp = 0
+		self.assertIsNone(mode.get_keymapping())

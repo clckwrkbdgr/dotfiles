@@ -34,6 +34,8 @@ class Dungeon(engine.Game):
 		self.scene = Scene()
 		self.time = 0
 		self.autoexplore = None
+	def in_automovement(self):
+		return self.autoexplore
 	def start_autoexplore(self): # pragma: no cover -- TODO
 		self.autoexplore = DungeonExplorer(self)
 	def is_finished(self): # pragma: no cover -- TODO

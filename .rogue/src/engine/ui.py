@@ -31,6 +31,22 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		self.messages = []
 		self.aim = None
 
+	# Overridden behavior.
+
+	def nodelay(self):
+		return self.game.in_automovement()
+	def get_keymapping(self):
+		if self.messages:
+			return None
+		player = self.game.scene.get_player()
+		if not (player and player.is_alive()):
+			return None
+		if self.nodelay():
+			return None
+		return super(MainGame, self).get_keymapping()
+
+	# Options for customizations.
+
 	def get_map_shift(self): # pragma: no cover
 		""" Shift of the topleft point of the map viewport
 		from the topleft point of the screen.
@@ -58,6 +74,8 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		"""
 		raise NotImplementedError()
 	
+	# Displaying.
+
 	def redraw(self, ui):
 		""" Redraws all parts of UI: map, message line, status line/panel.
 		Also displays cursor if aim mode is enabled.

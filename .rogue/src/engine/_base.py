@@ -62,3 +62,10 @@ class Game(object):
 		"""
 		while self.has_unprocessed_events():
 			yield self.process_next_event(raw=raw, bind_self=bind_self)
+
+	# Actions.
+
+	def in_automovement(self): # pragma: no cover
+		""" Should return True when player's currently automoving.
+		"""
+		return False

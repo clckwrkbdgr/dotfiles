@@ -304,6 +304,11 @@ class WeightedSquat(Squat):
 ### Game. ######################################################################
 
 class NanoDungeon(_base.Game):
+	def __init__(self, *args, **kwargs):
+		super(NanoDungeon, self).__init__(*args, **kwargs)
+		self.automovement = False
+	def in_automovement(self):
+		return self.automovement
 	def generate(self):
 		builder = DungeonFloor(self.rng, Size(10, 10))
 		builder.map_key(**({

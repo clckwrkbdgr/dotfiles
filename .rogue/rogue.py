@@ -787,10 +787,6 @@ class MainGameMode(ui.MainGame):
 	def pre_action(self):
 		self.step_taken = False
 		return True
-	def get_keymapping(self):
-		if self.messages or not self.game.scene.get_player().is_alive():
-			return None
-		return super().get_keymapping()
 	@Keys.bind('S')
 	def exit_game(self):
 		return 'quit'
