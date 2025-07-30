@@ -784,9 +784,6 @@ class MainGameMode(ui.MainGame):
 		return next(self.game.scene.iter_items_at(self.game.scene.get_player_coord()), None)
 	def get_message_line_rect(self):
 		return Rect(Point(0, 23), Size(80, 1))
-	def pre_action(self):
-		self.step_taken = False
-		return True
 	@Keys.bind('S')
 	def exit_game(self):
 		return 'quit'
@@ -973,6 +970,7 @@ class MainGameMode(ui.MainGame):
 						game.scene.get_player().hp = game.scene.get_player().max_hp
 
 			game.passed_time += 1
+			self.step_taken = False
 
 			monster_action_range = Rect(
 					player_pos - Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH),

@@ -69,3 +69,8 @@ class Game(object):
 		""" Should return True when player's currently automoving.
 		"""
 		return False
+	def perform_automovement(self): # pragma: no cover
+		""" Should perform any automovement activities
+		(if currently enabled).
+		"""
+		pass

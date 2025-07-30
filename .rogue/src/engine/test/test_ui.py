@@ -44,7 +44,7 @@ class MockMainGame(ui.MainGame):
 	def get_sprite(self, world_pos, cell_info):
 		return ui.Sprite(self.game.scene.str_cell(world_pos) or ' ', None)
 
-class TestMainGame(unittest.TestCase):
+class MainGameTestCase(unittest.TestCase):
 	def _init(self):
 		self.maxDiff = None
 		game = NanoDungeon(RNG(0))
@@ -52,6 +52,8 @@ class TestMainGame(unittest.TestCase):
 		mode = MockMainGame(game)
 		mock_ui = MockUI()
 		return mode, mock_ui
+
+class TestMainGameDisplay(MainGameTestCase):
 	def should_draw_map(self):
 		mode, mock_ui = self._init()
 		mode.draw_map(mock_ui)
@@ -131,6 +133,8 @@ class TestMainGame(unittest.TestCase):
 		_#####                         _
 		_Hello, this is the first...   _
 		""").replace('_', ''))
+
+class TestMainGameCustomizations(MainGameTestCase):
 	def should_disable_keymapping_when_player_does_not_control(self):
 		mode, mock_ui = self._init()
 		self.assertIsNotNone(mode.get_keymapping())
@@ -145,3 +149,8 @@ class TestMainGame(unittest.TestCase):
 
 		mode.game.scene.get_player().hp = 0
 		self.assertIsNone(mode.get_keymapping())
+	def should_perform_pre_action_checks(self):
+		mode, mock_ui = self._init()
+		self.assertTrue(mode.pre_action())
+		mode.game.scene.monsters.remove(mode.game.scene.get_player())
+		self.assertFalse(mode.pre_action())

@@ -35,104 +35,95 @@ class AbstractTestDungeon(unittest.TestCase):
 class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_run_main_loop(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.UP)
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[9, 5])',
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.DOWN)
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[9, 6])',
 			]])
 		dungeon.descend()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.walk_to(Point(11, 2))
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # walking...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # walking...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # NONE AUTOEXPLORE
 			'DiscoverEvent(obj=stairs)',
 			]])
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # exploring...
 			]])
 		dungeon.start_autoexploring()
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement())
 		dungeon.autostop()
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.start_autoexploring()
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement())
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement())
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement())
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # GOD_TOGGLE_* EXIT
 			]])
 		dungeon.toggle_god_vision()
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.toggle_god_noclip()
-		self.assertTrue(dungeon._pre_action())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
 	def should_perform_monsters_turns_after_player_has_done_with_their_turn(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'DiscoverEvent(obj=monster)',
 			'DiscoverEvent(obj=monster)',
 			]])
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.UP) # Step in.
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[9, 5])',
 			'AttackEvent(actor=monster, target=player)',
 			'HealthEvent(target=player, diff=-1)',
 			]])
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.UP) # Attack.
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'AttackEvent(actor=player, target=monster)',
 			'HealthEvent(target=monster, diff=-1)',
@@ -141,7 +132,6 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			]])
 		dungeon.wait() # Just wait.
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'AttackEvent(actor=monster, target=player)',
 			'HealthEvent(target=player, diff=-1)',
@@ -152,17 +142,14 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(dungeon.scene.monsters[2].hp, 2)
 	def should_die_after_monster_attack(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'DiscoverEvent(obj=monster)',
 			'DiscoverEvent(obj=monster)',
 			]])
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.UP) # Step in.
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[9, 5])',
 			'AttackEvent(actor=monster, target=player)'.format(9),
@@ -171,26 +158,22 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.wait()
 		dungeon.end_turn()
 		for i in range(1, 9): # Just wait while monster kills you.
-			self.assertTrue(dungeon._pre_action())
 			self.assertEqual(self._events(), [[
 				'AttackEvent(actor=monster, target=player)'.format(9 - i),
 				'HealthEvent(target=player, diff=-1)'.format(9 - i),
 				]])
 			dungeon.wait()
 			dungeon.end_turn()
-		self.assertFalse(dungeon._pre_action())
 		self.assertTrue(dungeon.is_finished())
 		self.maxDiff = None
 		self.assertIsNone(dungeon.get_player())
 		self.assertEqual(dungeon.scene.monsters[1].hp, 3)
 	def should_suicide_out_of_main_loop(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.suicide(dungeon.get_player())
 		dungeon.end_turn()
-		self.assertFalse(dungeon._pre_action())
 		self.assertTrue(dungeon.is_finished())
 		self.assertIsNone(dungeon.get_player())
 		self.maxDiff = None
@@ -198,20 +181,17 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 class TestItems(AbstractTestDungeon):
 	def should_grab_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around 2')
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'DiscoverEvent(obj=potion)',
 			'DiscoverEvent(obj=healing potion)',
 			]])
 		dungeon.move(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'MoveEvent(actor=player, dest=[10, 6])',
 			]])
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'GrabItemEvent(actor=player, item=potion)',
 			]])
@@ -220,12 +200,10 @@ class TestItems(AbstractTestDungeon):
 	def should_consume_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(dungeon.ITEMS['potion']())
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'NotConsumable(item=potion)',
 			]])
@@ -234,12 +212,10 @@ class TestItems(AbstractTestDungeon):
 	def should_drop_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(dungeon.ITEMS['potion']())
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.drop_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'DropItemEvent(actor=player, item=potion)',
 			]])
@@ -248,12 +224,10 @@ class TestItems(AbstractTestDungeon):
 	def should_equip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(dungeon.ITEMS['weapon']())
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'EquipItemEvent(actor=player, item=weapon)',
 			]])
@@ -262,12 +236,10 @@ class TestItems(AbstractTestDungeon):
 	def should_unequip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().wielding = dungeon.ITEMS['weapon']()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.unwield_item(dungeon.get_player())
 		dungeon.end_turn()
-		self.assertTrue(dungeon._pre_action())
 		self.assertEqual(self._events(), [[
 			'UnequipItemEvent(actor=player, item=weapon)',
 			]])
@@ -541,18 +513,18 @@ class TestMovement(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
 		list(dungeon.process_events(raw=True)) # Clear events.
 		self.assertTrue(dungeon.start_autoexploring())
-		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
-		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
 	def should_not_allow_move_player_diagonally_in_autowalk_mode(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
 		list(dungeon.process_events(raw=True)) # Clear events.
 		dungeon.walk_to(Point(7, 1))
 		self.assertTrue(dungeon.start_autoexploring())
-		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
-		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
 	def should_not_allow_move_player_diagonally_both_from_and_to_good_cell(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue lonely')
@@ -813,19 +785,19 @@ class TestAutoMode(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		self.assertFalse(dungeon.perform_automovement())
+		self.assertFalse(dungeon.perform_automovement_step())
 		dungeon.walk_to(Point(11, 2))
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement_step())
+		self.assertTrue(dungeon.perform_automovement_step())
 		with self.assertRaises(dungeon.AutoMovementStopped):
-			dungeon.perform_automovement() # Notices stairs and stops.
+			dungeon.perform_automovement_step() # Notices stairs and stops.
 		list(dungeon.process_events(raw=True)) # Clear events.
-		self.assertFalse(dungeon.perform_automovement())
+		self.assertFalse(dungeon.perform_automovement_step())
 
 		dungeon.walk_to(Point(11, 2))
-		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement_step())
 		with self.assertRaises(dungeon.AutoMovementStopped):
-			dungeon.perform_automovement() # You have reached your destination.
+			dungeon.perform_automovement_step() # You have reached your destination.
 
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				  #########      ###
@@ -845,7 +817,7 @@ class TestAutoMode(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True)) # Clear events.
 
 		dungeon.walk_to(Point(1, 2))
-		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(0, 1))
 	def should_not_allow_autowalking_if_monsters_are_nearby(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini 6 monster')
@@ -853,7 +825,7 @@ class TestAutoMode(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True)) # Clear events.
 
 		dungeon.walk_to(Point(12, 8))
-		self.assertFalse(dungeon.perform_automovement())
+		self.assertFalse(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
@@ -862,20 +834,20 @@ class TestAutoMode(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		self.assertFalse(dungeon.perform_automovement())
+		self.assertFalse(dungeon.perform_automovement_step())
 		self.assertTrue(dungeon.start_autoexploring())
 		for _ in range(12):
-			self.assertTrue(dungeon.perform_automovement())
+			self.assertTrue(dungeon.perform_automovement_step())
 		with self.assertRaises(dungeon.AutoMovementStopped):
-			dungeon.perform_automovement() # Notices stairs and stops.
+			dungeon.perform_automovement_step() # Notices stairs and stops.
 		list(dungeon.process_events(raw=True)) # Clear events.
-		self.assertFalse(dungeon.perform_automovement())
+		self.assertFalse(dungeon.perform_automovement_step())
 
 		self.assertTrue(dungeon.start_autoexploring())
 		for _ in range(5):
-			self.assertTrue(dungeon.perform_automovement())
+			self.assertTrue(dungeon.perform_automovement_step())
 		with self.assertRaises(dungeon.AutoMovementStopped):
-			dungeon.perform_automovement() # Explored everything.
+			dungeon.perform_automovement_step() # Explored everything.
 
 		self.assertFalse(dungeon.start_autoexploring()) # And Jesus wept.
 

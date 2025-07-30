@@ -38,6 +38,12 @@ class Dungeon(engine.Game):
 		return self.autoexplore
 	def start_autoexplore(self): # pragma: no cover -- TODO
 		self.autoexplore = DungeonExplorer(self)
+	def perform_automovement(self):
+		if not self.autoexplore:
+			return
+		control = self.autoexplore.next()
+		self.shift_monster(self.scene.get_player(), control)
+		self.finish_action()
 	def is_finished(self): # pragma: no cover -- TODO
 		return False
 	def generate(self):

@@ -289,14 +289,6 @@ class Game(engine.Game):
 		self.vision.save(writer)
 	def is_finished(self):
 		return not (self.scene.get_player() and self.scene.get_player().is_alive())
-	def _pre_action(self):
-		if not self.scene.get_player():
-			return False
-		try:
-			self.perform_automovement()
-		except Game.AutoMovementStopped:
-			pass
-		return True
 	def end_turn(self):
 		self.player_turn = False
 		if not self.player_turn:
@@ -553,6 +545,12 @@ class Game(engine.Game):
 	def in_automovement(self):
 		return self.autoexploring or bool(self.movement_queue)
 	def perform_automovement(self):
+		try:
+			self.perform_automovement_step()
+		except Game.AutoMovementStopped:
+			pass
+		return True
+	def perform_automovement_step(self):
 		""" Performs next step from auto-movement queue, if any.
 		Stops on events.
 		"""

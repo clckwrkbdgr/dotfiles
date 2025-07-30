@@ -426,13 +426,13 @@ class MainGame(ui.MainGame):
 	def _view(self, window):
 		self.draw_map(ui)
 	def _control(self, ch):
-		self.step_is_over = False
 		try:
 			new_mode = Controls[str(ch)](self)
 			if new_mode:
 				return new_mode
 			if not self.step_is_over:
 				return
+			self.step_is_over = False
 			return self.process_others()
 		except KeyError:
 			trace.debug("Unknown key: {0}".format(ch))

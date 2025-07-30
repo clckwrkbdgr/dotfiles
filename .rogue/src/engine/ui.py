@@ -44,6 +44,11 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		if self.nodelay():
 			return None
 		return super(MainGame, self).get_keymapping()
+	def pre_action(self):
+		if not self.game.scene.get_player():
+			return False
+		self.game.perform_automovement()
+		return True
 
 	# Options for customizations.
 

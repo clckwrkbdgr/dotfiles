@@ -47,14 +47,6 @@ class Game(ui.MainGame):
 	@Keys.bind('q')
 	def quit(self):
 		return True
-	def pre_action(self):
-		if True:
-			if self.dungeon.autoexplore:
-				control = self.dungeon.autoexplore.next()
-				trace.debug('Autoexploring: {0}'.format(repr(control)))
-				self.dungeon.shift_monster(self.dungeon.scene.get_player(), control)
-				self.dungeon.finish_action()
-		return True
 	@Keys.bind('o')
 	def start_autoexplore(self):
 		if True:

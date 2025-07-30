@@ -71,8 +71,6 @@ class MainGame(ui.MainGame):
 		return ui.Sprite(sprite or ' ', None)
 	def get_message_line_rect(self):
 		return Rect(Point(0, 0), Size(80, 1))
-	def pre_action(self):
-		return self.game._pre_action()
 	def action(self, control):
 		if isinstance(control, clckwrkbdgr.tui.Key):
 			self.game.autostop()
