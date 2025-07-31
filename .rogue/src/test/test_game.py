@@ -956,9 +956,8 @@ class TestGameSerialization(AbstractTestDungeon):
 				)
 		self.assertEqual(dungeon.scene.appliances[0].pos, restored_dungeon.scene.appliances[0].pos)
 		for pos in dungeon.scene.strata.size.iter_points():
-			self.assertEqual(dungeon.scene.strata.cell(pos).sprite, restored_dungeon.scene.strata.cell(pos).sprite, str(pos))
+			self.assertEqual(type(dungeon.scene.strata.cell(pos)).__name__, type(restored_dungeon.scene.strata.cell(pos)).__name__, str(pos))
 			self.assertEqual(dungeon.scene.strata.cell(pos).passable, restored_dungeon.scene.strata.cell(pos).passable, str(pos))
-			self.assertEqual(dungeon.scene.strata.cell(pos).remembered, restored_dungeon.scene.strata.cell(pos).remembered, str(pos))
 			self.assertEqual(dungeon.vision.visited.cell(pos), restored_dungeon.vision.visited.cell(pos), str(pos))
 		self.assertEqual(len(dungeon.scene.monsters), len(restored_dungeon.scene.monsters))
 		for monster, restored_monster in zip(dungeon.scene.monsters, restored_dungeon.scene.monsters):

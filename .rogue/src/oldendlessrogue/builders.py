@@ -3,19 +3,20 @@ import math
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr import utils
 from clckwrkbdgr.collections import AutoRegistry
-from src.engine import builders
-from src.engine import terrain
+from ..engine import builders
+from ..engine import terrain
+from ..engine import ui
 
 class EndlessFloor(terrain.Terrain):
-	_sprite = '.'
+	_sprite = ui.Sprite('.', None)
 	_name = '.'
 	_passable = True
 class EndlessWall(terrain.Terrain):
-	_sprite = '#'
+	_sprite = ui.Sprite('#', None)
 	_name = '#'
 	_passable = False
 class EndlessVoid(terrain.Terrain):
-	_sprite = ' '
+	_sprite = ui.Sprite(' ', None)
 	_name = ' '
 	_passable = False
 

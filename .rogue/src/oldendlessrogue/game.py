@@ -35,7 +35,7 @@ class Game(ui.MainGame):
 		sprite = terrain.sprite
 		if monsters:
 			sprite = monsters[-1].sprite
-		return ui.Sprite(sprite, None)
+		return sprite
 	def get_message_line_rect(self):
 		return Rect(Point(0, 25), Size(80, 1))
 	@Keys.bind('q')

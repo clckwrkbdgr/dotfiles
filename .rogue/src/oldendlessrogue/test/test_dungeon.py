@@ -32,10 +32,10 @@ class TestDungeon(unittest.TestCase):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
-		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite, '.')
-		self.assertEqual(dungeon.scene.terrain.cell((1, 0)).sprite, '#')
-		self.assertEqual(dungeon.scene.terrain.cell((0, 1)).sprite, '#')
-		self.assertEqual(dungeon.scene.terrain.cell((1, 1)).sprite, '.')
+		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite.sprite, '.')
+		self.assertEqual(dungeon.scene.terrain.cell((1, 0)).sprite.sprite, '#')
+		self.assertEqual(dungeon.scene.terrain.cell((0, 1)).sprite.sprite, '#')
+		self.assertEqual(dungeon.scene.terrain.cell((1, 1)).sprite.sprite, '.')
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 	def should_move_player(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
@@ -59,7 +59,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT, str_cell=lambda c:c.sprite), unittest.dedent("""\
 		_________
 		_........
 		_........
@@ -75,7 +75,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.finish_action()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT, str_cell=lambda c:c.sprite), unittest.dedent("""\
 		_________
 		_........
 		_........
@@ -91,7 +91,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.finish_action()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 3))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, 0))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT, str_cell=lambda c:c.sprite), unittest.dedent("""\
 		_________
 		_________
 		_________
@@ -106,7 +106,7 @@ class TestDungeon(unittest.TestCase):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
-		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite, '.')
+		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite.sprite, '.')
 		self.assertTrue(dungeon.scene.is_passable((0, 0)))
 		self.assertFalse(dungeon.scene.is_passable((1, 0)))
 		self.assertFalse(dungeon.scene.is_passable((-10, -10)))
@@ -127,8 +127,8 @@ class TestSerialization(unittest.TestCase):
 		other.load(other_data)
 		self.maxDiff = None
 		self.assertEqual(
-				'\n'.join(dungeon.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite) for c in dungeon.scene.terrain.blocks),
-				'\n'.join(other.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite) for c in other.scene.terrain.blocks),
+				'\n'.join(dungeon.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite.sprite) for c in dungeon.scene.terrain.blocks),
+				'\n'.join(other.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite.sprite) for c in other.scene.terrain.blocks),
 				)
 		self.assertEqual(dungeon.scene.get_player().pos, other.scene.get_player().pos)
 		self.assertEqual(dungeon.time, other.time)

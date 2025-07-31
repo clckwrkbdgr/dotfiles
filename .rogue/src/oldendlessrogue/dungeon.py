@@ -4,9 +4,10 @@ from . import builders
 from .. import engine
 from clckwrkbdgr.math.auto import Autoexplorer
 from ..engine import actors, scene
+from ..engine import ui
 
 class Player(actors.Monster):
-	_sprite = "@"
+	_sprite = ui.Sprite("@", None)
 
 class DungeonExplorer(Autoexplorer): # pragma: no cover
 	def __init__(self, dungeon):

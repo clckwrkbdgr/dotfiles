@@ -4,6 +4,7 @@ import logging
 Log = logging.getLogger('rogue')
 import src.game, src.engine.items, src.engine.actors, src.engine.terrain
 import src.ui
+from src.engine.ui import Sprite
 import src.pcg
 import clckwrkbdgr.fs
 import src.engine.builders
@@ -45,7 +46,7 @@ class DungeonSquatters(src.engine.builders.Builder):
 
 class Potion(src.engine.items.Item):
 	_name = 'potion'
-	_sprite = '!'
+	_sprite = Sprite('!', None)
 
 class Healing(src.engine.items.Consumable):
 	healing = 0
@@ -55,13 +56,13 @@ class Healing(src.engine.items.Consumable):
 
 class HealingPotion(src.engine.items.Item, Healing):
 	_name = 'healing potion'
-	_sprite = '!'
+	_sprite = Sprite('!', None)
 	healing = +5
 
 class Player(src.game.Player):
 	_hostile_to = [src.engine.actors.Monster]
 	_name = 'player'
-	_sprite = '@'
+	_sprite = Sprite('@', None)
 	_max_hp = 10
 	_vision = 10
 	_attack = 1
@@ -70,7 +71,7 @@ class Player(src.game.Player):
 class Monster(src.engine.actors.Monster):
 	_hostile_to = [Player]
 	_name = 'monster'
-	_sprite = 'M'
+	_sprite = Sprite('M', None)
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
@@ -79,7 +80,7 @@ class Monster(src.engine.actors.Monster):
 class Plant(src.engine.actors.Monster):
 	_hostile_to = [Player]
 	_name = 'plant'
-	_sprite = 'P'
+	_sprite = Sprite('P', None)
 	_max_hp = 1
 	_vision = 1
 	_attack = 1
@@ -92,7 +93,7 @@ class Plant(src.engine.actors.Monster):
 class Slime(src.game.Inert):
 	_hostile_to = [Player]
 	_name = 'slime'
-	_sprite = 'o'
+	_sprite = Sprite('o', None)
 	_max_hp = 5
 	_vision = 3
 	_attack = 1
@@ -105,7 +106,7 @@ class Slime(src.game.Inert):
 class Rodent(src.game.Angry):
 	_hostile_to = [Player]
 	_name = 'rodent'
-	_sprite = 'r'
+	_sprite = Sprite('r', None)
 	_max_hp = 3
 	_vision = 8
 	_attack = 1
@@ -117,69 +118,69 @@ class Rodent(src.game.Angry):
 
 class Void(src.engine.terrain.Terrain):
 	_name = 'void'
-	_sprite = ' '
+	_sprite = Sprite(' ', None)
 	_passable = False
 class Corner(src.engine.terrain.Terrain):
 	_name = 'corner'
-	_sprite = "+"
+	_sprite = Sprite("+", None)
 	_passable = False
 	_remembered='+'
 class Door(src.engine.terrain.Terrain):
 	_name = 'door'
-	_sprite = "+"
+	_sprite = Sprite("+", None)
 	_passable = True
 	_remembered='+'
 class RogueDoor(src.engine.terrain.Terrain):
 	_name = 'rogue_door'
-	_sprite = "+"
+	_sprite = Sprite("+", None)
 	_passable = True
 	_remembered='+'
 	_allow_diagonal=False
 	_dark=True
 class Floor(src.engine.terrain.Terrain):
 	_name = 'floor'
-	_sprite = "."
+	_sprite = Sprite(".", None)
 	_passable = True
 class TunnelFloor(src.engine.terrain.Terrain):
 	_name = 'tunnel_floor'
-	_sprite = "."
+	_sprite = Sprite(".", None)
 	_passable = True
 	_allow_diagonal=False
 class Passage(src.engine.terrain.Terrain):
 	_name = 'passage'
-	_sprite = "#"
+	_sprite = Sprite("#", None)
 	_passable = True
 	_remembered='#'
 class RoguePassage(src.engine.terrain.Terrain):
 	_name = 'rogue_passage'
-	_sprite = "#"
+	_sprite = Sprite("#", None)
 	_passable = True
 	_remembered='#'
 	_allow_diagonal=False
 	_dark=True
 class Wall(src.engine.terrain.Terrain):
 	_name = 'wall'
-	_sprite = '#'
+	_sprite = Sprite('#', None)
 	_passable = False
 	_remembered='#'
 class WallH(src.engine.terrain.Terrain):
 	_name = 'wall_h'
-	_sprite = "-"
+	_sprite = Sprite("-", None)
 	_passable = False
 	_remembered='-'
 class WallV(src.engine.terrain.Terrain):
 	_name = 'wall_v'
-	_sprite = "|"
+	_sprite = Sprite("|", None)
 	_passable = False
 	_remembered='|'
 class Water(src.engine.terrain.Terrain):
 	_name = 'water'
-	_sprite = "~"
+	_sprite = Sprite("~", None)
 	_passable = True
 
 class Stairs(src.game.LevelExit):
 	_name = 'stairs'
-	_sprite = '>'
+	_sprite = Sprite('>', None)
 
 class DungeonMapping:
 	void = Void()

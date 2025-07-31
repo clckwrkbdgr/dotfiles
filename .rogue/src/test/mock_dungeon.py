@@ -4,41 +4,42 @@ from .. import pcg as settlers
 from .. import game
 from ..engine.terrain import Terrain
 from ..engine import items, actors
+from ..engine.ui import Sprite
 
 class NameItem(items.Item):
 	_name = 'name'
-	_sprite = '!'
+	_sprite = Sprite('!', None)
 
 class Potion(items.Item):
 	_name = 'potion'
-	_sprite = '!'
+	_sprite = Sprite('!', None)
 
 class HealingPotion(items.Item, items.Consumable):
 	_name = 'healing potion'
-	_sprite = '!'
+	_sprite = Sprite('!', None)
 	def consume(self, target):
 		diff = target.affect_health(+5)
 		return [game.HealthEvent(target, diff)]
 
 class Money(items.Item):
 	_name = 'money'
-	_sprite = '$'
+	_sprite = Sprite('$', None)
 
 class Weapon(items.Item):
 	_name = 'weapon'
-	_sprite = '('
+	_sprite = Sprite('(', None)
 
 class Ranged(items.Item):
 	_name = 'ranged'
-	_sprite = ')'
+	_sprite = Sprite(')', None)
 
 class Rags(items.Item):
 	_name = 'rags'
-	_sprite = '['
+	_sprite = Sprite('[', None)
 
 class Name(actors.EquippedMonster):
 	_name = 'name'
-	_sprite = 'M'
+	_sprite = Sprite('M', None)
 	_max_hp = 100
 	_vision = 10
 	_drops = [
@@ -49,7 +50,7 @@ class Name(actors.EquippedMonster):
 class Player(game.Player):
 	_hostile_to = [actors.Monster]
 	_name = 'player'
-	_sprite = '@'
+	_sprite = Sprite('@', None)
 	_max_hp = 10
 	_vision = 10
 	_attack = 1
@@ -59,7 +60,7 @@ class Player(game.Player):
 class MockMonster(actors.EquippedMonster):
 	_hostile_to = [Player]
 	_name = 'monster'
-	_sprite = 'M'
+	_sprite = Sprite('M', None)
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
@@ -69,7 +70,7 @@ class MockMonster(actors.EquippedMonster):
 class AngryMonster(game.Angry):
 	_hostile_to = [Player]
 	_name = 'monster'
-	_sprite = 'M'
+	_sprite = Sprite('M', None)
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
@@ -79,7 +80,7 @@ class AngryMonster(game.Angry):
 class InertMonster(game.Inert):
 	_hostile_to = [Player]
 	_name = 'monster'
-	_sprite = 'M'
+	_sprite = Sprite('M', None)
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
@@ -89,7 +90,7 @@ class InertMonster(game.Inert):
 class DummyThief(actors.EquippedMonster):
 	_hostile_to = [Player]
 	_name = 'thief'
-	_sprite = 'T'
+	_sprite = Sprite('T', None)
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
@@ -101,7 +102,7 @@ class DummyThief(actors.EquippedMonster):
 class Thief(game.Angry):
 	_hostile_to = [Player]
 	_name = 'thief'
-	_sprite = 'T'
+	_sprite = Sprite('T', None)
 	_max_hp = 3
 	_vision = 10
 	_attack = 1
@@ -112,64 +113,64 @@ class Thief(game.Angry):
 
 class NameTerrain(Terrain):
 	_name = 'name'
-	_sprite = '.'
+	_sprite = Sprite('.', None)
 class Space(Terrain):
 	_name = ' '
-	_sprite = ' '
+	_sprite = Sprite(' ', None)
 	_passable = False
 class Wall(Terrain):
 	_name = '#'
-	_sprite = "#"
+	_sprite = Sprite("#", None)
 	_passable = False
-	_remembered='#'
+	_remembered= Sprite('#', None)
 class Floor(Terrain):
 	_name = '.'
-	_sprite = "."
+	_sprite = Sprite(".", None)
 	_passable = True
 class Water(Terrain):
 	_name = '~'
-	_sprite = "."
+	_sprite = Sprite(".", None)
 	_passable = True
 	_allow_diagonal=False
 class NonDiagonalWall(Terrain):
 	_name = '#'
-	_sprite = "#"
+	_sprite = Sprite("#", None)
 	_passable = True
-	_remembered='#'
+	_remembered=Sprite('#', None)
 	_allow_diagonal=False
 	_dark=True
 class NonDiagonalOblivionWall(Terrain):
 	_name = '#'
-	_sprite = "#"
+	_sprite = Sprite("#", None)
 	_passable = True
 	_allow_diagonal=False
 	_dark=True
 class Corner(Terrain):
 	_name = '+'
-	_sprite = "+"
+	_sprite = Sprite("+", None)
 	_passable = False
-	_remembered='+'
+	_remembered=Sprite('+', None)
 class WallH(Terrain):
 	_name = '-'
-	_sprite = "-"
+	_sprite = Sprite("-", None)
 	_passable = False
-	_remembered='-'
+	_remembered=Sprite('-', None)
 class WallV(Terrain):
 	_name = '|'
-	_sprite = "|"
+	_sprite = Sprite("|", None)
 	_passable = False
-	_remembered='|'
+	_remembered=Sprite('|', None)
 class DarkFloor(Terrain):
 	_name = '^'
-	_sprite = "^"
+	_sprite = Sprite("^", None)
 	_passable = True
-	_remembered='^'
+	_remembered=Sprite('^', None)
 	_allow_diagonal=False
 	_dark=True
 
 class MockStairs(game.LevelExit):
 	_name = 'stairs'
-	_sprite = '>'
+	_sprite = Sprite('>', None)
 
 class MockGame(game.Game):
 	SPECIES = {

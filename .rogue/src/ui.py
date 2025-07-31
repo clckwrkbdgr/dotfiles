@@ -12,6 +12,7 @@ import clckwrkbdgr.text
 from clckwrkbdgr.tui import Key, Keymapping
 from .engine.events import Events
 from .engine import ui
+from .engine.ui import Sprite
 
 DIRECTION = {
 	'h' : Direction.LEFT,
@@ -33,10 +34,10 @@ class MainGame(ui.MainGame):
 				len(str(self.game.scene.get_player().max_hp)),
 				self.game.scene.get_player().max_hp) if self.game.scene.get_player() else '[DEAD] Press Any Key...'),
 			ui.Indicator((12, 24), 7, lambda self: 'here: {0}'.format(
-				next(self.game.scene.iter_items_at(self.game.scene.get_player().pos), None).sprite,
+				next(self.game.scene.iter_items_at(self.game.scene.get_player().pos), None).sprite.sprite,
 				) if self.game.scene.get_player() and next(self.game.scene.iter_items_at(self.game.scene.get_player().pos), None) else ''),
 			ui.Indicator((20, 24), 7, lambda self: 'inv: {0:>2}'.format(
-				''.join(item.sprite for item in self.game.scene.get_player().inventory)
+				''.join(item.sprite.sprite for item in self.game.scene.get_player().inventory)
 				if len(self.game.scene.get_player().inventory) <= 2
 				else len(self.game.scene.get_player().inventory)
 				) if self.game.scene.get_player() and self.game.scene.get_player().inventory else ''
@@ -54,8 +55,8 @@ class MainGame(ui.MainGame):
 	def get_sprite(self, pos, cell_info):
 		game = self.game
 		cell, objects, items, monsters = cell_info
-		sprite = ' '
-		if game.god.vision or game.vision.field_of_view.is_visible(pos.x, pos.y):
+		sprite = Sprite(' ', None)
+		if game.is_visible(pos):
 			if monsters:
 				sprite = monsters[-1].sprite
 			elif items:
@@ -68,7 +69,7 @@ class MainGame(ui.MainGame):
 			sprite = objects[-1].sprite
 		elif game.vision.visited.cell(pos) and cell.remembered:
 			sprite = cell.remembered
-		return ui.Sprite(sprite or ' ', None)
+		return sprite
 	def get_message_line_rect(self):
 		return Rect(Point(0, 0), Size(80, 1))
 	@Events.on(game.DiscoverEvent)

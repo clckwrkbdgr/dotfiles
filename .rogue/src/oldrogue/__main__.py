@@ -58,13 +58,13 @@ class EntityClassDistribution:
 		return [(value, entity_class) for entity_class in self.classes]
 
 class StairsUp(appliances.LevelPassage):
-	_sprite = '<'
+	_sprite = Sprite('<', None)
 	_name = 'stairs up'
 	_id = 'enter'
 	_can_go_up = True
 
 class DungeonGates(appliances.LevelPassage):
-	_sprite = '<'
+	_sprite = Sprite('<', None)
 	_name = 'exit from the dungeon'
 	_id = 'enter'
 	_can_go_up = True
@@ -74,17 +74,17 @@ class DungeonGates(appliances.LevelPassage):
 			raise GameCompleted()
 
 class StairsDown(appliances.LevelPassage):
-	_sprite = '>'
+	_sprite = Sprite('>', None)
 	_name = 'stairs down'
 	_id = 'exit'
 	_can_go_down = True
 
 class McGuffin(Item):
-	_sprite = "*"
+	_sprite = Sprite("*", None)
 	_name = "mcguffin"
 
 class HealingPotion(Item, items.Consumable):
-	_sprite = "!"
+	_sprite = Sprite("!", None)
 	_name = "potion"
 	def consume(self, who):
 		who.affect_health(10)
@@ -120,7 +120,7 @@ class RealMonster(actors.EquippedMonster):
 
 class Rogue(Player):
 	_hostile_to = [RealMonster]
-	_sprite = "@"
+	_sprite = Sprite("@", None)
 	_name = "rogue"
 	_max_hp = 25
 	_attack = 1

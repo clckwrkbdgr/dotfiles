@@ -3,7 +3,7 @@ import six
 import inspect
 
 class Terrain(object):
-	sprite = classfield('_sprite', ' ')
+	sprite = classfield('_sprite', None)
 	name = classfield('_name', 'void')
 	passable = classfield('_passable', True) # allow free movement.
 	remembered = classfield('_remembered', None) # sprite for "remembered" state, where it is not seen directly, but was visited before.

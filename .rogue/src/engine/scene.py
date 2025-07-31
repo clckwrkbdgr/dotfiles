@@ -12,11 +12,11 @@ class Scene(object):
 		stream.set_meta_info('Appliances', {_.__name__:_ for _ in utils.all_subclasses(appliances.Appliance)})
 		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(actors.Actor)})
 
-	def tostring(self, view_rect):
+	def tostring(self, view_rect, str_cell=None):
 		result = Matrix(view_rect.size)
 		for pos, cell_info in self.iter_cells(view_rect):
 			result.set_cell(pos - view_rect.topleft, self.str_cell(pos, cell_info))
-		return result.tostring()
+		return result.tostring(str_cell)
 	def str_cell(self, pos, cell_info=None):
 		if not cell_info:
 			cell_info = self.get_cell_info(pos)
