@@ -511,6 +511,33 @@ class Game(engine.Game):
 			if not rect.contains(monster_pos, with_border=True):
 				continue
 			yield monster_coord, monster
+	def process_others(self):
+		if self.step_taken:
+			player_pos = self.scene.get_player_coord().get_global(self.scene.world)
+			if self.scene.get_player().hp < self.scene.get_player().max_hp:
+				self.scene.get_player().regeneration += 1
+				while self.scene.get_player().regeneration >= 10:
+					self.scene.get_player().regeneration -= 10
+					self.scene.get_player().affect_health(+1)
+					if self.scene.get_player().hp >= self.scene.get_player().max_hp:
+						self.scene.get_player().hp = self.scene.get_player().max_hp
+
+			self.passed_time += 1
+			self.step_taken = False
+
+			monster_action_range = Rect(
+					player_pos - Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH),
+					Size(1 + MAX_MONSTER_ACTION_LENGTH * 2, 1 + MAX_MONSTER_ACTION_LENGTH * 2),
+					)
+			self.already_acted_monsters_from_previous_fields = []
+			for monster_coord, monster in self.iter_monsters_in_rect(monster_action_range):
+				if monster in self.already_acted_monsters_from_previous_fields:
+					continue
+				if isinstance(monster, Player):
+					continue
+				monster.coord = monster_coord
+				monster.act(self)
+		return True
 
 class Scene(scene.Scene):
 	def __init__(self):
@@ -779,7 +806,7 @@ class MainGameMode(ui.MainGame):
 	@Keys.bind('.')
 	def wait(self):
 		if True:
-			self.step_taken = True
+			self.game.step_taken = True
 	@Keys.bind('g')
 	def grab_item(self):
 		game = self.game
@@ -792,7 +819,7 @@ class MainGameMode(ui.MainGame):
 				game.scene.get_player().grab(item)
 				game.scene.world.get_data(game.scene.get_player_coord())[-1].items.remove(item)
 				self.game.fire_event(PickedUpItem(item))
-				self.step_taken = True
+				self.game.step_taken = True
 			except Monster.InventoryFull:
 				self.game.fire_event(InventoryIsFull())
 	@Keys.bind('C')
@@ -895,7 +922,7 @@ class MainGameMode(ui.MainGame):
 					item = game.scene.get_player().drop(menu_choice)
 					game.scene.world.get_data(game.scene.get_player_coord())[-1].items.append(item)
 					self.game.fire_event(DroppedItem('you', item.item))
-					self.step_taken = True
+					self.game.step_taken = True
 				return InventoryMode(
 						game.scene.get_player().inventory,
 						caption="Select item to drop (a-z/ESC):",
@@ -938,35 +965,7 @@ class MainGameMode(ui.MainGame):
 					dest_field_data.monsters.append(player)
 				player.pos = dest_pos.values[-1]
 				game.scene.autoexpand(self.game.scene.get_player_coord(), Size(40, 40))
-			self.step_taken = True
-	def process_others(self):
-		game = self.game
-		if self.step_taken:
-			player_pos = game.scene.get_player_coord().get_global(game.scene.world)
-			if game.scene.get_player().hp < game.scene.get_player().max_hp:
-				game.scene.get_player().regeneration += 1
-				while game.scene.get_player().regeneration >= 10:
-					game.scene.get_player().regeneration -= 10
-					game.scene.get_player().affect_health(+1)
-					if game.scene.get_player().hp >= game.scene.get_player().max_hp:
-						game.scene.get_player().hp = game.scene.get_player().max_hp
-
-			game.passed_time += 1
-			self.step_taken = False
-
-			monster_action_range = Rect(
-					player_pos - Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH),
-					Size(1 + MAX_MONSTER_ACTION_LENGTH * 2, 1 + MAX_MONSTER_ACTION_LENGTH * 2),
-					)
-			self.game.already_acted_monsters_from_previous_fields = []
-			for monster_coord, monster in self.game.iter_monsters_in_rect(monster_action_range):
-				if monster in self.game.already_acted_monsters_from_previous_fields:
-					continue
-				if isinstance(monster, Player):
-					continue
-				monster.coord = monster_coord
-				monster.act(game)
-		return True
+			self.game.step_taken = True
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()
 class DirectionDialogMode(clckwrkbdgr.tui.Mode):
