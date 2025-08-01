@@ -30,12 +30,6 @@ class Game(ui.MainGame):
 		self.dungeon = self.game
 	def get_viewrect(self):
 		return Rect(self.dungeon.scene.get_player().pos - self.VIEW_CENTER, Size(25, 25))
-	def get_sprite(self, pos, cell_info):
-		terrain, _1, _2, monsters = cell_info
-		sprite = terrain.sprite
-		if monsters:
-			sprite = monsters[-1].sprite
-		return sprite
 	def get_message_line_rect(self):
 		return Rect(Point(0, 25), Size(80, 1))
 	@Keys.bind('q')

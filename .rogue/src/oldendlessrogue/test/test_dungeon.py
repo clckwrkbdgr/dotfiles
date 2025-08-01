@@ -59,7 +59,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT, str_cell=lambda c:c.sprite), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_........
 		_........
@@ -75,7 +75,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.finish_action()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT, str_cell=lambda c:c.sprite), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_........
 		_........
@@ -91,7 +91,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.finish_action()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 3))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, 0))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT, str_cell=lambda c:c.sprite), unittest.dedent("""\
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_________
 		_________

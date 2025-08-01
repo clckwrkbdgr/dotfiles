@@ -52,24 +52,6 @@ class MainGame(ui.MainGame):
 		return Point(0, 1)
 	def get_viewrect(self):
 		return self.game.get_viewport()
-	def get_sprite(self, pos, cell_info):
-		game = self.game
-		cell, objects, items, monsters = cell_info
-		sprite = Sprite(' ', None)
-		if game.is_visible(pos):
-			if monsters:
-				sprite = monsters[-1].sprite
-			elif items:
-				sprite = items[-1].sprite
-			elif objects:
-				sprite = objects[-1].sprite
-			else:
-				sprite = cell.sprite
-		elif objects and game.vision.visited.cell(pos):
-			sprite = objects[-1].sprite
-		elif game.vision.visited.cell(pos) and cell.remembered:
-			sprite = cell.remembered
-		return sprite
 	def get_message_line_rect(self):
 		return Rect(Point(0, 0), Size(80, 1))
 	@Events.on(game.DiscoverEvent)

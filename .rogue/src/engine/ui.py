@@ -84,11 +84,28 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		See Scene.iter_cells()
 		"""
 		raise NotImplementedError()
-	def get_sprite(self, world_pos, cell_info): # pragma: no cover
-		""" Should return Sprite object for given world pos
-		and cell info (see Scene.get_cell_info()).
+	def get_sprite(self, pos, cell_info=None):
+		""" Returns topmost Sprite object to display at the specified world pos.
+		Additional cell info may be passed (see Scene.get_cell_info()).
 		"""
-		raise NotImplementedError()
+		if cell_info is None:
+			cell_info = self.game.scene.get_cell_info(pos)
+		cell, objects, items, monsters = cell_info
+		if self.game.is_visible(pos):
+			if monsters:
+				return monsters[-1].sprite
+			elif items:
+				return items[-1].sprite
+			elif objects:
+				return objects[-1].sprite
+			elif cell:
+				return cell.sprite
+		if self.game.is_visited(pos):
+			if objects:
+				return objects[-1].sprite
+			elif cell and cell.remembered:
+				return cell.remembered
+		return None
 	
 	# Displaying.
 
@@ -109,6 +126,8 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		view_rect = self.get_viewrect()
 		for world_pos, cell_info in self.game.scene.iter_cells(view_rect):
 			sprite = self.get_sprite(world_pos, cell_info)
+			if sprite is None:
+				continue
 			viewport_pos = world_pos - view_rect.topleft
 			screen_pos = viewport_pos + self.get_map_shift()
 			ui.print_char(screen_pos.x, screen_pos.y, sprite.sprite, sprite.color)

@@ -41,8 +41,6 @@ class MockMainGame(ui.MainGame):
 				self.game.scene.get_player().pos - Point(2, 2),
 				Size(5, 5),
 				)
-	def get_sprite(self, world_pos, cell_info):
-		return ui.Sprite(self.game.scene.str_cell(world_pos) or ' ', None)
 
 class MainGameTestCase(unittest.TestCase):
 	def _init(self):
@@ -54,17 +52,33 @@ class MainGameTestCase(unittest.TestCase):
 		return mode, mock_ui
 
 class TestMainGameDisplay(MainGameTestCase):
+	def should_get_visible_sprites(self):
+		mode, mock_ui = self._init()
+		self.assertEqual(mode.get_sprite(Point(4, 9)), ui.Sprite('#', None))
+		self.assertEqual(mode.get_sprite(Point(4, 7)), ui.Sprite('@', None))
+		mode.game.scene.get_player().pos = Point(1, 1)
+		self.assertEqual(mode.get_sprite(Point(3, 2)), ui.Sprite('&', None))
+		self.assertEqual(mode.get_sprite(Point(1, 2)), ui.Sprite('?', None))
+	def should_get_remembered_sprites(self):
+		mode, mock_ui = self._init()
+		self.assertEqual(mode.get_sprite(Point(3, 2)), ui.Sprite('&', None))
+		self.assertEqual(mode.get_sprite(Point(1, 2)), None) # ?
+		self.assertEqual(mode.get_sprite(Point(0, 0)), ui.Sprite('#', None))
 	def should_draw_map(self):
 		mode, mock_ui = self._init()
+
+		# To display some void south of the wall:
+		mode.game.scene.get_player().pos.y += 1
+
 		mode.draw_map(mock_ui)
 		self.maxDiff = None
 		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\
 		_                              _
-		_.....                         _
 		_.~...                         _
-		_..@..                         _
-		_.b...                         _
+		_.....                         _
+		_.b@..                         _
 		_#####                         _
+		_                              _
 		_                              _
 		""").replace('_', ''))
 	def should_print_messages(self):

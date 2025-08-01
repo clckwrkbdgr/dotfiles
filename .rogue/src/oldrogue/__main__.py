@@ -407,22 +407,6 @@ class MainGame(ui.MainGame):
 		return None
 	def get_map_shift(self):
 		return Point(0, 1)
-	def get_sprite(self, pos, cell_info):
-		dungeon = self.data
-		terrain, objects, items, monsters = cell_info
-		is_visible = dungeon.is_visible(pos) or dungeon.god.vision
-		if monsters and is_visible:
-			return monsters[-1].sprite
-		elif items and (dungeon.is_remembered(pos) or is_visible):
-			return items[-1].sprite
-		elif objects and (dungeon.is_remembered(pos) or is_visible):
-			return objects[-1].sprite
-		terrain, remembered = terrain
-		if is_visible:
-			return terrain
-		elif dungeon.is_remembered(pos):
-			return remembered
-		return None
 	def _view(self, window):
 		self.draw_map(ui)
 	def _control(self, ch):

@@ -769,17 +769,6 @@ class MainGameMode(ui.MainGame):
 				self.game.scene.get_player_coord().get_global(self.game.scene.world) + self.centered_viewport.topleft,
 				self.centered_viewport.size,
 				)
-	def get_sprite(self, _pos, cell_info):
-		_terrain, _objects, _items, _monsters = cell_info
-		if _monsters:
-			entity = _monsters[-1]
-		elif _items:
-			entity = _items[-1]
-		elif _objects:
-			entity = _objects[-1]
-		else:
-			entity = _terrain
-		return entity.sprite
 	def item_here(self):
 		return next(self.game.scene.iter_items_at(self.game.scene.get_player_coord()), None)
 	def get_message_line_rect(self):

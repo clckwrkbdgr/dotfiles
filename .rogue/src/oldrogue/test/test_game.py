@@ -420,15 +420,15 @@ class TestDungeon(unittest.TestCase):
 			is_visible = dungeon.is_visible(pos) or dungeon.god.vision
 			if monsters and is_visible:
 				view.set_cell(pos, monsters[-1].sprite)
-			elif items and (dungeon.is_remembered(pos) or is_visible):
+			elif items and (dungeon.is_visited(pos) or is_visible):
 				view.set_cell(pos, items[-1].sprite)
-			elif objects and (dungeon.is_remembered(pos) or is_visible):
+			elif objects and (dungeon.is_visited(pos) or is_visible):
 				view.set_cell(pos, objects[-1].sprite)
 			else:
 				terrain, remembered = terrain
 				if is_visible:
 					view.set_cell(pos, terrain)
-				elif dungeon.is_remembered(pos):
+				elif dungeon.is_visited(pos):
 					view.set_cell(pos, remembered)
 		expected = textwrap.dedent("""\
 				+--+____________________________________________________________________________
@@ -516,20 +516,20 @@ class TestDungeon(unittest.TestCase):
 		dungeon.visit(dungeon.scene.get_player().pos)
 		dungeon.scene.get_player().pos = Point(2, 6)
 
-		self.assertTrue(dungeon.is_remembered(dungeon.scene.rooms.cell((0, 0))))
-		self.assertFalse(dungeon.is_remembered(dungeon.scene.rooms.cell((1, 0))))
-		self.assertTrue(dungeon.is_remembered(dungeon.scene.tunnels[0], additional=Point(3, 1)))
-		self.assertFalse(dungeon.is_remembered(dungeon.scene.tunnels[1], additional=Point(11, 4)))
-		self.assertTrue(dungeon.is_remembered(Point(2, 1)))
-		self.assertTrue(dungeon.is_remembered(Point(3, 1)))
-		self.assertFalse(dungeon.is_remembered(Point(5, 1)))
-		self.assertFalse(dungeon.is_remembered(Point(8, 2)))
+		self.assertTrue(dungeon.is_visited(dungeon.scene.rooms.cell((0, 0))))
+		self.assertFalse(dungeon.is_visited(dungeon.scene.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_visited(dungeon.scene.tunnels[0], additional=Point(3, 1)))
+		self.assertFalse(dungeon.is_visited(dungeon.scene.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_visited(Point(2, 1)))
+		self.assertTrue(dungeon.is_visited(Point(3, 1)))
+		self.assertFalse(dungeon.is_visited(Point(5, 1)))
+		self.assertFalse(dungeon.is_visited(Point(8, 2)))
 
 		dungeon.god.vision = True
-		self.assertTrue(dungeon.is_remembered(dungeon.scene.rooms.cell((1, 0))))
-		self.assertTrue(dungeon.is_remembered(dungeon.scene.tunnels[1], additional=Point(11, 4)))
-		self.assertTrue(dungeon.is_remembered(Point(5, 1)))
-		self.assertTrue(dungeon.is_remembered(Point(8, 2)))
+		self.assertTrue(dungeon.is_visited(dungeon.scene.rooms.cell((1, 0))))
+		self.assertTrue(dungeon.is_visited(dungeon.scene.tunnels[1], additional=Point(11, 4)))
+		self.assertTrue(dungeon.is_visited(Point(5, 1)))
+		self.assertTrue(dungeon.is_visited(Point(8, 2)))
 	def should_move_monster(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')

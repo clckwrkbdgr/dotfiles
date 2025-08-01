@@ -1,19 +1,20 @@
-from clckwrkbdgr.math import Point, Rect, Size
+from clckwrkbdgr.math import Point, Rect, Size, distance
 from clckwrkbdgr.math.grid import Matrix
 from . import terrain, actors, items, appliances
 from . import builders
 from . import scene, events
 from . import _base
+from .ui import Sprite
 
 ### Terrain. ###################################################################
 
 class Floor(terrain.Terrain):
-	_sprite = '.'
+	_sprite = Sprite('.', None)
 	_name = 'floor'
 	_passable = True
 
 class ToxicWaste(terrain.Terrain):
-	_sprite = '~'
+	_sprite = Sprite('~', None)
 	_name = 'toxic waste'
 	_passable = True
 	def __init__(self, damage=0):
@@ -25,36 +26,36 @@ class ToxicWaste(terrain.Terrain):
 		stream.write(self.damage)
 
 class Wall(terrain.Terrain):
-	_sprite = '#'
+	_sprite = Sprite('#', None)
 	_name = 'wall'
 	_passable = False
-	_remembered = '#'
+	_remembered = Sprite('#', None)
 
 ### Items. #####################################################################
 
 class Gold(items.Item):
-	_sprite = '*'
+	_sprite = Sprite('*', None)
 	_name = 'gold'
 
 class Potion(items.Item, items.Consumable):
-	_sprite = '!'
+	_sprite = Sprite('!', None)
 	_name = 'potion'
 	def consume(self, target):
 		diff = target.affect_health(+5)
 		return [Healed(target, diff)]
 
 class Dagger(items.Item):
-	_sprite = '('
+	_sprite = Sprite('(', None)
 	_name = 'dagger'
 	_attack = 1
 
 class Rags(items.Item, items.Wearable):
-	_sprite = '['
+	_sprite = Sprite('[', None)
 	_name = 'rags'
 	_protection = 1
 
 class ScribbledNote(items.Item):
-	_sprite = '?'
+	_sprite = Sprite('?', None)
 	_name = 'note'
 	def __init__(self, text='turn around'):
 		self.text = text
@@ -67,28 +68,28 @@ class ScribbledNote(items.Item):
 ### Appliances. ################################################################
 
 class Door(appliances.Appliance):
-	_sprite = '+'
+	_sprite = Sprite('+', None)
 	_name = 'door'
 
 class Tree(appliances.Appliance):
-	_sprite = '&'
+	_sprite = Sprite('&', None)
 	_name = 'tree'
 
 class StairsUp(appliances.LevelPassage):
-	_sprite = '>'
+	_sprite = Sprite('>', None)
 	_name = 'stairs'
 	_id = 'enter'
 	_can_go_up = True
 	_unlocking_item = Gold
 
 class StairsDown(appliances.LevelPassage):
-	_sprite = '>'
+	_sprite = Sprite('>', None)
 	_name = 'stairs'
 	_id = 'exit'
 	_can_go_up = False
 
 class Statue(appliances.Appliance):
-	_sprite = '&'
+	_sprite = Sprite('&', None)
 	_name = 'statue'
 	def __init__(self, likeness='dummy'):
 		self.likeness = likeness
@@ -101,11 +102,11 @@ class Statue(appliances.Appliance):
 ### Actors. ####################################################################
 
 class Dragonfly(actors.Actor):
-	_sprite = 'd'
+	_sprite = Sprite('d', None)
 	_name = 'dragonfly'
 
 class Butterfly(actors.Actor):
-	_sprite = 'b'
+	_sprite = Sprite('b', None)
 	_name = 'butterfly'
 	def __init__(self, *args, **kwargs):
 		self.color = kwargs.get('color', 'black')
@@ -120,7 +121,7 @@ class Butterfly(actors.Actor):
 
 class Rogue(actors.EquippedMonster):
 	_hostile_to = [actors.Monster]
-	_sprite = '@'
+	_sprite = Sprite('@', None)
 	_name = 'rogue'
 	_attack = 1
 	_max_hp = 10
@@ -128,7 +129,7 @@ class Rogue(actors.EquippedMonster):
 
 class Rat(actors.Monster):
 	_hostile_to = [Rogue]
-	_sprite = 'r'
+	_sprite = Sprite('r', None)
 	_name = 'rat'
 	_max_hp = 10
 	_attack = 1
@@ -154,7 +155,7 @@ class PackRat(Rat):
 
 class Goblin(actors.EquippedMonster):
 	_hostile_to = [Rogue, PackRat]
-	_sprite = 'g'
+	_sprite = Sprite('g', None)
 	_name = 'goblin'
 	_attack = 1
 	_max_hp = 10
@@ -328,3 +329,5 @@ class NanoDungeon(_base.Game):
 			builder.point() # Skip not interesting position.
 		scene.monsters.append(Rogue(builder.point()))
 		self.scene = scene
+	def is_visible(self, pos):
+		return distance(pos, self.scene.get_player().pos) < 3

@@ -316,13 +316,15 @@ class Game(engine.Game):
 		return Rect(Point(0, 0), self.scene.strata.size)
 	def is_visible(self, pos):
 		return self.god.vision or self.vision.field_of_view.is_visible(pos.x, pos.y)
+	def is_visited(self, pos):
+		return self.vision.visited.cell(pos)
 	def tostring(self, with_fov=False):
 		""" Creates string representation of the current viewport.
 		If with_fov=True, considers transparency/lighting, otherwise everything is visible.
 		If strcell is given, it is lambda that takes pair (x, y) and returns single-char representation of that cell. By default get_sprite(x, y) is used.
 		"""
 		if not with_fov:
-			return self.scene.tostring(self.get_viewport(), str_cell=lambda c:c.sprite)
+			return self.scene.tostring(self.get_viewport())
 		result = Matrix(self.get_viewport().size)
 		for pos, cell_info in self.scene.iter_cells(self.get_viewport()):
 			result.set_cell(pos, self.get_cell_repr(pos, cell_info) or ' ')

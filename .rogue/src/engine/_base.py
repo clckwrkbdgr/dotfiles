@@ -63,6 +63,19 @@ class Game(object):
 		while self.has_unprocessed_events():
 			yield self.process_next_event(raw=raw, bind_self=bind_self)
 
+	# Display.
+
+	def is_visible(self, pos): # pragma: no cover
+		""" Should return True is position on map is visible to player.
+		By default the whole map is visible.
+		"""
+		return True
+	def is_visited(self, pos): # pragma: no cover
+		""" Should return True is position on map was visited by player.
+		By default the whole map is considered visited and remembered.
+		"""
+		return True
+
 	# Actions.
 
 	def in_automovement(self): # pragma: no cover

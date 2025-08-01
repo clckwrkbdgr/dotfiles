@@ -337,7 +337,7 @@ class Dungeon(engine.Game):
 				if self.is_visible(tunnel, obj):
 					return True
 		return False
-	def is_remembered(self, obj, additional=None):
+	def is_visited(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) was visible for player at some point and now can be remembered.
 		Additional data depends on type of primary object.
 		Currently only Tunnel Points are considered.
@@ -353,10 +353,10 @@ class Dungeon(engine.Game):
 			return additional in tunnel_visited
 		if isinstance(obj, Point):
 			for room in self.scene.rooms.values():
-				if room.contains(obj, with_border=True) and self.is_remembered(room):
+				if room.contains(obj, with_border=True) and self.is_visited(room):
 					return True
 			for tunnel in self.scene.tunnels:
-				if self.is_remembered(tunnel, obj): # pragma: no covered -- TODO
+				if self.is_visited(tunnel, obj): # pragma: no covered -- TODO
 					return True
 		return False
 	def visit_tunnel(self, tunnel, pos, adjacent=True):

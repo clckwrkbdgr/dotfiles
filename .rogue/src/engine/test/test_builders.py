@@ -119,7 +119,7 @@ class TestBuilder(unittest.TestCase):
 				#..................#
 				####################
 				""")
-		self.assertEqual(grid.tostring(lambda c:c.sprite), expected)
+		self.assertEqual(grid.tostring(lambda c:c.sprite.sprite), expected)
 
 		_monsters = list(builder.make_actors())
 		self.assertEqual(sorted(map(lambda c:(c.name, c.pos, c.color), _monsters)), sorted([
@@ -143,4 +143,4 @@ class TestBuilder(unittest.TestCase):
 				#..~.....#
 				##########
 				""")
-		self.assertEqual(grid.tostring(lambda c:c.sprite), expected)
+		self.assertEqual(grid.tostring(lambda c:c.sprite.sprite), expected)

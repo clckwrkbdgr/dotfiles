@@ -152,6 +152,11 @@ class TestCurses(unittest.TestCase):
 		loop.modes.append(main_mode)
 		ui.window = MockCurses(key_sequence)
 		return ui, loop
+	def _addstr_map(self, matrix):
+		return [
+			('addstr', y, x, matrix[y-1][x]) for y in range(1, 11) for x in range(20)
+			if matrix[y-1][x] != ' '
+			]
 
 	def should_draw_game(self):
 		dungeon = mock_dungeon.build('single mock monster')
@@ -159,9 +164,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'monster!                                                                        '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -179,9 +182,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'monster!                                                                        '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -199,9 +200,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FULL) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -225,9 +224,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_EXIT) + [
 			('addstr', 0, 0, 'monster! monsters! stairs!                                                      '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -256,9 +253,7 @@ class TestCurses(unittest.TestCase):
 				'# .................#',
 				' ###################',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT_EXIT) + [
 			('addstr', 0, 0, 'monster...                                                                      '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -284,9 +279,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_REMEMBERED_EXIT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_REMEMBERED_EXIT) + [
 			('addstr', 0, 0, 'monster! monsters! stairs!                                                      '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -307,9 +300,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FIGHT) + [
 			('addstr', 0, 0, 'player x> monster. monster-1hp.                                                 '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -328,9 +319,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_KILLED_MONSTER[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_KILLED_MONSTER) + [
 			('addstr', 0, 0, 'player x> monster. monster-1hp. player x> monster. monster-1hp. monster dies.   '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -367,9 +356,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				'####################',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT_FULL) + [
 			('addstr', 0, 0, 'stairs! monster bumps.                                                          '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -389,9 +376,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_DEAD[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_DEAD) + [
 			('addstr', 0, 0, 'player-10hp. player dies.                                                       '),
 			('addstr', 24, 0, '[DEAD] Press Any Key...'),
 			('addstr', 24, 12, '       '),
@@ -456,9 +441,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -554,9 +537,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), godmode_display)
 		self.assertFalse(loop.action()) # v
 		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FULL) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -569,9 +550,7 @@ class TestCurses(unittest.TestCase):
 			])
 		self.assertTrue(loop.action()) # ~
 		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FULL) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -586,9 +565,7 @@ class TestCurses(unittest.TestCase):
 			])
 		self.assertFalse(loop.action()) # c
 		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_FULL[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FULL) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -612,9 +589,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.NEXT_DUNGEON[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.NEXT_DUNGEON) + [
 			('addstr', 0, 0, 'monster! stairs! player V... monster!                                           '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -685,9 +660,7 @@ class TestCurses(unittest.TestCase):
 				'#.................. ',
 				' #################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -713,9 +686,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, 'here: !'),
@@ -741,9 +712,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'player ^^ potion.                                                               '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -770,9 +739,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -799,9 +766,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -840,9 +805,7 @@ class TestCurses(unittest.TestCase):
 				'#.................. ',
 				' #################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -869,9 +832,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'player ^^ potion.                                                               '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -916,9 +877,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'player VV potion.                                                               '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, 'here: !'),
@@ -948,9 +907,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, 'here: !'),
@@ -985,9 +942,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, 'here: !'),
@@ -1014,9 +969,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'player ^^ potion.                                                               '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1063,9 +1016,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'X potion.                                                                       '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1102,9 +1053,7 @@ class TestCurses(unittest.TestCase):
 				'#..................#',
 				' ################## ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'player <~ healing potion. player+0hp.                                           '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1125,9 +1074,7 @@ class TestCurses(unittest.TestCase):
 
 		loop.redraw()
 		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, self.DISPLAYED_LAYOUT_FIGHT_THIEF[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FIGHT_THIEF) + [
 			('addstr', 0, 0, 'player x> thief. thief-1hp.                                                     '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1159,9 +1106,7 @@ class TestCurses(unittest.TestCase):
 				'#   ...............#',
 				' ###################',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP) + [
 			('addstr', 0, 0, 'player x> thief. thief-1hp. thief dies. thief VV money.                         '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1209,9 +1154,7 @@ class TestCurses(unittest.TestCase):
 				'#.................. ',
 				' #################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1261,9 +1204,7 @@ class TestCurses(unittest.TestCase):
 				'#.................. ',
 				' #################  ',
 				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'potion! monster!                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1294,9 +1235,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertFalse(loop.action())
 		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, '                                                                                '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1336,9 +1275,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertFalse(loop.action())
 		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'player <+ weapon.                                                               '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
@@ -1360,9 +1297,7 @@ class TestCurses(unittest.TestCase):
 
 		self.assertFalse(loop.action())
 		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + [
-			('addstr', y, x, DISPLAYED_LAYOUT[y-1][x]) for y in range(1, 11) for x in range(20)
-			] + [
+		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
 			('addstr', 0, 0, 'player +> weapon.                                                               '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
