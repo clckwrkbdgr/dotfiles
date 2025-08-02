@@ -35,6 +35,7 @@ class Dungeon(engine.Game):
 		self.scene = Scene()
 		self.time = 0
 		self.autoexplore = None
+		self.player_turn = True
 	def in_automovement(self):
 		return self.autoexplore
 	def start_autoexplore(self): # pragma: no cover -- TODO
@@ -44,7 +45,6 @@ class Dungeon(engine.Game):
 			return
 		control = self.autoexplore.next()
 		self.shift_monster(self.scene.get_player(), control)
-		self.finish_action()
 	def stop_automovement(self):
 		self.autoexplore = None
 	def is_finished(self): # pragma: no cover -- TODO
@@ -66,9 +66,14 @@ class Dungeon(engine.Game):
 		new_pos = monster.pos + shift
 		if self.scene.is_passable(new_pos):
 			monster.pos = new_pos
-	def finish_action(self):
+		if monster == self.scene.get_player():
+			self.player_turn = False
+	def process_others(self):
+		if self.player_turn:
+			return
 		self.scene.terrain.recalibrate(self.scene.get_player().pos)
 		self.time += 1
+		self.player_turn = True
 
 class Scene(scene.Scene):
 	BLOCK_SIZE = Size(32, 32)

@@ -45,4 +45,3 @@ class Game(ui.MainGame):
 	def move_player(self, control):
 		if True:
 			self.dungeon.shift_monster(self.dungeon.scene.get_player(), control)
-			self.dungeon.finish_action()

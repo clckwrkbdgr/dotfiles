@@ -140,7 +140,7 @@ class TestGame(unittest.TestCase):
 				self._extract_matrix(expected, Rect((10, 10), (5, 5))),
 				)
 		self.assertEqual(ui.lines, {
-			0: 'Time: 4                      ',
+			0: 'Time: 3                      ',
 			1: 'X:1 Y:3                      ',
 			24: '                             ',
 			25: ' '*80,
