@@ -16,6 +16,16 @@ class TestActors(unittest.TestCase):
 		dragonfly = Dragonfly(Point(1, 1))
 		self.assertEqual(str(dragonfly), 'dragonfly')
 		self.assertEqual(repr(dragonfly), 'Dragonfly(dragonfly @[1, 1])')
+	def should_spend_action_points(self):
+		dragonfly = Dragonfly(Point(1, 1))
+		self.assertEqual(dragonfly.action_points, True)
+		self.assertFalse(dragonfly.has_acted())
+		dragonfly.spend_action_points()
+		self.assertEqual(dragonfly.action_points, False)
+		self.assertTrue(dragonfly.has_acted())
+		dragonfly.add_action_points()
+		self.assertEqual(dragonfly.action_points, True)
+		self.assertFalse(dragonfly.has_acted())
 	def should_load_actor(self):
 		stream = StringIO(str(VERSION) + '\x00Dragonfly\x001\x002')
 		reader = savefile.Reader(stream)

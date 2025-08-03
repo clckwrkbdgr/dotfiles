@@ -35,7 +35,6 @@ class Dungeon(engine.Game):
 		self.scene = Scene()
 		self.time = 0
 		self.autoexplore = None
-		self.player_turn = True
 	def in_automovement(self):
 		return self.autoexplore
 	def start_autoexplore(self): # pragma: no cover -- TODO
@@ -66,14 +65,13 @@ class Dungeon(engine.Game):
 		new_pos = monster.pos + shift
 		if self.scene.is_passable(new_pos):
 			monster.pos = new_pos
-		if monster == self.scene.get_player():
-			self.player_turn = False
+		monster.spend_action_points()
 	def process_others(self):
-		if self.player_turn:
+		if not self.scene.get_player().has_acted():
 			return
 		self.scene.terrain.recalibrate(self.scene.get_player().pos)
 		self.time += 1
-		self.player_turn = True
+		self.scene.get_player().add_action_points()
 
 class Scene(scene.Scene):
 	BLOCK_SIZE = Size(32, 32)

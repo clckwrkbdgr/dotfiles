@@ -476,7 +476,7 @@ class MainGame(ui.MainGame):
 			_, item = dungeon.scene.items[item_here]
 			for _ in dungeon.grab_item(dungeon.get_player(), item):
 				self.data.fire_event(_)
-			self.step_is_over = True
+			self.game.scene.get_player().spend_action_points()
 		else:
 			dungeon.fire_event(NothingToPickUp())
 	@Controls('d')
@@ -536,7 +536,7 @@ class MainGame(ui.MainGame):
 	@Controls('.')
 	def wait(self):
 		""" Wait. """
-		self.step_is_over = True
+		self.game.scene.get_player().spend_action_points()
 	@Controls('h')
 	def move_west(self):
 		""" Move around. """
@@ -575,12 +575,12 @@ class MainGame(ui.MainGame):
 		for _ in dungeon.move_monster(dungeon.get_player(), dungeon.get_player().pos + shift):
 			self.data.fire_event(_)
 		dungeon.scene.visit(dungeon.get_player().pos)
-		self.step_is_over = True
+		self.game.scene.get_player().spend_action_points()
 
 	def process_others(self):
-		if not self.step_is_over:
+		if not self.game.scene.get_player().has_acted():
 			return
-		self.step_is_over = False
+		self.game.scene.get_player().add_action_points()
 		dungeon = self.data
 		for monster in dungeon.scene.monsters:
 			if isinstance(monster, self.PLAYER_TYPE):

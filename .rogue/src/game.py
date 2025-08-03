@@ -74,7 +74,7 @@ class Angry(actors.EquippedMonster):
 			if not self.is_hostile_to(monster):
 				continue
 			closest.append((clckwrkbdgr.math.distance(self.pos, monster.pos), monster))
-		if not closest:
+		if not closest: # pragma: no cover
 			return
 		_, player = sorted(closest)[0]
 
@@ -263,7 +263,6 @@ class Game(engine.Game):
 		self.god = God()
 		self.autoexploring = False
 		self.movement_queue = []
-		self.player_turn = True
 		self.scene = Scene()
 		self.vision = Vision()
 	def generate(self):
@@ -290,14 +289,16 @@ class Game(engine.Game):
 	def is_finished(self):
 		return not (self.scene.get_player() and self.scene.get_player().is_alive())
 	def end_turn(self):
-		self.player_turn = False
+		if self.scene.get_player():
+			self.scene.get_player().spend_action_points()
 	def process_others(self):
-		if not self.player_turn:
+		if self.scene.get_player() and self.scene.get_player().has_acted():
 			for monster in self.scene.monsters:
 				if isinstance(monster, Player):
 					continue
 				monster.act(self)
-			self.player_turn = True
+			if self.scene.get_player():
+				self.scene.get_player().add_action_points()
 	def stop_automovement(self):
 		try:
 			self.autostop()

@@ -512,7 +512,7 @@ class Game(engine.Game):
 				continue
 			yield monster_coord, monster
 	def process_others(self):
-		if self.step_taken:
+		if self.scene.get_player().has_acted():
 			player_pos = self.scene.get_player_coord().get_global(self.scene.world)
 			if self.scene.get_player().hp < self.scene.get_player().max_hp:
 				self.scene.get_player().regeneration += 1
@@ -523,7 +523,7 @@ class Game(engine.Game):
 						self.scene.get_player().hp = self.scene.get_player().max_hp
 
 			self.passed_time += 1
-			self.step_taken = False
+			self.scene.get_player().add_action_points()
 
 			monster_action_range = Rect(
 					player_pos - Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH),
@@ -805,8 +805,7 @@ class MainGameMode(ui.MainGame):
 		return True
 	@Keys.bind('.')
 	def wait(self):
-		if True:
-			self.game.step_taken = True
+		self.game.scene.get_player().spend_action_points()
 	@Keys.bind('g')
 	def grab_item(self):
 		game = self.game
@@ -819,7 +818,7 @@ class MainGameMode(ui.MainGame):
 				game.scene.get_player().grab(item)
 				game.scene.world.get_data(game.scene.get_player_coord())[-1].items.remove(item)
 				self.game.fire_event(PickedUpItem(item))
-				self.game.step_taken = True
+				self.game.scene.get_player().spend_action_points()
 			except Monster.InventoryFull:
 				self.game.fire_event(InventoryIsFull())
 	@Keys.bind('C')
@@ -922,7 +921,7 @@ class MainGameMode(ui.MainGame):
 					item = game.scene.get_player().drop(menu_choice)
 					game.scene.world.get_data(game.scene.get_player_coord())[-1].items.append(item)
 					self.game.fire_event(DroppedItem('you', item.item))
-					self.game.step_taken = True
+					self.game.scene.get_player().spend_action_points()
 				return InventoryMode(
 						game.scene.get_player().inventory,
 						caption="Select item to drop (a-z/ESC):",
@@ -965,7 +964,7 @@ class MainGameMode(ui.MainGame):
 					dest_field_data.monsters.append(player)
 				player.pos = dest_pos.values[-1]
 				game.scene.autoexpand(self.game.scene.get_player_coord(), Size(40, 40))
-			self.game.step_taken = True
+			self.game.scene.get_player().spend_action_points()
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()
 class DirectionDialogMode(clckwrkbdgr.tui.Mode):

@@ -16,10 +16,21 @@ class Actor(object):
 
 	def __init__(self, pos):
 		self.pos = Point(pos) if pos else None
+		self.action_points = True # TODO should be proper counter for free action points left. Also should save them.
 	def __str__(self):
 		return self.name
 	def __repr__(self):
 		return '{0}({1} @{2})'.format(type(self).__name__, self.name, self.pos)
+
+	def has_acted(self):
+		""" Returns True if there are no more free action points left. """
+		return not self.action_points # TODO should be a number.
+	def add_action_points(self, amount=None):
+		""" Adds free action points (usually at the start of new turn). """
+		self.action_points = True # TODO Should be a number and consider _amount_.
+	def spend_action_points(self, amount=None):
+		""" Decreases free action points (when some action is performed). """
+		self.action_points = False # TODO Should be a number and consider _amount_.
 
 	@classmethod
 	def load(cls, reader):
