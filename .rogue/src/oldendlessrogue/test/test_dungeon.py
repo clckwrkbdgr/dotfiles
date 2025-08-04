@@ -110,6 +110,45 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.scene.is_passable((0, 0)))
 		self.assertFalse(dungeon.scene.is_passable((1, 0)))
 		self.assertFalse(dungeon.scene.is_passable((-10, -10)))
+	def should_control_dungeon_via_autoexplorer(self):
+		class MockExplorer:
+			def __init__(self, controls):
+				self.controls = controls
+			def next(self):
+				return self.controls.pop(0)
+		class MockDungeon(Dungeon):
+			def automove(self):
+				self.autoexplore = MockExplorer(self.autoexplorer_controls)
+		dungeon = MockDungeon(builder=MockBuilder(walls=[[]]*4+[[(2, 3)]]))
+		dungeon.generate()
+		dungeon.autoexplorer_controls = [Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0)]
+
+		self.assertEqual(dungeon.scene.get_player().pos, (0, 0))
+		dungeon.perform_automovement()
+		dungeon.process_others()
+		self.assertEqual(dungeon.scene.get_player().pos, (0, 0))
+
+		dungeon.automove()
+		for _ in range(len(dungeon.autoexplorer_controls)):
+			self.assertTrue(dungeon.in_automovement())
+			dungeon.perform_automovement()
+			dungeon.process_others()
+		dungeon.stop_automovement()
+		self.assertFalse(dungeon.in_automovement())
+
+		self.assertEqual(dungeon.scene.get_player().pos, (1, 3))
+		self.assertEqual(dungeon.scene.terrain.shift, Point(-32, -32))
+		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
+		.........
+		.........
+		.........
+		.........
+		.........
+		.........
+		.........
+		.....@#..
+		.........
+		""").replace('_', ' '))
 
 class TestSerialization(unittest.TestCase):
 	def should_serialize_deserialize_dungeon(self):
