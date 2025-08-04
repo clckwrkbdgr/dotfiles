@@ -114,9 +114,7 @@ class RealMonster(actors.EquippedMonster):
 				clckwrkbdgr.math.sign(dungeon.get_player().pos.x - self.pos.x),
 				clckwrkbdgr.math.sign(dungeon.get_player().pos.y - self.pos.y),
 				)
-		new_pos = self.pos + shift
-		for _ in dungeon.move_monster(self, new_pos, with_tunnels=False):
-			dungeon.fire_event(_)
+		dungeon.move_actor(self, shift)
 
 class Rogue(Player):
 	_hostile_to = [RealMonster]
@@ -572,10 +570,8 @@ class MainGame(ui.MainGame):
 
 	def move_by(self, shift):
 		dungeon = self.data
-		for _ in dungeon.move_monster(dungeon.get_player(), dungeon.get_player().pos + shift):
-			self.data.fire_event(_)
+		dungeon.move_actor(dungeon.get_player(), shift):
 		dungeon.scene.visit(dungeon.get_player().pos)
-		self.game.scene.get_player().spend_action_points()
 
 	def process_others(self):
 		if not self.game.scene.get_player().has_acted():

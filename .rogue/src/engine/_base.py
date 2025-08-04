@@ -97,6 +97,11 @@ class Game(object):
 		"""
 		raise NotImplementedError()
 
+	def move_actor(self, actor, shift): # pragma: no cover
+		""" Should move actor on scene by specified shift.
+		"""
+		raise NotImplementedError()
+
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn
 		to process other monsters and other game mechanics.

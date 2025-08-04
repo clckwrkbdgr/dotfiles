@@ -42,7 +42,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
-		dungeon.shift_monster(dungeon.scene.get_player(), Point(0, 1))
+		dungeon.move_actor(dungeon.scene.get_player(), Point(0, 1))
 		dungeon.process_others()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
 	def should_not_move_player_into_wall(self):
@@ -50,7 +50,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
-		dungeon.shift_monster(dungeon.scene.get_player(), Point(0, -1))
+		dungeon.move_actor(dungeon.scene.get_player(), Point(0, -1))
 		dungeon.process_others()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 	def should_recalibrate_plane_after_player_moved(self):
@@ -71,7 +71,7 @@ class TestDungeon(unittest.TestCase):
 		_........
 		""").replace('_', ' '))
 
-		dungeon.shift_monster(dungeon.scene.get_player(), Point(0, 1))
+		dungeon.move_actor(dungeon.scene.get_player(), Point(0, 1))
 		dungeon.process_others()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
@@ -87,7 +87,7 @@ class TestDungeon(unittest.TestCase):
 		_........
 		""").replace('_', ' '))
 
-		dungeon.shift_monster(dungeon.scene.get_player(), Point(0, 1))
+		dungeon.move_actor(dungeon.scene.get_player(), Point(0, 1))
 		dungeon.process_others()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 3))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, 0))

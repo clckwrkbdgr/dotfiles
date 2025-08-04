@@ -114,6 +114,36 @@ class Scene(scene.Scene):
 					return False
 				return True
 		return False
+	def get_cell_info(self, pos): # pragma: no cover -- TODO
+		terrain = []
+		for room in self.rooms.values():
+			terrain.append((room.top, room.left, "+"))
+			terrain.append((room.bottom, room.left, "+"))
+			terrain.append((room.top, room.right, "+"))
+			terrain.append((room.bottom, room.right, "+"))
+			for x in range(room.left+1, room.right):
+				terrain.append((room.top, x, "-"))
+				terrain.append((room.bottom, x, "-"))
+			for y in range(room.top+1, room.bottom):
+				terrain.append((y, room.left, "|"))
+				terrain.append((y, room.right, "|"))
+			for y in range(room.top+1, room.bottom):
+				for x in range(room.left+1, room.right):
+					terrain.append((y, x, (".", ' ')))
+		for tunnel in self.tunnels:
+			for cell in tunnel.iter_points():
+				terrain.append((cell.y, cell.x, "#"))
+			terrain.append((tunnel.start.y, tunnel.start.x, "+"))
+			terrain.append((tunnel.stop.y, tunnel.stop.x, "+"))
+		pos = Point(pos)
+		Mock_Terrain = namedtuple('Mock_Terrain', 'sprite')
+		Mock_Sprite = namedtuple('Mock_Sprite', 'sprite')
+		return (
+				next(Mock_Terrain(Mock_Sprite(s)) for (y, x, s) in terrain if pos.x == x and pos.y == y),
+				list(self.iter_appliances_at(pos)),
+				list(self.iter_items_at(pos)),
+				list(self.iter_actors_at(pos, with_player=True)),
+				)
 
 	def __setstate__(self, data): # pragma: no cover -- TODO
 		self.rooms = data.rooms
@@ -156,16 +186,17 @@ class Scene(scene.Scene):
 				terrain.append((y, room.right, "|"))
 			for y in range(room.top+1, room.bottom):
 				for x in range(room.left+1, room.right):
-					terrain.append((y, x, (".", ' ')))
+					terrain.append((y, x, ".")) # , ' ')))
 		for tunnel in self.tunnels:
 			for cell in tunnel.iter_points():
 				terrain.append((cell.y, cell.x, "#"))
 			terrain.append((tunnel.start.y, tunnel.start.x, "+"))
 			terrain.append((tunnel.stop.y, tunnel.stop.x, "+"))
 
+		Mock_Terrain = namedtuple('Mock_Terrain', 'sprite')
+		Mock_Sprite = namedtuple('Mock_Sprite', 'sprite')
 		for y, x, sprite in terrain:
-			if len(sprite) == 1:
-				sprite = (sprite, sprite)
+			sprite = Mock_Terrain(Mock_Sprite(sprite))
 			pos = Point(x, y)
 			objects = list(self.iter_appliances_at(pos))
 			items = list(self.iter_items_at(pos))
@@ -287,7 +318,7 @@ class Dungeon(engine.Game):
 		item = who.drop(item)
 		self.scene.items.append(item)
 		return [Event.MonsterDroppedItem(who, item.item)]
-	def move_monster(self, monster, new_pos, with_tunnels=True):
+	def move_actor(self, monster, shift):
 		""" Tries to move monster to a new position.
 		May attack hostile other monster there.
 		Returns happened events as ordered list of objects:
@@ -297,25 +328,31 @@ class Dungeon(engine.Game):
 		- Item: other monster dropped an item.
 		Empty list means the monster is successfully moved.
 		"""
+		with_tunnels = (monster == self.scene.get_player())
+		new_pos = monster.pos + shift
 		can_move = self.scene.can_move_to(new_pos, with_tunnels=with_tunnels, from_pos=monster.pos)
 		if not can_move:
-			return [Event.BumpIntoTerrain(monster, new_pos)]
+			self.fire_event(Event.BumpIntoTerrain(monster, new_pos))
+			return
 		others = [other for other in self.scene.iter_actors_at(new_pos, with_player=True) if other != monster]
 		if not others:
+			monster.spend_action_points()
 			monster.pos = new_pos
-			return []
+			return
 		hostiles = [other for other in others if monster.is_hostile_to(other)]
 		if not hostiles:
-			return [Event.BumpIntoMonster(monster, others[0])]
+			monster.spend_action_points()
+			self.fire_event(Event.BumpIntoMonster(monster, others[0]))
+			return
 		other = hostiles[0]
 		damage = max(0, monster.get_attack_damage() - other.get_protection())
 		other.affect_health(-damage)
-		events = [Event.AttackMonster(monster, other, damage)]
+		self.fire_event(Event.AttackMonster(monster, other, damage))
 		if not other.is_alive():
-			events.append(Event.MonsterDied(other))
+			self.fire_event(Event.MonsterDied(other))
 			for item in self.rip(other):
-				events.append(Event.MonsterDroppedItem(other, item))
-		return events
+				self.fire_event(Event.MonsterDroppedItem(other, item))
+		monster.spend_action_points()
 	def is_visible(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) is visible for player.
 		Additional data depends on type of primary object.

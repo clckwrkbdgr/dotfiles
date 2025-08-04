@@ -40,5 +40,4 @@ class Game(ui.MainGame):
 		self.game.automove()
 	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 	def move_player(self, control):
-		if True:
-			self.dungeon.shift_monster(self.dungeon.scene.get_player(), control)
+		self.game.move_actor(self.dungeon.scene.get_player(), control)

@@ -10,7 +10,7 @@ class Actor(object):
 	""" Basic actor.
 	Supports no properties/behaviour except movement.
 	"""
-	sprite = classfield('_sprite', '?')
+	sprite = classfield('_sprite', None)
 	name = classfield('_name', 'unknown creature')
 	vision = classfield('_vision', 0) # Radius of field of vision.
 

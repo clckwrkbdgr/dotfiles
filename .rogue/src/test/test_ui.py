@@ -218,9 +218,9 @@ class TestCurses(unittest.TestCase):
 		dungeon.automove()
 		# Monster is already spotted from the beginning,
 		# now move into cave opening to detect exit.
-		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
-		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
-		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP_RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP_RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP_RIGHT)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -271,11 +271,11 @@ class TestCurses(unittest.TestCase):
 		dungeon.automove()
 		# Monster is already spotted from the beginning,
 		# now move into cave opening to detect exit.
-		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
-		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
-		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP_RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP_RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP_RIGHT)
 		# Now move back and try to remember exit.
-		dungeon.move(dungeon.scene.get_player(), Direction.LEFT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.LEFT)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -296,7 +296,7 @@ class TestCurses(unittest.TestCase):
 		list(dungeon.process_events(raw=True))
 
 		dungeon.jump_to(Point(13, 4))
-		dungeon.move(dungeon.scene.get_player(), Direction.UP)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -314,8 +314,8 @@ class TestCurses(unittest.TestCase):
 
 		# Finish him.
 		list(dungeon.process_events(raw=True))
-		dungeon.move(dungeon.scene.get_player(), Direction.UP)
-		dungeon.move(dungeon.scene.get_player(), Direction.UP)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -336,11 +336,11 @@ class TestCurses(unittest.TestCase):
 		list(dungeon.process_events(raw=True))
 		dungeon.god.vision = True
 
-		dungeon.move(dungeon.scene.get_player(), Direction.RIGHT)
-		dungeon.move(dungeon.scene.get_player(), Direction.RIGHT)
-		dungeon.move(dungeon.scene.get_player(), Direction.RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.RIGHT)
 
-		dungeon.move(dungeon.scene.monsters[-1], Direction.LEFT)
+		dungeon.move_actor(dungeon.scene.monsters[-1], Direction.LEFT)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -1070,7 +1070,7 @@ class TestCurses(unittest.TestCase):
 		list(dungeon.process_events(raw=True))
 
 		dungeon.jump_to(Point(13, 4))
-		dungeon.move(dungeon.scene.get_player(), Direction.UP)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -1088,9 +1088,9 @@ class TestCurses(unittest.TestCase):
 
 		# Finish him.
 		list(dungeon.process_events(raw=True))
-		dungeon.move(dungeon.scene.get_player(), Direction.UP)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP)
 		list(dungeon.process_events(raw=True))
-		dungeon.move(dungeon.scene.get_player(), Direction.UP)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP)
 
 		loop.redraw()
 		self.maxDiff = None
@@ -1166,7 +1166,7 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 
-		dungeon.move(dungeon.scene.get_player(), Direction.RIGHT)
+		dungeon.move_actor(dungeon.scene.get_player(), Direction.RIGHT)
 		dungeon.grab_item_at(dungeon.scene.get_player(), Point(10, 6))
 
 		self.assertTrue(loop.action())

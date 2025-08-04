@@ -158,20 +158,7 @@ class AggressiveColoredMonster(ColoredMonster):
 					sign(monster_pos.x - self_pos.x),
 					sign(monster_pos.y - self_pos.y),
 					)
-			new_pos = self_pos + shift
-			dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
-			dest_field_data = game.scene.world.get_data(dest_pos)[-1]
-			dest_cell = game.scene.world.cell(dest_pos)
-			actor_at_dest = next(game.scene.iter_actors_at(dest_pos), None)
-			if actor_at_dest:
-				game.fire_event(Bump(self.name, actor_at_dest.name))
-			elif dest_cell.passable:
-				current_field_data = game.scene.world.get_data(self.coord)[-1]
-				if current_field_data != dest_field_data:
-					current_field_data.monsters.remove(self)
-					dest_field_data.monsters.append(self)
-					game.already_acted_monsters_from_previous_fields.append(self)
-				self.pos = dest_pos.values[-1]
+			game.move_actor(self, shift)
 
 class Dweller(Monster):
 	_max_hp = 10
@@ -538,6 +525,46 @@ class Game(engine.Game):
 				monster.coord = monster_coord
 				monster.act(self)
 		return True
+	def move_actor(self, actor, shift):
+		game = self
+		if actor == game.scene.get_player():
+			actor_coord = game.scene.get_player_coord()
+		else:
+			actor_coord = actor.coord
+		self_pos = actor_coord.get_global(game.scene.world)
+		new_pos = self_pos + shift
+		dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
+		dest_field_data = None
+		dest_cell = None
+		if game.scene.world.valid(dest_pos):
+			dest_field_data = game.scene.world.get_data(dest_pos)[-1]
+			dest_cell = game.scene.world.cell(dest_pos)
+		actor_at_dest = next(game.scene.iter_actors_at(dest_pos), None)
+		if actor_at_dest:
+			if not actor.is_hostile_to(actor_at_dest):
+				self.fire_event(Bump(actor.name, actor_at_dest.name))
+			else:
+				damage = max(0, actor.get_attack_damage() - actor_at_dest.get_protection())
+				actor_at_dest.affect_health(-damage)
+				self.fire_event(HitMonster(actor.name, actor_at_dest.name))
+				if not actor_at_dest.is_alive():
+					dest_field_data.monsters.remove(actor_at_dest)
+					self.fire_event(MonsterDead(actor_at_dest.name))
+					for item in actor_at_dest.drop_all():
+						dest_field_data.items.append(item)
+						self.fire_event(DroppedItem(actor_at_dest.name, item.item))
+		elif dest_cell is None:
+			self.fire_event(StareIntoVoid())
+		elif dest_cell.passable:
+			current_field_data = game.scene.world.get_data(actor_coord)[-1]
+			if current_field_data != dest_field_data:
+				current_field_data.monsters.remove(actor)
+				dest_field_data.monsters.append(actor)
+				game.already_acted_monsters_from_previous_fields.append(actor)
+			actor.pos = dest_pos.values[-1]
+			if actor == game.scene.get_player():
+				game.scene.autoexpand(self.scene.get_player_coord(), Size(40, 40))
+		actor.spend_action_points()
 
 class Scene(scene.Scene):
 	def __init__(self):
@@ -929,42 +956,7 @@ class MainGameMode(ui.MainGame):
 					)
 	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 	def move_player(self, control):
-		game = self.game
-		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
-		if True:
-			new_pos = player_pos + control
-			dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
-			dest_field_data = None
-			dest_cell = None
-			if game.scene.world.valid(dest_pos):
-				dest_field_data = game.scene.world.get_data(dest_pos)[-1]
-				dest_cell = game.scene.world.cell(dest_pos)
-			monster = next(game.scene.iter_actors_at(dest_pos), None)
-			if monster:
-				actor = game.scene.get_player()
-				if not actor.is_hostile_to(monster):
-					self.game.fire_event(Bump(actor.name, monster.name))
-				else:
-					damage = max(0, game.scene.get_player().get_attack_damage() - monster.get_protection())
-					monster.affect_health(-damage)
-					self.game.fire_event(HitMonster(actor.name, monster.name))
-					if not monster.is_alive():
-						dest_field_data.monsters.remove(monster)
-						self.game.fire_event(MonsterDead(monster.name))
-						for item in monster.drop_all():
-							dest_field_data.items.append(item)
-							self.game.fire_event(DroppedItem(monster.name, item.item))
-			elif dest_cell is None:
-				self.game.fire_event(StareIntoVoid())
-			elif dest_cell.passable:
-				player = game.scene.get_player()
-				current_field_data = game.scene.world.get_data(self.game.scene.get_player_coord())[-1]
-				if current_field_data != dest_field_data:
-					current_field_data.monsters.remove(player)
-					dest_field_data.monsters.append(player)
-				player.pos = dest_pos.values[-1]
-				game.scene.autoexpand(self.game.scene.get_player_coord(), Size(40, 40))
-			self.game.scene.get_player().spend_action_points()
+		self.game.move_actor(self.game.scene.get_player(), control)
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()
 class DirectionDialogMode(clckwrkbdgr.tui.Mode):

@@ -13,7 +13,7 @@ class Scene(object):
 		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(actors.Actor)})
 
 	def tostring(self, view_rect):
-		result = Matrix(view_rect.size)
+		result = Matrix(view_rect.size, ' ')
 		for pos, cell_info in self.iter_cells(view_rect):
 			result.set_cell(pos - view_rect.topleft, self.str_cell(pos, cell_info))
 		return result.tostring()

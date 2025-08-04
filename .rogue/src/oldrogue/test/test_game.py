@@ -1,20 +1,21 @@
 from clckwrkbdgr import unittest
 import textwrap, functools
-from clckwrkbdgr.math import Point, Matrix, get_neighbours
+from clckwrkbdgr.math import Point, Matrix, get_neighbours, Rect
 from .. import game
 from ..game import Item, Wearable
 from ..game import Player
 from ..game import Scene, Dungeon
 from ...engine import events
 from ...engine import items, actors, appliances
+from ...engine.ui import Sprite
 
 class Elevator(appliances.LevelPassage):
-	_sprite = '>'
+	_sprite = Sprite('>', None)
 	_can_go_down = True
 	_id = 'basement'
 
 class Ladder(appliances.LevelPassage):
-	_sprite = '<'
+	_sprite = Sprite('<', None)
 	_can_go_up = True
 	_id = 'roof'
 
@@ -24,7 +25,7 @@ class NanoKey(Item):
 
 class StealthPistol(Item):
 	_attack = 5
-	_sprite = '('
+	_sprite = Sprite('(', None)
 
 class ThermopticCamo(Item, Wearable):
 	_protection = 3
@@ -48,9 +49,10 @@ class UNATCOAgent(Player):
 	_attack = 2
 	_max_hp = 100
 	_max_inventory = 2
-	_sprite = '@'
+	_sprite = Sprite('@', None)
 
 class VacuumCleaner(actors.EquippedMonster):
+	_sprite = Sprite('v', None)
 	_max_hp = 5
 
 class NSFTerrorist(actors.EquippedMonster):
@@ -61,7 +63,7 @@ class MJ12Trooper(actors.EquippedMonster):
 	_attack = 3
 	_max_hp = 200
 	_hostile_to = [UNATCOAgent, NSFTerrorist]
-	_sprite = 'M'
+	_sprite = Sprite('M', None)
 
 class TestUtils(unittest.TestCase):
 	def should_detect_diagonal_movement(self):
@@ -234,7 +236,7 @@ class TestGridRoomMap(unittest.TestCase):
 			result.set_cell(cells[-1], '+')
 		for pos, obj in gridmap.objects:
 			result.set_cell(pos, obj.sprite)
-		self.assertEqual(result.tostring(), MockGenerator.MAIN_LEVEL)
+		self.assertEqual(result.tostring(lambda c: (c.sprite.sprite if hasattr(c.sprite, 'sprite') else c.sprite) if hasattr(c, 'sprite') else c), MockGenerator.MAIN_LEVEL)
 	def should_find_room_by_pos(self):
 		gridmap = self._map()
 		self.assertEqual(gridmap.room_of(Point(2, 2)), gridmap.rooms.cell((0, 0)))
@@ -425,11 +427,10 @@ class TestDungeon(unittest.TestCase):
 			elif objects and (dungeon.is_visited(pos) or is_visible):
 				view.set_cell(pos, objects[-1].sprite)
 			else:
-				terrain, remembered = terrain
 				if is_visible:
 					view.set_cell(pos, terrain)
 				elif dungeon.is_visited(pos):
-					view.set_cell(pos, remembered)
+					view.set_cell(pos, ' ' if terrain.sprite.sprite == '.' else terrain)
 		expected = textwrap.dedent("""\
 				+--+____________________________________________________________________________
 				|> +##_+----+___________________________________________________________________
@@ -458,7 +459,7 @@ class TestDungeon(unittest.TestCase):
 				________________________________________________________________________________
 				""")
 		self.maxDiff = None
-		self.assertEqual(view.tostring(), expected)
+		self.assertEqual(view.tostring(lambda c: (c.sprite.sprite if hasattr(c.sprite, 'sprite') else c.sprite) if hasattr(c, 'sprite') else c), expected)
 	def should_move_to_level(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
@@ -545,32 +546,34 @@ class TestDungeon(unittest.TestCase):
 		vacuum.pos = Point(8, 2)
 		dungeon.scene.monsters.append(vacuum)
 
-		events = dungeon.move_monster(mj12, Point(7, 3))
+		dungeon.move_actor(mj12, Point(-1, 0))
 		self.assertEqual(mj12.pos, Point(7, 3))
-		self.assertEqual(events, [])
 
-		events = dungeon.move_monster(mj12, Point(6, 3), with_tunnels=False)
+		dungeon.move_actor(mj12, Point(-1, 0))
 		self.assertEqual(mj12.pos, Point(7, 3))
-		self.assertEqual(_R(events), _R([game.Event.BumpIntoTerrain(mj12, Point(6, 3))]))
+		self.assertEqual(_R(dungeon.events), _R([game.Event.BumpIntoTerrain(mj12, Point(6, 3))]))
 
-		events = dungeon.move_monster(mj12, Point(8, 3))
+		dungeon.events = []
+		dungeon.move_actor(mj12, Point(+1, 0))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(events, [])
+		self.assertEqual(dungeon.events, [])
 
-		events = dungeon.move_monster(mj12, Point(8, 2))
+		dungeon.move_actor(mj12, Point(0, -1))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(events), _R([game.Event.BumpIntoMonster(mj12, vacuum)]))
+		self.assertEqual(_R(dungeon.events), _R([game.Event.BumpIntoMonster(mj12, vacuum)]))
 
-		events = dungeon.move_monster(mj12, Point(9, 3))
+		dungeon.events = []
+		dungeon.move_actor(mj12, Point(+1, 0))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(events), _R([game.Event.AttackMonster(mj12, dungeon.scene.get_player(), 3)]))
+		self.assertEqual(_R(dungeon.events), _R([game.Event.AttackMonster(mj12, dungeon.scene.get_player(), 3)]))
 		self.assertEqual(dungeon.scene.get_player().hp, 97)
 
+		dungeon.events = []
 		dungeon.scene.get_player().hp = 3
 		player = dungeon.scene.get_player()
-		events = dungeon.move_monster(mj12, Point(9, 3))
+		dungeon.move_actor(mj12, Point(+1, 0))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(events), _R([
+		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.AttackMonster(mj12, player, 3),
 			game.Event.MonsterDied(player),
 			game.Event.MonsterDroppedItem(player, pistol),

@@ -43,7 +43,7 @@ class Dungeon(engine.Game):
 		if not self.autoexplore:
 			return
 		control = self.autoexplore.next()
-		self.shift_monster(self.scene.get_player(), control)
+		self.move_actor(self.scene.get_player(), control)
 	def stop_automovement(self):
 		self.autoexplore = None
 	def is_finished(self): # pragma: no cover -- TODO
@@ -61,7 +61,7 @@ class Dungeon(engine.Game):
 		data.update(self.__dict__)
 		del data['rng']
 		state.update(data)
-	def shift_monster(self, monster, shift):
+	def move_actor(self, monster, shift):
 		new_pos = monster.pos + shift
 		if self.scene.is_passable(new_pos):
 			monster.pos = new_pos

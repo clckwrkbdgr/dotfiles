@@ -179,7 +179,7 @@ class MainGame(ui.MainGame):
 			if self.game.scene.strata.valid(new_pos):
 				self.aim = new_pos
 		else:
-			self.game.move(self.game.scene.get_player(), direction)
+			self.game.move_actor(self.game.scene.get_player(), direction)
 			self.game.end_turn()
 
 class HelpScreen(clckwrkbdgr.tui.Mode):

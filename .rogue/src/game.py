@@ -86,7 +86,7 @@ class Angry(actors.EquippedMonster):
 			is_transparent = lambda p: game.scene.is_transparent_to_monster(p, self)
 			if clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(self.pos, player.pos, is_transparent):
 				direction = Direction.from_points(self.pos, player.pos)
-				game.move(self, direction)
+				game.move_actor(self, direction)
 
 class Inert(actors.EquippedMonster):
 	def act(self, game):
@@ -381,7 +381,7 @@ class Game(engine.Game):
 		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
 		Log.debug("Dungeon is ready.")
-	def move(self, actor, direction):
+	def move_actor(self, actor, direction):
 		""" Moves monster into given direction (if possible).
 		If there is a monster, performs attack().
 		May produce all sorts of other events.
