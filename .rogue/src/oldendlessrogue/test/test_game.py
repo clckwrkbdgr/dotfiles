@@ -52,7 +52,7 @@ class MockBuilder:
 		return self.rogue_pos
 
 class MockDungeon(Dungeon):
-	def start_autoexplore(self):
+	def automove(self):
 		self.autoexplore = MockExplorer(self.autoexplorer_controls)
 
 class TestGame(unittest.TestCase):

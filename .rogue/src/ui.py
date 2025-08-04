@@ -125,14 +125,14 @@ class MainGame(ui.MainGame):
 		if self.aim:
 			dest = self.aim
 			self.aim = None
-			self.game.walk_to(dest)
+			self.game.automove(dest)
 		else:
 			self.game.wait()
 			self.game.end_turn()
 	@Keys.bind('o')
 	def autoexplore(self):
 		""" Autoexplore. """
-		self.game.start_autoexploring()
+		self.game.automove()
 	@Keys.bind('~')
 	def god_mode(self):
 		""" God mode options. """

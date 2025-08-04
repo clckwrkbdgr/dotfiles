@@ -37,7 +37,7 @@ class Dungeon(engine.Game):
 		self.autoexplore = None
 	def in_automovement(self):
 		return self.autoexplore
-	def start_autoexplore(self): # pragma: no cover -- TODO
+	def automove(self, dest=None): # pragma: no cover
 		self.autoexplore = DungeonExplorer(self)
 	def perform_automovement(self):
 		if not self.autoexplore:

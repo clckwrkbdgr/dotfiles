@@ -91,6 +91,11 @@ class Game(object):
 		""" Force stop automovement (e.g. because of user interruption).
 		"""
 		pass
+	def automove(self, dest=None): # pragma: no cover
+		""" Start automovement to the specified destination point.
+		If point is not specified, start autoexploring mode.
+		"""
+		raise NotImplementedError()
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

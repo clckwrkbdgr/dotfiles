@@ -37,10 +37,7 @@ class Game(ui.MainGame):
 		return True
 	@Keys.bind('o')
 	def start_autoexplore(self):
-		if True:
-			if True:
-				trace.debug('Starting self.autoexplore.')
-				self.dungeon.start_autoexplore()
+		self.game.automove()
 	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
 	def move_player(self, control):
 		if True:

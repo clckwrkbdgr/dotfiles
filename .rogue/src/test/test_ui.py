@@ -215,7 +215,7 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '.')
 
-		dungeon.start_autoexploring()
+		dungeon.automove()
 		# Monster is already spotted from the beginning,
 		# now move into cave opening to detect exit.
 		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)
@@ -268,7 +268,7 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '.')
 
-		dungeon.start_autoexploring()
+		dungeon.automove()
 		# Monster is already spotted from the beginning,
 		# now move into cave opening to detect exit.
 		dungeon.move(dungeon.scene.get_player(), Direction.UP_RIGHT)

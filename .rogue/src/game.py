@@ -516,25 +516,29 @@ class Game(engine.Game):
 		if path[0] == self.scene.get_player().pos: # We're already standing there.
 			path.pop(0)
 		return path
-	def walk_to(self, dest):
-		""" Starts auto-walking towards dest, if possible.
-		Does not start when monsters are around and produces event.
-		"""
+	def automove(self, dest=None):
 		if self.vision.visible_monsters:
 			self.fire_event(DiscoverEvent('monsters'))
 			return
+		if dest is None:
+			path = self._start_autoexploring()
+		else:
+			path = self._walk_to(dest)
+		if path:
+			self.movement_queue.extend(path)
+		return bool(path)
+	def _walk_to(self, dest):
+		""" Starts auto-walking towards dest, if possible.
+		Does not start when monsters are around and produces event.
+		"""
 		path = self.find_path(self.scene.get_player().pos,
 				find_target=lambda wave: dest if dest in wave else None,
 				)
-		if path:
-			self.movement_queue.extend(path)
-	def start_autoexploring(self):
+		return path
+	def _start_autoexploring(self):
 		""" Starts auto-exploring, if there are unknown places.
 		Does not start when monsters are around and produces event.
 		"""
-		if self.vision.visible_monsters:
-			self.fire_event(DiscoverEvent('monsters'))
-			return False
 		path = self.find_path(self.scene.get_player().pos,
 			find_target=lambda wave: next((target for target in sorted(wave)
 			if any(
@@ -543,11 +547,8 @@ class Game(engine.Game):
 				)
 			), None),
 			)
-		if not path:
-			return False
-		self.movement_queue.extend(path)
-		self.autoexploring = True
-		return True
+		self.autoexploring = bool(path)
+		return path
 	def in_automovement(self):
 		return self.autoexploring or bool(self.movement_queue)
 	def perform_automovement(self):
@@ -571,7 +572,7 @@ class Game(engine.Game):
 		if self.movement_queue:
 			return True
 		if self.autoexploring:
-			if not self.start_autoexploring():
+			if not self.automove():
 				self.autoexploring = False
 				raise Game.AutoMovementStopped()
 		else:

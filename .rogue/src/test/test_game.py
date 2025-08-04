@@ -52,7 +52,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.descend()
 		self.assertEqual(self._events(), [[
 			]])
-		dungeon.walk_to(Point(11, 2))
+		dungeon.automove(Point(11, 2))
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # walking...
 		self.assertTrue(dungeon.perform_automovement())
@@ -64,7 +64,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # exploring...
 			]])
-		dungeon.start_autoexploring()
+		dungeon.automove()
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement()) # exploring...
 		self.assertTrue(dungeon.perform_automovement())
@@ -87,7 +87,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
 			]])
-		dungeon.start_autoexploring()
+		dungeon.automove()
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement())
 		self.assertTrue(dungeon.perform_automovement())
@@ -527,7 +527,7 @@ class TestMovement(AbstractTestDungeon):
 	def should_not_allow_move_player_diagonally_in_autoexplore_mode(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
 		list(dungeon.process_events(raw=True)) # Clear events.
-		self.assertTrue(dungeon.start_autoexploring())
+		self.assertTrue(dungeon.automove())
 		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
 		self.assertTrue(dungeon.perform_automovement_step())
@@ -535,8 +535,8 @@ class TestMovement(AbstractTestDungeon):
 	def should_not_allow_move_player_diagonally_in_autowalk_mode(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
 		list(dungeon.process_events(raw=True)) # Clear events.
-		dungeon.walk_to(Point(7, 1))
-		self.assertTrue(dungeon.start_autoexploring())
+		dungeon.automove(Point(7, 1))
+		self.assertTrue(dungeon.automove())
 		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
 		self.assertTrue(dungeon.perform_automovement_step())
@@ -801,7 +801,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
 		self.assertFalse(dungeon.perform_automovement_step())
-		dungeon.walk_to(Point(11, 2))
+		dungeon.automove(Point(11, 2))
 		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertTrue(dungeon.perform_automovement_step())
 		with self.assertRaises(dungeon.AutoMovementStopped):
@@ -809,7 +809,7 @@ class TestAutoMode(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True)) # Clear events.
 		self.assertFalse(dungeon.perform_automovement_step())
 
-		dungeon.walk_to(Point(11, 2))
+		dungeon.automove(Point(11, 2))
 		self.assertTrue(dungeon.perform_automovement_step())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement_step() # You have reached your destination.
@@ -831,7 +831,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		list(dungeon.process_events(raw=True)) # Clear events.
 
-		dungeon.walk_to(Point(1, 2))
+		dungeon.automove(Point(1, 2))
 		self.assertTrue(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(0, 1))
 	def should_not_allow_autowalking_if_monsters_are_nearby(self):
@@ -839,7 +839,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		list(dungeon.process_events(raw=True)) # Clear events.
 
-		dungeon.walk_to(Point(12, 8))
+		dungeon.automove(Point(12, 8))
 		self.assertFalse(dungeon.perform_automovement_step())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
@@ -850,7 +850,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
 		self.assertFalse(dungeon.perform_automovement_step())
-		self.assertTrue(dungeon.start_autoexploring())
+		self.assertTrue(dungeon.automove())
 		for _ in range(12):
 			self.assertTrue(dungeon.perform_automovement_step())
 		with self.assertRaises(dungeon.AutoMovementStopped):
@@ -858,13 +858,13 @@ class TestAutoMode(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True)) # Clear events.
 		self.assertFalse(dungeon.perform_automovement_step())
 
-		self.assertTrue(dungeon.start_autoexploring())
+		self.assertTrue(dungeon.automove())
 		for _ in range(5):
 			self.assertTrue(dungeon.perform_automovement_step())
 		with self.assertRaises(dungeon.AutoMovementStopped):
 			dungeon.perform_automovement_step() # Explored everything.
 
-		self.assertFalse(dungeon.start_autoexploring()) # And Jesus wept.
+		self.assertFalse(dungeon.automove()) # And Jesus wept.
 
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				####################
@@ -882,7 +882,7 @@ class TestAutoMode(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('single mock monster')
 		list(dungeon.process_events(raw=True)) # Clear events.
 
-		self.assertFalse(dungeon.start_autoexploring())
+		self.assertFalse(dungeon.automove())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
