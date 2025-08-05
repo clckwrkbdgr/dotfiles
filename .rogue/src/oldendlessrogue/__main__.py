@@ -5,8 +5,8 @@ from clckwrkbdgr import xdg, fs
 from clckwrkbdgr import logging
 from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
-from .dungeon import Dungeon
-from ..engine import ui
+from . import dungeon
+from ..engine import ui, actors
 
 Keys = clckwrkbdgr.tui.Keymapping()
 MOVEMENT = {
@@ -19,6 +19,12 @@ MOVEMENT = {
 		'b' : Point(-1, +1),
 		'n' : Point(+1, +1),
 		}
+
+class Player(actors.Monster):
+	_sprite = ui.Sprite("@", None)
+
+class Dungeon(dungeon.Dungeon):
+	PLAYER_TYPE = Player
 
 class Game(ui.MainGame):
 	KEYMAPPING = Keys

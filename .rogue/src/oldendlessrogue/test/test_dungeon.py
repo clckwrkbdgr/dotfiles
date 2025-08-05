@@ -3,14 +3,24 @@ from clckwrkbdgr import unittest
 from clckwrkbdgr.collections import dotdict
 from ..dungeon import Dungeon, Scene
 from ..builders import EndlessFloor, EndlessWall
+from ...engine import mock
 
 class MockScene(Scene):
 	BLOCK_SIZE = Size(3, 3)
 
+class MockExplorer:
+	def __init__(self, controls):
+		self.controls = controls
+	def next(self):
+		return self.controls.pop(0)
+
 class MockDungeon(Dungeon):
+	PLAYER_TYPE = mock.Rogue
 	def __init__(self, *args, **kwargs):
 		super(MockDungeon, self).__init__(*args, **kwargs)
 		self.scene = MockScene()
+	def automove(self):
+		self.autoexplore = MockExplorer(self.autoexplorer_controls)
 
 class MockBuilder:
 	def __init__(self, rogue_pos=None, walls=None):
@@ -111,15 +121,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertFalse(dungeon.scene.is_passable((1, 0)))
 		self.assertFalse(dungeon.scene.is_passable((-10, -10)))
 	def should_control_dungeon_via_autoexplorer(self):
-		class MockExplorer:
-			def __init__(self, controls):
-				self.controls = controls
-			def next(self):
-				return self.controls.pop(0)
-		class MockDungeon(Dungeon):
-			def automove(self):
-				self.autoexplore = MockExplorer(self.autoexplorer_controls)
-		dungeon = MockDungeon(builder=MockBuilder(walls=[[]]*4+[[(2, 3)]]))
+		dungeon = MockDungeon(builder=MockBuilder(walls=[[]]*4+[[(1, 2)]]))
 		dungeon.generate()
 		dungeon.autoexplorer_controls = [Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0)]
 
@@ -136,18 +138,18 @@ class TestDungeon(unittest.TestCase):
 		dungeon.stop_automovement()
 		self.assertFalse(dungeon.in_automovement())
 
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 3))
-		self.assertEqual(dungeon.scene.terrain.shift, Point(-32, -32))
+		self.assertEqual(dungeon.scene.get_player().pos, (2, 3))
+		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, 0))
 		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
-		.........
-		.........
-		.........
-		.........
-		.........
-		.........
-		.........
-		.....@#..
-		.........
+		_________
+		_________
+		_________
+		_________
+		_........
+		_........
+		_....#...
+		_.....@..
+		_........
 		""").replace('_', ' '))
 
 class TestSerialization(unittest.TestCase):

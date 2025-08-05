@@ -6,9 +6,6 @@ from clckwrkbdgr.math.auto import Autoexplorer
 from ..engine import actors, scene
 from ..engine import ui
 
-class Player(actors.Monster):
-	_sprite = ui.Sprite("@", None)
-
 class DungeonExplorer(Autoexplorer): # pragma: no cover
 	def __init__(self, dungeon):
 		self.dungeon = dungeon
@@ -29,6 +26,7 @@ class DungeonExplorer(Autoexplorer): # pragma: no cover
 		return Size(21, 21)
 
 class Dungeon(engine.Game):
+	PLAYER_TYPE = None
 	def __init__(self, builder=None):
 		super(Dungeon, self).__init__()
 		self.builder = builder or builders.Builders()
@@ -50,7 +48,7 @@ class Dungeon(engine.Game):
 		return False
 	def generate(self):
 		self.scene.terrain = EndlessMatrix(block_size=self.scene.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
-		self.scene.monsters.append(Player(self.builder.place_rogue(self.scene.terrain)))
+		self.scene.monsters.append(self.PLAYER_TYPE(self.builder.place_rogue(self.scene.terrain)))
 	def load(self, state):
 		self.__dict__.update(state)
 		if 'time' not in state:
