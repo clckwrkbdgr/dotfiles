@@ -47,6 +47,12 @@ class Event:
 	class NotConsumable(events.Event): FIELDS = 'item'
 	class InventoryFull(events.Event): FIELDS = 'item'
 	class GrabbedItem(events.Event): FIELDS = 'who item'
+	class CannotReachCeiling(events.Event): FIELDS = ''
+	class GoingUp(events.Event): FIELDS = ''
+	class GoingDown(events.Event): FIELDS = ''
+	class CannotDig(events.Event): FIELDS = ''
+	class NeedKey(events.Event): FIELDS = 'key'
+	class NothingToPickUp(events.Event): FIELDS = ''
 
 class Player(actors.EquippedMonster):
 	_name = 'player'
@@ -279,8 +285,13 @@ class Dungeon(engine.Game):
 		self.visit(monster.pos)
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """
-		stairs.use(monster)
-		self.go_to_level(monster, stairs.level_id, stairs.connected_passage)
+		try:
+			stairs.use(monster)
+			self.go_to_level(monster, stairs.level_id, stairs.connected_passage)
+			return True
+		except appliances.LevelPassage.Locked as e:
+			self.fire_event(Event.NeedKey(e.key_item_type))
+			return False
 	def rip(self, who):
 		""" Processes monster's death (it should be actually not is_alive() for that).
 		Drops all items from inventory to the ground at the same pos.
@@ -300,10 +311,10 @@ class Dungeon(engine.Game):
 		index, = [index for index, (pos, i) in enumerate(self.scene.items) if i == item]
 		try:
 			who.grab(item)
+			self.scene.items.pop(index)
+			self.fire_event(Event.GrabbedItem(who, item))
 		except actors.EquippedMonster.InventoryFull:
-			return [Event.InventoryFull(item)]
-		self.scene.items.pop(index)
-		return [Event.GrabbedItem(who, item)]
+			self.fire_event(Event.InventoryFull(item))
 	def consume_item(self, actor, item):
 		""" Tries to consume item.
 		Returns list of happened events.
@@ -311,13 +322,33 @@ class Dungeon(engine.Game):
 		try:
 			events = [Event.MonsterConsumedItem(actor, item)]
 			events += actor.consume(item)
+			for _ in events:
+				self.fire_event(_)
 		except actor.ItemNotFit as e:
-			return [Event.NotConsumable(item)]
-		return events
+			return self.fire_event(Event.NotConsumable(item))
 	def drop_item(self, who, item):
 		item = who.drop(item)
 		self.scene.items.append(item)
-		return [Event.MonsterDroppedItem(who, item.item)]
+		self.fire_event(Event.MonsterDroppedItem(who, item.item))
+	def wield_item(self, who, item):
+		try:
+			who.wield(item)
+		except actors.EquippedMonster.SlotIsTaken:
+			old_item = who.unwield()
+			self.fire_event(Event.Unwielding(who, old_item))
+			who.wield(item)
+		self.fire_event(Event.Wielding(who, item))
+	def wear_item(self, who, item):
+		try:
+			who.wear(item)
+		except actors.EquippedMonster.ItemNotFit as e:
+			self.fire_event(Event.NotWearable(item))
+			return
+		except actors.EquippedMonster.SlotIsTaken:
+			old_item = who.take_off()
+			self.fire_event(Event.TakingOff(who, old_item))
+			who.wear(item)
+		self.fire_event(Event.Wearing(who, item))
 	def move_actor(self, monster, shift):
 		""" Tries to move monster to a new position.
 		May attack hostile other monster there.
@@ -374,6 +405,11 @@ class Dungeon(engine.Game):
 				if self.is_visible(tunnel, obj):
 					return True
 		return False
+	def actor_sees_player(self, actor):
+		if not self.scene.current_room: # pragma: no cover -- TODO
+			return False
+		sees_rogue = self.scene.current_room.contains(actor.pos)
+		return sees_rogue
 	def is_visited(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) was visible for player at some point and now can be remembered.
 		Additional data depends on type of primary object.
@@ -426,3 +462,51 @@ class Dungeon(engine.Game):
 		tunnel = self.scene.tunnel_of(pos)
 		if tunnel:
 			self.visit_tunnel(tunnel, pos)
+	def process_others(self):
+		if not self.scene.get_player().has_acted():
+			return
+		self.scene.get_player().add_action_points()
+		dungeon = self
+		for monster in dungeon.scene.monsters:
+			if isinstance(monster, self.PLAYER_TYPE):
+				continue
+			monster.act(dungeon)
+	def descend(self, actor):
+		dungeon = self
+		stairs_here = next(iter(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(actor.pos))), None)
+		if not stairs_here:
+			dungeon.fire_event(Event.CannotDig())
+			return False
+		if not dungeon.use_stairs(actor, stairs_here):
+			return False
+		dungeon.fire_event(Event.GoingDown())
+		return True
+	def ascend(self, actor):
+		dungeon = self
+		stairs_here = next(iter(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_up, dungeon.scene.iter_appliances_at(actor.pos))), None)
+		if not stairs_here:
+			dungeon.fire_event(Event.CannotReachCeiling())
+			return False
+		if not dungeon.use_stairs(actor, stairs_here):
+			return False
+		dungeon.fire_event(Event.GoingUp())
+		return True
+	def grab_here(self, actor):
+		dungeon = self
+		item_here = next( (index for index, (pos, item) in enumerate(reversed(dungeon.scene.items)) if pos == actor.pos), None)
+		trace.debug("Items: {0}".format(dungeon.scene.items))
+		trace.debug("Rogue: {0}".format(actor.pos))
+		trace.debug("Items here: {0}".format([(index, pos, item) for index, (pos, item) in enumerate(reversed(dungeon.scene.items)) if pos == actor.pos]))
+		trace.debug("Item here: {0}".format(item_here))
+		if item_here is not None:
+			item_here = len(dungeon.scene.items) - 1 - item_here # Index is from reversed list.
+			trace.debug("Unreversed item here: {0}".format(item_here))
+			_, item = dungeon.scene.items[item_here]
+			dungeon.grab_item(actor, item)
+			actor.spend_action_points()
+		else:
+			dungeon.fire_event(Event.NothingToPickUp())
+	def move_by(self, actor, shift):
+		dungeon = self
+		dungeon.move_actor(actor, shift)
+		dungeon.visit(actor.pos)

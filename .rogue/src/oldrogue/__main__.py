@@ -105,10 +105,7 @@ class RealMonster(actors.EquippedMonster):
 	_hostile_to = [Player]
 
 	def act(self, dungeon):
-		if not dungeon.scene.current_room:
-			return
-		sees_rogue = dungeon.scene.current_room.contains(self.pos)
-		if not sees_rogue:
+		if not dungeon.actor_sees_player(self):
 			return
 		shift = Point(
 				clckwrkbdgr.math.sign(dungeon.get_player().pos.x - self.pos.x),
@@ -222,24 +219,18 @@ norm_monsters << make_monster('Zealot', 'Z', 'zealot', 10, 2, thug_drops)
 class GodModeSwitched(events.Event): FIELDS = 'name state'
 events.Event.on(GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
 
-class NeedMcGuffin(events.Event): FIELDS = ''
-events.Event.on(NeedMcGuffin)(lambda event:"You cannot escape the dungeon without mcguffin!")
-class GoingUp(events.Event): FIELDS = ''
-events.Event.on(GoingUp)(lambda event:"Going up...")
-class GoingDown(events.Event): FIELDS = ''
-events.Event.on(GoingDown)(lambda event:"Going down...")
+events.Event.on(Event.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
+events.Event.on(Event.GoingUp)(lambda event:"Going up...")
+events.Event.on(Event.GoingDown)(lambda event:"Going down...")
 class CannotGoBelow(events.Event): FIELDS = ''
 events.Event.on(CannotGoBelow)(lambda event:"No place down below.")
-class CannotDig(events.Event): FIELDS = ''
-events.Event.on(CannotDig)(lambda event:"Cannot dig through the ground.")
-class CannotReachCeiling(events.Event): FIELDS = ''
-events.Event.on(CannotReachCeiling)(lambda event:"Cannot reach the ceiling.")
+events.Event.on(Event.CannotDig)(lambda event:"Cannot dig through the ground.")
+events.Event.on(Event.CannotReachCeiling)(lambda event:"Cannot reach the ceiling.")
 
 class NoSuchItem(events.Event): FIELDS = 'char'
 events.Event.on(NoSuchItem)(lambda event:"No such item '{char}'.".format(char=event.char))
 events.Event.on(Event.InventoryFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
 events.Event.on(Event.GrabbedItem)(lambda event: "Grabbed {item}.".format(who=event.who.name, item=event.item.name))
-class NothingToPickUp(events.Event): FIELDS = ''
 events.Event.on(NothingToPickUp)(lambda event:"There is nothing here to pick up.")
 class InventoryEmpty(events.Event): FIELDS = ''
 events.Event.on(InventoryEmpty)(lambda event:"Inventory is empty.")
@@ -412,7 +403,9 @@ class MainGame(ui.MainGame):
 			new_mode = Controls[str(ch)](self)
 			if new_mode:
 				return new_mode
-			return self.process_others()
+			self.game.process_others()
+			if not dungeon.get_player().is_alive():
+				return MessageView(Grave, self.data)
 		except KeyError:
 			trace.debug("Unknown key: {0}".format(ch))
 			pass
@@ -436,47 +429,22 @@ class MainGame(ui.MainGame):
 	def descend(self):
 		""" Go down. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(dungeon.get_player().pos)), None)
-		if stairs_here:
-			dungeon.use_stairs(dungeon.get_player(), stairs_here)
-			dungeon.fire_event(GoingDown())
+		if dungeon.descend(dungeon.get_player()):
 			return to_main_screen(self)
-		else:
-			dungeon.fire_event(CannotDig())
 	@Controls('<')
 	def ascend(self):
 		""" Go up. """
 		dungeon = self.data
-		stairs_here = next(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_up, dungeon.scene.iter_appliances_at(dungeon.get_player().pos)), None)
-		if stairs_here:
-			try:
-				dungeon.use_stairs(dungeon.get_player(), stairs_here)
-				dungeon.fire_event(GoingUp())
+		try:
+			if dungeon.ascend(dungeon.get_player()):
 				return to_main_screen(self)
-			except Furniture.Locked:
-				dungeon.fire_event(NeedMcGuffin())
-			except GameCompleted:
-				return Greetings
-		else:
-			dungeon.fire_event(CannotReachCeiling())
+		except GameCompleted:
+			return Greetings
 	@Controls('g')
 	def grab(self):
 		""" Grab item. """
 		dungeon = self.data
-		item_here = next( (index for index, (pos, item) in enumerate(reversed(dungeon.scene.items)) if pos == dungeon.get_player().pos), None)
-		trace.debug("Items: {0}".format(dungeon.scene.items))
-		trace.debug("Rogue: {0}".format(dungeon.get_player().pos))
-		trace.debug("Items here: {0}".format([(index, pos, item) for index, (pos, item) in enumerate(reversed(dungeon.scene.items)) if pos == dungeon.get_player().pos]))
-		trace.debug("Item here: {0}".format(item_here))
-		if item_here is not None:
-			item_here = len(dungeon.scene.items) - 1 - item_here # Index is from reversed list.
-			trace.debug("Unreversed item here: {0}".format(item_here))
-			_, item = dungeon.scene.items[item_here]
-			for _ in dungeon.grab_item(dungeon.get_player(), item):
-				self.data.fire_event(_)
-			self.game.scene.get_player().spend_action_points()
-		else:
-			dungeon.fire_event(NothingToPickUp())
+		dungeon.grab_here(dungeon.get_player())
 	@Controls('d')
 	def drop(self):
 		""" Drop item. """
@@ -538,53 +506,35 @@ class MainGame(ui.MainGame):
 	@Controls('h')
 	def move_west(self):
 		""" Move around. """
-		self.move_by(Point(-1,  0))
+		self.data.move_by(self.game.scene.get_player(), Point(-1,  0))
 	@Controls('j')
 	def move_south(self):
 		""" Move around. """
-		self.move_by(Point( 0, +1))
+		self.data.move_by(self.game.scene.get_player(), Point( 0, +1))
 	@Controls('k')
 	def move_north(self):
 		""" Move around. """
-		self.move_by(Point( 0, -1))
+		self.data.move_by(self.game.scene.get_player(), Point( 0, -1))
 	@Controls('l')
 	def move_east(self):
 		""" Move around. """
-		self.move_by(Point(+1,  0))
+		self.data.move_by(self.game.scene.get_player(), Point(+1,  0))
 	@Controls('y')
 	def move_north_west(self):
 		""" Move around. """
-		self.move_by(Point(-1, -1))
+		self.data.move_by(self.game.scene.get_player(), Point(-1, -1))
 	@Controls('u')
 	def move_north_east(self):
 		""" Move around. """
-		self.move_by(Point(+1, -1))
+		self.data.move_by(self.game.scene.get_player(), Point(+1, -1))
 	@Controls('b')
 	def move_south_west(self):
 		""" Move around. """
-		self.move_by(Point(-1, +1))
+		self.data.move_by(self.game.scene.get_player(), Point(-1, +1))
 	@Controls('n')
 	def move_south_east(self):
 		""" Move around. """
-		self.move_by(Point(+1, +1))
-
-	def move_by(self, shift):
-		dungeon = self.data
-		dungeon.move_actor(dungeon.get_player(), shift):
-		dungeon.scene.visit(dungeon.get_player().pos)
-
-	def process_others(self):
-		if not self.game.scene.get_player().has_acted():
-			return
-		self.game.scene.get_player().add_action_points()
-		dungeon = self.data
-		for monster in dungeon.scene.monsters:
-			if isinstance(monster, self.PLAYER_TYPE):
-				continue
-			monster.act(dungeon)
-
-		if not dungeon.get_player().is_alive():
-			return MessageView(Grave, self.data)
+		self.data.move_by(self.game.scene.get_player(), Point(+1, +1))
 
 class GodModeAction(tui.widgets.Menu):
 	KEYS_TO_CLOSE = [curses.ascii.ESC, ord('~')]
@@ -604,43 +554,25 @@ class ConsumeItem:
 	def prompt(self): return "Which item to consume?"
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
-		for _ in self.data.consume_item(self.data.get_player(), item):
-			self.data.fire_event(_)
+		self.data.consume_item(self.data.get_player(), item)
 
 class DropItem:
 	def prompt(self): return "Which item to drop?"
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
-		for _ in self.data.drop_item(self.data.get_player(), item):
-			self.data.fire_event(_)
+		self.data.drop_item(self.data.get_player(), item)
 
 class WieldItem:
 	def prompt(self): return "Which item to wield?"
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
-		try:
-			self.data.get_player().wield(item)
-		except EquippedMonster.SlotIsTaken:
-			item = dungeon.get_player().unwield()
-			self.data.fire_event(Event.Unwielding(self.data.get_player(), item))
-			self.data.get_player().wield(item)
-			events.append(Event.Wielding(self.data.get_player(), item))
+		self.data.wield_item(self.data.get_player(), item)
 
 class WearItem:
 	def prompt(self): return "Which item to wear?"
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
-		for _ in self.data.get_player().wear(item):
-			self.data.fire_event(_)
-		try:
-			self.data.get_player().wear(item)
-		except EquippedMonster.ItemNotFit as e:
-			self.data.fire_event(Event.NotWearable(item))
-		except EquippedMonster.SlotIsTaken:
-			item = dungeon.get_player().take_off()
-			self.data.fire_event(Event.TakingOff(self.data.get_player(), item))
-			self.data.get_player().wear(item)
-			events.append(Event.Wielding(self.data.get_player(), item))
+		self.data.wear_item(self.data.get_player(), item)
 
 class QuickItemSelection(tui.widgets.Prompt):
 	def extended_mode(self):

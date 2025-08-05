@@ -9,9 +9,15 @@ from ...engine import events
 from ...engine import items, actors, appliances
 from ...engine.ui import Sprite
 
+class NanoKey(Item):
+	_name = 'nanokey'
+	def __init__(self):
+		self.value = ''
+
 class Elevator(appliances.LevelPassage):
 	_sprite = Sprite('>', None)
 	_can_go_down = True
+	_unlocking_item = NanoKey
 	_id = 'basement'
 
 class Ladder(appliances.LevelPassage):
@@ -19,15 +25,24 @@ class Ladder(appliances.LevelPassage):
 	_can_go_up = True
 	_id = 'roof'
 
-class NanoKey(Item):
-	def __init__(self):
-		self.value = ''
+class ElevatorUp(appliances.LevelPassage):
+	_sprite = Sprite('<', None)
+	_unlocking_item = NanoKey
+	_can_go_up = True
+	_id = 'top'
 
 class StealthPistol(Item):
 	_attack = 5
+	_name = 'stealth pistol'
+	_sprite = Sprite('(', None)
+
+class SniperRifle(Item):
+	_attack = 10
+	_name = 'sniper rifle'
 	_sprite = Sprite('(', None)
 
 class ThermopticCamo(Item, Wearable):
+	_name = 'thermoptic camo'
 	_protection = 3
 
 class HazmatSuit(Item, Wearable):
@@ -54,6 +69,8 @@ class UNATCOAgent(Player):
 class VacuumCleaner(actors.EquippedMonster):
 	_sprite = Sprite('v', None)
 	_max_hp = 5
+	def act(self, game):
+		game.fire_event('Whroooom')
 
 class NSFTerrorist(actors.EquippedMonster):
 	_attack = 1
@@ -89,18 +106,24 @@ class TestMonster(unittest.TestCase):
 		jc.inventory.append(stimpack)
 		jc.inventory.append(smart_stimpack)
 
-		self.assertEqual(_R(dungeon.consume_item(jc, key)), _R([
+		dungeon.events = []
+		dungeon.consume_item(jc, key)
+		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.NotConsumable(key),
 			]))
 		self.assertTrue(jc.has_item(NanoKey))
 
-		self.assertEqual(_R(dungeon.consume_item(jc, stimpack)), _R([
+		dungeon.events = []
+		dungeon.consume_item(jc, stimpack)
+		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.MonsterConsumedItem(jc, stimpack),
 			]))
 		self.assertFalse(jc.has_item(StimPack))
 		self.assertEqual(jc.hp, jc.max_hp)
 
-		self.assertEqual(_R(dungeon.consume_item(jc, smart_stimpack)), _R([
+		dungeon.events = []
+		dungeon.consume_item(jc, smart_stimpack)
+		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.MonsterConsumedItem(jc, smart_stimpack),
 			]))
 		self.assertFalse(jc.has_item(SmartStimPack))
@@ -130,12 +153,26 @@ class MockGenerator:
 			#            #
 			##############
 			""")
+	BASEMENT = textwrap.dedent("""\
+			##############
+			#............#
+			#............#
+			#............#
+			#......^.....#
+			#............#
+			#............#
+			#............#
+			#............#
+			##############
+			""")
 	def build_level(self, level_id):
 		result = Scene()
 		if level_id == 'top':
 			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.MAIN_LEVEL)
 		elif level_id == 'roof':
 			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.ROOF)
+		elif level_id == 'basement':
+			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.BASEMENT)
 		return result
 	@functools.lru_cache()
 	def _parse_layout(self, layout):
@@ -201,11 +238,13 @@ class MockGenerator:
 		for y in range(layout.height):
 			for x in range(layout.width):
 				if layout.cell( (x, y) ) == '>':
-					objects.append( (Point(x, y), Elevator(None, None)) )
+					objects.append( (Point(x, y), Elevator('basement', 'top')) )
 				elif layout.cell( (x, y) ) == '<':
 					objects.append( (Point(x, y), Ladder('roof', 'roof')) )
 				elif layout.cell( (x, y) ) == '=':
 					objects.append( (Point(x, y), Ladder('top', 'roof')) )
+				elif layout.cell( (x, y) ) == '^':
+					objects.append( (Point(x, y), ElevatorUp('top', 'basement')) )
 
 		return rooms, tunnels, objects
 
@@ -334,18 +373,21 @@ class TestGridRoomMap(unittest.TestCase):
 		gridmap.items.append( (Point(1, 1), armor) )
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor, pistol, key])
 
-		events = dungeon.grab_item(jc, key)
-		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, key)]))
+		dungeon.events = []
+		dungeon.grab_item(jc, key)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.GrabbedItem(jc, key)]))
 		self.assertTrue(jc.has_item(NanoKey))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor, pistol])
 
-		events = dungeon.grab_item(jc, pistol)
-		self.assertEqual(_R(events), _R([game.Event.GrabbedItem(jc, pistol)]))
+		dungeon.events = []
+		dungeon.grab_item(jc, pistol)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.GrabbedItem(jc, pistol)]))
 		self.assertTrue(jc.has_item(StealthPistol))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor])
 
-		events = dungeon.grab_item(jc, armor)
-		self.assertEqual(_R(events), _R([game.Event.InventoryFull(armor)]))
+		dungeon.events = []
+		dungeon.grab_item(jc, armor)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.InventoryFull(armor)]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor])
 	def should_drop_item(self):
@@ -359,10 +401,70 @@ class TestGridRoomMap(unittest.TestCase):
 
 		gridmap = dungeon.scene
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [])
-		events = dungeon.drop_item(jc, pistol)
-		self.assertEqual(_R(events), _R([game.Event.MonsterDroppedItem(jc, pistol)]))
+		dungeon.events = []
+		dungeon.drop_item(jc, pistol)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.MonsterDroppedItem(jc, pistol)]))
 		self.assertFalse(jc.has_item(StealthPistol))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [pistol])
+	def should_wield_item(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+
+		pistol = StealthPistol()
+		rifle = SniperRifle()
+		jc = UNATCOAgent(None)
+		jc.inventory.append(pistol)
+		jc.inventory.append(rifle)
+		jc.pos = Point(1, 1)
+
+		dungeon.events = []
+		dungeon.wield_item(jc, pistol)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.Wielding(jc, pistol)]))
+		self.assertFalse(jc.has_item(StealthPistol))
+		self.assertEqual(jc.wielding, pistol)
+
+		dungeon.events = []
+		dungeon.wield_item(jc, rifle)
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.Unwielding(jc, pistol),
+			game.Event.Wielding(jc, rifle),
+			]))
+		self.assertFalse(jc.has_item(SniperRifle))
+		self.assertEqual(jc.wielding, rifle)
+	def should_wear_item(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+
+		camo = ThermopticCamo()
+		suit = HazmatSuit()
+		pistol = StealthPistol()
+		jc = UNATCOAgent(None)
+		jc.inventory.append(camo)
+		jc.inventory.append(suit)
+		jc.inventory.append(pistol)
+		jc.pos = Point(1, 1)
+
+		dungeon.events = []
+		dungeon.wear_item(jc, camo)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.Wearing(jc, camo)]))
+		self.assertFalse(jc.has_item(ThermopticCamo))
+		self.assertEqual(jc.wearing, camo)
+
+		dungeon.events = []
+		dungeon.wear_item(jc, suit)
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.TakingOff(jc, camo),
+			game.Event.Wearing(jc, suit),
+			]))
+		self.assertFalse(jc.has_item(HazmatSuit))
+		self.assertEqual(jc.wearing, suit)
+
+		dungeon.events = []
+		dungeon.wear_item(jc, pistol)
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.NotWearable(pistol),
+			]))
+		self.assertEqual(jc.wearing, suit)
 	def should_visit_tunnel(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
@@ -531,6 +633,21 @@ class TestDungeon(unittest.TestCase):
 		self.assertTrue(dungeon.is_visited(dungeon.scene.tunnels[1], additional=Point(11, 4)))
 		self.assertTrue(dungeon.is_visited(Point(5, 1)))
 		self.assertTrue(dungeon.is_visited(Point(8, 2)))
+	def should_detect_player_by_monsters(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+		dungeon.scene.get_player().pos = Point(9, 3)
+
+		mj12 = MJ12Trooper(None)
+		mj12.pos = Point(8, 3)
+		dungeon.scene.monsters.append(mj12)
+
+		vacuum = VacuumCleaner(None)
+		vacuum.pos = Point(2, 1)
+		dungeon.scene.monsters.append(vacuum)
+
+		self.assertTrue(dungeon.actor_sees_player(mj12))
+		self.assertFalse(dungeon.actor_sees_player(vacuum))
 	def should_move_monster(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
@@ -580,3 +697,126 @@ class TestDungeon(unittest.TestCase):
 			]))
 		self.assertTrue(dungeon.is_finished())
 		self.assertEqual(dungeon.scene.items, [items.ItemAtPos(Point(9, 3), pistol)])
+	def should_process_others(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+		dungeon.scene.get_player().pos = Point(9, 3)
+		pistol = StealthPistol()
+		dungeon.scene.get_player().inventory.append(pistol)
+
+		mj12 = MJ12Trooper(None)
+		mj12.pos = Point(8, 3)
+		dungeon.scene.monsters.append(mj12)
+
+		vacuum = VacuumCleaner(None)
+		vacuum.pos = Point(8, 2)
+		dungeon.scene.monsters.append(vacuum)
+
+		self.assertFalse(dungeon.scene.get_player().has_acted())
+		dungeon.process_others()
+		self.assertEqual(dungeon.events, [])
+
+		dungeon.move_actor(dungeon.scene.get_player(), Point(+1, 0))
+		self.assertTrue(dungeon.scene.get_player().has_acted())
+		dungeon.process_others()
+		self.assertEqual(dungeon.events, ['Whroooom'])
+		self.assertFalse(dungeon.scene.get_player().has_acted())
+	def should_ascend(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+
+		self.assertFalse(dungeon.ascend(dungeon.scene.get_player()))
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.CannotReachCeiling(),
+			]))
+
+		dungeon.events = []
+		dungeon.scene.get_player().pos = Point(3, 6)
+		self.assertTrue(dungeon.ascend(dungeon.scene.get_player()))
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.GoingUp(),
+			]))
+		self.assertEqual(dungeon.scene, dungeon.levels['roof'])
+		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
+
+	def should_descend(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+
+		dungeon.scene.get_player().pos = Point(3, 6)
+		self.assertFalse(dungeon.descend(dungeon.scene.get_player()))
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.CannotDig(),
+			]))
+
+		dungeon.events = []
+		dungeon.scene.get_player().pos = Point(1, 1)
+		self.assertFalse(dungeon.descend(dungeon.scene.get_player()))
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.NeedKey(NanoKey),
+			]))
+
+		dungeon.events = []
+		key = NanoKey()
+		key.value = '0451'
+		dungeon.scene.get_player().inventory.append(key)
+		dungeon.scene.get_player().pos = Point(1, 1)
+		self.assertTrue(dungeon.descend(dungeon.scene.get_player()))
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.GoingDown(),
+			]))
+		self.assertEqual(dungeon.scene, dungeon.levels['basement'])
+		self.assertEqual(dungeon.scene.get_player().pos, Point(7, 4))
+
+		dungeon.scene.get_player().drop(key)
+		dungeon.events = []
+		self.assertFalse(dungeon.ascend(dungeon.scene.get_player()))
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.NeedKey(NanoKey),
+			]))
+
+		dungeon.events = []
+		key = NanoKey()
+		key.value = '0451'
+		dungeon.scene.get_player().inventory.append(key)
+		self.assertTrue(dungeon.ascend(dungeon.scene.get_player()))
+		self.assertEqual(_R(dungeon.events), _R([
+			game.Event.GoingUp(),
+			]))
+		self.assertEqual(dungeon.scene, dungeon.levels['top'])
+		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
+	def should_grab_items(self):
+		dungeon = self.UNATCO()
+		dungeon.go_to_level(dungeon.PLAYER_TYPE(None), 'top', connected_passage='basement')
+
+		pistol = StealthPistol()
+		armor = ThermopticCamo()
+
+		jc = dungeon.scene.get_player()
+
+		gridmap = dungeon.scene
+		key = NanoKey()
+		gridmap.items.append( (Point(1, 1), armor) )
+		gridmap.items.append( (Point(1, 1), pistol) )
+		gridmap.items.append( (Point(1, 1), key) )
+
+		dungeon.events = []
+		dungeon.grab_here(jc)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.GrabbedItem(jc, key)]))
+		self.assertTrue(jc.has_item(NanoKey))
+
+		dungeon.events = []
+		dungeon.grab_here(jc)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.GrabbedItem(jc, pistol)]))
+		self.assertTrue(jc.has_item(StealthPistol))
+
+		dungeon.events = []
+		dungeon.grab_here(jc)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.InventoryFull(armor)]))
+		self.assertFalse(jc.has_item(ThermopticCamo))
+
+		dungeon.move_by(dungeon.scene.get_player(), Point(1, 0))
+		self.assertEqual(dungeon.scene.get_player().pos, Point(2, 1))
+		dungeon.events = []
+		dungeon.grab_here(jc)
+		self.assertEqual(_R(dungeon.events), _R([game.Event.NothingToPickUp()]))
