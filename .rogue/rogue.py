@@ -91,6 +91,15 @@ class Player(Monster):
 		super(Player, self).load(stream)
 		self.regeneration = stream.read(int)
 		self._max_hp = stream.read(int)
+	def apply_auto_effects(self):
+		if self.hp >= self.max_hp:
+			return
+		self.regeneration += 1
+		while self.regeneration >= 10:
+			self.regeneration -= 10
+			self.affect_health(+1)
+			if self.hp >= self.max_hp:
+				self.hp = self.max_hp
 
 class ColoredMonster(RealMonster):
 	_attack = 1
@@ -114,7 +123,7 @@ class ColoredMonster(RealMonster):
 	def act(self, game):
 		monster_pos = self.coord.get_global(game.scene.world)
 		close_rect = Rect(monster_pos - Point(1, 1), Size(3, 3))
-		for monster_coord, monster in game.iter_monsters_in_rect(close_rect):
+		for monster in game.scene.iter_monsters_in_rect(close_rect):
 			if not self.is_hostile_to(monster):
 				continue
 			damage = max(0, self.get_attack_damage() - monster.get_protection())
@@ -135,13 +144,13 @@ class AggressiveColoredMonster(ColoredMonster):
 				Size(1 + self.vision * 2, 1 + self.vision * 2),
 				)
 		closest = []
-		for monster_coord, monster in game.iter_monsters_in_rect(monster_action_range):
+		for monster in game.scene.iter_monsters_in_rect(monster_action_range):
 			if not self.is_hostile_to(monster):
 				continue
-			monster_pos = monster_coord.get_global(game.scene.world)
+			monster_pos = monster.coord.get_global(game.scene.world)
 			closest.append((
 				distance(self_pos, monster_pos),
-				monster_coord, monster,
+				monster.coord, monster,
 				))
 		if not closest:
 			return
@@ -387,18 +396,6 @@ class Marsh(Builder):
 		for _ in range(random.randrange(10)):
 			grid.set_cell(self.point(), 'dead_tree')
 
-def all_monsters(world, raw=False, zone_range=None):
-	for zone_index in (zone_range or world.cells):
-		zone = world.cells.cell(zone_index)
-		if zone is None:
-			continue
-		for field_index in zone.cells:
-			for monster in zone.cells.cell(field_index).data.monsters:
-				coord = NestedGrid.Coord(zone_index, field_index, monster.pos)
-				if not raw:
-					coord = coord.get_global(world)
-				yield coord, monster
-
 class NothingToPickUp(events.Event): FIELDS = ''
 class NoOneToChat(events.Event): FIELDS = ''
 class NoOneToChatInDirection(events.Event): FIELDS = ''
@@ -459,16 +456,14 @@ class Game(engine.Game):
 	def __init__(self):
 		super(Game, self).__init__()
 		self.scene = Scene()
-		self.passed_time = 0
+		self.playing_time = 0
 		self.colors = {}
 	def save(self, stream):
 		self.scene.save(stream)
-		stream.write(self.passed_time)
+		stream.write(self.playing_time)
 	def load(self, stream):
 		self.scene.load(stream)
-		self.passed_time = stream.read(int)
-	def is_finished(self):
-		return not self.scene.get_player().is_alive()
+		self.playing_time = stream.read(int)
 	def generate(self):
 		zone_pos = Point(
 				random.randrange(self.scene.world.cells.size.width),
@@ -489,42 +484,6 @@ class Game(engine.Game):
 				)
 		player = Player(player_pos.values[-1])
 		self.scene.world.get_data(player_pos)[-1].monsters.append(player)
-	def iter_monsters_in_rect(self, rect):
-		monster_zone_topleft = NestedGrid.Coord.from_global(rect.topleft, self.scene.world)
-		monster_zone_bottomright = NestedGrid.Coord.from_global(rect.bottomright, self.scene.world)
-		monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
-		for monster_coord, monster in all_monsters(self.scene.world, raw=True, zone_range=monster_zone_range):
-			monster_pos = monster_coord.get_global(self.scene.world)
-			if not rect.contains(monster_pos, with_border=True):
-				continue
-			yield monster_coord, monster
-	def process_others(self):
-		if self.scene.get_player().has_acted():
-			player_pos = self.scene.get_player_coord().get_global(self.scene.world)
-			if self.scene.get_player().hp < self.scene.get_player().max_hp:
-				self.scene.get_player().regeneration += 1
-				while self.scene.get_player().regeneration >= 10:
-					self.scene.get_player().regeneration -= 10
-					self.scene.get_player().affect_health(+1)
-					if self.scene.get_player().hp >= self.scene.get_player().max_hp:
-						self.scene.get_player().hp = self.scene.get_player().max_hp
-
-			self.passed_time += 1
-			self.scene.get_player().add_action_points()
-
-			monster_action_range = Rect(
-					player_pos - Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH),
-					Size(1 + MAX_MONSTER_ACTION_LENGTH * 2, 1 + MAX_MONSTER_ACTION_LENGTH * 2),
-					)
-			self.already_acted_monsters_from_previous_fields = []
-			for monster_coord, monster in self.iter_monsters_in_rect(monster_action_range):
-				if monster in self.already_acted_monsters_from_previous_fields:
-					continue
-				if isinstance(monster, Player):
-					continue
-				monster.coord = monster_coord
-				monster.act(self)
-		return True
 	def move_actor(self, actor, shift):
 		game = self
 		if actor == game.scene.get_player():
@@ -560,7 +519,6 @@ class Game(engine.Game):
 			if current_field_data != dest_field_data:
 				current_field_data.monsters.remove(actor)
 				dest_field_data.monsters.append(actor)
-				game.already_acted_monsters_from_previous_fields.append(actor)
 			actor.pos = dest_pos.values[-1]
 			if actor == game.scene.get_player():
 				game.scene.autoexpand(self.scene.get_player_coord(), Size(40, 40))
@@ -675,7 +633,7 @@ class Scene(scene.Scene):
 		return coord
 	def _get_player_data(self):
 		if self._cached_player_pos is None:
-			player, self._cached_player_pos = next((monster, coord) for coord, monster in all_monsters(self.world, raw=True) if isinstance(monster, Player))
+			player, self._cached_player_pos = next((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player))
 			return player, self._cached_player_pos
 		expected_zone_index = self._cached_player_pos.values[0]
 		expected_zone = self.world.cells.cell(expected_zone_index)
@@ -688,7 +646,7 @@ class Scene(scene.Scene):
 				return monster, self._cached_player_pos
 		# Not found in the field.
 		# Checking the whole last remembered zone:
-		for coord, monster in all_monsters(self.world, raw=True, zone_range=[expected_zone_index]):
+		for coord, monster in self.all_monsters(raw=True, zone_range=[expected_zone_index]):
 			if isinstance(monster, Player):
 				self._cached_player_pos = coord
 				return monster, self._cached_player_pos
@@ -698,13 +656,13 @@ class Scene(scene.Scene):
 			expected_zone_index - Point(1, 1),
 			expected_zone_index + Point(1, 1),
 			)) - {expected_zone_index}
-		for coord, monster in all_monsters(self.world, raw=True, zone_range=adjacent_zones):
+		for coord, monster in self.all_monsters(raw=True, zone_range=adjacent_zones):
 			if isinstance(monster, Player):
 				self._cached_player_pos = coord
 				return monster, self._cached_player_pos
 		# Not found in adjacent zones.
 		# Performing full lookup:
-		player, self._cached_player_pos = next((monster, coord) for coord, monster in all_monsters(self.world, raw=True) if isinstance(monster, Player))
+		player, self._cached_player_pos = next((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player))
 		return player, self._cached_player_pos
 
 	def iter_items_at(self, pos):
@@ -719,6 +677,35 @@ class Scene(scene.Scene):
 				continue
 			if pos.values[-1] == actor.pos:
 				yield actor
+	def all_monsters(self, raw=False, zone_range=None):
+		for zone_index in (zone_range or self.world.cells):
+			zone = self.world.cells.cell(zone_index)
+			if zone is None:
+				continue
+			for field_index in zone.cells:
+				for monster in zone.cells.cell(field_index).data.monsters:
+					coord = NestedGrid.Coord(zone_index, field_index, monster.pos)
+					if not raw:
+						coord = coord.get_global(self.world)
+					yield coord, monster
+	def iter_monsters_in_rect(self, rect):
+		monster_zone_topleft = NestedGrid.Coord.from_global(rect.topleft, self.world)
+		monster_zone_bottomright = NestedGrid.Coord.from_global(rect.bottomright, self.world)
+		monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
+		for monster_coord, monster in self.all_monsters(raw=True, zone_range=monster_zone_range):
+			monster_pos = monster_coord.get_global(self.world)
+			if not rect.contains(monster_pos, with_border=True):
+				continue
+			monster.coord = monster_coord
+			yield monster
+	def iter_active_monsters(self):
+		player_pos = self.get_player_coord().get_global(self.world)
+		monster_action_range = Rect(
+				player_pos - Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH),
+				Size(1 + MAX_MONSTER_ACTION_LENGTH * 2, 1 + MAX_MONSTER_ACTION_LENGTH * 2),
+				)
+		for monster in self.iter_monsters_in_rect(monster_action_range):
+			yield monster
 
 def iter_rect(topleft, bottomright):
 	for x in range(topleft.x, bottomright.x + 1):
@@ -808,7 +795,7 @@ class MainGameMode(ui.MainGame):
 				self.game.scene.get_player_coord().values[1].y,
 				self.game.scene.get_player_coord().values[2].y,
 				)),
-			ui.Indicator((62, 1), 18, lambda self:"T:{0}".format(self.game.passed_time)),
+			ui.Indicator((62, 1), 18, lambda self:"T:{0}".format(self.game.playing_time)),
 			ui.Indicator((62, 2), 18, lambda self:"hp:{0}/{1}".format(self.game.scene.get_player().hp, self.game.scene.get_player().max_hp)),
 			ui.Indicator((62, 3), 18, lambda self:"inv:{0}".format(len(self.game.scene.get_player().inventory))),
 			ui.Indicator((62, 4), 18, lambda self:"here:{0}".format(self.item_here().sprite.sprite) if self.item_here() else ""),
@@ -855,12 +842,12 @@ class MainGameMode(ui.MainGame):
 		if True:
 			npcs = [
 					monster for monster_pos, monster
-					in all_monsters(game.scene.world)
+					in self.game.scene.all_monsters()
 					if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1
 					and isinstance(monster, Dweller)
 					]
 			questing = [
-					npc for _, npc in all_monsters(game.scene.world)
+					npc for _, npc in self.game.scene.all_monsters()
 					if isinstance(npc, Dweller)
 					and npc.quest
 					]
@@ -928,7 +915,7 @@ class MainGameMode(ui.MainGame):
 		game = self.game
 		if True:
 			questing = [
-					(coord, npc) for coord, npc in all_monsters(game.scene.world, raw=True)
+					(coord, npc) for coord, npc in self.game.scene.all_monsters(raw=True)
 					if isinstance(npc, Dweller)
 					and npc.quest
 					]

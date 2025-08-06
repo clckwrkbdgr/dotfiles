@@ -157,7 +157,7 @@ class TestSerialization(unittest.TestCase):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
 		dungeon.generate()
-		dungeon.time = 666
+		dungeon.playing_time = 666
 
 		import pickle
 		from clckwrkbdgr.collections import dotdict
@@ -172,7 +172,7 @@ class TestSerialization(unittest.TestCase):
 				'\n'.join(other.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite.sprite) for c in other.scene.terrain.blocks),
 				)
 		self.assertEqual(dungeon.scene.get_player().pos, other.scene.get_player().pos)
-		self.assertEqual(dungeon.time, other.time)
+		self.assertEqual(dungeon.playing_time, other.playing_time)
 	def should_deserialize_dungeons_from_previous_versions(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
 		dungeon = MockDungeon(builder=builder)
@@ -181,4 +181,4 @@ class TestSerialization(unittest.TestCase):
 		state = {'builder' : builder, 'scene': dotdict({'terrain':dungeon.scene.terrain, 'rogue':dungeon.scene.get_player()})}
 		other = MockDungeon(builder=builder)
 		other.load(state)
-		self.assertEqual(other.time, 0)
+		self.assertEqual(other.playing_time, 0)

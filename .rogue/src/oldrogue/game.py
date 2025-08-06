@@ -223,6 +223,8 @@ class Scene(scene.Scene):
 				yield obj
 	def get_player(self):
 		return next((monster for monster in self.monsters if isinstance(monster, Player)), None)
+	def iter_active_monsters(self):
+		return self.monsters
 
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
@@ -251,8 +253,6 @@ class Dungeon(engine.Game):
 		data.visited_rooms = self.visited_rooms
 		data.visited_tunnels = self.visited_tunnels
 		data.current_level = self.current_level_id
-	def is_finished(self):
-		return not (self.scene.get_player() and self.scene.get_player().is_alive())
 	def go_to_level(self, monster, level_id, connected_passage='enter'):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
@@ -450,15 +450,6 @@ class Dungeon(engine.Game):
 		tunnel = self.scene.tunnel_of(pos)
 		if tunnel:
 			self.visit_tunnel(tunnel, pos)
-	def process_others(self):
-		if not self.scene.get_player().has_acted():
-			return
-		self.scene.get_player().add_action_points()
-		dungeon = self
-		for monster in dungeon.scene.monsters:
-			if isinstance(monster, self.PLAYER_TYPE):
-				continue
-			monster.act(dungeon)
 	def descend(self, actor):
 		dungeon = self
 		stairs_here = next(iter(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(actor.pos))), None)

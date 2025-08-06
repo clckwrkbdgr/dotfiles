@@ -225,6 +225,8 @@ class Scene(scene.Scene):
 		for obj_pos, obj in self.appliances:
 			if obj_pos == pos:
 				yield obj
+	def iter_active_monsters(self):
+		return self.monsters
 
 class Game(engine.Game):
 	""" Main game object.
@@ -283,19 +285,9 @@ class Game(engine.Game):
 		writer.write(self.rng.value)
 		writer.write(self.scene)
 		self.vision.save(writer)
-	def is_finished(self):
-		return not (self.scene.get_player() and self.scene.get_player().is_alive())
 	def end_turn(self):
 		if self.scene.get_player():
 			self.scene.get_player().spend_action_points()
-	def process_others(self):
-		if self.scene.get_player() and self.scene.get_player().has_acted():
-			for monster in self.scene.monsters:
-				if isinstance(monster, Player):
-					continue
-				monster.act(self)
-			if self.scene.get_player():
-				self.scene.get_player().add_action_points()
 	def stop_automovement(self):
 		try:
 			self.autostop()

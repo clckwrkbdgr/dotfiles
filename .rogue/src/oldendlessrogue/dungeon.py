@@ -31,7 +31,6 @@ class Dungeon(engine.Game):
 		super(Dungeon, self).__init__()
 		self.builder = builder or builders.Builders()
 		self.scene = Scene()
-		self.time = 0
 		self.autoexplore = None
 	def in_automovement(self):
 		return self.autoexplore
@@ -44,15 +43,13 @@ class Dungeon(engine.Game):
 		self.move_actor(self.scene.get_player(), control)
 	def stop_automovement(self):
 		self.autoexplore = None
-	def is_finished(self): # pragma: no cover -- TODO
-		return False
 	def generate(self):
 		self.scene.terrain = EndlessMatrix(block_size=self.scene.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
 		self.scene.monsters.append(self.PLAYER_TYPE(self.builder.place_rogue(self.scene.terrain)))
 	def load(self, state):
 		self.__dict__.update(state)
-		if 'time' not in state:
-			self.time = 0
+		if 'playing_time' not in state:
+			self.playing_time = state.get('time', 0)
 		self.scene.terrain.builder = self.builder.build_block
 	def save(self, state): # pragma: no cover -- TODO
 		data = {}
@@ -64,12 +61,7 @@ class Dungeon(engine.Game):
 		if self.scene.is_passable(new_pos):
 			monster.pos = new_pos
 		monster.spend_action_points()
-	def process_others(self):
-		if not self.scene.get_player().has_acted():
-			return
 		self.scene.terrain.recalibrate(self.scene.get_player().pos)
-		self.time += 1
-		self.scene.get_player().add_action_points()
 
 class Scene(scene.Scene):
 	BLOCK_SIZE = Size(32, 32)
@@ -92,3 +84,5 @@ class Scene(scene.Scene):
 		return next(iter(self.monsters))
 	def is_passable(self, pos):
 		return self.terrain.cell(pos) and self.terrain.cell(pos).passable
+	def iter_active_monsters(self):
+		return self.monsters

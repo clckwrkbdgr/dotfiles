@@ -20,6 +20,7 @@ class Game(object):
 			import random
 			rng = random
 		self.rng = rng
+		self.playing_time = 0
 		self.god = GodMode()
 		self.events = []
 		self.scene = None
@@ -40,12 +41,13 @@ class Game(object):
 		""" Should store game data to the reader/state.
 		"""
 		raise NotImplementedError()
-	def is_finished(self): # pragma: no cover
+	def is_finished(self):
 		""" Should return True if game is completed/finished/failed
 		and should reset, e.g. savefile should be deleted.
 		Otherwise game keeps going and should be saved.
+		By default checks if player character is still alive
 		"""
-		raise NotImplementedError()
+		return not (self.scene.get_player() and self.scene.get_player().is_alive())
 
 	# Events.
 
@@ -118,7 +120,22 @@ class Game(object):
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn
 		to process other monsters and other game mechanics.
-		Should perform check for player turn manually
+		Perform check for player turn manually
 		and reset it also manually.
+		Applies any auto effects on player.
+		Performs actions for all other monsters in the activity area
+		(see Scene.iter_active_monsters).
+		Forwards playing time.
 		"""
-		pass
+		if not (self.scene.get_player() and self.scene.get_player().has_acted()):
+			return False
+		self.scene.get_player().apply_auto_effects()
+		self.scene.get_player().add_action_points()
+
+		for monster in list(self.scene.iter_active_monsters()):
+			if monster == self.scene.get_player():
+				continue
+			monster.act(self)
+
+		self.playing_time += 1
+		return True

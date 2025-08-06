@@ -31,6 +31,11 @@ class Actor(object):
 	def spend_action_points(self, amount=None):
 		""" Decreases free action points (when some action is performed). """
 		self.action_points = False # TODO Should be a number and consider _amount_.
+	def apply_auto_effects(self): # pragma: no cover
+		""" Apply any internal effects of on-going conditions at the end of current turn,
+		like regeneration or poison.
+		"""
+		pass
 
 	@classmethod
 	def load(cls, reader):

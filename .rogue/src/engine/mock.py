@@ -118,6 +118,8 @@ class Butterfly(actors.Actor):
 	def save(self, stream):
 		super(Butterfly, self).save(stream)
 		stream.write(self.color)
+	def act(self, game):
+		game.fire_event(FlopWings(self))
 
 class Rogue(actors.EquippedMonster):
 	_hostile_to = [actors.Monster]
@@ -171,10 +173,12 @@ class Hit(events.Event):
 	FIELDS = ('actor', 'target')
 class Healed(events.Event):
 	FIELDS = ('target', 'diff')
+class FlopWings(events.Event): FIELDS = ('actor')
 
 events.Events.on(Healed)(lambda event: '{0} gains {1}hp.')
 events.Events.on(NothingToDrop)(lambda event: 'Nothing to drop.')
 events.Events.on(DropItem)(lambda event: '{0} drops {2} on {1}'.format(event.who, event.where, event.what))
+events.Events.on(FlopWings)(lambda event: '{0} flops its wings'.format(event.actor))
 class Handler(object):
 	@events.Events.on(Hit)
 	def handle_hits(self, event):
@@ -219,6 +223,8 @@ class Dungeon(scene.Scene):
 		for obj_pos, obj in self.appliances:
 			if obj_pos == pos:
 				yield obj
+	def iter_active_monsters(self):
+		return self.monsters
 
 ### Builders. ##################################################################
 
