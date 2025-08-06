@@ -1,1 +1,1 @@
-from ._base import Game
+from ._base import *

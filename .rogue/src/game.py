@@ -113,9 +113,7 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	@staticmethod
 	def allow_movement_direction(strata, from_point, to_point):
 		""" Returns True, if current map allows direct movement from point to point. """
-		shift = to_point - from_point
-		is_diagonal = abs(shift.x) + abs(shift.y) == 2
-		if not is_diagonal:
+		if not engine.is_diagonal(to_point - from_point):
 			return True
 		if not strata.cell(from_point).allow_diagonal:
 			return False
@@ -260,7 +258,6 @@ class Game(engine.Game):
 		super(Game, self).__init__(rng=RNG(rng_seed))
 		self.builders = builders or self.BUILDERS
 		assert not hasattr(self, 'SETTLERS') or self.SETTLERS is None
-		self.god = God()
 		self.autoexploring = False
 		self.movement_queue = []
 		self.scene = Scene()
@@ -583,12 +580,3 @@ class Game(engine.Game):
 		self.movement_queue[:] = []
 		self.autoexploring = False
 		raise Game.AutoMovementStopped()
-
-class God:
-	""" God mode options.
-	- vision: see through everything, ignore FOV/transparency.
-	- noclip: walk through everything, ignoring obstacles.
-	"""
-	def __init__(self):
-		self.vision = False
-		self.noclip = False

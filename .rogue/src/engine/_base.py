@@ -1,5 +1,17 @@
 from . import events
 
+def is_diagonal(shift):
+	return abs(shift.x) + abs(shift.y) == 2
+
+class GodMode:
+	""" God mode options.
+	- vision: see through everything, ignore FOV/transparency.
+	- noclip: walk through everything, ignoring obstacles.
+	"""
+	def __init__(self):
+		self.vision = False
+		self.noclip = False
+
 class Game(object):
 	""" Main object for the game mechanics.
 	"""
@@ -8,6 +20,7 @@ class Game(object):
 			import random
 			rng = random
 		self.rng = rng
+		self.god = GodMode()
 		self.events = []
 		self.scene = None
 

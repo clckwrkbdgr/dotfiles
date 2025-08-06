@@ -82,13 +82,6 @@ class MJ12Trooper(actors.EquippedMonster):
 	_hostile_to = [UNATCOAgent, NSFTerrorist]
 	_sprite = Sprite('M', None)
 
-class TestUtils(unittest.TestCase):
-	def should_detect_diagonal_movement(self):
-		self.assertTrue(game.is_diagonal_movement(Point(0, 0), Point(1, 1)))
-		self.assertTrue(game.is_diagonal_movement(Point(0, 0), Point(1, -1)))
-		self.assertFalse(game.is_diagonal_movement(Point(0, 0), Point(1, 0)))
-		self.assertFalse(game.is_diagonal_movement(Point(0, 0), Point(0, 1)))
-
 class TestMonster(unittest.TestCase):
 	class UNATCO(game.Dungeon):
 		GENERATOR = lambda *_:None

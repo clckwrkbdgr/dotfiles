@@ -14,10 +14,6 @@ from ..engine import events, scene
 from ..engine import actors, items, appliances
 from ..engine.items import Item, Wearable
 
-def is_diagonal_movement(point_from, point_to):
-	shift = abs(point_to - point_from)
-	return shift.x + shift.y > 1
-
 class Version(clckwrkbdgr.collections.Enum):
 	auto = clckwrkbdgr.collections.Enum.auto()
 	INITIAL = auto()
@@ -110,13 +106,13 @@ class Scene(scene.Scene):
 				return True
 			for tunnel in self.get_tunnels(dest_room):
 				if tunnel.contains(pos):
-					if from_pos and is_diagonal_movement(from_pos, pos):
+					if from_pos and engine.is_diagonal(from_pos - pos):
 						return False
 					return True
 		if with_tunnels:
 			dest_tunnel = self.tunnel_of(pos)
 			if dest_tunnel:
-				if from_pos and is_diagonal_movement(from_pos, pos):
+				if from_pos and engine.is_diagonal(from_pos - pos):
 					return False
 				return True
 		return False
@@ -228,13 +224,6 @@ class Scene(scene.Scene):
 	def get_player(self):
 		return next((monster for monster in self.monsters if isinstance(monster, Player)), None)
 
-class GodMode(object):
-	""" God mode options.
-	Vision: allows to see everything regardless of obstacles.
-	"""
-	def __init__(self):
-		self.vision = False
-
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
 	GENERATOR = None
@@ -246,7 +235,6 @@ class Dungeon(engine.Game):
 		self.visited_tunnels = {}
 		self.current_level_id = None
 		self.generator = self.GENERATOR()
-		self.god = GodMode()
 	def generate(self): # pragma: no cover -- TODO
 		rogue = self.PLAYER_TYPE()
 		rogue.grab(Dagger())
