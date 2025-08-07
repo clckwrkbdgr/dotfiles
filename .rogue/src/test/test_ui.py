@@ -7,6 +7,7 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 from .. import ui
 from ..ui import MainGame
+from ..game import Automovement
 from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
 from ..test import mock_dungeon
@@ -178,7 +179,8 @@ class TestCurses(unittest.TestCase):
 	def should_show_state_markers(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon)
-		dungeon.movement_queue = ['mock']
+		dungeon.automovement = Automovement()
+		dungeon.automovement.movement_queue = ['mock']
 
 		loop.redraw()
 		self.maxDiff = None
@@ -194,7 +196,7 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 
-		dungeon.movement_queue = []
+		dungeon.automovement = None
 		dungeon.god.vision = True
 		dungeon.god.noclip = True
 
@@ -457,13 +459,14 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, [-1, -1, 'j'])
 
-		dungeon.autoexploring = True
+		dungeon.automovement = Automovement()
+		dungeon.automovement.autoexploring = True
 		self.assertTrue(loop.action())
-		self.assertTrue(dungeon.autoexploring)
+		self.assertTrue(dungeon.automovement.autoexploring)
 		self.assertTrue(loop.action())
-		self.assertTrue(dungeon.autoexploring)
+		self.assertTrue(dungeon.automovement.autoexploring)
 		self.assertTrue(loop.action())
-		self.assertFalse(dungeon.autoexploring)
+		self.assertFalse(dungeon.automovement)
 	def should_ignore_unknown_keys(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'Z')
@@ -516,7 +519,7 @@ class TestCurses(unittest.TestCase):
 		self.assertTrue(loop.action()) # ...monster's...
 		self.assertTrue(loop.action()) # ...vision
 		self.assertTrue(loop.action()) # explore
-		self.assertTrue(dungeon.autoexploring)
+		self.assertTrue(dungeon.automovement.autoexploring)
 	def should_toggle_god_settings(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '~Q~v~c')
