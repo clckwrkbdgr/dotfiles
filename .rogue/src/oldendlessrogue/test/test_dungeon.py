@@ -20,7 +20,7 @@ class MockDungeon(Dungeon):
 		super(MockDungeon, self).__init__(*args, **kwargs)
 		self.scene = MockScene()
 	def automove(self):
-		self.autoexplore = MockExplorer(self.autoexplorer_controls)
+		self.automovement = MockExplorer(self.autoexplorer_controls)
 
 class MockBuilder:
 	def __init__(self, rogue_pos=None, walls=None):

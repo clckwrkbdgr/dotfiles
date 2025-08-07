@@ -24,6 +24,7 @@ class Game(object):
 		self.god = GodMode()
 		self.events = []
 		self.scene = None
+		self.automovement = None
 
 	# State control.
 
@@ -93,10 +94,10 @@ class Game(object):
 
 	# Actions.
 
-	def in_automovement(self): # pragma: no cover
-		""" Should return True when player's currently automoving.
+	def in_automovement(self):
+		""" Returns True when player's currently automoving.
 		"""
-		return False
+		return self.automovement is not None
 	def perform_automovement(self): # pragma: no cover
 		""" Should perform any automovement activities
 		(if currently enabled).

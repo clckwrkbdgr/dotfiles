@@ -123,6 +123,11 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	def is_passable(self, p, from_point):
 		return self.matrix.cell(p).passable and self.visited.cell(p) and self.allow_movement_direction(self.matrix, from_point, p)
 
+class Automovement(object):
+	def __init__(self):
+		self.autoexploring = False
+		self.movement_queue = []
+
 class Vision(object):
 	def __init__(self):
 		self.visited = None
@@ -260,8 +265,6 @@ class Game(engine.Game):
 		super(Game, self).__init__(rng=RNG(rng_seed))
 		self.builders = builders or self.BUILDERS
 		assert not hasattr(self, 'SETTLERS') or self.SETTLERS is None
-		self.autoexploring = False
-		self.movement_queue = []
 		self.scene = Scene()
 		self.vision = Vision()
 	def generate(self):
@@ -511,10 +514,15 @@ class Game(engine.Game):
 			return
 		if dest is None:
 			path = self._start_autoexploring()
+			if path:
+				self.automovement = Automovement()
+				self.automovement.movement_queue.extend(path)
+				self.automovement.autoexploring = bool(path)
 		else:
 			path = self._walk_to(dest)
-		if path:
-			self.movement_queue.extend(path)
+			if path:
+				self.automovement = Automovement()
+				self.automovement.movement_queue.extend(path)
 		return bool(path)
 	def _walk_to(self, dest):
 		""" Starts auto-walking towards dest, if possible.
@@ -536,10 +544,7 @@ class Game(engine.Game):
 				)
 			), None),
 			)
-		self.autoexploring = bool(path)
 		return path
-	def in_automovement(self):
-		return self.autoexploring or bool(self.movement_queue)
 	def perform_automovement(self):
 		try:
 			self.perform_automovement_step()
@@ -550,25 +555,27 @@ class Game(engine.Game):
 		""" Performs next step from auto-movement queue, if any.
 		Stops on events.
 		"""
-		if not self.movement_queue:
+		if not self.automovement:
+			return False
+		if not self.automovement.movement_queue:
 			return False
 		if self.has_unprocessed_events():
 			Log.debug('New events in FOV, aborting auto-moving mode.')
 			return self.autostop()
 		Log.debug('Performing queued actions.')
-		new_pos = self.movement_queue.pop(0)
+		new_pos = self.automovement.movement_queue.pop(0)
 		self.jump_to(new_pos)
-		if self.movement_queue:
+		if self.automovement.movement_queue:
 			return True
-		if self.autoexploring:
+		if self.automovement.autoexploring:
 			if not self.automove():
-				self.autoexploring = False
+				self.automovement = None
 				raise Game.AutoMovementStopped()
 		else:
+			self.automovement = None
 			raise Game.AutoMovementStopped()
 		return True
 	def autostop(self):
 		""" Stops and resets auto-movement. """
-		self.movement_queue[:] = []
-		self.autoexploring = False
+		self.automovement = None
 		raise Game.AutoMovementStopped()
