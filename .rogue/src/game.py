@@ -124,9 +124,59 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 		return self.matrix.cell(p).passable and self.visited.cell(p) and self.allow_movement_direction(self.matrix, from_point, p)
 
 class Automovement(object):
-	def __init__(self):
-		self.autoexploring = False
+	def __init__(self, game):
+		self.game = game
 		self.movement_queue = []
+	def find_path(self, start, find_target):
+		""" Find free path from start and until find_target() returns suitable target.
+		Otherwise return None.
+		"""
+		wave = Pathfinder(self.game.scene.strata, visited=self.game.vision.visited)
+		path = wave.run(start, find_target)
+		if not path:
+			return None
+		if path[0] == self.game.scene.get_player().pos: # We're already standing there.
+			path.pop(0)
+		return path
+	def restart(self):
+		return False
+	def next(self):
+		if not self.movement_queue:
+			if not self.restart():
+				return None
+		return self.movement_queue.pop(0)
+
+class AutoWalk(Automovement):
+	""" Starts auto-walking towards dest, if possible.
+	Does not start when monsters are around and produces event.
+	"""
+	def __init__(self, game, dest):
+		super(AutoWalk, self).__init__(game)
+		path = self.find_path(self.game.scene.get_player().pos,
+				find_target=lambda wave: dest if dest in wave else None,
+				)
+		if path:
+			self.movement_queue.extend(path)
+
+class AutoExplore(Automovement):
+	""" Starts auto-exploring, if there are unknown places.
+	Does not start when monsters are around and produces event.
+	"""
+	def __init__(self, game):
+		super(AutoExplore, self).__init__(game)
+		self.restart()
+	def restart(self):
+		path = self.find_path(self.game.scene.get_player().pos,
+			find_target=lambda wave: next((target for target in sorted(wave)
+			if any(
+				not self.game.vision.visited.cell(p)
+				for p in clckwrkbdgr.math.get_neighbours(self.game.scene.strata, target, with_diagonal=True)
+				)
+			), None),
+			)
+		if path:
+			self.movement_queue.extend(path)
+		return bool(path)
 
 class Vision(object):
 	def __init__(self):
@@ -243,10 +293,6 @@ class Game(engine.Game):
 	- SPECIES: dict, registry of Species classes by their IDs used in Settlers.
 	- ITEMS: dict, registry of Item classes by their IDs used in Settlers.
 	"""
-
-	class AutoMovementStopped(BaseException):
-		""" Raised when current automovement mode was stopped. """
-		pass
 
 	BUILDERS = None
 	SETTLERS = None
@@ -492,54 +538,17 @@ class Game(engine.Game):
 				self.fire_event(DescendEvent(self.scene.get_player()))
 				self.build_new_strata()
 				break
-	def find_path(self, start, find_target):
-		""" Find free path from start and until find_target() returns suitable target.
-		Otherwise return None.
-		"""
-		wave = Pathfinder(self.scene.strata, visited=self.vision.visited)
-		path = wave.run(start, find_target)
-		if not path:
-			return None
-		if path[0] == self.scene.get_player().pos: # We're already standing there.
-			path.pop(0)
-		return path
 	def automove(self, dest=None):
 		if self.vision.visible_monsters:
 			self.fire_event(DiscoverEvent('monsters'))
 			return False
 		if dest is None:
-			path = self._start_autoexploring()
-			if path:
-				self.automovement = Automovement()
-				self.automovement.movement_queue.extend(path)
-				self.automovement.autoexploring = bool(path)
+			self.automovement = AutoExplore(self)
 		else:
-			path = self._walk_to(dest)
-			if path:
-				self.automovement = Automovement()
-				self.automovement.movement_queue.extend(path)
-		return bool(path)
-	def _walk_to(self, dest):
-		""" Starts auto-walking towards dest, if possible.
-		Does not start when monsters are around and produces event.
-		"""
-		path = self.find_path(self.scene.get_player().pos,
-				find_target=lambda wave: dest if dest in wave else None,
-				)
-		return path
-	def _start_autoexploring(self):
-		""" Starts auto-exploring, if there are unknown places.
-		Does not start when monsters are around and produces event.
-		"""
-		path = self.find_path(self.scene.get_player().pos,
-			find_target=lambda wave: next((target for target in sorted(wave)
-			if any(
-				not self.vision.visited.cell(p)
-				for p in clckwrkbdgr.math.get_neighbours(self.scene.strata, target, with_diagonal=True)
-				)
-			), None),
-			)
-		return path
+			self.automovement = AutoWalk(self, dest)
+		if not self.automovement.movement_queue:
+			self.automovement = None
+		return bool(self.automovement)
 	def perform_automovement(self):
 		""" Performs next step from auto-movement queue, if any.
 		Stops on events.
@@ -551,15 +560,9 @@ class Game(engine.Game):
 			self.automovement = None
 			return False
 		Log.debug('Performing queued actions.')
-		new_pos = self.automovement.movement_queue.pop(0)
-		self.jump_to(new_pos)
-		if self.automovement.movement_queue:
-			return True
-		if self.automovement.autoexploring:
-			if not self.automove():
-				self.automovement = None
-				return False
-		else:
+		new_pos = self.automovement.next()
+		if not new_pos:
 			self.automovement = None
 			return False
+		self.jump_to(new_pos)
 		return True

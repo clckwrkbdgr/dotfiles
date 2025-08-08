@@ -94,6 +94,8 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.in_automovement())
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertTrue(dungeon.in_automovement())
+		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.in_automovement())
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # GOD_TOGGLE_* EXIT
 			]])
@@ -810,6 +812,7 @@ class TestAutoMode(AbstractTestDungeon):
 
 		dungeon.automove(Point(11, 2))
 		self.assertTrue(dungeon.perform_automovement())
+		self.assertTrue(dungeon.perform_automovement())
 		self.assertFalse(dungeon.perform_automovement()) # You have reached your destination.
 
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
@@ -856,7 +859,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertFalse(dungeon.perform_automovement())
 
 		self.assertTrue(dungeon.automove())
-		for _ in range(5):
+		for _ in range(6):
 			self.assertTrue(dungeon.perform_automovement())
 		self.assertFalse(dungeon.perform_automovement()) # Explored everything.
 

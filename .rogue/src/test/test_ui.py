@@ -7,7 +7,7 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 from .. import ui
 from ..ui import MainGame
-from ..game import Automovement
+from ..game import Automovement, AutoExplore, AutoWalk
 from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
 from ..test import mock_dungeon
@@ -179,8 +179,7 @@ class TestCurses(unittest.TestCase):
 	def should_show_state_markers(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon)
-		dungeon.automovement = Automovement()
-		dungeon.automovement.movement_queue = ['mock']
+		dungeon.automovement = True
 
 		loop.redraw()
 		self.maxDiff = None
@@ -518,7 +517,7 @@ class TestCurses(unittest.TestCase):
 		self.assertTrue(loop.action()) # ...monster's...
 		self.assertTrue(loop.action()) # ...vision
 		self.assertTrue(loop.action()) # explore
-		self.assertTrue(dungeon.automovement.autoexploring)
+		self.assertTrue(dungeon.in_automovement())
 	def should_toggle_god_settings(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '~Q~v~c')

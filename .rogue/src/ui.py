@@ -42,7 +42,7 @@ class MainGame(ui.MainGame):
 				else len(self.game.scene.get_player().inventory)
 				) if self.game.scene.get_player() and self.game.scene.get_player().inventory else ''
 					 ),
-			ui.Indicator((28, 24), 6, lambda self: '[auto]' if self.game.automovement else ''),
+			ui.Indicator((28, 24), 6, lambda self: '[auto]' if self.game.in_automovement() else ''),
 			ui.Indicator((34, 24), 5, lambda self: '[vis]' if self.game.god.vision else ''),
 			ui.Indicator((39, 24), 6, lambda self: '[clip]' if self.game.god.noclip else ''),
 			ui.Indicator((77, 24), 3, lambda self: '[?]'),
