@@ -106,7 +106,7 @@ class Game(object):
 	def stop_automovement(self): # pragma: no cover
 		""" Force stop automovement (e.g. because of user interruption).
 		"""
-		pass
+		self.automovement = None
 	def automove(self, dest=None): # pragma: no cover
 		""" Start automovement to the specified destination point.
 		If point is not specified, start autoexploring mode.

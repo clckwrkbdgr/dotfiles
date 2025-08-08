@@ -456,17 +456,16 @@ class TestCurses(unittest.TestCase):
 			('refresh',),
 			])
 	def should_check_for_user_interrupt(self):
-		dungeon = mock_dungeon.build('single mock monster')
+		dungeon = mock_dungeon.build('lonely')
 		ui, loop = self._init(dungeon, [-1, -1, 'j'])
 
-		dungeon.automovement = Automovement()
-		dungeon.automovement.autoexploring = True
+		self.assertTrue(dungeon.automove())
 		self.assertTrue(loop.action())
-		self.assertTrue(dungeon.automovement.autoexploring)
+		self.assertTrue(dungeon.in_automovement())
 		self.assertTrue(loop.action())
-		self.assertTrue(dungeon.automovement.autoexploring)
+		self.assertTrue(dungeon.in_automovement())
 		self.assertTrue(loop.action())
-		self.assertFalse(dungeon.automovement)
+		self.assertFalse(dungeon.in_automovement())
 	def should_ignore_unknown_keys(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, 'Z')

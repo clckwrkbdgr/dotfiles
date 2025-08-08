@@ -291,11 +291,6 @@ class Game(engine.Game):
 	def end_turn(self):
 		if self.scene.get_player():
 			self.scene.get_player().spend_action_points()
-	def stop_automovement(self):
-		try:
-			self.autostop()
-		except Game.AutoMovementStopped:
-			pass
 	def suicide(self, monster):
 		self.affect_health(monster, -monster.hp)
 	def toggle_god_vision(self):
@@ -511,7 +506,7 @@ class Game(engine.Game):
 	def automove(self, dest=None):
 		if self.vision.visible_monsters:
 			self.fire_event(DiscoverEvent('monsters'))
-			return
+			return False
 		if dest is None:
 			path = self._start_autoexploring()
 			if path:
@@ -546,22 +541,15 @@ class Game(engine.Game):
 			)
 		return path
 	def perform_automovement(self):
-		try:
-			self.perform_automovement_step()
-		except Game.AutoMovementStopped:
-			pass
-		return True
-	def perform_automovement_step(self):
 		""" Performs next step from auto-movement queue, if any.
 		Stops on events.
 		"""
 		if not self.automovement:
 			return False
-		if not self.automovement.movement_queue:
-			return False
 		if self.has_unprocessed_events():
 			Log.debug('New events in FOV, aborting auto-moving mode.')
-			return self.autostop()
+			self.automovement = None
+			return False
 		Log.debug('Performing queued actions.')
 		new_pos = self.automovement.movement_queue.pop(0)
 		self.jump_to(new_pos)
@@ -570,12 +558,8 @@ class Game(engine.Game):
 		if self.automovement.autoexploring:
 			if not self.automove():
 				self.automovement = None
-				raise Game.AutoMovementStopped()
+				return False
 		else:
 			self.automovement = None
-			raise Game.AutoMovementStopped()
+			return False
 		return True
-	def autostop(self):
-		""" Stops and resets auto-movement. """
-		self.automovement = None
-		raise Game.AutoMovementStopped()
