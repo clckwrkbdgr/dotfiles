@@ -33,11 +33,6 @@ class Dungeon(engine.Game):
 		self.scene = Scene()
 	def automove(self, dest=None): # pragma: no cover
 		self.automovement = DungeonExplorer(self)
-	def perform_automovement(self):
-		if not self.automovement:
-			return
-		control = self.automovement.next()
-		self.move_actor(self.scene.get_player(), control)
 	def generate(self):
 		self.scene.terrain = EndlessMatrix(block_size=self.scene.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
 		self.scene.monsters.append(self.PLAYER_TYPE(self.builder.place_rogue(self.scene.terrain)))

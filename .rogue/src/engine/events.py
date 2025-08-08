@@ -19,6 +19,13 @@ class Event(object):
 		fields = self.FIELDS.split() if isinstance(self.FIELDS, str) else self.FIELDS
 		return '{0}({1})'.format(self.__class__.__name__, ', '.join(('{0}={1}'.format(name, getattr(self, name)) for name in fields)))
 
+class ImportantEvent(Event):
+	""" Base class for events that may not be ignored.
+	Encountering this event should abort any auto-activity.
+	E.g. discovering new features, encountering monsters etc.
+	"""
+	pass
+
 class Events:
 	""" Registry of convertors of events to string (or other) representation to display on UI. """
 	_registry = {}

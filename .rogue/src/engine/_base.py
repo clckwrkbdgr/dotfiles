@@ -1,4 +1,6 @@
 from . import events
+import logging
+Log = logging.getLogger('rogue')
 
 def is_diagonal(shift):
 	return abs(shift.x) + abs(shift.y) == 2
@@ -56,8 +58,13 @@ class Game(object):
 		""" Adds new event to the list.
 		"""
 		self.events.append(event)
-	def has_unprocessed_events(self):
-		""" Returns True if there are unprocessed events left. """
+	def has_unprocessed_events(self, important_only=False):
+		""" Returns True if there are unprocessed events left.
+		If important_only=True, checks only for ImportantEvent items,
+		ignoring the rest.
+		"""
+		if important_only:
+			return next((True for event in self.events if isinstance(event, events.ImportantEvent)), False)
 		return bool(self.events)
 	def process_next_event(self, raw=False, bind_self=None):
 		""" Immediately processes next event from the event queue,
@@ -98,11 +105,27 @@ class Game(object):
 		""" Returns True when player's currently automoving.
 		"""
 		return self.automovement is not None
-	def perform_automovement(self): # pragma: no cover
+	def perform_automovement(self):
 		""" Should perform any automovement activities
 		(if currently enabled).
 		"""
-		pass
+		""" Performs next step from auto-movement queue,
+		if any and until available.
+		Stops on important events.
+		"""
+		if not self.automovement:
+			return False
+		if self.has_unprocessed_events(important_only=True):
+			Log.debug('New events in FOV, aborting auto-moving mode.')
+			self.automovement = None
+			return False
+		Log.debug('Performing queued actions.')
+		shift = self.automovement.next()
+		if not shift:
+			self.automovement = None
+			return False
+		self.move_actor(self.scene.get_player(), shift)
+		return True
 	def stop_automovement(self): # pragma: no cover
 		""" Force stop automovement (e.g. because of user interruption).
 		"""

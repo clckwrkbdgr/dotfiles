@@ -59,6 +59,8 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.in_automovement()) # walking...
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # NONE AUTOEXPLORE
+			'MoveEvent(actor=player, dest=[10, 5])',
+			'MoveEvent(actor=player, dest=[11, 4])',
 			'DiscoverEvent(obj=stairs)',
 			]])
 		self.assertFalse(dungeon.perform_automovement())
@@ -86,6 +88,15 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.stop_automovement()
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
+			'MoveEvent(actor=player, dest=[11, 3])',
+			'MoveEvent(actor=player, dest=[10, 2])',
+			'MoveEvent(actor=player, dest=[11, 3])',
+			'MoveEvent(actor=player, dest=[12, 4])',
+			'MoveEvent(actor=player, dest=[13, 3])',
+			'MoveEvent(actor=player, dest=[12, 4])',
+			'MoveEvent(actor=player, dest=[11, 4])',
+			'MoveEvent(actor=player, dest=[10, 4])',
+			'MoveEvent(actor=player, dest=[9, 4])',
 			]])
 		dungeon.automove()
 		self.assertTrue(dungeon.perform_automovement())
@@ -98,6 +109,10 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.in_automovement())
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # GOD_TOGGLE_* EXIT
+			'MoveEvent(actor=player, dest=[8, 3])',
+			'MoveEvent(actor=player, dest=[7, 2])',
+			'MoveEvent(actor=player, dest=[6, 2])',
+			'MoveEvent(actor=player, dest=[5, 2])',
 			]])
 		dungeon.toggle_god_vision()
 		self.assertFalse(dungeon.perform_automovement())

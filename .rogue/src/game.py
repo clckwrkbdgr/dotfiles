@@ -6,7 +6,7 @@ Log = logging.getLogger('rogue')
 from .engine import items, actors, scene, appliances
 from . import engine
 from .engine.terrain import Terrain
-from .engine.events import Event
+from .engine.events import Event, ImportantEvent
 import clckwrkbdgr.math
 from clckwrkbdgr.collections import DocstringEnum as Enum
 
@@ -21,43 +21,43 @@ class Version(Enum):
 	WIELDING
 	"""
 
-class DiscoverEvent(Event):
+class DiscoverEvent(ImportantEvent):
 	""" Something new is discovered on the map! """
 	FIELDS = 'obj'
-class AttackEvent(Event):
+class AttackEvent(ImportantEvent):
 	""" Attack was performed. """
 	FIELDS = 'actor target'
 class HealthEvent(Event):
 	""" Health stat has been changed. """
 	FIELDS = 'target diff'
-class DeathEvent(Event):
+class DeathEvent(ImportantEvent):
 	""" Someone's is no more. """
 	FIELDS = 'target'
 class MoveEvent(Event):
 	""" Location is changed. """
 	FIELDS = 'actor dest'
-class DescendEvent(Event):
+class DescendEvent(ImportantEvent):
 	""" Descended to another level. """
 	FIELDS = 'actor'
 class BumpEvent(Event):
 	""" Bumps into impenetrable obstacle. """
 	FIELDS = 'actor dest'
-class GrabItemEvent(Event):
+class GrabItemEvent(ImportantEvent):
 	""" Grabs something from the floor. """
 	FIELDS = 'actor item'
-class DropItemEvent(Event):
+class DropItemEvent(ImportantEvent):
 	""" Drops something on the floor. """
 	FIELDS = 'actor item'
-class ConsumeItemEvent(Event):
+class ConsumeItemEvent(ImportantEvent):
 	""" Consumes consumable item. """
 	FIELDS = 'actor item'
 class NotConsumable(Event):
 	""" Item is not consumable. """
 	FIELDS = 'item'
-class EquipItemEvent(Event):
+class EquipItemEvent(ImportantEvent):
 	""" Equips item. """
 	FIELDS = 'actor item'
-class UnequipItemEvent(Event):
+class UnequipItemEvent(ImportantEvent):
 	""" Unequips item. """
 	FIELDS = 'actor item'
 
@@ -144,7 +144,9 @@ class Automovement(object):
 		if not self.movement_queue:
 			if not self.restart():
 				return None
-		return self.movement_queue.pop(0)
+		next_point = self.movement_queue.pop(0)
+		next_point = next_point - self.game.scene.get_player().pos
+		return next_point
 
 class AutoWalk(Automovement):
 	""" Starts auto-walking towards dest, if possible.
@@ -549,20 +551,3 @@ class Game(engine.Game):
 		if not self.automovement.movement_queue:
 			self.automovement = None
 		return bool(self.automovement)
-	def perform_automovement(self):
-		""" Performs next step from auto-movement queue, if any.
-		Stops on events.
-		"""
-		if not self.automovement:
-			return False
-		if self.has_unprocessed_events():
-			Log.debug('New events in FOV, aborting auto-moving mode.')
-			self.automovement = None
-			return False
-		Log.debug('Performing queued actions.')
-		new_pos = self.automovement.next()
-		if not new_pos:
-			self.automovement = None
-			return False
-		self.jump_to(new_pos)
-		return True
