@@ -4,9 +4,9 @@ from . import builders
 from .. import engine
 from clckwrkbdgr.math.auto import Autoexplorer
 from ..engine import actors, scene
-from ..engine import ui
+from ..engine import ui, auto
 
-class DungeonExplorer(Autoexplorer): # pragma: no cover
+class DungeonExplorer(Autoexplorer, auto.AutoMovement): # pragma: no cover
 	def __init__(self, dungeon):
 		self.dungeon = dungeon
 		super(DungeonExplorer, self).__init__()

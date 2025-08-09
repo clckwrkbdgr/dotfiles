@@ -5,6 +5,7 @@ import logging
 Log = logging.getLogger('rogue')
 from .engine import items, actors, scene, appliances
 from . import engine
+from .engine import auto
 from .engine.terrain import Terrain
 from .engine.events import Event, ImportantEvent
 import clckwrkbdgr.math
@@ -123,7 +124,7 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	def is_passable(self, p, from_point):
 		return self.matrix.cell(p).passable and self.visited.cell(p) and self.allow_movement_direction(self.matrix, from_point, p)
 
-class Automovement(object):
+class Automovement(auto.AutoMovement):
 	def __init__(self, game):
 		self.game = game
 		self.movement_queue = []
