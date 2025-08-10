@@ -2,9 +2,6 @@ from . import events
 import logging
 Log = logging.getLogger('rogue')
 
-def is_diagonal(shift):
-	return abs(shift.x) + abs(shift.y) == 2
-
 class GodMode:
 	""" God mode options.
 	- vision: see through everything, ignore FOV/transparency.

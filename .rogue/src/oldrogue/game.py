@@ -5,6 +5,7 @@ from clckwrkbdgr.collections import dotdict
 from clckwrkbdgr.utils import get_type_by_name, classfield
 from clckwrkbdgr.math import Point, Size, Rect, Matrix
 import clckwrkbdgr.math
+from ..engine import math
 import logging
 trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
@@ -106,13 +107,13 @@ class Scene(scene.Scene):
 				return True
 			for tunnel in self.get_tunnels(dest_room):
 				if tunnel.contains(pos):
-					if from_pos and engine.is_diagonal(from_pos - pos):
+					if from_pos and math.is_diagonal(from_pos - pos):
 						return False
 					return True
 		if with_tunnels:
 			dest_tunnel = self.tunnel_of(pos)
 			if dest_tunnel:
-				if from_pos and engine.is_diagonal(from_pos - pos):
+				if from_pos and math.is_diagonal(from_pos - pos):
 					return False
 				return True
 		return False

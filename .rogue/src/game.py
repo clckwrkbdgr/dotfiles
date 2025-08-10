@@ -114,7 +114,8 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 	@staticmethod
 	def allow_movement_direction(strata, from_point, to_point):
 		""" Returns True, if current map allows direct movement from point to point. """
-		if not engine.is_diagonal(to_point - from_point):
+		from .engine.math import is_diagonal
+		if not is_diagonal(to_point - from_point):
 			return True
 		if not strata.cell(from_point).allow_diagonal:
 			return False
