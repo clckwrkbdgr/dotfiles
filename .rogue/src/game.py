@@ -107,61 +107,49 @@ class Inert(actors.EquippedMonster):
 			game.attack(self, player)
 
 class Automovement(auto.AutoMovement):
-	def __init__(self, game):
+	def __init__(self, game, dest=None):
 		self.game = game
-		self.movement_queue = []
-	def find_path(self, start, find_target):
+		self.queue = []
+		self.dest = dest
+		self.find_path()
+	def find_path(self):
 		""" Find free path from start and until find_target() returns suitable target.
 		Otherwise return None.
 		"""
 		wave = math.Pathfinder(self.game.scene, vision=self.game.vision)
-		path = wave.run(start, find_target)
+		path = wave.run(self.game.scene.get_player().pos, self.find_target)
 		if not path:
-			return None
-		if path[0] == self.game.scene.get_player().pos: # We're already standing there.
-			path.pop(0)
-		return path
-	def restart(self):
-		return False
+			raise self.FailedToPlotCourse()
+		assert path[0] == self.game.scene.get_player().pos
+		self.queue = [next_p - prev_p for (prev_p, next_p) in zip(path[:-1], path[1:])]
 	def next(self):
-		if not self.movement_queue:
-			if not self.restart():
+		if not self.queue:
+			if self.dest:
 				return None
-		next_point = self.movement_queue.pop(0)
-		next_point = next_point - self.game.scene.get_player().pos
-		return next_point
+			try:
+				self.find_path()
+			except auto.AutoMovement.FailedToPlotCourse:
+				return None
+		return self.queue.pop(0)
 
 class AutoWalk(Automovement):
 	""" Starts auto-walking towards dest, if possible.
 	Does not start when monsters are around and produces event.
 	"""
-	def __init__(self, game, dest):
-		super(AutoWalk, self).__init__(game)
-		path = self.find_path(self.game.scene.get_player().pos,
-				find_target=lambda wave: dest if dest in wave else None,
-				)
-		if path:
-			self.movement_queue.extend(path)
+	def find_target(self, wave):
+		return self.dest if self.dest in wave else None
 
 class AutoExplore(Automovement):
 	""" Starts auto-exploring, if there are unknown places.
 	Does not start when monsters are around and produces event.
 	"""
-	def __init__(self, game):
-		super(AutoExplore, self).__init__(game)
-		self.restart()
-	def restart(self):
-		path = self.find_path(self.game.scene.get_player().pos,
-			find_target=lambda wave: next((target for target in sorted(wave)
+	def find_target(self, wave):
+		return next((target for target in sorted(wave)
 			if any(
 				not self.game.vision.visited.cell(p)
 				for p in clckwrkbdgr.math.get_neighbours(self.game.scene.strata, target, with_diagonal=True)
 				)
-			), None),
-			)
-		if path:
-			self.movement_queue.extend(path)
-		return bool(path)
+			), None)
 
 class Vision(math.Vision):
 	def __init__(self):
@@ -531,10 +519,11 @@ class Game(engine.Game):
 		if self.vision.visible_monsters:
 			self.fire_event(DiscoverEvent('monsters'))
 			return False
-		if dest is None:
-			self.automovement = AutoExplore(self)
-		else:
-			self.automovement = AutoWalk(self, dest)
-		if not self.automovement.movement_queue:
-			self.automovement = None
-		return bool(self.automovement)
+		try:
+			if dest is None:
+				self.automovement = AutoExplore(self)
+			else:
+				self.automovement = AutoWalk(self, dest)
+			return True
+		except auto.AutoMovement.FailedToPlotCourse:
+			return False

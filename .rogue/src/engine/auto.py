@@ -5,6 +5,8 @@ class AutoMovement(object):
 	Supports both movement with target destination
 	and endless auto-exploration modes.
 	"""
+	class FailedToPlotCourse(RuntimeError): pass
+
 	def next(self): # pragma: no cover
 		""" Should return next movement shift
 		or None, if automovement is finished.
