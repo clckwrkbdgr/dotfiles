@@ -54,7 +54,5 @@ class Scene(scene.Scene):
 				yield pos, self.get_cell_info(pos)
 	def get_player(self):
 		return next(iter(self.monsters))
-	def is_passable(self, pos):
-		return self.terrain.cell(pos) and self.terrain.cell(pos).passable
 	def iter_active_monsters(self):
 		return self.monsters

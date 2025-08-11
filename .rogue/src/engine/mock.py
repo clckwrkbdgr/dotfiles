@@ -8,10 +8,21 @@ from .ui import Sprite
 
 ### Terrain. ###################################################################
 
+class Void(terrain.Terrain):
+	_sprite = Sprite(' ', None)
+	_name = 'void'
+	_passable = False
+
 class Floor(terrain.Terrain):
 	_sprite = Sprite('.', None)
 	_name = 'floor'
 	_passable = True
+
+class CorridorFloor(terrain.Terrain):
+	_sprite = Sprite('.', None)
+	_name = 'floor'
+	_passable = True
+	_allow_diagonal = False
 
 class ToxicWaste(terrain.Terrain):
 	_sprite = Sprite('~', None)
@@ -231,6 +242,36 @@ class Dungeon(scene.Scene):
 
 ### Builders. ##################################################################
 
+class Tomb(builders.Builder):
+	class Mapping:
+		wall = Wall()
+		void = Void()
+		_ = {
+			'corridor_floor': CorridorFloor(),
+			'floor': Floor(),
+			'water': ToxicWaste(),
+			}
+
+	def fill_grid(self, grid):
+		import textwrap
+		strmap = textwrap.dedent("""\
+				###   
+				#~####
+				#....#
+				####.#
+				   #.#
+				   ###
+				""").splitlines()
+		grid.clear('void')
+		for y, row in enumerate(strmap):
+			for x, c in enumerate(row):
+				if c == '#':
+					grid.set_cell((x, y), 'wall')
+				elif c == '~':
+					grid.set_cell((x, y), 'water')
+				elif c == '.':
+					grid.set_cell((x, y), 'corridor_floor')
+
 class DungeonFloor(builders.Builder):
 	class Mapping:
 		wall = Wall()
@@ -319,7 +360,7 @@ class NanoDungeon(_base.Game):
 		self.automovement = False
 	def in_automovement(self):
 		return self.automovement
-	def generate(self):
+	def generate_dungeon_floor(self):
 		builder = DungeonFloor(self.rng, Size(10, 10))
 		builder.map_key(**({
 			'exit':lambda: 'exit',
@@ -337,6 +378,23 @@ class NanoDungeon(_base.Game):
 		for _ in range(6):
 			builder.point() # Skip not interesting position.
 		scene.monsters.append(Rogue(builder.point()))
-		self.scene = scene
+		return scene
+	def generate_tomb(self):
+		builder = Tomb(self.rng, Size(10, 10))
+		builder.generate()
+		scene = Dungeon()
+		scene.cells = builder.make_grid()
+		scene.appliances = list(_ for _ in builder.make_appliances() if _ not in ('start', 'exit'))
+		scene.monsters = list(builder.make_actors())
+		scene.items = list(builder.make_items())
+		for _ in range(6):
+			builder.point() # Skip not interesting position.
+		scene.monsters.append(Rogue(builder.point()))
+		return scene
+	def generate(self, map_id=None):
+		if map_id == 'tomb':
+			self.scene = self.generate_tomb()
+			return
+		self.scene = self.generate_dungeon_floor()
 	def is_visible(self, pos):
 		return distance(pos, self.scene.get_player().pos) < 3

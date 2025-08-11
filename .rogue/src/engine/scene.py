@@ -1,6 +1,7 @@
 from . import items, appliances, actors, terrain
 from clckwrkbdgr import utils
 from clckwrkbdgr.math.grid import Matrix
+from .math import is_diagonal
 
 class Scene(object):
 	""" Current physical map of terrain, objects, actors, etc.
@@ -87,5 +88,14 @@ class Scene(object):
 		if monsters:
 			return False
 		if not all(obj.passable for obj in objects):
+			return False
+		return True
+	def allow_movement_direction(self, from_point, to_point):
+		""" Returns True, if current map allows direct movement from point to point. """
+		if not is_diagonal(to_point - from_point):
+			return True
+		if not self.cell(from_point).allow_diagonal:
+			return False
+		if not self.cell(to_point).allow_diagonal:
 			return False
 		return True

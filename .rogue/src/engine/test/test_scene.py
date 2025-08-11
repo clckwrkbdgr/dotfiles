@@ -6,9 +6,9 @@ from .. import terrain, actors, items, appliances
 from ..mock import *
 
 class TestScene(unittest.TestCase):
-	def _generate(self):
+	def _generate(self, map_id=None):
 		game = NanoDungeon(RNG(0))
-		game.generate()
+		game.generate(map_id)
 		return game.scene
 	def should_str_cells(self):
 		scene = self._generate()
@@ -58,3 +58,12 @@ class TestScene(unittest.TestCase):
 		self.assertFalse(scene.is_passable((3, 2))) # '&'
 		self.assertTrue(scene.is_passable((1, 2))) # '?'
 		self.assertFalse(scene.is_passable((3, 8))) # 'b'
+	def should_disallow_diagonal_movement(self):
+		scene = self._generate()
+		self.assertTrue(scene.allow_movement_direction(Point(1, 1), Point(2, 2)))
+
+		scene = self._generate('tomb')
+		self.assertFalse(scene.allow_movement_direction(Point(1, 1), Point(2, 2)))
+		self.assertTrue(scene.allow_movement_direction(Point(1, 1), Point(1, 2)))
+		self.assertFalse(scene.allow_movement_direction(Point(2, 2), Point(1, 1)))
+		self.assertTrue(scene.allow_movement_direction(Point(1, 2), Point(1, 1)))

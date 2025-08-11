@@ -6,6 +6,7 @@ Log = logging.getLogger('rogue')
 from .engine import items, actors, scene, appliances
 from . import engine
 from .engine import auto
+from .engine import math
 from .engine.terrain import Terrain
 from .engine.events import Event, ImportantEvent
 import clckwrkbdgr.math
@@ -105,26 +106,6 @@ class Inert(actors.EquippedMonster):
 		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
 			game.attack(self, player)
 
-class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
-	def __init__(self, *args, **kwargs):
-		if kwargs.get('visited'):
-			self.visited = kwargs.get('visited')
-			del kwargs['visited']
-		super(Pathfinder, self).__init__(*args, **kwargs)
-	@staticmethod
-	def allow_movement_direction(strata, from_point, to_point):
-		""" Returns True, if current map allows direct movement from point to point. """
-		from .engine.math import is_diagonal
-		if not is_diagonal(to_point - from_point):
-			return True
-		if not strata.cell(from_point).allow_diagonal:
-			return False
-		if not strata.cell(to_point).allow_diagonal:
-			return False
-		return True
-	def is_passable(self, p, from_point):
-		return self.matrix.cell(p).passable and self.visited.cell(p) and self.allow_movement_direction(self.matrix, from_point, p)
-
 class Automovement(auto.AutoMovement):
 	def __init__(self, game):
 		self.game = game
@@ -133,7 +114,7 @@ class Automovement(auto.AutoMovement):
 		""" Find free path from start and until find_target() returns suitable target.
 		Otherwise return None.
 		"""
-		wave = Pathfinder(self.game.scene, visited=self.game.vision.visited)
+		wave = math.Pathfinder(self.game.scene, vision=self.game.vision)
 		path = wave.run(start, find_target)
 		if not path:
 			return None
@@ -182,7 +163,7 @@ class AutoExplore(Automovement):
 			self.movement_queue.extend(path)
 		return bool(path)
 
-class Vision(object):
+class Vision(math.Vision):
 	def __init__(self):
 		self.visited = None
 		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
@@ -192,6 +173,8 @@ class Vision(object):
 		self.visited = reader.read_matrix(lambda c:c=='1')
 	def save(self, writer):
 		writer.write(self.visited)
+	def is_explored(self, pos):
+		return self.visited.cell(pos)
 	def update(self, monster, scene):
 		""" Recalculates visibility/FOV for the player.
 		May produce Discover events, if some objects come into vision.
@@ -438,7 +421,7 @@ class Game(engine.Game):
 		if not passable:
 			self.fire_event(BumpEvent(actor, new_pos))
 			return False
-		if not Pathfinder.allow_movement_direction(self.scene, actor.pos, new_pos):
+		if not self.scene.allow_movement_direction(actor.pos, new_pos):
 			self.fire_event(BumpEvent(actor, new_pos))
 			return False
 		monster = next(self.scene.iter_actors_at(new_pos), None)
