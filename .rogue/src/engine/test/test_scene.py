@@ -43,3 +43,18 @@ class TestScene(unittest.TestCase):
 				#..b
 				####
 				"""))
+	def should_get_terrain(self):
+		scene = self._generate()
+		self.assertEqual(scene.cell((0, 0)).sprite.sprite, '#')
+	def should_check_validity(self):
+		scene = self._generate()
+		self.assertTrue(scene.valid((0, 0)))
+		self.assertFalse(scene.valid((-1, -1)))
+		self.assertFalse(scene.valid((scene.cells.width, scene.cells.height)))
+	def should_check_passability(self):
+		scene = self._generate()
+		self.assertFalse(scene.is_passable((0, 0))) # '#'
+		self.assertTrue(scene.is_passable((1, 1))) # '.'
+		self.assertFalse(scene.is_passable((3, 2))) # '&'
+		self.assertTrue(scene.is_passable((1, 2))) # '?'
+		self.assertFalse(scene.is_passable((3, 8))) # 'b'

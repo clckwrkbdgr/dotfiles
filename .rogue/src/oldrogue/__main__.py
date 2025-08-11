@@ -325,6 +325,7 @@ class _Builder(builders.Builder):
 
 class RogueDungeonGenerator(pcg.Generator):
 	MAX_LEVELS = 26
+	SIZE = Size(78, 21)
 	def build_level(self, level_id):
 		if level_id < 0 or level_id >= self.MAX_LEVELS:
 			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
@@ -334,7 +335,7 @@ class RogueDungeonGenerator(pcg.Generator):
 		enter_object_type = StairsUp if level_id > 0 else DungeonGates
 		prev_level_id = level_id - 1 if level_id > 0 else None
 		next_level_id = level_id + 1 if not is_bottom else None
-		builder = _Builder(depth, random, (78, 21))
+		builder = _Builder(depth, random, self.SIZE)
 		builder.map_key(enter=enter_object_type(prev_level_id, 'exit'))
 		if is_bottom:
 			builder.map_key(exit_item=McGuffin())
@@ -342,6 +343,7 @@ class RogueDungeonGenerator(pcg.Generator):
 			builder.map_key(exit=StairsDown(next_level_id, 'enter'))
 		builder.generate()
 		return Scene(
+				size = self.SIZE,
 				rooms = builder.dungeon.grid,
 				tunnels = builder.dungeon.tunnels,
 				objects = list(builder.make_appliances()),

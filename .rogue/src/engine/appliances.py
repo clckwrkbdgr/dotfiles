@@ -5,6 +5,7 @@ import inspect
 class Appliance(object):
 	sprite = classfield('_sprite', '?')
 	name = classfield('_name', 'unknown object')
+	passable = classfield('_passable', True) # allow free movement through the structure.
 	def __str__(self):
 		return self.name
 	def __repr__(self):

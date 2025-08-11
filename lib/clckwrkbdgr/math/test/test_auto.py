@@ -52,8 +52,8 @@ class MockAutoexplorer(auto.Autoexplorer):
 		return self.plane.pos
 	def get_matrix(self):
 		return self.plane.matrix
-	def is_passable(self, cell):
-		return cell == '.'
+	def is_passable(self, pos):
+		return self.plane.matrix.cell(pos) == '.'
 	def is_valid_target(self, target):
 		distance = target - self.get_current_pos()
 		diff = abs(distance)

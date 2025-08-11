@@ -133,7 +133,7 @@ class Automovement(auto.AutoMovement):
 		""" Find free path from start and until find_target() returns suitable target.
 		Otherwise return None.
 		"""
-		wave = Pathfinder(self.game.scene.strata, visited=self.game.vision.visited)
+		wave = Pathfinder(self.game.scene, visited=self.game.vision.visited)
 		path = wave.run(start, find_target)
 		if not path:
 			return None
@@ -243,6 +243,8 @@ class Scene(scene.Scene):
 		writer.write(self.monsters)
 		writer.write(self.items)
 		writer.write(self.appliances)
+	def valid(self, pos): # pragma: no cover -- TODO
+		return self.strata.valid(pos)
 	def is_transparent_to_monster(self, p, monster):
 		""" True if cell at position p is transparent/visible to a monster. """
 		if not self.strata.valid(p):
@@ -436,7 +438,7 @@ class Game(engine.Game):
 		if not passable:
 			self.fire_event(BumpEvent(actor, new_pos))
 			return False
-		if not Pathfinder.allow_movement_direction(self.scene.strata, actor.pos, new_pos):
+		if not Pathfinder.allow_movement_direction(self.scene, actor.pos, new_pos):
 			self.fire_event(BumpEvent(actor, new_pos))
 			return False
 		monster = next(self.scene.iter_actors_at(new_pos), None)

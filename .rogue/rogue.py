@@ -617,6 +617,9 @@ class Scene(scene.Scene):
 					coord_pos = NestedGrid.Coord(zone_index, field_index, pos)
 					
 					yield ((pos + field_rect.topleft), self.get_cell_info(coord_pos, context=field))
+	def valid(self, pos):
+		pos = NestedGrid.Coord.from_global(pos, self.world)
+		return self.world.valid(pos)
 	def get_cell_info(self, pos, context=None):
 		field = context
 		return (

@@ -61,15 +61,18 @@ class Scene(scene.Scene):
 	Room = Rect
 	Tunnel = clckwrkbdgr.math.geometry.RectConnection
 
-	def __init__(self,
+	def __init__(self, size=None,
 			rooms=None, tunnels=None,
 			items=None, monsters=None, objects=None,
 			): # pragma: no cover
+		self.size = size
 		self.rooms = rooms or Matrix( (3, 3) )
 		self.tunnels = tunnels or []
 		self.items = items or []
 		self.monsters = monsters or []
 		self.objects = objects or []
+	def valid(self, pos): # pragma: no cover -- TODO
+		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
 	@functools.lru_cache()
 	def room_of(self, pos):
 		return next((room for room in self.rooms.data if room.contains(pos, with_border=True)), None)

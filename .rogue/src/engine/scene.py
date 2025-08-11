@@ -29,6 +29,11 @@ class Scene(object):
 			return objects[-1].sprite.sprite
 		return cell.sprite.sprite if cell is not None else None
 
+	def valid(self, pos): # pragma: no cover
+		""" Returns True if specified position is valid within scene
+		and can be addressed.
+		"""
+		raise NotImplementedError()
 	def get_cell_info(self, pos, context=None): # pragma: no cover
 		""" Should return cell info in form of tuples for given world position:
 		(terrain, [objects on that cell], [items on that cell], [monsters on that cell]).
@@ -49,6 +54,9 @@ class Scene(object):
 	def get_player(self): # pragma: no cover
 		""" Should return player-controlled actor character. """
 		raise NotImplementedError()
+	def cell(self, pos):
+		""" Returns Terrain object at the specified position. """
+		return self.get_cell_info(pos)[0]
 	def iter_items_at(self, pos): # pragma: no cover
 		""" Should iterate over all items at the specified position. """
 		raise NotImplementedError()
@@ -67,3 +75,17 @@ class Scene(object):
 		Could return player character.
 		"""
 		raise NotImplementedError()
+
+	def is_passable(self, pos):
+		""" Returns True is cell is passable (open for movement).
+		Terrain should be .passable, as well as any appliances at the position.
+		Also any actor is considered to be impassable (blocking movement).
+		"""
+		cell, objects, items, monsters = self.get_cell_info(pos)
+		if not cell.passable:
+			return False
+		if monsters:
+			return False
+		if not all(obj.passable for obj in objects):
+			return False
+		return True

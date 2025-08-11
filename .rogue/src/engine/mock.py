@@ -91,6 +91,7 @@ class StairsDown(appliances.LevelPassage):
 class Statue(appliances.Appliance):
 	_sprite = Sprite('&', None)
 	_name = 'statue'
+	_passable = False
 	def __init__(self, likeness='dummy'):
 		self.likeness = likeness
 	def load(self, stream):
@@ -192,6 +193,8 @@ class Dungeon(scene.Scene):
 		self.appliances = []
 		self.items = []
 		self.monsters = []
+	def valid(self, pos):
+		return self.cells.valid(pos)
 	def get_cell_info(self, pos, context=None):
 		if not self.cells.valid(pos): # pragma: no cover
 			return (None, [], [], [])

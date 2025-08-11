@@ -2,28 +2,8 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.math.grid import EndlessMatrix
 from . import builders
 from .. import engine
-from clckwrkbdgr.math.auto import Autoexplorer
 from ..engine import actors, scene
 from ..engine import ui, auto
-
-class DungeonExplorer(Autoexplorer, auto.AutoMovement): # pragma: no cover
-	def __init__(self, dungeon):
-		self.dungeon = dungeon
-		super(DungeonExplorer, self).__init__()
-	def get_current_pos(self):
-		return self.dungeon.scene.get_player().pos
-	def get_matrix(self):
-		return self.dungeon.terrain
-	def is_passable(self, cell):
-		return cell == '.'
-	def is_valid_target(self, target):
-		distance = target - self.get_current_pos()
-		diff = abs(distance)
-		if not (3 < diff.x < 10 or 3 < diff.y < 10):
-			return False
-		return True
-	def target_area_size(self):
-		return Size(21, 21)
 
 class Dungeon(engine.Game):
 	PLAYER_TYPE = None
@@ -32,7 +12,7 @@ class Dungeon(engine.Game):
 		self.builder = builder or builders.Builders()
 		self.scene = Scene()
 	def automove(self, dest=None): # pragma: no cover
-		self.automovement = DungeonExplorer(self)
+		self.automovement = auto.EndlessAreaExplorer(self)
 	def generate(self):
 		self.scene.terrain = EndlessMatrix(block_size=self.scene.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
 		self.scene.monsters.append(self.PLAYER_TYPE(self.builder.place_rogue(self.scene.terrain)))
@@ -58,6 +38,8 @@ class Scene(scene.Scene):
 	def __init__(self):
 		self.terrain = None
 		self.monsters = []
+	def valid(self, pos): # pragma: no cover -- TODO
+		return self.terrain.valid(pos)
 	def get_cell_info(self, pos):
 		cell = self.terrain.cell(pos) or builders.EndlessVoid()
 		return cell, [], [], list(self.iter_actors_at(pos))

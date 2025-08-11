@@ -14,7 +14,7 @@ class Autoexplorer(object):
 			self.engine = engine
 			super(Autoexplorer.Wave, self).__init__(*args, **kwargs)
 		def is_passable(self, p, _):
-			return self.engine.is_passable(self.matrix.cell(p))
+			return self.engine.is_passable(p)
 
 	def __init__(self):
 		self.path = None
@@ -35,8 +35,8 @@ class Autoexplorer(object):
 		It should implement at least methods .cell() and .valid()
 		"""
 		raise NotImplementedError()
-	def is_passable(self, cell): # pragma: no cover
-		""" Should return True if given cell object is passable. """
+	def is_passable(self, pos): # pragma: no cover
+		""" Should return True if cell at given pos is passable. """
 		raise NotImplementedError()
 	def target_area_size(self): # pragma: no cover
 		""" Should return Rect object from which target point is picked,
@@ -75,7 +75,7 @@ class Autoexplorer(object):
 					self.randrange(target_area.top, target_area.bottom),
 					)
 			trace.debug('Autoexplorer target: trying {0}'.format(target))
-			if not self.is_passable(self.get_matrix().cell(target)):
+			if not self.is_passable(target):
 				trace.debug('Autoexplorer target: {0}: not passable'.format(target))
 				continue
 			if not self.is_valid_target(target):
