@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import os, sys, subprocess
+try:
+	import configparser
+except ImportError:
+	import ConfigParser as configparser
 from clckwrkbdgr import utils
 
 EXIT_SUCCESS, EXIT_FAILURE = 0, 1
@@ -11,7 +15,18 @@ def build_python_setuptools(install=False, install_global=False, quiet=False):
 	rc = subprocess.call([python_version, 'setup.py'] + quiet_arg + ['build'])
 	if rc != EXIT_SUCCESS:
 		return rc
-	rc = subprocess.call([python_version, '-m', 'pip', 'wheel', '--disable-pip-version-check'] + quiet_arg + ['.', '--no-deps', '--wheel-dir=dist'])
+
+	setup_cfg = configparser.ConfigParser()
+	setup_cfg.read(['setup.cfg'])
+	no_build_isolation = False
+	if setup_cfg.has_section('build_pip'):
+		if setup_cfg.has_option('build_pip', 'no_build_isolation'):
+			no_build_isolation = setup_cfg.get('build_pip', 'no_build_isolation').lower() in ['true', 'yes', '1']
+
+	command_args = [python_version, '-m', 'pip', 'wheel', '--disable-pip-version-check']
+	if no_build_isolation:
+		command_args.append('--no-build-isolation')
+	rc = subprocess.call(command_args + quiet_arg + ['.', '--no-deps', '--wheel-dir=dist'])
 	if rc != EXIT_SUCCESS:
 		return rc
 	if not install:
