@@ -7,7 +7,6 @@ except ImportError: # pragma: no cover
 mock.patch.TEST_PREFIX = 'should'
 from .. import ui
 from ..ui import MainGame
-from ..game import Automovement, AutoExplore, AutoWalk
 from clckwrkbdgr.math import Point, Direction
 from clckwrkbdgr import utils
 from ..test import mock_dungeon

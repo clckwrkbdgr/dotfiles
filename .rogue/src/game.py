@@ -106,51 +106,6 @@ class Inert(actors.EquippedMonster):
 		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
 			game.attack(self, player)
 
-class Automovement(auto.AutoMovement):
-	def __init__(self, game, dest=None):
-		self.game = game
-		self.queue = []
-		self.dest = dest
-		self.find_path()
-	def find_path(self):
-		""" Find free path from start and until find_target() returns suitable target.
-		Otherwise return None.
-		"""
-		wave = math.Pathfinder(self.game.scene, vision=self.game.vision)
-		path = wave.run(self.game.scene.get_player().pos, self.find_target)
-		if not path:
-			raise self.FailedToPlotCourse()
-		assert path[0] == self.game.scene.get_player().pos
-		self.queue = [next_p - prev_p for (prev_p, next_p) in zip(path[:-1], path[1:])]
-	def next(self):
-		if not self.queue:
-			if self.dest:
-				return None
-			try:
-				self.find_path()
-			except auto.AutoMovement.FailedToPlotCourse:
-				return None
-		return self.queue.pop(0)
-
-class AutoWalk(Automovement):
-	""" Starts auto-walking towards dest, if possible.
-	Does not start when monsters are around and produces event.
-	"""
-	def find_target(self, wave):
-		return self.dest if self.dest in wave else None
-
-class AutoExplore(Automovement):
-	""" Starts auto-exploring, if there are unknown places.
-	Does not start when monsters are around and produces event.
-	"""
-	def find_target(self, wave):
-		return next((target for target in sorted(wave)
-			if any(
-				not self.game.vision.visited.cell(p)
-				for p in clckwrkbdgr.math.get_neighbours(self.game.scene.strata, target, with_diagonal=True)
-				)
-			), None)
-
 class Vision(math.Vision):
 	def __init__(self):
 		self.visited = None
@@ -519,11 +474,8 @@ class Game(engine.Game):
 		if self.vision.visible_monsters:
 			self.fire_event(DiscoverEvent('monsters'))
 			return False
-		try:
-			if dest is None:
-				self.automovement = AutoExplore(self)
-			else:
-				self.automovement = AutoWalk(self, dest)
-			return True
-		except auto.AutoMovement.FailedToPlotCourse:
-			return False
+		if dest is None:
+			self.automovement = auto.AutoExplorer(self)
+		else:
+			self.automovement = auto.AutoWalk(self, dest)
+		return True

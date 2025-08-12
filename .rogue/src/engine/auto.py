@@ -1,12 +1,11 @@
 from clckwrkbdgr.math.auto import Autoexplorer
+from . import math
 
 class AutoMovement(object):
 	""" Base class for any automovement mode.
 	Supports both movement with target destination
 	and endless auto-exploration modes.
 	"""
-	class FailedToPlotCourse(RuntimeError): pass
-
 	def next(self): # pragma: no cover
 		""" Should return next movement shift
 		or None, if automovement is finished.
@@ -34,3 +33,57 @@ class EndlessAreaExplorer(Autoexplorer, AutoMovement): # pragma: no cover -- TOD
 				1 + 2 * self.dungeon.scene.get_player().vision,
 				1 + 2 * self.dungeon.scene.get_player().vision,
 				)
+
+class BasicQueuedExplorer(AutoMovement):
+	""" Base for any queued auto walker (targeted or free explorer).
+	"""
+	def __init__(self, game, dest=None):
+		""" Is dest is None, starts free exploring mode.
+		Otherwise walks to the dest and stops.
+		"""
+		self.game = game
+		self.dest = dest
+		self.queue = self.find_path()
+	def find_target(self, wave): # pragma: no cover
+		""" Should return point from the wave that is acceptable as a target.
+		"""
+		raise NotImplementedError()
+	def find_path(self):
+		""" Find free path from start and until find_target() returns suitable target.
+		Otherwise return None.
+		"""
+		wave = math.Pathfinder(self.game.scene, vision=self.game.vision)
+		self.wave = wave
+		path = wave.run(self.game.scene.get_player().pos, self.find_target)
+		if not path:
+			return None
+		assert path[0] == self.game.scene.get_player().pos
+		return [next_p - prev_p for (prev_p, next_p) in zip(path[:-1], path[1:])]
+	def next(self):
+		""" If queue is ended and dest is specified, stops.
+		Otherwise tries to restart by picking any new target.
+		"""
+		if not self.queue:
+			if self.dest:
+				return None
+			self.queue = self.find_path()
+			if not self.queue:
+				return None
+		return self.queue.pop(0)
+
+class AutoWalk(BasicQueuedExplorer):
+	""" Starts auto-walking towards dest, if possible.
+	Does not start when monsters are around and produces event.
+	"""
+	def find_target(self, wave):
+		return self.dest if self.dest in wave else None
+
+class AutoExplorer(BasicQueuedExplorer):
+	""" Starts auto-exploring in closed area, if there are unknown places.
+	Picks any cell that has not explored neighbours as target.
+	"""
+	def find_target(self, wave):
+		for target in sorted(wave):
+			if self.wave.is_frontier(target):
+				return target
+		return None

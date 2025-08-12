@@ -1,3 +1,4 @@
+import clckwrkbdgr.math
 import clckwrkbdgr.math.algorithm
 
 def is_diagonal(shift):
@@ -26,6 +27,11 @@ class Pathfinder(clckwrkbdgr.math.algorithm.MatrixWave):
 			self.vision = kwargs.get('vision')
 			del kwargs['vision']
 		super(Pathfinder, self).__init__(*args, **kwargs)
+	def is_frontier(self, target):
+		for p in clckwrkbdgr.math.get_neighbours(self.matrix, target, with_diagonal=True):
+			if not self.vision.is_explored(p):
+				return True
+		return False
 	def is_passable(self, p, from_point):
 		""" Movement is allowed if cell is passable, explored (seen and/or visible)
 		and diagonal movement is allowed between two cells.

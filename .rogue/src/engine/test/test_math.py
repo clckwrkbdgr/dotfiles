@@ -58,6 +58,10 @@ class TestPathfinder(unittest.TestCase):
 				*************
 				"""))
 		wave = math.Pathfinder(scene, vision=vision)
+
+		self.assertFalse(wave.is_frontier(Point(4, 1)))
+		self.assertTrue(wave.is_frontier(Point(5, 1)))
+
 		start = Point(1, 1)
 		dest = Point(11, 3)
 		path = wave.run(start, lambda wave: dest if dest in wave else None)

@@ -878,7 +878,8 @@ class TestAutoMode(AbstractTestDungeon):
 			self.assertTrue(dungeon.perform_automovement())
 		self.assertFalse(dungeon.perform_automovement()) # Explored everything.
 
-		self.assertFalse(dungeon.automove()) # And Jesus wept.
+		self.assertTrue(dungeon.automove())
+		self.assertFalse(dungeon.perform_automovement()) # And Jesus wept.
 
 		self.assertEqual(dungeon.tostring(with_fov=True), textwrap.dedent("""\
 				####################
