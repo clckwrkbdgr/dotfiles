@@ -11,8 +11,6 @@ class Dungeon(engine.Game):
 		super(Dungeon, self).__init__()
 		self.builder = builder or builders.Builders()
 		self.scene = Scene()
-	def automove(self, dest=None): # pragma: no cover
-		self.automovement = auto.EndlessAreaExplorer(self)
 	def generate(self):
 		self.scene.terrain = EndlessMatrix(block_size=self.scene.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
 		self.scene.monsters.append(self.PLAYER_TYPE(self.builder.place_rogue(self.scene.terrain)))
@@ -38,6 +36,9 @@ class Scene(scene.Scene):
 	def __init__(self):
 		self.terrain = None
 		self.monsters = []
+	@classmethod
+	def get_autoexplorer_class(cls): # pragma: no cover -- TODO
+		return auto.EndlessAreaExplorer
 	def valid(self, pos): # pragma: no cover -- TODO
 		return self.terrain.valid(pos)
 	def get_cell_info(self, pos):

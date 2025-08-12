@@ -99,3 +99,10 @@ class Scene(object):
 		if not self.cell(to_point).allow_diagonal:
 			return False
 		return True
+	@classmethod
+	def get_autoexplorer_class(cls):
+		""" Should return class for free autoxploring on this Scene.
+		Used by Game.automove()
+		"""
+		from . import auto
+		return auto.AutoExplorer

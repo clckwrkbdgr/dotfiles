@@ -470,12 +470,8 @@ class Game(engine.Game):
 				self.fire_event(DescendEvent(self.scene.get_player()))
 				self.build_new_strata()
 				break
-	def automove(self, dest=None):
+	def prevent_automove(self):
 		if self.vision.visible_monsters:
 			self.fire_event(DiscoverEvent('monsters'))
-			return False
-		if dest is None:
-			self.automovement = auto.AutoExplorer(self)
-		else:
-			self.automovement = auto.AutoWalk(self, dest)
-		return True
+			return True
+		return False

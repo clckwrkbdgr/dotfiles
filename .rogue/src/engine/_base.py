@@ -1,6 +1,7 @@
-from . import events
 import logging
 Log = logging.getLogger('rogue')
+from . import events
+from . import auto
 
 class GodMode:
 	""" God mode options.
@@ -123,15 +124,26 @@ class Game(object):
 			return False
 		self.move_actor(self.scene.get_player(), shift)
 		return True
-	def stop_automovement(self): # pragma: no cover
+	def stop_automovement(self):
 		""" Force stop automovement (e.g. because of user interruption).
 		"""
 		self.automovement = None
-	def automove(self, dest=None): # pragma: no cover
+	def automove(self, dest=None):
 		""" Start automovement to the specified destination point.
 		If point is not specified, start autoexploring mode.
 		"""
-		raise NotImplementedError()
+		if self.prevent_automove():
+			return False
+		if dest is None:
+			self.automovement = self.scene.get_autoexplorer_class()(self)
+		else:
+			self.automovement = auto.AutoWalk(self, dest)
+		return True
+	def prevent_automove(self): # pragma: no cover
+		""" Should return True if there are any conditions at play
+		that prevent auto movement from start (e.g. visible danger)
+		"""
+		return False
 
 	def move_actor(self, actor, shift): # pragma: no cover
 		""" Should move actor on scene by specified shift.
