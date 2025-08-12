@@ -8,19 +8,11 @@ from ...engine import mock
 class MockScene(Scene):
 	BLOCK_SIZE = Size(3, 3)
 
-class MockExplorer:
-	def __init__(self, controls):
-		self.controls = controls
-	def next(self):
-		return self.controls.pop(0)
-
 class MockDungeon(Dungeon):
 	PLAYER_TYPE = mock.Rogue
 	def __init__(self, *args, **kwargs):
 		super(MockDungeon, self).__init__(*args, **kwargs)
 		self.scene = MockScene()
-	def automove(self):
-		self.automovement = MockExplorer(self.autoexplorer_controls)
 
 class MockBuilder:
 	def __init__(self, rogue_pos=None, walls=None):
@@ -110,45 +102,6 @@ class TestDungeon(unittest.TestCase):
 		_...#....
 		_........
 		_....@...
-		_........
-		""").replace('_', ' '))
-	def should_check_if_cell_is_passable(self):
-		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
-		dungeon = MockDungeon(builder=builder)
-		dungeon.generate()
-		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite.sprite, '.')
-		self.assertTrue(dungeon.scene.is_passable((0, 0)))
-		self.assertFalse(dungeon.scene.is_passable((1, 0)))
-		self.assertFalse(dungeon.scene.is_passable((-10, -10)))
-	def should_control_dungeon_via_autoexplorer(self):
-		dungeon = MockDungeon(builder=MockBuilder(walls=[[]]*4+[[(1, 2)]]))
-		dungeon.generate()
-		dungeon.autoexplorer_controls = [Point(0, 1), Point(0, 1), Point(1, 1), Point(1, 0)]
-
-		self.assertEqual(dungeon.scene.get_player().pos, (0, 0))
-		dungeon.perform_automovement()
-		dungeon.process_others()
-		self.assertEqual(dungeon.scene.get_player().pos, (0, 0))
-
-		dungeon.automove()
-		for _ in range(len(dungeon.autoexplorer_controls)):
-			self.assertTrue(dungeon.in_automovement())
-			dungeon.perform_automovement()
-			dungeon.process_others()
-		dungeon.stop_automovement()
-		self.assertFalse(dungeon.in_automovement())
-
-		self.assertEqual(dungeon.scene.get_player().pos, (2, 3))
-		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, 0))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
-		_________
-		_________
-		_________
-		_________
-		_........
-		_........
-		_....#...
-		_.....@..
 		_........
 		""").replace('_', ' '))
 

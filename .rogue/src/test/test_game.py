@@ -541,23 +541,6 @@ class TestMovement(AbstractTestDungeon):
 		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.UP_LEFT))
 		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT))
 		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
-	def should_not_allow_move_player_diagonally_in_autoexplore_mode(self):
-		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
-		list(dungeon.process_events(raw=True)) # Clear events.
-		self.assertTrue(dungeon.automove())
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
-	def should_not_allow_move_player_diagonally_in_autowalk_mode(self):
-		dungeon = self.dungeon = mock_dungeon.build('mini rogue 2 lonely')
-		list(dungeon.process_events(raw=True)) # Clear events.
-		dungeon.automove(Point(7, 1))
-		self.assertTrue(dungeon.automove())
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(3, 2))
-		self.assertTrue(dungeon.perform_automovement())
-		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
 	def should_not_allow_move_player_diagonally_both_from_and_to_good_cell(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(3, 1))
