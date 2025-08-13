@@ -227,7 +227,7 @@ class TestItems(AbstractTestDungeon):
 		self.maxDiff = None
 	def should_consume_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(dungeon.ITEMS['potion']())
+		dungeon.get_player().inventory.append(mock_dungeon.Potion())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
@@ -240,7 +240,7 @@ class TestItems(AbstractTestDungeon):
 		self.maxDiff = None
 	def should_drop_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(dungeon.ITEMS['potion']())
+		dungeon.get_player().inventory.append(mock_dungeon.Potion())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.drop_item(dungeon.get_player(), dungeon.get_player().inventory[0])
@@ -253,7 +253,7 @@ class TestItems(AbstractTestDungeon):
 		self.maxDiff = None
 	def should_equip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(dungeon.ITEMS['weapon']())
+		dungeon.get_player().inventory.append(mock_dungeon.Weapon())
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
@@ -266,7 +266,7 @@ class TestItems(AbstractTestDungeon):
 		self.maxDiff = None
 	def should_unequip_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().wielding = dungeon.ITEMS['weapon']()
+		dungeon.get_player().wielding = mock_dungeon.Weapon()
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.unwield_item(dungeon.get_player())
@@ -631,8 +631,8 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
 		dungeon.affect_health(dungeon.get_player(), -9)
 		list(dungeon.process_events(raw=True))
-		dungeon.get_player().inventory.append(dungeon.ITEMS['potion']())
-		dungeon.get_player().inventory.append(dungeon.ITEMS['healing_potion']())
+		dungeon.get_player().inventory.append(mock_dungeon.Potion())
+		dungeon.get_player().inventory.append(mock_dungeon.HealingPotion())
 
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
@@ -653,8 +653,8 @@ class TestItemActions(AbstractTestDungeon):
 	def should_equip_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
 		list(dungeon.process_events(raw=True))
-		dungeon.get_player().inventory.append(dungeon.ITEMS['weapon']())
-		dungeon.get_player().inventory.append(dungeon.ITEMS['ranged']())
+		dungeon.get_player().inventory.append(mock_dungeon.Weapon())
+		dungeon.get_player().inventory.append(mock_dungeon.Ranged())
 
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
@@ -909,8 +909,8 @@ class TestGameSerialization(AbstractTestDungeon):
 		writer = savefile.Writer(MockWriterStream(), game.Version.CURRENT)
 		dungeon.save(writer)
 		dump = writer.f.dump[1:]
-		Wall = mock_dungeon.MockGame.TERRAIN['Wall'].__name__
-		Floor = mock_dungeon.MockGame.TERRAIN['Floor'].__name__
+		Wall = mock_dungeon.Wall.__name__
+		Floor = mock_dungeon.Floor.__name__
 		self.assertEqual(dump, list(map(str, [1406932606,
 			20, 10,
 			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,

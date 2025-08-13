@@ -234,52 +234,7 @@ class Game(src.game.Game):
 			CaveBuilder,
 			MazeBuilder,
 			]
-	TERRAIN = {
-			None : Void,
-			'void' : Void,
-			'corner' : Corner,
-			'door' : Door,
-			'rogue_door' : RogueDoor,
-			'floor' : Floor,
-			'tunnel_floor' : TunnelFloor,
-			'passage' : Passage,
-			'rogue_passage' : RoguePassage,
-			'wall' : Wall,
-			'wall_h' : WallH,
-			'wall_v' : WallV,
-			'water' : Water,
-			'Void' : Void,
-			'Corner' : Corner,
-			'Door' : Door,
-			'RogueDoor' : RogueDoor,
-			'Floor' : Floor,
-			'TunnelFloor' : TunnelFloor,
-			'Passage' : Passage,
-			'RoguePassage' : RoguePassage,
-			'Wall' : Wall,
-			'WallH' : WallH,
-			'WallV' : WallV,
-			'Water' : Water,
-			}
-	SPECIES = {
-			'player' : Player,
-			'monster' : Monster,
-			'plant' : Plant,
-			'slime' : Slime,
-			'rodent' : Rodent,
-			'Player' : Player,
-			'Monster' : Monster,
-			'Plant' : Plant,
-			'Slime' : Slime,
-			'Rodent' : Rodent,
-			}
-	ITEMS = {
-			'potion' : Potion,
-			'healing potion' : HealingPotion,
-			'healing_potion' : HealingPotion,
-			'Potion' : Potion,
-			'HealingPotion' : HealingPotion,
-			}
+	PLAYER_CLASS = Player
 
 import click
 @click.command()

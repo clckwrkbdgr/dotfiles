@@ -247,17 +247,10 @@ class Game(engine.Game):
 
 	Override definitions for content:
 	- BUILDERS: list of Builder classes to build maps.
-	- SETTLERS: list of Settler classes to populate them.
-	- TERRAIN: dict, registry of Terrain classes by their IDs used in Builders.
-	- SPECIES: dict, registry of Species classes by their IDs used in Settlers.
-	- ITEMS: dict, registry of Item classes by their IDs used in Settlers.
 	"""
 
 	BUILDERS = None
-	SETTLERS = None
-	TERRAIN = None
-	SPECIES = None
-	ITEMS = None
+	PLAYER_CLASS = None
 
 	def __init__(self, rng_seed=None):
 		""" Creates game instance and optionally generate new world.
@@ -268,7 +261,6 @@ class Game(engine.Game):
 		Otherwise new game is generated.
 		"""
 		super(Game, self).__init__(rng=RNG(rng_seed))
-		assert not hasattr(self, 'SETTLERS') or self.SETTLERS is None
 		self.vision = Vision()
 	def generate(self):
 		self.scene = Scene(self.rng, self.BUILDERS)
@@ -338,7 +330,7 @@ class Game(engine.Game):
 			return cell.remembered.sprite
 		return None
 	def make_player(self):
-		player = self.SPECIES['Player'](None)
+		player = self.PLAYER_CLASS(None)
 		player.fill_drops(self.rng)
 		return player
 	def build_new_strata(self):

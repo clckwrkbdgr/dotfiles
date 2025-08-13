@@ -1180,7 +1180,7 @@ class TestCurses(unittest.TestCase):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')
 		ui, loop = self._init(dungeon, 'E' + chr(Key.ESCAPE) + 'Ea' + chr(Key.ESCAPE) + 'EabaEa')
-		dungeon.scene.get_player().inventory.append(MockGame.ITEMS['weapon']())
+		dungeon.scene.get_player().inventory.append(mock_dungeon.Weapon())
 
 		self.assertTrue(loop.action())
 		loop.redraw()

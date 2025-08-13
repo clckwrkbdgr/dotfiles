@@ -173,63 +173,37 @@ class MockStairs(game.LevelExit):
 	_sprite = Sprite('>', None)
 
 class MockGame(game.Game):
-	SPECIES = {
-			'name' : Name,
-			'player' : Player,
-			'monster' : MockMonster,
-			'thief' : Thief,
-			'Name' : Name,
-			'Player' : Player,
-			'MockMonster' : MockMonster,
-			'Thief' : Thief,
-			}
-	ITEMS = {
-			'name' : NameItem,
-			'potion' : Potion,
-			'healing_potion' : HealingPotion,
-			'money' : Money,
-			'weapon' : Weapon,
-			'ranged' : Ranged,
-			'rags' : Rags,
-			'NameItem' : NameItem,
-			'Potion' : Potion,
-			'HealingPotion' : HealingPotion,
-			'Money' : Money,
-			'Weapon' : Weapon,
-			'Ranged' : Ranged,
-			'Rags' : Rags,
-			}
-	TERRAIN = {
-		None : Space,
-		'name' : NameTerrain,
-		' ' : Space,
-		'#' : Wall,
-		'.' : Floor,
-		'~' : Water,
-		'NameTerrain' : NameTerrain,
-		'Space' : Space,
-		'Wall' : Wall,
-		'Floor' : Floor,
-		'Water' : Water,
-		# Rogue dungeon:
-		'*' : NonDiagonalWall,
-		'%' : NonDiagonalOblivionWall,
-		'+' : Corner,
-		'-' : WallH,
-		'|' : WallV,
-		'^' : DarkFloor,
-		'NonDiagonalWall' : NonDiagonalWall,
-		'NonDiagonalOblivionWall' : NonDiagonalOblivionWall,
-		'Corner' : Corner,
-		'WallH' : WallH,
-		'WallV' : WallV,
-		'DarkFloor' : DarkFloor,
-		}
+	PLAYER_CLASS = Player
 	def get_player(self): # TODO shortcut for testing purposes.
 		return self.scene.get_player()
 
 class MockMapping:
-	_ = {_key:_item() for (_key, _item) in MockGame.TERRAIN.items()}
+	_ = {
+		None : Space(),
+		'name' : NameTerrain(),
+		' ' : Space(),
+		'#' : Wall(),
+		'.' : Floor(),
+		'~' : Water(),
+		'NameTerrain' : NameTerrain(),
+		'Space' : Space(),
+		'Wall' : Wall(),
+		'Floor' : Floor(),
+		'Water' : Water(),
+		# Rogue dungeon:
+		'*' : NonDiagonalWall(),
+		'%' : NonDiagonalOblivionWall(),
+		'+' : Corner(),
+		'-' : WallH(),
+		'|' : WallV(),
+		'^' : DarkFloor(),
+		'NonDiagonalWall' : NonDiagonalWall(),
+		'NonDiagonalOblivionWall' : NonDiagonalOblivionWall(),
+		'Corner' : Corner(),
+		'WallH' : WallH(),
+		'WallV' : WallV(),
+		'DarkFloor' : DarkFloor(),
+		}
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod
