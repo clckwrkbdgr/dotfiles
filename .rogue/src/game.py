@@ -177,6 +177,12 @@ class Scene(scene.Scene):
 			self.monsters.append(monster)
 		for item in settler.make_items():
 			self.items.append(item)
+	def exit_actor(self, actor):
+		self.monsters.remove(actor)
+		return actor
+	def enter_actor(self, actor, location):
+		actor.pos = self._start_pos
+		self.monsters.insert(0, actor)
 	def load(self, reader):
 		super(Scene, self).load(reader)
 		self.strata = reader.read_matrix(Terrain)
@@ -336,15 +342,15 @@ class Game(engine.Game):
 		Updates vision afterwards.
 		"""
 		player = self.scene.get_player()
-		if not player:
+		if player:
+			self.scene.exit_actor(player)
+		else:
 			player = self.SPECIES['Player'](None)
 			player.fill_drops(self.rng)
 
 		self.scene = Scene(self.rng, self.scene.builders)
 		self.scene.generate(None)
-
-		player.pos = self.scene._start_pos
-		self.scene.monsters.insert(0, player)
+		self.scene.enter_actor(player, None)
 
 		Log.debug("Finalizing dungeon...")
 		self.vision.visited = Matrix(self.scene.strata.size, False)

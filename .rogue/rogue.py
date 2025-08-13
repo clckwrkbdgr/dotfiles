@@ -466,8 +466,7 @@ class Game(engine.Game):
 		self.playing_time = stream.read(int)
 	def generate(self):
 		self.scene.generate(None)
-		player = Player(self.scene._player_pos.values[-1])
-		self.scene.world.get_data(self.scene._player_pos)[-1].monsters.append(player)
+		self.scene.enter_actor(Player(None), None)
 	def move_actor(self, actor, shift):
 		game = self
 		if actor == game.scene.get_player():
@@ -530,6 +529,9 @@ class Scene(scene.Scene):
 					random.randrange(zone.sizes[-1].width),
 					),
 				)
+	def enter_actor(self, actor, location):
+		actor.pos = self._player_pos.values[-1]
+		self.world.get_data(self._player_pos)[-1].monsters.append(actor)
 	def save(self, stream):
 		self.world.save(stream)
 	def load(self, stream):

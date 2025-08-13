@@ -11,6 +11,17 @@ class Scene(object):
 		""" Should generate scene for given map ID.
 		"""
 		raise NotImplementedError()
+	def exit_actor(self, actor): # pragma: no cover
+		""" Should remove actor from the scene and return it. """
+		raise NotImplementedError()
+	def enter_actor(self, actor, location): # pragma: no cover
+		""" Should place actor on the scene at the specified location
+		(value and interpretation may depend on concrete Scene implementation).
+		If location is None, should pick the "default" location
+		(also implementation-defined), e.g. dungeon entrance or stairs.
+		"""
+		raise NotImplementedError()
+
 	def load(self, stream):
 		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(terrain.Terrain)})
 		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(items.Item)})

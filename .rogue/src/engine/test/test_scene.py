@@ -8,7 +8,8 @@ from ..mock import *
 class TestScene(unittest.TestCase):
 	def _generate(self, map_id=None):
 		game = NanoDungeon(RNG(0))
-		game.generate(map_id)
+		game.enter_map_id = map_id
+		game.generate()
 		return game.scene
 	def should_str_cells(self):
 		scene = self._generate()

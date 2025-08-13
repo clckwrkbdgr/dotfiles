@@ -230,6 +230,9 @@ class Dungeon(scene.Scene):
 		for _ in range(6):
 			builder.point() # Skip not interesting position.
 		self._player_pos = builder.point()
+	def enter_actor(self, actor, location):
+		actor.pos = self._player_pos
+		self.monsters.append(actor)
 
 	def valid(self, pos):
 		return self.cells.valid(pos)
@@ -386,10 +389,11 @@ class NanoDungeon(_base.Game):
 		super(NanoDungeon, self).__init__(*args, **kwargs)
 		self.automovement = False
 		self.scene = Dungeon(self.rng)
+		self.enter_map_id = None
 	def in_automovement(self):
 		return self.automovement
-	def generate(self, map_id=None):
-		self.scene.generate(map_id)
-		self.scene.monsters.append(Rogue(self.scene._player_pos))
+	def generate(self):
+		self.scene.generate(self.enter_map_id)
+		self.scene.enter_actor(Rogue(None), None)
 	def is_visible(self, pos):
 		return distance(pos, self.scene.get_player().pos) < 3

@@ -71,6 +71,15 @@ class Scene(scene.Scene):
 		self.generator = builder
 	def generate(self, id):
 		self.generator.build_level(self, id)
+	def exit_actor(self, actor):
+		self.monsters.remove(actor)
+		return actor
+	def enter_actor(self, actor, location):
+		location = location or 'enter'
+		stairs = next((pos for pos, obj in reversed(self.objects) if isinstance(obj, appliances.LevelPassage) and obj.id == location), None)
+		assert stairs is not None, "No stairs with id {0}".format(repr(location))
+		actor.pos = stairs
+		self.monsters.append(actor)
 	def valid(self, pos): # pragma: no cover -- TODO
 		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
 	@functools.lru_cache()
@@ -256,25 +265,24 @@ class Dungeon(engine.Game):
 		data.visited_rooms = self.visited_rooms
 		data.visited_tunnels = self.visited_tunnels
 		data.current_level = self.current_level_id
-	def go_to_level(self, monster, level_id, connected_passage='enter'):
+	def go_to_level(self, monster, level_id, connected_passage=None):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
 		"""
 		if self.current_level_id is not None:
-			self.scene.monsters.remove(monster)
+			self.scene.exit_actor(monster)
+
 		if level_id not in self.levels:
 			self.levels[level_id] = Scene(self.GENERATOR())
 			self.levels[level_id].generate(level_id)
-		if level_id not in self.visited_rooms:
-			self.visited_rooms[level_id] = Matrix((3, 3), False)
-			self.visited_tunnels[level_id] = [set() for tunnel in self.levels[level_id].tunnels]
-		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, appliances.LevelPassage) and obj.id == connected_passage), None)
-		assert stairs is not None, "No stairs with id {0}".format(repr(connected_passage))
 		self.current_level_id = level_id
 		self.scene = self.levels[self.current_level_id]
 
-		self.scene.monsters.append(monster)
-		monster.pos = stairs
+		self.scene.enter_actor(monster, connected_passage)
+
+		if level_id not in self.visited_rooms:
+			self.visited_rooms[level_id] = Matrix((3, 3), False)
+			self.visited_tunnels[level_id] = [set() for tunnel in self.levels[level_id].tunnels]
 		self.visit(monster.pos)
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """

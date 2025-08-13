@@ -12,7 +12,7 @@ class Dungeon(engine.Game):
 		self.scene = Scene()
 	def generate(self):
 		self.scene.generate(None)
-		self.scene.monsters.append(self.PLAYER_TYPE(self.scene.builder.place_rogue(self.scene.terrain)))
+		self.scene.enter_actor(self.PLAYER_TYPE(None), None)
 	def load(self, state):
 		old_builder = self.scene.builder
 		self.__dict__.update(state)
@@ -40,6 +40,10 @@ class Scene(scene.Scene):
 		self.builder = builders.Builders()
 	def generate(self, id):
 		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
+		self._player_pos = Point(self.builder.place_rogue(self.terrain))
+	def enter_actor(self, actor, location):
+		actor.pos = self._player_pos
+		self.monsters.append(actor)
 	@classmethod
 	def get_autoexplorer_class(cls): # pragma: no cover -- TODO
 		return auto.EndlessAreaExplorer
