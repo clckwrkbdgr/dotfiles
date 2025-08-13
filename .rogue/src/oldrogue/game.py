@@ -249,10 +249,10 @@ class Dungeon(engine.Game):
 		self.visited_rooms = {}
 		self.visited_tunnels = {}
 		self.current_level_id = None
+	def make_player(self):
+		return self.PLAYER_TYPE(None)
 	def generate(self): # pragma: no cover -- TODO
-		rogue = self.PLAYER_TYPE()
-		rogue.grab(Dagger())
-		self.go_to_level(rogue, 0)
+		self.go_to_level(self.make_player(), 0)
 	def load(self, reader): # pragma: no cover -- TODO
 		self.levels = data.levels
 		self.visited_rooms = data.visited_rooms

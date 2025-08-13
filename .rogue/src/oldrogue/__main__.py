@@ -673,6 +673,10 @@ class Game(tui.app.App):
 class RogueDungeon(Dungeon):
 	GENERATOR = RogueDungeonGenerator
 	PLAYER_TYPE = Rogue
+	def make_player(self):
+		rogue = super(RogueDungeon, self).make_player()
+		rogue.grab(Dagger())
+		return rogue
 
 def main(stdscr):
 	curses.curs_set(0)

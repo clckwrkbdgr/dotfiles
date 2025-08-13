@@ -28,6 +28,11 @@ class Game(object):
 
 	# State control.
 
+	def make_player(self): # pragma: no cover
+		""" Should return constructed player's Actor,
+		ready to be added on the scene (pos does not matter).
+		"""
+		raise NotImplementedError()
 	def generate(self): # pragma: no cover
 		""" Should reset game and generate new state.
 		Common pattern is create dummy Game object

@@ -12,7 +12,9 @@ class Dungeon(engine.Game):
 		self.scene = Scene()
 	def generate(self):
 		self.scene.generate(None)
-		self.scene.enter_actor(self.PLAYER_TYPE(None), None)
+		self.scene.enter_actor(self.make_player(), None)
+	def make_player(self):
+		return self.PLAYER_TYPE(None)
 	def load(self, state):
 		old_builder = self.scene.builder
 		self.__dict__.update(state)

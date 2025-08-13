@@ -392,8 +392,10 @@ class NanoDungeon(_base.Game):
 		self.enter_map_id = None
 	def in_automovement(self):
 		return self.automovement
+	def make_player(self):
+		return Rogue(None)
 	def generate(self):
 		self.scene.generate(self.enter_map_id)
-		self.scene.enter_actor(Rogue(None), None)
+		self.scene.enter_actor(self.make_player(), None)
 	def is_visible(self, pos):
 		return distance(pos, self.scene.get_player().pos) < 3

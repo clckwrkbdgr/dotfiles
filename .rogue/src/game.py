@@ -336,6 +336,10 @@ class Game(engine.Game):
 		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered.sprite
 		return None
+	def make_player(self):
+		player = self.SPECIES['Player'](None)
+		player.fill_drops(self.rng)
+		return player
 	def build_new_strata(self):
 		""" Constructs and populates new random level.
 		Transfers player from previous level.
@@ -345,8 +349,7 @@ class Game(engine.Game):
 		if player:
 			self.scene.exit_actor(player)
 		else:
-			player = self.SPECIES['Player'](None)
-			player.fill_drops(self.rng)
+			player = self.make_player()
 
 		self.scene = Scene(self.rng, self.scene.builders)
 		self.scene.generate(None)

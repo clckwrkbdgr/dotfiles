@@ -466,7 +466,9 @@ class Game(engine.Game):
 		self.playing_time = stream.read(int)
 	def generate(self):
 		self.scene.generate(None)
-		self.scene.enter_actor(Player(None), None)
+		self.scene.enter_actor(self.make_player(), None)
+	def make_player(self):
+		return Player(None)
 	def move_actor(self, actor, shift):
 		game = self
 		if actor == game.scene.get_player():
