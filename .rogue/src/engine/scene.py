@@ -7,6 +7,10 @@ class Scene(object):
 	""" Current physical map of terrain, objects, actors, etc.
 	"""
 
+	def generate(self, id): # pragma: no cover
+		""" Should generate scene for given map ID.
+		"""
+		raise NotImplementedError()
 	def load(self, stream):
 		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(terrain.Terrain)})
 		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(items.Item)})

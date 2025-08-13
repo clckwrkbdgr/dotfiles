@@ -465,25 +465,9 @@ class Game(engine.Game):
 		self.scene.load(stream)
 		self.playing_time = stream.read(int)
 	def generate(self):
-		zone_pos = Point(
-				random.randrange(self.scene.world.cells.size.width),
-				random.randrange(self.scene.world.cells.size.height),
-				)
-		zone = self.scene.generate_zone(zone_pos)
-
-		player_pos = NestedGrid.Coord(
-				zone_pos,
-				Point(
-					random.randrange(zone.cells.size.width),
-					random.randrange(zone.cells.size.height),
-					),
-				Point(
-					random.randrange(zone.sizes[-1].width),
-					random.randrange(zone.sizes[-1].width),
-					),
-				)
-		player = Player(player_pos.values[-1])
-		self.scene.world.get_data(player_pos)[-1].monsters.append(player)
+		self.scene.generate(None)
+		player = Player(self.scene._player_pos.values[-1])
+		self.scene.world.get_data(self.scene._player_pos)[-1].monsters.append(player)
 	def move_actor(self, actor, shift):
 		game = self
 		if actor == game.scene.get_player():
@@ -528,6 +512,24 @@ class Scene(scene.Scene):
 	def __init__(self):
 		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
 		self._cached_player_pos = None
+	def generate(self, id):
+		zone_pos = Point(
+				random.randrange(self.world.cells.size.width),
+				random.randrange(self.world.cells.size.height),
+				)
+		zone = self.generate_zone(zone_pos)
+
+		self._player_pos = NestedGrid.Coord(
+				zone_pos,
+				Point(
+					random.randrange(zone.cells.size.width),
+					random.randrange(zone.cells.size.height),
+					),
+				Point(
+					random.randrange(zone.sizes[-1].width),
+					random.randrange(zone.sizes[-1].width),
+					),
+				)
 	def save(self, stream):
 		self.world.save(stream)
 	def load(self, stream):

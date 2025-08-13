@@ -61,16 +61,16 @@ class Scene(scene.Scene):
 	Room = Rect
 	Tunnel = clckwrkbdgr.math.geometry.RectConnection
 
-	def __init__(self, size=None,
-			rooms=None, tunnels=None,
-			items=None, monsters=None, objects=None,
-			): # pragma: no cover
-		self.size = size
-		self.rooms = rooms or Matrix( (3, 3) )
-		self.tunnels = tunnels or []
-		self.items = items or []
-		self.monsters = monsters or []
-		self.objects = objects or []
+	def __init__(self, builder): # pragma: no cover
+		self.size = None
+		self.rooms = Matrix( (3, 3) )
+		self.tunnels = []
+		self.items = []
+		self.monsters = []
+		self.objects = []
+		self.generator = builder
+	def generate(self, id):
+		self.generator.build_level(self, id)
 	def valid(self, pos): # pragma: no cover -- TODO
 		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
 	@functools.lru_cache()
@@ -240,7 +240,6 @@ class Dungeon(engine.Game):
 		self.visited_rooms = {}
 		self.visited_tunnels = {}
 		self.current_level_id = None
-		self.generator = self.GENERATOR()
 	def generate(self): # pragma: no cover -- TODO
 		rogue = self.PLAYER_TYPE()
 		rogue.grab(Dagger())
@@ -264,7 +263,9 @@ class Dungeon(engine.Game):
 		if self.current_level_id is not None:
 			self.scene.monsters.remove(monster)
 		if level_id not in self.levels:
-			self.levels[level_id] = self.generator.build_level(level_id)
+			self.levels[level_id] = Scene(self.GENERATOR())
+			self.levels[level_id].generate(level_id)
+		if level_id not in self.visited_rooms:
 			self.visited_rooms[level_id] = Matrix((3, 3), False)
 			self.visited_tunnels[level_id] = [set() for tunnel in self.levels[level_id].tunnels]
 		stairs = next((pos for pos, obj in reversed(self.levels[level_id].objects) if isinstance(obj, appliances.LevelPassage) and obj.id == connected_passage), None)

@@ -32,7 +32,8 @@ class TestDungeon(unittest.TestCase):
 	VIEW_RECT = Rect((-4, -4), (9, 9))
 	def should_generate_random_dungeon(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
-		dungeon = MockDungeon(builder=builder)
+		dungeon = MockDungeon()
+		dungeon.scene.builder = builder
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite.sprite, '.')
 		self.assertEqual(dungeon.scene.terrain.cell((1, 0)).sprite.sprite, '#')
@@ -41,7 +42,8 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 	def should_move_player(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
-		dungeon = MockDungeon(builder=builder)
+		dungeon = MockDungeon()
+		dungeon.scene.builder = builder
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		dungeon.move_actor(dungeon.scene.get_player(), Point(0, 1))
@@ -49,7 +51,8 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
 	def should_not_move_player_into_wall(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0)]])
-		dungeon = MockDungeon(builder=builder)
+		dungeon = MockDungeon()
+		dungeon.scene.builder = builder
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		dungeon.move_actor(dungeon.scene.get_player(), Point(0, -1))
@@ -57,7 +60,8 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 	def should_recalibrate_plane_after_player_moved(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]] + [[]]*4 + [[(2, 2)]])
-		dungeon = MockDungeon(builder=builder)
+		dungeon = MockDungeon()
+		dungeon.scene.builder = builder
 		dungeon.generate()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
@@ -108,7 +112,8 @@ class TestDungeon(unittest.TestCase):
 class TestSerialization(unittest.TestCase):
 	def should_serialize_deserialize_dungeon(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
-		dungeon = MockDungeon(builder=builder)
+		dungeon = MockDungeon()
+		dungeon.scene.builder = builder
 		dungeon.generate()
 		dungeon.playing_time = 666
 
@@ -117,7 +122,7 @@ class TestSerialization(unittest.TestCase):
 		data = dotdict()
 		dungeon.save(data)
 		other_data = pickle.loads(pickle.dumps(data))
-		other = MockDungeon(builder=builder)
+		other = MockDungeon()
 		other.load(other_data)
 		self.maxDiff = None
 		self.assertEqual(
@@ -128,10 +133,11 @@ class TestSerialization(unittest.TestCase):
 		self.assertEqual(dungeon.playing_time, other.playing_time)
 	def should_deserialize_dungeons_from_previous_versions(self):
 		builder = MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]])
-		dungeon = MockDungeon(builder=builder)
+		dungeon = MockDungeon()
+		dungeon.scene.builder = builder
 		dungeon.generate()
 
 		state = {'builder' : builder, 'scene': dotdict({'terrain':dungeon.scene.terrain, 'rogue':dungeon.scene.get_player()})}
-		other = MockDungeon(builder=builder)
+		other = MockDungeon()
 		other.load(state)
 		self.assertEqual(other.playing_time, 0)

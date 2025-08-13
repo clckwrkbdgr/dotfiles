@@ -199,11 +199,38 @@ class Handler(object):
 ### Map. #######################################################################
 
 class Dungeon(scene.Scene):
-	def __init__(self):
+	def __init__(self, rng):
+		self.rng = rng
 		self.cells = None
 		self.appliances = []
 		self.items = []
 		self.monsters = []
+	def generate_dungeon_floor(self):
+		builder = DungeonFloor(self.rng, Size(10, 10))
+		builder.map_key(**({
+			'exit':lambda: 'exit',
+			}))
+		builder.map_key(
+				butterfly = lambda pos, color: Butterfly(pos, color=color),
+				note = lambda text: ScribbledNote(text),
+				)
+		return builder
+	def generate_tomb(self):
+		return Tomb(self.rng, Size(10, 10))
+	def generate(self, id):
+		if id == 'tomb':
+			builder = self.generate_tomb()
+		else:
+			builder = self.generate_dungeon_floor()
+		builder.generate()
+		self.cells = builder.make_grid()
+		self.appliances = list(_ for _ in builder.make_appliances() if _ not in ('start', 'exit'))
+		self.monsters = list(builder.make_actors())
+		self.items = list(builder.make_items())
+		for _ in range(6):
+			builder.point() # Skip not interesting position.
+		self._player_pos = builder.point()
+
 	def valid(self, pos):
 		return self.cells.valid(pos)
 	def get_cell_info(self, pos, context=None):
@@ -358,43 +385,11 @@ class NanoDungeon(_base.Game):
 	def __init__(self, *args, **kwargs):
 		super(NanoDungeon, self).__init__(*args, **kwargs)
 		self.automovement = False
+		self.scene = Dungeon(self.rng)
 	def in_automovement(self):
 		return self.automovement
-	def generate_dungeon_floor(self):
-		builder = DungeonFloor(self.rng, Size(10, 10))
-		builder.map_key(**({
-			'exit':lambda: 'exit',
-			}))
-		builder.map_key(
-				butterfly = lambda pos, color: Butterfly(pos, color=color),
-				note = lambda text: ScribbledNote(text),
-				)
-		builder.generate()
-		scene = Dungeon()
-		scene.cells = builder.make_grid()
-		scene.appliances = list(_ for _ in builder.make_appliances() if _ not in ('start', 'exit'))
-		scene.monsters = list(builder.make_actors())
-		scene.items = list(builder.make_items())
-		for _ in range(6):
-			builder.point() # Skip not interesting position.
-		scene.monsters.append(Rogue(builder.point()))
-		return scene
-	def generate_tomb(self):
-		builder = Tomb(self.rng, Size(10, 10))
-		builder.generate()
-		scene = Dungeon()
-		scene.cells = builder.make_grid()
-		scene.appliances = list(_ for _ in builder.make_appliances() if _ not in ('start', 'exit'))
-		scene.monsters = list(builder.make_actors())
-		scene.items = list(builder.make_items())
-		for _ in range(6):
-			builder.point() # Skip not interesting position.
-		scene.monsters.append(Rogue(builder.point()))
-		return scene
 	def generate(self, map_id=None):
-		if map_id == 'tomb':
-			self.scene = self.generate_tomb()
-			return
-		self.scene = self.generate_dungeon_floor()
+		self.scene.generate(map_id)
+		self.scene.monsters.append(Rogue(self.scene._player_pos))
 	def is_visible(self, pos):
 		return distance(pos, self.scene.get_player().pos) < 3

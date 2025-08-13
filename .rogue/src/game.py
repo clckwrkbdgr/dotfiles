@@ -151,11 +151,32 @@ class Vision(math.Vision):
 		self.visible_items = current_visible_items
 
 class Scene(scene.Scene):
-	def __init__(self):
+	def __init__(self, rng, builders):
+		self.rng = rng
+		self.builders = builders
 		self.strata = None
 		self.monsters = []
 		self.items = []
 		self.appliances = []
+	def generate(self, id):
+		builder = self.rng.choice(self.builders)
+		Log.debug('Building dungeon: {0}...'.format(builder))
+		Log.debug('With RNG: {0}...'.format(self.rng.value))
+		builder = builder(self.rng, Size(80, 23))
+		settler = builder
+		Log.debug("Populating dungeon: {0}".format(settler))
+		builder.generate()
+
+		self.strata = builder.make_grid()
+
+		appliances = list(builder.make_appliances())
+		self._start_pos = next(_pos for _pos, _name in appliances if _name == 'start')
+		self.appliances = [_entry for _entry in appliances if _entry.obj != 'start']
+		for monster in settler.make_actors():
+			monster.fill_drops(self.rng)
+			self.monsters.append(monster)
+		for item in settler.make_items():
+			self.items.append(item)
 	def load(self, reader):
 		super(Scene, self).load(reader)
 		self.strata = reader.read_matrix(Terrain)
@@ -241,9 +262,8 @@ class Game(engine.Game):
 		Otherwise new game is generated.
 		"""
 		super(Game, self).__init__(rng=RNG(rng_seed))
-		self.builders = builders or self.BUILDERS
 		assert not hasattr(self, 'SETTLERS') or self.SETTLERS is None
-		self.scene = Scene()
+		self.scene = Scene(self.rng, builders or self.BUILDERS)
 		self.vision = Vision()
 	def generate(self):
 		self.build_new_strata()
@@ -315,34 +335,19 @@ class Game(engine.Game):
 		Transfers player from previous level.
 		Updates vision afterwards.
 		"""
-		builder = self.rng.choice(self.builders)
-		Log.debug('Building dungeon: {0}...'.format(builder))
-		Log.debug('With RNG: {0}...'.format(self.rng.value))
-		builder = builder(self.rng, Size(80, 23))
-		settler = builder
-		Log.debug("Populating dungeon: {0}".format(settler))
-		builder.generate()
-		self.scene.strata = builder.make_grid()
-		self.vision.visited = Matrix(self.scene.strata.size, False)
-
-		appliances = list(builder.make_appliances())
-		start_pos = next(_pos for _pos, _name in appliances if _name == 'start')
-		self.scene.appliances = [_entry for _entry in appliances if _entry.obj != 'start']
 		player = self.scene.get_player()
-		if player:
-			player.pos = start_pos
-		else:
-			player = self.SPECIES['Player'](start_pos)
+		if not player:
+			player = self.SPECIES['Player'](None)
 			player.fill_drops(self.rng)
-		self.scene.monsters[:] = [player]
-		for monster in settler.make_actors():
-			monster.fill_drops(self.rng)
-			self.scene.monsters.append(monster)
-		self.scene.items[:] = []
-		for item in settler.make_items():
-			self.scene.items.append(item)
+
+		self.scene = Scene(self.rng, self.scene.builders)
+		self.scene.generate(None)
+
+		player.pos = self.scene._start_pos
+		self.scene.monsters.insert(0, player)
 
 		Log.debug("Finalizing dungeon...")
+		self.vision.visited = Matrix(self.scene.strata.size, False)
 		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
 		Log.debug("Dungeon is ready.")

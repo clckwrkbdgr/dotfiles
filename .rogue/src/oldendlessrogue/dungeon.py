@@ -7,18 +7,19 @@ from ..engine import ui, auto
 
 class Dungeon(engine.Game):
 	PLAYER_TYPE = None
-	def __init__(self, builder=None):
+	def __init__(self):
 		super(Dungeon, self).__init__()
-		self.builder = builder or builders.Builders()
 		self.scene = Scene()
 	def generate(self):
-		self.scene.terrain = EndlessMatrix(block_size=self.scene.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
-		self.scene.monsters.append(self.PLAYER_TYPE(self.builder.place_rogue(self.scene.terrain)))
+		self.scene.generate(None)
+		self.scene.monsters.append(self.PLAYER_TYPE(self.scene.builder.place_rogue(self.scene.terrain)))
 	def load(self, state):
+		old_builder = self.scene.builder
 		self.__dict__.update(state)
 		if 'playing_time' not in state:
 			self.playing_time = state.get('time', 0)
-		self.scene.terrain.builder = self.builder.build_block
+		self.scene.builder = old_builder
+		self.scene.terrain.builder = self.scene.builder.build_block
 	def save(self, state): # pragma: no cover -- TODO
 		data = {}
 		data.update(self.__dict__)
@@ -36,6 +37,9 @@ class Scene(scene.Scene):
 	def __init__(self):
 		self.terrain = None
 		self.monsters = []
+		self.builder = builders.Builders()
+	def generate(self, id):
+		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
 	@classmethod
 	def get_autoexplorer_class(cls): # pragma: no cover -- TODO
 		return auto.EndlessAreaExplorer

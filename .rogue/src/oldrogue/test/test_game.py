@@ -158,15 +158,13 @@ class MockGenerator:
 			#............#
 			##############
 			""")
-	def build_level(self, level_id):
-		result = Scene()
+	def build_level(self, result, level_id):
 		if level_id == 'top':
 			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.MAIN_LEVEL)
 		elif level_id == 'roof':
 			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.ROOF)
 		elif level_id == 'basement':
 			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.BASEMENT)
-		return result
 	@functools.lru_cache()
 	def _parse_layout(self, layout):
 		layout = Matrix.fromstring(layout)
@@ -248,7 +246,9 @@ class TestGridRoomMap(unittest.TestCase):
 		GENERATOR = MockGenerator
 		PLAYER_TYPE = UNATCOAgent
 	def _map(self):
-		return MockGenerator().build_level('top')
+		gridmap = game.Scene(self.UNATCO.GENERATOR())
+		MockGenerator().build_level(gridmap, 'top')
+		return gridmap
 	def should_parse_layout_correctly(self):
 		gridmap = self._map()
 		result = Matrix.fromstring(MockGenerator.MAIN_LEVEL)
