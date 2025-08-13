@@ -532,35 +532,62 @@ class _MockBuilder_FightingGround(CustomSettler):
 		(Point(9, 4), 'inert_monster',),
 		]
 
+class _MockBuilder_NowYouSeeMeGame(MockGame): BUILDERS = [_MockBuilder_NowYouSeeMe]
+class _MockMiniRogueBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniRogueBuilderUnSettler]
+class _MockBuilderUnSettlerGame(MockGame): BUILDERS = [_MockBuilderUnSettler]
+class _MockBuilder_MonstersOnTopOfItemsGame(MockGame): BUILDERS = [_MockBuilder_MonstersOnTopOfItems]
+class _MockMiniBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniBuilderUnSettler]
+class _MockMiniBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniBuilderUnSettler]
+class _MockMiniBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniBuilderUnSettler]
+class _MockMiniBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniBuilderUnSettler]
+class _MockMiniBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniBuilderUnSettler]
+class _MockBuilder_NowYouSeeMeGame(MockGame): BUILDERS = [_MockBuilder_NowYouSeeMe]
+class _MockMiniBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniBuilderUnSettler]
+class _MockMiniRogueBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniRogueBuilderUnSettler]
+class _MockMiniRogueBuilderUnSettlerGame(MockGame): BUILDERS = [_MockMiniRogueBuilderUnSettler]
+class _MockBuilder_PotionsLyingAroundGame(MockGame): BUILDERS = [_MockBuilder_PotionsLyingAround]
+class _MockBuilder_CloseMonsterGame(MockGame): BUILDERS = [_MockBuilder_CloseMonster]
+class _MockBuilder_CloseThiefGame(MockGame): BUILDERS = [_MockBuilder_CloseThief]
+class _MockBuilder_CloseInertMonsterGame(MockGame): BUILDERS = [_MockBuilder_CloseInertMonster]
+class _MockBuilder_CloseAngryMonsterGame(MockGame): BUILDERS = [_MockBuilder_CloseAngryMonster]
+class _MockBuilder_CloseAngryMonster2Game(MockGame): BUILDERS = [_MockBuilder_CloseAngryMonster2]
+class _MockBuilderSingleMockMonsterGame(MockGame): BUILDERS = [_MockBuilderSingleMockMonster]
+class _MockBuilderSingleMockThiefGame(MockGame): BUILDERS = [_MockBuilderSingleMockThief]
+class _MockBuilder_MockSettlerGame(MockGame): BUILDERS = [_MockBuilder_MockSettler]
+class _MockBuilder_MockSettlerGame(MockGame): BUILDERS = [_MockBuilder_MockSettler]
+class _MockBuilder_FightingGroundGame(MockGame): BUILDERS = [_MockBuilder_FightingGround]
+class _MockBuilder_PotionsLyingAroundGame(MockGame): BUILDERS = [_MockBuilder_PotionsLyingAround]
+class _MockBuilder_MockSettlerGame(MockGame): BUILDERS = [_MockBuilder_MockSettler]
+
 def build(dungeon_id):
 	_DATA = {
-			'now you see me': ([_MockBuilder_NowYouSeeMe]),
-			'mini dark rogue': ([_MockMiniRogueBuilderUnSettler]),
-			'lonely': ([_MockBuilderUnSettler]),
-			'monsters on top': ([_MockBuilder_MonstersOnTopOfItems]),
-			'mini lonely': ([_MockMiniBuilderUnSettler]),
-			'mini 2 lonely': ([_MockMiniBuilderUnSettler]),
-			'mini 3 lonely': ([_MockMiniBuilderUnSettler]),
-			'mini 4 lonely': ([_MockMiniBuilderUnSettler]),
-			'mini 5 lonely': ([_MockMiniBuilderUnSettler]),
-			'mini 6 monster': ([_MockBuilder_NowYouSeeMe]),
-			'mini 6 lonely': ([_MockMiniBuilderUnSettler]),
-			'mini rogue 2 lonely': ([_MockMiniRogueBuilderUnSettler]),
-			'mini rogue lonely': ([_MockMiniRogueBuilderUnSettler]),
-			'potions lying around': ([_MockBuilder_PotionsLyingAround]),
-			'close monster': ([_MockBuilder_CloseMonster]),
-			'close thief': ([_MockBuilder_CloseThief]),
-			'close inert monster': ([_MockBuilder_CloseInertMonster]),
-			'close angry monster': ([_MockBuilder_CloseAngryMonster]),
-			'close angry monster 2': ([_MockBuilder_CloseAngryMonster2]),
-			'single mock monster': ([_MockBuilderSingleMockMonster]),
-			'single mock thief': ([_MockBuilderSingleMockThief]),
-			'mock settler': ([_MockBuilder_MockSettler]),
-			'mock settler restored': ([_MockBuilder_MockSettler]),
-			'fighting around': ([_MockBuilder_FightingGround]),
-			'potions lying around 2': ([_MockBuilder_PotionsLyingAround]),
-			'monster and potion': ([_MockBuilder_MockSettler]),
+			'now you see me': _MockBuilder_NowYouSeeMeGame,
+			'mini dark rogue': _MockMiniRogueBuilderUnSettlerGame,
+			'lonely': _MockBuilderUnSettlerGame,
+			'monsters on top': _MockBuilder_MonstersOnTopOfItemsGame,
+			'mini lonely': _MockMiniBuilderUnSettlerGame,
+			'mini 2 lonely': _MockMiniBuilderUnSettlerGame,
+			'mini 3 lonely': _MockMiniBuilderUnSettlerGame,
+			'mini 4 lonely': _MockMiniBuilderUnSettlerGame,
+			'mini 5 lonely': _MockMiniBuilderUnSettlerGame,
+			'mini 6 monster': _MockBuilder_NowYouSeeMeGame,
+			'mini 6 lonely': _MockMiniBuilderUnSettlerGame,
+			'mini rogue 2 lonely': _MockMiniRogueBuilderUnSettlerGame,
+			'mini rogue lonely': _MockMiniRogueBuilderUnSettlerGame,
+			'potions lying around': _MockBuilder_PotionsLyingAroundGame,
+			'close monster': _MockBuilder_CloseMonsterGame,
+			'close thief': _MockBuilder_CloseThiefGame,
+			'close inert monster': _MockBuilder_CloseInertMonsterGame,
+			'close angry monster': _MockBuilder_CloseAngryMonsterGame,
+			'close angry monster 2': _MockBuilder_CloseAngryMonster2Game,
+			'single mock monster': _MockBuilderSingleMockMonsterGame,
+			'single mock thief': _MockBuilderSingleMockThiefGame,
+			'mock settler': _MockBuilder_MockSettlerGame,
+			'mock settler restored': _MockBuilder_MockSettlerGame,
+			'fighting around': _MockBuilder_FightingGroundGame,
+			'potions lying around 2': _MockBuilder_PotionsLyingAroundGame,
+			'monster and potion': _MockBuilder_MockSettlerGame,
 			}
-	game = MockGame(rng_seed=0, builders=_DATA[dungeon_id])
+	game = _DATA[dungeon_id](rng_seed=0)
 	game.generate()
 	return game

@@ -455,16 +455,17 @@ class Game(engine.Game):
 			}
 	def __init__(self):
 		super(Game, self).__init__()
-		self.scene = Scene()
 		self.playing_time = 0
 		self.colors = {}
 	def save(self, stream):
 		self.scene.save(stream)
 		stream.write(self.playing_time)
 	def load(self, stream):
+		self.scene = Scene()
 		self.scene.load(stream)
 		self.playing_time = stream.read(int)
 	def generate(self):
+		self.scene = Scene()
 		self.scene.generate(None)
 		self.scene.enter_actor(self.make_player(), None)
 	def make_player(self):

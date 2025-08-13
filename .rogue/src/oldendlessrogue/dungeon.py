@@ -9,13 +9,15 @@ class Dungeon(engine.Game):
 	PLAYER_TYPE = None
 	def __init__(self):
 		super(Dungeon, self).__init__()
-		self.scene = Scene()
+	def get_scene_class(self): return Scene
 	def generate(self):
+		self.scene = self.get_scene_class()()
 		self.scene.generate(None)
 		self.scene.enter_actor(self.make_player(), None)
 	def make_player(self):
 		return self.PLAYER_TYPE(None)
 	def load(self, state):
+		self.scene = self.get_scene_class()()
 		old_builder = self.scene.builder
 		self.__dict__.update(state)
 		if 'playing_time' not in state:
@@ -36,10 +38,11 @@ class Dungeon(engine.Game):
 
 class Scene(scene.Scene):
 	BLOCK_SIZE = Size(32, 32)
+	BUILDERS = None
 	def __init__(self):
 		self.terrain = None
 		self.monsters = []
-		self.builder = builders.Builders()
+		self.builder = self.BUILDERS()
 	def generate(self, id):
 		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
 		self._player_pos = Point(self.builder.place_rogue(self.terrain))

@@ -259,7 +259,7 @@ class Game(engine.Game):
 	SPECIES = None
 	ITEMS = None
 
-	def __init__(self, rng_seed=None, builders=None):
+	def __init__(self, rng_seed=None):
 		""" Creates game instance and optionally generate new world.
 		Custom rng_seed may be used for PCG.
 		If dummy = True, does not automatically generate or load game, just create empty object.
@@ -269,15 +269,16 @@ class Game(engine.Game):
 		"""
 		super(Game, self).__init__(rng=RNG(rng_seed))
 		assert not hasattr(self, 'SETTLERS') or self.SETTLERS is None
-		self.scene = Scene(self.rng, builders or self.BUILDERS)
 		self.vision = Vision()
 	def generate(self):
+		self.scene = Scene(self.rng, self.BUILDERS)
 		self.build_new_strata()
 	def load(self, reader):
 		""" Loads game from reader. """
 		if reader.version > Version.PERSISTENT_RNG:
 			self.rng = RNG(reader.read_int())
 
+		self.scene = Scene(self.rng, self.BUILDERS)
 		self.scene.load(reader)
 		self.vision.load(reader)
 
