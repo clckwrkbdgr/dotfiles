@@ -260,6 +260,7 @@ class Game(engine.Game):
 		self.build_new_strata(start_scene_id)
 	def load(self, reader):
 		""" Loads game from reader. """
+		super(Game, self).load(reader)
 		if reader.version > Version.PERSISTENT_RNG:
 			self.rng = RNG(reader.read_int())
 
@@ -275,6 +276,7 @@ class Game(engine.Game):
 		Log.debug('Player: {0}'.format(self.scene.get_player()))
 	def save(self, writer):
 		""" Saves game using writer. """
+		super(Game, self).save(writer)
 		writer.write(self.rng.value)
 		writer.write(self.scene)
 		self.vision.save(writer)

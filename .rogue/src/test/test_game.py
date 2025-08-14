@@ -911,7 +911,7 @@ class TestGameSerialization(AbstractTestDungeon):
 		dump = writer.f.dump[1:]
 		Wall = mock_dungeon.Wall.__name__
 		Floor = mock_dungeon.Floor.__name__
-		self.assertEqual(dump, list(map(str, [1406932606,
+		self.assertEqual(dump, list(map(str, [0, 1406932606,
 			20, 10,
 			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
 			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall, Floor, Wall, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,

@@ -23,7 +23,7 @@ from src.engine.actors import Monster
 from src.engine import ui
 from src.engine.ui import Sprite
 
-SAVEFILE_VERSION = 8
+SAVEFILE_VERSION = 9
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -458,12 +458,12 @@ class Game(engine.Game):
 		self.playing_time = 0
 		self.colors = {}
 	def save(self, stream):
+		super(Game, self).save(stream)
 		self.scene.save(stream)
-		stream.write(self.playing_time)
 	def load(self, stream):
+		super(Game, self).load(stream)
 		self.scene = Scene()
 		self.scene.load(stream)
-		self.playing_time = stream.read(int)
 	def make_scene(self, scene_id):
 		return Scene()
 	def generate(self, start_scene_id):

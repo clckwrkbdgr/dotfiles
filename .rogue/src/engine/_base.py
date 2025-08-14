@@ -44,14 +44,14 @@ class Game(object):
 		and then explicitly call generate().
 		"""
 		raise NotImplementedError()
-	def load(self, reader): # pragma: no cover
-		""" Should load game data from the stream/state.
+	def load(self, stream):
+		""" Loads game data from the stream/state.
 		"""
-		raise NotImplementedError()
-	def save(self, reader): # pragma: no cover
-		""" Should store game data to the reader/state.
+		self.playing_time = stream.read(int)
+	def save(self, stream):
+		""" Stores game data to the reader/state.
 		"""
-		raise NotImplementedError()
+		stream.write(self.playing_time)
 	def is_finished(self):
 		""" Should return True if game is completed/finished/failed
 		and should reset, e.g. savefile should be deleted.
