@@ -178,9 +178,10 @@ class Water(src.engine.terrain.Terrain):
 	_sprite = Sprite("~", None)
 	_passable = True
 
-class Stairs(src.game.LevelExit):
+class Stairs(src.engine.appliances.LevelPassage):
 	_name = 'stairs'
 	_sprite = Sprite('>', None)
+	_id = 'enter'
 
 class DungeonMapping:
 	void = Void()
@@ -199,7 +200,7 @@ class DungeonMapping:
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod
-	def exit(): return Stairs()
+	def exit(): return Stairs(None, 'enter')
 
 	@staticmethod
 	def plant(pos,*data):

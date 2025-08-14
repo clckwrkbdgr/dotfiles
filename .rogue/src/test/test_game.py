@@ -930,7 +930,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			1,
 				'Potion', 10, 6,
 			1,
-				'MockStairs', 10, 1,
+				'MockStairs', 'mock settler', 'enter', 10, 1,
 			'',
 
 			20, 10,

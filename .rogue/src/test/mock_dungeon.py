@@ -3,7 +3,7 @@ from .. import pcg as builders
 from .. import pcg as settlers
 from .. import game
 from ..engine.terrain import Terrain
-from ..engine import items, actors
+from ..engine import items, actors, appliances
 from ..engine.ui import Sprite
 
 class NameItem(items.Item):
@@ -168,9 +168,10 @@ class DarkFloor(Terrain):
 	_allow_diagonal=False
 	_dark=True
 
-class MockStairs(game.LevelExit):
+class MockStairs(appliances.LevelPassage):
 	_name = 'stairs'
 	_sprite = Sprite('>', None)
+	_id = 'enter'
 
 class MockGame(game.Game):
 	def make_player(self):
@@ -208,8 +209,6 @@ class MockGame(game.Game):
 			'potions lying around 2': _MockBuilder_PotionsLyingAround,
 			'monster and potion': _MockBuilder_MockSettler,
 			}
-		if scene_id is None: # TODO
-			return game.Scene(self.rng, self.scene.builders)
 		return game.Scene(self.rng, [_DATA[scene_id]])
 
 class MockMapping:
@@ -242,7 +241,7 @@ class MockMapping:
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod
-	def exit(): return MockStairs()
+	def exit(): return MockStairs(None, 'enter')
 	@staticmethod
 	def monster(pos,*data):
 		return MockMonster(*(data + (pos,)))
