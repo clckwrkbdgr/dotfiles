@@ -912,6 +912,7 @@ class TestGameSerialization(AbstractTestDungeon):
 		Wall = mock_dungeon.Wall.__name__
 		Floor = mock_dungeon.Floor.__name__
 		self.assertEqual(dump, list(map(str, [0, 1406932606,
+			'mock settler', 'mock settler',
 			20, 10,
 			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
 			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall, Floor, Wall, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
@@ -930,6 +931,7 @@ class TestGameSerialization(AbstractTestDungeon):
 				'Potion', 10, 6,
 			1,
 				'MockStairs', 10, 1,
+			'',
 
 			20, 10,
 			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,

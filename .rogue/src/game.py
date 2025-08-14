@@ -262,12 +262,6 @@ class Game(engine.Game):
 	def load(self, reader):
 		""" Loads game from reader. """
 		super(Game, self).load(reader)
-		if reader.version > Version.PERSISTENT_RNG:
-			self.rng = RNG(reader.read_int())
-
-		self.scenes[None] = self.make_scene(None)
-		self.current_scene_id = None
-		self.scene.load(reader)
 		self.vision.load(reader)
 
 		if self.scene.get_player(): # pragma: no cover
@@ -279,8 +273,6 @@ class Game(engine.Game):
 	def save(self, writer):
 		""" Saves game using writer. """
 		super(Game, self).save(writer)
-		writer.write(self.rng.value)
-		writer.write(self.scene)
 		self.vision.save(writer)
 	def end_turn(self):
 		if self.scene.get_player():

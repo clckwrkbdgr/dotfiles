@@ -209,8 +209,6 @@ class MockGame(game.Game):
 			'monster and potion': _MockBuilder_MockSettler,
 			}
 		if scene_id is None: # TODO
-			if self.current_scene_id not in self.scenes:
-				return game.Scene(self.rng, None)
 			return game.Scene(self.rng, self.scene.builders)
 		return game.Scene(self.rng, [_DATA[scene_id]])
 
