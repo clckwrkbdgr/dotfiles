@@ -241,16 +241,12 @@ class Scene(scene.Scene):
 
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
-	GENERATOR = None
-	PLAYER_TYPE = None
 	def __init__(self):
 		super(Dungeon, self).__init__()
 		self.levels = {}
 		self.visited_rooms = {}
 		self.visited_tunnels = {}
 		self.current_level_id = None
-	def make_player(self):
-		return self.PLAYER_TYPE(None)
 	def generate(self, start_scene_id): # pragma: no cover -- TODO
 		self.go_to_level(self.make_player(), start_scene_id)
 	def load(self, reader): # pragma: no cover -- TODO
@@ -265,8 +261,6 @@ class Dungeon(engine.Game):
 		data.visited_rooms = self.visited_rooms
 		data.visited_tunnels = self.visited_tunnels
 		data.current_level = self.current_level_id
-	def make_scene(self, scene_id):
-		return Scene(self.GENERATOR())
 	def go_to_level(self, monster, level_id, connected_passage=None):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.

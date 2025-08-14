@@ -226,7 +226,10 @@ class MazeBuilder(src.pcg.MazeBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
 
 class Game(src.game.Game):
-	PLAYER_CLASS = Player
+	def make_player(self):
+		player = Player(None)
+		player.fill_drops(self.rng)
+		return player
 	def make_scene(self, scene_id):
 		return Scene(self.rng, [
 			BSPDungeon,

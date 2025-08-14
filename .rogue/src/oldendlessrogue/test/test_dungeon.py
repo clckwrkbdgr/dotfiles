@@ -13,7 +13,8 @@ class MockScene(Scene):
 		self.builder = builder
 
 class MockDungeon(Dungeon):
-	PLAYER_TYPE = mock.Rogue
+	def make_player(self):
+		return mock.Rogue(None)
 	def make_scene(self, scene_id):
 		if scene_id == 1:
 			return MockScene(MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]]))

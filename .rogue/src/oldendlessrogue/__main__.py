@@ -27,8 +27,10 @@ class Scene(dungeon.Scene):
 	BUILDERS = builders.Builders
 
 class Dungeon(dungeon.Dungeon):
-	PLAYER_TYPE = Player
-	def get_scene_class(self): return Scene
+	def make_scene(self, scene_id):
+		return Scene()
+	def make_player(self):
+		return Player(None)
 
 class Game(ui.MainGame):
 	KEYMAPPING = Keys

@@ -84,8 +84,7 @@ class MJ12Trooper(actors.EquippedMonster):
 
 class TestMonster(unittest.TestCase):
 	class UNATCO(game.Dungeon):
-		GENERATOR = lambda *_:None
-		PLAYER_TYPE = UNATCOAgent
+		pass
 	def should_consumeItems(self):
 		dungeon = self.UNATCO()
 
@@ -243,10 +242,13 @@ def _R(events): return list(map(repr, events))
 
 class TestGridRoomMap(unittest.TestCase):
 	class UNATCO(game.Dungeon):
-		GENERATOR = MockGenerator
-		PLAYER_TYPE = UNATCOAgent
+		def make_scene(self, scene_id):
+			return Scene(MockGenerator())
+		def make_player(self):
+			return UNATCOAgent(None)
 	def _map(self):
-		gridmap = game.Scene(self.UNATCO.GENERATOR())
+		dungeon = self.UNATCO()
+		gridmap = dungeon.make_scene('top')
 		MockGenerator().build_level(gridmap, 'top')
 		return gridmap
 	def should_parse_layout_correctly(self):
@@ -493,8 +495,10 @@ class TestGridRoomMap(unittest.TestCase):
 
 class TestDungeon(unittest.TestCase):
 	class UNATCO(game.Dungeon):
-		GENERATOR = MockGenerator
-		PLAYER_TYPE = UNATCOAgent
+		def make_scene(self, scene_id):
+			return Scene(MockGenerator())
+		def make_player(self):
+			return UNATCOAgent(None)
 	def should_iter_dungeon_cells(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.make_player(), 'top', connected_passage='basement')

@@ -6,16 +6,10 @@ from ..engine import actors, scene
 from ..engine import ui, auto
 
 class Dungeon(engine.Game):
-	PLAYER_TYPE = None
-	def __init__(self):
-		super(Dungeon, self).__init__()
-	def make_scene(self, scene_id): return Scene()
 	def generate(self, start_scene_id):
 		self.scene = self.make_scene(start_scene_id)
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
-	def make_player(self):
-		return self.PLAYER_TYPE(None)
 	def load(self, state):
 		self.__dict__.update(state)
 		if 'playing_time' not in state:

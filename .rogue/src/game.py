@@ -244,14 +244,7 @@ class Scene(scene.Scene):
 
 class Game(engine.Game):
 	""" Main game object.
-
-	Override definitions for content:
-	- BUILDERS: list of Builder classes to build maps.
 	"""
-
-	BUILDERS = None
-	PLAYER_CLASS = None
-
 	def __init__(self, rng_seed=None):
 		""" Creates game instance and optionally generate new world.
 		Custom rng_seed may be used for PCG.
@@ -329,10 +322,6 @@ class Game(engine.Game):
 		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered.sprite
 		return None
-	def make_player(self):
-		player = self.PLAYER_CLASS(None)
-		player.fill_drops(self.rng)
-		return player
 	def build_new_strata(self, start_scene_id):
 		""" Constructs and populates new random level.
 		Transfers player from previous level.

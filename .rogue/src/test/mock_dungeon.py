@@ -173,7 +173,10 @@ class MockStairs(game.LevelExit):
 	_sprite = Sprite('>', None)
 
 class MockGame(game.Game):
-	PLAYER_CLASS = Player
+	def make_player(self):
+		player = Player(None)
+		player.fill_drops(self.rng)
+		return player
 	def get_player(self): # TODO shortcut for testing purposes.
 		return self.scene.get_player()
 	def make_scene(self, scene_id):
@@ -207,7 +210,7 @@ class MockGame(game.Game):
 			}
 		if scene_id is None: # TODO
 			if self.scene is None:
-				return game.Scene(self.rng, self.BUILDERS)
+				return game.Scene(self.rng, None)
 			return game.Scene(self.rng, self.scene.builders)
 		return game.Scene(self.rng, [_DATA[scene_id]])
 

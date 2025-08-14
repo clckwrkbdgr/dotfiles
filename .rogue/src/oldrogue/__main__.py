@@ -671,8 +671,8 @@ class Game(tui.app.App):
 	pass
 
 class RogueDungeon(Dungeon):
-	GENERATOR = RogueDungeonGenerator
-	PLAYER_TYPE = Rogue
+	def make_scene(self, scene_id):
+		return Scene(RogueDungeonGenerator())
 	def make_player(self):
 		rogue = super(RogueDungeon, self).make_player()
 		rogue.grab(Dagger())
