@@ -33,6 +33,9 @@ class Game(object):
 		ready to be added on the scene (pos does not matter).
 		"""
 		raise NotImplementedError()
+	def make_scene(self, scene_id): # pragma: no cover
+		""" Should return constructed Scene object for given ID. """
+		raise NotImplementedError()
 	def generate(self, start_scene_id): # pragma: no cover
 		""" Should reset game and generate new state.
 		Starts with given scene and places player (see make_player())

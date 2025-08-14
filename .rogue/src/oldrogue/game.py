@@ -265,6 +265,8 @@ class Dungeon(engine.Game):
 		data.visited_rooms = self.visited_rooms
 		data.visited_tunnels = self.visited_tunnels
 		data.current_level = self.current_level_id
+	def make_scene(self, scene_id):
+		return Scene(self.GENERATOR())
 	def go_to_level(self, monster, level_id, connected_passage=None):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
@@ -273,7 +275,7 @@ class Dungeon(engine.Game):
 			self.scene.exit_actor(monster)
 
 		if level_id not in self.levels:
-			self.levels[level_id] = Scene(self.GENERATOR())
+			self.levels[level_id] = self.make_scene(level_id)
 			self.levels[level_id].generate(level_id)
 		self.current_level_id = level_id
 		self.scene = self.levels[self.current_level_id]

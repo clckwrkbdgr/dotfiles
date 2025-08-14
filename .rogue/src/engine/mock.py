@@ -388,12 +388,14 @@ class NanoDungeon(_base.Game):
 	def __init__(self, *args, **kwargs):
 		super(NanoDungeon, self).__init__(*args, **kwargs)
 		self.automovement = False
-		self.scene = Dungeon(self.rng)
 	def in_automovement(self):
 		return self.automovement
 	def make_player(self):
 		return Rogue(None)
+	def make_scene(self, scene_id):
+		return Dungeon(self.rng)
 	def generate(self, start_scene_id):
+		self.scene = self.make_scene(start_scene_id)
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
 	def is_visible(self, pos):

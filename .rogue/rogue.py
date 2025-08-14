@@ -464,8 +464,10 @@ class Game(engine.Game):
 		self.scene = Scene()
 		self.scene.load(stream)
 		self.playing_time = stream.read(int)
+	def make_scene(self, scene_id):
+		return Scene()
 	def generate(self, start_scene_id):
-		self.scene = Scene()
+		self.scene = self.make_scene(start_scene_id)
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
 	def make_player(self):
