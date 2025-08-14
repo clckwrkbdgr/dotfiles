@@ -131,11 +131,3 @@ class TestSerialization(unittest.TestCase):
 				)
 		self.assertEqual(dungeon.scene.get_player().pos, other.scene.get_player().pos)
 		self.assertEqual(dungeon.playing_time, other.playing_time)
-	def should_deserialize_dungeons_from_previous_versions(self):
-		dungeon = MockDungeon()
-		dungeon.generate(1)
-
-		state = {'scene': dotdict({'terrain':dungeon.scene.terrain, 'rogue':dungeon.scene.get_player()})}
-		other = MockDungeon()
-		other.load(state)
-		self.assertEqual(other.playing_time, 0)

@@ -256,7 +256,8 @@ class Game(engine.Game):
 		super(Game, self).__init__(rng=RNG(rng_seed))
 		self.vision = Vision()
 	def generate(self, start_scene_id):
-		self.scene = self.make_scene(start_scene_id)
+		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
+		self.current_scene_id = start_scene_id
 		self.build_new_strata(start_scene_id)
 	def load(self, reader):
 		""" Loads game from reader. """
@@ -264,7 +265,8 @@ class Game(engine.Game):
 		if reader.version > Version.PERSISTENT_RNG:
 			self.rng = RNG(reader.read_int())
 
-		self.scene = self.make_scene(None)
+		self.scenes[None] = self.make_scene(None)
+		self.current_scene_id = None
 		self.scene.load(reader)
 		self.vision.load(reader)
 
@@ -335,7 +337,8 @@ class Game(engine.Game):
 		else:
 			player = self.make_player()
 
-		self.scene = self.make_scene(start_scene_id)
+		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
+		self.current_scene_id = start_scene_id
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(player, None)
 

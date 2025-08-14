@@ -395,7 +395,8 @@ class NanoDungeon(_base.Game):
 	def make_scene(self, scene_id):
 		return Dungeon(self.rng)
 	def generate(self, start_scene_id):
-		self.scene = self.make_scene(start_scene_id)
+		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
+		self.current_scene_id = start_scene_id
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
 	def is_visible(self, pos):

@@ -562,18 +562,18 @@ class TestDungeon(unittest.TestCase):
 	def should_move_to_level(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.make_player(), 'top', connected_passage='basement')
-		self.assertEqual(dungeon.scene, dungeon.levels['top'])
+		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
 	def should_use_stairs(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.make_player(), 'top', connected_passage='basement')
 		dungeon.use_stairs(dungeon.scene.get_player(), dungeon.scene.objects[1][1])
-		self.assertEqual(dungeon.scene, dungeon.levels['roof'])
+		self.assertEqual(dungeon.scene, dungeon.scenes['roof'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
 	def should_locate_in_maze(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.make_player(), 'top', connected_passage='basement')
-		self.assertEqual(dungeon.scene, dungeon.levels['top'])
+		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 
 		dungeon.scene.get_player().pos = Point(1, 1)
 		self.assertEqual(dungeon.scene.current_room, dungeon.scene.rooms.cell((0, 0)))
@@ -589,7 +589,7 @@ class TestDungeon(unittest.TestCase):
 	def should_detect_visible_objects(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.make_player(), 'top', connected_passage='basement')
-		self.assertEqual(dungeon.scene, dungeon.levels['top'])
+		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 
 		dungeon.scene.get_player().pos = Point(1, 1)
 		dungeon.visit(dungeon.scene.get_player().pos)
@@ -610,7 +610,7 @@ class TestDungeon(unittest.TestCase):
 	def should_remember_objects(self):
 		dungeon = self.UNATCO()
 		dungeon.go_to_level(dungeon.make_player(), 'top', connected_passage='basement')
-		self.assertEqual(dungeon.scene, dungeon.levels['top'])
+		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 
 		dungeon.scene.get_player().pos = Point(1, 1)
 		dungeon.visit(dungeon.scene.get_player().pos)
@@ -733,7 +733,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.GoingUp(),
 			]))
-		self.assertEqual(dungeon.scene, dungeon.levels['roof'])
+		self.assertEqual(dungeon.scene, dungeon.scenes['roof'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
 
 	def should_descend(self):
@@ -762,7 +762,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.GoingDown(),
 			]))
-		self.assertEqual(dungeon.scene, dungeon.levels['basement'])
+		self.assertEqual(dungeon.scene, dungeon.scenes['basement'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(7, 4))
 
 		dungeon.scene.get_player().drop(key)
@@ -780,7 +780,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.GoingUp(),
 			]))
-		self.assertEqual(dungeon.scene, dungeon.levels['top'])
+		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
 	def should_grab_items(self):
 		dungeon = self.UNATCO()

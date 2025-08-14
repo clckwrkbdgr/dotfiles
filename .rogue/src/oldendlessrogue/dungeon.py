@@ -7,15 +7,14 @@ from ..engine import ui, auto
 
 class Dungeon(engine.Game):
 	def generate(self, start_scene_id):
-		self.scene = self.make_scene(start_scene_id)
+		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
+		self.current_scene_id = start_scene_id
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
 	def load(self, state):
 		self.__dict__.update(state)
-		if 'playing_time' not in state:
-			self.playing_time = state.get('time', 0)
-		self.scene.builder = self.make_scene(None).builder
-		self.scene.terrain.builder = self.scene.builder.build_block
+		builder = self.make_scene(None).builder
+		self.scene.terrain.builder = builder.build_block
 	def save(self, state): # pragma: no cover -- TODO
 		data = {}
 		data.update(self.__dict__)

@@ -455,19 +455,20 @@ class Game(engine.Game):
 			}
 	def __init__(self):
 		super(Game, self).__init__()
-		self.playing_time = 0
 		self.colors = {}
 	def save(self, stream):
 		super(Game, self).save(stream)
 		self.scene.save(stream)
 	def load(self, stream):
 		super(Game, self).load(stream)
-		self.scene = Scene()
+		self.scenes[None] = self.make_scene(None)
+		self.current_scene_id = None
 		self.scene.load(stream)
 	def make_scene(self, scene_id):
 		return Scene()
 	def generate(self, start_scene_id):
-		self.scene = self.make_scene(start_scene_id)
+		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
+		self.current_scene_id = start_scene_id
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
 	def make_player(self):

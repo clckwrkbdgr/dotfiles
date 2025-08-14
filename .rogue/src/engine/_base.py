@@ -23,8 +23,12 @@ class Game(object):
 		self.playing_time = 0
 		self.god = GodMode()
 		self.events = []
-		self.scene = None
+		self.scenes = {}
+		self.current_scene_id = None
 		self.automovement = None
+	@property
+	def scene(self):
+		return self.scenes[self.current_scene_id]
 
 	# State control.
 
