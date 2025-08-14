@@ -251,8 +251,8 @@ class Dungeon(engine.Game):
 		self.current_level_id = None
 	def make_player(self):
 		return self.PLAYER_TYPE(None)
-	def generate(self): # pragma: no cover -- TODO
-		self.go_to_level(self.make_player(), 0)
+	def generate(self, start_scene_id): # pragma: no cover -- TODO
+		self.go_to_level(self.make_player(), start_scene_id)
 	def load(self, reader): # pragma: no cover -- TODO
 		self.levels = data.levels
 		self.visited_rooms = data.visited_rooms

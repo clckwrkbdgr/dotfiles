@@ -563,5 +563,5 @@ def build(dungeon_id):
 			'monster and potion': _MockBuilder_MockSettlerGame,
 			}
 	game = _DATA[dungeon_id](rng_seed=0)
-	game.generate()
+	game.generate(dungeon_id)
 	return game

@@ -67,7 +67,7 @@ def cli(debug=False):
 		if savefile.entity:
 			dungeon.load(savefile.entity)
 		else:
-			dungeon.generate()
+			dungeon.generate(None)
 		game = Game(dungeon)
 		with clckwrkbdgr.tui.Curses() as ui:
 			clckwrkbdgr.tui.Mode.run(game, ui)

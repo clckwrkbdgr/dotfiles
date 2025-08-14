@@ -51,7 +51,7 @@ class TestDungeon(unittest.TestCase):
 	VIEW_RECT = Rect((-4, -4), (9, 9))
 	def should_generate_random_dungeon(self):
 		dungeon = MockDungeon_1()
-		dungeon.generate()
+		dungeon.generate(1)
 		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite.sprite, '.')
 		self.assertEqual(dungeon.scene.terrain.cell((1, 0)).sprite.sprite, '#')
 		self.assertEqual(dungeon.scene.terrain.cell((0, 1)).sprite.sprite, '#')
@@ -59,21 +59,21 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 	def should_move_player(self):
 		dungeon = MockDungeon_1()
-		dungeon.generate()
+		dungeon.generate(1)
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		dungeon.move_actor(dungeon.scene.get_player(), Point(0, 1))
 		dungeon.process_others()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
 	def should_not_move_player_into_wall(self):
 		dungeon = MockDungeon_2()
-		dungeon.generate()
+		dungeon.generate(2)
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		dungeon.move_actor(dungeon.scene.get_player(), Point(0, -1))
 		dungeon.process_others()
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 	def should_recalibrate_plane_after_player_moved(self):
 		dungeon = MockDungeon_3()
-		dungeon.generate()
+		dungeon.generate(3)
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
 		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
@@ -123,7 +123,7 @@ class TestDungeon(unittest.TestCase):
 class TestSerialization(unittest.TestCase):
 	def should_serialize_deserialize_dungeon(self):
 		dungeon = MockDungeon_1()
-		dungeon.generate()
+		dungeon.generate(1)
 		dungeon.playing_time = 666
 
 		import pickle
@@ -142,7 +142,7 @@ class TestSerialization(unittest.TestCase):
 		self.assertEqual(dungeon.playing_time, other.playing_time)
 	def should_deserialize_dungeons_from_previous_versions(self):
 		dungeon = MockDungeon_1()
-		dungeon.generate()
+		dungeon.generate(1)
 
 		state = {'scene': dotdict({'terrain':dungeon.scene.terrain, 'rogue':dungeon.scene.get_player()})}
 		other = MockDungeon_1()

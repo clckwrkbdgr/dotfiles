@@ -464,9 +464,9 @@ class Game(engine.Game):
 		self.scene = Scene()
 		self.scene.load(stream)
 		self.playing_time = stream.read(int)
-	def generate(self):
+	def generate(self, start_scene_id):
 		self.scene = Scene()
-		self.scene.generate(None)
+		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
 	def make_player(self):
 		return Player(None)
@@ -782,7 +782,7 @@ def main(ui):
 			assert reader.version == SAVEFILE_VERSION, (reader.version, SAVEFILE_VERSION, savefile.filename)
 			game.load(reader)
 		else:
-			game.generate()
+			game.generate(None)
 
 	main_game = MainGameMode(game)
 	loop = clckwrkbdgr.tui.ModeLoop(ui)

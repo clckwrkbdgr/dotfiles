@@ -33,8 +33,10 @@ class Game(object):
 		ready to be added on the scene (pos does not matter).
 		"""
 		raise NotImplementedError()
-	def generate(self): # pragma: no cover
+	def generate(self, start_scene_id): # pragma: no cover
 		""" Should reset game and generate new state.
+		Starts with given scene and places player (see make_player())
+		at the default location (see Scene.enter_actor).
 		Common pattern is create dummy Game object
 		and then explicitly call generate().
 		"""

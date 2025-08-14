@@ -269,7 +269,7 @@ def cli(debug=False, command=None, tests=None):
 		if savefile.reader:
 			game.load(savefile.reader)
 		else:
-			game.generate()
+			game.generate(None)
 		with clckwrkbdgr.tui.Curses() as ui:
 			loop = clckwrkbdgr.tui.ModeLoop(ui)
 			main_mode = src.ui.MainGame(game)

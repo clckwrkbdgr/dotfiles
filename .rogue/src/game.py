@@ -262,9 +262,9 @@ class Game(engine.Game):
 		"""
 		super(Game, self).__init__(rng=RNG(rng_seed))
 		self.vision = Vision()
-	def generate(self):
+	def generate(self, start_scene_id):
 		self.scene = Scene(self.rng, self.BUILDERS)
-		self.build_new_strata()
+		self.build_new_strata(start_scene_id)
 	def load(self, reader):
 		""" Loads game from reader. """
 		if reader.version > Version.PERSISTENT_RNG:
@@ -333,7 +333,7 @@ class Game(engine.Game):
 		player = self.PLAYER_CLASS(None)
 		player.fill_drops(self.rng)
 		return player
-	def build_new_strata(self):
+	def build_new_strata(self, start_scene_id):
 		""" Constructs and populates new random level.
 		Transfers player from previous level.
 		Updates vision afterwards.
@@ -345,7 +345,7 @@ class Game(engine.Game):
 			player = self.make_player()
 
 		self.scene = Scene(self.rng, self.scene.builders)
-		self.scene.generate(None)
+		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(player, None)
 
 		Log.debug("Finalizing dungeon...")
@@ -475,7 +475,7 @@ class Game(engine.Game):
 		for obj in self.scene.iter_appliances_at(self.scene.get_player().pos):
 			if isinstance(obj, LevelExit):
 				self.fire_event(DescendEvent(self.scene.get_player()))
-				self.build_new_strata()
+				self.build_new_strata(None)
 				break
 	def prevent_automove(self):
 		if self.vision.visible_monsters:

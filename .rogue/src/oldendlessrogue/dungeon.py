@@ -10,9 +10,9 @@ class Dungeon(engine.Game):
 	def __init__(self):
 		super(Dungeon, self).__init__()
 	def get_scene_class(self): return Scene
-	def generate(self):
+	def generate(self, start_scene_id):
 		self.scene = self.get_scene_class()()
-		self.scene.generate(None)
+		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
 	def make_player(self):
 		return self.PLAYER_TYPE(None)

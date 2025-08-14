@@ -686,7 +686,7 @@ def main(stdscr):
 		if savefile.entity:
 			dungeon.load(savefile.entity)
 		else:
-			dungeon.generate()
+			dungeon.generate(0)
 			savefile.reset(dungeon)
 
 		game = Game(stdscr)
