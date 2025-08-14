@@ -14,7 +14,7 @@ class TestEvents(unittest.TestCase):
 class TestActionLoop(unittest.TestCase):
 	def should_process_others(self):
 		game = NanoDungeon()
-		game.generate()
+		game.generate(None)
 
 		self.assertFalse(game.scene.get_player().has_acted())
 		game.process_others()

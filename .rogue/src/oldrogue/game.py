@@ -241,48 +241,40 @@ class Scene(scene.Scene):
 
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
-	GENERATOR = None
-	PLAYER_TYPE = None
 	def __init__(self):
 		super(Dungeon, self).__init__()
-		self.levels = {}
 		self.visited_rooms = {}
 		self.visited_tunnels = {}
-		self.current_level_id = None
-	def make_player(self):
-		return self.PLAYER_TYPE(None)
-	def generate(self): # pragma: no cover -- TODO
-		self.go_to_level(self.make_player(), 0)
+	def generate(self, start_scene_id): # pragma: no cover -- TODO
+		self.go_to_level(self.make_player(), start_scene_id)
 	def load(self, reader): # pragma: no cover -- TODO
-		self.levels = data.levels
+		self.scenes = data.levels
 		self.visited_rooms = data.visited_rooms
 		self.visited_tunnels = data.visited_tunnels
-		self.current_level_id = data.current_level
-		self.scene = self.levels[self.current_level_id]
+		self.current_scene_id = data.current_level
 		self.fire_event(Event.WelcomeBack(dungeon.scene.get_player()))
 	def save(self, data): # pragma: no cover -- TODO
-		data.levels = self.levels
+		data.levels = self.scenes
 		data.visited_rooms = self.visited_rooms
 		data.visited_tunnels = self.visited_tunnels
-		data.current_level = self.current_level_id
+		data.current_level = self.current_scene_id
 	def go_to_level(self, monster, level_id, connected_passage=None):
 		""" Travel to specified level and enter through specified passage.
 		If level was not generated yet, it will be generated at this moment.
 		"""
-		if self.current_level_id is not None:
+		if self.current_scene_id is not None:
 			self.scene.exit_actor(monster)
 
-		if level_id not in self.levels:
-			self.levels[level_id] = Scene(self.GENERATOR())
-			self.levels[level_id].generate(level_id)
-		self.current_level_id = level_id
-		self.scene = self.levels[self.current_level_id]
+		if level_id not in self.scenes:
+			self.scenes[level_id] = self.make_scene(level_id)
+			self.scenes[level_id].generate(level_id)
+		self.current_scene_id = level_id
 
 		self.scene.enter_actor(monster, connected_passage)
 
 		if level_id not in self.visited_rooms:
 			self.visited_rooms[level_id] = Matrix((3, 3), False)
-			self.visited_tunnels[level_id] = [set() for tunnel in self.levels[level_id].tunnels]
+			self.visited_tunnels[level_id] = [set() for tunnel in self.scenes[level_id].tunnels]
 		self.visit(monster.pos)
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """
@@ -396,7 +388,7 @@ class Dungeon(engine.Game):
 			return obj == self.scene.current_room
 		if isinstance(obj, Scene.Tunnel):
 			tunnel_visited = self.scene.tunnels.index(obj)
-			tunnel_visited = self.visited_tunnels[self.current_level_id][tunnel_visited]
+			tunnel_visited = self.visited_tunnels[self.current_scene_id][tunnel_visited]
 			return additional in tunnel_visited
 		if isinstance(obj, Point):
 			for room in self.scene.rooms.values():
@@ -420,10 +412,10 @@ class Dungeon(engine.Game):
 			return True
 		if isinstance(obj, Scene.Room):
 			room_index = self.scene.index_room_of(obj.topleft)
-			return self.visited_rooms[self.current_level_id].cell(room_index)
+			return self.visited_rooms[self.current_scene_id].cell(room_index)
 		if isinstance(obj, Scene.Tunnel):
 			tunnel_visited = self.scene.tunnels.index(obj)
-			tunnel_visited = self.visited_tunnels[self.current_level_id][tunnel_visited]
+			tunnel_visited = self.visited_tunnels[self.current_scene_id][tunnel_visited]
 			return additional in tunnel_visited
 		if isinstance(obj, Point):
 			for room in self.scene.rooms.values():
@@ -444,7 +436,7 @@ class Dungeon(engine.Game):
 				Point(0, +1),
 				]
 		tunnel_visited = self.scene.tunnels.index(tunnel)
-		tunnel_visited = self.visited_tunnels[self.current_level_id][tunnel_visited]
+		tunnel_visited = self.visited_tunnels[self.current_scene_id][tunnel_visited]
 		for shift in shifts:
 			p = pos + shift
 			if tunnel.contains(p):
@@ -454,7 +446,7 @@ class Dungeon(engine.Game):
 		room = self.scene.room_of(pos)
 		if room:
 			room_index = self.scene.index_room_of(pos)
-			self.visited_rooms[self.current_level_id].set_cell(room_index, True)
+			self.visited_rooms[self.current_scene_id].set_cell(room_index, True)
 			for tunnel in self.scene.get_tunnels(room):
 				if room.contains(tunnel.start, with_border=True):
 					self.visit_tunnel(tunnel, tunnel.start, adjacent=False)

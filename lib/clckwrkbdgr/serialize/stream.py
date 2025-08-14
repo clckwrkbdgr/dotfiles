@@ -252,7 +252,13 @@ class Savefile:
 		"""
 		try:
 			with open(self.filename, 'w') as f:
-				yield Writer(f, version)
+				writer = Writer(f, version)
+				yield writer
+				# Otherwise if stream ends with a series of empty values
+				# separated by \x00, that tail would be cut off
+				# on the next loading.
+				# File should be ended with something non-NULL.
+				writer.write('EOF')
 		except:
 			self.unlink()
 			raise

@@ -1,6 +1,8 @@
 import logging
 Log = logging.getLogger('rogue')
+from clckwrkbdgr.pcg import RNG
 from . import events
+from . import scene
 from . import auto
 
 class GodMode:
@@ -17,14 +19,18 @@ class Game(object):
 	"""
 	def __init__(self, rng=None):
 		if rng is None:
-			import random
-			rng = random
+			import time
+			rng = RNG(int(time.time()))
 		self.rng = rng
 		self.playing_time = 0
 		self.god = GodMode()
 		self.events = []
-		self.scene = None
+		self.scenes = {}
+		self.current_scene_id = None
 		self.automovement = None
+	@property
+	def scene(self):
+		return self.scenes[self.current_scene_id]
 
 	# State control.
 
@@ -33,20 +39,43 @@ class Game(object):
 		ready to be added on the scene (pos does not matter).
 		"""
 		raise NotImplementedError()
-	def generate(self): # pragma: no cover
+	def make_scene(self, scene_id): # pragma: no cover
+		""" Should return constructed Scene object for given ID. """
+		raise NotImplementedError()
+	def generate(self, start_scene_id): # pragma: no cover
 		""" Should reset game and generate new state.
+		Starts with given scene and places player (see make_player())
+		at the default location (see Scene.enter_actor).
 		Common pattern is create dummy Game object
 		and then explicitly call generate().
 		"""
 		raise NotImplementedError()
-	def load(self, reader): # pragma: no cover
-		""" Should load game data from the stream/state.
+	def load(self, stream):
+		""" Loads game data from the stream/state.
 		"""
-		raise NotImplementedError()
-	def save(self, reader): # pragma: no cover
-		""" Should store game data to the reader/state.
+		self.playing_time = stream.read(int)
+		self.rng = RNG(stream.read_int())
+		self.current_scene_id = stream.read()
+
+		self.scenes = {}
+		while True:
+			scene_id = stream.read()
+			if not scene_id:
+				break
+			scene = self.make_scene(scene_id)
+			scene.load(stream)
+			self.scenes[scene_id] = scene
+	def save(self, stream):
+		""" Stores game data to the reader/state.
 		"""
-		raise NotImplementedError()
+		stream.write(self.playing_time)
+		stream.write(self.rng.value)
+		stream.write(self.current_scene_id)
+		for scene_id, scene in self.scenes.items():
+			stream.write(scene_id)
+			stream.write(scene)
+		else:
+			stream.write('')
 	def is_finished(self):
 		""" Should return True if game is completed/finished/failed
 		and should reset, e.g. savefile should be deleted.

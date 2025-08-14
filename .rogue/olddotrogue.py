@@ -178,9 +178,10 @@ class Water(src.engine.terrain.Terrain):
 	_sprite = Sprite("~", None)
 	_passable = True
 
-class Stairs(src.game.LevelExit):
+class Stairs(src.engine.appliances.LevelPassage):
 	_name = 'stairs'
 	_sprite = Sprite('>', None)
+	_id = 'enter'
 
 class DungeonMapping:
 	void = Void()
@@ -199,7 +200,7 @@ class DungeonMapping:
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod
-	def exit(): return Stairs()
+	def exit(): return Stairs(None, 'enter')
 
 	@staticmethod
 	def plant(pos,*data):
@@ -226,15 +227,19 @@ class MazeBuilder(src.pcg.MazeBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
 
 class Game(src.game.Game):
-	BUILDERS = [
+	def make_player(self):
+		player = Player(None)
+		player.fill_drops(self.rng)
+		return player
+	def make_scene(self, scene_id):
+		return Scene(self.rng, [
 			BSPDungeon,
 			CityBuilder,
 			Sewers,
 			RogueDungeon,
 			CaveBuilder,
 			MazeBuilder,
-			]
-	PLAYER_CLASS = Player
+			])
 
 import click
 @click.command()
@@ -269,7 +274,7 @@ def cli(debug=False, command=None, tests=None):
 		if savefile.reader:
 			game.load(savefile.reader)
 		else:
-			game.generate()
+			game.generate(None)
 		with clckwrkbdgr.tui.Curses() as ui:
 			loop = clckwrkbdgr.tui.ModeLoop(ui)
 			main_mode = src.ui.MainGame(game)

@@ -23,7 +23,7 @@ from src.engine.actors import Monster
 from src.engine import ui
 from src.engine.ui import Sprite
 
-SAVEFILE_VERSION = 8
+SAVEFILE_VERSION = 11
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -455,18 +455,17 @@ class Game(engine.Game):
 			}
 	def __init__(self):
 		super(Game, self).__init__()
-		self.playing_time = 0
 		self.colors = {}
 	def save(self, stream):
-		self.scene.save(stream)
-		stream.write(self.playing_time)
+		super(Game, self).save(stream)
 	def load(self, stream):
-		self.scene = Scene()
-		self.scene.load(stream)
-		self.playing_time = stream.read(int)
-	def generate(self):
-		self.scene = Scene()
-		self.scene.generate(None)
+		super(Game, self).load(stream)
+	def make_scene(self, scene_id):
+		return Scene()
+	def generate(self, start_scene_id):
+		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
+		self.current_scene_id = start_scene_id
+		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
 	def make_player(self):
 		return Player(None)
@@ -782,7 +781,7 @@ def main(ui):
 			assert reader.version == SAVEFILE_VERSION, (reader.version, SAVEFILE_VERSION, savefile.filename)
 			game.load(reader)
 		else:
-			game.generate()
+			game.generate(None)
 
 	main_game = MainGameMode(game)
 	loop = clckwrkbdgr.tui.ModeLoop(ui)

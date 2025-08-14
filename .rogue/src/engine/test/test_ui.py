@@ -46,7 +46,7 @@ class MainGameTestCase(unittest.TestCase):
 	def _init(self):
 		self.maxDiff = None
 		game = NanoDungeon(RNG(0))
-		game.generate()
+		game.generate(None)
 		mode = MockMainGame(game)
 		mock_ui = MockUI()
 		return mode, mock_ui

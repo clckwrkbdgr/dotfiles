@@ -66,9 +66,6 @@ class UnequipItemEvent(ImportantEvent):
 class Player(actors.EquippedMonster):
 	pass
 
-class LevelExit(appliances.Appliance):
-	pass
-
 class Angry(actors.EquippedMonster):
 	def act(self, game):
 		closest = []
@@ -169,9 +166,14 @@ class Scene(scene.Scene):
 
 		self.strata = builder.make_grid()
 
-		appliances = list(builder.make_appliances())
-		self._start_pos = next(_pos for _pos, _name in appliances if _name == 'start')
-		self.appliances = [_entry for _entry in appliances if _entry.obj != 'start']
+		_appliances = list(builder.make_appliances())
+		self._start_pos = next(_pos for _pos, _name in _appliances if _name == 'start')
+		self.appliances = [_entry for _entry in _appliances if _entry.obj != 'start']
+		exit_stairs = next(_entry.obj for _entry in self.appliances if isinstance(_entry.obj, appliances.LevelPassage))
+		try:
+			exit_stairs.level_id = str(int(id) + 1)
+		except:
+			exit_stairs.level_id = id # FIXME workaround for tests: looping the same map
 		for monster in settler.make_actors():
 			monster.fill_drops(self.rng)
 			self.monsters.append(monster)
@@ -244,14 +246,7 @@ class Scene(scene.Scene):
 
 class Game(engine.Game):
 	""" Main game object.
-
-	Override definitions for content:
-	- BUILDERS: list of Builder classes to build maps.
 	"""
-
-	BUILDERS = None
-	PLAYER_CLASS = None
-
 	def __init__(self, rng_seed=None):
 		""" Creates game instance and optionally generate new world.
 		Custom rng_seed may be used for PCG.
@@ -262,16 +257,13 @@ class Game(engine.Game):
 		"""
 		super(Game, self).__init__(rng=RNG(rng_seed))
 		self.vision = Vision()
-	def generate(self):
-		self.scene = Scene(self.rng, self.BUILDERS)
-		self.build_new_strata()
+	def generate(self, start_scene_id):
+		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
+		self.current_scene_id = start_scene_id
+		self.build_new_strata(start_scene_id)
 	def load(self, reader):
 		""" Loads game from reader. """
-		if reader.version > Version.PERSISTENT_RNG:
-			self.rng = RNG(reader.read_int())
-
-		self.scene = Scene(self.rng, self.BUILDERS)
-		self.scene.load(reader)
+		super(Game, self).load(reader)
 		self.vision.load(reader)
 
 		if self.scene.get_player(): # pragma: no cover
@@ -282,8 +274,7 @@ class Game(engine.Game):
 		Log.debug('Player: {0}'.format(self.scene.get_player()))
 	def save(self, writer):
 		""" Saves game using writer. """
-		writer.write(self.rng.value)
-		writer.write(self.scene)
+		super(Game, self).save(writer)
 		self.vision.save(writer)
 	def end_turn(self):
 		if self.scene.get_player():
@@ -329,11 +320,7 @@ class Game(engine.Game):
 		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered.sprite
 		return None
-	def make_player(self):
-		player = self.PLAYER_CLASS(None)
-		player.fill_drops(self.rng)
-		return player
-	def build_new_strata(self):
+	def build_new_strata(self, start_scene_id, passage=None):
 		""" Constructs and populates new random level.
 		Transfers player from previous level.
 		Updates vision afterwards.
@@ -344,9 +331,10 @@ class Game(engine.Game):
 		else:
 			player = self.make_player()
 
-		self.scene = Scene(self.rng, self.scene.builders)
-		self.scene.generate(None)
-		self.scene.enter_actor(player, None)
+		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
+		self.current_scene_id = start_scene_id
+		self.scene.generate(start_scene_id)
+		self.scene.enter_actor(player, passage)
 
 		Log.debug("Finalizing dungeon...")
 		self.vision.visited = Matrix(self.scene.strata.size, False)
@@ -473,9 +461,9 @@ class Game(engine.Game):
 		Otherwise does nothing.
 		"""
 		for obj in self.scene.iter_appliances_at(self.scene.get_player().pos):
-			if isinstance(obj, LevelExit):
+			if isinstance(obj, appliances.LevelPassage):
 				self.fire_event(DescendEvent(self.scene.get_player()))
-				self.build_new_strata()
+				self.build_new_strata(obj.level_id, obj.connected_passage)
 				break
 	def prevent_automove(self):
 		if self.vision.visible_monsters:
