@@ -29,3 +29,14 @@ class TestActionLoop(unittest.TestCase):
 		self.assertEqual(list(game.process_events()), [
 			'butterfly flops its wings',
 			])
+
+class TestScenes(unittest.TestCase):
+	def should_travel_to_other_scene(self):
+		game = NanoDungeon()
+		game.generate('floor')
+		self.assertEqual(len(game.scenes), 1)
+
+		game.travel(game.scene.get_player(), 'tomb', 'enter')
+		self.assertEqual(game.current_scene_id, 'tomb')
+		self.assertEqual(len(game.scenes), 2)
+		self.assertEqual(game.scene.get_player().pos, Point(1, 1))

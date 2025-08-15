@@ -87,7 +87,7 @@ class Tree(appliances.Appliance):
 	_name = 'tree'
 
 class StairsUp(appliances.LevelPassage):
-	_sprite = Sprite('>', None)
+	_sprite = Sprite('<', None)
 	_name = 'stairs'
 	_id = 'enter'
 	_can_go_up = True
@@ -208,7 +208,7 @@ class Dungeon(scene.Scene):
 	def generate_dungeon_floor(self):
 		builder = DungeonFloor(self.rng, Size(10, 10))
 		builder.map_key(**({
-			'exit':lambda: 'exit',
+			'exit':lambda: StairsDown(),
 			}))
 		builder.map_key(
 				butterfly = lambda pos, color: Butterfly(pos, color=color),
@@ -224,14 +224,19 @@ class Dungeon(scene.Scene):
 			builder = self.generate_dungeon_floor()
 		builder.generate()
 		self.cells = builder.make_grid()
-		self.appliances = list(_ for _ in builder.make_appliances() if _ not in ('start', 'exit'))
+		self.appliances = list(builder.make_appliances())
 		self.monsters = list(builder.make_actors())
 		self.items = list(builder.make_items())
 		for _ in range(6):
 			builder.point() # Skip not interesting position.
 		self._player_pos = builder.point()
+	def exit_actor(self, actor):
+		self.monsters.remove(actor)
 	def enter_actor(self, actor, location):
-		actor.pos = self._player_pos
+		location = location or 'enter'
+		stairs = next((pos for pos, obj in reversed(self.appliances) if isinstance(obj, appliances.LevelPassage) and obj.id == location), None)
+		assert stairs is not None, "No stairs with id {0}".format(repr(location))
+		actor.pos = stairs
 		self.monsters.append(actor)
 
 	def valid(self, pos):
@@ -274,6 +279,7 @@ class Dungeon(scene.Scene):
 
 class Tomb(builders.Builder):
 	class Mapping:
+		start = StairsUp
 		wall = Wall()
 		void = Void()
 		_ = {
@@ -298,9 +304,12 @@ class Tomb(builders.Builder):
 				if c == '#':
 					grid.set_cell((x, y), 'wall')
 				elif c == '~':
+					self._start = Point(x, y)
 					grid.set_cell((x, y), 'water')
 				elif c == '.':
 					grid.set_cell((x, y), 'corridor_floor')
+	def generate_appliances(self):
+		yield self._start, 'start'
 
 class DungeonFloor(builders.Builder):
 	class Mapping:
@@ -310,7 +319,7 @@ class DungeonFloor(builders.Builder):
 			'water': ToxicWaste(),
 			}
 		@staticmethod
-		def start(): return 'start'
+		def start(): return StairsUp()
 		@staticmethod
 		def statue(likeness): return Statue(likeness)
 
@@ -394,10 +403,5 @@ class NanoDungeon(_base.Game):
 		return Rogue(None)
 	def make_scene(self, scene_id):
 		return Dungeon(self.rng)
-	def generate(self, start_scene_id):
-		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
-		self.current_scene_id = start_scene_id
-		self.scene.generate(start_scene_id)
-		self.scene.enter_actor(self.make_player(), None)
 	def is_visible(self, pos):
 		return distance(pos, self.scene.get_player().pos) < 3

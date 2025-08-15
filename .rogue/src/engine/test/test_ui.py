@@ -55,7 +55,7 @@ class TestMainGameDisplay(MainGameTestCase):
 	def should_get_visible_sprites(self):
 		mode, mock_ui = self._init()
 		self.assertEqual(mode.get_sprite(Point(4, 9)), ui.Sprite('#', None))
-		self.assertEqual(mode.get_sprite(Point(4, 7)), ui.Sprite('@', None))
+		self.assertEqual(mode.get_sprite(Point(1, 5)), ui.Sprite('@', None))
 		mode.game.scene.get_player().pos = Point(1, 1)
 		self.assertEqual(mode.get_sprite(Point(3, 2)), ui.Sprite('&', None))
 		self.assertEqual(mode.get_sprite(Point(1, 2)), ui.Sprite('?', None))
@@ -68,13 +68,13 @@ class TestMainGameDisplay(MainGameTestCase):
 		mode, mock_ui = self._init()
 
 		# To display some void south of the wall:
-		mode.game.scene.get_player().pos.y += 1
+		mode.game.scene.get_player().pos = Point(4, 8)
 
 		mode.draw_map(mock_ui)
 		self.maxDiff = None
 		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\
 		_                              _
-		_.~...                         _
+		_.~>..                         _
 		_.....                         _
 		_.b@..                         _
 		_#####                         _
@@ -115,7 +115,7 @@ class TestMainGameDisplay(MainGameTestCase):
 		mode.draw_status(mock_ui)
 		self.maxDiff = None
 		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\
-		_pos: [4, 7]                   _
+		_pos: [1, 5]                   _
 		_         monsters: 2          _
 		_                              _
 		_                              _
@@ -136,12 +136,13 @@ class TestMainGameDisplay(MainGameTestCase):
 		'Third.',
 		'Last.',
 		]
+		mode.game.scene.get_player().pos = Point(4, 7)
 		mode.redraw(mock_ui)
 		self.maxDiff = None
 		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\
 		_pos: [4, 7]                   _
 		_.....    monsters: 2          _
-		_.~...                         _
+		_.~>..                         _
 		_..@..                         _
 		_.b...                         _
 		_#####                         _

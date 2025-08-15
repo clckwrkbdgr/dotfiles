@@ -92,7 +92,7 @@ class TestBuilder(unittest.TestCase):
 		self.maxDiff = None
 		_appliances = sorted(map(repr, builder.make_appliances()))
 		self.assertEqual(_appliances, sorted(map(repr, [
-			appliances.ObjectAtPos(Point(2, 10), 'start'),
+			appliances.ObjectAtPos(Point(2, 10), StairsUp()),
 			appliances.ObjectAtPos(Point(7, 5), Statue('goddess')),
 			appliances.ObjectAtPos(Point(9, 12), 'exit'),
 			])))

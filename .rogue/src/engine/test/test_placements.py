@@ -19,6 +19,8 @@ class TestAppliances(unittest.TestCase):
 		tree = Tree()
 		appliance = appliances.ObjectAtPos(Point(1, 1), tree)
 		self.assertEqual(str(appliance), 'tree @[1, 1]')
+		self.assertEqual(appliance, appliance)
+		self.assertEqual(appliance, tree)
 
 class TestAppliancesSavefile(unittest.TestCase):
 	def should_load_appliance(self):
