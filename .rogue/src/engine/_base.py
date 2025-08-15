@@ -42,14 +42,37 @@ class Game(object):
 	def make_scene(self, scene_id): # pragma: no cover
 		""" Should return constructed Scene object for given ID. """
 		raise NotImplementedError()
+	def travel(self, actor, scene_id, passage=None):
+		""" Travel to a specified scene.
+		Creates the scene, if necessary.
+		Places actor at the LevelPassage with specified ID.
+		If passage is None, picks the default location
+		(see Scene.enter_actor).
+		Actor should be present on the current scene (if there is any).
+		"""
+		if self.current_scene_id is not None:
+			self.scene.exit_actor(actor)
+
+		is_new_scene = scene_id not in self.scenes
+		if is_new_scene:
+			self.scenes[scene_id] = self.make_scene(scene_id)
+			self.scenes[scene_id].generate(scene_id)
+		if self.current_scene_id and self.scene.one_time():
+			del self.scenes[self.current_scene_id]
+		self.current_scene_id = scene_id
+		self.scene.enter_actor(actor, passage)
+
+		Log.debug("Finalizing dungeon...")
+		self.update_vision(reset=is_new_scene)
+		Log.debug("Dungeon is ready.")
 	def generate(self, start_scene_id): # pragma: no cover
-		""" Should reset game and generate new state.
+		""" Resets game and generates new state.
 		Starts with given scene and places player (see make_player())
 		at the default location (see Scene.enter_actor).
 		Common pattern is create dummy Game object
 		and then explicitly call generate().
 		"""
-		raise NotImplementedError()
+		self.travel(self.make_player(), start_scene_id)
 	def load(self, stream):
 		""" Loads game data from the stream/state.
 		"""

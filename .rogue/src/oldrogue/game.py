@@ -245,8 +245,6 @@ class Dungeon(engine.Game):
 		super(Dungeon, self).__init__()
 		self.visited_rooms = {}
 		self.visited_tunnels = {}
-	def generate(self, start_scene_id): # pragma: no cover -- TODO
-		self.go_to_level(self.make_player(), start_scene_id)
 	def load(self, reader): # pragma: no cover -- TODO
 		self.scenes = data.levels
 		self.visited_rooms = data.visited_rooms
@@ -258,21 +256,6 @@ class Dungeon(engine.Game):
 		data.visited_rooms = self.visited_rooms
 		data.visited_tunnels = self.visited_tunnels
 		data.current_level = self.current_scene_id
-	def go_to_level(self, monster, level_id, connected_passage=None):
-		""" Travel to specified level and enter through specified passage.
-		If level was not generated yet, it will be generated at this moment.
-		"""
-		if self.current_scene_id is not None:
-			self.scene.exit_actor(monster)
-
-		if level_id not in self.scenes:
-			self.scenes[level_id] = self.make_scene(level_id)
-			self.scenes[level_id].generate(level_id)
-		self.current_scene_id = level_id
-
-		self.scene.enter_actor(monster, connected_passage)
-
-		self.update_vision(reset=level_id not in self.visited_rooms)
 	def update_vision(self, reset=False):
 		if reset:
 			self.visited_rooms[self.current_scene_id] = Matrix((3, 3), False)
@@ -282,7 +265,7 @@ class Dungeon(engine.Game):
 		""" Use level passage object. """
 		try:
 			stairs.use(monster)
-			self.go_to_level(monster, stairs.level_id, stairs.connected_passage)
+			self.travel(monster, stairs.level_id, stairs.connected_passage)
 			return True
 		except appliances.LevelPassage.Locked as e:
 			self.fire_event(Event.NeedKey(e.key_item_type))

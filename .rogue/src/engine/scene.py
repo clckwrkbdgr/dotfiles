@@ -7,6 +7,12 @@ class Scene(object):
 	""" Current physical map of terrain, objects, actors, etc.
 	"""
 
+	def one_time(self): # pragma: no cover
+		""" Should return True when scene is one-time entry only
+		and should be discarded immediately on leave.
+		By default all visited scenes are kept.
+		"""
+		return False
 	def generate(self, id): # pragma: no cover
 		""" Should generate scene for given map ID.
 		"""

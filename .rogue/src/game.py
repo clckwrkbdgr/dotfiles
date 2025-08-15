@@ -155,6 +155,8 @@ class Scene(scene.Scene):
 		self.monsters = []
 		self.items = []
 		self.appliances = []
+	def one_time(self):
+		return True
 	def generate(self, id):
 		builder = self.rng.choice(self.builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))
@@ -169,11 +171,15 @@ class Scene(scene.Scene):
 		_appliances = list(builder.make_appliances())
 		self._start_pos = next(_pos for _pos, _name in _appliances if _name == 'start')
 		self.appliances = [_entry for _entry in _appliances if _entry.obj != 'start']
+
 		exit_stairs = next(_entry.obj for _entry in self.appliances if isinstance(_entry.obj, appliances.LevelPassage))
-		try:
-			exit_stairs.level_id = str(int(id) + 1)
-		except:
-			exit_stairs.level_id = id # FIXME workaround for tests: looping the same map
+		if '/' in id:
+			level_id, index = id.split('/')
+		else:
+			level_id, index = id, 0
+		index = str(int(index) + 1)
+		exit_stairs.level_id = '/'.join((level_id, index))
+
 		for monster in settler.make_actors():
 			monster.fill_drops(self.rng)
 			self.monsters.append(monster)
@@ -257,10 +263,6 @@ class Game(engine.Game):
 		"""
 		super(Game, self).__init__(rng=RNG(rng_seed))
 		self.vision = Vision()
-	def generate(self, start_scene_id):
-		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
-		self.current_scene_id = start_scene_id
-		self.build_new_strata(start_scene_id)
 	def load(self, reader):
 		""" Loads game from reader. """
 		super(Game, self).load(reader)
@@ -318,25 +320,6 @@ class Game(engine.Game):
 		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered.sprite
 		return None
-	def build_new_strata(self, start_scene_id, passage=None):
-		""" Constructs and populates new random level.
-		Transfers player from previous level.
-		Updates vision afterwards.
-		"""
-		player = self.scene.get_player()
-		if player:
-			self.scene.exit_actor(player)
-		else:
-			player = self.make_player()
-
-		self.scenes[start_scene_id] = self.make_scene(start_scene_id)
-		self.current_scene_id = start_scene_id
-		self.scene.generate(start_scene_id)
-		self.scene.enter_actor(player, passage)
-
-		Log.debug("Finalizing dungeon...")
-		self.update_vision(reset=True)
-		Log.debug("Dungeon is ready.")
 	def update_vision(self, reset=False):
 		if not self.scene.get_player():
 			return
@@ -462,7 +445,7 @@ class Game(engine.Game):
 		for obj in self.scene.iter_appliances_at(self.scene.get_player().pos):
 			if isinstance(obj, appliances.LevelPassage):
 				self.fire_event(DescendEvent(self.scene.get_player()))
-				self.build_new_strata(obj.level_id, obj.connected_passage)
+				self.travel(self.scene.get_player(), obj.level_id, obj.connected_passage)
 				break
 	def prevent_automove(self):
 		if self.vision.visible_monsters:

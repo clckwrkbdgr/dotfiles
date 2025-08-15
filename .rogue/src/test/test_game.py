@@ -568,6 +568,7 @@ class TestMovement(AbstractTestDungeon):
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 
 		dungeon.descend()
+		self.assertEqual(len(dungeon.scenes), 1)
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN)
 		dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN)
@@ -575,6 +576,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.descend()
+		self.assertEqual(len(dungeon.scenes), 1)
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		self.assertEqual(dungeon.get_player().hp, 5)
 		self.assertEqual(dungeon.tostring(), textwrap.dedent(mock_dungeon._MockMiniBuilderUnSettler.MAP_DATA).replace('~', '.'))
@@ -930,7 +932,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			1,
 				'Potion', 10, 6,
 			1,
-				'MockStairs', 'mock settler', 'enter', 10, 1,
+				'MockStairs', 'mock settler/1', 'enter', 10, 1,
 			'',
 
 			20, 10,
