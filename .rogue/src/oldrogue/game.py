@@ -272,10 +272,12 @@ class Dungeon(engine.Game):
 
 		self.scene.enter_actor(monster, connected_passage)
 
-		if level_id not in self.visited_rooms:
-			self.visited_rooms[level_id] = Matrix((3, 3), False)
-			self.visited_tunnels[level_id] = [set() for tunnel in self.scenes[level_id].tunnels]
-		self.visit(monster.pos)
+		self.update_vision(reset=level_id not in self.visited_rooms)
+	def update_vision(self, reset=False):
+		if reset:
+			self.visited_rooms[self.current_scene_id] = Matrix((3, 3), False)
+			self.visited_tunnels[self.current_scene_id] = [set() for tunnel in self.scenes[self.current_scene_id].tunnels]
+		self.visit(self.scene.get_player().pos)
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """
 		try:

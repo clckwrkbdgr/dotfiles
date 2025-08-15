@@ -467,6 +467,7 @@ class Game(engine.Game):
 		self.current_scene_id = start_scene_id
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
+		self.update_vision(reset=True)
 	def make_player(self):
 		return Player(None)
 	def move_actor(self, actor, shift):

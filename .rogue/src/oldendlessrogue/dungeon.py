@@ -11,6 +11,7 @@ class Dungeon(engine.Game):
 		self.current_scene_id = start_scene_id
 		self.scene.generate(start_scene_id)
 		self.scene.enter_actor(self.make_player(), None)
+		self.update_vision(reset=True)
 	def load(self, state):
 		self.__dict__.update(state)
 		builder = self.make_scene(None).builder

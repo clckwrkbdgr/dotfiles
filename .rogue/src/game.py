@@ -266,9 +266,7 @@ class Game(engine.Game):
 		super(Game, self).load(reader)
 		self.vision.load(reader)
 
-		if self.scene.get_player(): # pragma: no cover
-			for obj in self.vision.update(self.scene.get_player(), self.scene):
-				self.fire_event(DiscoverEvent(obj))
+		self.update_vision()
 		Log.debug('Loaded.')
 		Log.debug(repr(self.scene.strata))
 		Log.debug('Player: {0}'.format(self.scene.get_player()))
@@ -337,10 +335,15 @@ class Game(engine.Game):
 		self.scene.enter_actor(player, passage)
 
 		Log.debug("Finalizing dungeon...")
-		self.vision.visited = Matrix(self.scene.strata.size, False)
+		self.update_vision(reset=True)
+		Log.debug("Dungeon is ready.")
+	def update_vision(self, reset=False):
+		if not self.scene.get_player():
+			return
+		if reset:
+			self.vision.visited = Matrix(self.scene.strata.size, False)
 		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
-		Log.debug("Dungeon is ready.")
 	def move_actor(self, actor, direction):
 		""" Moves monster into given direction (if possible).
 		If there is a monster, performs attack().
@@ -370,8 +373,7 @@ class Game(engine.Game):
 		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
 		self.fire_event(MoveEvent(actor, new_pos))
 		actor.pos = new_pos
-		for obj in self.vision.update(self.scene.get_player(), self.scene):
-			self.fire_event(DiscoverEvent(obj))
+		self.update_vision()
 		return True
 	def affect_health(self, target, diff):
 		""" Changes health of given target.
@@ -396,9 +398,7 @@ class Game(engine.Game):
 		self.fire_event(AttackEvent(actor, target))
 		damage = max(0, actor.get_attack_damage() - target.get_protection())
 		self.affect_health(target, -damage)
-		if self.get_player():
-			for obj in self.vision.update(self.scene.get_player(), self.scene): # pragma: no cover -- TODO
-				self.fire_event(DiscoverEvent(obj))
+		self.update_vision()
 	def grab_item_at(self, actor, pos):
 		""" Grabs topmost item at given cell and puts to the inventory.
 		Produces events.
@@ -453,8 +453,7 @@ class Game(engine.Game):
 	def jump_to(self, new_pos):
 		""" Teleports player to new pos. """
 		self.scene.get_player().pos = new_pos
-		for obj in self.vision.update(self.scene.get_player(), self.scene):
-			self.fire_event(DiscoverEvent(obj))
+		self.update_vision()
 	def descend(self):
 		""" Descends onto new level, when standing on exit pos.
 		Generates new level.

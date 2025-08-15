@@ -130,6 +130,13 @@ class Game(object):
 		By default the whole map is considered visited and remembered.
 		"""
 		return True
+	def update_vision(self, reset=False): # pragma: no cover
+		""" Should update current vision field after disposition
+		has changed (e.g. after movement or travelling).
+		If reset is True, rebuild vision field from scratch
+		(forgetting explored places).
+		"""
+		return True
 
 	# Actions.
 
