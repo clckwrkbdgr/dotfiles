@@ -42,12 +42,13 @@ class TestDungeon(unittest.TestCase):
 	VIEW_RECT = Rect((-4, -4), (9, 9))
 	def should_generate_random_dungeon(self):
 		dungeon = MockDungeon()
-		dungeon.generate(1)
-		self.assertEqual(dungeon.scene.terrain.cell((0, 0)).sprite.sprite, '.')
-		self.assertEqual(dungeon.scene.terrain.cell((1, 0)).sprite.sprite, '#')
-		self.assertEqual(dungeon.scene.terrain.cell((0, 1)).sprite.sprite, '#')
-		self.assertEqual(dungeon.scene.terrain.cell((1, 1)).sprite.sprite, '.')
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
+		scene = dungeon.make_scene(1)
+		scene.generate(1)
+		self.assertEqual(scene.terrain.cell((0, 0)).sprite.sprite, '.')
+		self.assertEqual(scene.terrain.cell((1, 0)).sprite.sprite, '#')
+		self.assertEqual(scene.terrain.cell((0, 1)).sprite.sprite, '#')
+		self.assertEqual(scene.terrain.cell((1, 1)).sprite.sprite, '.')
+		self.assertEqual(scene._player_pos, (1, 1))
 	def should_move_player(self):
 		dungeon = MockDungeon()
 		dungeon.generate(1)
@@ -64,10 +65,13 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
 	def should_recalibrate_plane_after_player_moved(self):
 		dungeon = MockDungeon()
-		dungeon.generate(3)
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
-		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
+		scene = dungeon.make_scene(3)
+		scene.generate(3)
+		scene.monsters.append(mock.Rogue(scene._player_pos))
+
+		self.assertEqual(scene.get_player().pos, (1, 1))
+		self.assertEqual(scene.terrain.shift, Point(-3, -3))
+		self.assertEqual(scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_........
 		_........
@@ -79,11 +83,10 @@ class TestDungeon(unittest.TestCase):
 		_........
 		""").replace('_', ' '))
 
-		dungeon.move_actor(dungeon.scene.get_player(), Point(0, 1))
-		dungeon.process_others()
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
-		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, -3))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
+		scene.get_player().pos = Point(1, 2)
+		scene.recalibrate(scene.get_player().pos)
+		self.assertEqual(scene.terrain.shift, Point(-3, -3))
+		self.assertEqual(scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_........
 		_........
@@ -95,11 +98,10 @@ class TestDungeon(unittest.TestCase):
 		_........
 		""").replace('_', ' '))
 
-		dungeon.move_actor(dungeon.scene.get_player(), Point(0, 1))
-		dungeon.process_others()
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 3))
-		self.assertEqual(dungeon.scene.terrain.shift, Point(-3, 0))
-		self.assertEqual(dungeon.scene.tostring(self.VIEW_RECT), unittest.dedent("""\
+		scene.get_player().pos = Point(1, 3)
+		scene.recalibrate(scene.get_player().pos)
+		self.assertEqual(scene.terrain.shift, Point(-3, 0))
+		self.assertEqual(scene.tostring(self.VIEW_RECT), unittest.dedent("""\
 		_________
 		_________
 		_________

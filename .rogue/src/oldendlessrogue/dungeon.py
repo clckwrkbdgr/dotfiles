@@ -20,7 +20,8 @@ class Dungeon(engine.Game):
 		if self.scene.is_passable(new_pos):
 			monster.pos = new_pos
 		monster.spend_action_points()
-		self.scene.terrain.recalibrate(self.scene.get_player().pos)
+		if monster == self.scene.get_player():
+			self.scene.recalibrate(monster.pos, Size(monster.vision, monster.vision))
 
 class Scene(scene.Scene):
 	BLOCK_SIZE = Size(32, 32)
@@ -40,6 +41,8 @@ class Scene(scene.Scene):
 		return auto.EndlessAreaExplorer
 	def valid(self, pos): # pragma: no cover -- TODO
 		return self.terrain.valid(pos)
+	def recalibrate(self, vantage_point, marging=None):
+		self.terrain.recalibrate(vantage_point)
 	def get_cell_info(self, pos):
 		cell = self.terrain.cell(pos) or builders.EndlessVoid()
 		return cell, [], [], list(self.iter_actors_at(pos))

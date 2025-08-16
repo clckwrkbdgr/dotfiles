@@ -27,6 +27,18 @@ class Scene(object):
 		(also implementation-defined), e.g. dungeon entrance or stairs.
 		"""
 		raise NotImplementedError()
+	def recalibrate(self, vantage_point, margin=None): # pragma: no cover
+		""" Should re-adjust (if needed) internal grid in case
+		if it dynamically loads/generates/unloads part of the map
+		(e.g. endless grid or nested grid).
+		Should make sure that area surrounding given vantage point
+		is valid and adjusted properly.
+		Optional margin size can specify distance (for both axis)
+		to the edge of the world at which map should be forced
+		to recalibrate. Up to implementation how to treat this value,
+		usually it should be the size of player's character vision/action area.
+		"""
+		pass
 
 	def load(self, stream):
 		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(terrain.Terrain)})

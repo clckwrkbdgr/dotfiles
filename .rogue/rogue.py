@@ -75,6 +75,7 @@ class RealMonster(Monster):
 class Player(Monster):
 	_sprite = Sprite('@', 'bold_white')
 	_name = 'you'
+	_vision = 40
 	_attack = 1
 	_hostile_to = [RealMonster]
 	init_max_hp = 10
@@ -501,7 +502,7 @@ class Game(engine.Game):
 				dest_field_data.monsters.append(actor)
 			actor.pos = dest_pos.values[-1]
 			if actor == game.scene.get_player():
-				game.scene.autoexpand(self.scene.get_player_coord(), Size(40, 40))
+				game.scene.recalibrate(self.scene.get_player_coord(), Size(actor.vision, actor.vision))
 		actor.spend_action_points()
 
 class Scene(scene.Scene):
@@ -534,7 +535,7 @@ class Scene(scene.Scene):
 	def load(self, stream):
 		super(Scene, self).load(stream)
 		self.world.load(stream)
-	def autoexpand(self, coord, margin):
+	def recalibrate(self, coord, margin):
 		pos = coord.get_global(self.world)
 		within_zone = Point(
 				pos.x % (self.world.sizes[-2].width * self.world.sizes[-1].width),
@@ -543,16 +544,16 @@ class Scene(scene.Scene):
 		close_to_zone_boundaries = False
 		in_world_pos = coord.values[0]
 		expansion = Point(0, 0)
-		if within_zone.x - 40 < 0:
+		if within_zone.x - margin.width < 0:
 			close_to_zone_boundaries = True
 			expansion.x = -1
-		if within_zone.x + 40 >= self.world.cells.cell(in_world_pos).full_size.width:
+		if within_zone.x + margin.width >= self.world.cells.cell(in_world_pos).full_size.width:
 			close_to_zone_boundaries = True
 			expansion.x = +1
-		if within_zone.y - 40 < 0:
+		if within_zone.y - margin.height < 0:
 			close_to_zone_boundaries = True
 			expansion.y = -1
-		if within_zone.y + 40 >= self.world.cells.cell(in_world_pos).full_size.height:
+		if within_zone.y + margin.height >= self.world.cells.cell(in_world_pos).full_size.height:
 			close_to_zone_boundaries = True
 			expansion.y = +1
 		if not close_to_zone_boundaries:
