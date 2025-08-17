@@ -812,7 +812,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(_R(dungeon.events), _R([game.Event.InventoryFull(armor)]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
 
-		dungeon.move_by(dungeon.scene.get_player(), Point(1, 0))
+		dungeon.move_actor(dungeon.scene.get_player(), Point(1, 0))
 		self.assertEqual(dungeon.scene.get_player().pos, Point(2, 1))
 		dungeon.events = []
 		dungeon.grab_here(jc)

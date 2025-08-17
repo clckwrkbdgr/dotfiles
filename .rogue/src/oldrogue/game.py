@@ -347,6 +347,8 @@ class Dungeon(engine.Game):
 		if not others:
 			monster.spend_action_points()
 			monster.pos = new_pos
+			if monster == self.scene.get_player():
+				self.visit(monster.pos)
 			return
 		hostiles = [other for other in others if monster.is_hostile_to(other)]
 		if not hostiles:
@@ -475,7 +477,3 @@ class Dungeon(engine.Game):
 			actor.spend_action_points()
 		else:
 			dungeon.fire_event(Event.NothingToPickUp())
-	def move_by(self, actor, shift):
-		dungeon = self
-		dungeon.move_actor(actor, shift)
-		dungeon.visit(actor.pos)
