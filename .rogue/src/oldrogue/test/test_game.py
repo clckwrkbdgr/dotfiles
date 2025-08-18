@@ -159,11 +159,11 @@ class MockGenerator:
 			""")
 	def build_level(self, result, level_id):
 		if level_id == 'top':
-			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.MAIN_LEVEL)
+			result.size, result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.MAIN_LEVEL)
 		elif level_id == 'roof':
-			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.ROOF)
+			result.size, result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.ROOF)
 		elif level_id == 'basement':
-			result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.BASEMENT)
+			result.size, result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.BASEMENT)
 	@functools.lru_cache()
 	def _parse_layout(self, layout):
 		layout = Matrix.fromstring(layout)
@@ -236,7 +236,7 @@ class MockGenerator:
 				elif layout.cell( (x, y) ) == '^':
 					objects.append( (Point(x, y), ElevatorUp('top', 'basement')) )
 
-		return rooms, tunnels, objects
+		return layout.size, rooms, tunnels, objects
 
 def _R(events): return list(map(repr, events))
 

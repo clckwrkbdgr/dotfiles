@@ -204,7 +204,7 @@ class Scene(scene.Scene):
 		writer.write(self.monsters)
 		writer.write(self.items)
 		writer.write(self.appliances)
-	def valid(self, pos): # pragma: no cover -- TODO
+	def valid(self, pos):
 		return self.strata.valid(pos)
 	def is_transparent_to_monster(self, p, monster):
 		""" True if cell at position p is transparent/visible to a monster. """
@@ -333,11 +333,12 @@ class Game(engine.Game):
 		May produce all sorts of other events.
 		Returns True, is action succeeds, otherwise False.
 		"""
-		shift = direction
-		Log.debug('Shift: {0}'.format(shift))
-		new_pos = actor.pos + shift
-		if not self.scene.strata.valid(new_pos):
+		new_pos = super(Game, self).move_actor(actor, direction)
+		if not new_pos:
 			return False
+		if new_pos is True:
+			return True
+
 		if self.god.noclip:
 			passable = True
 		else:
@@ -348,11 +349,6 @@ class Game(engine.Game):
 		if not self.scene.allow_movement_direction(actor.pos, new_pos):
 			self.fire_event(BumpEvent(actor, new_pos))
 			return False
-		monster = next(self.scene.iter_actors_at(new_pos), None)
-		if monster:
-			Log.debug('Monster at dest pos {0}: '.format(new_pos, monster))
-			self.attack(actor, monster)
-			return True
 		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
 		self.fire_event(MoveEvent(actor, new_pos))
 		actor.pos = new_pos

@@ -327,6 +327,19 @@ class Dungeon(engine.Game):
 			self.fire_event(Event.TakingOff(who, old_item))
 			who.wear(item)
 		self.fire_event(Event.Wearing(who, item))
+	def attack(self, monster, other):
+		if not monster.is_hostile_to(other):
+			monster.spend_action_points()
+			self.fire_event(Event.BumpIntoMonster(monster, other))
+			return
+		damage = max(0, monster.get_attack_damage() - other.get_protection())
+		other.affect_health(-damage)
+		self.fire_event(Event.AttackMonster(monster, other, damage))
+		if not other.is_alive():
+			self.fire_event(Event.MonsterDied(other))
+			for item in self.rip(other):
+				self.fire_event(Event.MonsterDroppedItem(other, item))
+		monster.spend_action_points()
 	def move_actor(self, monster, shift):
 		""" Tries to move monster to a new position.
 		May attack hostile other monster there.
@@ -337,33 +350,20 @@ class Dungeon(engine.Game):
 		- Item: other monster dropped an item.
 		Empty list means the monster is successfully moved.
 		"""
+		new_pos = super(Dungeon, self).move_actor(monster, shift)
+		if new_pos is True:
+			return True
+
 		with_tunnels = (monster == self.scene.get_player())
-		new_pos = monster.pos + shift
 		can_move = self.scene.can_move_to(new_pos, with_tunnels=with_tunnels, from_pos=monster.pos)
 		if not can_move:
 			self.fire_event(Event.BumpIntoTerrain(monster, new_pos))
 			return
-		others = [other for other in self.scene.iter_actors_at(new_pos, with_player=True) if other != monster]
-		if not others:
-			monster.spend_action_points()
-			monster.pos = new_pos
-			if monster == self.scene.get_player():
-				self.visit(monster.pos)
-			return
-		hostiles = [other for other in others if monster.is_hostile_to(other)]
-		if not hostiles:
-			monster.spend_action_points()
-			self.fire_event(Event.BumpIntoMonster(monster, others[0]))
-			return
-		other = hostiles[0]
-		damage = max(0, monster.get_attack_damage() - other.get_protection())
-		other.affect_health(-damage)
-		self.fire_event(Event.AttackMonster(monster, other, damage))
-		if not other.is_alive():
-			self.fire_event(Event.MonsterDied(other))
-			for item in self.rip(other):
-				self.fire_event(Event.MonsterDroppedItem(other, item))
 		monster.spend_action_points()
+		monster.pos = new_pos
+		if monster == self.scene.get_player():
+			self.visit(monster.pos)
+		return
 	def is_visible(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) is visible for player.
 		Additional data depends on type of primary object.

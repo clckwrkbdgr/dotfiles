@@ -16,7 +16,8 @@ class Dungeon(engine.Game):
 		del data['rng']
 		state.update(data)
 	def move_actor(self, monster, shift):
-		new_pos = monster.pos + shift
+		new_pos = super(Dungeon, self).move_actor(monster, shift)
+
 		if self.scene.is_passable(new_pos):
 			monster.pos = new_pos
 		monster.spend_action_points()

@@ -465,37 +465,40 @@ class Game(engine.Game):
 		return Scene()
 	def make_player(self):
 		return Player(None)
-	def move_actor(self, actor, shift):
-		game = self
-		if actor == game.scene.get_player():
-			actor_coord = game.scene.get_player_coord()
+	def attack(self, actor, other):
+		if not actor.is_hostile_to(other):
+			self.fire_event(Bump(actor.name, other.name))
 		else:
-			actor_coord = actor.coord
-		self_pos = actor_coord.get_global(game.scene.world)
-		new_pos = self_pos + shift
-		dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
-		dest_field_data = None
-		dest_cell = None
-		if game.scene.world.valid(dest_pos):
-			dest_field_data = game.scene.world.get_data(dest_pos)[-1]
-			dest_cell = game.scene.world.cell(dest_pos)
-		actor_at_dest = next(game.scene.iter_actors_at(dest_pos), None)
-		if actor_at_dest:
-			if not actor.is_hostile_to(actor_at_dest):
-				self.fire_event(Bump(actor.name, actor_at_dest.name))
-			else:
-				damage = max(0, actor.get_attack_damage() - actor_at_dest.get_protection())
-				actor_at_dest.affect_health(-damage)
-				self.fire_event(HitMonster(actor.name, actor_at_dest.name))
-				if not actor_at_dest.is_alive():
-					dest_field_data.monsters.remove(actor_at_dest)
-					self.fire_event(MonsterDead(actor_at_dest.name))
-					for item in actor_at_dest.drop_all():
-						dest_field_data.items.append(item)
-						self.fire_event(DroppedItem(actor_at_dest.name, item.item))
-		elif dest_cell is None:
+			damage = max(0, actor.get_attack_damage() - other.get_protection())
+			other.affect_health(-damage)
+			self.fire_event(HitMonster(actor.name, other.name))
+			if not other.is_alive():
+				dest_pos = self.scene.get_global_pos(other)
+				dest_pos = NestedGrid.Coord.from_global(dest_pos, self.scene.world)
+				dest_field_data = self.scene.world.get_data(dest_pos)[-1]
+				dest_field_data.monsters.remove(other)
+				self.fire_event(MonsterDead(other.name))
+				for item in other.drop_all():
+					dest_field_data.items.append(item)
+					self.fire_event(DroppedItem(other.name, item.item))
+		actor.spend_action_points()
+	def move_actor(self, actor, shift):
+		new_pos = super(Game, self).move_actor(actor, shift)
+		if not new_pos:
 			self.fire_event(StareIntoVoid())
-		elif dest_cell.passable:
+			return
+		if new_pos is True:
+			return True
+
+		game = self
+		dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
+		dest_field_data = game.scene.world.get_data(dest_pos)[-1]
+		dest_cell = game.scene.world.cell(dest_pos)
+		if dest_cell.passable:
+			if actor == game.scene.get_player():
+				actor_coord = game.scene.get_player_coord()
+			else:
+				actor_coord = actor.coord
 			current_field_data = game.scene.world.get_data(actor_coord)[-1]
 			if current_field_data != dest_field_data:
 				current_field_data.monsters.remove(actor)
@@ -670,12 +673,20 @@ class Scene(scene.Scene):
 		player, self._cached_player_pos = next((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player))
 		return player, self._cached_player_pos
 
+	def get_global_pos(self, actor):
+		if actor == self.get_player():
+			actor_coord = self.get_player_coord()
+		else:
+			actor_coord = actor.coord
+		return actor_coord.get_global(self.world)
 	def iter_items_at(self, pos):
 		zone_items = self.world.get_data(pos)[-1].items
 		for item_pos, item in zone_items:
 			if pos.values[-1] == item_pos:
 				yield item
 	def iter_actors_at(self, pos, with_player=False):
+		if isinstance(pos, Point):
+			pos = NestedGrid.Coord.from_global(pos, self.world)
 		zone_actors = self.world.get_data(pos)[-1].monsters
 		for actor in zone_actors:
 			if not with_player and isinstance(actor, Player):

@@ -209,10 +209,28 @@ class Game(object):
 		"""
 		return False
 
-	def move_actor(self, actor, shift): # pragma: no cover
-		""" Should move actor on scene by specified shift.
+	def attack(self, actor, other): # pragma: no cover
+		""" Should perform attack on a hostile other actor
+		and check consequences (death, loot etc).
+		Also should address bump into the other actor if it is not hostile.
 		"""
 		raise NotImplementedError()
+	def move_actor(self, actor, shift):
+		""" Should move actor on scene by specified shift.
+		"""
+		Log.debug('Shift: {0}'.format(shift))
+		actor_pos = self.scene.get_global_pos(actor)
+		new_pos = actor_pos + shift
+		if not self.scene.valid(new_pos):
+			return None
+
+		other_actor = next((other for other in self.scene.iter_actors_at(new_pos, with_player=True) if other != actor), None)
+		if other_actor:
+			Log.debug('Actor at dest pos {0}: '.format(new_pos, other_actor))
+			self.attack(actor, other_actor)
+			return True
+
+		return new_pos
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

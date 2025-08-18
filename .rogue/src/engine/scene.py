@@ -110,6 +110,11 @@ class Scene(object):
 		"""
 		raise NotImplementedError()
 
+	def get_global_pos(self, actor):
+		""" Should return global pos for scenes where Actor.pos refers
+		to some local zones and global pos should be calculated.
+		"""
+		return actor.pos
 	def is_passable(self, pos):
 		""" Returns True is cell is passable (open for movement).
 		Terrain should be .passable, as well as any appliances at the position.
