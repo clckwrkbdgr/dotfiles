@@ -228,6 +228,10 @@ class Scene(scene.Scene):
 				list(self.iter_items_at(pos)),
 				list(self.iter_actors_at(pos, with_player=True)),
 				)
+	def can_move(self, actor, pos):
+		if not self.allow_movement_direction(actor.pos, pos):
+			return False
+		return self.strata.cell(pos).passable
 	def get_player(self):
 		""" Returns player character if exists, or None. """
 		return next((monster for monster in self.monsters if isinstance(monster, Player)), None)
@@ -342,13 +346,11 @@ class Game(engine.Game):
 		if self.god.noclip:
 			passable = True
 		else:
-			passable = self.scene.strata.cell(new_pos).passable
+			passable = self.scene.can_move(actor, new_pos)
 		if not passable:
 			self.fire_event(BumpEvent(actor, new_pos))
 			return False
-		if not self.scene.allow_movement_direction(actor.pos, new_pos):
-			self.fire_event(BumpEvent(actor, new_pos))
-			return False
+
 		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
 		self.fire_event(MoveEvent(actor, new_pos))
 		actor.pos = new_pos

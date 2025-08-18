@@ -490,22 +490,24 @@ class Game(engine.Game):
 		if new_pos is True:
 			return True
 
+		if not self.scene.can_move(actor, new_pos):
+			actor.spend_action_points()
+			return
+
 		game = self
 		dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
+		if actor == game.scene.get_player():
+			actor_coord = game.scene.get_player_coord()
+		else:
+			actor_coord = actor.coord
+		current_field_data = game.scene.world.get_data(actor_coord)[-1]
 		dest_field_data = game.scene.world.get_data(dest_pos)[-1]
-		dest_cell = game.scene.world.cell(dest_pos)
-		if dest_cell.passable:
-			if actor == game.scene.get_player():
-				actor_coord = game.scene.get_player_coord()
-			else:
-				actor_coord = actor.coord
-			current_field_data = game.scene.world.get_data(actor_coord)[-1]
-			if current_field_data != dest_field_data:
-				current_field_data.monsters.remove(actor)
-				dest_field_data.monsters.append(actor)
-			actor.pos = dest_pos.values[-1]
-			if actor == game.scene.get_player():
-				game.scene.recalibrate(self.scene.get_player_coord(), Size(actor.vision, actor.vision))
+		if current_field_data != dest_field_data:
+			current_field_data.monsters.remove(actor)
+			dest_field_data.monsters.append(actor)
+		actor.pos = dest_pos.values[-1]
+		if actor == game.scene.get_player():
+			game.scene.recalibrate(self.scene.get_player_coord(), Size(actor.vision, actor.vision))
 		actor.spend_action_points()
 
 class Scene(scene.Scene):
@@ -679,6 +681,10 @@ class Scene(scene.Scene):
 		else:
 			actor_coord = actor.coord
 		return actor_coord.get_global(self.world)
+	def can_move(self, actor, pos):
+		dest_pos = NestedGrid.Coord.from_global(pos, self.world)
+		dest_cell = self.world.cell(dest_pos)
+		return dest_cell.passable
 	def iter_items_at(self, pos):
 		zone_items = self.world.get_data(pos)[-1].items
 		for item_pos, item in zone_items:

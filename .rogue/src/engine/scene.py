@@ -115,6 +115,13 @@ class Scene(object):
 		to some local zones and global pos should be calculated.
 		"""
 		return actor.pos
+	def can_move(self, actor, pos):
+		""" Should return True if actor can move onto terrain at pos
+		(without checks for objects or other actors).
+		Should consider diagonal movement if applicable.
+		By default checks just passability of the target cell.
+		"""
+		return self.get_cell_info(pos)[0].passable
 	def is_passable(self, pos):
 		""" Returns True is cell is passable (open for movement).
 		Terrain should be .passable, as well as any appliances at the position.

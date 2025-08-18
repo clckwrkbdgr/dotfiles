@@ -107,12 +107,14 @@ class Scene(scene.Scene):
 		start_room = next(_ for _ in self.rooms.values() if _.contains(tunnel.start, with_border=True))
 		stop_room = next(_ for _ in self.rooms.values() if _.contains(tunnel.stop, with_border=True))
 		return start_room, stop_room
-	def can_move_to(self, pos, with_tunnels=True, from_pos=None):
+	def can_move(self, actor, pos):
 		""" Returns True if pos is available for movement.
 		If with_tunnels is False, prohibits movements in tunnels and their doors.
 		If from_pos is given, considers relative direction and prohibits
 		diagonal movement in/from/to tunnels.
 		"""
+		with_tunnels = (actor == self.get_player())
+		from_pos = actor.pos
 		dest_room = self.room_of(pos)
 		if dest_room:
 			if dest_room.contains(pos):
@@ -354,11 +356,11 @@ class Dungeon(engine.Game):
 		if new_pos is True:
 			return True
 
-		with_tunnels = (monster == self.scene.get_player())
-		can_move = self.scene.can_move_to(new_pos, with_tunnels=with_tunnels, from_pos=monster.pos)
+		can_move = self.scene.can_move(monster, new_pos)
 		if not can_move:
 			self.fire_event(Event.BumpIntoTerrain(monster, new_pos))
 			return
+
 		monster.spend_action_points()
 		monster.pos = new_pos
 		if monster == self.scene.get_player():
