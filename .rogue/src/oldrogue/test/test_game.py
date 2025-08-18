@@ -5,7 +5,7 @@ from .. import game
 from ..game import Item, Wearable
 from ..game import Player
 from ..game import Scene, Dungeon
-from ...engine import events
+from ...engine import events, Events
 from ...engine import items, actors, appliances
 from ...engine.ui import Sprite
 
@@ -673,7 +673,7 @@ class TestDungeon(unittest.TestCase):
 
 		dungeon.move_actor(mj12, Point(-1, 0))
 		self.assertEqual(mj12.pos, Point(7, 3))
-		self.assertEqual(_R(dungeon.events), _R([game.Event.BumpIntoTerrain(mj12, Point(6, 3))]))
+		self.assertEqual(_R(dungeon.events), _R([Events.BumpIntoTerrain(mj12, Point(6, 3))]))
 
 		dungeon.events = []
 		dungeon.move_actor(mj12, Point(+1, 0))

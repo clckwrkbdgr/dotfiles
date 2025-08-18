@@ -30,7 +30,6 @@ class Version(clckwrkbdgr.collections.Enum):
 	JSONPICKLE = auto()
 
 class Event:
-	class BumpIntoTerrain(events.Event): FIELDS = 'who pos'
 	class BumpIntoMonster(events.Event): FIELDS = 'who whom'
 	class AttackMonster(events.Event): FIELDS = 'who whom damage'
 	class MonsterDied(events.Event): FIELDS = 'who'
@@ -356,13 +355,9 @@ class Dungeon(engine.Game):
 		if new_pos is True:
 			return True
 
-		can_move = self.scene.can_move(monster, new_pos)
-		if not can_move:
-			self.fire_event(Event.BumpIntoTerrain(monster, new_pos))
-			return
-
 		monster.spend_action_points()
-		monster.pos = new_pos
+		if new_pos:
+			monster.pos = new_pos
 		if monster == self.scene.get_player():
 			self.visit(monster.pos)
 		return

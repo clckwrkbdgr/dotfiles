@@ -22,6 +22,7 @@ from src.engine.terrain import Terrain
 from src.engine.actors import Monster
 from src.engine import ui
 from src.engine.ui import Sprite
+from src.engine import Events
 
 SAVEFILE_VERSION = 11
 
@@ -408,10 +409,8 @@ class ChatComeLater(events.Event): FIELDS = ''
 class ChatQuestReminder(events.Event): FIELDS = 'color item'
 class NothingToDrop(events.Event): FIELDS = ''
 class DroppedItem(events.Event): FIELDS = 'actor item'
-class Bump(events.Event): FIELDS = 'actor target'
 class HitMonster(events.Event): FIELDS = 'actor target'
 class MonsterDead(events.Event): FIELDS = 'target'
-class StareIntoVoid(events.Event): FIELDS = ''
 
 events.Events.on(NothingToPickUp)(lambda _:'Nothing to pick up here.')
 events.Events.on(NoOneToChat)(lambda _:'No one to chat with.')
@@ -425,14 +424,15 @@ events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."'
 events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(_.color, _.item))
 events.Events.on(NothingToDrop)(lambda _:'Nothing to drop.')
 events.Events.on(DroppedItem)(lambda _:'{0} drop {1}.'.format(_.actor.title(), _.item.name))
-events.Events.on(Bump)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
+events.Events.on(Events.BumpIntoTerrain)(lambda _:None)
+events.Events.on(Events.BumpIntoMonster)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
 events.Events.on(HitMonster)(lambda _:'{0} hit {1}.'.format(_.actor.title(), _.target))
 @events.Events.on(MonsterDead)
 def monster_is_dead(_):
 	if _.target == 'you':
 		return 'You died!!!'
 	return '{0} is dead.'.format(_.target.title())
-events.Events.on(StareIntoVoid)(lambda _:'Will not fall into the void.')
+events.Events.on(Events.StareIntoVoid)(lambda _:'Will not fall into the void.')
 
 Color = namedtuple('Color', 'fg attr dweller monster')
 class Game(engine.Game):
@@ -467,7 +467,7 @@ class Game(engine.Game):
 		return Player(None)
 	def attack(self, actor, other):
 		if not actor.is_hostile_to(other):
-			self.fire_event(Bump(actor.name, other.name))
+			self.fire_event(BumpIntoMonster(actor.name, other.name))
 		else:
 			damage = max(0, actor.get_attack_damage() - other.get_protection())
 			other.affect_health(-damage)
@@ -485,7 +485,6 @@ class Game(engine.Game):
 	def move_actor(self, actor, shift):
 		new_pos = super(Game, self).move_actor(actor, shift)
 		if not new_pos:
-			self.fire_event(StareIntoVoid())
 			return
 		if new_pos is True:
 			return True

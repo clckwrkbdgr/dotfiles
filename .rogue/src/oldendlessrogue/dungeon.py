@@ -17,11 +17,8 @@ class Dungeon(engine.Game):
 		state.update(data)
 	def move_actor(self, monster, shift):
 		new_pos = super(Dungeon, self).move_actor(monster, shift)
-
-		if not self.scene.can_move(monster, new_pos):
-			return
-
-		monster.pos = new_pos
+		if new_pos:
+			monster.pos = new_pos
 		monster.spend_action_points()
 		if monster == self.scene.get_player():
 			self.scene.recalibrate(monster.pos, Size(monster.vision, monster.vision))

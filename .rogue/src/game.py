@@ -41,9 +41,6 @@ class MoveEvent(Event):
 class DescendEvent(ImportantEvent):
 	""" Descended to another level. """
 	FIELDS = 'actor'
-class BumpEvent(Event):
-	""" Bumps into impenetrable obstacle. """
-	FIELDS = 'actor dest'
 class GrabItemEvent(ImportantEvent):
 	""" Grabs something from the floor. """
 	FIELDS = 'actor item'
@@ -342,14 +339,6 @@ class Game(engine.Game):
 			return False
 		if new_pos is True:
 			return True
-
-		if self.god.noclip:
-			passable = True
-		else:
-			passable = self.scene.can_move(actor, new_pos)
-		if not passable:
-			self.fire_event(BumpEvent(actor, new_pos))
-			return False
 
 		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
 		self.fire_event(MoveEvent(actor, new_pos))

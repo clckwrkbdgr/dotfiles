@@ -12,6 +12,7 @@ import clckwrkbdgr.text
 from clckwrkbdgr.tui import Key, Keymapping
 from .engine.events import Events
 from .engine import ui
+from . import engine
 from .engine.ui import Sprite
 
 DIRECTION = {
@@ -76,7 +77,7 @@ class MainGame(ui.MainGame):
 	@Events.on(game.DescendEvent)
 	def on_descending(self, event):
 		return '{0} V...'.format(event.actor.name)
-	@Events.on(game.BumpEvent)
+	@Events.on(engine.Events.BumpIntoTerrain)
 	def on_bumping(self, event):
 		if event.actor != self.game.scene.get_player():
 			return '{0} bumps.'.format(event.actor.name)

@@ -14,6 +14,14 @@ class GodMode:
 		self.vision = False
 		self.noclip = False
 
+class Events:
+	class StareIntoVoid(events.Event):
+		""" No movement past the edge of the world. """
+		FIELDS = ''
+	class BumpIntoTerrain(events.Event):
+		""" Bumps into impenetrable obstacle. """
+		FIELDS = 'actor target'
+
 class Game(object):
 	""" Main object for the game mechanics.
 	"""
@@ -222,6 +230,7 @@ class Game(object):
 		actor_pos = self.scene.get_global_pos(actor)
 		new_pos = actor_pos + shift
 		if not self.scene.valid(new_pos):
+			self.fire_event(Events.StareIntoVoid())
 			return None
 
 		other_actor = next((other for other in self.scene.iter_actors_at(new_pos, with_player=True) if other != actor), None)
@@ -229,6 +238,14 @@ class Game(object):
 			Log.debug('Actor at dest pos {0}: '.format(new_pos, other_actor))
 			self.attack(actor, other_actor)
 			return True
+
+		if self.god.noclip:
+			passable = True
+		else:
+			passable = self.scene.can_move(actor, new_pos)
+		if not passable:
+			self.fire_event(Events.BumpIntoTerrain(actor, new_pos))
+			return None
 
 		return new_pos
 

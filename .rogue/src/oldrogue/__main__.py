@@ -24,7 +24,7 @@ trace = logging.getLogger('rogue')
 from . import game
 from .game import Version, Item, Wearable, Player, Room, Tunnel, Scene, GodMode, Dungeon, Event
 from . import pcg
-from ..engine import events, appliances, ui
+from ..engine import events, appliances, ui, Events
 
 class MakeEntity:
 	""" Creates builders for bare-properties-based classes to create subclass in one line. """
@@ -256,7 +256,7 @@ events.Event.on(Wearing)(lambda event:"Wearing {item}.".format(item=event.item.n
 
 events.Event.on(Event.AttackMonster)(lambda event: "{Who} hit {whom} for {damage} hp.".format(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
 events.Event.on(Event.MonsterDied)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
-@events.Event.on(Event.BumpIntoTerrain)
+@events.Event.on(Events.BumpIntoTerrain)
 def bumps_into_terrain(event):
 	if event.who != dungeon.get_player():
 		return "{Who} bumps into wall.".format(Who=event.who.name.title())
