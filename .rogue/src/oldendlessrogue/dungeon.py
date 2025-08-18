@@ -15,13 +15,6 @@ class Dungeon(engine.Game):
 		data.update(self.__dict__)
 		del data['rng']
 		state.update(data)
-	def move_actor(self, monster, shift):
-		new_pos = super(Dungeon, self).move_actor(monster, shift)
-		if new_pos:
-			monster.pos = new_pos
-		monster.spend_action_points()
-		if monster == self.scene.get_player():
-			self.scene.recalibrate(monster.pos, Size(monster.vision, monster.vision))
 
 class Scene(scene.Scene):
 	BLOCK_SIZE = Size(32, 32)

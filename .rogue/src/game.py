@@ -35,9 +35,6 @@ class HealthEvent(Event):
 class DeathEvent(ImportantEvent):
 	""" Someone's is no more. """
 	FIELDS = 'target'
-class MoveEvent(Event):
-	""" Location is changed. """
-	FIELDS = 'actor dest'
 class DescendEvent(ImportantEvent):
 	""" Descended to another level. """
 	FIELDS = 'actor'
@@ -328,23 +325,6 @@ class Game(engine.Game):
 			self.vision.visited = Matrix(self.scene.strata.size, False)
 		for obj in self.vision.update(self.scene.get_player(), self.scene):
 			self.fire_event(DiscoverEvent(obj))
-	def move_actor(self, actor, direction):
-		""" Moves monster into given direction (if possible).
-		If there is a monster, performs attack().
-		May produce all sorts of other events.
-		Returns True, is action succeeds, otherwise False.
-		"""
-		new_pos = super(Game, self).move_actor(actor, direction)
-		if not new_pos:
-			return False
-		if new_pos is True:
-			return True
-
-		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
-		self.fire_event(MoveEvent(actor, new_pos))
-		actor.pos = new_pos
-		self.update_vision()
-		return True
 	def affect_health(self, target, diff):
 		""" Changes health of given target.
 		Removes monsters from the main list, if health is zero.

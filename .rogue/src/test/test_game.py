@@ -9,6 +9,7 @@ from clckwrkbdgr.math import Point, Size, Rect
 from clckwrkbdgr.pcg import RNG
 from ..pcg import builders
 from ..engine import items
+from .. import engine
 from .. import pcg
 from .. import game
 from .. import ui
@@ -41,13 +42,13 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'MoveEvent(actor=player, dest=[9, 5])',
+			'Move(actor=player, dest=[9, 5])',
 			]])
 		dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN)
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'MoveEvent(actor=player, dest=[9, 6])',
+			'Move(actor=player, dest=[9, 6])',
 			]])
 		dungeon.descend()
 		self.assertEqual(self._events(), [[
@@ -59,8 +60,8 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.in_automovement()) # walking...
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # NONE AUTOEXPLORE
-			'MoveEvent(actor=player, dest=[10, 5])',
-			'MoveEvent(actor=player, dest=[11, 4])',
+			'Move(actor=player, dest=[10, 5])',
+			'Move(actor=player, dest=[11, 4])',
 			'DiscoverEvent(obj=stairs)',
 			]])
 		self.assertFalse(dungeon.perform_automovement())
@@ -88,15 +89,15 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.stop_automovement()
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
-			'MoveEvent(actor=player, dest=[11, 3])',
-			'MoveEvent(actor=player, dest=[10, 2])',
-			'MoveEvent(actor=player, dest=[11, 3])',
-			'MoveEvent(actor=player, dest=[12, 4])',
-			'MoveEvent(actor=player, dest=[13, 3])',
-			'MoveEvent(actor=player, dest=[12, 4])',
-			'MoveEvent(actor=player, dest=[11, 4])',
-			'MoveEvent(actor=player, dest=[10, 4])',
-			'MoveEvent(actor=player, dest=[9, 4])',
+			'Move(actor=player, dest=[11, 3])',
+			'Move(actor=player, dest=[10, 2])',
+			'Move(actor=player, dest=[11, 3])',
+			'Move(actor=player, dest=[12, 4])',
+			'Move(actor=player, dest=[13, 3])',
+			'Move(actor=player, dest=[12, 4])',
+			'Move(actor=player, dest=[11, 4])',
+			'Move(actor=player, dest=[10, 4])',
+			'Move(actor=player, dest=[9, 4])',
 			]])
 		dungeon.automove()
 		self.assertTrue(dungeon.perform_automovement())
@@ -109,10 +110,10 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertTrue(dungeon.in_automovement())
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # GOD_TOGGLE_* EXIT
-			'MoveEvent(actor=player, dest=[8, 3])',
-			'MoveEvent(actor=player, dest=[7, 2])',
-			'MoveEvent(actor=player, dest=[6, 2])',
-			'MoveEvent(actor=player, dest=[5, 2])',
+			'Move(actor=player, dest=[8, 3])',
+			'Move(actor=player, dest=[7, 2])',
+			'Move(actor=player, dest=[6, 2])',
+			'Move(actor=player, dest=[5, 2])',
 			]])
 		dungeon.toggle_god_vision()
 		self.assertFalse(dungeon.perform_automovement())
@@ -136,7 +137,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'MoveEvent(actor=player, dest=[9, 5])',
+			'Move(actor=player, dest=[9, 5])',
 			'AttackEvent(actor=monster, target=player)',
 			'HealthEvent(target=player, diff=-1)',
 			]])
@@ -174,7 +175,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'MoveEvent(actor=player, dest=[9, 5])',
+			'Move(actor=player, dest=[9, 5])',
 			'AttackEvent(actor=monster, target=player)'.format(9),
 			'HealthEvent(target=player, diff=-1)'.format(9),
 			]])
@@ -215,7 +216,7 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'MoveEvent(actor=player, dest=[10, 6])',
+			'Move(actor=player, dest=[10, 6])',
 			]])
 		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
 		dungeon.end_turn()
@@ -776,7 +777,7 @@ class TestFight(AbstractTestDungeon):
 		dungeon.scene.monsters[-1].act(dungeon)
 		self.assertEqual(dungeon.scene.monsters[-1].pos, Point(10, 6))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), game.MoveEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Move)
 		self.assertEqual(dungeon.events[0].actor, monster)
 		self.assertEqual(dungeon.events[0].dest, Point(10, 6))
 		list(dungeon.process_events(raw=True))

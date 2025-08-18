@@ -1,5 +1,6 @@
 import logging
 Log = logging.getLogger('rogue')
+from clckwrkbdgr.math import Size
 from clckwrkbdgr.pcg import RNG
 from . import events
 from . import scene
@@ -21,6 +22,9 @@ class Events:
 	class BumpIntoTerrain(events.Event):
 		""" Bumps into impenetrable obstacle. """
 		FIELDS = 'actor target'
+	class Move(events.Event):
+		""" Location is changed. """
+		FIELDS = 'actor dest'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -224,30 +228,44 @@ class Game(object):
 		"""
 		raise NotImplementedError()
 	def move_actor(self, actor, shift):
-		""" Should move actor on scene by specified shift.
+		""" Moves monster into given direction (if possible).
+		If there is a monster, performs .attack().
+		If there is an obstacle (terrain), produces BumpIntoTerrain event.
+		May produce all sorts of other events (including from attack()).
+		Returns True, is movement succeeds, otherwise False.
 		"""
 		Log.debug('Shift: {0}'.format(shift))
 		actor_pos = self.scene.get_global_pos(actor)
 		new_pos = actor_pos + shift
 		if not self.scene.valid(new_pos):
 			self.fire_event(Events.StareIntoVoid())
-			return None
+			return False
 
 		other_actor = next((other for other in self.scene.iter_actors_at(new_pos, with_player=True) if other != actor), None)
 		if other_actor:
 			Log.debug('Actor at dest pos {0}: '.format(new_pos, other_actor))
 			self.attack(actor, other_actor)
-			return True
+			return False
 
 		if self.god.noclip:
 			passable = True
 		else:
 			passable = self.scene.can_move(actor, new_pos)
 		if not passable:
+			actor.spend_action_points()
 			self.fire_event(Events.BumpIntoTerrain(actor, new_pos))
-			return None
+			return False
 
-		return new_pos
+		Log.debug('Shift is valid, updating pos: {0}'.format(actor.pos))
+
+		self.scene.transfer_actor(actor, new_pos)
+		self.fire_event(Events.Move(actor, new_pos))
+		actor.spend_action_points()
+
+		if actor == self.scene.get_player():
+			self.scene.recalibrate(new_pos, Size(actor.vision, actor.vision))
+			self.update_vision()
+		return True
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

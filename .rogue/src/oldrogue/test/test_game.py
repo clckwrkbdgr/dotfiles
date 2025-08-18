@@ -673,16 +673,17 @@ class TestDungeon(unittest.TestCase):
 
 		dungeon.move_actor(mj12, Point(-1, 0))
 		self.assertEqual(mj12.pos, Point(7, 3))
-		self.assertEqual(_R(dungeon.events), _R([Events.BumpIntoTerrain(mj12, Point(6, 3))]))
+		self.assertEqual(_R(dungeon.events), _R([Events.Move(mj12, Point(7, 3)), Events.BumpIntoTerrain(mj12, Point(6, 3))]))
 
 		dungeon.events = []
 		dungeon.move_actor(mj12, Point(+1, 0))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(dungeon.events, [])
+		self.assertEqual(_R(dungeon.events), _R([Events.Move(mj12, Point(8, 3))]))
 
 		dungeon.move_actor(mj12, Point(0, -1))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(dungeon.events), _R([game.Event.BumpIntoMonster(mj12, vacuum)]))
+
+		self.assertEqual(_R(dungeon.events), _R([Events.Move(mj12, Point(8, 3)), game.Event.BumpIntoMonster(mj12, vacuum)]))
 
 		dungeon.events = []
 		dungeon.move_actor(mj12, Point(+1, 0))
@@ -724,7 +725,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move_actor(dungeon.scene.get_player(), Point(+1, 0))
 		self.assertTrue(dungeon.scene.get_player().has_acted())
 		dungeon.process_others()
-		self.assertEqual(dungeon.events, ['Whroooom'])
+		self.assertEqual(list(map(str, dungeon.events)), ['Move(actor=player, dest=[10, 3])', 'Whroooom'])
 		self.assertFalse(dungeon.scene.get_player().has_acted())
 	def should_ascend(self):
 		dungeon = self.UNATCO()

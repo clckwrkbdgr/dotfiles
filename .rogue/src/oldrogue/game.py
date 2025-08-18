@@ -341,26 +341,6 @@ class Dungeon(engine.Game):
 			for item in self.rip(other):
 				self.fire_event(Event.MonsterDroppedItem(other, item))
 		monster.spend_action_points()
-	def move_actor(self, monster, shift):
-		""" Tries to move monster to a new position.
-		May attack hostile other monster there.
-		Returns happened events as ordered list of objects:
-		- Point: impassable terrain.
-		- Monster: other monster is there.
-		- int: other monster was attacked and received this damage.
-		- Item: other monster dropped an item.
-		Empty list means the monster is successfully moved.
-		"""
-		new_pos = super(Dungeon, self).move_actor(monster, shift)
-		if new_pos is True:
-			return True
-
-		monster.spend_action_points()
-		if new_pos:
-			monster.pos = new_pos
-		if monster == self.scene.get_player():
-			self.visit(monster.pos)
-		return
 	def is_visible(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) is visible for player.
 		Additional data depends on type of primary object.

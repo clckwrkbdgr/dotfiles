@@ -410,6 +410,7 @@ class ChatQuestReminder(events.Event): FIELDS = 'color item'
 class NothingToDrop(events.Event): FIELDS = ''
 class DroppedItem(events.Event): FIELDS = 'actor item'
 class HitMonster(events.Event): FIELDS = 'actor target'
+class BumpIntoMonster(events.Event): FIELDS = 'actor target'
 class MonsterDead(events.Event): FIELDS = 'target'
 
 events.Events.on(NothingToPickUp)(lambda _:'Nothing to pick up here.')
@@ -425,7 +426,7 @@ events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(
 events.Events.on(NothingToDrop)(lambda _:'Nothing to drop.')
 events.Events.on(DroppedItem)(lambda _:'{0} drop {1}.'.format(_.actor.title(), _.item.name))
 events.Events.on(Events.BumpIntoTerrain)(lambda _:None)
-events.Events.on(Events.BumpIntoMonster)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
+events.Events.on(BumpIntoMonster)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
 events.Events.on(HitMonster)(lambda _:'{0} hit {1}.'.format(_.actor.title(), _.target))
 @events.Events.on(MonsterDead)
 def monster_is_dead(_):
@@ -482,32 +483,6 @@ class Game(engine.Game):
 					dest_field_data.items.append(item)
 					self.fire_event(DroppedItem(other.name, item.item))
 		actor.spend_action_points()
-	def move_actor(self, actor, shift):
-		new_pos = super(Game, self).move_actor(actor, shift)
-		if not new_pos:
-			return
-		if new_pos is True:
-			return True
-
-		if not self.scene.can_move(actor, new_pos):
-			actor.spend_action_points()
-			return
-
-		game = self
-		dest_pos = NestedGrid.Coord.from_global(new_pos, game.scene.world)
-		if actor == game.scene.get_player():
-			actor_coord = game.scene.get_player_coord()
-		else:
-			actor_coord = actor.coord
-		current_field_data = game.scene.world.get_data(actor_coord)[-1]
-		dest_field_data = game.scene.world.get_data(dest_pos)[-1]
-		if current_field_data != dest_field_data:
-			current_field_data.monsters.remove(actor)
-			dest_field_data.monsters.append(actor)
-		actor.pos = dest_pos.values[-1]
-		if actor == game.scene.get_player():
-			game.scene.recalibrate(self.scene.get_player_coord(), Size(actor.vision, actor.vision))
-		actor.spend_action_points()
 
 class Scene(scene.Scene):
 	def __init__(self):
@@ -539,13 +514,13 @@ class Scene(scene.Scene):
 	def load(self, stream):
 		super(Scene, self).load(stream)
 		self.world.load(stream)
-	def recalibrate(self, coord, margin):
-		pos = coord.get_global(self.world)
+	def recalibrate(self, pos, margin):
 		within_zone = Point(
 				pos.x % (self.world.sizes[-2].width * self.world.sizes[-1].width),
 				pos.y % (self.world.sizes[-2].height * self.world.sizes[-1].height),
 				)
 		close_to_zone_boundaries = False
+		coord = NestedGrid.Coord.from_global(pos, self.world)
 		in_world_pos = coord.values[0]
 		expansion = Point(0, 0)
 		if within_zone.x - margin.width < 0:
@@ -684,6 +659,18 @@ class Scene(scene.Scene):
 		dest_pos = NestedGrid.Coord.from_global(pos, self.world)
 		dest_cell = self.world.cell(dest_pos)
 		return dest_cell.passable
+	def transfer_actor(self, actor, pos):
+		dest_pos = NestedGrid.Coord.from_global(pos, self.world)
+		if actor == self.get_player():
+			actor_coord = self.get_player_coord()
+		else:
+			actor_coord = actor.coord
+		current_field_data = self.world.get_data(actor_coord)[-1]
+		dest_field_data = self.world.get_data(dest_pos)[-1]
+		if current_field_data != dest_field_data:
+			current_field_data.monsters.remove(actor)
+			dest_field_data.monsters.append(actor)
+		actor.pos = dest_pos.values[-1]
 	def iter_items_at(self, pos):
 		zone_items = self.world.get_data(pos)[-1].items
 		for item_pos, item in zone_items:

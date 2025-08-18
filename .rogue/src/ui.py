@@ -70,7 +70,7 @@ class MainGame(ui.MainGame):
 	@Events.on(game.DeathEvent)
 	def on_death(self, event):
 		return '{0} dies.'.format(event.target.name)
-	@Events.on(game.MoveEvent)
+	@Events.on(engine.Events.Move)
 	def on_movement(self, event):
 		if event.actor != self.game.scene.get_player():
 			return '{0}...'.format(event.actor.name)

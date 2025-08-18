@@ -122,6 +122,13 @@ class Scene(object):
 		By default checks just passability of the target cell.
 		"""
 		return self.get_cell_info(pos)[0].passable
+	def transfer_actor(self, actor, pos):
+		""" Should transfer actor to a new location.
+		Does not perform any check.
+		Should be aware of internal terrain structure (if applicable).
+		By default just changes Actor's .pos property.
+		"""
+		actor.pos = pos
 	def is_passable(self, pos):
 		""" Returns True is cell is passable (open for movement).
 		Terrain should be .passable, as well as any appliances at the position.
