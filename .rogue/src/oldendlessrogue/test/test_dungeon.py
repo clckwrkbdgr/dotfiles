@@ -1,7 +1,7 @@
 from clckwrkbdgr.math import Point, Size, Matrix, Rect
 from clckwrkbdgr import unittest
 from clckwrkbdgr.collections import dotdict
-from ..dungeon import Dungeon, Scene
+from ..dungeon import Scene
 from ..builders import EndlessFloor, EndlessWall
 from ...engine import mock
 
@@ -12,17 +12,12 @@ class MockScene(Scene):
 		super(MockScene, self).__init__()
 		self.builder = builder
 
-class MockDungeon(Dungeon):
-	def make_player(self):
-		return mock.Rogue(None)
-	def make_scene(self, scene_id):
+def make_scene(scene_id):
+	if True:
 		if scene_id == 1:
 			return MockScene(MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]]))
-		if scene_id == 2:
-			return MockScene(MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0)]]))
 		if scene_id == 3:
 			return MockScene(MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]] + [[]]*4 + [[(2, 2)]]))
-		return MockScene(MockBuilder())
 
 class MockBuilder(object):
 	def __init__(self, rogue_pos=None, walls=None):
@@ -41,33 +36,21 @@ class MockBuilder(object):
 class TestDungeon(unittest.TestCase):
 	VIEW_RECT = Rect((-4, -4), (9, 9))
 	def should_generate_random_dungeon(self):
-		dungeon = MockDungeon()
-		scene = dungeon.make_scene(1)
+		scene = make_scene(1)
 		scene.generate(1)
 		self.assertEqual(scene.terrain.cell((0, 0)).sprite.sprite, '.')
 		self.assertEqual(scene.terrain.cell((1, 0)).sprite.sprite, '#')
 		self.assertEqual(scene.terrain.cell((0, 1)).sprite.sprite, '#')
 		self.assertEqual(scene.terrain.cell((1, 1)).sprite.sprite, '.')
 		self.assertEqual(scene._player_pos, (1, 1))
-	def should_move_player(self):
-		dungeon = MockDungeon()
-		dungeon.generate(1)
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
-		dungeon.move_actor(dungeon.scene.get_player(), Point(0, 1))
-		dungeon.process_others()
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 2))
-	def should_not_move_player_into_wall(self):
-		dungeon = MockDungeon()
-		dungeon.generate(2)
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
-		dungeon.move_actor(dungeon.scene.get_player(), Point(0, -1))
-		dungeon.process_others()
-		self.assertEqual(dungeon.scene.get_player().pos, (1, 1))
+
+		player = mock.Rogue(None)
+		scene.enter_actor(player, None)
+		self.assertEqual(list(scene.iter_active_monsters()), [player])
 	def should_recalibrate_plane_after_player_moved(self):
-		dungeon = MockDungeon()
-		scene = dungeon.make_scene(3)
+		scene = make_scene(3)
 		scene.generate(3)
-		scene.monsters.append(mock.Rogue(scene._player_pos))
+		scene.enter_actor(mock.Rogue(None), None)
 
 		self.assertEqual(scene.get_player().pos, (1, 1))
 		self.assertEqual(scene.terrain.shift, Point(-3, -3))
@@ -112,24 +95,3 @@ class TestDungeon(unittest.TestCase):
 		_....@...
 		_........
 		""").replace('_', ' '))
-
-class TestSerialization(unittest.TestCase):
-	def should_serialize_deserialize_dungeon(self):
-		dungeon = MockDungeon()
-		dungeon.generate(1)
-		dungeon.playing_time = 666
-
-		import pickle
-		from clckwrkbdgr.collections import dotdict
-		data = dotdict()
-		dungeon.save(data)
-		other_data = pickle.loads(pickle.dumps(data))
-		other = MockDungeon()
-		other.load(other_data)
-		self.maxDiff = None
-		self.assertEqual(
-				'\n'.join(dungeon.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite.sprite) for c in dungeon.scene.terrain.blocks),
-				'\n'.join(other.scene.terrain.blocks.cell(c).tostring(lambda x:x.sprite.sprite) for c in other.scene.terrain.blocks),
-				)
-		self.assertEqual(dungeon.scene.get_player().pos, other.scene.get_player().pos)
-		self.assertEqual(dungeon.playing_time, other.playing_time)

@@ -5,17 +5,6 @@ from .. import engine
 from ..engine import actors, scene
 from ..engine import ui, auto
 
-class Dungeon(engine.Game):
-	def load(self, state):
-		self.__dict__.update(state)
-		builder = self.make_scene(None).builder
-		self.scene.terrain.builder = builder.build_block
-	def save(self, state): # pragma: no cover -- TODO
-		data = {}
-		data.update(self.__dict__)
-		del data['rng']
-		state.update(data)
-
 class Scene(scene.Scene):
 	BLOCK_SIZE = Size(32, 32)
 	BUILDERS = None
