@@ -10,6 +10,20 @@ class TestEvent(unittest.TestCase):
 	def should_create_event_without_fields(self):
 		event = NothingToDrop()
 		self.assertEqual(repr(event), 'NothingToDrop()')
+	def should_compare_events_without_fields(self):
+		event = NothingToDrop()
+		event_same = NothingToDrop()
+		event_diff = DropItem('me', 'floor', what='nothing')
+		self.assertTrue(event == event_same)
+		self.assertFalse(event == event_diff)
+	def should_compare_events_with_fields(self):
+		event = DropItem('me', 'floor', what='something')
+		event_same = DropItem('me', 'floor', what='something')
+		event_diff = DropItem('me', 'floor', what='nothing')
+		event_other = NothingToDrop()
+		self.assertTrue(event == event_same)
+		self.assertFalse(event == event_diff)
+		self.assertFalse(event == event_other)
 
 class TestEvents(unittest.TestCase):
 	def should_handle_event_with_function_callback(self):

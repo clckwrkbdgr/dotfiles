@@ -30,6 +30,63 @@ class TestActionLoop(unittest.TestCase):
 			'butterfly flops its wings',
 			])
 
+class TestMovement(unittest.TestCase):
+	def should_move_actor(self):
+		game = NanoDungeon()
+		game.generate(None)
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
+		self.assertTrue(game.scene.get_player().has_acted())
+		self.assertEqual(game.events, [_base.Events.Move(game.scene.get_player(), Point(2, 6))])
+		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
+				##########
+				#........#
+				#?.&.....#
+				#........#
+				#........#
+				#<.......#
+				##@~>....#
+				#........#
+				#..b.....#
+				##########
+				"""))
+	def should_bump_into_terrain(self):
+		game = NanoDungeon()
+		game.generate(None)
+		self.assertFalse(game.move_actor(game.scene.get_player(), Point(0, 1)))
+		self.assertTrue(game.scene.get_player().has_acted())
+		self.assertEqual(game.events, [_base.Events.BumpIntoTerrain(game.scene.get_player(), Point(1, 6))])
+		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
+				##########
+				#........#
+				#?.&.....#
+				#........#
+				#........#
+				#@.......#
+				##.~>....#
+				#........#
+				#..b.....#
+				##########
+				"""))
+	def should_attack_other_actor(self):
+		game = NanoDungeon()
+		game.generate(None)
+		game.scene.transfer_actor(game.scene.get_player(), Point(3, 7))
+		self.assertFalse(game.move_actor(game.scene.get_player(), Point(0, 1)))
+		self.assertTrue(game.scene.get_player().has_acted())
+		self.assertEqual(game.events, [NoFighting(game.scene.get_player(), next(_ for _ in game.scene.monsters if _.name == 'butterfly'))])
+		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
+				##########
+				#........#
+				#?.&.....#
+				#........#
+				#........#
+				#<.......#
+				##.~>....#
+				#..@.....#
+				#..b.....#
+				##########
+				"""))
+
 class TestScenes(unittest.TestCase):
 	def should_travel_to_other_scene(self):
 		game = NanoDungeon()

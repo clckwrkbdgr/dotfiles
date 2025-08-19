@@ -177,6 +177,8 @@ class Goblin(actors.EquippedMonster):
 
 ### Events. ####################################################################
 
+class NoFighting(events.Event):
+	FIELDS = 'actor other'
 class NothingToDrop(events.Event):
 	FIELDS = ''
 class DropItem(events.Event):
@@ -394,8 +396,8 @@ class WeightedSquat(Squat):
 ### Game. ######################################################################
 
 class NanoDungeon(_base.Game):
-	def __init__(self, *args, **kwargs):
-		super(NanoDungeon, self).__init__(*args, **kwargs)
+	def __init__(self, rng_seed=0):
+		super(NanoDungeon, self).__init__(0)
 		self.automovement = False
 	def in_automovement(self):
 		return self.automovement
@@ -405,3 +407,6 @@ class NanoDungeon(_base.Game):
 		return Dungeon(self.rng)
 	def is_visible(self, pos):
 		return distance(pos, self.scene.get_player().pos) < 3
+	def attack(self, actor, other):
+		self.fire_event(NoFighting(actor, other))
+		actor.spend_action_points()
