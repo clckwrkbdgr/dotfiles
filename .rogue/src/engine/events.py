@@ -18,6 +18,14 @@ class Event(object):
 	def __repr__(self):
 		fields = self.FIELDS.split() if isinstance(self.FIELDS, str) else self.FIELDS
 		return '{0}({1})'.format(self.__class__.__name__, ', '.join(('{0}={1}'.format(name, getattr(self, name)) for name in fields)))
+	def __eq__(self, other):
+		if type(self) != type(other):
+			return False
+		fields = self.FIELDS.split() if isinstance(self.FIELDS, str) else self.FIELDS
+		for field in fields:
+			if getattr(self, field) != getattr(other, field):
+				return False
+		return True
 
 class ImportantEvent(Event):
 	""" Base class for events that may not be ignored.

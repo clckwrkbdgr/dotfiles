@@ -30,9 +30,15 @@ class Game(object):
 	""" Main object for the game mechanics.
 	"""
 	def __init__(self, rng=None):
+		""" Creates and initializes empty Game.
+		Rng is either RNG object, or integer seed.
+		If rng is not specified, current time() is used as seed.
+		"""
 		if rng is None:
 			import time
-			rng = RNG(int(time.time()))
+			rng = int(time.time())
+		if isinstance(rng, int):
+			rng = RNG(rng)
 		self.rng = rng
 		self.playing_time = 0
 		self.god = GodMode()

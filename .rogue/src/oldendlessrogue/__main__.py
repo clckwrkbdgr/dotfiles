@@ -6,6 +6,7 @@ from clckwrkbdgr import logging
 from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
 from . import dungeon, builders
+from .. import engine
 from ..engine import ui, actors
 
 Keys = clckwrkbdgr.tui.Keymapping()
@@ -26,7 +27,7 @@ class Player(actors.Monster):
 class Scene(dungeon.Scene):
 	BUILDERS = builders.Builders
 
-class Dungeon(dungeon.Dungeon):
+class Dungeon(engine.Game):
 	def make_scene(self, scene_id):
 		return Scene()
 	def make_player(self):
