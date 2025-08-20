@@ -88,24 +88,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		""" Returns topmost Sprite object to display at the specified world pos.
 		Additional cell info may be passed (see Scene.get_cell_info()).
 		"""
-		if cell_info is None:
-			cell_info = self.game.scene.get_cell_info(pos)
-		cell, objects, items, monsters = cell_info
-		if self.game.is_visible(pos):
-			if monsters:
-				return monsters[-1].sprite
-			elif items:
-				return items[-1].sprite
-			elif objects:
-				return objects[-1].sprite
-			elif cell:
-				return cell.sprite
-		if self.game.is_visited(pos):
-			if objects:
-				return objects[-1].sprite
-			elif cell and cell.remembered:
-				return cell.remembered
-		return None
+		return self.game.get_sprite(pos, cell_info=cell_info)
 	
 	# Displaying.
 

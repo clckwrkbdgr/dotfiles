@@ -34,11 +34,7 @@ class TestVision(unittest.TestCase):
 	def should_see_places(self):
 		game = NanoDungeon()
 		game.generate(None)
-		visibility = Matrix(game.scene.cells.size, ' ')
-		for pos in game.scene.cells:
-			if game.is_visible(pos):
-				visibility.set_cell(pos, game.scene.str_cell(pos))
-		self.assertEqual(visibility.tostring(), unittest.dedent("""\
+		self.assertEqual(game.tostring(Rect((0, 0), game.scene.cells.size), visited=False), unittest.dedent("""\
 				__________
 				__________
 				__________
@@ -50,14 +46,10 @@ class TestVision(unittest.TestCase):
 				__________
 				__________
 				""").replace('_', ' '))
-		visibility.clear(' ')
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
-		for pos in game.scene.cells:
-			if game.is_visible(pos):
-				visibility.set_cell(pos, game.scene.str_cell(pos))
-		self.assertEqual(visibility.tostring(), unittest.dedent("""\
+		self.assertEqual(game.tostring(Rect((0, 0), game.scene.cells.size), visited=False), unittest.dedent("""\
 				__________
 				__________
 				__________
@@ -72,11 +64,7 @@ class TestVision(unittest.TestCase):
 	def should_remember_places(self):
 		game = NanoDungeon()
 		game.generate(None)
-		memory = Matrix(game.scene.cells.size, ' ')
-		for pos in game.scene.cells:
-			if game.is_visited(pos):
-				memory.set_cell(pos, game.scene.str_cell(pos))
-		self.assertEqual(memory.tostring(), unittest.dedent("""\
+		self.assertEqual(game.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
 				__________
 				__________
 				__________
@@ -88,23 +76,19 @@ class TestVision(unittest.TestCase):
 				__________
 				__________
 				""").replace('_', ' '))
-		memory.clear(' ')
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
-		for pos in game.scene.cells:
-			if game.is_visited(pos):
-				memory.set_cell(pos, game.scene.str_cell(pos))
-		self.assertEqual(memory.tostring(), unittest.dedent("""\
+		self.assertEqual(game.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
 				__________
 				__________
 				__________
-				#...______
-				#...._____
-				#<....____
+				#   ______
+				#    _____
+				#<    ____
 				##.~>..___
-				#......___
-				#..b@..___
+				# .....___
+				# .b@..___
 				_######___
 				""").replace('_', ' '))
 

@@ -1,6 +1,6 @@
 import logging
 Log = logging.getLogger('rogue')
-from clckwrkbdgr.math import Size
+from clckwrkbdgr.math import Size, Matrix
 from clckwrkbdgr.pcg import RNG
 from . import events
 from . import scene
@@ -211,6 +211,30 @@ class Game(object):
 			return
 		for obj in self.vision.visit(self.scene.get_player()):
 			self.fire_event(Events.Discover(obj))
+	def tostring(self, view_rect, visible=True, visited=True):
+		result = Matrix(view_rect.size, ' ')
+		for pos, cell_info in self.scene.iter_cells(view_rect):
+			result.set_cell(pos - view_rect.topleft, self.str_cell(pos, cell_info, visible=visible, visited=visited))
+		return result.tostring()
+	def str_cell(self, pos, cell_info=None, visible=True, visited=True):
+		result = self.get_sprite(pos, cell_info=cell_info, visible=visible, visited=visited)
+		return result.sprite if result else ' '
+	def get_sprite(self, pos, cell_info=None, visible=True, visited=True):
+		""" Returns topmost Sprite at the specified world pos.
+		Additional cell info may be passed (see Scene.get_cell_info()).
+		Considers Vision (visible/remembered places).
+		"""
+		if cell_info is None:
+			cell_info = self.scene.get_cell_info(pos)
+		if visible and self.is_visible(pos):
+			return self.scene.get_sprite(pos, cell_info)
+		if visited and self.is_visited(pos):
+			cell, objects, items, monsters = cell_info
+			if objects:
+				return objects[-1].sprite
+			elif cell and cell.remembered:
+				return cell.remembered
+		return None
 
 	# Actions.
 
