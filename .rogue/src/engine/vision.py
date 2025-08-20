@@ -6,6 +6,10 @@ class Vision(object):
 		""" Creates vision field and memory for given scene.
 		"""
 		self.scene = scene
+	def is_visible(self, pos): # pragma: no cover
+		""" Should return True is position on map is visible.
+		"""
+		raise NotImplementedError()
 	def is_explored(self, pos): # pragma: no cover
 		""" Should return True if given position is visible or
 		was visited and/or seen.
@@ -22,5 +26,6 @@ class OmniVision(Vision):
 	""" Most primitive Vision: everything is visible
 	and explored from the start.
 	"""
+	def is_visible(self, pos): return True
 	def is_explored(self, pos): return True
 	def visit(self, actor): return []

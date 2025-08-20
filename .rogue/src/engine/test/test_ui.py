@@ -54,13 +54,19 @@ class MainGameTestCase(unittest.TestCase):
 class TestMainGameDisplay(MainGameTestCase):
 	def should_get_visible_sprites(self):
 		mode, mock_ui = self._init()
-		self.assertEqual(mode.get_sprite(Point(4, 9)), ui.Sprite('#', None))
+		mode.game.update_vision()
+		self.assertEqual(mode.get_sprite(Point(0, 5)), ui.Sprite('#', None))
 		self.assertEqual(mode.get_sprite(Point(1, 5)), ui.Sprite('@', None))
 		mode.game.scene.get_player().pos = Point(1, 1)
+		mode.game.update_vision()
 		self.assertEqual(mode.get_sprite(Point(3, 2)), ui.Sprite('&', None))
 		self.assertEqual(mode.get_sprite(Point(1, 2)), ui.Sprite('?', None))
 	def should_get_remembered_sprites(self):
 		mode, mock_ui = self._init()
+		mode.game.scene.get_player().pos = Point(1, 1)
+		mode.game.update_vision()
+		mode.game.scene.get_player().pos = Point(7, 7)
+		mode.game.update_vision()
 		self.assertEqual(mode.get_sprite(Point(3, 2)), ui.Sprite('&', None))
 		self.assertEqual(mode.get_sprite(Point(1, 2)), None) # ?
 		self.assertEqual(mode.get_sprite(Point(0, 0)), ui.Sprite('#', None))
@@ -69,6 +75,7 @@ class TestMainGameDisplay(MainGameTestCase):
 
 		# To display some void south of the wall:
 		mode.game.scene.get_player().pos = Point(4, 8)
+		mode.game.update_vision()
 
 		mode.draw_map(mock_ui)
 		self.maxDiff = None
@@ -137,6 +144,7 @@ class TestMainGameDisplay(MainGameTestCase):
 		'Last.',
 		]
 		mode.game.scene.get_player().pos = Point(4, 7)
+		mode.game.update_vision()
 		mode.redraw(mock_ui)
 		self.maxDiff = None
 		self.assertEqual(mock_ui.screen.tostring(), unittest.dedent("""\

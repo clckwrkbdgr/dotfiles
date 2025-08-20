@@ -413,27 +413,11 @@ class Dungeon(engine.Game):
 			for item in self.rip(other):
 				self.fire_event(Event.MonsterDroppedItem(other, item))
 		monster.spend_action_points()
-	def is_visible(self, obj, additional=None):
-		""" Returns true if object (Room, Tunnel, Point) is visible for player.
-		Additional data depends on type of primary object.
-		Currently only Tunnel Points are considered.
-		"""
-		if self.god.vision:
-			return True
-		return self.vision.is_visible(obj, additional=additional)
 	def actor_sees_player(self, actor):
 		if not self.scene.current_room: # pragma: no cover -- TODO
 			return False
 		sees_rogue = self.scene.current_room.contains(actor.pos)
 		return sees_rogue
-	def is_visited(self, obj, additional=None):
-		""" Returns true if object (Room, Tunnel, Point) was visible for player at some point and now can be remembered.
-		Additional data depends on type of primary object.
-		Currently only Tunnel Points are considered.
-		"""
-		if self.god.vision:
-			return True
-		return self.vision.is_explored(obj, additional=additional)
 	def descend(self, actor):
 		dungeon = self
 		stairs_here = next(iter(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(actor.pos))), None)

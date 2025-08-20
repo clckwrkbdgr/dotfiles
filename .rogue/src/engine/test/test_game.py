@@ -30,6 +30,84 @@ class TestActionLoop(unittest.TestCase):
 			'butterfly flops its wings',
 			])
 
+class TestVision(unittest.TestCase):
+	def should_see_places(self):
+		game = NanoDungeon()
+		game.generate(None)
+		visibility = Matrix(game.scene.cells.size, ' ')
+		for pos in game.scene.cells:
+			if game.is_visible(pos):
+				visibility.set_cell(pos, game.scene.str_cell(pos))
+		self.assertEqual(visibility.tostring(), unittest.dedent("""\
+				__________
+				__________
+				__________
+				#...______
+				#...______
+				#@..______
+				##.~______
+				#...______
+				__________
+				__________
+				""").replace('_', ' '))
+		visibility.clear(' ')
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
+		for pos in game.scene.cells:
+			if game.is_visible(pos):
+				visibility.set_cell(pos, game.scene.str_cell(pos))
+		self.assertEqual(visibility.tostring(), unittest.dedent("""\
+				__________
+				__________
+				__________
+				__________
+				__________
+				__________
+				__.~>..___
+				__.....___
+				__.b@..___
+				__#####___
+				""").replace('_', ' '))
+	def should_remember_places(self):
+		game = NanoDungeon()
+		game.generate(None)
+		memory = Matrix(game.scene.cells.size, ' ')
+		for pos in game.scene.cells:
+			if game.is_visited(pos):
+				memory.set_cell(pos, game.scene.str_cell(pos))
+		self.assertEqual(memory.tostring(), unittest.dedent("""\
+				__________
+				__________
+				__________
+				#...______
+				#...______
+				#@..______
+				##.~______
+				#...______
+				__________
+				__________
+				""").replace('_', ' '))
+		memory.clear(' ')
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
+		for pos in game.scene.cells:
+			if game.is_visited(pos):
+				memory.set_cell(pos, game.scene.str_cell(pos))
+		self.assertEqual(memory.tostring(), unittest.dedent("""\
+				__________
+				__________
+				__________
+				#...______
+				#...._____
+				#<....____
+				##.~>..___
+				#......___
+				#..b@..___
+				_######___
+				""").replace('_', ' '))
+
 class TestMovement(unittest.TestCase):
 	def should_move_actor(self):
 		game = NanoDungeon()

@@ -193,16 +193,16 @@ class Game(object):
 
 	# Display.
 
-	def is_visible(self, pos): # pragma: no cover
+	def is_visible(self, pos):
 		""" Should return True is position on map is visible to player.
 		By default the whole map is visible.
 		"""
-		return True
-	def is_visited(self, pos): # pragma: no cover
+		return self.god.vision or self.vision.is_visible(pos)
+	def is_visited(self, pos):
 		""" Should return True is position on map was visited by player.
 		By default the whole map is considered visited and remembered.
 		"""
-		return True
+		return self.vision.is_explored(pos)
 	def update_vision(self): # pragma: no cover
 		""" Should update current vision field after disposition
 		has changed (e.g. after movement or travelling).

@@ -105,6 +105,8 @@ class Vision(vision.Vision):
 		self.visited = reader.read_matrix(lambda c:c=='1')
 	def save(self, writer):
 		writer.write(self.visited)
+	def is_visible(self, pos):
+		return self.field_of_view.is_visible(pos.x, pos.y)
 	def is_explored(self, pos):
 		return self.visited.cell(pos)
 	def visit(self, monster):
@@ -266,10 +268,6 @@ class Game(engine.Game):
 	def get_viewport(self):
 		""" Returns current viewport rect. """
 		return Rect(Point(0, 0), self.scene.strata.size)
-	def is_visible(self, pos):
-		return self.god.vision or self.vision.field_of_view.is_visible(pos.x, pos.y)
-	def is_visited(self, pos):
-		return self.vision.visited.cell(pos)
 	def tostring(self, with_fov=False):
 		""" Creates string representation of the current viewport.
 		If with_fov=True, considers transparency/lighting, otherwise everything is visible.

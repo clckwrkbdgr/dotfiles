@@ -2,7 +2,7 @@ from clckwrkbdgr.math import Point, Rect, Size, distance
 from clckwrkbdgr.math.grid import Matrix
 from . import terrain, actors, items, appliances
 from . import builders
-from . import scene, events
+from . import scene, events, vision
 from . import _base
 from .ui import Sprite
 
@@ -138,6 +138,7 @@ class Rogue(actors.EquippedMonster):
 	_sprite = Sprite('@', None)
 	_name = 'rogue'
 	_attack = 1
+	_vision = 2
 	_max_hp = 10
 	_max_inventory = 26
 
@@ -200,6 +201,23 @@ class Handler(object):
 
 ### Map. #######################################################################
 
+class Vision(vision.Vision):
+	def __init__(self, scene):
+		super(Vision, self).__init__(scene)
+		self.visible = Matrix(scene.cells.size, False)
+		self.visited = Matrix(scene.cells.size, False)
+	def is_visible(self, pos):
+		return self.visible.cell(pos) if self.visible.valid(pos) else False
+	def is_explored(self, pos):
+		return self.visited.cell(pos) if self.visited.valid(pos) else False
+	def visit(self, actor):
+		self.visible.clear(False)
+		for pos in self.visible:
+			if distance(pos, actor.pos) <= actor.vision:
+				self.visible.set_cell(pos, True)
+				self.visited.set_cell(pos, True)
+		return []
+
 class Dungeon(scene.Scene):
 	def __init__(self, rng):
 		self.rng = rng
@@ -207,6 +225,8 @@ class Dungeon(scene.Scene):
 		self.appliances = []
 		self.items = []
 		self.monsters = []
+	def make_vision(self):
+		return Vision(self)
 	def generate_dungeon_floor(self):
 		builder = DungeonFloor(self.rng, Size(10, 10))
 		builder.map_key(**({
@@ -405,8 +425,6 @@ class NanoDungeon(_base.Game):
 		return Rogue(None)
 	def make_scene(self, scene_id):
 		return Dungeon(self.rng)
-	def is_visible(self, pos):
-		return distance(pos, self.scene.get_player().pos) < 3
 	def attack(self, actor, other):
 		self.fire_event(NoFighting(actor, other))
 		actor.spend_action_points()
