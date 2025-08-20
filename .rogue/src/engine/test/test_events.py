@@ -3,6 +3,8 @@ from .. import events
 from clckwrkbdgr import utils
 from ..mock import *
 
+class NotRegisteredEvent(events.Event): FIELDS = ''
+
 class TestEvent(unittest.TestCase):
 	def should_create_event_with_fields(self):
 		event = DropItem('me', 'floor', what='something')
@@ -38,3 +40,8 @@ class TestEvents(unittest.TestCase):
 		handler = Handler()
 		message = events.Events.process(Hit('player', 'monster'), bind_self=handler)
 		self.assertEqual(message, 'player -> monster')
+	def should_raise_on_not_registered_event(self):
+		handler = Handler()
+		with self.assertRaises(events.Events.NotRegistered) as e:
+			events.Events.process(NotRegisteredEvent(), bind_self=handler)
+		self.assertEqual(str(e.exception), 'Event not registered: {0}'.format(NotRegisteredEvent))

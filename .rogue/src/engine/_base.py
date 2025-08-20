@@ -174,7 +174,11 @@ class Game(object):
 		if raw:
 			return events.Events.get(event, bind_self=bind_self), event
 		else:
-			return events.Events.process(event, bind_self=bind_self)
+			try:
+				return events.Events.process(event, bind_self=bind_self)
+			except events.Events.NotRegistered as e: # pragma: no cover
+				Log.warning(e)
+				return None
 	def process_events(self, raw=False, bind_self=None):
 		""" Iterates over accumulated events and processes them immediately,
 		yielding results of the processing.

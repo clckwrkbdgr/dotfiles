@@ -426,6 +426,7 @@ events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(
 events.Events.on(NothingToDrop)(lambda _:'Nothing to drop.')
 events.Events.on(DroppedItem)(lambda _:'{0} drop {1}.'.format(_.actor.title(), _.item.name))
 events.Events.on(Events.BumpIntoTerrain)(lambda _:None)
+events.Events.on(Events.Move)(lambda _:None)
 events.Events.on(BumpIntoMonster)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
 events.Events.on(HitMonster)(lambda _:'{0} hit {1}.'.format(_.actor.title(), _.target))
 @events.Events.on(MonsterDead)

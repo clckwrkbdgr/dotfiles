@@ -36,6 +36,12 @@ class ImportantEvent(Event):
 
 class Events:
 	""" Registry of convertors of events to string (or other) representation to display on UI. """
+	class NotRegistered(RuntimeError):
+		def __init__(self, event_type):
+			self.event_type = event_type
+		def __str__(self):
+			return "Event not registered: {0}".format(self.event_type)
+
 	_registry = {}
 	@classmethod
 	def on(cls, event_type):
@@ -66,6 +72,9 @@ class Events:
 		""" Processes event by executing bound callback.
 		Callback should accept single argument: event object.
 		See .get() for details.
+		May throw NotRegistered.
 		"""
 		callback = cls.get(event, bind_self=bind_self)
+		if callback is None:
+			raise cls.NotRegistered(type(event))
 		return callback(event)
