@@ -9,9 +9,19 @@ class Vision(object):
 	""" Basic vision/memory capabilities.
 	Should support fields or vision and remembered/visited places.
 	"""
+	def __init__(self, scene):
+		""" Creates vision field and memory for given scene.
+		"""
+		self.scene = scene
 	def is_explored(self, pos): # pragma: no cover
 		""" Should return True if given position is visible or
 		was visited and/or seen.
+		"""
+		raise NotImplementedError()
+	def visit(self, actor): # pragma: no cover
+		""" Should mark actor's position as visited along with every place visible from that position.
+		Updates current field of vision.
+		Should yield events, if some new objects come into vision.
 		"""
 		raise NotImplementedError()
 

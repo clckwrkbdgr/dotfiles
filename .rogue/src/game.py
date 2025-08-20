@@ -98,8 +98,9 @@ class Inert(actors.EquippedMonster):
 			game.attack(self, player)
 
 class Vision(math.Vision):
-	def __init__(self):
-		self.visited = None
+	def __init__(self, scene):
+		super(Vision, self).__init__(scene)
+		self.visited = Matrix(scene.strata.size, False)
 		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
 		self.visible_monsters = []
 		self.visible_items = []
@@ -109,11 +110,12 @@ class Vision(math.Vision):
 		writer.write(self.visited)
 	def is_explored(self, pos):
 		return self.visited.cell(pos)
-	def update(self, monster, scene):
+	def visit(self, monster):
 		""" Recalculates visibility/FOV for the player.
 		May produce Discover events, if some objects come into vision.
 		Remembers already seen objects.
 		"""
+		scene = self.scene
 		current_visible_monsters = []
 		current_visible_items = []
 		is_transparent = lambda p: scene.is_transparent_to_monster(p, monster)
@@ -260,10 +262,12 @@ class Game(engine.Game):
 		Otherwise new game is generated.
 		"""
 		super(Game, self).__init__(rng=RNG(rng_seed))
-		self.vision = Vision()
+		self.vision = None
 	def load(self, reader):
 		""" Loads game from reader. """
 		super(Game, self).load(reader)
+		if self.vision is None:
+			self.vision = Vision(self.scene)
 		self.vision.load(reader)
 
 		self.update_vision()
@@ -322,8 +326,8 @@ class Game(engine.Game):
 		if not self.scene.get_player():
 			return
 		if reset:
-			self.vision.visited = Matrix(self.scene.strata.size, False)
-		for obj in self.vision.update(self.scene.get_player(), self.scene):
+			self.vision = Vision(self.scene)
+		for obj in self.vision.visit(self.scene.get_player()):
 			self.fire_event(DiscoverEvent(obj))
 	def affect_health(self, target, diff):
 		""" Changes health of given target.

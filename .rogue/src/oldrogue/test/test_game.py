@@ -473,11 +473,12 @@ class TestGridRoomMap(unittest.TestCase):
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
 		tunnel = Scene.Tunnel(Point(2, 2), Point(6, 12), 'H', bending_point=2)
 		dungeon.scene.tunnels.append(tunnel)
-		dungeon.visited_tunnels['top'].append(set())
-		dungeon.visit_tunnel(tunnel, Point(2, 2), adjacent=False)
-		self.assertEqual(dungeon.visited_tunnels['top'][-1], {Point(2, 2)})
-		dungeon.visit_tunnel(tunnel, Point(4, 2), adjacent=True)
-		self.assertEqual(dungeon.visited_tunnels['top'][-1], {
+		vision = dungeon.vision
+		vision.visited_tunnels.append(set())
+		vision.visit_tunnel(tunnel, dungeon.scene.tunnels.index(tunnel), Point(2, 2), adjacent=False)
+		self.assertEqual(vision.visited_tunnels[-1], {Point(2, 2)})
+		vision.visit_tunnel(tunnel, dungeon.scene.tunnels.index(tunnel), Point(4, 2), adjacent=True)
+		self.assertEqual(vision.visited_tunnels[-1], {
 			Point(2, 2),
 			Point(3, 2), Point(4, 2), Point(4, 3),
 			})
@@ -485,17 +486,21 @@ class TestGridRoomMap(unittest.TestCase):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
 		gridmap = dungeon.scene
+		vision = dungeon.vision
 
-		dungeon.visit(Point(1, 1))
-		self.assertTrue(dungeon.visited_rooms['top'].cell((0, 0)))
-		self.assertEqual(dungeon.visited_tunnels['top'][0], {Point(3, 1)})
+		dungeon.scene.get_player().pos = Point(1, 1)
+		vision.visit(dungeon.scene.get_player())
+		self.assertTrue(vision.visited_rooms.cell((0, 0)))
+		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1)})
 
-		dungeon.visit(Point(9, 2))
-		self.assertTrue(dungeon.visited_rooms['top'].cell((1, 0)))
-		self.assertEqual(dungeon.visited_tunnels['top'][0], {Point(3, 1), Point(7, 3)})
+		dungeon.scene.get_player().pos = Point(9, 2)
+		vision.visit(dungeon.scene.get_player())
+		self.assertTrue(vision.visited_rooms.cell((1, 0)))
+		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1), Point(7, 3)})
 
-		dungeon.visit(Point(5, 1))
-		self.assertEqual(dungeon.visited_tunnels['top'][0], {Point(3, 1),
+		dungeon.scene.get_player().pos = Point(5, 1)
+		vision.visit(dungeon.scene.get_player())
+		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1),
 			Point(4, 1), Point(5, 1),
 			Point(5, 2),
 			Point(7, 3),
@@ -511,13 +516,13 @@ class TestDungeon(unittest.TestCase):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
 		dungeon.scene.get_player().pos = Point(3, 1)
-		dungeon.visit(dungeon.scene.get_player().pos)
+		dungeon.vision.visit(dungeon.scene.get_player())
 		dungeon.scene.get_player().pos = Point(5, 1)
-		dungeon.visit(dungeon.scene.get_player().pos)
+		dungeon.vision.visit(dungeon.scene.get_player())
 		dungeon.scene.get_player().pos = Point(5, 3)
-		dungeon.visit(dungeon.scene.get_player().pos)
+		dungeon.vision.visit(dungeon.scene.get_player())
 		dungeon.scene.get_player().pos = Point(7, 3)
-		dungeon.visit(dungeon.scene.get_player().pos)
+		dungeon.vision.visit(dungeon.scene.get_player())
 		mj12 = MJ12Trooper(None)
 		mj12.pos = Point(8, 3)
 		dungeon.scene.monsters.append(mj12)
@@ -600,7 +605,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 
 		dungeon.scene.get_player().pos = Point(1, 1)
-		dungeon.visit(dungeon.scene.get_player().pos)
+		dungeon.vision.visit(dungeon.scene.get_player())
 		self.assertTrue(dungeon.is_visible(dungeon.scene.rooms.cell((0, 0))))
 		self.assertFalse(dungeon.is_visible(dungeon.scene.rooms.cell((1, 0))))
 		self.assertTrue(dungeon.is_visible(dungeon.scene.tunnels[0], additional=Point(3, 1)))
@@ -621,7 +626,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 
 		dungeon.scene.get_player().pos = Point(1, 1)
-		dungeon.visit(dungeon.scene.get_player().pos)
+		dungeon.vision.visit(dungeon.scene.get_player())
 		dungeon.scene.get_player().pos = Point(2, 6)
 
 		self.assertTrue(dungeon.is_visited(dungeon.scene.rooms.cell((0, 0))))

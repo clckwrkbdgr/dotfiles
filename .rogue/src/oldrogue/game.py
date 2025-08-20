@@ -240,28 +240,107 @@ class Scene(scene.Scene):
 	def iter_active_monsters(self):
 		return self.monsters
 
+class Vision(math.Vision):
+	def __init__(self, scene):
+		super(Vision, self).__init__(scene)
+		self.visited_rooms = Matrix((3, 3), False)
+		self.visited_tunnels = [set() for tunnel in scene.tunnels]
+	def is_visible(self, obj, additional=None):
+		""" Returns true if object (Room, Tunnel, Point) is visible for player.
+		Additional data depends on type of primary object.
+		Currently only Tunnel Points are considered.
+		"""
+		scene = self.scene
+		if isinstance(obj, Scene.Room):
+			return obj == scene.current_room
+		if isinstance(obj, Scene.Tunnel):
+			tunnel_visited = scene.tunnels.index(obj)
+			tunnel_visited = self.visited_tunnels[tunnel_visited]
+			return additional in tunnel_visited
+		if isinstance(obj, Point):
+			for room in scene.rooms.values():
+				if room.contains(obj, with_border=True) and self.is_visible(room):
+					return True
+			for tunnel in scene.tunnels:
+				if self.is_visible(tunnel, obj):
+					return True
+		return False
+	def is_explored(self, obj, additional=None):
+		""" Returns true if object (Room, Tunnel, Point) was visible for player at some point and now can be remembered.
+		Additional data depends on type of primary object.
+		Currently only Tunnel Points are considered.
+		"""
+		scene = self.scene
+		if isinstance(obj, Scene.Room):
+			room_index = scene.index_room_of(obj.topleft)
+			return self.visited_rooms.cell(room_index)
+		if isinstance(obj, Scene.Tunnel):
+			tunnel_visited = scene.tunnels.index(obj)
+			tunnel_visited = self.visited_tunnels[tunnel_visited]
+			return additional in tunnel_visited
+		if isinstance(obj, Point):
+			for room in scene.rooms.values():
+				if room.contains(obj, with_border=True) and self.is_explored(room):
+					return True
+			for tunnel in scene.tunnels:
+				if self.is_explored(tunnel, obj): # pragma: no covered -- TODO
+					return True
+		return False
+	def visit_tunnel(self, tunnel, tunnel_index, pos, adjacent=True):
+		""" Marks cell as visited. If adjacent is True, marks all neighbouring cells too. """
+		shifts = [Point(0, 0)]
+		if adjacent:
+			shifts += [
+				Point(-1, 0),
+				Point(0, -1),
+				Point(+1, 0),
+				Point(0, +1),
+				]
+		tunnel_visited = self.visited_tunnels[tunnel_index]
+		for shift in shifts:
+			p = pos + shift
+			if tunnel.contains(p):
+				tunnel_visited.add(p)
+	def visit(self, monster):
+		""" Marks all objects (rooms, tunnels) related to pos as visited. """
+		scene = self.scene
+		pos = monster.pos
+		room = scene.room_of(pos)
+		if room:
+			room_index = scene.index_room_of(pos)
+			self.visited_rooms.set_cell(room_index, True)
+			for tunnel in scene.get_tunnels(room):
+				tunnel_index = scene.tunnels.index(tunnel)
+				if room.contains(tunnel.start, with_border=True):
+					self.visit_tunnel(tunnel, tunnel_index, tunnel.start, adjacent=False)
+				if room.contains(tunnel.stop, with_border=True):
+					self.visit_tunnel(tunnel, tunnel_index, tunnel.stop, adjacent=False)
+		tunnel = scene.tunnel_of(pos)
+		if tunnel:
+			tunnel_index = scene.tunnels.index(tunnel)
+			self.visit_tunnel(tunnel, tunnel_index, pos)
+
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
 	def __init__(self):
 		super(Dungeon, self).__init__()
-		self.visited_rooms = {}
-		self.visited_tunnels = {}
+		self.visions = {}
+	@property
+	def vision(self):
+		return self.visions[self.current_scene_id]
 	def load(self, reader): # pragma: no cover -- TODO
 		self.scenes = data.levels
-		self.visited_rooms = data.visited_rooms
-		self.visited_tunnels = data.visited_tunnels
+		self.visions = data.visions
 		self.current_scene_id = data.current_level
 		self.fire_event(Event.WelcomeBack(dungeon.scene.get_player()))
 	def save(self, data): # pragma: no cover -- TODO
 		data.levels = self.scenes
-		data.visited_rooms = self.visited_rooms
-		data.visited_tunnels = self.visited_tunnels
+		data.visions = self.visions
 		data.current_level = self.current_scene_id
 	def update_vision(self, reset=False):
 		if reset:
-			self.visited_rooms[self.current_scene_id] = Matrix((3, 3), False)
-			self.visited_tunnels[self.current_scene_id] = [set() for tunnel in self.scenes[self.current_scene_id].tunnels]
-		self.visit(self.scene.get_player().pos)
+			self.visions[self.current_scene_id] = Vision(self.scene)
+		self.vision.visit(self.scene.get_player())
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """
 		try:
@@ -348,20 +427,7 @@ class Dungeon(engine.Game):
 		"""
 		if self.god.vision:
 			return True
-		if isinstance(obj, Scene.Room):
-			return obj == self.scene.current_room
-		if isinstance(obj, Scene.Tunnel):
-			tunnel_visited = self.scene.tunnels.index(obj)
-			tunnel_visited = self.visited_tunnels[self.current_scene_id][tunnel_visited]
-			return additional in tunnel_visited
-		if isinstance(obj, Point):
-			for room in self.scene.rooms.values():
-				if room.contains(obj, with_border=True) and self.is_visible(room):
-					return True
-			for tunnel in self.scene.tunnels:
-				if self.is_visible(tunnel, obj):
-					return True
-		return False
+		return self.vision.is_visible(obj, additional=additional)
 	def actor_sees_player(self, actor):
 		if not self.scene.current_room: # pragma: no cover -- TODO
 			return False
@@ -374,51 +440,7 @@ class Dungeon(engine.Game):
 		"""
 		if self.god.vision:
 			return True
-		if isinstance(obj, Scene.Room):
-			room_index = self.scene.index_room_of(obj.topleft)
-			return self.visited_rooms[self.current_scene_id].cell(room_index)
-		if isinstance(obj, Scene.Tunnel):
-			tunnel_visited = self.scene.tunnels.index(obj)
-			tunnel_visited = self.visited_tunnels[self.current_scene_id][tunnel_visited]
-			return additional in tunnel_visited
-		if isinstance(obj, Point):
-			for room in self.scene.rooms.values():
-				if room.contains(obj, with_border=True) and self.is_visited(room):
-					return True
-			for tunnel in self.scene.tunnels:
-				if self.is_visited(tunnel, obj): # pragma: no covered -- TODO
-					return True
-		return False
-	def visit_tunnel(self, tunnel, pos, adjacent=True):
-		""" Marks cell as visited. If adjacent is True, marks all neighbouring cells too. """
-		shifts = [Point(0, 0)]
-		if adjacent:
-			shifts += [
-				Point(-1, 0),
-				Point(0, -1),
-				Point(+1, 0),
-				Point(0, +1),
-				]
-		tunnel_visited = self.scene.tunnels.index(tunnel)
-		tunnel_visited = self.visited_tunnels[self.current_scene_id][tunnel_visited]
-		for shift in shifts:
-			p = pos + shift
-			if tunnel.contains(p):
-				tunnel_visited.add(p)
-	def visit(self, pos):
-		""" Marks all objects (rooms, tunnels) related to pos as visited. """
-		room = self.scene.room_of(pos)
-		if room:
-			room_index = self.scene.index_room_of(pos)
-			self.visited_rooms[self.current_scene_id].set_cell(room_index, True)
-			for tunnel in self.scene.get_tunnels(room):
-				if room.contains(tunnel.start, with_border=True):
-					self.visit_tunnel(tunnel, tunnel.start, adjacent=False)
-				if room.contains(tunnel.stop, with_border=True):
-					self.visit_tunnel(tunnel, tunnel.stop, adjacent=False)
-		tunnel = self.scene.tunnel_of(pos)
-		if tunnel:
-			self.visit_tunnel(tunnel, pos)
+		return self.vision.is_explored(obj, additional=additional)
 	def descend(self, actor):
 		dungeon = self
 		stairs_here = next(iter(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(actor.pos))), None)
