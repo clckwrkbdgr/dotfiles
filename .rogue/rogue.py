@@ -24,7 +24,7 @@ from src.engine import ui
 from src.engine.ui import Sprite
 from src.engine import Events
 
-SAVEFILE_VERSION = 11
+SAVEFILE_VERSION = 12
 
 MOVEMENT = {
 		'h' : Point(-1, 0),

@@ -936,6 +936,7 @@ class TestGameSerialization(AbstractTestDungeon):
 				'MockStairs', 'mock settler/1', 'enter', 10, 1,
 			'',
 
+			'mock settler',
 			20, 10,
 			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
 			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0,
@@ -947,6 +948,7 @@ class TestGameSerialization(AbstractTestDungeon):
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 			0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+			'',
 			])))
 		dump = [str(game.Version.CURRENT)] + list(map(str, dump))
 		restored_dungeon = MockGame()

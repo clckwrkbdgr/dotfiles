@@ -5,7 +5,7 @@ from clckwrkbdgr.collections import dotdict
 from clckwrkbdgr.utils import get_type_by_name, classfield
 from clckwrkbdgr.math import Point, Size, Rect, Matrix
 import clckwrkbdgr.math
-from ..engine import math
+from ..engine import math, vision
 import logging
 trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
@@ -70,6 +70,8 @@ class Scene(scene.Scene):
 		self.generator = builder
 	def generate(self, id):
 		self.generator.build_level(self, id)
+	def make_vision(self):
+		return Vision(self)
 	def exit_actor(self, actor):
 		self.monsters.remove(actor)
 		return actor
@@ -240,7 +242,7 @@ class Scene(scene.Scene):
 	def iter_active_monsters(self):
 		return self.monsters
 
-class Vision(math.Vision):
+class Vision(vision.Vision):
 	def __init__(self, scene):
 		super(Vision, self).__init__(scene)
 		self.visited_rooms = Matrix((3, 3), False)
@@ -322,12 +324,6 @@ class Vision(math.Vision):
 
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
-	def __init__(self):
-		super(Dungeon, self).__init__()
-		self.visions = {}
-	@property
-	def vision(self):
-		return self.visions[self.current_scene_id]
 	def load(self, reader): # pragma: no cover -- TODO
 		self.scenes = data.levels
 		self.visions = data.visions
@@ -337,9 +333,7 @@ class Dungeon(engine.Game):
 		data.levels = self.scenes
 		data.visions = self.visions
 		data.current_level = self.current_scene_id
-	def update_vision(self, reset=False):
-		if reset:
-			self.visions[self.current_scene_id] = Vision(self.scene)
+	def update_vision(self):
 		self.vision.visit(self.scene.get_player())
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """

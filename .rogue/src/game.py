@@ -6,7 +6,7 @@ Log = logging.getLogger('rogue')
 from .engine import items, actors, scene, appliances
 from . import engine
 from .engine import auto
-from .engine import math
+from .engine import math, vision
 from .engine.terrain import Terrain
 from .engine.events import Event, ImportantEvent
 import clckwrkbdgr.math
@@ -97,7 +97,7 @@ class Inert(actors.EquippedMonster):
 		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
 			game.attack(self, player)
 
-class Vision(math.Vision):
+class Vision(vision.Vision):
 	def __init__(self, scene):
 		super(Vision, self).__init__(scene)
 		self.visited = Matrix(scene.strata.size, False)
@@ -153,6 +153,8 @@ class Scene(scene.Scene):
 		self.appliances = []
 	def one_time(self):
 		return True
+	def make_vision(self):
+		return Vision(self)
 	def generate(self, id):
 		builder = self.rng.choice(self.builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))
@@ -262,22 +264,6 @@ class Game(engine.Game):
 		Otherwise new game is generated.
 		"""
 		super(Game, self).__init__(rng=RNG(rng_seed))
-		self.vision = None
-	def load(self, reader):
-		""" Loads game from reader. """
-		super(Game, self).load(reader)
-		if self.vision is None:
-			self.vision = Vision(self.scene)
-		self.vision.load(reader)
-
-		self.update_vision()
-		Log.debug('Loaded.')
-		Log.debug(repr(self.scene.strata))
-		Log.debug('Player: {0}'.format(self.scene.get_player()))
-	def save(self, writer):
-		""" Saves game using writer. """
-		super(Game, self).save(writer)
-		self.vision.save(writer)
 	def end_turn(self):
 		if self.scene.get_player():
 			self.scene.get_player().spend_action_points()
@@ -322,11 +308,9 @@ class Game(engine.Game):
 		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered.sprite
 		return None
-	def update_vision(self, reset=False):
+	def update_vision(self):
 		if not self.scene.get_player():
 			return
-		if reset:
-			self.vision = Vision(self.scene)
 		for obj in self.vision.visit(self.scene.get_player()):
 			self.fire_event(DiscoverEvent(obj))
 	def affect_health(self, target, diff):

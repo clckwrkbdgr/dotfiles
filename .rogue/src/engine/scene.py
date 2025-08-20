@@ -1,4 +1,5 @@
 from . import items, appliances, actors, terrain
+from . import vision
 from clckwrkbdgr import utils
 from clckwrkbdgr.math.grid import Matrix
 from .math import is_diagonal
@@ -13,6 +14,10 @@ class Scene(object):
 		By default all visited scenes are kept.
 		"""
 		return False
+	def make_vision(self): # pragma: no cover
+		""" Should init and return empty Vision object that supports this scene.
+		"""
+		return vision.OmniVision()
 	def generate(self, id): # pragma: no cover
 		""" Should generate scene for given map ID.
 		"""

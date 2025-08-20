@@ -46,9 +46,15 @@ class Game(object):
 		self.scenes = {}
 		self.current_scene_id = None
 		self.automovement = None
+		self.visions = {}
 	@property
 	def scene(self):
 		return self.scenes[self.current_scene_id]
+	@property
+	def vision(self):
+		if self.current_scene_id not in self.visions:
+			self.visions[self.current_scene_id] = self.scene.make_vision()
+		return self.visions[self.current_scene_id]
 
 	# State control.
 
@@ -71,17 +77,17 @@ class Game(object):
 		if self.current_scene_id is not None:
 			self.scene.exit_actor(actor)
 
-		is_new_scene = scene_id not in self.scenes
-		if is_new_scene:
+		if scene_id not in self.scenes:
 			self.scenes[scene_id] = self.make_scene(scene_id)
 			self.scenes[scene_id].generate(scene_id)
 		if self.current_scene_id and self.scene.one_time():
 			del self.scenes[self.current_scene_id]
+			del self.visions[self.current_scene_id]
 		self.current_scene_id = scene_id
 		self.scene.enter_actor(actor, passage)
 
 		Log.debug("Finalizing dungeon...")
-		self.update_vision(reset=is_new_scene)
+		self.update_vision()
 		Log.debug("Dungeon is ready.")
 	def generate(self, start_scene_id): # pragma: no cover
 		""" Resets game and generates new state.
@@ -93,6 +99,7 @@ class Game(object):
 		self.travel(self.make_player(), start_scene_id)
 	def load(self, stream):
 		""" Loads game data from the stream/state.
+		Updates vision after loading.
 		"""
 		self.playing_time = stream.read(int)
 		self.rng = RNG(stream.read_int())
@@ -106,15 +113,33 @@ class Game(object):
 			scene = self.make_scene(scene_id)
 			scene.load(stream)
 			self.scenes[scene_id] = scene
+
+		self.visions = {}
+		while True:
+			scene_id = stream.read()
+			if not scene_id:
+				break
+			vision = self.scenes[scene_id].make_vision()
+			vision.load(stream)
+			self.visions[scene_id] = vision
+
+		self.update_vision()
 	def save(self, stream):
 		""" Stores game data to the reader/state.
 		"""
 		stream.write(self.playing_time)
 		stream.write(self.rng.value)
 		stream.write(self.current_scene_id)
+
 		for scene_id, scene in self.scenes.items():
 			stream.write(scene_id)
 			stream.write(scene)
+		else:
+			stream.write('')
+
+		for scene_id, vision in self.visions.items():
+			stream.write(scene_id)
+			stream.write(vision)
 		else:
 			stream.write('')
 	def is_finished(self):
