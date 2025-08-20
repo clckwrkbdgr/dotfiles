@@ -543,6 +543,6 @@ class _MockBuilder_FightingGround(CustomSettler):
 		]
 
 def build(dungeon_id):
-	game = MockGame(rng_seed=0)
+	game = MockGame(0)
 	game.generate(dungeon_id)
 	return game

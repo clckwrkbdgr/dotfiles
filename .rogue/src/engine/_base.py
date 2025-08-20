@@ -25,6 +25,9 @@ class Events:
 	class Move(events.Event):
 		""" Location is changed. """
 		FIELDS = 'actor dest'
+	class Discover(events.ImportantEvent):
+		""" Something new is discovered on the map! """
+		FIELDS = 'obj'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -200,13 +203,14 @@ class Game(object):
 		By default the whole map is considered visited and remembered.
 		"""
 		return True
-	def update_vision(self, reset=False): # pragma: no cover
+	def update_vision(self): # pragma: no cover
 		""" Should update current vision field after disposition
 		has changed (e.g. after movement or travelling).
-		If reset is True, rebuild vision field from scratch
-		(forgetting explored places).
 		"""
-		return True
+		if not self.scene.get_player():
+			return
+		for obj in self.vision.visit(self.scene.get_player()):
+			self.fire_event(Events.Discover(obj))
 
 	# Actions.
 

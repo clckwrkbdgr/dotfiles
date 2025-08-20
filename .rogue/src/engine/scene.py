@@ -17,7 +17,7 @@ class Scene(object):
 	def make_vision(self): # pragma: no cover
 		""" Should init and return empty Vision object that supports this scene.
 		"""
-		return vision.OmniVision()
+		return vision.OmniVision(self)
 	def generate(self, id): # pragma: no cover
 		""" Should generate scene for given map ID.
 		"""

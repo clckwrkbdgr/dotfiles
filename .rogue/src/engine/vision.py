@@ -14,7 +14,7 @@ class Vision(object):
 	def visit(self, actor): # pragma: no cover
 		""" Should mark actor's position as visited along with every place visible from that position.
 		Updates current field of vision.
-		Should yield events, if some new objects come into vision.
+		Should return iterable or yield new objects that come into vision.
 		"""
 		raise NotImplementedError()
 
@@ -23,4 +23,4 @@ class OmniVision(Vision):
 	and explored from the start.
 	"""
 	def is_explored(self, pos): return True
-	def visit(self, actor): pass
+	def visit(self, actor): return []

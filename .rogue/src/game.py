@@ -23,9 +23,6 @@ class Version(Enum):
 	WIELDING
 	"""
 
-class DiscoverEvent(ImportantEvent):
-	""" Something new is discovered on the map! """
-	FIELDS = 'obj'
 class AttackEvent(ImportantEvent):
 	""" Attack was performed. """
 	FIELDS = 'actor target'
@@ -255,15 +252,6 @@ class Scene(scene.Scene):
 class Game(engine.Game):
 	""" Main game object.
 	"""
-	def __init__(self, rng_seed=None):
-		""" Creates game instance and optionally generate new world.
-		Custom rng_seed may be used for PCG.
-		If dummy = True, does not automatically generate or load game, just create empty object.
-		Optional builders/settlers may be passed to override default class variables.
-		If load_from_reader is given, it should be a Reader class, from which game is loaded.
-		Otherwise new game is generated.
-		"""
-		super(Game, self).__init__(rng=RNG(rng_seed))
 	def end_turn(self):
 		if self.scene.get_player():
 			self.scene.get_player().spend_action_points()
@@ -308,11 +296,6 @@ class Game(engine.Game):
 		if self.vision.visited.cell(pos) and cell.remembered:
 			return cell.remembered.sprite
 		return None
-	def update_vision(self):
-		if not self.scene.get_player():
-			return
-		for obj in self.vision.visit(self.scene.get_player()):
-			self.fire_event(DiscoverEvent(obj))
 	def affect_health(self, target, diff):
 		""" Changes health of given target.
 		Removes monsters from the main list, if health is zero.
@@ -404,6 +387,6 @@ class Game(engine.Game):
 				break
 	def prevent_automove(self):
 		if self.vision.visible_monsters:
-			self.fire_event(DiscoverEvent('monsters'))
+			self.fire_event(engine.Events.Discover('monsters'))
 			return True
 		return False

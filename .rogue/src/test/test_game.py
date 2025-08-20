@@ -62,7 +62,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[ # NONE AUTOEXPLORE
 			'Move(actor=player, dest=[10, 5])',
 			'Move(actor=player, dest=[11, 4])',
-			'DiscoverEvent(obj=stairs)',
+			'Discover(obj=stairs)',
 			]])
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[ # exploring...
@@ -128,8 +128,8 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_perform_monsters_turns_after_player_has_done_with_their_turn(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
 		self.assertEqual(self._events(), [[
-			'DiscoverEvent(obj=monster)',
-			'DiscoverEvent(obj=monster)',
+			'Discover(obj=monster)',
+			'Discover(obj=monster)',
 			]])
 		self.assertEqual(self._events(), [[
 			]])
@@ -166,8 +166,8 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 	def should_die_after_monster_attack(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
 		self.assertEqual(self._events(), [[
-			'DiscoverEvent(obj=monster)',
-			'DiscoverEvent(obj=monster)',
+			'Discover(obj=monster)',
+			'Discover(obj=monster)',
 			]])
 		self.assertEqual(self._events(), [[
 			]])
@@ -209,8 +209,8 @@ class TestItems(AbstractTestDungeon):
 	def should_grab_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around 2')
 		self.assertEqual(self._events(), [[
-			'DiscoverEvent(obj=potion)',
-			'DiscoverEvent(obj=healing potion)',
+			'Discover(obj=potion)',
+			'Discover(obj=healing potion)',
 			]])
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.end_turn()
@@ -285,7 +285,7 @@ class TestEvents(AbstractTestDungeon):
 		self.assertEqual(dungeon.events, [])
 		dungeon.jump_to(Point(11, 2))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Discover)
 		self.assertEqual(repr(dungeon.events[0].obj), 'MockStairs(stairs)')
 		list(dungeon.process_events(raw=True))
 		dungeon.jump_to(Point(9, 6))
@@ -296,7 +296,7 @@ class TestEvents(AbstractTestDungeon):
 		dungeon = self.dungeon = mock_dungeon.build('now you see me')
 		# At start we see just the one monster.
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Discover)
 		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.scene.monsters if monster.pos == Point(1, 6)))
 		list(dungeon.process_events(raw=True))
 
@@ -845,7 +845,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Discover)
 		self.assertEqual(dungeon.events[0].obj, 'monsters')
 	def should_autoexplore(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
@@ -886,7 +886,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertFalse(dungeon.automove())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), game.DiscoverEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Discover)
 		self.assertEqual(dungeon.events[0].obj, 'monsters')
 
 class TestGameSerialization(AbstractTestDungeon):

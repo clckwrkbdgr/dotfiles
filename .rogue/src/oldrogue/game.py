@@ -321,6 +321,7 @@ class Vision(vision.Vision):
 		if tunnel:
 			tunnel_index = scene.tunnels.index(tunnel)
 			self.visit_tunnel(tunnel, tunnel_index, pos)
+		return []
 
 class Dungeon(engine.Game):
 	""" Set of connected PCG levels with player. """
@@ -333,8 +334,6 @@ class Dungeon(engine.Game):
 		data.levels = self.scenes
 		data.visions = self.visions
 		data.current_level = self.current_scene_id
-	def update_vision(self):
-		self.vision.visit(self.scene.get_player())
 	def use_stairs(self, monster, stairs):
 		""" Use level passage object. """
 		try:

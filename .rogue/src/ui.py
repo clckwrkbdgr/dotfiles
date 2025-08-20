@@ -55,7 +55,7 @@ class MainGame(ui.MainGame):
 		return self.game.get_viewport()
 	def get_message_line_rect(self):
 		return Rect(Point(0, 0), Size(80, 1))
-	@Events.on(game.DiscoverEvent)
+	@Events.on(engine.Events.Discover)
 	def on_discovering(self, event):
 		if hasattr(event.obj, 'name'):
 			return '{0}!'.format(event.obj.name)
