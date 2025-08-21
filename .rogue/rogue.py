@@ -24,7 +24,7 @@ from src.engine import ui
 from src.engine.ui import Sprite
 from src.engine import Events
 
-SAVEFILE_VERSION = 12
+SAVEFILE_VERSION = 13
 
 MOVEMENT = {
 		'h' : Point(-1, 0),
@@ -456,13 +456,6 @@ class Game(engine.Game):
 			'bold_magenta': Color(curses.COLOR_MAGENTA, curses.A_BOLD, True, True),
 			'bold_white': Color(curses.COLOR_WHITE, curses.A_BOLD, False, True),
 			}
-	def __init__(self):
-		super(Game, self).__init__()
-		self.colors = {}
-	def save(self, stream):
-		super(Game, self).save(stream)
-	def load(self, stream):
-		super(Game, self).load(stream)
 	def make_scene(self, scene_id):
 		return Scene()
 	def make_player(self):

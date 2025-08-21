@@ -211,22 +211,34 @@ class Game(object):
 			return
 		for obj in self.vision.visit(self.scene.get_player()):
 			self.fire_event(Events.Discover(obj))
-	def tostring(self, view_rect, visible=True, visited=True):
+	def tostring(self, view_rect, visited=True):
+		""" Returns string representation of the viewport.
+		If visited is False, ignores remembered locations
+		and returns only currently visible cells.
+		"""
 		result = Matrix(view_rect.size, ' ')
 		for pos, cell_info in self.scene.iter_cells(view_rect):
-			result.set_cell(pos - view_rect.topleft, self.str_cell(pos, cell_info, visible=visible, visited=visited))
+			result.set_cell(pos - view_rect.topleft, self.str_cell(pos, cell_info, visited=visited))
 		return result.tostring()
-	def str_cell(self, pos, cell_info=None, visible=True, visited=True):
-		result = self.get_sprite(pos, cell_info=cell_info, visible=visible, visited=visited)
+	def str_cell(self, pos, cell_info=None, visited=True):
+		""" Returns string representation of the cell at the pos
+		(1-char sprite symbol).
+		See .get_sprite()
+		If visited is False, ignores remembered locations
+		and returns only currently visible cells.
+		"""
+		result = self.get_sprite(pos, cell_info=cell_info, visited=visited)
 		return result.sprite if result else ' '
-	def get_sprite(self, pos, cell_info=None, visible=True, visited=True):
+	def get_sprite(self, pos, cell_info=None, visited=True):
 		""" Returns topmost Sprite at the specified world pos.
 		Additional cell info may be passed (see Scene.get_cell_info()).
 		Considers Vision (visible/remembered places).
+		If visited is False, ignores remembered locations
+		and returns only currently visible cells.
 		"""
 		if cell_info is None:
 			cell_info = self.scene.get_cell_info(pos)
-		if visible and self.is_visible(pos):
+		if self.is_visible(pos):
 			return self.scene.get_sprite(pos, cell_info)
 		if visited and self.is_visited(pos):
 			cell, objects, items, monsters = cell_info

@@ -52,14 +52,23 @@ class Scene(object):
 		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(actors.Actor)})
 
 	def tostring(self, view_rect):
+		""" Returns string representation of the viewport.
+		"""
 		result = Matrix(view_rect.size, ' ')
 		for pos, cell_info in self.iter_cells(view_rect):
 			result.set_cell(pos - view_rect.topleft, self.str_cell(pos, cell_info))
 		return result.tostring()
 	def str_cell(self, pos, cell_info=None):
+		""" Returns string representation of the cell at the pos
+		(1-char sprite symbol).
+		See .get_sprite()
+		"""
 		result = self.get_sprite(pos, cell_info=cell_info)
 		return result.sprite if result else None
 	def get_sprite(self, pos, cell_info=None):
+		""" Returns topmost Sprite at the specified world pos.
+		Additional cell info may be passed (see Scene.get_cell_info()).
+		"""
 		if not cell_info:
 			cell_info = self.get_cell_info(pos)
 		cell, objects, items, monsters = cell_info

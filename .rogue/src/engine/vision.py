@@ -26,6 +26,8 @@ class OmniVision(Vision):
 	""" Most primitive Vision: everything is visible
 	and explored from the start.
 	"""
+	def save(self, stream): pass
+	def load(self, stream): pass
 	def is_visible(self, pos): return True
 	def is_explored(self, pos): return True
 	def visit(self, actor): return []
