@@ -146,6 +146,11 @@ class Scene(object):
 		By default just changes Actor's .pos property.
 		"""
 		actor.pos = pos
+	def rip(self, actor): # pragma: no cover
+		""" Should remove actor and drop all loot in its place.
+		Should yield all dropped items.
+		"""
+		raise NotImplementedError()
 	def is_passable(self, pos):
 		""" Returns True is cell is passable (open for movement).
 		Terrain should be .passable, as well as any appliances at the position.

@@ -22,6 +22,21 @@ class Events:
 	class BumpIntoTerrain(events.Event):
 		""" Bumps into impenetrable obstacle. """
 		FIELDS = 'actor target'
+	class BumpIntoActor(events.Event):
+		""" Bumps into non-hostile actor. """
+		FIELDS = 'actor target'
+	class Attack(events.ImportantEvent):
+		""" Attack was performed. """
+		FIELDS = 'actor target damage'
+	class Health(events.Event):
+		""" Health stat has been changed. """
+		FIELDS = 'target diff'
+	class Death(events.ImportantEvent):
+		""" It's bleeding demised. """
+		FIELDS = 'target'
+	class DropItem(events.ImportantEvent):
+		""" Drops something on the floor. """
+		FIELDS = 'actor item'
 	class Move(events.Event):
 		""" Location is changed. """
 		FIELDS = 'actor dest'
@@ -296,12 +311,36 @@ class Game(object):
 		"""
 		return False
 
-	def attack(self, actor, other): # pragma: no cover
-		""" Should perform attack on a hostile other actor
-		and check consequences (death, loot etc).
-		Also should address bump into the other actor if it is not hostile.
+	def affect_health(self, target, diff):
+		""" Changes health of given target.
+		Raises events for health change and death.
+		Removes monsters from the main list, if health reaches zero.
+		Drops loot, if any.
 		"""
-		raise NotImplementedError()
+		diff = target.affect_health(diff)
+		self.fire_event(Events.Health(target, diff))
+		if not target.is_alive():
+			self.fire_event(Events.Death(target))
+			for item in self.scene.rip(target):
+				self.fire_event(Events.DropItem(target, item))
+			return False
+		return True
+	def attack(self, actor, other):
+		""" Perform attack on a hostile other actor
+		and check consequences (death, loot etc).
+		If other actor is not considered hostile, just bumps.
+		Any action spend AP.
+		Returns True is actual attack happened.
+		"""
+		if not actor.is_hostile_to(other):
+			actor.spend_action_points()
+			self.fire_event(Events.BumpIntoActor(actor, other))
+			return False
+		damage = max(0, actor.get_attack_damage() - other.get_protection())
+		self.fire_event(Events.Attack(actor, other, damage))
+		self.affect_health(other, -damage)
+		self.update_vision()
+		actor.spend_action_points()
 	def move_actor(self, actor, shift):
 		""" Moves monster into given direction (if possible).
 		If there is a monster, performs .attack().

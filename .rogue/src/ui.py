@@ -61,13 +61,13 @@ class MainGame(ui.MainGame):
 			return '{0}!'.format(event.obj.name)
 		else:
 			return '{0}!'.format(event.obj)
-	@Events.on(game.AttackEvent)
+	@Events.on(engine.Events.Attack)
 	def on_attack(self, event):
 		return '{0} x> {1}.'.format(event.actor.name, event.target.name)
-	@Events.on(game.HealthEvent)
+	@Events.on(engine.Events.Health)
 	def on_health_change(self, event):
 		return '{0}{1:+}hp.'.format(event.target.name, event.diff)
-	@Events.on(game.DeathEvent)
+	@Events.on(engine.Events.Death)
 	def on_death(self, event):
 		return '{0} dies.'.format(event.target.name)
 	@Events.on(engine.Events.Move)
@@ -84,7 +84,7 @@ class MainGame(ui.MainGame):
 	@Events.on(game.GrabItemEvent)
 	def on_grabbing(self, event):
 		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(game.DropItemEvent)
+	@Events.on(engine.Events.DropItem)
 	def on_dropping(self, event):
 		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(game.ConsumeItemEvent)

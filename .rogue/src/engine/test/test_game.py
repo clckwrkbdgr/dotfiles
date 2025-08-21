@@ -135,7 +135,7 @@ class TestMovement(unittest.TestCase):
 		game.scene.transfer_actor(game.scene.get_player(), Point(3, 7))
 		self.assertFalse(game.move_actor(game.scene.get_player(), Point(0, 1)))
 		self.assertTrue(game.scene.get_player().has_acted())
-		self.assertEqual(game.events, [NoFighting(game.scene.get_player(), next(_ for _ in game.scene.monsters if _.name == 'butterfly'))])
+		self.assertEqual(game.events, [_base.Events.BumpIntoActor(game.scene.get_player(), next(_ for _ in game.scene.monsters if _.name == 'butterfly'))])
 		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
 				##########
 				#........#

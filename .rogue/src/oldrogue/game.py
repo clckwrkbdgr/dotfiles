@@ -30,10 +30,6 @@ class Version(clckwrkbdgr.collections.Enum):
 	JSONPICKLE = auto()
 
 class Event:
-	class BumpIntoMonster(events.Event): FIELDS = 'who whom'
-	class AttackMonster(events.Event): FIELDS = 'who whom damage'
-	class MonsterDied(events.Event): FIELDS = 'who'
-	class MonsterDroppedItem(events.Event): FIELDS = 'who item'
 	class MonsterConsumedItem(events.Event): FIELDS = 'who item'
 	class Unwielding(events.Event): FIELDS = 'who item'
 	class TakingOff(events.Event): FIELDS = 'who item'
@@ -81,6 +77,11 @@ class Scene(scene.Scene):
 		assert stairs is not None, "No stairs with id {0}".format(repr(location))
 		actor.pos = stairs
 		self.monsters.append(actor)
+	def rip(self, actor):
+		for item in actor.drop_all():
+			self.items.append(item)
+			yield item.item
+		self.monsters.remove(actor)
 	def valid(self, pos): # pragma: no cover -- TODO
 		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
 	@functools.lru_cache()
@@ -343,21 +344,6 @@ class Dungeon(engine.Game):
 		except appliances.LevelPassage.Locked as e:
 			self.fire_event(Event.NeedKey(e.key_item_type))
 			return False
-	def rip(self, who):
-		""" Processes monster's death (it should be actually not is_alive() for that).
-		Drops all items from inventory to the ground at the same pos.
-		Yields all dropped items.
-		Removes monster from the level.
-		"""
-		if who.is_alive():
-			raise RuntimeError("Trying to bury someone alive: {0}".format(who))
-		for item in who.drop_all():
-			self.scene.items.append(item)
-			yield item.item
-		try:
-			self.scene.monsters.remove(who)
-		except ValueError: # pragma: no cover -- TODO rogue is not stored in the list.
-			pass
 	def grab_item(self, who, item):
 		index, = [index for index, (pos, i) in enumerate(self.scene.items) if i == item]
 		try:
@@ -380,7 +366,7 @@ class Dungeon(engine.Game):
 	def drop_item(self, who, item):
 		item = who.drop(item)
 		self.scene.items.append(item)
-		self.fire_event(Event.MonsterDroppedItem(who, item.item))
+		self.fire_event(engine.Events.DropItem(who, item.item))
 	def wield_item(self, who, item):
 		try:
 			who.wield(item)
@@ -400,19 +386,6 @@ class Dungeon(engine.Game):
 			self.fire_event(Event.TakingOff(who, old_item))
 			who.wear(item)
 		self.fire_event(Event.Wearing(who, item))
-	def attack(self, monster, other):
-		if not monster.is_hostile_to(other):
-			monster.spend_action_points()
-			self.fire_event(Event.BumpIntoMonster(monster, other))
-			return
-		damage = max(0, monster.get_attack_damage() - other.get_protection())
-		other.affect_health(-damage)
-		self.fire_event(Event.AttackMonster(monster, other, damage))
-		if not other.is_alive():
-			self.fire_event(Event.MonsterDied(other))
-			for item in self.rip(other):
-				self.fire_event(Event.MonsterDroppedItem(other, item))
-		monster.spend_action_points()
 	def actor_sees_player(self, actor):
 		if not self.scene.current_room: # pragma: no cover -- TODO
 			return False

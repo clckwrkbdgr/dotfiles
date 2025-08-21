@@ -12,7 +12,6 @@ from ..engine import items
 from .. import engine
 from .. import pcg
 from .. import game
-from .. import ui
 import clckwrkbdgr.serialize.stream as savefile
 from . import mock_dungeon
 from .mock_dungeon import MockGame
@@ -138,8 +137,8 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[9, 5])',
-			'AttackEvent(actor=monster, target=player)',
-			'HealthEvent(target=player, diff=-1)',
+			'Attack(actor=monster, target=player, damage=1)',
+			'Health(target=player, diff=-1)',
 			]])
 		self.assertEqual(self._events(), [[
 			]])
@@ -147,17 +146,17 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'AttackEvent(actor=player, target=monster)',
-			'HealthEvent(target=monster, diff=-1)',
-			'AttackEvent(actor=monster, target=player)',
-			'HealthEvent(target=player, diff=-1)',
+			'Attack(actor=player, target=monster, damage=1)',
+			'Health(target=monster, diff=-1)',
+			'Attack(actor=monster, target=player, damage=1)',
+			'Health(target=player, diff=-1)',
 			]])
 		dungeon.wait() # Just wait.
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'AttackEvent(actor=monster, target=player)',
-			'HealthEvent(target=player, diff=-1)',
+			'Attack(actor=monster, target=player, damage=1)',
+			'Health(target=player, diff=-1)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
@@ -176,16 +175,16 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[9, 5])',
-			'AttackEvent(actor=monster, target=player)'.format(9),
-			'HealthEvent(target=player, diff=-1)'.format(9),
+			'Attack(actor=monster, target=player, damage=1)'.format(9),
+			'Health(target=player, diff=-1)'.format(9),
 			]])
 		dungeon.wait()
 		dungeon.end_turn()
 		dungeon.process_others()
 		for i in range(1, 9): # Just wait while monster kills you.
 			self.assertEqual(self._events(), [[
-				'AttackEvent(actor=monster, target=player)'.format(9 - i),
-				'HealthEvent(target=player, diff=-1)'.format(9 - i),
+				'Attack(actor=monster, target=player, damage=1)'.format(9 - i),
+				'Health(target=player, diff=-1)'.format(9 - i),
 				]])
 			dungeon.wait()
 			dungeon.end_turn()
@@ -248,7 +247,7 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'DropItemEvent(actor=player, item=potion)',
+			'DropItem(actor=player, item=potion)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
@@ -645,7 +644,7 @@ class TestItemActions(AbstractTestDungeon):
 		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[1])
 		self.assertEqual(list(map(str, dungeon.events)), [
 			'ConsumeItemEvent(actor=player, item=healing potion)',
-			'HealthEvent(target=player, diff=5)',
+			'Health(target=player, diff=5)',
 			])
 		self.assertEqual(dungeon.get_player().hp, 6)
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -705,10 +704,10 @@ class TestFight(AbstractTestDungeon):
 		dungeon.attack(dungeon.get_player(), monster)
 		self.assertEqual(monster.hp, 2)
 		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Attack)
 		self.assertEqual(dungeon.events[0].actor, dungeon.get_player())
 		self.assertEqual(dungeon.events[0].target, monster)
-		self.assertEqual(type(dungeon.events[1]), game.HealthEvent)
+		self.assertEqual(type(dungeon.events[1]), engine.Events.Health)
 		self.assertEqual(dungeon.events[1].target, monster)
 		self.assertEqual(dungeon.events[1].diff, -1)
 	def should_kill_monster(self):
@@ -717,7 +716,7 @@ class TestFight(AbstractTestDungeon):
 		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
 		monster.hp = 1
 		dungeon.attack(dungeon.get_player(), monster)
-		self.assertEqual(type(dungeon.events[-1]), game.DeathEvent)
+		self.assertEqual(type(dungeon.events[-1]), engine.Events.Death)
 		self.assertEqual(dungeon.events[-1].target, monster)
 		monster = next(dungeon.scene.iter_actors_at((10, 6)), None)
 		self.assertIsNone(monster)
@@ -730,9 +729,9 @@ class TestFight(AbstractTestDungeon):
 
 		item = next(dungeon.scene.iter_items_at((10, 6)))
 		self.assertEqual(item.name, 'money')
-		self.assertEqual(type(dungeon.events[-1]), game.DropItemEvent)
-		self.assertEqual(dungeon.events[-1].actor, monster)
-		self.assertEqual(dungeon.events[-1].item, item)
+		self.assertEqual(type(dungeon.events[-2]), engine.Events.DropItem)
+		self.assertEqual(dungeon.events[-2].actor, monster)
+		self.assertEqual(dungeon.events[-2].item, item)
 	def should_be_attacked_by_monster(self):
 		dungeon = self.dungeon = mock_dungeon.build('close inert monster')
 		list(dungeon.process_events(raw=True))
@@ -741,10 +740,10 @@ class TestFight(AbstractTestDungeon):
 		dungeon.scene.monsters[-1].act(dungeon)
 		self.assertEqual(dungeon.get_player().hp, 9)
 		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Attack)
 		self.assertEqual(dungeon.events[0].actor, monster)
 		self.assertEqual(dungeon.events[0].target, dungeon.get_player())
-		self.assertEqual(type(dungeon.events[1]), game.HealthEvent)
+		self.assertEqual(type(dungeon.events[1]), engine.Events.Health)
 		self.assertEqual(dungeon.events[1].target, dungeon.get_player())
 		self.assertEqual(dungeon.events[1].diff, -1)
 	def should_be_killed_by_monster(self):
@@ -757,13 +756,13 @@ class TestFight(AbstractTestDungeon):
 		dungeon.scene.monsters[-1].act(dungeon)
 		self.assertIsNone(dungeon.get_player())
 		self.assertEqual(len(dungeon.events), 3)
-		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Attack)
 		self.assertEqual(dungeon.events[0].actor, monster)
 		self.assertEqual(dungeon.events[0].target, player)
-		self.assertEqual(type(dungeon.events[1]), game.HealthEvent)
+		self.assertEqual(type(dungeon.events[1]), engine.Events.Health)
 		self.assertEqual(dungeon.events[1].target, player)
 		self.assertEqual(dungeon.events[1].diff, -1)
-		self.assertEqual(type(dungeon.events[-1]), game.DeathEvent)
+		self.assertEqual(type(dungeon.events[-1]), engine.Events.Death)
 		self.assertEqual(dungeon.events[-1].target, player)
 	def should_angry_move_to_attack_player(self):
 		dungeon = self.dungeon = mock_dungeon.build('close angry monster')
@@ -780,10 +779,10 @@ class TestFight(AbstractTestDungeon):
 
 		dungeon.scene.monsters[-1].act(dungeon)
 		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(type(dungeon.events[0]), game.AttackEvent)
+		self.assertEqual(type(dungeon.events[0]), engine.Events.Attack)
 		self.assertEqual(dungeon.events[0].actor, monster)
 		self.assertEqual(dungeon.events[0].target, dungeon.get_player())
-		self.assertEqual(type(dungeon.events[1]), game.HealthEvent)
+		self.assertEqual(type(dungeon.events[1]), engine.Events.Health)
 		self.assertEqual(dungeon.events[1].target, dungeon.get_player())
 		self.assertEqual(dungeon.events[1].diff, -1)
 	def should_not_angry_move_when_player_is_out_of_sight(self):

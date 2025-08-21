@@ -128,11 +128,7 @@ class ColoredMonster(RealMonster):
 		for monster in game.scene.iter_monsters_in_rect(close_rect):
 			if not self.is_hostile_to(monster):
 				continue
-			damage = max(0, self.get_attack_damage() - monster.get_protection())
-			monster.affect_health(-damage)
-			game.fire_event(HitMonster(self.name, monster.name))
-			if not monster.is_alive():
-				game.fire_event(MonsterDead(monster.name))
+			game.attack(self, monster)
 			break
 
 MAX_MONSTER_ACTION_LENGTH = 10
@@ -159,11 +155,7 @@ class AggressiveColoredMonster(ColoredMonster):
 		_, monster_coord, monster = sorted(closest)[0]
 		monster_pos = monster_coord.get_global(game.scene.world)
 		if max(abs(self_pos.x - monster_pos.x), abs(self_pos.y - monster_pos.y)) <= 1:
-			damage = max(0, self.get_attack_damage() - monster.get_protection())
-			monster.affect_health(-damage)
-			game.fire_event(HitMonster(self.name, monster.name))
-			if not monster.is_alive():
-				game.fire_event(MonsterDead(monster.name))
+			game.attack(self, monster)
 		elif math.hypot(self_pos.x - monster_pos.x, self_pos.y - monster_pos.y) <= self.vision:
 			shift = Point(
 					sign(monster_pos.x - self_pos.x),
@@ -408,10 +400,6 @@ class ChatThanks(events.Event): FIELDS = ''
 class ChatComeLater(events.Event): FIELDS = ''
 class ChatQuestReminder(events.Event): FIELDS = 'color item'
 class NothingToDrop(events.Event): FIELDS = ''
-class DroppedItem(events.Event): FIELDS = 'actor item'
-class HitMonster(events.Event): FIELDS = 'actor target'
-class BumpIntoMonster(events.Event): FIELDS = 'actor target'
-class MonsterDead(events.Event): FIELDS = 'target'
 
 events.Events.on(NothingToPickUp)(lambda _:'Nothing to pick up here.')
 events.Events.on(NoOneToChat)(lambda _:'No one to chat with.')
@@ -424,16 +412,17 @@ events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
 events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')
 events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(_.color, _.item))
 events.Events.on(NothingToDrop)(lambda _:'Nothing to drop.')
-events.Events.on(DroppedItem)(lambda _:'{0} drop {1}.'.format(_.actor.title(), _.item.name))
+events.Events.on(Events.DropItem)(lambda _:'{0} drop {1}.'.format(_.actor.name.title(), _.item.name))
 events.Events.on(Events.BumpIntoTerrain)(lambda _:None)
 events.Events.on(Events.Move)(lambda _:None)
-events.Events.on(BumpIntoMonster)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
-events.Events.on(HitMonster)(lambda _:'{0} hit {1}.'.format(_.actor.title(), _.target))
-@events.Events.on(MonsterDead)
+events.Events.on(Events.Health)(lambda _:None)
+events.Events.on(Events.BumpIntoActor)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
+events.Events.on(Events.Attack)(lambda _:'{0} hit {1}.'.format(_.actor.name.title(), _.target.name))
+@events.Events.on(Events.Death)
 def monster_is_dead(_):
-	if _.target == 'you':
+	if _.target.name == 'you':
 		return 'You died!!!'
-	return '{0} is dead.'.format(_.target.title())
+	return '{0} is dead.'.format(_.target.name.title())
 events.Events.on(Events.StareIntoVoid)(lambda _:'Will not fall into the void.')
 
 Color = namedtuple('Color', 'fg attr dweller monster')
@@ -460,23 +449,6 @@ class Game(engine.Game):
 		return Scene()
 	def make_player(self):
 		return Player(None)
-	def attack(self, actor, other):
-		if not actor.is_hostile_to(other):
-			self.fire_event(BumpIntoMonster(actor.name, other.name))
-		else:
-			damage = max(0, actor.get_attack_damage() - other.get_protection())
-			other.affect_health(-damage)
-			self.fire_event(HitMonster(actor.name, other.name))
-			if not other.is_alive():
-				dest_pos = self.scene.get_global_pos(other)
-				dest_pos = NestedGrid.Coord.from_global(dest_pos, self.scene.world)
-				dest_field_data = self.scene.world.get_data(dest_pos)[-1]
-				dest_field_data.monsters.remove(other)
-				self.fire_event(MonsterDead(other.name))
-				for item in other.drop_all():
-					dest_field_data.items.append(item)
-					self.fire_event(DroppedItem(other.name, item.item))
-		actor.spend_action_points()
 
 class Scene(scene.Scene):
 	def __init__(self):
@@ -500,9 +472,22 @@ class Scene(scene.Scene):
 					random.randrange(zone.sizes[-1].width),
 					),
 				)
+	def exit_actor(self, actor):
+		dest_pos = self.get_global_pos(actor)
+		dest_pos = NestedGrid.Coord.from_global(dest_pos, self.world)
+		dest_field_data = self.world.get_data(dest_pos)[-1]
+		dest_field_data.monsters.remove(actor)
 	def enter_actor(self, actor, location):
 		actor.pos = self._player_pos.values[-1]
 		self.world.get_data(self._player_pos)[-1].monsters.append(actor)
+	def rip(self, actor):
+		dest_pos = self.get_global_pos(actor)
+		dest_pos = NestedGrid.Coord.from_global(dest_pos, self.world)
+		dest_field_data = self.world.get_data(dest_pos)[-1]
+		for item in actor.drop_all():
+			dest_field_data.items.append(item)
+			yield item.item
+		dest_field_data.monsters.remove(actor)
 	def save(self, stream):
 		self.world.save(stream)
 	def load(self, stream):
@@ -608,10 +593,14 @@ class Scene(scene.Scene):
 		return player
 	def get_player_coord(self):
 		_, coord = self._get_player_data()
+		if coord:
+			self._cached_coord = coord
+		else:
+			coord = self._cached_coord
 		return coord
 	def _get_player_data(self):
 		if self._cached_player_pos is None:
-			player, self._cached_player_pos = next((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player))
+			player, self._cached_player_pos = next(((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player)), (None, self._cached_player_pos))
 			return player, self._cached_player_pos
 		expected_zone_index = self._cached_player_pos.values[0]
 		expected_zone = self.world.cells.cell(expected_zone_index)
@@ -640,7 +629,7 @@ class Scene(scene.Scene):
 				return monster, self._cached_player_pos
 		# Not found in adjacent zones.
 		# Performing full lookup:
-		player, self._cached_player_pos = next((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player))
+		player, self._cached_player_pos = next(((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player)), (None, None))
 		return player, self._cached_player_pos
 
 	def get_global_pos(self, actor):
@@ -798,8 +787,8 @@ class MainGameMode(ui.MainGame):
 				self.game.scene.get_player_coord().values[2].y,
 				)),
 			ui.Indicator((62, 1), 18, lambda self:"T:{0}".format(self.game.playing_time)),
-			ui.Indicator((62, 2), 18, lambda self:"hp:{0}/{1}".format(self.game.scene.get_player().hp, self.game.scene.get_player().max_hp)),
-			ui.Indicator((62, 3), 18, lambda self:"inv:{0}".format(len(self.game.scene.get_player().inventory))),
+			ui.Indicator((62, 2), 18, lambda self:"hp:{0}/{1}".format(self.game.scene.get_player().hp, self.game.scene.get_player().max_hp) if self.game.scene.get_player() else ""),
+			ui.Indicator((62, 3), 18, lambda self:"inv:{0}".format(len(self.game.scene.get_player().inventory)) if self.game.scene.get_player() else ""),
 			ui.Indicator((62, 4), 18, lambda self:"here:{0}".format(self.item_here().sprite.sprite) if self.item_here() else ""),
 			]
 	def __init__(self, game):
@@ -936,7 +925,7 @@ class MainGameMode(ui.MainGame):
 				def _on_select_item(menu_choice):
 					item = game.scene.get_player().drop(menu_choice)
 					game.scene.world.get_data(game.scene.get_player_coord())[-1].items.append(item)
-					self.game.fire_event(DroppedItem('you', item.item))
+					self.game.fire_event(Events.DropItem(self.game.scene.get_player(), item.item))
 					self.game.scene.get_player().spend_action_points()
 				return InventoryMode(
 						game.scene.get_player().inventory,

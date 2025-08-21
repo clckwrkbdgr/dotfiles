@@ -4,6 +4,7 @@ from .. import pcg as settlers
 from .. import game
 from ..engine.terrain import Terrain
 from ..engine import items, actors, appliances
+from .. import engine
 from ..engine.ui import Sprite
 
 class NameItem(items.Item):
@@ -19,7 +20,7 @@ class HealingPotion(items.Item, items.Consumable):
 	_sprite = Sprite('!', None)
 	def consume(self, target):
 		diff = target.affect_health(+5)
-		return [game.HealthEvent(target, diff)]
+		return [engine.Events.Health(target, diff)]
 
 class Money(items.Item):
 	_name = 'money'

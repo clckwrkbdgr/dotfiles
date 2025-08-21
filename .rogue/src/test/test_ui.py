@@ -1109,7 +1109,7 @@ class TestCurses(unittest.TestCase):
 				' ###################',
 				]
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT_KILLED_MONSTER_WITH_DROP) + [
-			('addstr', 0, 0, 'player x> thief. thief-1hp. thief dies. thief VV money.                         '),
+			('addstr', 0, 0, 'player x> thief. thief-1hp. thief dies. thief VV money. money!                  '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
 			('addstr', 24, 20, '       '),

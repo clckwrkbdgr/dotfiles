@@ -417,14 +417,8 @@ class WeightedSquat(Squat):
 
 class NanoDungeon(_base.Game):
 	def __init__(self, rng_seed=0):
-		super(NanoDungeon, self).__init__(0)
-		self.automovement = False
-	def in_automovement(self):
-		return self.automovement
+		super(NanoDungeon, self).__init__(rng_seed)
 	def make_player(self):
 		return Rogue(None)
 	def make_scene(self, scene_id):
 		return Dungeon(self.rng)
-	def attack(self, actor, other):
-		self.fire_event(NoFighting(actor, other))
-		actor.spend_action_points()

@@ -23,23 +23,11 @@ class Version(Enum):
 	WIELDING
 	"""
 
-class AttackEvent(ImportantEvent):
-	""" Attack was performed. """
-	FIELDS = 'actor target'
-class HealthEvent(Event):
-	""" Health stat has been changed. """
-	FIELDS = 'target diff'
-class DeathEvent(ImportantEvent):
-	""" Someone's is no more. """
-	FIELDS = 'target'
 class DescendEvent(ImportantEvent):
 	""" Descended to another level. """
 	FIELDS = 'actor'
 class GrabItemEvent(ImportantEvent):
 	""" Grabs something from the floor. """
-	FIELDS = 'actor item'
-class DropItemEvent(ImportantEvent):
-	""" Drops something on the floor. """
 	FIELDS = 'actor item'
 class ConsumeItemEvent(ImportantEvent):
 	""" Consumes consumable item. """
@@ -229,6 +217,11 @@ class Scene(scene.Scene):
 		if not self.allow_movement_direction(actor.pos, pos):
 			return False
 		return self.strata.cell(pos).passable
+	def rip(self, actor):
+		for item in actor.drop_all():
+			self.items.append(item)
+			yield item.item
+		self.monsters.remove(actor)
 	def get_player(self):
 		""" Returns player character if exists, or None. """
 		return next((monster for monster in self.monsters if isinstance(monster, Player)), None)
@@ -268,30 +261,6 @@ class Game(engine.Game):
 	def get_viewport(self):
 		""" Returns current viewport rect. """
 		return Rect(Point(0, 0), self.scene.strata.size)
-	def affect_health(self, target, diff):
-		""" Changes health of given target.
-		Removes monsters from the main list, if health is zero.
-		Raises events for health change and death.
-		"""
-		diff = target.affect_health(diff)
-		self.fire_event(HealthEvent(target, diff))
-		self.check_alive(target)
-	def check_alive(self, target):
-		if not target.is_alive():
-			self.fire_event(DeathEvent(target))
-			for item in target.drop_all():
-				self.scene.items.append(item)
-				self.vision.visible_items.append(item.item)
-				self.fire_event(DropItemEvent(target, item.item))
-			self.scene.monsters.remove(target)
-	def attack(self, actor, target):
-		""" Attacks target monster.
-		Raises attack event.
-		"""
-		self.fire_event(AttackEvent(actor, target))
-		damage = max(0, actor.get_attack_damage() - target.get_protection())
-		self.affect_health(target, -damage)
-		self.update_vision()
 	def grab_item_at(self, actor, pos):
 		""" Grabs topmost item at given cell and puts to the inventory.
 		Produces events.
@@ -315,15 +284,13 @@ class Game(engine.Game):
 		self.fire_event(ConsumeItemEvent(monster, item))
 		for event in events:
 			self.fire_event(event)
-		self.check_alive(monster)
 	def drop_item(self, monster, item):
 		""" Drops item from inventory (item is removed).
 		Produces events.
 		"""
 		item = monster.drop(item)
 		self.scene.items.append(item)
-		self.vision.visible_items.append(item.item)
-		self.fire_event(DropItemEvent(monster, item.item))
+		self.fire_event(engine.Events.DropItem(monster, item.item))
 	def wield_item(self, monster, item):
 		""" Monster equips item from inventory.
 		Produces events.

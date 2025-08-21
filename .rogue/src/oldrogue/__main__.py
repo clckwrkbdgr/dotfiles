@@ -234,7 +234,7 @@ events.Event.on(Event.GrabbedItem)(lambda event: "Grabbed {item}.".format(who=ev
 events.Event.on(NothingToPickUp)(lambda event:"There is nothing here to pick up.")
 class InventoryEmpty(events.Event): FIELDS = ''
 events.Event.on(InventoryEmpty)(lambda event:"Inventory is empty.")
-events.Event.on(Event.MonsterDroppedItem)(lambda event:"Dropped {item}.".format(Who=event.who.name.title(), item=event.item.name))
+events.Event.on(Events.DropItem)(lambda event:"Dropped {item}.".format(Who=event.who.name.title(), item=event.item.name))
 class DropsItem(events.Event): FIELDS = 'Who'
 events.Event.on(DropsItem)(lambda event:"{Who} drops {item}.".format(Who=event.Who))
 
@@ -254,8 +254,8 @@ events.Event.on(NothingToTakeOff)(lambda event:"Nothing is worn already.")
 events.Event.on(TakingOff)(lambda event:"Taking off {item}.".format(item=event.item.name))
 events.Event.on(Wearing)(lambda event:"Wearing {item}.".format(item=event.item.name))
 
-events.Event.on(Event.AttackMonster)(lambda event: "{Who} hit {whom} for {damage} hp.".format(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
-events.Event.on(Event.MonsterDied)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
+events.Event.on(Events.Attack)(lambda event: "{Who} hit {whom} for {damage} hp.".format(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
+events.Event.on(Events.Death)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
 @events.Event.on(Events.BumpIntoTerrain)
 def bumps_into_terrain(event):
 	if event.who != dungeon.get_player():

@@ -350,14 +350,7 @@ class TestGridRoomMap(unittest.TestCase):
 		gridmap = dungeon.scene
 		mj12.pos = Point(9, 2)
 		gridmap.monsters.append(mj12)
-		self.assertTrue(mj12.is_alive())
-		with self.assertRaises(RuntimeError):
-			list(dungeon.rip(mj12))
-		self.assertTrue(mj12.is_alive())
-		self.assertEqual(list(dungeon.scene.iter_actors_at(Point(9, 2))), [mj12])
-
-		mj12.hp = 0
-		loot = list(dungeon.rip(mj12))
+		loot = list(dungeon.scene.rip(mj12))
 		self.assertEqual(loot, [armor, pistol])
 		self.assertEqual(list(dungeon.scene.iter_actors_at(Point(9, 2))), [])
 	def should_grab_item(self):
@@ -406,7 +399,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [])
 		dungeon.events = []
 		dungeon.drop_item(jc, pistol)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.MonsterDroppedItem(jc, pistol)]))
+		self.assertEqual(_R(dungeon.events), _R([Events.DropItem(jc, pistol)]))
 		self.assertFalse(jc.has_item(StealthPistol))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [pistol])
 	def should_wield_item(self):
@@ -686,12 +679,12 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move_actor(mj12, Point(0, -1))
 		self.assertEqual(mj12.pos, Point(8, 3))
 
-		self.assertEqual(_R(dungeon.events), _R([Events.Move(mj12, Point(8, 3)), game.Event.BumpIntoMonster(mj12, vacuum)]))
+		self.assertEqual(_R(dungeon.events), _R([Events.Move(mj12, Point(8, 3)), Events.BumpIntoActor(mj12, vacuum)]))
 
 		dungeon.events = []
 		dungeon.move_actor(mj12, Point(+1, 0))
 		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(dungeon.events), _R([game.Event.AttackMonster(mj12, dungeon.scene.get_player(), 3)]))
+		self.assertEqual(_R(dungeon.events), _R([Events.Attack(mj12, dungeon.scene.get_player(), 3), Events.Health(dungeon.scene.get_player(), -3)]))
 		self.assertEqual(dungeon.scene.get_player().hp, 97)
 
 		dungeon.events = []
@@ -700,9 +693,10 @@ class TestDungeon(unittest.TestCase):
 		dungeon.move_actor(mj12, Point(+1, 0))
 		self.assertEqual(mj12.pos, Point(8, 3))
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.AttackMonster(mj12, player, 3),
-			game.Event.MonsterDied(player),
-			game.Event.MonsterDroppedItem(player, pistol),
+			Events.Attack(mj12, player, 3),
+			Events.Health(player, -3),
+			Events.Death(player),
+			Events.DropItem(player, pistol),
 			]))
 		self.assertTrue(dungeon.is_finished())
 		self.assertEqual(dungeon.scene.items, [items.ItemAtPos(Point(9, 3), pistol)])
