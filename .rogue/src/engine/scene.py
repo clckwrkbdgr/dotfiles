@@ -146,6 +146,10 @@ class Scene(object):
 		By default just changes Actor's .pos property.
 		"""
 		actor.pos = pos
+	def drop_item(self, item_at_pos): # pragma: no cover
+		""" Should add item at specified pos.
+		"""
+		raise NotImplementedError()
 	def rip(self, actor): # pragma: no cover
 		""" Should remove actor and drop all loot in its place.
 		Should yield all dropped items.

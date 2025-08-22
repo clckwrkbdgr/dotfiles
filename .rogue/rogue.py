@@ -488,6 +488,10 @@ class Scene(scene.Scene):
 			dest_field_data.items.append(item)
 			yield item.item
 		dest_field_data.monsters.remove(actor)
+	def drop_item(self, item_at_pos):
+		coord = item_at_pos.item.coord # Eh.
+		delattr(item_at_pos.item, 'coord') # Eh.
+		self.world.get_data(coord)[-1].items.append(item_at_pos)
 	def save(self, stream):
 		self.world.save(stream)
 	def load(self, stream):
@@ -923,10 +927,9 @@ class MainGameMode(ui.MainGame):
 				self.game.fire_event(NothingToDrop())
 			else:
 				def _on_select_item(menu_choice):
-					item = game.scene.get_player().drop(menu_choice)
-					game.scene.world.get_data(game.scene.get_player_coord())[-1].items.append(item)
-					self.game.fire_event(Events.DropItem(self.game.scene.get_player(), item.item))
-					self.game.scene.get_player().spend_action_points()
+					menu_choice = game.scene.get_player().inventory[menu_choice] # Eh.
+					menu_choice.coord = game.scene.get_player_coord() # Eh.
+					game.drop_item(game.scene.get_player(), menu_choice)
 				return InventoryMode(
 						game.scene.get_player().inventory,
 						caption="Select item to drop (a-z/ESC):",

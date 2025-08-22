@@ -82,6 +82,8 @@ class Scene(scene.Scene):
 			self.items.append(item)
 			yield item.item
 		self.monsters.remove(actor)
+	def drop_item(self, item_at_pos):
+		self.items.append(item_at_pos)
 	def valid(self, pos): # pragma: no cover -- TODO
 		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
 	@functools.lru_cache()
@@ -363,10 +365,6 @@ class Dungeon(engine.Game):
 				self.fire_event(_)
 		except actor.ItemNotFit as e:
 			return self.fire_event(Event.NotConsumable(item))
-	def drop_item(self, who, item):
-		item = who.drop(item)
-		self.scene.items.append(item)
-		self.fire_event(engine.Events.DropItem(who, item.item))
 	def wield_item(self, who, item):
 		try:
 			who.wield(item)

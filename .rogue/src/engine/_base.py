@@ -380,6 +380,14 @@ class Game(object):
 			self.scene.recalibrate(new_pos, Size(actor.vision, actor.vision))
 			self.update_vision()
 		return True
+	def drop_item(self, actor, item):
+		""" Drops item from inventory on the floor (item is removed).
+		Produces events.
+		"""
+		item = actor.drop(item)
+		self.scene.drop_item(item)
+		self.fire_event(Events.DropItem(actor, item.item))
+		actor.spend_action_points()
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

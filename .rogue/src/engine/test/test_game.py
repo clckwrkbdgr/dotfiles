@@ -149,6 +149,30 @@ class TestMovement(unittest.TestCase):
 				##########
 				"""))
 
+class TestInventory(unittest.TestCase):
+	def should_drop_item(self):
+		game = NanoDungeon()
+		game.generate(None)
+		dagger = game.scene.get_player().inventory[0]
+		game.drop_item(game.scene.get_player(), dagger)
+		self.assertTrue(game.scene.get_player().has_acted())
+		self.assertEqual(list(game.scene.iter_items_at((1, 5))), [dagger])
+		self.assertFalse(game.scene.get_player().inventory)
+		self.assertEqual(game.events, [_base.Events.DropItem(game.scene.get_player(), dagger)])
+		game.scene.get_player().pos = Point(2, 6)
+		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
+				##########
+				#........#
+				#?.&.....#
+				#........#
+				#........#
+				#(.......#
+				##@~>....#
+				#........#
+				#..b.....#
+				##########
+				"""))
+
 class TestScenes(unittest.TestCase):
 	def should_travel_to_other_scene(self):
 		game = NanoDungeon()

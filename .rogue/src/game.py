@@ -217,6 +217,8 @@ class Scene(scene.Scene):
 		if not self.allow_movement_direction(actor.pos, pos):
 			return False
 		return self.strata.cell(pos).passable
+	def drop_item(self, item_at_pos):
+		self.items.append(item_at_pos)
 	def rip(self, actor):
 		for item in actor.drop_all():
 			self.items.append(item)
@@ -284,13 +286,6 @@ class Game(engine.Game):
 		self.fire_event(ConsumeItemEvent(monster, item))
 		for event in events:
 			self.fire_event(event)
-	def drop_item(self, monster, item):
-		""" Drops item from inventory (item is removed).
-		Produces events.
-		"""
-		item = monster.drop(item)
-		self.scene.items.append(item)
-		self.fire_event(engine.Events.DropItem(monster, item.item))
 	def wield_item(self, monster, item):
 		""" Monster equips item from inventory.
 		Produces events.

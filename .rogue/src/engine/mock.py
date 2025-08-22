@@ -260,6 +260,8 @@ class Dungeon(scene.Scene):
 		assert stairs is not None, "No stairs with id {0}".format(repr(location))
 		actor.pos = stairs
 		self.monsters.append(actor)
+	def drop_item(self, item_at_pos):
+		self.items.append(item_at_pos)
 
 	def valid(self, pos):
 		return self.cells.valid(pos)
@@ -419,6 +421,8 @@ class NanoDungeon(_base.Game):
 	def __init__(self, rng_seed=0):
 		super(NanoDungeon, self).__init__(rng_seed)
 	def make_player(self):
-		return Rogue(None)
+		rogue = Rogue(None)
+		rogue.grab(Dagger())
+		return rogue
 	def make_scene(self, scene_id):
 		return Dungeon(self.rng)
