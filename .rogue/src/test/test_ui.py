@@ -407,7 +407,7 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			] + [('addstr', i, 0, _) for i, _ in enumerate([
-			'hjklyubn - Move.',
+			'hjklyubn - Move around.',
 			'. - Wait.',
 			'> - Descend.',
 			'? - Show this help.',

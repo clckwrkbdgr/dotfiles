@@ -1,6 +1,19 @@
+import logging
+Log = logging.getLogger('rogue')
 from collections import namedtuple
-from clckwrkbdgr.math import Point, Rect, Size
+from clckwrkbdgr.math import Point, Direction, Rect, Size
 import clckwrkbdgr.tui
+
+DIRECTION = {
+		'h' : Direction.LEFT,
+		'j' : Direction.DOWN,
+		'k' : Direction.UP,
+		'l' : Direction.RIGHT,
+		'y' : Direction.UP_LEFT,
+		'u' : Direction.UP_RIGHT,
+		'b' : Direction.DOWN_LEFT,
+		'n' : Direction.DOWN_RIGHT,
+		}
 
 Sprite = namedtuple('Sprite', 'sprite color')
 
@@ -21,9 +34,12 @@ class Indicator(object):
 		value = self.value_getter(mode)
 		ui.print_line(self.pos.y, self.pos.x, value.ljust(self.width))
 
+_MainKeys = clckwrkbdgr.tui.Keymapping()
 class MainGame(clckwrkbdgr.tui.Mode):
 	""" Main game mode: map, status line/panel, messages.
 	"""
+	Keys = _MainKeys
+	KEYMAPPING = _MainKeys
 	INDICATORS = []
 
 	def __init__(self, game):
@@ -142,3 +158,16 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		"""
 		for indicator in self.INDICATORS:
 			indicator.draw(ui, self)
+
+	# Actual controls.
+
+	@_MainKeys.bind(list('hjklyubn'), lambda key:DIRECTION[str(key)])
+	def move_player(self, direction):
+		""" Move around. """
+		Log.debug('Moving.')
+		if self.aim:
+			new_pos = self.aim + direction
+			if self.game.scene.valid(new_pos):
+				self.aim = new_pos
+		else:
+			self.game.move_actor(self.game.scene.get_player(), direction)

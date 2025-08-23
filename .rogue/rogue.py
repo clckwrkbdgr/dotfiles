@@ -21,21 +21,11 @@ from src.engine.items import Item
 from src.engine.terrain import Terrain
 from src.engine.actors import Monster
 from src.engine import ui
+from src.engine import ui as UI
 from src.engine.ui import Sprite
 from src.engine import Events
 
 SAVEFILE_VERSION = 13
-
-MOVEMENT = {
-		'h' : Point(-1, 0),
-		'j' : Point(0, 1),
-		'k' : Point(0, -1),
-		'l' : Point(1, 0),
-		'y' : Point(-1, -1),
-		'u' : Point(+1, -1),
-		'b' : Point(-1, +1),
-		'n' : Point(+1, +1),
-		}
 
 class Bog(Terrain):
 	_sprite = Sprite('~', 'green')
@@ -778,9 +768,7 @@ def main(ui):
 	else:
 		savefile.unlink()
 
-Keys = clckwrkbdgr.tui.Keymapping()
 class MainGameMode(ui.MainGame):
-	KEYMAPPING = Keys
 	INDICATORS = [
 			ui.Indicator((62, 0), 18, lambda self: "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
 				self.game.scene.get_player_coord().values[0].x,
@@ -809,13 +797,13 @@ class MainGameMode(ui.MainGame):
 		return next(self.game.scene.iter_items_at(self.game.scene.get_player_coord()), None)
 	def get_message_line_rect(self):
 		return Rect(Point(0, 23), Size(80, 1))
-	@Keys.bind('S')
+	@ui.MainGame.Keys.bind('S')
 	def exit_game(self):
 		return True
-	@Keys.bind('.')
+	@ui.MainGame.Keys.bind('.')
 	def wait(self):
 		self.game.scene.get_player().spend_action_points()
-	@Keys.bind('g')
+	@ui.MainGame.Keys.bind('g')
 	def grab_item(self):
 		game = self.game
 		if True:
@@ -830,7 +818,7 @@ class MainGameMode(ui.MainGame):
 				self.game.scene.get_player().spend_action_points()
 			except Monster.InventoryFull:
 				self.game.fire_event(InventoryIsFull())
-	@Keys.bind('C')
+	@ui.MainGame.Keys.bind('C')
 	def char(self):
 		game = self.game
 		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
@@ -905,7 +893,7 @@ class MainGameMode(ui.MainGame):
 							self.game.fire_event(ChatComeLater())
 						return TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.prepared_quest)),
 										 on_yes=_on_yes, on_no=_on_no)
-	@Keys.bind('q')
+	@ui.MainGame.Keys.bind('q')
 	def show_questlog(self):
 		game = self.game
 		if True:
@@ -916,10 +904,10 @@ class MainGameMode(ui.MainGame):
 					]
 			quest_log = QuestLog(questing)
 			return quest_log
-	@Keys.bind('i')
+	@ui.MainGame.Keys.bind('i')
 	def display_inventory(self):
 		return InventoryMode(self.game.scene.get_player().inventory)
-	@Keys.bind('d')
+	@ui.MainGame.Keys.bind('d')
 	def drop_item(self):
 		game = self.game
 		if True:
@@ -935,9 +923,6 @@ class MainGameMode(ui.MainGame):
 						caption="Select item to drop (a-z/ESC):",
 						on_select=_on_select_item
 					)
-	@Keys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
-	def move_player(self, control):
-		self.game.move_actor(self.game.scene.get_player(), control)
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()
 class DirectionDialogMode(clckwrkbdgr.tui.Mode):
@@ -948,7 +933,7 @@ class DirectionDialogMode(clckwrkbdgr.tui.Mode):
 	def redraw(self, ui):
 		ui.print_line(24, 0, " " * 80)
 		ui.print_line(24, 0, "Too crowded. Chat in which direction?")
-	@DirectionKeys.bind(list('hjklyubn'), lambda key:MOVEMENT[str(key)])
+	@DirectionKeys.bind(list('hjklyubn'), lambda key:UI.DIRECTION[str(key)])
 	def choose_direction(self, direction):
 		if self.on_direction:
 			return self.on_direction(direction)

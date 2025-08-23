@@ -503,38 +503,6 @@ class MainGame(ui.MainGame):
 	def wait(self):
 		""" Wait. """
 		self.game.scene.get_player().spend_action_points()
-	@Controls('h')
-	def move_west(self):
-		""" Move around. """
-		self.data.move_actor(self.game.scene.get_player(), Point(-1,  0))
-	@Controls('j')
-	def move_south(self):
-		""" Move around. """
-		self.data.move_actor(self.game.scene.get_player(), Point( 0, +1))
-	@Controls('k')
-	def move_north(self):
-		""" Move around. """
-		self.data.move_actor(self.game.scene.get_player(), Point( 0, -1))
-	@Controls('l')
-	def move_east(self):
-		""" Move around. """
-		self.data.move_actor(self.game.scene.get_player(), Point(+1,  0))
-	@Controls('y')
-	def move_north_west(self):
-		""" Move around. """
-		self.data.move_actor(self.game.scene.get_player(), Point(-1, -1))
-	@Controls('u')
-	def move_north_east(self):
-		""" Move around. """
-		self.data.move_actor(self.game.scene.get_player(), Point(+1, -1))
-	@Controls('b')
-	def move_south_west(self):
-		""" Move around. """
-		self.data.move_actor(self.game.scene.get_player(), Point(-1, +1))
-	@Controls('n')
-	def move_south_east(self):
-		""" Move around. """
-		self.data.move_actor(self.game.scene.get_player(), Point(+1, +1))
 
 class GodModeAction(tui.widgets.Menu):
 	KEYS_TO_CLOSE = [curses.ascii.ESC, ord('~')]

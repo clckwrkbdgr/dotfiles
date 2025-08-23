@@ -15,20 +15,7 @@ from .engine import ui
 from . import engine
 from .engine.ui import Sprite
 
-DIRECTION = {
-	'h' : Direction.LEFT,
-	'j' : Direction.DOWN,
-	'k' : Direction.UP,
-	'l' : Direction.RIGHT,
-	'y' : Direction.UP_LEFT,
-	'u' : Direction.UP_RIGHT,
-	'b' : Direction.DOWN_LEFT,
-	'n' : Direction.DOWN_RIGHT,
-	}
-
-Keys = Keymapping()
 class MainGame(ui.MainGame):
-	KEYMAPPING = Keys
 	INDICATORS = [
 			ui.Indicator((0, 24), 11, lambda self: 'hp: {0:>{1}}/{2}'.format(
 				self.game.scene.get_player().hp,
@@ -100,27 +87,27 @@ class MainGame(ui.MainGame):
 	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	@Keys.bind(None)
+	@ui.MainGame.Keys.bind(None)
 	def on_idle(self): # pragma: no cover -- TODO why is this needed?
 		""" Show this help. """
 		return None
-	@Keys.bind('?')
+	@ui.MainGame.Keys.bind('?')
 	def help(self):
 		""" Show this help. """
 		return HelpScreen()
-	@Keys.bind('q')
+	@ui.MainGame.Keys.bind('q')
 	def quit(self):
 		""" Save and quit. """
 		Log.debug('Exiting the game.')
 		return True
-	@Keys.bind('x')
+	@ui.MainGame.Keys.bind('x')
 	def examine(self):
 		""" Examine surroundings (cursor mode). """
 		if self.aim:
 			self.aim = None
 		else:
 			self.aim = self.game.scene.get_player().pos
-	@Keys.bind('.')
+	@ui.MainGame.Keys.bind('.')
 	def autowalk(self):
 		""" Wait. """
 		if self.aim:
@@ -130,63 +117,51 @@ class MainGame(ui.MainGame):
 		else:
 			self.game.wait()
 			self.game.end_turn()
-	@Keys.bind('o')
+	@ui.MainGame.Keys.bind('o')
 	def autoexplore(self):
 		""" Autoexplore. """
 		self.game.automove()
-	@Keys.bind('~')
+	@ui.MainGame.Keys.bind('~')
 	def god_mode(self):
 		""" God mode options. """
 		return GodModeMenu(self.game)
-	@Keys.bind('Q')
+	@ui.MainGame.Keys.bind('Q')
 	def suicide(self):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
 		self.game.suicide(self.game.scene.get_player())
 		self.game.end_turn()
-	@Keys.bind('>')
+	@ui.MainGame.Keys.bind('>')
 	def descend(self):
 		""" Descend. """
 		if not self.aim:
 			self.game.descend()
-	@Keys.bind('g')
+	@ui.MainGame.Keys.bind('g')
 	def grab(self):
 		""" Grab item. """
 		self.game.grab_item_at(self.game.scene.get_player(), self.game.scene.get_player().pos)
 		self.game.end_turn()
-	@Keys.bind('d')
+	@ui.MainGame.Keys.bind('d')
 	def drop(self):
 		""" Drop item. """
 		return DropSelection(self.game)
-	@Keys.bind('e')
+	@ui.MainGame.Keys.bind('e')
 	def consume(self):
 		""" Consume item. """
 		return ConsumeSelection(self.game)
-	@Keys.bind('i')
+	@ui.MainGame.Keys.bind('i')
 	def show_inventory(self):
 		""" Show inventory. """
 		return Inventory(self.game)
-	@Keys.bind('E')
+	@ui.MainGame.Keys.bind('E')
 	def show_equipment(self):
 		""" Show equipment. """
 		return Equipment(self.game)
-	@Keys.bind(list('hjklyubn'), param=lambda key: DIRECTION[str(key)])
-	def move(self, direction):
-		""" Move. """
-		Log.debug('Moving.')
-		if self.aim:
-			shift = direction
-			new_pos = self.aim + shift
-			if self.game.scene.strata.valid(new_pos):
-				self.aim = new_pos
-		else:
-			self.game.move_actor(self.game.scene.get_player(), direction)
-			self.game.end_turn()
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """
 	def redraw(self, ui):
-		for row, (_, binding) in enumerate(Keys.list_all()):
+		for row, (_, binding) in enumerate(MainGame.Keys.list_all()):
 			if utils.is_collection(binding.key):
 				keys = ''.join(map(str, binding.key))
 			else:
