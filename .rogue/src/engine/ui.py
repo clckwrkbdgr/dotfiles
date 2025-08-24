@@ -161,6 +161,15 @@ class MainGame(clckwrkbdgr.tui.Mode):
 
 	# Actual controls.
 
+	@_MainKeys.bind('S')
+	def exit_game(self):
+		""" Save and quit. """
+		Log.debug('Exiting the game.')
+		return True
+	@_MainKeys.bind('o')
+	def start_autoexplore(self):
+		""" Autoexplore. """
+		self.game.automove()
 	@_MainKeys.bind(list('hjklyubn'), lambda key:DIRECTION[str(key)])
 	def move_player(self, direction):
 		""" Move around. """

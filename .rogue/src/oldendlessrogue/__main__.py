@@ -33,12 +33,6 @@ class Game(ui.MainGame):
 		return Rect(self.game.scene.get_player().pos - self.VIEW_CENTER, Size(25, 25))
 	def get_message_line_rect(self):
 		return Rect(Point(0, 25), Size(80, 1))
-	@ui.MainGame.Keys.bind('q')
-	def quit(self):
-		return True
-	@ui.MainGame.Keys.bind('o')
-	def start_autoexplore(self):
-		self.game.automove()
 
 import click
 @click.command()

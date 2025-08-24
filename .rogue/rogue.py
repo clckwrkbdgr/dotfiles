@@ -797,9 +797,6 @@ class MainGameMode(ui.MainGame):
 		return next(self.game.scene.iter_items_at(self.game.scene.get_player_coord()), None)
 	def get_message_line_rect(self):
 		return Rect(Point(0, 23), Size(80, 1))
-	@ui.MainGame.Keys.bind('S')
-	def exit_game(self):
-		return True
 	@ui.MainGame.Keys.bind('.')
 	def wait(self):
 		self.game.scene.get_player().spend_action_points()

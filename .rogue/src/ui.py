@@ -95,11 +95,6 @@ class MainGame(ui.MainGame):
 	def help(self):
 		""" Show this help. """
 		return HelpScreen()
-	@ui.MainGame.Keys.bind('q')
-	def quit(self):
-		""" Save and quit. """
-		Log.debug('Exiting the game.')
-		return True
 	@ui.MainGame.Keys.bind('x')
 	def examine(self):
 		""" Examine surroundings (cursor mode). """
@@ -117,10 +112,6 @@ class MainGame(ui.MainGame):
 		else:
 			self.game.wait()
 			self.game.end_turn()
-	@ui.MainGame.Keys.bind('o')
-	def autoexplore(self):
-		""" Autoexplore. """
-		self.game.automove()
 	@ui.MainGame.Keys.bind('~')
 	def god_mode(self):
 		""" God mode options. """

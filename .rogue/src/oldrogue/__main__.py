@@ -353,10 +353,6 @@ class ExitWithoutSave(tui.app.AppExit):
 	def __init__(self):
 		super(ExitWithoutSave, self).__init__(False)
 
-class SaveAndExit(tui.app.AppExit):
-	def __init__(self):
-		super(SaveAndExit, self).__init__(True)
-
 class GameCompleted(Exception):
 	pass
 
@@ -414,10 +410,6 @@ class MainGame(ui.MainGame):
 	def quit(self):
 		""" Abandon game. """
 		return SuicideAttempt(to_main_screen(self), self.data)
-	@Controls('S')
-	def save_and_exit(self):
-		""" Save & exit. """
-		raise SaveAndExit()
 	@Controls('~')
 	def god_mode(self):
 		return GodModeAction

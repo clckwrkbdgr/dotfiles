@@ -389,7 +389,7 @@ class TestCurses(unittest.TestCase):
 			])
 	def should_perform_dungeon_actions(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui, loop = self._init(dungeon, 'h? q')
+		ui, loop = self._init(dungeon, 'h? S')
 		self.assertEqual(loop.action(), True)
 		self.assertEqual(dungeon.scene.get_player().pos, Point(8, 6))
 		self.assertEqual(loop.action(), True)
@@ -413,12 +413,12 @@ class TestCurses(unittest.TestCase):
 			'? - Show this help.',
 			'E - Show equipment.',
 			'Q - Suicide (quit without saving).',
+			'S - Save and quit.',
 			'd - Drop item.',
 			'e - Consume item.',
 			'g - Grab item.',
 			'i - Show inventory.',
 			'o - Autoexplore.',
-			'q - Save and quit.',
 			'x - Examine surroundings (cursor mode).',
 			'~ - God mode options.',
 			'[Press Any Key...]',
@@ -470,7 +470,7 @@ class TestCurses(unittest.TestCase):
 		self.assertTrue(loop.action())
 	def should_exit(self):
 		dungeon = mock_dungeon.build('single mock monster')
-		ui, loop = self._init(dungeon, 'q')
+		ui, loop = self._init(dungeon, 'S')
 		self.assertFalse(loop.action())
 	@mock.patch('curses.curs_set')
 	def should_enable_aim(self, curs_set):
