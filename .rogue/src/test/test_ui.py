@@ -408,7 +408,7 @@ class TestCurses(unittest.TestCase):
 			('clear',),
 			] + [('addstr', i, 0, _) for i, _ in enumerate([
 			'hjklyubn - Move around.',
-			'. - Wait.',
+			'. - Wait in-place / go to selected aim.',
 			'> - Descend.',
 			'? - Show this help.',
 			'E - Show equipment.',
@@ -602,25 +602,6 @@ class TestCurses(unittest.TestCase):
 			('addstr', 24, 77, '[?]'),
 			('refresh',),
 			])
-	def should_move_character(self):
-		dungeon = mock_dungeon.build('single mock monster')
-		ui, loop = self._init(dungeon, 'hjklyubn')
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon.scene.get_player().pos, Point(8, 6))
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon.scene.get_player().pos, Point(8, 7))
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon.scene.get_player().pos, Point(8, 6))
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon.scene.get_player().pos, Point(9, 6))
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon.scene.get_player().pos, Point(8, 5))
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon.scene.get_player().pos, Point(9, 4))
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon.scene.get_player().pos, Point(8, 5))
-		self.assertTrue(loop.action())
-		self.assertEqual(dungeon.scene.get_player().pos, Point(9, 6))
 	@mock.patch('curses.curs_set')
 	def should_move_aim(self, curs_set):
 		dungeon = mock_dungeon.build('single mock monster')

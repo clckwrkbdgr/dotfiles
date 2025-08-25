@@ -180,3 +180,11 @@ class MainGame(clckwrkbdgr.tui.Mode):
 				self.aim = new_pos
 		else:
 			self.game.move_actor(self.game.scene.get_player(), direction)
+	@_MainKeys.bind('.')
+	def wait(self):
+		""" Wait in-place / go to selected aim. """
+		if self.aim:
+			self.game.automove(self.aim)
+			self.aim = None
+		else:
+			self.game.wait(self.game.scene.get_player())

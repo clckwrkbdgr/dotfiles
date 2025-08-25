@@ -341,6 +341,9 @@ class Game(object):
 		self.affect_health(other, -damage)
 		self.update_vision()
 		actor.spend_action_points()
+	def wait(self, actor):
+		""" Wait in place and do nothing for a turn. """
+		actor.spend_action_points()
 	def move_actor(self, actor, shift):
 		""" Moves monster into given direction (if possible).
 		If there is a monster, performs .attack().

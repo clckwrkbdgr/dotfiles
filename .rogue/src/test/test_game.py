@@ -151,8 +151,7 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'Attack(actor=monster, target=player, damage=1)',
 			'Health(target=player, diff=-1)',
 			]])
-		dungeon.wait() # Just wait.
-		dungeon.end_turn()
+		dungeon.wait(dungeon.get_player()) # Just wait.
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Attack(actor=monster, target=player, damage=1)',
@@ -178,16 +177,14 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'Attack(actor=monster, target=player, damage=1)'.format(9),
 			'Health(target=player, diff=-1)'.format(9),
 			]])
-		dungeon.wait()
-		dungeon.end_turn()
+		dungeon.wait(dungeon.get_player())
 		dungeon.process_others()
 		for i in range(1, 9): # Just wait while monster kills you.
 			self.assertEqual(self._events(), [[
 				'Attack(actor=monster, target=player, damage=1)'.format(9 - i),
 				'Health(target=player, diff=-1)'.format(9 - i),
 				]])
-			dungeon.wait()
-			dungeon.end_turn()
+			dungeon.wait(dungeon.get_player())
 			dungeon.process_others()
 		self.assertTrue(dungeon.is_finished())
 		self.maxDiff = None
@@ -499,44 +496,6 @@ class TestMovement(AbstractTestDungeon):
 				#       .......    #
 				 ###################
 				"""))
-	def should_not_move_player_into_the_void(self):
-		dungeon = self.dungeon = mock_dungeon.build('mini lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP)
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.LEFT)
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-	def should_not_move_player_into_a_wall(self):
-		dungeon = self.dungeon = mock_dungeon.build('mini 2 lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN)
-		self.assertEqual(dungeon.get_player().pos, Point(0, 1))
-	def should_move_player_through_a_wall_in_noclip_mode(self):
-		dungeon = self.dungeon = mock_dungeon.build('mini 3 lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-
-		dungeon.god.noclip = True
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.get_player().pos, Point(1, 0))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.get_player().pos, Point(2, 0))
-	def should_move_player_diagonally_only_if_allowed(self):
-		dungeon = self.dungeon = mock_dungeon.build('mini 4 lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
-
-		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN))
-		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN_RIGHT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT))
-		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.UP_RIGHT))
-		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.UP_LEFT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT))
-		self.assertEqual(dungeon.get_player().pos, Point(2, 2))
 	def should_not_allow_move_player_diagonally_both_from_and_to_good_cell(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini rogue lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(3, 1))

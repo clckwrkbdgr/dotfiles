@@ -93,6 +93,11 @@ class TestVision(unittest.TestCase):
 				""").replace('_', ' '))
 
 class TestMovement(unittest.TestCase):
+	def should_wait_in_place(self):
+		game = NanoDungeon()
+		game.generate(None)
+		game.wait(game.scene.get_player())
+		self.assertTrue(game.scene.get_player().has_acted())
 	def should_move_actor(self):
 		game = NanoDungeon()
 		game.generate(None)
@@ -107,6 +112,32 @@ class TestMovement(unittest.TestCase):
 				#........#
 				#<.......#
 				##@~>....#
+				#........#
+				#..b.....#
+				##########
+				"""))
+	def should_not_move_into_void(self):
+		game = NanoDungeon()
+		game.generate(None)
+		game.scene.get_player().pos = Point(0, 6)
+		self.assertFalse(game.move_actor(game.scene.get_player(), Point(-1, 0)))
+		self.assertFalse(game.scene.get_player().has_acted())
+		self.assertEqual(game.events, [_base.Events.StareIntoVoid()])
+	def should_walk_through_terrain_in_noclip_mode(self):
+		game = NanoDungeon()
+		game.generate(None)
+		game.god.noclip = True
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(0, 1)))
+		self.assertTrue(game.scene.get_player().has_acted())
+		self.assertEqual(game.events, [_base.Events.Move(game.scene.get_player(), Point(1, 6))])
+		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
+				##########
+				#........#
+				#?.&.....#
+				#........#
+				#........#
+				#<.......#
+				#@.~>....#
 				#........#
 				#..b.....#
 				##########

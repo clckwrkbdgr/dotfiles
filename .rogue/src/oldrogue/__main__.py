@@ -491,10 +491,6 @@ class MainGame(ui.MainGame):
 	def inventory(self):
 		""" Toggle inventory. """
 		return Inventory
-	@Controls('.')
-	def wait(self):
-		""" Wait. """
-		self.game.scene.get_player().spend_action_points()
 
 class GodModeAction(tui.widgets.Menu):
 	KEYS_TO_CLOSE = [curses.ascii.ESC, ord('~')]

@@ -102,16 +102,6 @@ class MainGame(ui.MainGame):
 			self.aim = None
 		else:
 			self.aim = self.game.scene.get_player().pos
-	@ui.MainGame.Keys.bind('.')
-	def autowalk(self):
-		""" Wait. """
-		if self.aim:
-			dest = self.aim
-			self.aim = None
-			self.game.automove(dest)
-		else:
-			self.game.wait()
-			self.game.end_turn()
 	@ui.MainGame.Keys.bind('~')
 	def god_mode(self):
 		""" God mode options. """

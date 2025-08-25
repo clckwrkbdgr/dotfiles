@@ -221,6 +221,10 @@ class TestMainGameControls(MainGameTestCase):
 		self.assertFalse(self.game.automovement)
 		self.assertTrue(self.loop.action())
 		self.assertTrue(self.game.automovement)
+	def should_wait_in_place(self):
+		self.mock_ui.key('.')
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.playing_time, 1)
 	def should_move(self):
 		self.mock_ui.key('lb')
 		self.assertTrue(self.loop.action())

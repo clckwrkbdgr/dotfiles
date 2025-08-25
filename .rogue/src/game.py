@@ -258,8 +258,6 @@ class Game(engine.Game):
 		self.god.vision = not self.god.vision
 	def toggle_god_noclip(self):
 		self.god.noclip = not self.god.noclip
-	def wait(self):
-		pass
 	def get_viewport(self):
 		""" Returns current viewport rect. """
 		return Rect(Point(0, 0), self.scene.strata.size)
