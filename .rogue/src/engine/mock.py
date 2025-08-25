@@ -262,6 +262,11 @@ class Dungeon(scene.Scene):
 		self.monsters.append(actor)
 	def drop_item(self, item_at_pos):
 		self.items.append(item_at_pos)
+	def rip(self, actor):
+		for item in actor.drop_all():
+			self.items.append(item)
+			yield item.item
+		self.monsters.remove(actor)
 
 	def valid(self, pos):
 		return self.cells.valid(pos)

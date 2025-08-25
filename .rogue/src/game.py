@@ -252,8 +252,6 @@ class Game(engine.Game):
 	def end_turn(self):
 		if self.scene.get_player():
 			self.scene.get_player().spend_action_points()
-	def suicide(self, monster):
-		self.affect_health(monster, -monster.hp)
 	def toggle_god_vision(self):
 		self.god.vision = not self.god.vision
 	def toggle_god_noclip(self):

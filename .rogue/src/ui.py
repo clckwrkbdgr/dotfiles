@@ -111,7 +111,6 @@ class MainGame(ui.MainGame):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
 		self.game.suicide(self.game.scene.get_player())
-		self.game.end_turn()
 	@ui.MainGame.Keys.bind('>')
 	def descend(self):
 		""" Descend. """

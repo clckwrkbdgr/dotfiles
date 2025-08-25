@@ -92,6 +92,13 @@ class TestVision(unittest.TestCase):
 				_######___
 				""").replace('_', ' '))
 
+class TestActions(unittest.TestCase):
+	def should_suicide(self):
+		game = NanoDungeon()
+		game.generate(None)
+		game.suicide(game.scene.get_player())
+		self.assertFalse(game.scene.get_player())
+
 class TestMovement(unittest.TestCase):
 	def should_wait_in_place(self):
 		game = NanoDungeon()

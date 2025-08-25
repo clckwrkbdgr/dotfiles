@@ -391,6 +391,9 @@ class Game(object):
 		self.scene.drop_item(item)
 		self.fire_event(Events.DropItem(actor, item.item))
 		actor.spend_action_points()
+	def suicide(self, actor):
+		# No spending action points, because actor will be completely removed.
+		self.affect_health(actor, -actor.hp)
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn
