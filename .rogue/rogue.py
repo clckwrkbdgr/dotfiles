@@ -15,7 +15,7 @@ import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.tui
 from src import engine
 from src.engine import builders, scene
-from src.engine import events
+from src.engine import events, auto
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 from src.engine.items import Item
 from src.engine.terrain import Terrain
@@ -26,6 +26,10 @@ from src.engine.ui import Sprite
 from src.engine import Events
 
 SAVEFILE_VERSION = 13
+
+class Void(Terrain):
+	_sprite = Sprite(' ', 'black')
+	_passable = False
 
 class Bog(Terrain):
 	_sprite = Sprite('~', 'green')
@@ -403,7 +407,7 @@ events.Events.on(Events.DropItem)(lambda _:'{0} drop {1}.'.format(_.actor.name.t
 events.Events.on(Events.BumpIntoTerrain)(lambda _:None)
 events.Events.on(Events.Move)(lambda _:None)
 events.Events.on(Events.Health)(lambda _:None)
-events.Events.on(Events.BumpIntoActor)(lambda _:'{0} bump into {1}.'.format(_.actor.title(), _.target))
+events.Events.on(Events.BumpIntoActor)(lambda _:'{0} bump into {1}.'.format(_.actor.name.title(), _.target.name))
 events.Events.on(Events.Attack)(lambda _:'{0} hit {1}.'.format(_.actor.name.title(), _.target.name))
 @events.Events.on(Events.Death)
 def monster_is_dead(_):
@@ -441,6 +445,9 @@ class Scene(scene.Scene):
 	def __init__(self):
 		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
 		self._cached_player_pos = None
+	@classmethod
+	def get_autoexplorer_class(cls): # pragma: no cover -- TODO
+		return auto.EndlessAreaExplorer
 	def generate(self, id):
 		zone_pos = Point(
 				random.randrange(self.world.cells.size.width),
@@ -580,6 +587,15 @@ class Scene(scene.Scene):
 		return self.world.valid(pos)
 	def get_cell_info(self, pos, context=None):
 		field = context
+		if field is None:
+			if isinstance(pos, Point):
+				pos = NestedGrid.Coord.from_global(pos, self.world)
+				zone_index = pos.values[0]
+				zone = self.world.cells.cell(zone_index)
+				field_index = pos.values[1]
+				field = zone.cells.cell(field_index)
+			else:
+				return (Void(), [], [], [])
 		return (
 				field.cells.cell(pos.values[-1]),
 				[], # No objects.

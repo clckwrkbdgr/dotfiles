@@ -1,5 +1,6 @@
 from clckwrkbdgr.math.auto import Autoexplorer
 from . import math
+from clckwrkbdgr.math import Size
 
 class AutoMovement(object):
 	""" Base class for any automovement mode.
@@ -15,9 +16,9 @@ class AutoMovement(object):
 class EndlessAreaExplorer(Autoexplorer, AutoMovement): # pragma: no cover -- TODO
 	def __init__(self, dungeon):
 		self.dungeon = dungeon
-		super(DungeonExplorer, self).__init__()
+		super(EndlessAreaExplorer, self).__init__()
 	def get_current_pos(self):
-		return self.dungeon.scene.get_player().pos
+		return self.dungeon.scene.get_global_pos(self.dungeon.scene.get_player())
 	def get_matrix(self):
 		return self.dungeon.scene
 	def is_passable(self, pos):

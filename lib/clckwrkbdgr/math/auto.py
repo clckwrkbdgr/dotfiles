@@ -66,7 +66,7 @@ class Autoexplorer(object):
 	def _plan_path(self):
 		target = self.get_current_pos()
 		target_area = Rect(
-			topleft=self.get_current_pos() - self.target_area_size() / 2,
+			topleft=self.get_current_pos() - self.target_area_size() // 2,
 			size=self.target_area_size(),
 			)
 		for _ in range(target_area.width * target_area.height):

@@ -477,6 +477,8 @@ class NestedGrid: # pragma: no cover -- TODO
 		"""
 		subgrid = self
 		for pos in coord.values:
+			if subgrid is None:
+				return False
 			if not subgrid.cells.valid(pos):
 				return False
 			subgrid = subgrid.cells.cell(pos)
