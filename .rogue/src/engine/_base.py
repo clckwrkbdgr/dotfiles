@@ -14,6 +14,10 @@ class GodMode:
 	def __init__(self):
 		self.vision = False
 		self.noclip = False
+	def toggle_vision(self):
+		self.vision = not self.vision
+	def toggle_noclip(self):
+		self.noclip = not self.noclip
 
 class Events:
 	class StareIntoVoid(events.Event):
@@ -120,6 +124,14 @@ class Game(object):
 	def make_scene(self, scene_id): # pragma: no cover
 		""" Should return constructed Scene object for given ID. """
 		raise NotImplementedError()
+	def jump_to(self, actor, new_pos):
+		""" Transfers actor to a new position on the current map.
+		Does not perform any passability checks.
+		Does not spend action points.
+		Recalculates vision.
+		"""
+		actor.pos = new_pos
+		self.update_vision()
 	def travel(self, actor, scene_id, passage=None):
 		""" Travel to a specified scene.
 		Creates the scene, if necessary.

@@ -27,7 +27,7 @@ class MockWriterStream:
 class AbstractTestDungeon(unittest.TestCase):
 	def _formatMessage(self, msg, standardMsg): # pragma: no cover
 		if hasattr(self, 'dungeon'):
-			msg = (msg or '') + '\n' + self.dungeon.scene.tostring(self.dungeon.get_viewport())
+			msg = (msg or '') + '\n' + self.dungeon.scene.tostring(self.dungeon.scene.get_area_rect())
 		return super(AbstractTestDungeon, self)._formatMessage(msg, standardMsg)
 	def _events(self):
 		return [list(repr(event) for callback, event in self.dungeon.process_events(raw=True, bind_self=self))]
@@ -38,13 +38,11 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP)
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[9, 5])',
 			]])
 		dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN)
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[9, 6])',
@@ -114,11 +112,11 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 			'Move(actor=player, dest=[6, 2])',
 			'Move(actor=player, dest=[5, 2])',
 			]])
-		dungeon.toggle_god_vision()
+		dungeon.god.toggle_vision()
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
 			]])
-		dungeon.toggle_god_noclip()
+		dungeon.god.toggle_noclip()
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(self._events(), [[
 			]])
@@ -133,7 +131,6 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) # Step in.
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[9, 5])',
@@ -143,7 +140,6 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) # Attack.
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Attack(actor=player, target=monster, damage=1)',
@@ -170,7 +166,6 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) # Step in.
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[9, 5])',
@@ -195,7 +190,6 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.suicide(dungeon.get_player())
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertTrue(dungeon.is_finished())
 		self.assertIsNone(dungeon.get_player())
@@ -209,13 +203,11 @@ class TestItems(AbstractTestDungeon):
 			'Discover(obj=healing potion)',
 			]])
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[10, 6])',
 			]])
 		dungeon.grab_item_here(dungeon.get_player())
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'GrabItem(actor=player, item=potion)',
@@ -228,7 +220,6 @@ class TestItems(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[
 			]])
 		dungeon.drop_item(dungeon.get_player(), dungeon.get_player().inventory[0])
-		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
 			'DropItem(actor=player, item=potion)',
@@ -240,14 +231,14 @@ class TestEvents(AbstractTestDungeon):
 	def should_notify_when_found_exit(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.events, [])
-		dungeon.jump_to(Point(11, 2))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(11, 2))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), engine.Events.Discover)
 		self.assertEqual(repr(dungeon.events[0].obj), 'MockStairs(stairs)')
 		list(dungeon.process_events(raw=True))
-		dungeon.jump_to(Point(9, 6))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 6))
 		self.assertEqual(dungeon.events, [])
-		dungeon.jump_to(Point(11, 2))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(11, 2))
 		self.assertEqual(dungeon.events, [])
 	def should_notify_when_see_monsters(self):
 		dungeon = self.dungeon = mock_dungeon.build('now you see me')
@@ -258,17 +249,17 @@ class TestEvents(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True))
 
 		# Now we see both, but reporting only the new one.
-		dungeon.jump_to(Point(2, 2))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.scene.monsters if monster.pos == Point(1, 1)))
 		list(dungeon.process_events(raw=True))
 
 		# Now we see just the original one - visibility did not change.
-		dungeon.jump_to(Point(9, 6))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 6))
 		self.assertEqual(dungeon.events, [])
 
 		# Now we see both, but reporting only the new one again.
-		dungeon.jump_to(Point(2, 2))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(2, 2))
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(dungeon.events[0].obj, next(monster for monster in dungeon.scene.monsters if monster.pos == Point(1, 1)))
 		list(dungeon.process_events(raw=True))
@@ -276,31 +267,31 @@ class TestEvents(AbstractTestDungeon):
 class TestVisibility(AbstractTestDungeon):
 	def should_get_visible_surroundings(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		self.assertEqual(dungeon.get_viewport(), Rect(Point(0, 0), Size(20, 10)))
+		self.assertEqual(dungeon.scene.get_area_rect(), Rect(Point(0, 0), Size(20, 10)))
 		self.assertEqual(dungeon.str_cell(Point(9, 6)), '@')
 		self.assertEqual(dungeon.str_cell(Point(5, 6)), '.')
 		self.assertEqual(dungeon.str_cell(Point(5, 5)), '#')
 		self.assertEqual(dungeon.str_cell(Point(10, 1)), ' ')
-		dungeon.jump_to(Point(11, 2))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(11, 2))
 		self.assertEqual(dungeon.str_cell(Point(9, 6)), '.')
 		self.assertEqual(dungeon.str_cell(Point(5, 6)), ' ')
 		self.assertEqual(dungeon.str_cell(Point(5, 5)), '#')
 		self.assertEqual(dungeon.str_cell(Point(10, 1)), '>')
-		dungeon.jump_to(Point(9, 6))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 6))
 		self.assertEqual(dungeon.str_cell(Point(10, 1)), '>')
 	def should_get_visible_monsters_and_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('monsters on top')
-		dungeon.jump_to(Point(2, 2))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(2, 2))
 		self.assertEqual(dungeon.str_cell(Point(1, 1)), 'M')
 		self.assertEqual(dungeon.str_cell(Point(1, 6)), 'M')
 		self.assertEqual(dungeon.str_cell(Point(2, 6)), '!')
-		dungeon.jump_to(Point(10, 1))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(10, 1))
 		self.assertEqual(dungeon.str_cell(Point(1, 1)), ' ')
 		self.assertEqual(dungeon.str_cell(Point(1, 6)), ' ')
 		self.assertEqual(dungeon.str_cell(Point(2, 6)), ' ')
 	def should_see_monsters_only_in_the_field_of_vision(self):
 		dungeon = self.dungeon = mock_dungeon.build('now you see me')
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				    #####        #  
 				     ....   #  ...  
 				      ...  .# ..... 
@@ -312,8 +303,8 @@ class TestVisibility(AbstractTestDungeon):
 				#.................. 
 				 #################  
 				"""))
-		dungeon.jump_to(Point(2, 2))
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		dungeon.jump_to(dungeon.scene.get_player(), Point(2, 2))
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				##########       #  
 				#M.......#  #       
 				#.@......#  #       
@@ -327,7 +318,7 @@ class TestVisibility(AbstractTestDungeon):
 				"""))
 	def should_reduce_visibility_at_dark_tiles(self):
 		dungeon = self.dungeon = mock_dungeon.build('mini dark rogue')
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				_ +--+   
 				_ |@.|   
 				_ ^..^   
@@ -336,7 +327,7 @@ class TestVisibility(AbstractTestDungeon):
 				""").replace('_', ' '))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN)
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				_ +--+   
 				_ |..|   
 				_ ^.@^   
@@ -344,7 +335,7 @@ class TestVisibility(AbstractTestDungeon):
 				_ +--+   
 				""").replace('_', ' '))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				_ +--+   
 				_ |..|   
 				_ ^..@#  
@@ -352,7 +343,7 @@ class TestVisibility(AbstractTestDungeon):
 				_ +--+   
 				""").replace('_', ' '))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				_ +--+   
 				_ |  | # 
 				_ ^  ^@# 
@@ -360,7 +351,7 @@ class TestVisibility(AbstractTestDungeon):
 				_ +--+   
 				""").replace('_', ' '))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				_ +--+   
 				_ |  | # 
 				_ ^  ^#@ 
@@ -368,7 +359,7 @@ class TestVisibility(AbstractTestDungeon):
 				_ +--+   
 				""").replace('_', ' '))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP)
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				_ +--+ # 
 				_ |  | @ 
 				_ ^  ^## 
@@ -376,7 +367,7 @@ class TestVisibility(AbstractTestDungeon):
 				_ +--+   
 				""").replace('_', ' '))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP)
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				_ +--+ @ 
 				_ |  | # 
 				_ ^  ^   
@@ -407,14 +398,14 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP_RIGHT)
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		self.assertEqual(dungeon.scene.tostring(dungeon.get_viewport()), textwrap.dedent(mock_dungeon._MockBuilderUnSettler.MAP_DATA))
+		self.assertEqual(dungeon.scene.tostring(dungeon.scene.get_area_rect()), textwrap.dedent(mock_dungeon._MockBuilderUnSettler.MAP_DATA))
 	def should_update_fov_after_movement(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
 		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
 		self.maxDiff = None
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				    #####        #  
 				     ....   #  ...  
 				      ...  .# ..... 
@@ -428,7 +419,7 @@ class TestMovement(AbstractTestDungeon):
 				"""))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT) 
 		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				    #####      #### 
 				     ...   ## ..... 
 				      ...  .#......#
@@ -445,7 +436,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) 
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) 
 		self.assertTrue(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				   ########    #####
 				         #>##      #
 				         #.@#      #
@@ -495,14 +486,14 @@ class TestMovement(AbstractTestDungeon):
 		self.assertEqual(len(dungeon.scenes), 1)
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		self.assertEqual(dungeon.get_player().hp, 5)
-		self.assertEqual(dungeon.scene.tostring(dungeon.get_viewport()), textwrap.dedent(mock_dungeon._MockMiniBuilderUnSettler.MAP_DATA).replace('~', '.'))
+		self.assertEqual(dungeon.scene.tostring(dungeon.scene.get_area_rect()), textwrap.dedent(mock_dungeon._MockMiniBuilderUnSettler.MAP_DATA).replace('~', '.'))
 	def should_directly_jump_to_new_position(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 
-		dungeon.jump_to(Point(11, 2))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(11, 2))
 		self.maxDiff = None
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				    #######      #  
 				         #>##       
 				         #.@#       
@@ -693,7 +684,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertTrue(dungeon.perform_automovement())
 		self.assertFalse(dungeon.perform_automovement()) # You have reached your destination.
 
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				  #########      ###
 				         #>##      #
 				         #.@#      #
@@ -744,7 +735,7 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertTrue(dungeon.automove())
 		self.assertFalse(dungeon.perform_automovement()) # And Jesus wept.
 
-		self.assertEqual(dungeon.tostring(dungeon.get_viewport()), textwrap.dedent("""\
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
 				####################
 				#        #>##......#
 				#        #  #......#

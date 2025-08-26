@@ -372,17 +372,17 @@ class TestGridRoomMap(unittest.TestCase):
 		gridmap = dungeon.scene
 		vision = dungeon.vision
 
-		dungeon.scene.get_player().pos = Point(1, 1)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
 		vision.visit(dungeon.scene.get_player())
 		self.assertTrue(vision.visited_rooms.cell((0, 0)))
 		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1)})
 
-		dungeon.scene.get_player().pos = Point(9, 2)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 2))
 		vision.visit(dungeon.scene.get_player())
 		self.assertTrue(vision.visited_rooms.cell((1, 0)))
 		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1), Point(7, 3)})
 
-		dungeon.scene.get_player().pos = Point(5, 1)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(5, 1))
 		vision.visit(dungeon.scene.get_player())
 		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1),
 			Point(4, 1), Point(5, 1),
@@ -399,14 +399,10 @@ class TestDungeon(unittest.TestCase):
 	def should_iter_dungeon_cells(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.scene.get_player().pos = Point(3, 1)
-		dungeon.vision.visit(dungeon.scene.get_player())
-		dungeon.scene.get_player().pos = Point(5, 1)
-		dungeon.vision.visit(dungeon.scene.get_player())
-		dungeon.scene.get_player().pos = Point(5, 3)
-		dungeon.vision.visit(dungeon.scene.get_player())
-		dungeon.scene.get_player().pos = Point(7, 3)
-		dungeon.vision.visit(dungeon.scene.get_player())
+		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 1))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(5, 1))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(5, 3))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(7, 3))
 		mj12 = MJ12Trooper(None)
 		mj12.pos = Point(8, 3)
 		dungeon.scene.monsters.append(mj12)
@@ -472,15 +468,15 @@ class TestDungeon(unittest.TestCase):
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
 		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 
-		dungeon.scene.get_player().pos = Point(1, 1)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
 		self.assertEqual(dungeon.scene.current_room, dungeon.scene.rooms.cell((0, 0)))
 		self.assertIsNone(dungeon.scene.current_tunnel)
 
-		dungeon.scene.get_player().pos = Point(3, 1)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 1))
 		self.assertEqual(dungeon.scene.current_room, dungeon.scene.rooms.cell((0, 0)))
 		self.assertEqual(dungeon.scene.current_tunnel, dungeon.scene.tunnels[0])
 
-		dungeon.scene.get_player().pos = Point(5, 1)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(5, 1))
 		self.assertIsNone(dungeon.scene.current_room)
 		self.assertEqual(dungeon.scene.current_tunnel, dungeon.scene.tunnels[0])
 	def should_detect_visible_objects(self):
@@ -488,8 +484,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
 		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 
-		dungeon.scene.get_player().pos = Point(1, 1)
-		dungeon.vision.visit(dungeon.scene.get_player())
+		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
 		self.assertTrue(dungeon.vision.is_visible(dungeon.scene.rooms.cell((0, 0))))
 		self.assertFalse(dungeon.vision.is_visible(dungeon.scene.rooms.cell((1, 0))))
 		self.assertTrue(dungeon.vision.is_visible(dungeon.scene.tunnels[0], additional=Point(3, 1)))
@@ -508,9 +503,8 @@ class TestDungeon(unittest.TestCase):
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
 		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 
-		dungeon.scene.get_player().pos = Point(1, 1)
-		dungeon.vision.visit(dungeon.scene.get_player())
-		dungeon.scene.get_player().pos = Point(2, 6)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(2, 6))
 
 		self.assertTrue(dungeon.vision.is_explored(dungeon.scene.rooms.cell((0, 0))))
 		self.assertFalse(dungeon.vision.is_explored(dungeon.scene.rooms.cell((1, 0))))
@@ -528,7 +522,7 @@ class TestDungeon(unittest.TestCase):
 	def should_detect_player_by_monsters(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.scene.get_player().pos = Point(9, 3)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 3))
 
 		mj12 = MJ12Trooper(None)
 		mj12.pos = Point(8, 3)
@@ -538,12 +532,12 @@ class TestDungeon(unittest.TestCase):
 		vacuum.pos = Point(2, 1)
 		dungeon.scene.monsters.append(vacuum)
 
-		self.assertTrue(dungeon.actor_sees_player(mj12))
-		self.assertFalse(dungeon.actor_sees_player(vacuum))
+		self.assertTrue(dungeon.scene.actor_sees_player(mj12))
+		self.assertFalse(dungeon.scene.actor_sees_player(vacuum))
 	def should_move_monster(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.scene.get_player().pos = Point(9, 3)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 3))
 		pistol = StealthPistol()
 		dungeon.scene.get_player().inventory.append(pistol)
 
@@ -594,7 +588,7 @@ class TestDungeon(unittest.TestCase):
 	def should_process_others(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.scene.get_player().pos = Point(9, 3)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 3))
 		pistol = StealthPistol()
 		dungeon.scene.get_player().inventory.append(pistol)
 
@@ -625,7 +619,7 @@ class TestDungeon(unittest.TestCase):
 			]))
 
 		dungeon.events = []
-		dungeon.scene.get_player().pos = Point(3, 6)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 6))
 		self.assertTrue(dungeon.ascend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.GoingUp(),
@@ -637,14 +631,14 @@ class TestDungeon(unittest.TestCase):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
 
-		dungeon.scene.get_player().pos = Point(3, 6)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 6))
 		self.assertFalse(dungeon.descend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.CannotDig(),
 			]))
 
 		dungeon.events = []
-		dungeon.scene.get_player().pos = Point(1, 1)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
 		self.assertFalse(dungeon.descend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.NeedKey(NanoKey),
@@ -654,7 +648,7 @@ class TestDungeon(unittest.TestCase):
 		key = NanoKey()
 		key.value = '0451'
 		dungeon.scene.get_player().inventory.append(key)
-		dungeon.scene.get_player().pos = Point(1, 1)
+		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
 		self.assertTrue(dungeon.descend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
 			game.Event.GoingDown(),

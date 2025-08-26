@@ -184,6 +184,11 @@ class Scene(scene.Scene):
 	@property
 	def current_tunnel(self):
 		return self.tunnel_of(self.get_player().pos)
+	def actor_sees_player(self, actor):
+		if not self.current_room: # pragma: no cover -- TODO
+			return False
+		sees_rogue = self.current_room.contains(actor.pos)
+		return sees_rogue
 	def iter_cells(self, view_rect):
 		trace.debug(list(self.rooms.keys()))
 		terrain = []
@@ -340,11 +345,6 @@ class Dungeon(engine.Game):
 		except appliances.LevelPassage.Locked as e:
 			self.fire_event(Event.NeedKey(e.key_item_type))
 			return False
-	def actor_sees_player(self, actor):
-		if not self.scene.current_room: # pragma: no cover -- TODO
-			return False
-		sees_rogue = self.scene.current_room.contains(actor.pos)
-		return sees_rogue
 	def descend(self, actor):
 		dungeon = self
 		stairs_here = next(iter(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(actor.pos))), None)

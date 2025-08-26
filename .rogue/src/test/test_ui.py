@@ -295,7 +295,7 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon)
 		list(dungeon.process_events(raw=True))
 
-		dungeon.jump_to(Point(13, 4))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(13, 4))
 		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP)
 
 		loop.redraw()
@@ -585,7 +585,7 @@ class TestCurses(unittest.TestCase):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '>')
 		self.assertEqual(next(_ for _ in dungeon.scene.monsters if _.sprite.sprite == 'M').pos, Point(13, 3))
-		dungeon.jump_to(Point(10, 1))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(10, 1))
 		self.assertTrue(loop.action())
 		self.assertNotEqual(next(_ for _ in dungeon.scene.monsters if _.sprite.sprite == 'M').pos, Point(13, 3), msg=dungeon.scene.tostring(Rect((0, 0), dungeon.scene.strata.size)))
 
@@ -1052,7 +1052,7 @@ class TestCurses(unittest.TestCase):
 		ui, loop = self._init(dungeon)
 		list(dungeon.process_events(raw=True))
 
-		dungeon.jump_to(Point(13, 4))
+		dungeon.jump_to(dungeon.scene.get_player(), Point(13, 4))
 		dungeon.move_actor(dungeon.scene.get_player(), Direction.UP)
 
 		loop.redraw()

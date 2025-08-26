@@ -174,6 +174,8 @@ class Scene(scene.Scene):
 		writer.write(self.monsters)
 		writer.write(self.items)
 		writer.write(self.appliances)
+	def get_area_rect(self):
+		return Rect(Point(0, 0), self.strata.size)
 	def valid(self, pos):
 		return self.strata.valid(pos)
 	def is_transparent_to_monster(self, p, monster):
@@ -238,20 +240,6 @@ class Scene(scene.Scene):
 class Game(engine.Game):
 	""" Main game object.
 	"""
-	def end_turn(self):
-		if self.scene.get_player():
-			self.scene.get_player().spend_action_points()
-	def toggle_god_vision(self):
-		self.god.vision = not self.god.vision
-	def toggle_god_noclip(self):
-		self.god.noclip = not self.god.noclip
-	def get_viewport(self):
-		""" Returns current viewport rect. """
-		return Rect(Point(0, 0), self.scene.strata.size)
-	def jump_to(self, new_pos):
-		""" Teleports player to new pos. """
-		self.scene.get_player().pos = new_pos
-		self.update_vision()
 	def descend(self):
 		""" Descends onto new level, when standing on exit pos.
 		Generates new level.

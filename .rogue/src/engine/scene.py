@@ -80,6 +80,12 @@ class Scene(object):
 			return objects[-1].sprite
 		return cell.sprite if cell is not None else None
 
+	def get_area_rect(self): # pragma: no cover
+		""" Should return maximum addressable rect,
+		e.g. full map for limited maps or currently available parts of
+		endless scenes.
+		"""
+		raise NotImplementedError()
 	def valid(self, pos): # pragma: no cover
 		""" Returns True if specified position is valid within scene
 		and can be addressed.

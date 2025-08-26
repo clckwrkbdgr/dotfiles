@@ -39,7 +39,7 @@ class MainGame(ui.MainGame):
 	def get_map_shift(self):
 		return Point(0, 1)
 	def get_viewrect(self):
-		return self.game.get_viewport()
+		return self.game.scene.get_area_rect()
 	def get_message_line_rect(self):
 		return Rect(Point(0, 0), Size(80, 1))
 	@Events.on(engine.Events.Discover)
@@ -168,11 +168,11 @@ class GodModeMenu(clckwrkbdgr.tui.Mode):
 	@GodModeKeys.bind('v')
 	def vision(self):
 		""" See all. """
-		self.game.toggle_god_vision()
+		self.game.god.toggle_vision()
 	@GodModeKeys.bind('c')
 	def noclip(self):
 		""" Walk through walls. """
-		self.game.toggle_god_noclip()
+		self.game.god.toggle_noclip()
 
 InventoryKeys = Keymapping()
 class Inventory(clckwrkbdgr.tui.Mode):
@@ -212,7 +212,6 @@ class Inventory(clckwrkbdgr.tui.Mode):
 			self.prompt = "No such item ({0})".format(param)
 			return None
 		if self._use(self.game.scene.get_player(), self.game.scene.get_player().inventory[index]):
-			self.game.end_turn()
 			return True
 	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self):

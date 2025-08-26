@@ -105,7 +105,7 @@ class RealMonster(actors.EquippedMonster):
 	_hostile_to = [Player]
 
 	def act(self, dungeon):
-		if not dungeon.actor_sees_player(self):
+		if not dungeon.scene.actor_sees_player(self):
 			return
 		shift = Point(
 				clckwrkbdgr.math.sign(dungeon.get_player().pos.x - self.pos.x),
@@ -486,13 +486,12 @@ class GodModeAction(tui.widgets.Menu):
 	KEYS_TO_CLOSE = [curses.ascii.ESC, ord('~')]
 	def items(self):
 		return [
-				tui.widgets.Menu.Item('v', 'see all: {0}'.format('ON' if self.data.god.vision else 'off'), 'vision'),
+				tui.widgets.Menu.Item('v', 'see all: {0}'.format('ON' if self.data.god.vision else 'off'), self.data.god.toggle_vision),
 				]
 	def on_close(self):
 		return to_main_screen(self)
 	def on_item(self, item):
-		new_state = not getattr(self.data.god, item.data)
-		setattr(self.data.god, item.data, new_state)
+		item.data()
 		self.data.fire_event(GodModeSwitched(name=item.text, state='ON' if new_state else 'off'))
 		return to_main_screen(self)
 

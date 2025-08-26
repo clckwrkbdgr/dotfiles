@@ -126,7 +126,7 @@ class TestMovement(unittest.TestCase):
 	def should_not_move_into_void(self):
 		game = NanoDungeon()
 		game.generate(None)
-		game.scene.get_player().pos = Point(0, 6)
+		game.jump_to(game.scene.get_player(), Point(0, 6))
 		self.assertFalse(game.move_actor(game.scene.get_player(), Point(-1, 0)))
 		self.assertFalse(game.scene.get_player().has_acted())
 		self.assertEqual(game.events, [_base.Events.StareIntoVoid()])
@@ -197,7 +197,7 @@ class TestItems(unittest.TestCase):
 		self.assertEqual(list(game.scene.iter_items_at((1, 5))), [dagger])
 		self.assertFalse(game.scene.get_player().inventory)
 		self.assertEqual(game.events, [_base.Events.DropItem(game.scene.get_player(), dagger)])
-		game.scene.get_player().pos = Point(2, 6)
+		game.jump_to(game.scene.get_player(), Point(2, 6))
 		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
 				##########
 				#........#
@@ -219,14 +219,14 @@ class TestItems(unittest.TestCase):
 		self.assertFalse(game.scene.get_player().has_acted())
 
 		list(game.process_events(raw=True)) # Clear events.
-		game.scene.get_player().pos = Point(1, 2)
+		game.jump_to(game.scene.get_player(), Point(1, 2))
 		game.grab_item_here(game.scene.get_player())
 		self.assertTrue(game.scene.get_player().has_acted())
 		self.assertEqual(list(game.scene.iter_items_at((1, 5))), [])
 		scroll = game.scene.get_player().find_item(ScribbledNote)
 		self.assertIsNotNone(scroll)
 		self.assertEqual(game.events, [_base.Events.GrabItem(game.scene.get_player(), scroll)])
-		game.scene.get_player().pos = Point(2, 2)
+		game.jump_to(game.scene.get_player(), Point(2, 2))
 		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
 				##########
 				#........#
