@@ -247,11 +247,10 @@ events.Event.on(Events.NotWielding)(lambda event:"Nothing is wielded already.")
 events.Event.on(Events.Unwield)(lambda event:"Unwielding {item}.".format(item=event.item.name))
 events.Event.on(Events.Wield)(lambda event:"Wielding {item}.".format(item=event.item.name))
 
-events.Event.on(Event.NotWearable)(lambda event:"Cannot wear {item}.".format(item=event.item.name))
-class NothingToTakeOff(events.Event): FIELDS = ''
-events.Event.on(NothingToTakeOff)(lambda event:"Nothing is worn already.")
-events.Event.on(TakingOff)(lambda event:"Taking off {item}.".format(item=event.item.name))
-events.Event.on(Wearing)(lambda event:"Wearing {item}.".format(item=event.item.name))
+events.Event.on(Events.NotWearable)(lambda event:"Cannot wear {item}.".format(item=event.item.name))
+events.Event.on(Events.NotWearing)(lambda event:"Nothing is worn already.")
+events.Event.on(Events.TakeOff)(lambda event:"Taking off {item}.".format(item=event.item.name))
+events.Event.on(Events.Wear)(lambda event:"Wearing {item}.".format(item=event.item.name))
 
 events.Event.on(Events.Attack)(lambda event: "{Who} hit {whom} for {damage} hp.".format(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
 events.Event.on(Events.Death)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
@@ -477,11 +476,7 @@ class MainGame(ui.MainGame):
 	def take_off(self):
 		""" Take item off. """
 		dungeon = self.data
-		if not dungeon.get_player().wearing:
-			dungeon.fire_event(NothingToTakeOff())
-		else:
-			item = dungeon.get_player().take_off()
-			self.data.fire_event(Event.TakingOff(self, item))
+		dungeon.take_off_item(dungeon.get_player())
 	@Controls('i')
 	def inventory(self):
 		""" Toggle inventory. """

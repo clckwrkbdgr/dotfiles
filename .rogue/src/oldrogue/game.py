@@ -30,9 +30,6 @@ class Version(clckwrkbdgr.collections.Enum):
 	JSONPICKLE = auto()
 
 class Event:
-	class TakingOff(events.Event): FIELDS = 'who item'
-	class Wearing(events.Event): FIELDS = 'who item'
-	class NotWearable(events.Event): FIELDS = 'item'
 	class CannotReachCeiling(events.Event): FIELDS = ''
 	class GoingUp(events.Event): FIELDS = ''
 	class GoingDown(events.Event): FIELDS = ''
@@ -343,17 +340,6 @@ class Dungeon(engine.Game):
 		except appliances.LevelPassage.Locked as e:
 			self.fire_event(Event.NeedKey(e.key_item_type))
 			return False
-	def wear_item(self, who, item):
-		try:
-			who.wear(item)
-		except actors.EquippedMonster.ItemNotFit as e:
-			self.fire_event(Event.NotWearable(item))
-			return
-		except actors.EquippedMonster.SlotIsTaken:
-			old_item = who.take_off()
-			self.fire_event(Event.TakingOff(who, old_item))
-			who.wear(item)
-		self.fire_event(Event.Wearing(who, item))
 	def actor_sees_player(self, actor):
 		if not self.scene.current_room: # pragma: no cover -- TODO
 			return False

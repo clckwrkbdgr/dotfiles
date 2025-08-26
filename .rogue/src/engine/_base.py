@@ -67,6 +67,18 @@ class Events:
 	class NotWielding(events.ImportantEvent):
 		""" Wielding nothing, cannot unwield. """
 		FIELDS = ''
+	class Wear(events.Event):
+		""" Equip item as armor. """
+		FIELDS = 'actor item'
+	class TakeOff(events.Event):
+		""" Take off equipped armor. """
+		FIELDS = 'actor item'
+	class NotWearing(events.Event):
+		""" Wearing nothing; cannot take off. """
+		FIELDS = ''
+	class NotWearable(events.Event):
+		""" Cannot wear item. """
+		FIELDS = 'item'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -476,6 +488,25 @@ class Game(object):
 			self.fire_event(Events.Unwield(actor, item))
 		else:
 			self.fire_event(Events.NotWielding())
+	def wear_item(self, actor, item):
+		try:
+			actor.wear(item)
+		except actor.ItemNotFit as e:
+			self.fire_event(Events.NotWearable(item))
+			return
+		except actor.SlotIsTaken:
+			old_item = actor.take_off()
+			self.fire_event(Events.TakeOff(actor, old_item))
+			actor.wear(item)
+		actor.spend_action_points()
+		self.fire_event(Events.Wear(actor, item))
+	def take_off_item(self, actor):
+		if not actor.wearing:
+			self.fire_event(Events.NotWearing())
+		else:
+			item = actor.take_off()
+			self.fire_event(Events.TakeOff(actor, item))
+			actor.spend_action_points()
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

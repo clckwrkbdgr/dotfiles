@@ -65,6 +65,11 @@ class Rags(items.Item, items.Wearable):
 	_name = 'rags'
 	_protection = 1
 
+class ChainMail(items.Item, items.Wearable):
+	_sprite = Sprite('[', None)
+	_name = 'chain mail'
+	_protection = 3
+
 class ScribbledNote(items.Item):
 	_sprite = Sprite('?', None)
 	_name = 'note'

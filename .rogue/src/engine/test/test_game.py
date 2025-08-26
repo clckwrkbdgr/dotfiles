@@ -260,6 +260,76 @@ class TestItems(unittest.TestCase):
 		self.assertTrue(game.scene.get_player().has_acted())
 		self.assertFalse(game.scene.get_player().find_item(Potion))
 		self.assertEqual(game.scene.get_player().hp, 10)
+	def should_wield_items(self):
+		game = NanoDungeon()
+		game.generate(None)
+
+		game.scene.get_player().inventory.append(Potion())
+		dagger, potion = game.scene.get_player().inventory
+
+		game.unwield_item(game.scene.get_player())
+		self.assertEqual(game.events, [_base.Events.NotWielding()])
+		self.assertFalse(game.scene.get_player().has_acted())
+
+		list(game.process_events(raw=True)) # Clear events.
+		game.wield_item(game.scene.get_player(), dagger)
+		self.assertEqual(game.events, [_base.Events.Wield(game.scene.get_player(), dagger)])
+		self.assertTrue(game.scene.get_player().has_acted())
+
+		game.scene.get_player().add_action_points()
+		list(game.process_events(raw=True)) # Clear events.
+		game.wield_item(game.scene.get_player(), potion)
+		self.assertEqual(game.events, [
+			_base.Events.Unwield(game.scene.get_player(), dagger),
+			_base.Events.Wield(game.scene.get_player(), potion),
+			])
+		self.assertTrue(game.scene.get_player().has_acted())
+
+		game.scene.get_player().add_action_points()
+		list(game.process_events(raw=True)) # Clear events.
+		game.unwield_item(game.scene.get_player())
+		self.assertEqual(game.events, [
+			_base.Events.Unwield(game.scene.get_player(), potion),
+			])
+		self.assertTrue(game.scene.get_player().has_acted())
+	def should_wear_items(self):
+		game = NanoDungeon()
+		game.generate(None)
+
+		game.scene.get_player().inventory.append(Rags())
+		game.scene.get_player().inventory.append(ChainMail())
+		dagger, rags, armor = game.scene.get_player().inventory
+
+		game.take_off_item(game.scene.get_player())
+		self.assertEqual(game.events, [_base.Events.NotWearing()])
+		self.assertFalse(game.scene.get_player().has_acted())
+
+		list(game.process_events(raw=True)) # Clear events.
+		game.wear_item(game.scene.get_player(), dagger)
+		self.assertEqual(game.events, [_base.Events.NotWearable(dagger)])
+		self.assertFalse(game.scene.get_player().has_acted())
+
+		list(game.process_events(raw=True)) # Clear events.
+		game.wear_item(game.scene.get_player(), rags)
+		self.assertEqual(game.events, [_base.Events.Wear(game.scene.get_player(), rags)])
+		self.assertTrue(game.scene.get_player().has_acted())
+
+		game.scene.get_player().add_action_points()
+		list(game.process_events(raw=True)) # Clear events.
+		game.wear_item(game.scene.get_player(), armor)
+		self.assertEqual(game.events, [
+			_base.Events.TakeOff(game.scene.get_player(), rags),
+			_base.Events.Wear(game.scene.get_player(), armor),
+			])
+		self.assertTrue(game.scene.get_player().has_acted())
+
+		game.scene.get_player().add_action_points()
+		list(game.process_events(raw=True)) # Clear events.
+		game.take_off_item(game.scene.get_player())
+		self.assertEqual(game.events, [
+			_base.Events.TakeOff(game.scene.get_player(), armor),
+			])
+		self.assertTrue(game.scene.get_player().has_acted())
 
 class TestScenes(unittest.TestCase):
 	def should_travel_to_other_scene(self):

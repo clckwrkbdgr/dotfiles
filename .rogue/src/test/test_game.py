@@ -235,32 +235,6 @@ class TestItems(AbstractTestDungeon):
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
-	def should_equip_items(self):
-		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(mock_dungeon.Weapon())
-		self.assertEqual(self._events(), [[
-			]])
-		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
-		dungeon.end_turn()
-		dungeon.process_others()
-		self.assertEqual(self._events(), [[
-			'Wield(actor=player, item=weapon)',
-			]])
-		self.assertFalse(dungeon.is_finished())
-		self.maxDiff = None
-	def should_unequip_items(self):
-		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().wielding = mock_dungeon.Weapon()
-		self.assertEqual(self._events(), [[
-			]])
-		dungeon.unwield_item(dungeon.get_player())
-		dungeon.end_turn()
-		dungeon.process_others()
-		self.assertEqual(self._events(), [[
-			'Unwield(actor=player, item=weapon)',
-			]])
-		self.assertFalse(dungeon.is_finished())
-		self.maxDiff = None
 
 class TestEvents(AbstractTestDungeon):
 	def should_notify_when_found_exit(self):

@@ -352,65 +352,6 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(_R(dungeon.events), _R([Events.DropItem(jc, pistol)]))
 		self.assertFalse(jc.has_item(StealthPistol))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [pistol])
-	def should_wield_item(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-
-		pistol = StealthPistol()
-		rifle = SniperRifle()
-		jc = UNATCOAgent(None)
-		jc.inventory.append(pistol)
-		jc.inventory.append(rifle)
-		jc.pos = Point(1, 1)
-
-		dungeon.events = []
-		dungeon.wield_item(jc, pistol)
-		self.assertEqual(_R(dungeon.events), _R([Events.Wield(jc, pistol)]))
-		self.assertFalse(jc.has_item(StealthPistol))
-		self.assertEqual(jc.wielding, pistol)
-
-		dungeon.events = []
-		dungeon.wield_item(jc, rifle)
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.Unwield(jc, pistol),
-			Events.Wield(jc, rifle),
-			]))
-		self.assertFalse(jc.has_item(SniperRifle))
-		self.assertEqual(jc.wielding, rifle)
-	def should_wear_item(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-
-		camo = ThermopticCamo()
-		suit = HazmatSuit()
-		pistol = StealthPistol()
-		jc = UNATCOAgent(None)
-		jc.inventory.append(camo)
-		jc.inventory.append(suit)
-		jc.inventory.append(pistol)
-		jc.pos = Point(1, 1)
-
-		dungeon.events = []
-		dungeon.wear_item(jc, camo)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.Wearing(jc, camo)]))
-		self.assertFalse(jc.has_item(ThermopticCamo))
-		self.assertEqual(jc.wearing, camo)
-
-		dungeon.events = []
-		dungeon.wear_item(jc, suit)
-		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.TakingOff(jc, camo),
-			game.Event.Wearing(jc, suit),
-			]))
-		self.assertFalse(jc.has_item(HazmatSuit))
-		self.assertEqual(jc.wearing, suit)
-
-		dungeon.events = []
-		dungeon.wear_item(jc, pistol)
-		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.NotWearable(pistol),
-			]))
-		self.assertEqual(jc.wearing, suit)
 	def should_visit_tunnel(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
