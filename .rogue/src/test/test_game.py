@@ -214,11 +214,11 @@ class TestItems(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[10, 6])',
 			]])
-		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
+		dungeon.grab_item_here(dungeon.get_player())
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'GrabItemEvent(actor=player, item=potion)',
+			'GrabItem(actor=player, item=potion)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
@@ -567,23 +567,6 @@ class TestActorEffects(AbstractTestDungeon):
 		self.assertIsNone(dungeon.get_player())
 
 class TestItemActions(AbstractTestDungeon):
-	def should_grab_item(self):
-		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
-		list(dungeon.process_events(raw=True))
-
-		dungeon.grab_item_at(dungeon.get_player(), Point(9, 6))
-		self.assertEqual(dungeon.events, [])
-
-		dungeon.grab_item_at(dungeon.get_player(), Point(10, 6))
-		self.assertEqual(list(map(str, dungeon.events)), [
-			'GrabItemEvent(actor=player, item=potion)',
-			])
-
-		list(dungeon.process_events(raw=True))
-		dungeon.grab_item_at(dungeon.get_player(), Point(11, 6))
-		self.assertEqual(list(map(str, dungeon.events)), [
-			'GrabItemEvent(actor=player, item=healing potion)',
-			])
 	def should_consume_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
 		dungeon.affect_health(dungeon.get_player(), -9)

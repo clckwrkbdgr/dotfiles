@@ -150,6 +150,10 @@ class Scene(object):
 		""" Should add item at specified pos.
 		"""
 		raise NotImplementedError()
+	def take_item(self, item_at_pos): # pragma: no cover
+		""" Should remove item at specified pos and return the item itself.
+		"""
+		raise NotImplementedError()
 	def rip(self, actor): # pragma: no cover
 		""" Should remove actor and drop all loot in its place.
 		Should yield all dropped items.

@@ -380,23 +380,20 @@ class Marsh(Builder):
 		for _ in range(random.randrange(10)):
 			grid.set_cell(self.point(), 'dead_tree')
 
-class NothingToPickUp(events.Event): FIELDS = ''
 class NoOneToChat(events.Event): FIELDS = ''
 class NoOneToChatInDirection(events.Event): FIELDS = ''
 class TooMuchQuests(events.Event): FIELDS = ''
-class InventoryIsFull(events.Event): FIELDS = ''
-class PickedUpItem(events.Event): FIELDS = 'item'
 class ChatThanks(events.Event): FIELDS = ''
 class ChatComeLater(events.Event): FIELDS = ''
 class ChatQuestReminder(events.Event): FIELDS = 'color item'
 class NothingToDrop(events.Event): FIELDS = ''
 
-events.Events.on(NothingToPickUp)(lambda _:'Nothing to pick up here.')
+events.Events.on(Events.NothingToPickUp)(lambda _:'Nothing to pick up here.')
 events.Events.on(NoOneToChat)(lambda _:'No one to chat with.')
 events.Events.on(NoOneToChatInDirection)(lambda _:'No one to chat with in that direction.')
 events.Events.on(TooMuchQuests)(lambda _:"Too much quests already.")
-events.Events.on(InventoryIsFull)(lambda _:'Inventory is full.')
-events.Events.on(PickedUpItem)(lambda _:'Picked up {0}.'.format(_.item.name))
+events.Events.on(Events.InventoryIsFull)(lambda _:'Inventory is full.')
+events.Events.on(Events.GrabItem)(lambda _:'Picked up {0}.'.format(_.item.name))
 
 events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
 events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')
@@ -482,6 +479,13 @@ class Scene(scene.Scene):
 		coord = item_at_pos.item.coord # Eh.
 		delattr(item_at_pos.item, 'coord') # Eh.
 		self.world.get_data(coord)[-1].items.append(item_at_pos)
+	def take_item(self, item_at_pos):
+		coord = NestedGrid.Coord.from_global(item_at_pos.pos, self.world)
+		items = self.world.get_data(coord)[-1].items
+		item_at_pos.pos = coord.values[-1]
+		found = next(_ for _ in items if _ == item_at_pos)
+		items.remove(found)
+		return found.item
 	def save(self, stream):
 		self.world.save(stream)
 	def load(self, stream):
@@ -649,6 +653,8 @@ class Scene(scene.Scene):
 			dest_field_data.monsters.append(actor)
 		actor.pos = dest_pos.values[-1]
 	def iter_items_at(self, pos):
+		if isinstance(pos, Point):
+			pos = NestedGrid.Coord.from_global(pos, self.world)
 		zone_items = self.world.get_data(pos)[-1].items
 		for item_pos, item in zone_items:
 			if pos.values[-1] == item_pos:
@@ -799,19 +805,7 @@ class MainGameMode(ui.MainGame):
 		return Rect(Point(0, 23), Size(80, 1))
 	@ui.MainGame.Keys.bind('g')
 	def grab_item(self):
-		game = self.game
-		if True:
-			item = next(game.scene.iter_items_at(game.scene.get_player_coord()), None)
-			if not item:
-				self.game.fire_event(NothingToPickUp())
-				return
-			try:
-				game.scene.get_player().grab(item)
-				game.scene.world.get_data(game.scene.get_player_coord())[-1].items.remove(item)
-				self.game.fire_event(PickedUpItem(item))
-				self.game.scene.get_player().spend_action_points()
-			except Monster.InventoryFull:
-				self.game.fire_event(InventoryIsFull())
+		self.game.grab_item_here(self.game.scene.get_player())
 	@ui.MainGame.Keys.bind('C')
 	def char(self):
 		game = self.game

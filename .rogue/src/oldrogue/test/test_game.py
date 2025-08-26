@@ -360,30 +360,30 @@ class TestGridRoomMap(unittest.TestCase):
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
 
-		jc = UNATCOAgent(None)
+		jc = dungeon.scene.get_player()
 
 		gridmap = dungeon.scene
 		key = NanoKey()
-		gridmap.items.append( (Point(1, 1), key) )
-		gridmap.items.append( (Point(1, 1), pistol) )
-		gridmap.items.append( (Point(1, 1), armor) )
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor, pistol, key])
+		gridmap.drop_item(items.ItemAtPos(Point(1, 1), armor))
+		gridmap.drop_item(items.ItemAtPos(Point(1, 1), pistol))
+		gridmap.drop_item(items.ItemAtPos(Point(1, 1), key))
+		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [key, pistol, armor])
 
 		dungeon.events = []
-		dungeon.grab_item(jc, key)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.GrabbedItem(jc, key)]))
+		dungeon.grab_item_here(jc) # key)
+		self.assertEqual(_R(dungeon.events), _R([Events.GrabItem(jc, key)]))
 		self.assertTrue(jc.has_item(NanoKey))
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor, pistol])
+		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [pistol, armor])
 
 		dungeon.events = []
-		dungeon.grab_item(jc, pistol)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.GrabbedItem(jc, pistol)]))
+		dungeon.grab_item_here(jc) # pistol)
+		self.assertEqual(_R(dungeon.events), _R([Events.GrabItem(jc, pistol)]))
 		self.assertTrue(jc.has_item(StealthPistol))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor])
 
 		dungeon.events = []
-		dungeon.grab_item(jc, armor)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.InventoryFull(armor)]))
+		dungeon.grab_item_here(jc) # armor)
+		self.assertEqual(_R(dungeon.events), _R([Events.InventoryIsFull(armor)]))
 		self.assertFalse(jc.has_item(ThermopticCamo))
 		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor])
 	def should_drop_item(self):
@@ -788,38 +788,3 @@ class TestDungeon(unittest.TestCase):
 			]))
 		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
-	def should_grab_items(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
-
-		jc = dungeon.scene.get_player()
-
-		gridmap = dungeon.scene
-		key = NanoKey()
-		gridmap.items.append( (Point(1, 1), armor) )
-		gridmap.items.append( (Point(1, 1), pistol) )
-		gridmap.items.append( (Point(1, 1), key) )
-
-		dungeon.events = []
-		dungeon.grab_here(jc)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.GrabbedItem(jc, key)]))
-		self.assertTrue(jc.has_item(NanoKey))
-
-		dungeon.events = []
-		dungeon.grab_here(jc)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.GrabbedItem(jc, pistol)]))
-		self.assertTrue(jc.has_item(StealthPistol))
-
-		dungeon.events = []
-		dungeon.grab_here(jc)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.InventoryFull(armor)]))
-		self.assertFalse(jc.has_item(ThermopticCamo))
-
-		dungeon.move_actor(dungeon.scene.get_player(), Point(1, 0))
-		self.assertEqual(dungeon.scene.get_player().pos, Point(2, 1))
-		dungeon.events = []
-		dungeon.grab_here(jc)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.NothingToPickUp()]))

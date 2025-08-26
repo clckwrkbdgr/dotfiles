@@ -1150,7 +1150,7 @@ class TestCurses(unittest.TestCase):
 			])
 
 		dungeon.move_actor(dungeon.scene.get_player(), Direction.RIGHT)
-		dungeon.grab_item_at(dungeon.scene.get_player(), Point(10, 6))
+		dungeon.grab_item_here(dungeon.scene.get_player())
 
 		self.assertTrue(loop.action())
 		loop.redraw()

@@ -3,7 +3,7 @@ Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Size, Matrix
 from clckwrkbdgr.pcg import RNG
 from . import events
-from . import scene
+from . import scene, items
 from . import auto
 
 class GodMode:
@@ -43,6 +43,15 @@ class Events:
 	class Discover(events.ImportantEvent):
 		""" Something new is discovered on the map! """
 		FIELDS = 'obj'
+	class NothingToPickUp(events.Event):
+		""" Nothing to pick up here. """
+		FIELDS = ''
+	class InventoryIsFull(events.Event):
+		""" No room in the inventory. """
+		FIELDS = 'item'
+	class GrabItem(events.ImportantEvent):
+		""" Grabs something from the floor. """
+		FIELDS = 'actor item'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -394,6 +403,26 @@ class Game(object):
 	def suicide(self, actor):
 		# No spending action points, because actor will be completely removed.
 		self.affect_health(actor, -actor.hp)
+	def grab_item_here(self, actor):
+		""" Grabs topmost item at given cell and puts to the inventory.
+		Checks inventory size.
+		Produces events.
+		Returns picked item in case of success, None otherwise.
+		"""
+		pos = self.scene.get_global_pos(actor)
+		item = next(self.scene.iter_items_at(pos), None)
+		if not item:
+			self.fire_event(Events.NothingToPickUp())
+			return None
+		try:
+			actor.grab(item)
+			item = self.scene.take_item(items.ItemAtPos(pos, item))
+			self.fire_event(Events.GrabItem(actor, item))
+			actor.spend_action_points()
+		except actor.InventoryFull:
+			self.fire_event(Events.InventoryIsFull(item))
+			return None
+		return item
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

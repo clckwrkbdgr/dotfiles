@@ -48,6 +48,9 @@ class MainGame(ui.MainGame):
 			return '{0}!'.format(event.obj.name)
 		else:
 			return '{0}!'.format(event.obj)
+	@Events.on(engine.Events.NothingToPickUp)
+	def on_nothing_to_pick_up(self, event):
+		return ''
 	@Events.on(engine.Events.Attack)
 	def on_attack(self, event):
 		return '{0} x> {1}.'.format(event.actor.name, event.target.name)
@@ -68,7 +71,7 @@ class MainGame(ui.MainGame):
 	def on_bumping(self, event):
 		if event.actor != self.game.scene.get_player():
 			return '{0} bumps.'.format(event.actor.name)
-	@Events.on(game.GrabItemEvent)
+	@Events.on(engine.Events.GrabItem)
 	def on_grabbing(self, event):
 		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(engine.Events.DropItem)
@@ -119,8 +122,7 @@ class MainGame(ui.MainGame):
 	@ui.MainGame.Keys.bind('g')
 	def grab(self):
 		""" Grab item. """
-		self.game.grab_item_at(self.game.scene.get_player(), self.game.scene.get_player().pos)
-		self.game.end_turn()
+		self.game.grab_item_here(self.game.scene.get_player())
 	@ui.MainGame.Keys.bind('d')
 	def drop(self):
 		""" Drop item. """

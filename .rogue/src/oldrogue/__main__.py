@@ -229,9 +229,9 @@ events.Event.on(Event.CannotReachCeiling)(lambda event:"Cannot reach the ceiling
 
 class NoSuchItem(events.Event): FIELDS = 'char'
 events.Event.on(NoSuchItem)(lambda event:"No such item '{char}'.".format(char=event.char))
-events.Event.on(Event.InventoryFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
-events.Event.on(Event.GrabbedItem)(lambda event: "Grabbed {item}.".format(who=event.who.name, item=event.item.name))
-events.Event.on(NothingToPickUp)(lambda event:"There is nothing here to pick up.")
+events.Event.on(Events.InventoryIsFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
+events.Event.on(Events.GrabItem)(lambda event: "Grabbed {item}.".format(who=event.who.name, item=event.item.name))
+events.Event.on(Events.NothingToPickUp)(lambda event:"There is nothing here to pick up.")
 class InventoryEmpty(events.Event): FIELDS = ''
 events.Event.on(InventoryEmpty)(lambda event:"Inventory is empty.")
 events.Event.on(Events.DropItem)(lambda event:"Dropped {item}.".format(Who=event.who.name.title(), item=event.item.name))
@@ -436,7 +436,7 @@ class MainGame(ui.MainGame):
 	def grab(self):
 		""" Grab item. """
 		dungeon = self.data
-		dungeon.grab_here(dungeon.get_player())
+		dungeon.grab_item_here(dungeon.get_player())
 	@Controls('d')
 	def drop(self):
 		""" Drop item. """

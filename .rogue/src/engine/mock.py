@@ -262,6 +262,10 @@ class Dungeon(scene.Scene):
 		self.monsters.append(actor)
 	def drop_item(self, item_at_pos):
 		self.items.append(item_at_pos)
+	def take_item(self, item_at_pos):
+		found = next(_ for _ in self.items if _ == item_at_pos)
+		self.items.remove(found)
+		return found.item
 	def rip(self, actor):
 		for item in actor.drop_all():
 			self.items.append(item)

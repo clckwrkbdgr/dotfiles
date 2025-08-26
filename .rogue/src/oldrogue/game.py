@@ -37,14 +37,11 @@ class Event:
 	class Wearing(events.Event): FIELDS = 'who item'
 	class NotWearable(events.Event): FIELDS = 'item'
 	class NotConsumable(events.Event): FIELDS = 'item'
-	class InventoryFull(events.Event): FIELDS = 'item'
-	class GrabbedItem(events.Event): FIELDS = 'who item'
 	class CannotReachCeiling(events.Event): FIELDS = ''
 	class GoingUp(events.Event): FIELDS = ''
 	class GoingDown(events.Event): FIELDS = ''
 	class CannotDig(events.Event): FIELDS = ''
 	class NeedKey(events.Event): FIELDS = 'key'
-	class NothingToPickUp(events.Event): FIELDS = ''
 
 class Player(actors.EquippedMonster):
 	_name = 'player'
@@ -84,6 +81,10 @@ class Scene(scene.Scene):
 		self.monsters.remove(actor)
 	def drop_item(self, item_at_pos):
 		self.items.append(item_at_pos)
+	def take_item(self, item_at_pos):
+		found = next(_ for _ in self.items if _ == item_at_pos)
+		self.items.remove(found)
+		return found.item
 	def valid(self, pos): # pragma: no cover -- TODO
 		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
 	@functools.lru_cache()
@@ -346,14 +347,6 @@ class Dungeon(engine.Game):
 		except appliances.LevelPassage.Locked as e:
 			self.fire_event(Event.NeedKey(e.key_item_type))
 			return False
-	def grab_item(self, who, item):
-		index, = [index for index, (pos, i) in enumerate(self.scene.items) if i == item]
-		try:
-			who.grab(item)
-			self.scene.items.pop(index)
-			self.fire_event(Event.GrabbedItem(who, item))
-		except actors.EquippedMonster.InventoryFull:
-			self.fire_event(Event.InventoryFull(item))
 	def consume_item(self, actor, item):
 		""" Tries to consume item.
 		Returns list of happened events.
@@ -409,18 +402,3 @@ class Dungeon(engine.Game):
 			return False
 		dungeon.fire_event(Event.GoingUp())
 		return True
-	def grab_here(self, actor):
-		dungeon = self
-		item_here = next( (index for index, (pos, item) in enumerate(reversed(dungeon.scene.items)) if pos == actor.pos), None)
-		trace.debug("Items: {0}".format(dungeon.scene.items))
-		trace.debug("Rogue: {0}".format(actor.pos))
-		trace.debug("Items here: {0}".format([(index, pos, item) for index, (pos, item) in enumerate(reversed(dungeon.scene.items)) if pos == actor.pos]))
-		trace.debug("Item here: {0}".format(item_here))
-		if item_here is not None:
-			item_here = len(dungeon.scene.items) - 1 - item_here # Index is from reversed list.
-			trace.debug("Unreversed item here: {0}".format(item_here))
-			_, item = dungeon.scene.items[item_here]
-			dungeon.grab_item(actor, item)
-			actor.spend_action_points()
-		else:
-			dungeon.fire_event(Event.NothingToPickUp())

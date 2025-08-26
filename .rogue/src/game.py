@@ -26,9 +26,6 @@ class Version(Enum):
 class DescendEvent(ImportantEvent):
 	""" Descended to another level. """
 	FIELDS = 'actor'
-class GrabItemEvent(ImportantEvent):
-	""" Grabs something from the floor. """
-	FIELDS = 'actor item'
 class ConsumeItemEvent(ImportantEvent):
 	""" Consumes consumable item. """
 	FIELDS = 'actor item'
@@ -219,6 +216,10 @@ class Scene(scene.Scene):
 		return self.strata.cell(pos).passable
 	def drop_item(self, item_at_pos):
 		self.items.append(item_at_pos)
+	def take_item(self, item_at_pos):
+		found = next(_ for _ in self.items if _ == item_at_pos)
+		self.items.remove(found)
+		return found.item
 	def rip(self, actor):
 		for item in actor.drop_all():
 			self.items.append(item)
@@ -259,16 +260,6 @@ class Game(engine.Game):
 	def get_viewport(self):
 		""" Returns current viewport rect. """
 		return Rect(Point(0, 0), self.scene.strata.size)
-	def grab_item_at(self, actor, pos):
-		""" Grabs topmost item at given cell and puts to the inventory.
-		Produces events.
-		"""
-		item = next(self.scene.iter_items_at(pos), None)
-		if not item:
-			return
-		self.fire_event(GrabItemEvent(actor, item))
-		self.scene.items.remove(item)
-		actor.grab(item)
 	def consume_item(self, monster, item):
 		""" Consumes item from inventory (item is removed).
 		Applies corresponding effects, if item has any.
