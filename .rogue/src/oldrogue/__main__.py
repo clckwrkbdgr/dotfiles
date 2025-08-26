@@ -243,10 +243,9 @@ events.Event.on(Events.ConsumeItem)(lambda event:"Consumed {item}.".format(item=
 class DrinksHealingPotion(events.Event): FIELDS = 'Who'
 events.Event.on(DrinksHealingPotion)(lambda event:"{Who} heals itself.".format(Who=event.Who))
 
-class NothingToUnwield(events.Event): FIELDS = ''
-events.Event.on(NothingToUnwield)(lambda event:"Nothing is wielded already.")
-events.Event.on(Unwielding)(lambda event:"Unwielding {item}.".format(item=event.item.name))
-events.Event.on(Wielding)(lambda event:"Wielding {item}.".format(item=event.item.name))
+events.Event.on(Events.NotWielding)(lambda event:"Nothing is wielded already.")
+events.Event.on(Events.Unwield)(lambda event:"Unwielding {item}.".format(item=event.item.name))
+events.Event.on(Events.Wield)(lambda event:"Wielding {item}.".format(item=event.item.name))
 
 events.Event.on(Event.NotWearable)(lambda event:"Cannot wear {item}.".format(item=event.item.name))
 class NothingToTakeOff(events.Event): FIELDS = ''
@@ -465,11 +464,7 @@ class MainGame(ui.MainGame):
 	def unwield(self):
 		""" Unwield item. """
 		dungeon = self.data
-		if not dungeon.get_player().wielding:
-			dungeon.fire_event(NothingToUnwield())
-		else:
-			item = dungeon.get_player().unwield()
-			self.data.fire_event(Event.Unwielding(self, item))
+		dungeon.unwield(dungeon.get_player())
 	@Controls('W')
 	def wear(self):
 		""" Wear item. """

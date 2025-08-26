@@ -58,6 +58,15 @@ class Events:
 	class NotConsumable(events.Event):
 		""" Item is not consumable. """
 		FIELDS = 'item'
+	class Wield(events.ImportantEvent):
+		""" Equips item. """
+		FIELDS = 'actor item'
+	class Unwield(events.ImportantEvent):
+		""" Unequips item. """
+		FIELDS = 'actor item'
+	class NotWielding(events.ImportantEvent):
+		""" Wielding nothing, cannot unwield. """
+		FIELDS = ''
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -444,6 +453,29 @@ class Game(object):
 			self.fire_event(Events.NotConsumable(item))
 			return False
 		return True
+	def wield_item(self, actor, item):
+		""" Actor equips item from inventory.
+		Produces events.
+		"""
+		try:
+			actor.wield(item)
+		except actor.SlotIsTaken:
+			old_item = actor.unwield()
+			if old_item:
+				self.fire_event(Events.Unwield(actor, old_item))
+			actor.wield(item)
+		actor.spend_action_points()
+		self.fire_event(Events.Wield(actor, item))
+	def unwield_item(self, actor):
+		""" Actor unequips item and puts back to the inventory.
+		Produces events.
+		"""
+		item = actor.unwield()
+		if item:
+			actor.spend_action_points()
+			self.fire_event(Events.Unwield(actor, item))
+		else:
+			self.fire_event(Events.NotWielding())
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

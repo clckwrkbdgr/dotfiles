@@ -83,10 +83,10 @@ class MainGame(ui.MainGame):
 	@Events.on(engine.Events.NotConsumable)
 	def on_not_consuming(self, event):
 		return 'X {0}.'.format(event.item.name)
-	@Events.on(game.EquipItemEvent)
+	@Events.on(engine.Events.Wield)
 	def on_equipping(self, event):
 		return '{0} <+ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(game.UnequipItemEvent)
+	@Events.on(engine.Events.Unwield)
 	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
@@ -240,7 +240,6 @@ class Equipment(clckwrkbdgr.tui.Mode):
 		""" Wield or unwield item. """
 		if self.game.scene.get_player().wielding:
 			self.game.unwield_item(self.game.scene.get_player())
-			self.game.end_turn()
 			return True
 		self.done = True
 		return WieldSelection(self.game)

@@ -365,15 +365,15 @@ class TestGridRoomMap(unittest.TestCase):
 
 		dungeon.events = []
 		dungeon.wield_item(jc, pistol)
-		self.assertEqual(_R(dungeon.events), _R([game.Event.Wielding(jc, pistol)]))
+		self.assertEqual(_R(dungeon.events), _R([Events.Wield(jc, pistol)]))
 		self.assertFalse(jc.has_item(StealthPistol))
 		self.assertEqual(jc.wielding, pistol)
 
 		dungeon.events = []
 		dungeon.wield_item(jc, rifle)
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.Unwielding(jc, pistol),
-			game.Event.Wielding(jc, rifle),
+			Events.Unwield(jc, pistol),
+			Events.Wield(jc, rifle),
 			]))
 		self.assertFalse(jc.has_item(SniperRifle))
 		self.assertEqual(jc.wielding, rifle)

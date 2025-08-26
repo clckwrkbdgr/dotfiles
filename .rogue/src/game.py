@@ -26,12 +26,6 @@ class Version(Enum):
 class DescendEvent(ImportantEvent):
 	""" Descended to another level. """
 	FIELDS = 'actor'
-class EquipItemEvent(ImportantEvent):
-	""" Equips item. """
-	FIELDS = 'actor item'
-class UnequipItemEvent(ImportantEvent):
-	""" Unequips item. """
-	FIELDS = 'actor item'
 
 class Player(actors.EquippedMonster):
 	pass
@@ -254,25 +248,6 @@ class Game(engine.Game):
 	def get_viewport(self):
 		""" Returns current viewport rect. """
 		return Rect(Point(0, 0), self.scene.strata.size)
-	def wield_item(self, monster, item):
-		""" Monster equips item from inventory.
-		Produces events.
-		"""
-		try:
-			monster.wield(item)
-		except monster.SlotIsTaken:
-			old_item = monster.unwield()
-			if old_item:
-				self.fire_event(UnequipItemEvent(monster, old_item))
-			monster.wield(item)
-		self.fire_event(EquipItemEvent(monster, item))
-	def unwield_item(self, monster):
-		""" Monster unequips item and puts back to the inventory.
-		Produces events.
-		"""
-		item = monster.unwield()
-		if item:
-			self.fire_event(UnequipItemEvent(monster, item))
 	def jump_to(self, new_pos):
 		""" Teleports player to new pos. """
 		self.scene.get_player().pos = new_pos

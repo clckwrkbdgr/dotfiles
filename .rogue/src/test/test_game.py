@@ -244,7 +244,7 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'EquipItemEvent(actor=player, item=weapon)',
+			'Wield(actor=player, item=weapon)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
@@ -257,7 +257,7 @@ class TestItems(AbstractTestDungeon):
 		dungeon.end_turn()
 		dungeon.process_others()
 		self.assertEqual(self._events(), [[
-			'UnequipItemEvent(actor=player, item=weapon)',
+			'Unwield(actor=player, item=weapon)',
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
@@ -562,7 +562,7 @@ class TestItemActions(AbstractTestDungeon):
 
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'EquipItemEvent(actor=player, item=weapon)',
+			'Wield(actor=player, item=weapon)',
 			])
 		self.assertEqual(dungeon.get_player().wielding.name, 'weapon')
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -571,8 +571,8 @@ class TestItemActions(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True))
 		dungeon.wield_item(dungeon.get_player(), dungeon.get_player().inventory[0])
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'UnequipItemEvent(actor=player, item=weapon)',
-			'EquipItemEvent(actor=player, item=ranged)',
+			'Unwield(actor=player, item=weapon)',
+			'Wield(actor=player, item=ranged)',
 			])
 		self.assertEqual(dungeon.get_player().wielding.name, 'ranged')
 		self.assertEqual(len(dungeon.get_player().inventory), 1)
@@ -581,7 +581,7 @@ class TestItemActions(AbstractTestDungeon):
 		list(dungeon.process_events(raw=True))
 		dungeon.unwield_item(dungeon.get_player())
 		self.assertEqual(list(map(str, dungeon.events)), [
-			'UnequipItemEvent(actor=player, item=ranged)',
+			'Unwield(actor=player, item=ranged)',
 			])
 		self.assertIsNone(dungeon.get_player().wielding)
 		self.assertEqual(len(dungeon.get_player().inventory), 2)
@@ -590,7 +590,9 @@ class TestItemActions(AbstractTestDungeon):
 
 		list(dungeon.process_events(raw=True))
 		dungeon.unwield_item(dungeon.get_player())
-		self.assertEqual(len(dungeon.events), 0)
+		self.assertEqual(list(map(str, dungeon.events)), [
+			'NotWielding()',
+			])
 		self.assertIsNone(dungeon.get_player().wielding)
 		self.assertEqual(len(dungeon.get_player().inventory), 2)
 
