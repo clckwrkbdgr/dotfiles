@@ -77,10 +77,10 @@ class MainGame(ui.MainGame):
 	@Events.on(engine.Events.DropItem)
 	def on_dropping(self, event):
 		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(game.ConsumeItemEvent)
+	@Events.on(engine.Events.ConsumeItem)
 	def on_consuming(self, event):
 		return '{0} <~ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(game.NotConsumable)
+	@Events.on(engine.Events.NotConsumable)
 	def on_not_consuming(self, event):
 		return 'X {0}.'.format(event.item.name)
 	@Events.on(game.EquipItemEvent)

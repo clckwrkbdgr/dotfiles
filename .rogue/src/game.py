@@ -26,12 +26,6 @@ class Version(Enum):
 class DescendEvent(ImportantEvent):
 	""" Descended to another level. """
 	FIELDS = 'actor'
-class ConsumeItemEvent(ImportantEvent):
-	""" Consumes consumable item. """
-	FIELDS = 'actor item'
-class NotConsumable(Event):
-	""" Item is not consumable. """
-	FIELDS = 'item'
 class EquipItemEvent(ImportantEvent):
 	""" Equips item. """
 	FIELDS = 'actor item'
@@ -260,19 +254,6 @@ class Game(engine.Game):
 	def get_viewport(self):
 		""" Returns current viewport rect. """
 		return Rect(Point(0, 0), self.scene.strata.size)
-	def consume_item(self, monster, item):
-		""" Consumes item from inventory (item is removed).
-		Applies corresponding effects, if item has any.
-		Produces events.
-		"""
-		try:
-			events = monster.consume(item)
-		except monster.ItemNotFit as e:
-			self.fire_event(NotConsumable(item))
-			return
-		self.fire_event(ConsumeItemEvent(monster, item))
-		for event in events:
-			self.fire_event(event)
 	def wield_item(self, monster, item):
 		""" Monster equips item from inventory.
 		Produces events.

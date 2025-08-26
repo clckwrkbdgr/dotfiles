@@ -30,13 +30,11 @@ class Version(clckwrkbdgr.collections.Enum):
 	JSONPICKLE = auto()
 
 class Event:
-	class MonsterConsumedItem(events.Event): FIELDS = 'who item'
 	class Unwielding(events.Event): FIELDS = 'who item'
 	class TakingOff(events.Event): FIELDS = 'who item'
 	class Wielding(events.Event): FIELDS = 'who item'
 	class Wearing(events.Event): FIELDS = 'who item'
 	class NotWearable(events.Event): FIELDS = 'item'
-	class NotConsumable(events.Event): FIELDS = 'item'
 	class CannotReachCeiling(events.Event): FIELDS = ''
 	class GoingUp(events.Event): FIELDS = ''
 	class GoingDown(events.Event): FIELDS = ''
@@ -347,17 +345,6 @@ class Dungeon(engine.Game):
 		except appliances.LevelPassage.Locked as e:
 			self.fire_event(Event.NeedKey(e.key_item_type))
 			return False
-	def consume_item(self, actor, item):
-		""" Tries to consume item.
-		Returns list of happened events.
-		"""
-		try:
-			events = [Event.MonsterConsumedItem(actor, item)]
-			events += actor.consume(item)
-			for _ in events:
-				self.fire_event(_)
-		except actor.ItemNotFit as e:
-			return self.fire_event(Event.NotConsumable(item))
 	def wield_item(self, who, item):
 		try:
 			who.wield(item)

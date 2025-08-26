@@ -238,8 +238,8 @@ events.Event.on(Events.DropItem)(lambda event:"Dropped {item}.".format(Who=event
 class DropsItem(events.Event): FIELDS = 'Who'
 events.Event.on(DropsItem)(lambda event:"{Who} drops {item}.".format(Who=event.Who))
 
-events.Event.on(Event.NotConsumable)(lambda event:"Cannot consume {item}.".format(item=event.item.name))
-events.Event.on(Event.MonsterConsumedItem)(lambda event:"Consumed {item}.".format(item=event.item.name))
+events.Event.on(Events.NotConsumable)(lambda event:"Cannot consume {item}.".format(item=event.item.name))
+events.Event.on(Events.ConsumeItem)(lambda event:"Consumed {item}.".format(item=event.item.name))
 class DrinksHealingPotion(events.Event): FIELDS = 'Who'
 events.Event.on(DrinksHealingPotion)(lambda event:"{Who} heals itself.".format(Who=event.Who))
 

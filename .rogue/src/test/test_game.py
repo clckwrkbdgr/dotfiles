@@ -222,19 +222,6 @@ class TestItems(AbstractTestDungeon):
 			]])
 		self.assertFalse(dungeon.is_finished())
 		self.maxDiff = None
-	def should_consume_items(self):
-		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(mock_dungeon.Potion())
-		self.assertEqual(self._events(), [[
-			]])
-		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
-		dungeon.end_turn()
-		dungeon.process_others()
-		self.assertEqual(self._events(), [[
-			'NotConsumable(item=potion)',
-			]])
-		self.assertFalse(dungeon.is_finished())
-		self.maxDiff = None
 	def should_drop_items(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		dungeon.get_player().inventory.append(mock_dungeon.Potion())
@@ -567,29 +554,6 @@ class TestActorEffects(AbstractTestDungeon):
 		self.assertIsNone(dungeon.get_player())
 
 class TestItemActions(AbstractTestDungeon):
-	def should_consume_item(self):
-		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
-		dungeon.affect_health(dungeon.get_player(), -9)
-		list(dungeon.process_events(raw=True))
-		dungeon.get_player().inventory.append(mock_dungeon.Potion())
-		dungeon.get_player().inventory.append(mock_dungeon.HealingPotion())
-
-		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[0])
-		self.assertEqual(list(map(str, dungeon.events)), [
-			'NotConsumable(item=potion)',
-			])
-		self.assertEqual(len(dungeon.get_player().inventory), 2)
-		self.assertEqual(dungeon.get_player().inventory[0].name, 'potion')
-		self.assertEqual(dungeon.get_player().inventory[1].name, 'healing potion')
-
-		list(dungeon.process_events(raw=True))
-		dungeon.consume_item(dungeon.get_player(), dungeon.get_player().inventory[1])
-		self.assertEqual(list(map(str, dungeon.events)), [
-			'ConsumeItemEvent(actor=player, item=healing potion)',
-			'Health(target=player, diff=5)',
-			])
-		self.assertEqual(dungeon.get_player().hp, 6)
-		self.assertEqual(len(dungeon.get_player().inventory), 1)
 	def should_equip_item(self):
 		dungeon = self.dungeon = mock_dungeon.build('potions lying around')
 		list(dungeon.process_events(raw=True))

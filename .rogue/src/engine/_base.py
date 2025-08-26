@@ -52,6 +52,12 @@ class Events:
 	class GrabItem(events.ImportantEvent):
 		""" Grabs something from the floor. """
 		FIELDS = 'actor item'
+	class ConsumeItem(events.ImportantEvent):
+		""" Consumes consumable item. """
+		FIELDS = 'actor item'
+	class NotConsumable(events.Event):
+		""" Item is not consumable. """
+		FIELDS = 'item'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -423,6 +429,21 @@ class Game(object):
 			self.fire_event(Events.InventoryIsFull(item))
 			return None
 		return item
+	def consume_item(self, actor, item):
+		""" Consumes item from inventory (item is removed).
+		Applies corresponding effects, if item has any.
+		Produces events, including events from consuming item.
+		"""
+		try:
+			events = actor.consume(item)
+			actor.spend_action_points()
+			self.fire_event(Events.ConsumeItem(actor, item))
+			for event in events:
+				self.fire_event(event)
+		except actor.ItemNotFit as e:
+			self.fire_event(Events.NotConsumable(item))
+			return False
+		return True
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

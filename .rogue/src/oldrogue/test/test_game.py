@@ -48,18 +48,6 @@ class ThermopticCamo(Item, Wearable):
 class HazmatSuit(Item, Wearable):
 	_protection = 1
 
-class StimPack(Item, items.Consumable):
-	def consume(self, monster):
-		monster.affect_health(25)
-		return []
-
-class SmartStimPack(Item, items.Consumable):
-	def consume(self, monster):
-		if monster.hp >= monster.max_hp:
-			return []
-		else: # pragma: no cover
-			raise RuntimeError("Should never reach here.")
-
 class UNATCOAgent(Player):
 	_attack = 2
 	_max_hp = 100
@@ -81,44 +69,6 @@ class MJ12Trooper(actors.EquippedMonster):
 	_max_hp = 200
 	_hostile_to = [UNATCOAgent, NSFTerrorist]
 	_sprite = Sprite('M', None)
-
-class TestMonster(unittest.TestCase):
-	class UNATCO(game.Dungeon):
-		pass
-	def should_consumeItems(self):
-		dungeon = self.UNATCO()
-
-		key = NanoKey()
-		key.value = '0451'
-		stimpack = StimPack()
-		smart_stimpack = SmartStimPack()
-
-		jc = UNATCOAgent(None)
-		jc.inventory.append(key)
-		jc.inventory.append(stimpack)
-		jc.inventory.append(smart_stimpack)
-
-		dungeon.events = []
-		dungeon.consume_item(jc, key)
-		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.NotConsumable(key),
-			]))
-		self.assertTrue(jc.has_item(NanoKey))
-
-		dungeon.events = []
-		dungeon.consume_item(jc, stimpack)
-		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.MonsterConsumedItem(jc, stimpack),
-			]))
-		self.assertFalse(jc.has_item(StimPack))
-		self.assertEqual(jc.hp, jc.max_hp)
-
-		dungeon.events = []
-		dungeon.consume_item(jc, smart_stimpack)
-		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.MonsterConsumedItem(jc, smart_stimpack),
-			]))
-		self.assertFalse(jc.has_item(SmartStimPack))
 
 class MockGenerator:
 	MAIN_LEVEL = textwrap.dedent("""\

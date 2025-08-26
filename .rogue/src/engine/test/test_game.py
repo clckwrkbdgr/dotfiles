@@ -187,7 +187,7 @@ class TestMovement(unittest.TestCase):
 				##########
 				"""))
 
-class TestInventory(unittest.TestCase):
+class TestItems(unittest.TestCase):
 	def should_drop_item(self):
 		game = NanoDungeon()
 		game.generate(None)
@@ -239,6 +239,27 @@ class TestInventory(unittest.TestCase):
 				#..b.....#
 				##########
 				"""))
+	def should_consume_items(self):
+		game = NanoDungeon()
+		game.generate(None)
+
+		game.scene.get_player().hp -= 5
+		game.scene.get_player().inventory.append(Potion())
+		dagger, potion = game.scene.get_player().inventory
+
+		game.consume_item(game.scene.get_player(), dagger)
+		self.assertEqual(game.events, [_base.Events.NotConsumable(dagger)])
+		self.assertFalse(game.scene.get_player().has_acted())
+
+		list(game.process_events(raw=True)) # Clear events.
+		game.consume_item(game.scene.get_player(), potion)
+		self.assertEqual(game.events, [
+			_base.Events.ConsumeItem(game.scene.get_player(), potion),
+			Healed(game.scene.get_player(), +5),
+			])
+		self.assertTrue(game.scene.get_player().has_acted())
+		self.assertFalse(game.scene.get_player().find_item(Potion))
+		self.assertEqual(game.scene.get_player().hp, 10)
 
 class TestScenes(unittest.TestCase):
 	def should_travel_to_other_scene(self):
