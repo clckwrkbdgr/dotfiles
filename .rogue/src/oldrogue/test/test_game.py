@@ -460,7 +460,7 @@ class TestDungeon(unittest.TestCase):
 	def should_use_stairs(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.use_stairs(dungeon.scene.get_player(), dungeon.scene.objects[1][1])
+		dungeon.use_passage(dungeon.scene.get_player(), dungeon.scene.objects[1][1])
 		self.assertEqual(dungeon.scene, dungeon.scenes['roof'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
 	def should_locate_in_maze(self):
@@ -615,14 +615,14 @@ class TestDungeon(unittest.TestCase):
 
 		self.assertFalse(dungeon.ascend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.CannotReachCeiling(),
+			Events.CannotAscend(dungeon.scene.get_player().pos),
 			]))
 
 		dungeon.events = []
 		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 6))
 		self.assertTrue(dungeon.ascend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.GoingUp(),
+			Events.Ascend(dungeon.scene.get_player()),
 			]))
 		self.assertEqual(dungeon.scene, dungeon.scenes['roof'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
@@ -634,14 +634,14 @@ class TestDungeon(unittest.TestCase):
 		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 6))
 		self.assertFalse(dungeon.descend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.CannotDig(),
+			Events.CannotDescend(dungeon.scene.get_player().pos),
 			]))
 
 		dungeon.events = []
 		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
 		self.assertFalse(dungeon.descend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.NeedKey(NanoKey),
+			Events.NeedKey(NanoKey),
 			]))
 
 		dungeon.events = []
@@ -651,7 +651,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
 		self.assertTrue(dungeon.descend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.GoingDown(),
+			Events.Descend(dungeon.scene.get_player()),
 			]))
 		self.assertEqual(dungeon.scene, dungeon.scenes['basement'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(7, 4))
@@ -660,7 +660,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.events = []
 		self.assertFalse(dungeon.ascend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.NeedKey(NanoKey),
+			Events.NeedKey(NanoKey),
 			]))
 
 		dungeon.events = []
@@ -669,7 +669,7 @@ class TestDungeon(unittest.TestCase):
 		dungeon.scene.get_player().inventory.append(key)
 		self.assertTrue(dungeon.ascend(dungeon.scene.get_player()))
 		self.assertEqual(_R(dungeon.events), _R([
-			game.Event.GoingUp(),
+			Events.Ascend(dungeon.scene.get_player()),
 			]))
 		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))

@@ -102,7 +102,7 @@ class StairsDown(appliances.LevelPassage):
 	_sprite = Sprite('>', None)
 	_name = 'stairs'
 	_id = 'exit'
-	_can_go_up = False
+	_can_go_down = True
 
 class Statue(appliances.Appliance):
 	_sprite = Sprite('&', None)
@@ -234,10 +234,11 @@ class Dungeon(scene.Scene):
 		self.monsters = []
 	def make_vision(self):
 		return Vision(self)
+	def get_area_rect(self): return Rect((0, 0), self.cells.size)
 	def generate_dungeon_floor(self):
 		builder = DungeonFloor(self.rng, Size(10, 10))
 		builder.map_key(**({
-			'exit':lambda: StairsDown(),
+			'exit':lambda: StairsDown('tomb', 'enter'),
 			}))
 		builder.map_key(
 				butterfly = lambda pos, color: Butterfly(pos, color=color),
@@ -319,7 +320,8 @@ class Dungeon(scene.Scene):
 
 class Tomb(builders.Builder):
 	class Mapping:
-		start = StairsUp
+		@staticmethod
+		def start(): return StairsUp('floor', 'exit')
 		wall = Wall()
 		void = Void()
 		_ = {

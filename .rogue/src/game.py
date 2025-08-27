@@ -23,10 +23,6 @@ class Version(Enum):
 	WIELDING
 	"""
 
-class DescendEvent(ImportantEvent):
-	""" Descended to another level. """
-	FIELDS = 'actor'
-
 class Player(actors.EquippedMonster):
 	pass
 
@@ -243,13 +239,3 @@ class Scene(scene.Scene):
 class Game(engine.Game):
 	""" Main game object.
 	"""
-	def descend(self):
-		""" Descends onto new level, when standing on exit pos.
-		Generates new level.
-		Otherwise does nothing.
-		"""
-		for obj in self.scene.iter_appliances_at(self.scene.get_player().pos):
-			if isinstance(obj, appliances.LevelPassage):
-				self.fire_event(DescendEvent(self.scene.get_player()))
-				self.travel(self.scene.get_player(), obj.level_id, obj.connected_passage)
-				break

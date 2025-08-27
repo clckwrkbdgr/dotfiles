@@ -3,7 +3,7 @@ Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Size, Matrix
 from clckwrkbdgr.pcg import RNG
 from . import events
-from . import scene, items
+from . import scene, items, appliances
 from . import auto
 
 class GodMode:
@@ -88,6 +88,21 @@ class Events:
 	class NotWearable(events.Event):
 		""" Cannot wear item. """
 		FIELDS = 'item'
+	class NeedKey(events.Event):
+		""" Locked; needs a key type to unlock. """
+		FIELDS = 'key'
+	class Descend(events.ImportantEvent):
+		""" Descended to another level. """
+		FIELDS = 'actor'
+	class Ascend(events.ImportantEvent):
+		""" Ascended to another level. """
+		FIELDS = 'actor'
+	class CannotDescend(events.Event):
+		""" Cannot descend from here. """
+		FIELDS = 'pos'
+	class CannotAscend(events.Event):
+		""" Cannot ascend from here. """
+		FIELDS = 'pos'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -529,6 +544,42 @@ class Game(object):
 			item = actor.take_off()
 			self.fire_event(Events.TakeOff(actor, item))
 			actor.spend_action_points()
+	def use_passage(self, actor, level_passage):
+		""" Use level passage object. """
+		try:
+			level_id, connected_passage = level_passage.use(actor)
+			self.travel(actor, level_id, connected_passage)
+			return True
+		except level_passage.Locked as e:
+			self.fire_event(Events.NeedKey(e.key_item_type))
+			return False
+	def descend(self, actor):
+		""" Descends onto new level, when standing on unlocked exit passage.
+		May generate new level.
+		"""
+		here = self.scene.get_global_pos(actor)
+		stairs_here = next((obj for obj in self.scene.iter_appliances_at(here) if isinstance(obj, appliances.LevelPassage) and obj.can_go_down), None)
+		if not stairs_here:
+			self.fire_event(Events.CannotDescend(here))
+			return False
+		if not self.use_passage(actor, stairs_here):
+			return False
+		actor.spend_action_points()
+		self.fire_event(Events.Descend(actor))
+		return True
+	def ascend(self, actor):
+		""" Ascends onto new level, when standing on unlocked exit passage.
+		May generate new level.
+		"""
+		here = self.scene.get_global_pos(actor)
+		stairs_here = next((obj for obj in self.scene.iter_appliances_at(here) if isinstance(obj, appliances.LevelPassage) and obj.can_go_up), None)
+		if not stairs_here:
+			self.fire_event(Events.CannotAscend(here))
+			return False
+		if not self.use_passage(actor, stairs_here):
+			return False
+		self.fire_event(Events.Ascend(actor))
+		return True
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

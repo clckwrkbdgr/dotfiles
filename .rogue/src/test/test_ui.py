@@ -592,7 +592,7 @@ class TestCurses(unittest.TestCase):
 		loop.redraw()
 		self.maxDiff = None
 		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.NEXT_DUNGEON) + [
-			('addstr', 0, 0, 'monster! stairs! player V... monster!                                           '),
+			('addstr', 0, 0, 'monster! stairs! monster! player V...                                           '),
 			('addstr', 24, 0, 'hp: 10/10  '),
 			('addstr', 24, 12, '       '),
 			('addstr', 24, 20, '       '),

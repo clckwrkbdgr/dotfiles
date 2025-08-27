@@ -172,6 +172,7 @@ class DarkFloor(Terrain):
 class MockStairs(appliances.LevelPassage):
 	_name = 'stairs'
 	_sprite = Sprite('>', None)
+	_can_go_down = True
 	_id = 'enter'
 
 class MockGame(game.Game):

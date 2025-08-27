@@ -29,13 +29,6 @@ class Version(clckwrkbdgr.collections.Enum):
 	WEARING = auto()
 	JSONPICKLE = auto()
 
-class Event:
-	class CannotReachCeiling(events.Event): FIELDS = ''
-	class GoingUp(events.Event): FIELDS = ''
-	class GoingDown(events.Event): FIELDS = ''
-	class CannotDig(events.Event): FIELDS = ''
-	class NeedKey(events.Event): FIELDS = 'key'
-
 class Player(actors.EquippedMonster):
 	_name = 'player'
 
@@ -336,32 +329,3 @@ class Dungeon(engine.Game):
 		data.levels = self.scenes
 		data.visions = self.visions
 		data.current_level = self.current_scene_id
-	def use_stairs(self, monster, stairs):
-		""" Use level passage object. """
-		try:
-			stairs.use(monster)
-			self.travel(monster, stairs.level_id, stairs.connected_passage)
-			return True
-		except appliances.LevelPassage.Locked as e:
-			self.fire_event(Event.NeedKey(e.key_item_type))
-			return False
-	def descend(self, actor):
-		dungeon = self
-		stairs_here = next(iter(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_down, dungeon.scene.iter_appliances_at(actor.pos))), None)
-		if not stairs_here:
-			dungeon.fire_event(Event.CannotDig())
-			return False
-		if not dungeon.use_stairs(actor, stairs_here):
-			return False
-		dungeon.fire_event(Event.GoingDown())
-		return True
-	def ascend(self, actor):
-		dungeon = self
-		stairs_here = next(iter(filter(lambda obj: isinstance(obj, appliances.LevelPassage) and obj.can_go_up, dungeon.scene.iter_appliances_at(actor.pos))), None)
-		if not stairs_here:
-			dungeon.fire_event(Event.CannotReachCeiling())
-			return False
-		if not dungeon.use_stairs(actor, stairs_here):
-			return False
-		dungeon.fire_event(Event.GoingUp())
-		return True

@@ -341,3 +341,49 @@ class TestScenes(unittest.TestCase):
 		self.assertEqual(game.current_scene_id, 'tomb')
 		self.assertEqual(len(game.scenes), 2)
 		self.assertEqual(game.scene.get_player().pos, Point(1, 1))
+	def should_descend_and_ascend(self):
+		game = NanoDungeon()
+		game.generate('floor')
+		self.assertEqual(len(game.scenes), 1)
+
+		self.assertFalse(game.descend(game.scene.get_player()))
+		self.assertEqual(game.events, [
+			_base.Events.CannotDescend(game.scene.get_player().pos),
+			])
+
+		list(game.process_events(raw=True)) # Clear events.
+		game.jump_to(game.scene.get_player(), Point(4, 6))
+		self.assertTrue(game.descend(game.scene.get_player()))
+		self.assertEqual(game.events, [
+			_base.Events.Descend(game.scene.get_player()),
+			])
+		self.assertEqual(game.current_scene_id, 'tomb')
+		self.assertEqual(len(game.scenes), 2)
+		self.assertEqual(game.scene.get_player().pos, Point(1, 1))
+
+		list(game.process_events(raw=True)) # Clear events.
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(0, 1)))
+		self.assertFalse(game.ascend(game.scene.get_player()))
+		self.assertEqual(game.events, [
+			_base.Events.Move(game.scene.get_player(), game.scene.get_player().pos),
+			_base.Events.CannotAscend(game.scene.get_player().pos),
+			])
+
+		list(game.process_events(raw=True)) # Clear events.
+		self.assertTrue(game.move_actor(game.scene.get_player(), Point(0, -1)))
+		self.assertFalse(game.ascend(game.scene.get_player()))
+		self.assertEqual(game.events, [
+			_base.Events.Move(game.scene.get_player(), game.scene.get_player().pos),
+			_base.Events.NeedKey(Gold),
+			])
+		self.assertEqual(game.current_scene_id, 'tomb')
+
+		list(game.process_events(raw=True)) # Clear events.
+		game.scene.get_player().grab(Gold())
+		self.assertTrue(game.ascend(game.scene.get_player()))
+		self.assertEqual(game.events, [
+			_base.Events.Ascend(game.scene.get_player()),
+			])
+		self.assertEqual(game.current_scene_id, 'floor')
+		self.assertEqual(len(game.scenes), 2)
+		self.assertEqual(game.scene.get_player().pos, Point(4, 6))

@@ -70,7 +70,7 @@ class MainGame(ui.MainGame):
 	def on_movement(self, event):
 		if event.actor != self.game.scene.get_player():
 			return '{0}...'.format(event.actor.name)
-	@Events.on(game.DescendEvent)
+	@Events.on(engine.Events.Descend)
 	def on_descending(self, event):
 		return '{0} V...'.format(event.actor.name)
 	@Events.on(engine.Events.BumpIntoTerrain)
@@ -124,7 +124,7 @@ class MainGame(ui.MainGame):
 	def descend(self):
 		""" Descend. """
 		if not self.aim:
-			self.game.descend()
+			self.game.descend(self.game.scene.get_player())
 	@ui.MainGame.Keys.bind('g')
 	def grab(self):
 		""" Grab item. """

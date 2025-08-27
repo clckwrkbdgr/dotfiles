@@ -219,13 +219,13 @@ norm_monsters << make_monster('Zealot', 'Z', 'zealot', 10, 2, thug_drops)
 class GodModeSwitched(events.Event): FIELDS = 'name state'
 events.Event.on(GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
 
-events.Event.on(Event.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
-events.Event.on(Event.GoingUp)(lambda event:"Going up...")
-events.Event.on(Event.GoingDown)(lambda event:"Going down...")
+events.Event.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
+events.Event.on(Events.Ascend)(lambda event:"Going up...")
+events.Event.on(Events.Descend)(lambda event:"Going down...")
 class CannotGoBelow(events.Event): FIELDS = ''
 events.Event.on(CannotGoBelow)(lambda event:"No place down below.")
-events.Event.on(Event.CannotDig)(lambda event:"Cannot dig through the ground.")
-events.Event.on(Event.CannotReachCeiling)(lambda event:"Cannot reach the ceiling.")
+events.Event.on(Events.CannotDescend)(lambda event:"Cannot dig through the ground.")
+events.Event.on(Events.CannotAscend)(lambda event:"Cannot reach the ceiling.")
 
 class NoSuchItem(events.Event): FIELDS = 'char'
 events.Event.on(NoSuchItem)(lambda event:"No such item '{char}'.".format(char=event.char))

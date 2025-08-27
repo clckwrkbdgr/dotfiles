@@ -47,8 +47,9 @@ class TestMainDungeonLoop(AbstractTestDungeon):
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[9, 6])',
 			]])
-		dungeon.descend()
+		dungeon.descend(dungeon.get_player())
 		self.assertEqual(self._events(), [[
+			'CannotDescend(pos=[9, 6])',
 			]])
 		dungeon.automove(Point(11, 2))
 		self.assertTrue(dungeon.perform_automovement())
@@ -474,7 +475,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.affect_health(dungeon.get_player(), -5)
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 
-		dungeon.descend()
+		dungeon.descend(dungeon.get_player())
 		self.assertEqual(len(dungeon.scenes), 1)
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN)
@@ -482,7 +483,7 @@ class TestMovement(AbstractTestDungeon):
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
 		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		dungeon.descend()
+		dungeon.descend(dungeon.get_player())
 		self.assertEqual(len(dungeon.scenes), 1)
 		self.assertEqual(dungeon.get_player().pos, Point(0, 0))
 		self.assertEqual(dungeon.get_player().hp, 5)
