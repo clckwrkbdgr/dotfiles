@@ -215,6 +215,8 @@ class Vision(vision.Vision):
 		return self.visible.cell(pos) if self.visible.valid(pos) else False
 	def is_explored(self, pos):
 		return self.visited.cell(pos) if self.visited.valid(pos) else False
+	def iter_important(self):
+		return []
 	def visit(self, actor):
 		self.visible.clear(False)
 		for pos in self.visible:

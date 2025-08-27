@@ -44,6 +44,11 @@ class Events:
 	class Move(events.Event):
 		""" Location is changed. """
 		FIELDS = 'actor dest'
+	class AutoStop(events.ImportantEvent):
+		""" Cannot proceed with automatic actions
+		because of list of reasons.
+		"""
+		FIELDS = 'reason'
 	class Discover(events.ImportantEvent):
 		""" Something new is discovered on the map! """
 		FIELDS = 'obj'
@@ -356,7 +361,13 @@ class Game(object):
 	def prevent_automove(self): # pragma: no cover
 		""" Should return True if there are any conditions at play
 		that prevent auto movement from start (e.g. visible danger)
+		Default implementation stops if there are important
+		objects/happenings in the Vision.
 		"""
+		stoppers = list(self.vision.iter_important())
+		if stoppers:
+			self.fire_event(Events.AutoStop(stoppers))
+			return True
 		return False
 
 	def affect_health(self, target, diff):

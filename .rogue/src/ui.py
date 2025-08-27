@@ -11,7 +11,7 @@ import clckwrkbdgr.tui
 import clckwrkbdgr.text
 from clckwrkbdgr.tui import Key, Keymapping
 from .engine.events import Events
-from .engine import ui
+from .engine import ui, actors
 from . import engine
 from .engine.ui import Sprite
 
@@ -46,8 +46,14 @@ class MainGame(ui.MainGame):
 	def on_discovering(self, event):
 		if hasattr(event.obj, 'name'):
 			return '{0}!'.format(event.obj.name)
-		else:
+		else: # pragma: no cover
 			return '{0}!'.format(event.obj)
+	@Events.on(engine.Events.AutoStop)
+	def on_auto_stop(self, event):
+		if isinstance(event.reason[0], actors.Actor):
+			return 'monsters!'
+		else: # pragma: no cover
+			return '{0}!'.format(event.reason[0])
 	@Events.on(engine.Events.NothingToPickUp)
 	def on_nothing_to_pick_up(self, event):
 		return ''

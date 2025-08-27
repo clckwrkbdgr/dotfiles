@@ -15,6 +15,12 @@ class Vision(object):
 		was visited and/or seen.
 		"""
 		raise NotImplementedError()
+	def iter_important(self): # pragma: no cover
+		""" Should yield dangerous/important objects/happenings
+		in the current field of view (like monsters).
+		Mostly used to stop/prevent automatic actions.
+		"""
+		raise NotImplementedError()
 	def visit(self, actor): # pragma: no cover
 		""" Should mark actor's position as visited along with every place visible from that position.
 		Updates current field of vision.
@@ -31,3 +37,4 @@ class OmniVision(Vision):
 	def is_visible(self, pos): return True
 	def is_explored(self, pos): return True
 	def visit(self, actor): return []
+	def iter_important(self): return []

@@ -713,8 +713,8 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertFalse(dungeon.perform_automovement())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), engine.Events.Discover)
-		self.assertEqual(dungeon.events[0].obj, 'monsters')
+		self.assertEqual(type(dungeon.events[0]), engine.Events.AutoStop)
+		self.assertEqual(dungeon.events[0].reason, dungeon.vision.visible_monsters)
 	def should_autoexplore(self):
 		dungeon = self.dungeon = mock_dungeon.build('lonely')
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
@@ -754,8 +754,8 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertFalse(dungeon.automove())
 		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
 		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), engine.Events.Discover)
-		self.assertEqual(dungeon.events[0].obj, 'monsters')
+		self.assertEqual(type(dungeon.events[0]), engine.Events.AutoStop)
+		self.assertEqual(dungeon.events[0].reason, dungeon.vision.visible_monsters)
 
 class TestGameSerialization(AbstractTestDungeon):
 	def should_load_game_or_start_new_one(self):

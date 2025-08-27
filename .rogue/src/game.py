@@ -82,6 +82,9 @@ class Vision(vision.Vision):
 		return self.field_of_view.is_visible(pos.x, pos.y)
 	def is_explored(self, pos):
 		return self.visited.cell(pos)
+	def iter_important(self):
+		for _ in self.visible_monsters:
+			yield _
 	def visit(self, monster):
 		""" Recalculates visibility/FOV for the player.
 		May produce Discover events, if some objects come into vision.
@@ -250,8 +253,3 @@ class Game(engine.Game):
 				self.fire_event(DescendEvent(self.scene.get_player()))
 				self.travel(self.scene.get_player(), obj.level_id, obj.connected_passage)
 				break
-	def prevent_automove(self):
-		if self.vision.visible_monsters:
-			self.fire_event(engine.Events.Discover('monsters'))
-			return True
-		return False
