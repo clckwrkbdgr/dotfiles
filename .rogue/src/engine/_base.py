@@ -135,7 +135,7 @@ class Game(object):
 		Does not spend action points.
 		Recalculates vision.
 		"""
-		actor.pos = new_pos
+		self.scene.transfer_actor(actor, new_pos)
 		self.update_vision()
 	def travel(self, actor, scene_id, passage=None):
 		""" Travel to a specified scene.
@@ -323,18 +323,13 @@ class Game(object):
 		"""
 		return self.automovement is not None
 	def perform_automovement(self):
-		""" Should perform any automovement activities
-		(if currently enabled).
-		"""
-		""" Performs next step from auto-movement queue,
-		if any and until available.
+		""" Should perform any automovement activities (if currently enabled).
+		Performs next step from auto-movement queue, if any and until available.
 		Stops on important events.
 		"""
-		if not self.automovement:
-			return False
-		if self.has_unprocessed_events(important_only=True):
-			Log.debug('New events in FOV, aborting auto-moving mode.')
+		if self.automovement is True: # Pending stop from previous action.
 			self.automovement = None
+		if not self.automovement:
 			return False
 		Log.debug('Performing queued actions.')
 		shift = self.automovement.next()
@@ -342,6 +337,10 @@ class Game(object):
 			self.automovement = None
 			return False
 		self.move_actor(self.scene.get_player(), shift)
+		if self.has_unprocessed_events(important_only=True):
+			Log.debug('New events in FOV, aborting auto-moving mode.')
+			self.automovement = True # Pending stop on the next check.
+			return True
 		return True
 	def stop_automovement(self):
 		""" Force stop automovement (e.g. because of user interruption).

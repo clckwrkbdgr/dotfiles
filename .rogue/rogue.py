@@ -15,7 +15,7 @@ import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.tui
 from src import engine
 from src.engine import builders, scene
-from src.engine import events, auto
+from src.engine import events, auto, vision
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 from src.engine.items import Item
 from src.engine.terrain import Terrain
@@ -70,7 +70,7 @@ class RealMonster(Monster):
 class Player(Monster):
 	_sprite = Sprite('@', 'bold_white')
 	_name = 'you'
-	_vision = 40
+	_vision = 10
 	_attack = 1
 	_hostile_to = [RealMonster]
 	init_max_hp = 10
@@ -409,6 +409,17 @@ events.Events.on(Events.Move)(lambda _:None)
 events.Events.on(Events.Health)(lambda _:None)
 events.Events.on(Events.BumpIntoActor)(lambda _:'{0} bump into {1}.'.format(_.actor.name.title(), _.target.name))
 events.Events.on(Events.Attack)(lambda _:'{0} hit {1}.'.format(_.actor.name.title(), _.target.name))
+@events.Events.on(Events.Discover)
+def on_discover(event):
+	if hasattr(event.obj, 'name'):
+		return '{0}!'.format(event.obj.name)
+	else: # pragma: no cover
+		return '{0}!'.format(event.obj)
+@events.Events.on(Events.AutoStop)
+def stop_auto_activities(event):
+	if isinstance(event.reason[0], src.engine.actors.Actor):
+		return 'There are monsters nearby!'
+	return 'There are {0} nearby!'.format(', '.join(map(str, event.reason)))
 @events.Events.on(Events.Death)
 def monster_is_dead(_):
 	if _.target.name == 'you':
@@ -441,6 +452,28 @@ class Game(engine.Game):
 	def make_player(self):
 		return Player(None)
 
+class Vision(vision.OmniVision):
+	def __init__(self, scene):
+		super(Vision, self).__init__(scene)
+		self.visible_monsters = []
+	def iter_important(self):
+		for _ in self.visible_monsters:
+			yield _
+	def visit(self, actor):
+		actor_pos = self.scene.get_global_pos(actor)
+		vision_range = Rect( # Twice as wide.
+				actor_pos - Point(actor.vision * 2, actor.vision),
+				Size(1 + actor.vision * 2 * 2, 1 + actor.vision * 2),
+				)
+		current_visible_monsters = []
+		for monster in self.scene.iter_monsters_in_rect(vision_range):
+			if monster == actor:
+				continue
+			if monster not in self.visible_monsters:
+				yield monster
+			current_visible_monsters.append(monster)
+		self.visible_monsters = current_visible_monsters
+
 class Scene(scene.Scene):
 	def __init__(self):
 		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
@@ -448,6 +481,8 @@ class Scene(scene.Scene):
 	@classmethod
 	def get_autoexplorer_class(cls): # pragma: no cover -- TODO
 		return auto.EndlessAreaExplorer
+	def make_vision(self):
+		return Vision(self)
 	def generate(self, id):
 		zone_pos = Point(
 				random.randrange(self.world.cells.size.width),
