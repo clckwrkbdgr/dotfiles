@@ -175,7 +175,7 @@ class MockStairs(appliances.LevelPassage):
 	_can_go_down = True
 	_id = 'enter'
 
-class MockGame(game.Game):
+class MockGame(engine.Game):
 	def make_player(self):
 		player = Player(None)
 		player.fill_drops(self.rng)

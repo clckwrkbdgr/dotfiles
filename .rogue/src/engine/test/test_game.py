@@ -1,6 +1,8 @@
 from clckwrkbdgr import unittest
+import clckwrkbdgr.serialize.stream as savefile
 from .. import _base
 from .. import events
+from .. import mock
 from ..mock import *
 
 class TestEvents(unittest.TestCase):
@@ -10,6 +12,105 @@ class TestEvents(unittest.TestCase):
 		self.assertEqual(list(game.process_events()), [
 			'me drops something on floor',
 			])
+
+class MockWriterStream:
+	def __init__(self):
+		self.dump = []
+	def write(self, item):
+		if item == '\0':
+			return
+		self.dump.append(item)
+
+class TestSerialization(unittest.TestCase):
+	def should_load_game_or_start_new_one(self):
+		game = NanoDungeon()
+		game.generate('floor')
+		
+		self.assertEqual(game.scene.monsters[0].pos, Point(3, 8))
+		game.scene.monsters[0].pos = Point(2, 2)
+		writer = savefile.Writer(MockWriterStream(), 1)
+		game.save(writer)
+		dump = writer.f.dump
+
+		reader = savefile.Reader(iter(dump))
+		restored = NanoDungeon()
+		restored.load(reader)
+
+		self.assertEqual(restored.scene.monsters[0].pos, Point(2, 2))
+
+		restored = NanoDungeon()
+		restored.generate('floor')
+		self.assertEqual(restored.scene.monsters[0].pos, Point(3, 8))
+	def should_serialize_and_deserialize_game(self):
+		dungeon = NanoDungeon()
+		dungeon.generate('floor')
+		writer = savefile.Writer(MockWriterStream(), 1)
+		dungeon.save(writer)
+		dump = writer.f.dump[1:]
+		Wall = mock.Wall.__name__
+		Floor = mock.Floor.__name__
+		ToxicWaste = mock.ToxicWaste.__name__
+		#self.maxDiff = None
+		self.assertEqual(dump, list(map(str, [0, 1521280756,
+			'floor', 'floor',
+			10, 10,
+			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Wall, Floor, ToxicWaste, 0, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
+			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
+			2,
+				'Butterfly', 3, 8, 'red',
+				'Rogue', 1, 5, 10, 1, 'Dagger', '0', '0',
+			1,
+				'ScribbledNote', 'welcome', 1, 2,
+			3,
+				'StairsUp', None, None, 1, 5,
+				'Statue', 'goddess', 3, 2,
+				'StairsDown', 'tomb', 'enter', 4, 6,
+			'',
+
+			'floor',
+			10, 10,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+			1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+			1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+			1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+			1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			'',
+			])))
+		dump = [str(1)] + list(map(str, dump))
+
+		restored_dungeon = NanoDungeon()
+		reader = savefile.Reader(iter(dump))
+		restored_dungeon.load(reader)
+		self.assertEqual(
+				[(_.name, _.pos) for _ in dungeon.scene.monsters],
+				[(_.name, _.pos) for _ in restored_dungeon.scene.monsters],
+				)
+		self.assertEqual(dungeon.scene.appliances[0].pos, restored_dungeon.scene.appliances[0].pos)
+		for pos in dungeon.scene.cells.size.iter_points():
+			self.assertEqual(type(dungeon.scene.cells.cell(pos)).__name__, type(restored_dungeon.scene.cells.cell(pos)).__name__, str(pos))
+			self.assertEqual(dungeon.scene.cells.cell(pos).passable, restored_dungeon.scene.cells.cell(pos).passable, str(pos))
+			self.assertEqual(dungeon.vision.visited.cell(pos), restored_dungeon.vision.visited.cell(pos), str(pos))
+		self.assertEqual(len(dungeon.scene.monsters), len(restored_dungeon.scene.monsters))
+		for monster, restored_monster in zip(dungeon.scene.monsters, restored_dungeon.scene.monsters):
+			self.assertEqual(monster.name, restored_monster.name)
+			self.assertEqual(monster.pos, restored_monster.pos)
+		self.assertEqual(len(dungeon.scene.items), len(restored_dungeon.scene.items))
+		for item, restored_item in zip(dungeon.scene.items, restored_dungeon.scene.items):
+			self.assertEqual(item.item.name, restored_item.item.name)
+			self.assertEqual(item.pos, restored_item.pos)
 
 class TestActionLoop(unittest.TestCase):
 	def should_process_others(self):

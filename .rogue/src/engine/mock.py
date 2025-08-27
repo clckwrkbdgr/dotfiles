@@ -211,6 +211,10 @@ class Vision(vision.Vision):
 		super(Vision, self).__init__(scene)
 		self.visible = Matrix(scene.cells.size, False)
 		self.visited = Matrix(scene.cells.size, False)
+	def load(self, reader):
+		self.visited = reader.read_matrix(lambda c:c=='1')
+	def save(self, writer):
+		writer.write(self.visited)
 	def is_visible(self, pos):
 		return self.visible.cell(pos) if self.visible.valid(pos) else False
 	def is_explored(self, pos):
@@ -232,6 +236,17 @@ class Dungeon(scene.Scene):
 		self.appliances = []
 		self.items = []
 		self.monsters = []
+	def load(self, reader):
+		super(Dungeon, self).load(reader)
+		self.cells = reader.read_matrix(terrain.Terrain)
+		self.monsters.extend(reader.read_list(actors.Actor))
+		self.items.extend(reader.read_list(items.ItemAtPos))
+		self.appliances.extend(reader.read_list(appliances.ObjectAtPos))
+	def save(self, writer):
+		writer.write(self.cells)
+		writer.write(self.monsters)
+		writer.write(self.items)
+		writer.write(sorted(self.appliances))
 	def make_vision(self):
 		return Vision(self)
 	def get_area_rect(self): return Rect((0, 0), self.cells.size)

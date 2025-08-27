@@ -16,14 +16,6 @@ import clckwrkbdgr.serialize.stream as savefile
 from . import mock_dungeon
 from .mock_dungeon import MockGame
 
-class MockWriterStream:
-	def __init__(self):
-		self.dump = []
-	def write(self, item):
-		if item == '\0':
-			return
-		self.dump.append(item)
-
 class AbstractTestDungeon(unittest.TestCase):
 	def _formatMessage(self, msg, standardMsg): # pragma: no cover
 		if hasattr(self, 'dungeon'):
@@ -757,88 +749,3 @@ class TestAutoMode(AbstractTestDungeon):
 		self.assertEqual(len(dungeon.events), 1)
 		self.assertEqual(type(dungeon.events[0]), engine.Events.AutoStop)
 		self.assertEqual(dungeon.events[0].reason, dungeon.vision.visible_monsters)
-
-class TestGameSerialization(AbstractTestDungeon):
-	def should_load_game_or_start_new_one(self):
-		dungeon = self.dungeon = mock_dungeon.build('mock settler')
-		self.assertEqual(dungeon.scene.monsters[0].pos, Point(9, 6))
-		dungeon.scene.monsters[0].pos = Point(2, 2)
-		writer = savefile.Writer(MockWriterStream(), game.Version.CURRENT)
-		dungeon.save(writer)
-		dump = writer.f.dump
-
-		reader = savefile.Reader(iter(dump))
-		restored_dungeon = MockGame()
-		restored_dungeon.load(reader)
-
-		self.assertEqual(restored_dungeon.scene.monsters[0].pos, Point(2, 2))
-
-		restored_dungeon = self.dungeon = mock_dungeon.build('mock settler restored')
-		self.assertEqual(restored_dungeon.scene.monsters[0].pos, Point(9, 6))
-
-	def should_serialize_and_deserialize_game(self):
-		dungeon = self.dungeon = mock_dungeon.build('mock settler')
-		writer = savefile.Writer(MockWriterStream(), game.Version.CURRENT)
-		dungeon.save(writer)
-		dump = writer.f.dump[1:]
-		Wall = mock_dungeon.Wall.__name__
-		Floor = mock_dungeon.Floor.__name__
-		self.assertEqual(dump, list(map(str, [0, 1406932606,
-			'mock settler', 'mock settler',
-			20, 10,
-			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
-			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall, Floor, Wall, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
-			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall, Floor, Floor, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
-			Wall, Floor, Floor, Floor, Floor, Wall, Wall, Floor, Floor, Wall, Wall, Floor, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
-			Wall, Floor, Floor, Floor, Floor, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
-			Wall, Floor, Floor, Floor, Floor, Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
-			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
-			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
-			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
-			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
-			2,
-				'Player', 9, 6, 10, 0, 0, 0,
-				'MockMonster', 2, 5, 3, 0, 0, 0,
-			1,
-				'Potion', 10, 6,
-			1,
-				'MockStairs', 'mock settler/1', 'enter', 10, 1,
-			'',
-
-			'mock settler',
-			20, 10,
-			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0,
-			0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0,
-			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-			0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-			0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-			'',
-			])))
-		dump = [str(game.Version.CURRENT)] + list(map(str, dump))
-		restored_dungeon = MockGame()
-		self.assertEqual(game.Version.CURRENT, game.Version.WIELDING + 1)
-		reader = savefile.Reader(iter(dump))
-		restored_dungeon.load(reader)
-		self.assertEqual(
-				[(_.name, _.pos) for _ in dungeon.scene.monsters],
-				[(_.name, _.pos) for _ in restored_dungeon.scene.monsters],
-				)
-		self.assertEqual(dungeon.scene.appliances[0].pos, restored_dungeon.scene.appliances[0].pos)
-		for pos in dungeon.scene.strata.size.iter_points():
-			self.assertEqual(type(dungeon.scene.strata.cell(pos)).__name__, type(restored_dungeon.scene.strata.cell(pos)).__name__, str(pos))
-			self.assertEqual(dungeon.scene.strata.cell(pos).passable, restored_dungeon.scene.strata.cell(pos).passable, str(pos))
-			self.assertEqual(dungeon.vision.visited.cell(pos), restored_dungeon.vision.visited.cell(pos), str(pos))
-		self.assertEqual(len(dungeon.scene.monsters), len(restored_dungeon.scene.monsters))
-		for monster, restored_monster in zip(dungeon.scene.monsters, restored_dungeon.scene.monsters):
-			self.assertEqual(monster.name, restored_monster.name)
-			self.assertEqual(monster.pos, restored_monster.pos)
-			self.assertEqual(monster.hp, restored_monster.hp)
-		self.assertEqual(len(dungeon.scene.items), len(restored_dungeon.scene.items))
-		for item, restored_item in zip(dungeon.scene.items, restored_dungeon.scene.items):
-			self.assertEqual(item.item.name, restored_item.item.name)
-			self.assertEqual(item.pos, restored_item.pos)

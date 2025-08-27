@@ -70,9 +70,9 @@ class Vision(vision.Vision):
 		self.field_of_view = clckwrkbdgr.math.algorithm.FieldOfView(10)
 		self.visible_monsters = []
 		self.visible_items = []
-	def load(self, reader):
+	def load(self, reader): # pragma: no cover
 		self.visited = reader.read_matrix(lambda c:c=='1')
-	def save(self, writer):
+	def save(self, writer): # pragma: no cover
 		writer.write(self.visited)
 	def is_visible(self, pos):
 		return self.field_of_view.is_visible(pos.x, pos.y)
@@ -160,7 +160,7 @@ class Scene(scene.Scene):
 	def enter_actor(self, actor, location):
 		actor.pos = self._start_pos
 		self.monsters.insert(0, actor)
-	def load(self, reader):
+	def load(self, reader): # pragma: no cover
 		super(Scene, self).load(reader)
 		self.strata = reader.read_matrix(Terrain)
 		if reader.version > Version.MONSTERS:
@@ -168,7 +168,7 @@ class Scene(scene.Scene):
 		if reader.version > Version.ITEMS:
 			self.items.extend(reader.read_list(items.ItemAtPos))
 		self.appliances.extend(reader.read_list(appliances.ObjectAtPos))
-	def save(self, writer):
+	def save(self, writer): # pragma: no cover
 		writer.write(self.strata)
 		writer.write(self.monsters)
 		writer.write(self.items)
@@ -235,7 +235,3 @@ class Scene(scene.Scene):
 				yield obj
 	def iter_active_monsters(self):
 		return self.monsters
-
-class Game(engine.Game):
-	""" Main game object.
-	"""
