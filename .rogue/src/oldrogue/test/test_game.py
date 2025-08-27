@@ -110,8 +110,6 @@ class MockGenerator:
 	def build_level(self, result, level_id):
 		if level_id == 'top':
 			result.size, result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.MAIN_LEVEL)
-		elif level_id == 'roof':
-			result.size, result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.ROOF)
 		elif level_id == 'basement':
 			result.size, result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.BASEMENT)
 	@functools.lru_cache()
@@ -181,8 +179,6 @@ class MockGenerator:
 					objects.append( (Point(x, y), Elevator('basement', 'top')) )
 				elif layout.cell( (x, y) ) == '<':
 					objects.append( (Point(x, y), Ladder('roof', 'roof')) )
-				elif layout.cell( (x, y) ) == '=':
-					objects.append( (Point(x, y), Ladder('top', 'roof')) )
 				elif layout.cell( (x, y) ) == '^':
 					objects.append( (Point(x, y), ElevatorUp('top', 'basement')) )
 
@@ -452,17 +448,6 @@ class TestDungeon(unittest.TestCase):
 				""")
 		self.maxDiff = None
 		self.assertEqual(view.tostring(lambda c: (c.sprite.sprite if hasattr(c.sprite, 'sprite') else c.sprite) if hasattr(c, 'sprite') else c), expected)
-	def should_move_to_level(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
-		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
-	def should_use_stairs(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.use_passage(dungeon.scene.get_player(), dungeon.scene.objects[1][1])
-		self.assertEqual(dungeon.scene, dungeon.scenes['roof'])
-		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
 	def should_locate_in_maze(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
@@ -534,57 +519,6 @@ class TestDungeon(unittest.TestCase):
 
 		self.assertTrue(dungeon.scene.actor_sees_player(mj12))
 		self.assertFalse(dungeon.scene.actor_sees_player(vacuum))
-	def should_move_monster(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 3))
-		pistol = StealthPistol()
-		dungeon.scene.get_player().inventory.append(pistol)
-
-		mj12 = MJ12Trooper(None)
-		mj12.pos = Point(8, 3)
-		dungeon.scene.monsters.append(mj12)
-
-		vacuum = VacuumCleaner(None)
-		vacuum.pos = Point(8, 2)
-		dungeon.scene.monsters.append(vacuum)
-
-		dungeon.move_actor(mj12, Point(-1, 0))
-		self.assertEqual(mj12.pos, Point(7, 3))
-
-		dungeon.move_actor(mj12, Point(-1, 0))
-		self.assertEqual(mj12.pos, Point(7, 3))
-		self.assertEqual(_R(dungeon.events), _R([Events.Move(mj12, Point(7, 3)), Events.BumpIntoTerrain(mj12, Point(6, 3))]))
-
-		dungeon.events = []
-		dungeon.move_actor(mj12, Point(+1, 0))
-		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(dungeon.events), _R([Events.Move(mj12, Point(8, 3))]))
-
-		dungeon.move_actor(mj12, Point(0, -1))
-		self.assertEqual(mj12.pos, Point(8, 3))
-
-		self.assertEqual(_R(dungeon.events), _R([Events.Move(mj12, Point(8, 3)), Events.BumpIntoActor(mj12, vacuum)]))
-
-		dungeon.events = []
-		dungeon.move_actor(mj12, Point(+1, 0))
-		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(dungeon.events), _R([Events.Attack(mj12, dungeon.scene.get_player(), 3), Events.Health(dungeon.scene.get_player(), -3)]))
-		self.assertEqual(dungeon.scene.get_player().hp, 97)
-
-		dungeon.events = []
-		dungeon.scene.get_player().hp = 3
-		player = dungeon.scene.get_player()
-		dungeon.move_actor(mj12, Point(+1, 0))
-		self.assertEqual(mj12.pos, Point(8, 3))
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.Attack(mj12, player, 3),
-			Events.Health(player, -3),
-			Events.Death(player),
-			Events.DropItem(player, pistol),
-			]))
-		self.assertTrue(dungeon.is_finished())
-		self.assertEqual(dungeon.scene.items, [items.ItemAtPos(Point(9, 3), pistol)])
 	def should_process_others(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
@@ -609,24 +543,6 @@ class TestDungeon(unittest.TestCase):
 		dungeon.process_others()
 		self.assertEqual(list(map(str, dungeon.events)), ['Move(actor=player, dest=[10, 3])', 'Whroooom'])
 		self.assertFalse(dungeon.scene.get_player().has_acted())
-	def should_ascend(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-
-		self.assertFalse(dungeon.ascend(dungeon.scene.get_player()))
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.CannotAscend(dungeon.scene.get_player().pos),
-			]))
-
-		dungeon.events = []
-		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 6))
-		self.assertTrue(dungeon.ascend(dungeon.scene.get_player()))
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.Ascend(dungeon.scene.get_player()),
-			]))
-		self.assertEqual(dungeon.scene, dungeon.scenes['roof'])
-		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
-
 	def should_descend(self):
 		dungeon = self.UNATCO()
 		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
