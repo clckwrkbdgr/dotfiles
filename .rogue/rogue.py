@@ -412,6 +412,8 @@ events.Events.on(Events.Attack)(lambda _:'{0} hit {1}.'.format(_.actor.name.titl
 @events.Events.on(Events.Discover)
 def on_discover(event):
 	if hasattr(event.obj, 'name'):
+		if isinstance(event.obj, ColoredMonster):
+			return '{1} {0}!'.format(event.obj.name, event.obj.sprite.color)
 		return '{0}!'.format(event.obj.name)
 	else: # pragma: no cover
 		return '{0}!'.format(event.obj)
@@ -456,22 +458,26 @@ class Vision(vision.OmniVision):
 	def __init__(self, scene):
 		super(Vision, self).__init__(scene)
 		self.visible_monsters = []
+		self._first_visit = True
 	def iter_important(self):
 		for _ in self.visible_monsters:
 			yield _
 	def visit(self, actor):
 		actor_pos = self.scene.get_global_pos(actor)
 		vision_range = Rect( # Twice as wide.
-				actor_pos - Point(actor.vision * 2, actor.vision),
-				Size(1 + actor.vision * 2 * 2, 1 + actor.vision * 2),
+				actor_pos - Point(actor.vision * 3 - 1, actor.vision),
+				Size(1 + actor.vision * 3 * 2 - 1, 1 + actor.vision * 2),
 				)
 		current_visible_monsters = []
 		for monster in self.scene.iter_monsters_in_rect(vision_range):
 			if monster == actor:
 				continue
 			if monster not in self.visible_monsters:
-				yield monster
+				if not self._first_visit:
+					yield monster
 			current_visible_monsters.append(monster)
+		if self._first_visit:
+			self._first_visit = False
 		self.visible_monsters = current_visible_monsters
 
 class Scene(scene.Scene):
