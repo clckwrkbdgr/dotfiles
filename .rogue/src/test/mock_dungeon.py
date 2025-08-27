@@ -259,9 +259,6 @@ class MockMapping:
 	def thief(pos,*data):
 		return Thief(*(data + (pos,)))
 	@staticmethod
-	def dummy_thief(pos,*data):
-		return DummyThief(*(data + (pos,)))
-	@staticmethod
 	def potion(*data):
 		return Potion(*data)
 	@staticmethod
