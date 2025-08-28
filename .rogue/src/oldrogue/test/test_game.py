@@ -4,7 +4,7 @@ from clckwrkbdgr.math import Point, Matrix, get_neighbours, Rect, Size
 from .. import game
 from ..game import Item, Wearable
 from ..game import Player
-from ..game import Scene, Dungeon
+from ..game import Scene
 from ...engine import events, Events
 from ...engine import items, actors, appliances
 from ...engine.ui import Sprite

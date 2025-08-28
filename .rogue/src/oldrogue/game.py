@@ -317,15 +317,3 @@ class Vision(vision.Vision):
 			tunnel_index = scene.tunnels.index(tunnel)
 			self.visit_tunnel(tunnel, tunnel_index, pos)
 		return []
-
-class Dungeon(engine.Game):
-	""" Set of connected PCG levels with player. """
-	def load(self, reader): # pragma: no cover -- TODO
-		self.scenes = data.levels
-		self.visions = data.visions
-		self.current_scene_id = data.current_level
-		self.fire_event(Event.WelcomeBack(dungeon.scene.get_player()))
-	def save(self, data): # pragma: no cover -- TODO
-		data.levels = self.scenes
-		data.visions = self.visions
-		data.current_level = self.current_scene_id

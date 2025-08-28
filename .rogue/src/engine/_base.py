@@ -20,6 +20,12 @@ class GodMode:
 		self.noclip = not self.noclip
 
 class Events:
+	class Welcome(events.Event):
+		""" New game was generated. """
+		FIELDS = ''
+	class WelcomeBack(events.Event):
+		""" Existing game was loaded. """
+		FIELDS = ''
 	class StareIntoVoid(events.Event):
 		""" No movement past the edge of the world. """
 		FIELDS = ''
@@ -183,6 +189,7 @@ class Game(object):
 		and then explicitly call generate().
 		"""
 		self.travel(self.make_player(), start_scene_id)
+		self.fire_event(Events.Welcome())
 	def load(self, stream):
 		""" Loads game data from the stream/state.
 		Updates vision after loading.
@@ -209,6 +216,7 @@ class Game(object):
 			vision.load(stream)
 			self.visions[scene_id] = vision
 
+		self.fire_event(Events.WelcomeBack())
 		self.update_vision()
 	def save(self, stream):
 		""" Stores game data to the reader/state.

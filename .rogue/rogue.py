@@ -398,6 +398,8 @@ events.Events.on(NoOneToChatInDirection)(lambda _:'No one to chat with in that d
 events.Events.on(TooMuchQuests)(lambda _:"Too much quests already.")
 events.Events.on(Events.InventoryIsFull)(lambda _:'Inventory is full.')
 events.Events.on(Events.GrabItem)(lambda _:'Picked up {0}.'.format(_.item.name))
+events.Events.on(Events.Welcome)(lambda _:'Welcome!')
+events.Events.on(Events.WelcomeBack)(lambda _:'Welcome back!')
 
 events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
 events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')

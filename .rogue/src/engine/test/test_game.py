@@ -4,6 +4,7 @@ from .. import _base
 from .. import events
 from .. import mock
 from ..mock import *
+from .utils import *
 
 class TestEvents(unittest.TestCase):
 	def should_process_events(self):
@@ -13,19 +14,9 @@ class TestEvents(unittest.TestCase):
 			'me drops something on floor',
 			])
 
-class MockWriterStream:
-	def __init__(self):
-		self.dump = []
-	def write(self, item):
-		if item == '\0':
-			return
-		self.dump.append(item)
-
-class TestSerialization(unittest.TestCase):
+class TestSerialization(AbstractTestDungeon):
 	def should_load_game_or_start_new_one(self):
-		game = NanoDungeon()
-		game.generate('floor')
-		
+		game = self.game
 		self.assertEqual(game.scene.monsters[0].pos, Point(3, 8))
 		game.scene.monsters[0].pos = Point(2, 2)
 		writer = savefile.Writer(MockWriterStream(), 1)
@@ -42,8 +33,7 @@ class TestSerialization(unittest.TestCase):
 		restored.generate('floor')
 		self.assertEqual(restored.scene.monsters[0].pos, Point(3, 8))
 	def should_serialize_and_deserialize_game(self):
-		dungeon = NanoDungeon()
-		dungeon.generate('floor')
+		dungeon = self.game
 		writer = savefile.Writer(MockWriterStream(), 1)
 		dungeon.save(writer)
 		dump = writer.f.dump[1:]
@@ -112,11 +102,9 @@ class TestSerialization(unittest.TestCase):
 			self.assertEqual(item.item.name, restored_item.item.name)
 			self.assertEqual(item.pos, restored_item.pos)
 
-class TestActionLoop(unittest.TestCase):
+class TestActionLoop(AbstractTestDungeon):
 	def should_process_others(self):
-		game = NanoDungeon()
-		game.generate(None)
-
+		game = self.game
 		self.assertFalse(game.scene.get_player().has_acted())
 		game.process_others()
 		self.assertEqual(game.playing_time, 0)
@@ -131,10 +119,9 @@ class TestActionLoop(unittest.TestCase):
 			'butterfly flops its wings',
 			])
 
-class TestVision(unittest.TestCase):
+class TestVision(AbstractTestDungeon):
 	def should_see_places(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		self.assertEqual(game.tostring(Rect((0, 0), game.scene.cells.size), visited=False), unittest.dedent("""\
 				__________
 				__________
@@ -163,8 +150,7 @@ class TestVision(unittest.TestCase):
 				__#####___
 				""").replace('_', ' '))
 	def should_remember_places(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		self.assertEqual(game.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
 				__________
 				__________
@@ -193,22 +179,19 @@ class TestVision(unittest.TestCase):
 				_######___
 				""").replace('_', ' '))
 
-class TestActions(unittest.TestCase):
+class TestActions(AbstractTestDungeon):
 	def should_suicide(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		game.suicide(game.scene.get_player())
 		self.assertFalse(game.scene.get_player())
 
-class TestMovement(unittest.TestCase):
+class TestMovement(AbstractTestDungeon):
 	def should_wait_in_place(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		game.wait(game.scene.get_player())
 		self.assertTrue(game.scene.get_player().has_acted())
 	def should_move_actor(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		butterfly = next(game.scene.iter_actors_at(Point(3, 8)))
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
 		self.assertTrue(game.scene.get_player().has_acted())
@@ -230,15 +213,13 @@ class TestMovement(unittest.TestCase):
 				##########
 				"""))
 	def should_not_move_into_void(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		game.jump_to(game.scene.get_player(), Point(0, 6))
 		self.assertFalse(game.move_actor(game.scene.get_player(), Point(-1, 0)))
 		self.assertFalse(game.scene.get_player().has_acted())
 		self.assertEqual(game.events, [_base.Events.StareIntoVoid()])
 	def should_walk_through_terrain_in_noclip_mode(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		butterfly = next(game.scene.iter_actors_at(Point(3, 8)))
 		game.god.noclip = True
 
@@ -261,8 +242,7 @@ class TestMovement(unittest.TestCase):
 				##########
 				"""))
 	def should_bump_into_terrain(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		self.assertFalse(game.move_actor(game.scene.get_player(), Point(0, 1)))
 		self.assertTrue(game.scene.get_player().has_acted())
 		self.assertEqual(game.events, [_base.Events.BumpIntoTerrain(game.scene.get_player(), Point(1, 6))])
@@ -279,8 +259,7 @@ class TestMovement(unittest.TestCase):
 				##########
 				"""))
 	def should_attack_other_actor(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		game.scene.transfer_actor(game.scene.get_player(), Point(3, 7))
 		self.assertFalse(game.move_actor(game.scene.get_player(), Point(0, 1)))
 		self.assertTrue(game.scene.get_player().has_acted())
@@ -298,10 +277,9 @@ class TestMovement(unittest.TestCase):
 				##########
 				"""))
 
-class TestItems(unittest.TestCase):
+class TestItems(AbstractTestDungeon):
 	def should_drop_item(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 		dagger = game.scene.get_player().inventory[0]
 		game.drop_item(game.scene.get_player(), dagger)
 		self.assertTrue(game.scene.get_player().has_acted())
@@ -322,8 +300,7 @@ class TestItems(unittest.TestCase):
 				##########
 				"""))
 	def should_grab_item(self):
-		game = NanoDungeon()
-		game.generate(None)
+		game = self.game
 
 		game.grab_item_here(game.scene.get_player())
 		self.assertEqual(game.events, [_base.Events.NothingToPickUp()])
@@ -351,9 +328,7 @@ class TestItems(unittest.TestCase):
 				##########
 				"""))
 	def should_not_exceed_inventory_size(self):
-		game = NanoDungeon()
-		game.generate(None)
-
+		game = self.game
 		game.scene.get_player()._max_inventory = 1
 		game.jump_to(game.scene.get_player(), Point(1, 2))
 		game.grab_item_here(game.scene.get_player())
@@ -363,9 +338,7 @@ class TestItems(unittest.TestCase):
 		self.assertIsNone(game.scene.get_player().find_item(ScribbledNote))
 		self.assertEqual(game.events, [_base.Events.InventoryIsFull(scroll)])
 	def should_consume_items(self):
-		game = NanoDungeon()
-		game.generate(None)
-
+		game = self.game
 		game.scene.get_player().hp -= 5
 		game.scene.get_player().inventory.append(Potion())
 		dagger, potion = game.scene.get_player().inventory
@@ -384,9 +357,7 @@ class TestItems(unittest.TestCase):
 		self.assertFalse(game.scene.get_player().find_item(Potion))
 		self.assertEqual(game.scene.get_player().hp, 10)
 	def should_wield_items(self):
-		game = NanoDungeon()
-		game.generate(None)
-
+		game = self.game
 		game.scene.get_player().inventory.append(Potion())
 		dagger, potion = game.scene.get_player().inventory
 
@@ -416,9 +387,7 @@ class TestItems(unittest.TestCase):
 			])
 		self.assertTrue(game.scene.get_player().has_acted())
 	def should_wear_items(self):
-		game = NanoDungeon()
-		game.generate(None)
-
+		game = self.game
 		game.scene.get_player().inventory.append(Rags())
 		game.scene.get_player().inventory.append(ChainMail())
 		dagger, rags, armor = game.scene.get_player().inventory
@@ -454,10 +423,9 @@ class TestItems(unittest.TestCase):
 			])
 		self.assertTrue(game.scene.get_player().has_acted())
 
-class TestScenes(unittest.TestCase):
+class TestScenes(AbstractTestDungeon):
 	def should_travel_to_other_scene(self):
-		game = NanoDungeon()
-		game.generate('floor')
+		game = self.game
 		self.assertEqual(len(game.scenes), 1)
 
 		game.travel(game.scene.get_player(), 'tomb', 'enter')
@@ -465,8 +433,7 @@ class TestScenes(unittest.TestCase):
 		self.assertEqual(len(game.scenes), 2)
 		self.assertEqual(game.scene.get_player().pos, Point(1, 1))
 	def should_descend_and_ascend(self):
-		game = NanoDungeon()
-		game.generate('floor')
+		game = self.game
 		self.assertEqual(len(game.scenes), 1)
 		butterfly = next(game.scene.iter_actors_at(Point(3, 8)))
 

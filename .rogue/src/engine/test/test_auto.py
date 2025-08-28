@@ -2,11 +2,11 @@ from clckwrkbdgr import unittest
 from .._base import Events
 from .. import auto
 from ..mock import *
+from .utils import *
 
-class TestAutoMode(unittest.TestCase):
+class TestAutoMode(AbstractTestDungeon):
 	def should_auto_walk_to_position(self):
-		dungeon = NanoDungeon()
-		dungeon.generate(None)
+		dungeon = self.game
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 5))
 
 		self.assertFalse(dungeon.perform_automovement())
@@ -29,8 +29,7 @@ class TestAutoMode(unittest.TestCase):
 				_        _
 				""").replace('_', ' '))
 	def should_stop_automovement_on_event(self):
-		dungeon = NanoDungeon()
-		dungeon.generate(None)
+		dungeon = self.game
 		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 5))
 
 		dungeon.automove(Point(4, 8)) # No path there; cannot see the dest.

@@ -42,6 +42,12 @@ class MainGame(ui.MainGame):
 		return self.game.scene.get_area_rect()
 	def get_message_line_rect(self):
 		return Rect(Point(0, 0), Size(80, 1))
+	@Events.on(engine.Events.Welcome)
+	def on_new_game(self, event):
+		return ''
+	@Events.on(engine.Events.WelcomeBack)
+	def on_load_game(self, event): # pragma: no cover
+		return ''
 	@Events.on(engine.Events.Discover)
 	def on_discovering(self, event):
 		if hasattr(event.obj, 'name'):
