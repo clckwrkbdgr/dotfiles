@@ -350,6 +350,18 @@ class TestItems(unittest.TestCase):
 				#..b.....#
 				##########
 				"""))
+	def should_not_exceed_inventory_size(self):
+		game = NanoDungeon()
+		game.generate(None)
+
+		game.scene.get_player()._max_inventory = 1
+		game.jump_to(game.scene.get_player(), Point(1, 2))
+		game.grab_item_here(game.scene.get_player())
+		self.assertFalse(game.scene.get_player().has_acted())
+		scroll = next(game.scene.iter_items_at((1, 2)))
+		self.assertTrue(scroll)
+		self.assertIsNone(game.scene.get_player().find_item(ScribbledNote))
+		self.assertEqual(game.events, [_base.Events.InventoryIsFull(scroll)])
 	def should_consume_items(self):
 		game = NanoDungeon()
 		game.generate(None)

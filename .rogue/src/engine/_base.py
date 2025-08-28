@@ -544,11 +544,13 @@ class Game(object):
 			item = actor.take_off()
 			self.fire_event(Events.TakeOff(actor, item))
 			actor.spend_action_points()
-	def use_passage(self, actor, level_passage):
+	def _use_passage(self, actor, level_passage, travel_event):
 		""" Use level passage object. """
 		try:
 			level_id, connected_passage = level_passage.use(actor)
 			self.travel(actor, level_id, connected_passage)
+			actor.spend_action_points()
+			self.fire_event(travel_event(actor))
 			return True
 		except level_passage.Locked as e:
 			self.fire_event(Events.NeedKey(e.key_item_type))
@@ -562,11 +564,7 @@ class Game(object):
 		if not stairs_here:
 			self.fire_event(Events.CannotDescend(here))
 			return False
-		if not self.use_passage(actor, stairs_here):
-			return False
-		actor.spend_action_points()
-		self.fire_event(Events.Descend(actor))
-		return True
+		return self._use_passage(actor, stairs_here, Events.Descend)
 	def ascend(self, actor):
 		""" Ascends onto new level, when standing on unlocked exit passage.
 		May generate new level.
@@ -576,10 +574,7 @@ class Game(object):
 		if not stairs_here:
 			self.fire_event(Events.CannotAscend(here))
 			return False
-		if not self.use_passage(actor, stairs_here):
-			return False
-		self.fire_event(Events.Ascend(actor))
-		return True
+		return self._use_passage(actor, stairs_here, Events.Ascend)
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

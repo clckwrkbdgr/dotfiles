@@ -1,6 +1,6 @@
 from clckwrkbdgr import unittest
 import textwrap, functools
-from clckwrkbdgr.math import Point, Matrix, get_neighbours, Rect
+from clckwrkbdgr.math import Point, Matrix, get_neighbours, Rect, Size
 from .. import game
 from ..game import Item, Wearable
 from ..game import Player
@@ -25,28 +25,14 @@ class Ladder(appliances.LevelPassage):
 	_can_go_up = True
 	_id = 'roof'
 
-class ElevatorUp(appliances.LevelPassage):
-	_sprite = Sprite('<', None)
-	_unlocking_item = NanoKey
-	_can_go_up = True
-	_id = 'top'
-
 class StealthPistol(Item):
 	_attack = 5
 	_name = 'stealth pistol'
 	_sprite = Sprite('(', None)
 
-class SniperRifle(Item):
-	_attack = 10
-	_name = 'sniper rifle'
-	_sprite = Sprite('(', None)
-
 class ThermopticCamo(Item, Wearable):
 	_name = 'thermoptic camo'
 	_protection = 3
-
-class HazmatSuit(Item, Wearable):
-	_protection = 1
 
 class UNATCOAgent(Player):
 	_attack = 2
@@ -57,21 +43,15 @@ class UNATCOAgent(Player):
 class VacuumCleaner(actors.EquippedMonster):
 	_sprite = Sprite('v', None)
 	_max_hp = 5
-	def act(self, game):
-		game.fire_event('Whroooom')
-
-class NSFTerrorist(actors.EquippedMonster):
-	_attack = 1
-	_max_hp = 50
 
 class MJ12Trooper(actors.EquippedMonster):
 	_attack = 3
 	_max_hp = 200
-	_hostile_to = [UNATCOAgent, NSFTerrorist]
+	_hostile_to = [UNATCOAgent]
 	_sprite = Sprite('M', None)
 
 class MockGenerator:
-	MAIN_LEVEL = textwrap.dedent("""\
+	"""
 			####          
 			#> +.. ###### 
 			#### . #    # 
@@ -82,164 +62,53 @@ class MockGenerator:
 			 #  +.+      #
 			 #  # ########
 			 ####         
-			""")
-	ROOF = textwrap.dedent("""\
-			##############
-			#=           #
-			#            #
-			#            #
-			#            #
-			#            #
-			#            #
-			#            #
-			#            #
-			##############
-			""")
-	BASEMENT = textwrap.dedent("""\
-			##############
-			#............#
-			#............#
-			#............#
-			#......^.....#
-			#............#
-			#............#
-			#............#
-			#............#
-			##############
-			""")
+			"""
 	def build_level(self, result, level_id):
-		if level_id == 'top':
-			result.size, result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.MAIN_LEVEL)
-		elif level_id == 'basement':
-			result.size, result.rooms, result.tunnels[:], result.objects[:] = self._parse_layout(self.BASEMENT)
-	@functools.lru_cache()
-	def _parse_layout(self, layout):
-		layout = Matrix.fromstring(layout)
-
-		rects = []
-		for x in range(layout.width):
-			for y in range(layout.height):
-				if layout.cell( (x, y) ) != '#':
-					continue
-				if not layout.valid( (x+1, y) ):
-					continue
-				if not layout.valid( (x, y+1) ):
-					continue
-				if layout.cell( (x+1, y) ) not in '#+' or layout.cell( (x, y+1) ) not in '#+':
-					continue
-				right = min([_ for _ in range(x, layout.width) if layout.cell((_, y)) not in '#+'] + [layout.width])
-				bottom = min([_ for _ in range(y, layout.height) if layout.cell((x, _)) not in '#+'] + [layout.height])
-				rects.append( ((x, y), (right-x, bottom-y)) )
-
-		rects = sorted(rects, key=lambda rect: (rect[0][1], rect[0][0]))
-		if len(rects) == 4:
-			rooms = Matrix((2, 2))
-			rooms.set_cell((0, 0), Scene.Room(*(rects[0])))
-			rooms.set_cell((1, 0), Scene.Room(*(rects[1])))
-			rooms.set_cell((0, 1), Scene.Room(*(rects[2])))
-			rooms.set_cell((1, 1), Scene.Room(*(rects[3])))
-		else:
-			rooms = Matrix((1, 1))
-			rooms.set_cell((0, 0), Scene.Room(*(rects[0])))
-
-		tunnels = []
-		for y in range(layout.height):
-			for x in range(layout.width):
-				if layout.cell( (x, y) ) != '+':
-					continue
-				if any(tunnel.contains( (x, y) ) for tunnel in tunnels):
-					continue
-				current = Point(x, y)
-				path = [current]
-				for _ in range(layout.width * layout.height):
-					neighs = get_neighbours(layout, current, check=lambda p: p in '.+')
-					neighs = [p for p in neighs if p not in path]
-					if not neighs:
-						break
-					current, = neighs
-					path.append(current)
-				direction = ''
-				bending = 0
-				for prev, current in zip(path, path[1:]):
-					h, v = abs(prev.x - current.x), abs(prev.y - current.y)
-					if not direction:
-						direction = 'H' if h > v else 'V'
-					elif not bending:
-						if (direction == 'H') != (h > v):
-							bending = max(
-									abs(current.x - path[0].x),
-									abs(current.y - path[0].y),
-									)
-				tunnels.append(Scene.Tunnel(path[0], path[-1], direction, bending or 1))
-
-		objects = []
-		for y in range(layout.height):
-			for x in range(layout.width):
-				if layout.cell( (x, y) ) == '>':
-					objects.append( (Point(x, y), Elevator('basement', 'top')) )
-				elif layout.cell( (x, y) ) == '<':
-					objects.append( (Point(x, y), Ladder('roof', 'roof')) )
-				elif layout.cell( (x, y) ) == '^':
-					objects.append( (Point(x, y), ElevatorUp('top', 'basement')) )
-
-		return layout.size, rooms, tunnels, objects
-
-def _R(events): return list(map(repr, events))
+		result.rooms = Matrix((2, 2))
+		result.rooms.set_cell((0, 0), Scene.Room((0, 0), (4, 3)))
+		result.rooms.set_cell((1, 0), Scene.Room((7, 1), (6, 4)))
+		result.rooms.set_cell((0, 1), Scene.Room((1, 5), (4, 5)))
+		result.rooms.set_cell((1, 1), Scene.Room((6, 6), (8, 3)))
+		result.size = Size(14, 10)
+		result.objects = [
+				( (Point(1, 1), Elevator('basement', 'top')) ),
+				( (Point(3, 6), Ladder('roof', 'roof')) ),
+				]
+		result.tunnels = [
+				Scene.Tunnel(Point(3, 1), Point(7, 3), 'H', 2),
+				Scene.Tunnel(Point(11, 4), Point(8, 6), 'V', 1),
+				Scene.Tunnel(Point(4, 7), Point(6, 7), 'H', 1),
+				]
 
 class TestGridRoomMap(unittest.TestCase):
-	class UNATCO(game.Dungeon):
-		def make_scene(self, scene_id):
-			return Scene(MockGenerator())
-		def make_player(self):
-			return UNATCOAgent(None)
-	def _map(self):
-		dungeon = self.UNATCO()
-		gridmap = dungeon.make_scene('top')
-		MockGenerator().build_level(gridmap, 'top')
-		return gridmap
-	def should_parse_layout_correctly(self):
-		gridmap = self._map()
-		result = Matrix.fromstring(MockGenerator.MAIN_LEVEL)
-		result.clear(' ')
-		for room in gridmap.rooms.values():
-			for x in range(room.left, room.right + 1):
-				result.set_cell( (x, room.top), '#')
-				result.set_cell( (x, room.bottom), '#')
-			for y in range(room.top, room.bottom + 1):
-				result.set_cell( (room.left, y), '#')
-				result.set_cell( (room.right, y), '#')
-		for tunnel in gridmap.tunnels:
-			cells = list(tunnel.iter_points())
-			for cell in cells:
-				result.set_cell(cell, '.')
-			result.set_cell(cells[0], '+')
-			result.set_cell(cells[-1], '+')
-		for pos, obj in gridmap.objects:
-			result.set_cell(pos, obj.sprite)
-		self.assertEqual(result.tostring(lambda c: (c.sprite.sprite if hasattr(c.sprite, 'sprite') else c.sprite) if hasattr(c, 'sprite') else c), MockGenerator.MAIN_LEVEL)
 	def should_find_room_by_pos(self):
-		gridmap = self._map()
+		gridmap = scene = Scene(MockGenerator())
+		scene.generate('top')
 		self.assertEqual(gridmap.room_of(Point(2, 2)), gridmap.rooms.cell((0, 0)))
 		self.assertIsNone(gridmap.room_of(Point(10, 0)))
 	def should_find_tunnel_by_pos(self):
-		gridmap = self._map()
+		gridmap = scene = Scene(MockGenerator())
+		scene.generate('top')
 		self.assertEqual(gridmap.tunnel_of(Point(5, 1)), gridmap.tunnels[0])
 		self.assertIsNone(gridmap.tunnel_of(Point(10, 2)))
 	def should_get_tunnels_for_room(self):
-		gridmap = self._map()
+		gridmap = scene = Scene(MockGenerator())
+		scene.generate('top')
 		self.assertEqual(gridmap.get_tunnels(gridmap.rooms.cell((1, 0))), [
 			gridmap.tunnels[0], gridmap.tunnels[1],
 			])
 	def should_get_rooms_for_tunnel(self):
-		gridmap = self._map()
+		gridmap = scene = Scene(MockGenerator())
+		scene.generate('top')
 		self.assertEqual(list(gridmap.get_tunnel_rooms(gridmap.tunnels[0])), [
 			gridmap.rooms.cell((0, 0)),
 			gridmap.rooms.cell((1, 0)),
 			])
 	def should_move_within_terrain(self):
-		gridmap = self._map()
-		player = UNATCOAgent(None)
-		gridmap.monsters.append(player)
+		gridmap = scene = Scene(MockGenerator())
+		scene.generate('top')
+		scene.enter_actor(UNATCOAgent(None), 'basement')
+		player = scene.get_player()
 		mj12 = MJ12Trooper(None)
 		gridmap.monsters.append(mj12)
 
@@ -250,7 +119,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertFalse(gridmap.can_move(player, Point(1, 2)))
 		self.assertTrue(gridmap.can_move(player, Point(2, 1)))
 		self.assertTrue(gridmap.can_move(mj12, Point(3, 1)))
-		self.assertTrue(gridmap.can_move(player, Point(3, 1)))
+		self.assertFalse(gridmap.can_move(player, Point(3, 1)))
 		self.assertTrue(gridmap.can_move(player, Point(2, 1)))
 		self.assertFalse(gridmap.can_move(mj12, Point(4, 1)))
 		player.pos = Point(4, 2)
@@ -261,30 +130,19 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertTrue(gridmap.can_move(player, Point(5, 1)))
 		player.pos = Point(8, 2)
 		self.assertFalse(gridmap.can_move(player, Point(7, 3)))
-	def should_detect_objects_on_map(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
+	def should_detect_player_amongst_other_actors(self):
+		gridmap = scene = Scene(MockGenerator())
+		scene.generate('top')
+		scene.enter_actor(UNATCOAgent(None), 'basement')
 
-		mj12 = MJ12Trooper(None)
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
-
-		gridmap = dungeon.scene
-		gridmap.items.append( (Point(1, 1), pistol) )
-		gridmap.items.append( (Point(1, 1), armor) )
-		mj12.pos = Point(9, 2)
+		mj12 = MJ12Trooper(Point(9, 2))
 		gridmap.monsters.append(mj12)
 
-		elevator = gridmap.objects[0][1]
-
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(2, 1))), [])
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor, pistol])
-		self.assertEqual(list(dungeon.scene.iter_appliances_at(Point(1, 2))), [])
-		self.assertEqual(list(dungeon.scene.iter_appliances_at(Point(1, 1))), [elevator])
-		self.assertEqual(list(dungeon.scene.iter_actors_at(Point(9, 2))), [mj12])
+		self.assertEqual(list(scene.iter_actors_at(Point(9, 2))), [mj12])
+		self.assertEqual(list(scene.iter_actors_at(Point(1, 1), with_player=True)), [scene.get_player()])
 	def should_rip_monster(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
+		gridmap = scene = Scene(MockGenerator())
+		scene.generate('top')
 
 		pistol = StealthPistol()
 		armor = ThermopticCamo()
@@ -293,299 +151,136 @@ class TestGridRoomMap(unittest.TestCase):
 		mj12.inventory.append(pistol)
 		mj12.inventory.append(armor)
 
-		gridmap = dungeon.scene
 		mj12.pos = Point(9, 2)
 		gridmap.monsters.append(mj12)
-		loot = list(dungeon.scene.rip(mj12))
+		loot = list(scene.rip(mj12))
 		self.assertEqual(loot, [armor, pistol])
-		self.assertEqual(list(dungeon.scene.iter_actors_at(Point(9, 2))), [])
-	def should_grab_item(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
-
-		jc = dungeon.scene.get_player()
-
-		gridmap = dungeon.scene
+		self.assertEqual(list(scene.iter_actors_at(Point(9, 2))), [])
+	def should_drop_and_grab_item(self):
+		gridmap = scene = Scene(MockGenerator())
+		scene.generate('top')
 		key = NanoKey()
-		gridmap.drop_item(items.ItemAtPos(Point(1, 1), armor))
-		gridmap.drop_item(items.ItemAtPos(Point(1, 1), pistol))
 		gridmap.drop_item(items.ItemAtPos(Point(1, 1), key))
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [key, pistol, armor])
+		self.assertEqual(list(scene.iter_items_at(Point(1, 1))), [key])
 
-		dungeon.events = []
-		dungeon.grab_item_here(jc) # key)
-		self.assertEqual(_R(dungeon.events), _R([Events.GrabItem(jc, key)]))
-		self.assertTrue(jc.has_item(NanoKey))
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [pistol, armor])
-
-		dungeon.events = []
-		dungeon.grab_item_here(jc) # pistol)
-		self.assertEqual(_R(dungeon.events), _R([Events.GrabItem(jc, pistol)]))
-		self.assertTrue(jc.has_item(StealthPistol))
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor])
-
-		dungeon.events = []
-		dungeon.grab_item_here(jc) # armor)
-		self.assertEqual(_R(dungeon.events), _R([Events.InventoryIsFull(armor)]))
-		self.assertFalse(jc.has_item(ThermopticCamo))
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [armor])
-	def should_drop_item(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-
-		pistol = StealthPistol()
-		jc = UNATCOAgent(None)
-		jc.inventory.append(pistol)
-		jc.pos = Point(1, 1)
-
-		gridmap = dungeon.scene
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [])
-		dungeon.events = []
-		dungeon.drop_item(jc, pistol)
-		self.assertEqual(_R(dungeon.events), _R([Events.DropItem(jc, pistol)]))
-		self.assertFalse(jc.has_item(StealthPistol))
-		self.assertEqual(list(dungeon.scene.iter_items_at(Point(1, 1))), [pistol])
-	def should_visit_tunnel(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		tunnel = Scene.Tunnel(Point(2, 2), Point(6, 12), 'H', bending_point=2)
-		dungeon.scene.tunnels.append(tunnel)
-		vision = dungeon.vision
-		vision.visited_tunnels.append(set())
-		vision.visit_tunnel(tunnel, dungeon.scene.tunnels.index(tunnel), Point(2, 2), adjacent=False)
-		self.assertEqual(vision.visited_tunnels[-1], {Point(2, 2)})
-		vision.visit_tunnel(tunnel, dungeon.scene.tunnels.index(tunnel), Point(4, 2), adjacent=True)
-		self.assertEqual(vision.visited_tunnels[-1], {
-			Point(2, 2),
-			Point(3, 2), Point(4, 2), Point(4, 3),
-			})
-	def should_visit_places(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		gridmap = dungeon.scene
-		vision = dungeon.vision
-
-		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
-		vision.visit(dungeon.scene.get_player())
-		self.assertTrue(vision.visited_rooms.cell((0, 0)))
-		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1)})
-
-		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 2))
-		vision.visit(dungeon.scene.get_player())
-		self.assertTrue(vision.visited_rooms.cell((1, 0)))
-		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1), Point(7, 3)})
-
-		dungeon.jump_to(dungeon.scene.get_player(), Point(5, 1))
-		vision.visit(dungeon.scene.get_player())
-		self.assertEqual(vision.visited_tunnels[0], {Point(3, 1),
-			Point(4, 1), Point(5, 1),
-			Point(5, 2),
-			Point(7, 3),
-			})
+		self.assertEqual(scene.take_item(items.ItemAtPos((1, 1), key)), key)
+		self.assertEqual(list(scene.iter_items_at(Point(1, 1))), [])
 
 class TestDungeon(unittest.TestCase):
-	class UNATCO(game.Dungeon):
-		def make_scene(self, scene_id):
-			return Scene(MockGenerator())
-		def make_player(self):
-			return UNATCOAgent(None)
 	def should_iter_dungeon_cells(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 1))
-		dungeon.jump_to(dungeon.scene.get_player(), Point(5, 1))
-		dungeon.jump_to(dungeon.scene.get_player(), Point(5, 3))
-		dungeon.jump_to(dungeon.scene.get_player(), Point(7, 3))
+		scene = Scene(MockGenerator())
+		scene.generate('top')
+		scene.enter_actor(UNATCOAgent(None), 'basement')
+		vision = scene.make_vision()
+		scene.get_player().pos = Point(3, 1)
+		list(vision.visit(scene.get_player()))
+		scene.get_player().pos = Point(5, 1)
+		list(vision.visit(scene.get_player()))
+		scene.get_player().pos = Point(5, 3)
+		list(vision.visit(scene.get_player()))
+		scene.get_player().pos = Point(7, 3)
+		list(vision.visit(scene.get_player()))
+
 		mj12 = MJ12Trooper(None)
 		mj12.pos = Point(8, 3)
-		dungeon.scene.monsters.append(mj12)
+		scene.monsters.append(mj12)
 		pistol = StealthPistol()
-		dungeon.scene.items.append((Point(9, 2), pistol))
+		scene.items.append((Point(9, 2), pistol))
 
-		view = Matrix((80, 25), '_')
-		for pos, (terrain, objects, items, monsters) in dungeon.scene.iter_cells(None):
-			is_visible = dungeon.is_visible(pos) or dungeon.god.vision
-			if monsters and is_visible:
-				view.set_cell(pos, monsters[-1].sprite)
-			elif items and (dungeon.is_visited(pos) or is_visible):
-				view.set_cell(pos, items[-1].sprite)
-			elif objects and (dungeon.is_visited(pos) or is_visible):
-				view.set_cell(pos, objects[-1].sprite)
+		view = Matrix((15, 10), '_')
+		visible = Matrix((15, 10), '.')
+		visited = Matrix((15, 10), '.')
+		for pos, (terrain, objects, items, monsters) in scene.iter_cells(None):
+			if vision.is_visible(pos):
+				visible.set_cell(pos, '*')
+			if vision.is_explored(pos):
+				visited.set_cell(pos, '*')
+			if monsters:
+				view.set_cell(pos, monsters[-1].sprite.sprite)
+			elif items:
+				view.set_cell(pos, items[-1].sprite.sprite)
+			elif objects:
+				view.set_cell(pos, objects[-1].sprite.sprite)
 			else:
-				if is_visible:
-					view.set_cell(pos, terrain)
-				elif dungeon.is_visited(pos):
-					view.set_cell(pos, ' ' if terrain.sprite.sprite == '.' else terrain)
-		expected = textwrap.dedent("""\
-				+--+____________________________________________________________________________
-				|> +##_+----+___________________________________________________________________
-				+--+_#_|.(..|___________________________________________________________________
-				_____##@M...|___________________________________________________________________
-				_______+---++___________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				________________________________________________________________________________
-				""")
+				view.set_cell(pos, terrain.sprite.sprite)
 		self.maxDiff = None
-		self.assertEqual(view.tostring(lambda c: (c.sprite.sprite if hasattr(c.sprite, 'sprite') else c.sprite) if hasattr(c, 'sprite') else c), expected)
+		self.assertEqual(view.tostring(), textwrap.dedent("""\
+				+--+___________
+				|>.+##_+----+__
+				+--+_#_|.(..|__
+				_____##@M...|__
+				_______+---++__
+				_+--++__####___
+				_|.<|_+-+----+_
+				_|..+#+......|_
+				_|..|_+------+_
+				_+--+__________
+				"""))
+		self.assertEqual(visible.tostring(), textwrap.dedent("""\
+				...............
+				...***.******..
+				.....*.******..
+				.....********..
+				.......******..
+				...............
+				...............
+				...............
+				...............
+				...............
+				""").replace('_', ' '))
+		self.assertEqual(visited.tostring(), textwrap.dedent("""\
+				****...........
+				******.******..
+				****.*.******..
+				.....********..
+				.......******..
+				...............
+				...............
+				...............
+				...............
+				...............
+				""").replace('_', ' '))
 	def should_locate_in_maze(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
+		scene = Scene(MockGenerator())
+		scene.generate('top')
+		scene.enter_actor(UNATCOAgent(None), 'basement')
 
-		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
-		self.assertEqual(dungeon.scene.current_room, dungeon.scene.rooms.cell((0, 0)))
-		self.assertIsNone(dungeon.scene.current_tunnel)
+		scene.get_player().pos = Point(1, 1)
+		self.assertEqual(scene.current_room, scene.rooms.cell((0, 0)))
+		self.assertIsNone(scene.current_tunnel)
 
-		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 1))
-		self.assertEqual(dungeon.scene.current_room, dungeon.scene.rooms.cell((0, 0)))
-		self.assertEqual(dungeon.scene.current_tunnel, dungeon.scene.tunnels[0])
+		scene.get_player().pos = Point(3, 1)
+		self.assertEqual(scene.current_room, scene.rooms.cell((0, 0)))
+		self.assertEqual(scene.current_tunnel, scene.tunnels[0])
 
-		dungeon.jump_to(dungeon.scene.get_player(), Point(5, 1))
-		self.assertIsNone(dungeon.scene.current_room)
-		self.assertEqual(dungeon.scene.current_tunnel, dungeon.scene.tunnels[0])
-	def should_detect_visible_objects(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
-
-		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
-		self.assertTrue(dungeon.vision.is_visible(dungeon.scene.rooms.cell((0, 0))))
-		self.assertFalse(dungeon.vision.is_visible(dungeon.scene.rooms.cell((1, 0))))
-		self.assertTrue(dungeon.vision.is_visible(dungeon.scene.tunnels[0], additional=Point(3, 1)))
-		self.assertFalse(dungeon.vision.is_visible(dungeon.scene.tunnels[1], additional=Point(11, 4)))
-		self.assertTrue(dungeon.vision.is_visible(Point(2, 1)))
-		self.assertTrue(dungeon.vision.is_visible(Point(3, 1)))
-		self.assertFalse(dungeon.vision.is_visible(Point(5, 1)))
-		self.assertFalse(dungeon.vision.is_visible(Point(8, 2)))
-
-		dungeon.god.vision = True
-		self.assertTrue(dungeon.is_visible(Point(11, 4)))
-		self.assertTrue(dungeon.is_visible(Point(5, 1)))
-		self.assertTrue(dungeon.is_visible(Point(8, 2)))
-	def should_remember_objects(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
-
-		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
-		dungeon.jump_to(dungeon.scene.get_player(), Point(2, 6))
-
-		self.assertTrue(dungeon.vision.is_explored(dungeon.scene.rooms.cell((0, 0))))
-		self.assertFalse(dungeon.vision.is_explored(dungeon.scene.rooms.cell((1, 0))))
-		self.assertTrue(dungeon.vision.is_explored(dungeon.scene.tunnels[0], additional=Point(3, 1)))
-		self.assertFalse(dungeon.vision.is_explored(dungeon.scene.tunnels[1], additional=Point(11, 4)))
-		self.assertTrue(dungeon.is_visited(Point(2, 1)))
-		self.assertTrue(dungeon.is_visited(Point(3, 1)))
-		self.assertFalse(dungeon.is_visited(Point(5, 1)))
-		self.assertFalse(dungeon.is_visited(Point(8, 2)))
-
-		dungeon.god.vision = True
-		self.assertFalse(dungeon.is_visited(Point(11, 4)))
-		self.assertFalse(dungeon.is_visited(Point(5, 1)))
-		self.assertFalse(dungeon.is_visited(Point(8, 2)))
+		scene.get_player().pos = Point(5, 1)
+		self.assertIsNone(scene.current_room)
+		self.assertEqual(scene.current_tunnel, scene.tunnels[0])
 	def should_detect_player_by_monsters(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 3))
+		scene = Scene(MockGenerator())
+		scene.generate('top')
+		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.get_player().pos = Point(9, 3)
 
 		mj12 = MJ12Trooper(None)
 		mj12.pos = Point(8, 3)
-		dungeon.scene.monsters.append(mj12)
+		scene.monsters.append(mj12)
 
 		vacuum = VacuumCleaner(None)
 		vacuum.pos = Point(2, 1)
-		dungeon.scene.monsters.append(vacuum)
+		scene.monsters.append(vacuum)
 
-		self.assertTrue(dungeon.scene.actor_sees_player(mj12))
-		self.assertFalse(dungeon.scene.actor_sees_player(vacuum))
-	def should_process_others(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 3))
-		pistol = StealthPistol()
-		dungeon.scene.get_player().inventory.append(pistol)
-
-		mj12 = MJ12Trooper(None)
-		mj12.pos = Point(8, 3)
-		dungeon.scene.monsters.append(mj12)
-
-		vacuum = VacuumCleaner(None)
-		vacuum.pos = Point(8, 2)
-		dungeon.scene.monsters.append(vacuum)
-
-		self.assertFalse(dungeon.scene.get_player().has_acted())
-		dungeon.process_others()
-		self.assertEqual(dungeon.events, [])
-
-		dungeon.move_actor(dungeon.scene.get_player(), Point(+1, 0))
-		self.assertTrue(dungeon.scene.get_player().has_acted())
-		dungeon.process_others()
-		self.assertEqual(list(map(str, dungeon.events)), ['Move(actor=player, dest=[10, 3])', 'Whroooom'])
-		self.assertFalse(dungeon.scene.get_player().has_acted())
-	def should_descend(self):
-		dungeon = self.UNATCO()
-		dungeon.travel(dungeon.make_player(), 'top', passage='basement')
-
-		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 6))
-		self.assertFalse(dungeon.descend(dungeon.scene.get_player()))
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.CannotDescend(dungeon.scene.get_player().pos),
-			]))
-
-		dungeon.events = []
-		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
-		self.assertFalse(dungeon.descend(dungeon.scene.get_player()))
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.NeedKey(NanoKey),
-			]))
-
-		dungeon.events = []
-		key = NanoKey()
-		key.value = '0451'
-		dungeon.scene.get_player().inventory.append(key)
-		dungeon.jump_to(dungeon.scene.get_player(), Point(1, 1))
-		self.assertTrue(dungeon.descend(dungeon.scene.get_player()))
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.Descend(dungeon.scene.get_player()),
-			]))
-		self.assertEqual(dungeon.scene, dungeon.scenes['basement'])
-		self.assertEqual(dungeon.scene.get_player().pos, Point(7, 4))
-
-		dungeon.scene.get_player().drop(key)
-		dungeon.events = []
-		self.assertFalse(dungeon.ascend(dungeon.scene.get_player()))
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.NeedKey(NanoKey),
-			]))
-
-		dungeon.events = []
-		key = NanoKey()
-		key.value = '0451'
-		dungeon.scene.get_player().inventory.append(key)
-		self.assertTrue(dungeon.ascend(dungeon.scene.get_player()))
-		self.assertEqual(_R(dungeon.events), _R([
-			Events.Ascend(dungeon.scene.get_player()),
-			]))
-		self.assertEqual(dungeon.scene, dungeon.scenes['top'])
-		self.assertEqual(dungeon.scene.get_player().pos, Point(1, 1))
+		self.assertTrue(scene.actor_sees_player(mj12))
+		self.assertFalse(scene.actor_sees_player(vacuum))
+	def should_treat_all_monsters_as_active(self):
+		scene = Scene(MockGenerator())
+		scene.generate('top')
+		scene.enter_actor(UNATCOAgent(None), 'basement')
+		self.assertEqual(list(scene.iter_active_monsters()), list(scene.monsters))
+	def should_enter_and_exit_actor(self):
+		scene = Scene(MockGenerator())
+		scene.generate('top')
+		scene.enter_actor(UNATCOAgent(None), 'basement')
+		self.assertTrue(scene.get_player())
+		scene.exit_actor(scene.get_player())
+		self.assertFalse(scene.get_player())
