@@ -211,6 +211,7 @@ class Vision(vision.Vision):
 		super(Vision, self).__init__(scene)
 		self.visible = Matrix(scene.cells.size, False)
 		self.visited = Matrix(scene.cells.size, False)
+		self.visible_monsters = []
 	def load(self, reader):
 		self.visited = reader.read_matrix(lambda c:c=='1')
 	def save(self, writer):
@@ -220,14 +221,19 @@ class Vision(vision.Vision):
 	def is_explored(self, pos):
 		return self.visited.cell(pos) if self.visited.valid(pos) else False
 	def iter_important(self):
-		return []
+		return self.visible_monsters
 	def visit(self, actor):
 		self.visible.clear(False)
+		current_visible_monsters = []
 		for pos in self.visible:
 			if distance(pos, actor.pos) <= actor.vision:
 				self.visible.set_cell(pos, True)
 				self.visited.set_cell(pos, True)
-		return []
+				for monster in self.scene.iter_actors_at(pos, with_player=False):
+					if monster not in self.visible_monsters:
+						yield monster
+					current_visible_monsters.append(monster)
+		self.visible_monsters = current_visible_monsters
 
 class Dungeon(scene.Scene):
 	def __init__(self, rng):
@@ -322,6 +328,8 @@ class Dungeon(scene.Scene):
 	def iter_actors_at(self, pos, with_player=False):
 		""" Yield all monsters at given cell. """
 		for monster in self.monsters:
+			if not with_player and isinstance(monster, Rogue):
+				continue
 			if monster.pos == pos:
 				yield monster
 	def iter_appliances_at(self, pos):

@@ -209,9 +209,14 @@ class TestMovement(unittest.TestCase):
 	def should_move_actor(self):
 		game = NanoDungeon()
 		game.generate(None)
+		butterfly = next(game.scene.iter_actors_at(Point(3, 8)))
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(1, 1)))
 		self.assertTrue(game.scene.get_player().has_acted())
-		self.assertEqual(game.events, [_base.Events.Move(game.scene.get_player(), Point(2, 6))])
+		self.assertEqual(game.events, [
+			_base.Events.Move(game.scene.get_player(), Point(2, 6)),
+			_base.Events.Discover(butterfly),
+			])
+
 		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
 				##########
 				#........#
@@ -234,10 +239,15 @@ class TestMovement(unittest.TestCase):
 	def should_walk_through_terrain_in_noclip_mode(self):
 		game = NanoDungeon()
 		game.generate(None)
+		butterfly = next(game.scene.iter_actors_at(Point(3, 8)))
 		game.god.noclip = True
+
 		self.assertTrue(game.move_actor(game.scene.get_player(), Point(0, 1)))
 		self.assertTrue(game.scene.get_player().has_acted())
-		self.assertEqual(game.events, [_base.Events.Move(game.scene.get_player(), Point(1, 6))])
+		self.assertEqual(game.events, [
+			_base.Events.Move(game.scene.get_player(), Point(1, 6)),
+			_base.Events.Discover(butterfly),
+			])
 		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
 				##########
 				#........#
@@ -446,6 +456,7 @@ class TestScenes(unittest.TestCase):
 		game = NanoDungeon()
 		game.generate('floor')
 		self.assertEqual(len(game.scenes), 1)
+		butterfly = next(game.scene.iter_actors_at(Point(3, 8)))
 
 		self.assertFalse(game.descend(game.scene.get_player()))
 		self.assertEqual(game.events, [
@@ -456,6 +467,7 @@ class TestScenes(unittest.TestCase):
 		game.jump_to(game.scene.get_player(), Point(4, 6))
 		self.assertTrue(game.descend(game.scene.get_player()))
 		self.assertEqual(game.events, [
+			_base.Events.Discover(butterfly),
 			_base.Events.Descend(game.scene.get_player()),
 			])
 		self.assertEqual(game.current_scene_id, 'tomb')
