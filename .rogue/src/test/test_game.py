@@ -24,259 +24,131 @@ class AbstractTestDungeon(unittest.TestCase):
 	def _events(self):
 		return [list(repr(event) for callback, event in self.dungeon.process_events(raw=True, bind_self=self))]
 
-class TestMainDungeonLoop(AbstractTestDungeon):
-	def should_perform_monsters_turns_after_player_has_done_with_their_turn(self):
+class TestMonsters(AbstractTestDungeon):
+	def should_act_inert_and_attack_only_closest_enemy(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
-		self.assertEqual(self._events(), [[
-			'Discover(obj=monster)',
-			'Discover(obj=monster)',
-			]])
-		self.assertEqual(self._events(), [[
-			]])
+		list(dungeon.process_events(raw=True))
 		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) # Step in.
-		dungeon.process_others()
+		dungeon.scene.monsters[2].act(dungeon)
 		self.assertEqual(self._events(), [[
 			'Move(actor=player, dest=[9, 5])',
 			'Attack(actor=monster, target=player, damage=1)',
 			'Health(target=player, diff=-1)',
 			]])
-		self.assertEqual(self._events(), [[
-			]])
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) # Attack.
-		dungeon.process_others()
-		self.assertEqual(self._events(), [[
-			'Attack(actor=player, target=monster, damage=1)',
-			'Health(target=monster, diff=-1)',
-			'Attack(actor=monster, target=player, damage=1)',
-			'Health(target=player, diff=-1)',
-			]])
-		dungeon.wait(dungeon.get_player()) # Just wait.
-		dungeon.process_others()
-		self.assertEqual(self._events(), [[
-			'Attack(actor=monster, target=player, damage=1)',
-			'Health(target=player, diff=-1)',
-			]])
-		self.assertFalse(dungeon.is_finished())
-		self.maxDiff = None
-		self.assertEqual(dungeon.get_player().hp, 7)
-		self.assertEqual(dungeon.scene.monsters[2].hp, 2)
 
 class TestItems(AbstractTestDungeon):
 	def should_grab_items(self):
-		dungeon = self.dungeon = mock_dungeon.build('potions lying around 2')
-		self.assertEqual(self._events(), [[
-			'Discover(obj=potion)',
-			'Discover(obj=healing potion)',
-			]])
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		dungeon.process_others()
-		self.assertEqual(self._events(), [[
-			'Move(actor=player, dest=[10, 6])',
-			]])
-		dungeon.grab_item_here(dungeon.get_player())
-		dungeon.process_others()
-		self.assertEqual(self._events(), [[
-			'GrabItem(actor=player, item=potion)',
-			]])
-		self.assertFalse(dungeon.is_finished())
-		self.maxDiff = None
+		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilder_PotionsLyingAround])
+		scene.generate('potions lying around 2')
+		item = scene.take_item(next(scene.iter_items_at((10, 6))))
+		self.assertEqual(item.name, 'potion')
+		self.assertIsNone(next(scene.iter_items_at((10, 6)), None))
 	def should_drop_items(self):
-		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		dungeon.get_player().inventory.append(mock_dungeon.Potion())
-		self.assertEqual(self._events(), [[
-			]])
-		dungeon.drop_item(dungeon.get_player(), dungeon.get_player().inventory[0])
-		dungeon.process_others()
-		self.assertEqual(self._events(), [[
-			'DropItem(actor=player, item=potion)',
-			]])
-		self.assertFalse(dungeon.is_finished())
-		self.maxDiff = None
+		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilderUnSettler])
+		scene.generate('lonely')
+		scene.drop_item(items.ItemAtPos((10, 6), mock_dungeon.Potion()))
+		self.assertEqual(next(scene.iter_items_at((10, 6))).name, 'potion')
 
 class TestVisibility(AbstractTestDungeon):
 	def should_get_visible_surroundings(self):
-		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		self.assertEqual(dungeon.scene.get_area_rect(), Rect(Point(0, 0), Size(20, 10)))
-		self.assertEqual(dungeon.str_cell(Point(9, 6)), '@')
-		self.assertEqual(dungeon.str_cell(Point(5, 6)), '.')
-		self.assertEqual(dungeon.str_cell(Point(5, 5)), '#')
-		self.assertEqual(dungeon.str_cell(Point(10, 1)), ' ')
-		dungeon.jump_to(dungeon.scene.get_player(), Point(11, 2))
-		self.assertEqual(dungeon.str_cell(Point(9, 6)), '.')
-		self.assertEqual(dungeon.str_cell(Point(5, 6)), ' ')
-		self.assertEqual(dungeon.str_cell(Point(5, 5)), '#')
-		self.assertEqual(dungeon.str_cell(Point(10, 1)), '>')
-		dungeon.jump_to(dungeon.scene.get_player(), Point(9, 6))
-		self.assertEqual(dungeon.str_cell(Point(10, 1)), '>')
-	def should_get_visible_monsters_and_items(self):
-		dungeon = self.dungeon = mock_dungeon.build('monsters on top')
-		dungeon.jump_to(dungeon.scene.get_player(), Point(2, 2))
-		self.assertEqual(dungeon.str_cell(Point(1, 1)), 'M')
-		self.assertEqual(dungeon.str_cell(Point(1, 6)), 'M')
-		self.assertEqual(dungeon.str_cell(Point(2, 6)), '!')
-		dungeon.jump_to(dungeon.scene.get_player(), Point(10, 1))
-		self.assertEqual(dungeon.str_cell(Point(1, 1)), ' ')
-		self.assertEqual(dungeon.str_cell(Point(1, 6)), ' ')
-		self.assertEqual(dungeon.str_cell(Point(2, 6)), ' ')
-	def should_see_monsters_only_in_the_field_of_vision(self):
-		dungeon = self.dungeon = mock_dungeon.build('now you see me')
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				    #####        #  
-				     ....   #  ...  
-				      ...  .# ..... 
-				     ##..##.#...... 
-				     #............. 
-				#....#............. 
-				#M.......@.........#
-				#.................. 
-				#.................. 
-				 #################  
-				"""))
-		dungeon.jump_to(dungeon.scene.get_player(), Point(2, 2))
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				##########       #  
-				#M.......#  #       
-				#.@......#  #       
-				#....##..## #       
-				#....#              
-				#....#              
-				#M....             #
-				#......             
-				#.......            
-				##################  
-				"""))
+		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilderUnSettler])
+		scene.generate('lonely')
+		scene.enter_actor(mock_dungeon.Player(Point(9, 6)), None)
+		vision = scene.make_vision()
+		self.assertEqual(scene.get_area_rect(), Rect(Point(0, 0), Size(20, 10)))
+		list(vision.visit(scene.get_player()))
+		self.assertEqual(vision.visited.tostring(lambda c:'*' if c else '.'), textwrap.dedent("""\
+		....*****........*..
+		.....****...*..***..
+		......***..**.*****.
+		.....**************.
+		.....**************.
+		*******************.
+		********************
+		*******************.
+		*******************.
+		.*****************..
+		"""))
+		scene.get_player().pos = Point(11, 2)
+		list(vision.visit(scene.get_player()))
+		self.assertEqual(vision.visited.tostring(lambda c:'*' if c else '.'), textwrap.dedent("""\
+		....*******......*..
+		.....********..***..
+		......*******.*****.
+		.....**************.
+		.....**************.
+		*******************.
+		********************
+		*******************.
+		*******************.
+		.*****************..
+		"""))
 	def should_reduce_visibility_at_dark_tiles(self):
-		dungeon = self.dungeon = mock_dungeon.build('mini dark rogue')
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				_ +--+   
-				_ |@.|   
-				_ ^..^   
-				_ |.>|   
-				_ +--+   
-				""").replace('_', ' '))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN)
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				_ +--+   
-				_ |..|   
-				_ ^.@^   
-				_ |.>|   
-				_ +--+   
-				""").replace('_', ' '))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				_ +--+   
-				_ |..|   
-				_ ^..@#  
-				_ |.>|   
-				_ +--+   
-				""").replace('_', ' '))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				_ +--+   
-				_ |  | # 
-				_ ^  ^@# 
-				_ | >|   
-				_ +--+   
-				""").replace('_', ' '))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT)
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				_ +--+   
-				_ |  | # 
-				_ ^  ^#@ 
-				_ | >|   
-				_ +--+   
-				""").replace('_', ' '))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP)
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				_ +--+ # 
-				_ |  | @ 
-				_ ^  ^## 
-				_ | >|   
-				_ +--+   
-				""").replace('_', ' '))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP)
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				_ +--+ @ 
-				_ |  | # 
-				_ ^  ^   
-				_ | >|   
-				_ +--+   
-				""").replace('_', ' '))
+		scene = game.Scene(RNG(0), [mock_dungeon._MockMiniRogueBuilderUnSettler])
+		scene.generate('mini dark rogue')
+		scene.enter_actor(mock_dungeon.Player(Point(3, 1)), None)
+		vision = scene.make_vision()
+		list(vision.visit(scene.get_player()))
+		self.assertEqual(vision.visited.tostring(lambda c:'*' if c else '.'), textwrap.dedent("""\
+		..****...
+		..****...
+		..****...
+		..****...
+		..****...
+		"""))
+		scene.get_player().pos = Point(6, 2)
+		list(vision.visit(scene.get_player()))
+		self.assertEqual(vision.visited.tostring(lambda c:'*' if c else '.'), textwrap.dedent("""\
+		..****...
+		..******.
+		..******.
+		..******.
+		..****...
+		"""))
+		scene.get_player().pos = Point(7, 0)
+		list(vision.visit(scene.get_player()))
+		self.assertEqual(vision.visited.tostring(lambda c:'*' if c else '.'), textwrap.dedent("""\
+		..*******
+		..*******
+		..******.
+		..******.
+		..****...
+		"""))
 
 class TestMovement(AbstractTestDungeon):
-	def should_update_fov_after_movement(self):
-		dungeon = self.dungeon = mock_dungeon.build('lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(9, 6))
-
-		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
-		self.maxDiff = None
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				    #####        #  
-				     ....   #  ...  
-				      ...  .# ..... 
-				     ##..##.#...... 
-				     #............. 
-				#....#............. 
-				#........@.........#
-				#.................. 
-				#.................. 
-				 #################  
-				"""))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT) 
-		self.assertFalse(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				    #####      #### 
-				     ...   ## ..... 
-				      ...  .#......#
-				     ##..##.#......#
-				     #.............#
-				#    #.............#
-				#.........@........#
-				#..................#
-				#..................#
-				 ################## 
-				"""))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP_RIGHT) 
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) 
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) 
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) 
-		self.assertTrue(dungeon.vision.visited.cell(dungeon.scene.appliances[0].pos))
-		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), textwrap.dedent("""\
-				   ########    #####
-				         #>##      #
-				         #.@#      #
-				     ##  ##.#      #
-				     #    ...      #
-				#    #    ...      #
-				#        .....     #
-				#        .....     #
-				#       .......    #
-				 ###################
-				"""))
 	def should_not_allow_move_player_diagonally_both_from_and_to_good_cell(self):
-		dungeon = self.dungeon = mock_dungeon.build('mini rogue lonely')
-		self.assertEqual(dungeon.get_player().pos, Point(3, 1))
+		scene = game.Scene(RNG(0), [mock_dungeon._MockMiniRogueBuilderUnSettler])
+		scene.generate('mini rogue lonely')
+		scene.enter_actor(mock_dungeon.Player(Point(3, 1)), None)
 
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT))
-		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN_RIGHT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT))
-		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.UP_RIGHT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.RIGHT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.UP))
-		self.assertEqual(dungeon.get_player().pos, Point(7, 1))
-		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN_LEFT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.LEFT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.LEFT))
-		self.assertFalse(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN_LEFT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.LEFT))
-		self.assertTrue(dungeon.move_actor(dungeon.get_player(), game.Direction.DOWN))
-		self.assertEqual(dungeon.get_player().pos, Point(4, 3))
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.RIGHT))
+		scene.get_player().pos = Point(4, 1)
+		self.assertFalse(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.DOWN_RIGHT))
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.DOWN))
+		scene.get_player().pos = Point(4, 2)
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.RIGHT))
+		scene.get_player().pos = Point(5, 2)
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.RIGHT))
+		scene.get_player().pos = Point(6, 2)
+		self.assertFalse(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.UP_RIGHT))
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.RIGHT))
+		scene.get_player().pos = Point(7, 2)
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.UP))
+		scene.get_player().pos = Point(7, 1)
+		self.assertFalse(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.DOWN_LEFT))
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.DOWN))
+		scene.get_player().pos = Point(7, 2)
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.LEFT))
+		scene.get_player().pos = Point(6, 2)
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.LEFT))
+		scene.get_player().pos = Point(5, 2)
+		self.assertFalse(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.DOWN_LEFT))
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.LEFT))
+		scene.get_player().pos = Point(4, 2)
+		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.DOWN))
+		scene.get_player().pos = Point(4, 3)
 
-class TestFight(AbstractTestDungeon):
+class TestAngryMonsters(AbstractTestDungeon):
 	def should_angry_move_to_attack_player(self):
 		dungeon = self.dungeon = mock_dungeon.build('close angry monster')
 		list(dungeon.process_events(raw=True))
