@@ -55,10 +55,11 @@ class BasicQueuedExplorer(AutoMovement):
 		"""
 		wave = math.Pathfinder(self.game.scene, vision=self.game.vision)
 		self.wave = wave
-		path = wave.run(self.game.scene.get_player().pos, self.find_target)
+		current_pos = self.game.scene.get_global_pos(self.game.scene.get_player())
+		path = wave.run(current_pos, self.find_target)
 		if not path:
 			return None
-		assert path[0] == self.game.scene.get_player().pos
+		assert path[0] == current_pos
 		return [next_p - prev_p for (prev_p, next_p) in zip(path[:-1], path[1:])]
 	def next(self):
 		""" If queue is ended and dest is specified, stops.

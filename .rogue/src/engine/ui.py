@@ -118,7 +118,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		self.print_messages(ui, self.get_message_line_rect().topleft, line_width=self.get_message_line_rect().width)
 		self.draw_status(ui)
 		if self.aim:
-			cursor = self.aim + self.get_map_shift()
+			cursor = self.aim + self.get_map_shift() - self.get_viewrect().topleft
 			ui.cursor().move(cursor.x, cursor.y)
 	def draw_map(self, ui):
 		""" Redraws map according to get_viewrect() and get_sprite().
@@ -177,7 +177,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		Log.debug('Moving.')
 		if self.aim:
 			new_pos = self.aim + direction
-			if self.game.scene.valid(new_pos):
+			if self.game.scene.valid(new_pos) and self.get_viewrect().contains(new_pos, with_border=True):
 				self.aim = new_pos
 		else:
 			self.game.move_actor(self.game.scene.get_player(), direction)
@@ -208,7 +208,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		if self.aim:
 			self.aim = None
 		else:
-			self.aim = self.game.scene.get_player().pos
+			self.aim = self.game.scene.get_global_pos(self.game.scene.get_player())
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """

@@ -166,7 +166,7 @@ class TestMainGameDisplay(MainGameTestCase):
 		mode, mock_ui = self.mode, self.mock_ui
 		mode.aim = Point(3, 3)
 		mode.redraw(mock_ui)
-		self.assertEqual(mock_ui._cursor, Point(3, 4))
+		self.assertEqual(mock_ui._cursor, Point(4, 1))
 	def should_draw_everything(self):
 		mode, mock_ui = self.mode, self.mock_ui
 		mode.messages = [
@@ -269,7 +269,7 @@ class TestAim(MainGameTestCase):
 		self.mock_ui.key('x')
 		self.assertTrue(self.loop.action())
 		self.loop.redraw()
-		self.assertEqual(self.mock_ui._cursor, Point(1, 6))
+		self.assertEqual(self.mock_ui._cursor, Point(2, 3))
 		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
 		_pos: [1, 5] aim: [1, 5]       _
 		_ #...    monsters: 2          _
@@ -302,7 +302,7 @@ class TestAim(MainGameTestCase):
 		self.assertTrue(self.loop.action())
 		self.assertTrue(self.loop.action())
 		self.loop.redraw()
-		self.assertEqual(self.mock_ui._cursor, Point(3, 8))
+		self.assertEqual(self.mock_ui._cursor, Point(4, 5))
 		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
 		_pos: [1, 5] aim: [3, 7]       _
 		_ #...    monsters: 2          _
