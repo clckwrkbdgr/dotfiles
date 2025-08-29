@@ -61,7 +61,7 @@ class MainGame(ui.MainGame):
 		else: # pragma: no cover
 			return '{0}!'.format(event.reason[0])
 	@Events.on(engine.Events.NothingToPickUp)
-	def on_nothing_to_pick_up(self, event):
+	def on_nothing_to_pick_up(self, event): # pragma: no cover
 		return ''
 	@Events.on(engine.Events.Attack)
 	def on_attack(self, event):
@@ -102,14 +102,6 @@ class MainGame(ui.MainGame):
 	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	@ui.MainGame.Keys.bind(None)
-	def on_idle(self): # pragma: no cover -- TODO why is this needed?
-		""" Show this help. """
-		return None
-	@ui.MainGame.Keys.bind('?')
-	def help(self):
-		""" Show this help. """
-		return HelpScreen()
 	@ui.MainGame.Keys.bind('x')
 	def examine(self):
 		""" Examine surroundings (cursor mode). """
@@ -121,20 +113,11 @@ class MainGame(ui.MainGame):
 	def god_mode(self):
 		""" God mode options. """
 		return GodModeMenu(self.game)
-	@ui.MainGame.Keys.bind('Q')
-	def suicide(self):
-		""" Suicide (quit without saving). """
-		Log.debug('Suicide.')
-		self.game.suicide(self.game.scene.get_player())
 	@ui.MainGame.Keys.bind('>')
 	def descend(self):
 		""" Descend. """
 		if not self.aim:
 			self.game.descend(self.game.scene.get_player())
-	@ui.MainGame.Keys.bind('g')
-	def grab(self):
-		""" Grab item. """
-		self.game.grab_item_here(self.game.scene.get_player())
 	@ui.MainGame.Keys.bind('d')
 	def drop(self):
 		""" Drop item. """
@@ -151,19 +134,6 @@ class MainGame(ui.MainGame):
 	def show_equipment(self):
 		""" Show equipment. """
 		return Equipment(self.game)
-
-class HelpScreen(clckwrkbdgr.tui.Mode):
-	""" Main help screen with controls cheatsheet. """
-	def redraw(self, ui):
-		for row, (_, binding) in enumerate(MainGame.Keys.list_all()):
-			if utils.is_collection(binding.key):
-				keys = ''.join(map(str, binding.key))
-			else:
-				keys = str(binding.key)
-			ui.print_line(row, 0, '{0} - {1}'.format(keys, binding.help))
-		ui.print_line(row + 1, 0, '[Press Any Key...]')
-	def action(self, control):
-		return False
 
 GodModeKeys = Keymapping()
 class GodModeMenu(clckwrkbdgr.tui.Mode):

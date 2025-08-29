@@ -404,17 +404,9 @@ class MainGame(ui.MainGame):
 			trace.debug("Unknown key: {0}".format(ch))
 			pass
 
-	@Controls('Q')
-	def quit(self):
-		""" Abandon game. """
-		return SuicideAttempt(to_main_screen(self), self.data)
 	@Controls('~')
 	def god_mode(self):
 		return GodModeAction
-	@Controls('?')
-	def show_help(self):
-		""" Show help message. """
-		return HelpScreen
 	@Controls('>')
 	def descend(self):
 		""" Go down. """
@@ -430,11 +422,6 @@ class MainGame(ui.MainGame):
 				return to_main_screen(self)
 		except GameCompleted:
 			return Greetings
-	@Controls('g')
-	def grab(self):
-		""" Grab item. """
-		dungeon = self.data
-		dungeon.grab_item_here(dungeon.get_player())
 	@Controls('d')
 	def drop(self):
 		""" Drop item. """
@@ -582,18 +569,6 @@ class WieldFromInventory(WieldItem, Inventory):
 
 class WearFromInventory(WearItem, Inventory):
 	pass
-
-class HelpScreen(tui.widgets.TextScreen):
-	_full_redraw = True
-	LINES = ["{0} - {1}".format(''.join(map(itemgetter(1), keys)), text)
-			for text, keys in itertools.groupby(sorted([
-				(inspect.getdoc(value), key)
-				for key, value
-				in Controls.items()
-				if value.__doc__
-				]), key=itemgetter(0))]
-	def on_close(self):
-		return to_main_screen(self)
 
 class SuicideAttempt(tui.widgets.Confirmation):
 	MESSAGE = "Do you really want to quit without saving?"

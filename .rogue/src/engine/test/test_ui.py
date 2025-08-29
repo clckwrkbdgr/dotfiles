@@ -1,4 +1,5 @@
 from clckwrkbdgr import unittest
+import contextlib
 from clckwrkbdgr.math.grid import Matrix
 from clckwrkbdgr.math import Point, Size, Rect
 import clckwrkbdgr.tui
@@ -22,11 +23,18 @@ class MockUI:
 		self._cursor = None
 		self._mock_curses = self.MockCurses(self)
 		self._keys = []
+	@contextlib.contextmanager
+	def redraw(self, clean=False):
+		if clean:
+			self.screen.clear(' ')
+		yield self
 	def print_char(self, x, y, sprite, color):
 		self.screen.set_cell((x, y), sprite)
 	def print_line(self, y, x, line):
 		for i, c in enumerate(line):
-			self.screen.set_cell((x + i, y), c)
+			p = Point(x + i, y)
+			if self.screen.valid(p):
+				self.screen.set_cell(p, c)
 	def cursor(self, value=None):
 		if value is True:
 			self._cursor = Point(0, 0)
@@ -37,7 +45,7 @@ class MockUI:
 	def move(self, x, y):
 		self._cursor = Point(x, y)
 	def get_keypress(self, nodelay=False, timeout=None):
-		value = self._keys.pop()
+		value = self._keys.pop(0)
 		return value
 	# Internal.
 	def key(self, key_chars):
@@ -213,9 +221,14 @@ class TestMainGameCustomizations(MainGameTestCase):
 		self.assertFalse(mode.action(clckwrkbdgr.tui.Key(' ')))
 
 class TestMainGameControls(MainGameTestCase):
-	def should_quit_game(self):
+	def should_quit_game_and_save(self):
 		self.mock_ui.key('S')
 		self.assertFalse(self.loop.action())
+		self.assertTrue(self.game.scene.get_player())
+	def should_abandon_game(self):
+		self.mock_ui.key('Q')
+		self.assertTrue(self.loop.action())
+		self.assertFalse(self.game.scene.get_player())
 	def should_start_autoexplore(self):
 		self.mock_ui.key('o')
 		self.assertFalse(self.game.automovement)
@@ -240,3 +253,26 @@ class TestMainGameControls(MainGameTestCase):
 		_#....                         _
 		_                              _
 		""").replace('_', ''))
+	def should_grab_item(self):
+		self.mock_ui.key('kkkg')
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.game.scene.get_player().find_item(ScribbledNote))
+
+class TestHelpScreen(MainGameTestCase):
+	def should_show_help_info(self):
+		self.mock_ui.key('? ')
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		hjklyubn - Move around.       _
+		. - Wait in-place / go to sele_
+		> - Descend.                  _
+		? - Show this help.           _
+		E - Show equipment.           _
+		Q - Suicide (quit without savi_
+		S - Save and quit.            _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())

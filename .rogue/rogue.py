@@ -862,9 +862,6 @@ class MainGameMode(ui.MainGame):
 		return next(self.game.scene.iter_items_at(self.game.scene.get_player_coord()), None)
 	def get_message_line_rect(self):
 		return Rect(Point(0, 23), Size(80, 1))
-	@ui.MainGame.Keys.bind('g')
-	def grab_item(self):
-		self.game.grab_item_here(self.game.scene.get_player())
 	@ui.MainGame.Keys.bind('C')
 	def char(self):
 		game = self.game

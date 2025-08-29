@@ -1,6 +1,7 @@
 import logging
 Log = logging.getLogger('rogue')
 from collections import namedtuple
+from clckwrkbdgr import utils
 from clckwrkbdgr.math import Point, Direction, Rect, Size
 import clckwrkbdgr.tui
 
@@ -188,3 +189,29 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			self.aim = None
 		else:
 			self.game.wait(self.game.scene.get_player())
+	@_MainKeys.bind('g')
+	def grab_item(self):
+		""" Grab item. """
+		self.game.grab_item_here(self.game.scene.get_player())
+	@_MainKeys.bind('?')
+	def help(self):
+		""" Show this help. """
+		return HelpScreen()
+	@_MainKeys.bind('Q')
+	def suicide(self):
+		""" Suicide (quit without saving). """
+		Log.debug('Suicide.')
+		self.game.suicide(self.game.scene.get_player())
+
+class HelpScreen(clckwrkbdgr.tui.Mode):
+	""" Main help screen with controls cheatsheet. """
+	def redraw(self, ui):
+		for row, (_, binding) in enumerate(MainGame.Keys.list_all()):
+			if utils.is_collection(binding.key):
+				keys = ''.join(map(str, binding.key))
+			else:
+				keys = str(binding.key)
+			ui.print_line(row, 0, '{0} - {1}'.format(keys, binding.help))
+		ui.print_line(row + 1, 0, '[Press Any Key...]')
+	def action(self, control):
+		return False
