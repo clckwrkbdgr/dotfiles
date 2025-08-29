@@ -202,6 +202,13 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
 		self.game.suicide(self.game.scene.get_player())
+	@_MainKeys.bind('x')
+	def examine(self):
+		""" Examine surroundings (cursor mode). """
+		if self.aim:
+			self.aim = None
+		else:
+			self.aim = self.game.scene.get_player().pos
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """

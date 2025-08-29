@@ -48,8 +48,27 @@ class TestItems(AbstractTestDungeon):
 		scene.generate('lonely')
 		scene.drop_item(items.ItemAtPos((10, 6), mock_dungeon.Potion()))
 		self.assertEqual(next(scene.iter_items_at((10, 6))).name, 'potion')
+	def should_drop_loot_from_monsters(self):
+		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilder_FightingGround])
+		scene.generate('fighting around')
+		pos = scene.monsters[1].pos
+		potion = mock_dungeon.Potion()
+		scene.monsters[1].grab(potion)
+		self.assertEqual(list(scene.rip(scene.monsters[1])), [potion])
+		self.assertEqual(len(scene.monsters), 1)
+		self.assertEqual(next(scene.iter_items_at(pos)).name, 'potion')
 
 class TestVisibility(AbstractTestDungeon):
+	def should_list_important_events(self):
+		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilder_FightingGround])
+		scene.generate('fighting around')
+		scene.enter_actor(mock_dungeon.Player(Point(9, 6)), None)
+		vision = scene.make_vision()
+		list(vision.visit(scene.get_player()))
+		self.assertEqual(list(vision.iter_important()), [
+			next(scene.iter_actors_at((10, 6))),
+			next(scene.iter_actors_at((9, 4))),
+			])
 	def should_get_visible_surroundings(self):
 		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilderUnSettler])
 		scene.generate('lonely')

@@ -256,9 +256,6 @@ class MockMapping:
 	def inert_monster(pos,*data):
 		return InertMonster(*(data + (pos,)))
 	@staticmethod
-	def thief(pos,*data):
-		return Thief(*(data + (pos,)))
-	@staticmethod
 	def potion(*data):
 		return Potion(*data)
 	@staticmethod

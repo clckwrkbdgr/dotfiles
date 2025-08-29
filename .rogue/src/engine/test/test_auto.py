@@ -59,6 +59,27 @@ class TestAutoMode(AbstractTestDungeon):
 				#..b.    _
 				_        _
 				""").replace('_', ' '))
+	def should_prevent_automovement_on_monsters(self):
+		dungeon = self.game
+		dungeon.jump_to(dungeon.scene.get_player(), Point(3, 7))
+
+		self.assertEqual(dungeon.tostring(dungeon.scene.get_area_rect()), unittest.dedent("""\
+				_        _
+				_        _
+				_        _
+				#        _
+				#        _
+				#<....   _
+				##.~>.   _
+				#..@..   _
+				_..b..   _
+				_#####   _
+				""").replace('_', ' '))
+		self.assertFalse(dungeon.automove(Point(1, 5))) # Startled by butterfly.
+		self.assertEqual(dungeon.events, [
+			Events.Discover(next(dungeon.scene.iter_actors_at(Point(3, 8)))),
+			Events.AutoStop(reason=list(dungeon.scene.iter_actors_at(Point(3, 8)))),
+			])
 	def should_continue_autoexplore(self):
 		dungeon = NanoDungeon()
 		dungeon.generate(None)

@@ -58,6 +58,7 @@ class MockUI:
 class MockMainGame(ui.MainGame):
 	INDICATORS = [
 			ui.Indicator((0, 0), 10, lambda _:'pos: {0}'.format(_.game.scene.get_player().pos)),
+			ui.Indicator((12, 0), 10, lambda _:'aim: {0}'.format(_.aim) if _.aim else ''),
 			ui.Indicator((9, 1), 10, lambda _:'monsters: {0}'.format(len(_.game.scene.monsters))),
 			]
 	def get_map_shift(self):
@@ -229,11 +230,13 @@ class TestMainGameControls(MainGameTestCase):
 		self.mock_ui.key('Q')
 		self.assertTrue(self.loop.action())
 		self.assertFalse(self.game.scene.get_player())
-	def should_start_autoexplore(self):
-		self.mock_ui.key('o')
+	def should_start_and_stopautoexplore(self):
+		self.mock_ui.key('o.')
 		self.assertFalse(self.game.automovement)
 		self.assertTrue(self.loop.action())
 		self.assertTrue(self.game.automovement)
+		self.assertTrue(self.loop.action())
+		self.assertFalse(self.game.automovement)
 	def should_wait_in_place(self):
 		self.mock_ui.key('.')
 		self.assertTrue(self.loop.action())
@@ -260,6 +263,75 @@ class TestMainGameControls(MainGameTestCase):
 		self.assertTrue(self.loop.action())
 		self.assertTrue(self.loop.action())
 		self.assertTrue(self.game.scene.get_player().find_item(ScribbledNote))
+
+class TestAim(MainGameTestCase):
+	def should_start_aim_mode(self):
+		self.mock_ui.key('x')
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui._cursor, Point(1, 6))
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5] aim: [1, 5]       _
+		_ #...    monsters: 2          _
+		_ #...                         _
+		_ #@..                         _
+		_ ##.~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
+	def should_cancel_aim_mode(self):
+		self.mock_ui.key('xlx')
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertIsNone(self.mock_ui._cursor)
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 2          _
+		_ #...                         _
+		_ #@..                         _
+		_ ##.~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
+	def should_move_aim(self):
+		self.mock_ui.key('xnlj')
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui._cursor, Point(3, 8))
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5] aim: [3, 7]       _
+		_ #...    monsters: 2          _
+		_ #...                         _
+		_ #@..                         _
+		_ ##.~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
+	def should_select_aim(self):
+		self.mock_ui.key('xnlj.')
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertIsNone(self.mock_ui._cursor)
+		self.assertTrue(self.game.automovement)
+		self.assertEqual(self.game.automovement.dest, Point(3, 7))
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 2          _
+		_ #...                         _
+		_ #@..                         _
+		_ ##.~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
 
 class TestHelpScreen(MainGameTestCase):
 	def should_show_help_info(self):

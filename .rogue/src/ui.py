@@ -55,32 +55,32 @@ class MainGame(ui.MainGame):
 		else: # pragma: no cover
 			return '{0}!'.format(event.obj)
 	@Events.on(engine.Events.AutoStop)
-	def on_auto_stop(self, event):
+	def on_auto_stop(self, event): # pragma: no cover
 		if isinstance(event.reason[0], actors.Actor):
 			return 'monsters!'
-		else: # pragma: no cover
+		else:
 			return '{0}!'.format(event.reason[0])
 	@Events.on(engine.Events.NothingToPickUp)
 	def on_nothing_to_pick_up(self, event): # pragma: no cover
 		return ''
 	@Events.on(engine.Events.Attack)
-	def on_attack(self, event):
+	def on_attack(self, event): # pragma: no cover
 		return '{0} x> {1}.'.format(event.actor.name, event.target.name)
 	@Events.on(engine.Events.Health)
 	def on_health_change(self, event):
 		return '{0}{1:+}hp.'.format(event.target.name, event.diff)
 	@Events.on(engine.Events.Death)
-	def on_death(self, event):
+	def on_death(self, event): # pragma: no cover
 		return '{0} dies.'.format(event.target.name)
 	@Events.on(engine.Events.Move)
-	def on_movement(self, event):
+	def on_movement(self, event): # pragma: no cover
 		if event.actor != self.game.scene.get_player():
 			return '{0}...'.format(event.actor.name)
 	@Events.on(engine.Events.Descend)
 	def on_descending(self, event):
 		return '{0} V...'.format(event.actor.name)
 	@Events.on(engine.Events.BumpIntoTerrain)
-	def on_bumping(self, event):
+	def on_bumping(self, event): # pragma: no cover
 		if event.actor != self.game.scene.get_player():
 			return '{0} bumps.'.format(event.actor.name)
 	@Events.on(engine.Events.GrabItem)
@@ -102,13 +102,6 @@ class MainGame(ui.MainGame):
 	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	@ui.MainGame.Keys.bind('x')
-	def examine(self):
-		""" Examine surroundings (cursor mode). """
-		if self.aim:
-			self.aim = None
-		else:
-			self.aim = self.game.scene.get_player().pos
 	@ui.MainGame.Keys.bind('~')
 	def god_mode(self):
 		""" God mode options. """

@@ -183,7 +183,7 @@ class TestActions(AbstractTestDungeon):
 	def should_suicide(self):
 		game = self.game
 		game.suicide(game.scene.get_player())
-		self.assertFalse(game.scene.get_player())
+		self.assertTrue(game.is_finished())
 
 class TestMovement(AbstractTestDungeon):
 	def should_wait_in_place(self):
