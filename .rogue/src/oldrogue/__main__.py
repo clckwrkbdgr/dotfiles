@@ -22,7 +22,7 @@ from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 from . import game
-from .game import Version, Item, Wearable, Player, Room, Tunnel, Scene, GodMode, Dungeon, Event
+from .game import Version, Item, Wearable, Player, Room, Tunnel, Scene, Event
 from . import pcg
 from ..engine import events, appliances, ui, Events
 
@@ -216,8 +216,7 @@ hard_monsters << make_monster('Xenomorph', 'X', 'xenomorph', 30, 3, animal_drops
 norm_monsters << make_monster('Yeti', 'Y', 'yeti', 10, 2, animal_drops)
 norm_monsters << make_monster('Zealot', 'Z', 'zealot', 10, 2, thug_drops)
 
-class GodModeSwitched(events.Event): FIELDS = 'name state'
-events.Event.on(GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
+events.Event.on(Events.GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
 
 events.Event.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
 events.Event.on(Events.Ascend)(lambda event:"Going up...")
@@ -404,9 +403,6 @@ class MainGame(ui.MainGame):
 			trace.debug("Unknown key: {0}".format(ch))
 			pass
 
-	@Controls('~')
-	def god_mode(self):
-		return GodModeAction
 	@Controls('>')
 	def descend(self):
 		""" Go down. """
@@ -468,19 +464,6 @@ class MainGame(ui.MainGame):
 	def inventory(self):
 		""" Toggle inventory. """
 		return Inventory
-
-class GodModeAction(tui.widgets.Menu):
-	KEYS_TO_CLOSE = [curses.ascii.ESC, ord('~')]
-	def items(self):
-		return [
-				tui.widgets.Menu.Item('v', 'see all: {0}'.format('ON' if self.data.god.vision else 'off'), self.data.god.toggle_vision),
-				]
-	def on_close(self):
-		return to_main_screen(self)
-	def on_item(self, item):
-		item.data()
-		self.data.fire_event(GodModeSwitched(name=item.text, state='ON' if new_state else 'off'))
-		return to_main_screen(self)
 
 class ConsumeItem:
 	def prompt(self): return "Which item to consume?"

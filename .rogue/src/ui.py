@@ -102,10 +102,6 @@ class MainGame(ui.MainGame):
 	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	@ui.MainGame.Keys.bind('~')
-	def god_mode(self):
-		""" God mode options. """
-		return GodModeMenu(self.game)
 	@ui.MainGame.Keys.bind('>')
 	def descend(self):
 		""" Descend. """
@@ -127,27 +123,6 @@ class MainGame(ui.MainGame):
 	def show_equipment(self):
 		""" Show equipment. """
 		return Equipment(self.game)
-
-GodModeKeys = Keymapping()
-class GodModeMenu(clckwrkbdgr.tui.Mode):
-	""" God mode options. """
-	TRANSPARENT = True
-	KEYMAPPING = GodModeKeys
-	def __init__(self, game):
-		self.game = game
-	def redraw(self, ui):
-		keys = ''.join([binding.key for _, binding in self.KEYMAPPING.list_all()])
-		ui.print_line(0, 0, 'Select God option ({0})'.format(keys))
-	def action(self, control):
-		return False
-	@GodModeKeys.bind('v')
-	def vision(self):
-		""" See all. """
-		self.game.god.toggle_vision()
-	@GodModeKeys.bind('c')
-	def noclip(self):
-		""" Walk through walls. """
-		self.game.god.toggle_noclip()
 
 InventoryKeys = Keymapping()
 class Inventory(clckwrkbdgr.tui.Mode):

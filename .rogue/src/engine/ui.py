@@ -4,6 +4,7 @@ from collections import namedtuple
 from clckwrkbdgr import utils
 from clckwrkbdgr.math import Point, Direction, Rect, Size
 import clckwrkbdgr.tui
+from ._base import Events
 
 DIRECTION = {
 		'h' : Direction.LEFT,
@@ -210,6 +211,11 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		else:
 			self.aim = self.game.scene.get_global_pos(self.game.scene.get_player())
 
+	@_MainKeys.bind('~')
+	def god_mode(self):
+		""" God mode options. """
+		return GodModeMenu(self.game)
+
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """
 	def redraw(self, ui):
@@ -222,3 +228,33 @@ class HelpScreen(clckwrkbdgr.tui.Mode):
 		ui.print_line(row + 1, 0, '[Press Any Key...]')
 	def action(self, control):
 		return False
+
+GodModeKeys = clckwrkbdgr.tui.Keymapping()
+class GodModeMenu(clckwrkbdgr.tui.Mode):
+	""" God mode options. """
+	KEYMAPPING = GodModeKeys
+	def __init__(self, game):
+		self.game = game
+		self.getters = {
+			'v': lambda: self.game.god.vision,
+			'c': lambda: self.game.god.noclip,
+			}
+	def redraw(self, ui):
+		ui.print_line(0, 0, 'Select God option:')
+		for row, (_, binding) in enumerate(self.KEYMAPPING.list_all()):
+			ui.print_line(1 + row, 0, '{0} - [{1}] - {2}'.format(
+				binding.key, 'X' if self.getters[binding.key]() else ' ',
+				binding.help
+				))
+	def action(self, control):
+		return False
+	@GodModeKeys.bind('v')
+	def vision(self):
+		""" See all. """
+		self.game.god.toggle_vision()
+		self.game.fire_event(Events.GodModeSwitched('vision', self.game.god.vision))
+	@GodModeKeys.bind('c')
+	def noclip(self):
+		""" Walk through walls. """
+		self.game.god.toggle_noclip()
+		self.game.fire_event(Events.GodModeSwitched('noclip', self.game.god.noclip))

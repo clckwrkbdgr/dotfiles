@@ -348,3 +348,43 @@ class TestHelpScreen(MainGameTestCase):
 		S - Save and quit.            _
 		""").replace('_', ''))
 		self.assertFalse(self.loop.action())
+
+class TestGodModes(MainGameTestCase):
+	def should_show_god_mode_state(self):
+		self.mock_ui.key('~~')
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select God option:            _
+		_c - [ ] - Walk through walls. _
+		_v - [ ] - See all.            _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())
+	def should_display_enabled_god_mode(self):
+		self.mock_ui.key('~')
+		self.game.god.toggle_vision()
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select God option:            _
+		_c - [ ] - Walk through walls. _
+		_v - [X] - See all.            _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+	def should_toggle_god_vision(self):
+		self.mock_ui.key('~v')
+		self.assertTrue(self.loop.action())
+		self.assertFalse(self.loop.action())
+		self.assertTrue(self.game.god.vision)
+	def should_toggle_god_noclip(self):
+		self.mock_ui.key('~c')
+		self.assertTrue(self.loop.action())
+		self.assertFalse(self.loop.action())
+		self.assertTrue(self.game.god.noclip)

@@ -109,6 +109,9 @@ class Events:
 	class CannotAscend(events.Event):
 		""" Cannot ascend from here. """
 		FIELDS = 'pos'
+	class GodModeSwitched(events.Event):
+		""" God Mode state has been switched. """
+		FIELDS = 'name state'
 
 class Game(object):
 	""" Main object for the game mechanics.

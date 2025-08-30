@@ -158,65 +158,6 @@ class TestCurses(unittest.TestCase):
 			if matrix[y-1][x] != ' '
 			]
 
-	def should_toggle_god_settings(self):
-		dungeon = mock_dungeon.build('single mock monster')
-		ui, loop = self._init(dungeon, '~Q~v~c')
-		list(dungeon.process_events(raw=True))
-		loop.redraw()
-		main_display = ui.window.get_calls()
-		godmode_display = main_display + [('addstr', 0, 0, 'Select God option (cv)'), ('refresh',)]
-		self.maxDiff = None
-		self.assertTrue(loop.action()) # ~
-		list(dungeon.process_events(raw=True))
-		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), godmode_display)
-		self.assertFalse(loop.action()) # Q
-		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), main_display)
-		self.assertTrue(loop.action()) # ~
-		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), godmode_display)
-		self.assertFalse(loop.action()) # v
-		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FULL) + [
-			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10  '),
-			('addstr', 24, 12, '       '),
-			('addstr', 24, 20, '       '),
-			('addstr', 24, 28, '      '),
-			('addstr', 24, 34, '[vis]'),
-			('addstr', 24, 39, '      '),
-			('addstr', 24, 77, '[?]'),
-			('refresh',),
-			])
-		self.assertTrue(loop.action()) # ~
-		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FULL) + [
-			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10  '),
-			('addstr', 24, 12, '       '),
-			('addstr', 24, 20, '       '),
-			('addstr', 24, 28, '      '),
-			('addstr', 24, 34, '[vis]'),
-			('addstr', 24, 39, '      '),
-			('addstr', 24, 77, '[?]'),
-			('refresh',),
-			('addstr', 0, 0, 'Select God option (cv)'),
-			('refresh',),
-			])
-		self.assertFalse(loop.action()) # c
-		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.DISPLAYED_LAYOUT_FULL) + [
-			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10  '),
-			('addstr', 24, 12, '       '),
-			('addstr', 24, 20, '       '),
-			('addstr', 24, 28, '      '),
-			('addstr', 24, 34, '[vis]'),
-			('addstr', 24, 39, '[clip]'),
-			('addstr', 24, 77, '[?]'),
-			('refresh',),
-			])
 	def should_descend(self):
 		dungeon = mock_dungeon.build('single mock monster')
 		ui, loop = self._init(dungeon, '>')
