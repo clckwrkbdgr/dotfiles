@@ -403,21 +403,6 @@ class MainGame(ui.MainGame):
 			trace.debug("Unknown key: {0}".format(ch))
 			pass
 
-	@Controls('>')
-	def descend(self):
-		""" Go down. """
-		dungeon = self.data
-		if dungeon.descend(dungeon.get_player()):
-			return to_main_screen(self)
-	@Controls('<')
-	def ascend(self):
-		""" Go up. """
-		dungeon = self.data
-		try:
-			if dungeon.ascend(dungeon.get_player()):
-				return to_main_screen(self)
-		except GameCompleted:
-			return Greetings
 	@Controls('d')
 	def drop(self):
 		""" Drop item. """

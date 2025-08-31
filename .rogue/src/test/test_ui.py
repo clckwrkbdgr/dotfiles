@@ -158,27 +158,6 @@ class TestCurses(unittest.TestCase):
 			if matrix[y-1][x] != ' '
 			]
 
-	def should_descend(self):
-		dungeon = mock_dungeon.build('single mock monster')
-		ui, loop = self._init(dungeon, '>')
-		self.assertEqual(next(_ for _ in dungeon.scene.monsters if _.sprite.sprite == 'M').pos, Point(13, 3))
-		dungeon.jump_to(dungeon.scene.get_player(), Point(10, 1))
-		self.assertTrue(loop.action())
-		self.assertNotEqual(next(_ for _ in dungeon.scene.monsters if _.sprite.sprite == 'M').pos, Point(13, 3), msg=dungeon.scene.tostring(Rect((0, 0), dungeon.scene.strata.size)))
-
-		loop.redraw()
-		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(self.NEXT_DUNGEON) + [
-			('addstr', 0, 0, 'monster! stairs! monster! player V...                                           '),
-			('addstr', 24, 0, 'hp: 10/10  '),
-			('addstr', 24, 12, '       '),
-			('addstr', 24, 20, '       '),
-			('addstr', 24, 28, '      '),
-			('addstr', 24, 34, '     '),
-			('addstr', 24, 39, '      '),
-			('addstr', 24, 77, '[?]'),
-			('refresh',),
-			])
 	def should_drop_items(self):
 		self.maxDiff = None
 		dungeon = mock_dungeon.build('monster and potion')

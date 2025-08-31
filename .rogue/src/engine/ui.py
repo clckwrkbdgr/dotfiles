@@ -210,7 +210,16 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			self.aim = None
 		else:
 			self.aim = self.game.scene.get_global_pos(self.game.scene.get_player())
-
+	@_MainKeys.bind('>')
+	def descend(self):
+		""" Descend/go down. """
+		if not self.aim:
+			self.game.descend(self.game.scene.get_player())
+	@_MainKeys.bind('<')
+	def ascend(self):
+		""" Ascend/go up. """
+		if not self.aim:
+			self.game.ascend(self.game.scene.get_player())
 	@_MainKeys.bind('~')
 	def god_mode(self):
 		""" God mode options. """

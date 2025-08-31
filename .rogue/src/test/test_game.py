@@ -166,6 +166,13 @@ class TestMovement(AbstractTestDungeon):
 		scene.get_player().pos = Point(4, 2)
 		self.assertTrue(scene.can_move(scene.get_player(), scene.get_player().pos + game.Direction.DOWN))
 		scene.get_player().pos = Point(4, 3)
+	def should_leave_scene(self):
+		scene = game.Scene(RNG(0), [mock_dungeon._MockMiniRogueBuilderUnSettler])
+		scene.generate('mini rogue lonely/1')
+		self.assertTrue(scene.one_time())
+		player = mock_dungeon.Player(Point(3, 1))
+		scene.enter_actor(player, None)
+		self.assertEqual(scene.exit_actor(player), player)
 
 class TestAngryMonsters(AbstractTestDungeon):
 	def should_angry_move_to_attack_player(self):

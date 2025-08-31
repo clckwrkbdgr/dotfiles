@@ -211,8 +211,6 @@ class MockGame(engine.Game):
 			'potions lying around 2': _MockBuilder_PotionsLyingAround,
 			'monster and potion': _MockBuilder_MockSettler,
 			}
-		if '/' in scene_id: # To allow re-travelling to the same map type (with different counter).
-			scene_id = scene_id.split('/')[0]
 		return game.Scene(self.rng, [_DATA[scene_id]])
 
 class MockMapping:

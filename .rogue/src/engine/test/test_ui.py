@@ -263,6 +263,36 @@ class TestMainGameControls(MainGameTestCase):
 		self.assertTrue(self.loop.action())
 		self.assertTrue(self.loop.action())
 		self.assertTrue(self.game.scene.get_player().find_item(ScribbledNote))
+	def should_descend_and_ascend(self):
+		self.mock_ui.key('><')
+		self.game.jump_to(self.game.scene.get_player(), Point(4, 6))
+		self.game.scene.get_player().grab(Gold())
+
+		self.assertTrue(self.loop.action())
+		self.mode.draw_map(self.mock_ui)
+		self.assertEqual(self.game.current_scene_id, 'tomb')
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_                              _
+		_                              _
+		_ ###                          _
+		_ #@##                         _
+		_ #...                         _
+		_ ####                         _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertTrue(self.loop.action())
+		self.mode.draw_map(self.mock_ui)
+		self.assertEqual(self.game.current_scene_id, 'floor')
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_                              _
+		_.....                         _
+		_.....                         _
+		_..@..                         _
+		_~....                         _
+		_.....                         _
+		_                              _
+		""").replace('_', ''))
 
 class TestAim(MainGameTestCase):
 	def should_start_aim_mode(self):
@@ -341,11 +371,11 @@ class TestHelpScreen(MainGameTestCase):
 		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
 		hjklyubn - Move around.       _
 		. - Wait in-place / go to sele_
-		> - Descend.                  _
+		< - Ascend/go up.             _
+		> - Descend/go down.          _
 		? - Show this help.           _
 		E - Show equipment.           _
 		Q - Suicide (quit without savi_
-		S - Save and quit.            _
 		""").replace('_', ''))
 		self.assertFalse(self.loop.action())
 

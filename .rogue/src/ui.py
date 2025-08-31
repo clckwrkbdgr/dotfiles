@@ -77,7 +77,7 @@ class MainGame(ui.MainGame):
 		if event.actor != self.game.scene.get_player():
 			return '{0}...'.format(event.actor.name)
 	@Events.on(engine.Events.Descend)
-	def on_descending(self, event):
+	def on_descending(self, event): # pragma: no cover
 		return '{0} V...'.format(event.actor.name)
 	@Events.on(engine.Events.BumpIntoTerrain)
 	def on_bumping(self, event): # pragma: no cover
@@ -102,11 +102,6 @@ class MainGame(ui.MainGame):
 	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	@ui.MainGame.Keys.bind('>')
-	def descend(self):
-		""" Descend. """
-		if not self.aim:
-			self.game.descend(self.game.scene.get_player())
 	@ui.MainGame.Keys.bind('d')
 	def drop(self):
 		""" Drop item. """

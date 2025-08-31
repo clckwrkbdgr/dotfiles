@@ -175,7 +175,7 @@ class Game(object):
 		if scene_id not in self.scenes:
 			self.scenes[scene_id] = self.make_scene(scene_id)
 			self.scenes[scene_id].generate(scene_id)
-		if self.current_scene_id and self.scene.one_time():
+		if self.current_scene_id and self.scene.one_time(): # pragma: no cover -- TODO
 			del self.scenes[self.current_scene_id]
 			del self.visions[self.current_scene_id]
 		self.current_scene_id = scene_id
