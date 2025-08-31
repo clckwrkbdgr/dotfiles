@@ -7,13 +7,31 @@ from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
 from . import dungeon, builders
 from .. import engine
-from ..engine import ui, actors
+from ..engine import ui, terrain, actors
+
+class EndlessFloor(terrain.Terrain):
+	_sprite = ui.Sprite('.', None)
+	_name = '.'
+	_passable = True
+class EndlessWall(terrain.Terrain):
+	_sprite = ui.Sprite('#', None)
+	_name = '#'
+	_passable = False
+class EndlessVoid(terrain.Terrain):
+	_sprite = ui.Sprite(' ', None)
+	_name = ' '
+	_passable = False
 
 class Player(actors.Monster):
 	_sprite = ui.Sprite("@", None)
 
 class Scene(dungeon.Scene):
-	BUILDERS = builders.Builders
+	BUILDERS = lambda: builders.Builders([FieldOfTanks, EmptySquare, FilledWithGarbage],
+					 void=EndlessVoid,
+					 floor=EndlessFloor,
+					 wall=EndlessWall,
+					 start=lambda:'start'
+					 )
 
 class Dungeon(engine.Game):
 	def make_scene(self, scene_id):

@@ -2,8 +2,7 @@ from clckwrkbdgr.math import Point, Size, Matrix, Rect
 from clckwrkbdgr import unittest
 from clckwrkbdgr.collections import dotdict
 from ..dungeon import Scene
-from ..builders import EndlessFloor, EndlessWall
-from ...engine import mock
+from ...engine import mock, terrain, ui
 
 class MockScene(Scene):
 	BLOCK_SIZE = Size(3, 3)
@@ -19,19 +18,25 @@ def make_scene(scene_id):
 		if scene_id == 3:
 			return MockScene(MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]] + [[]]*4 + [[(2, 2)]]))
 
+class MockVoid(terrain.Terrain):
+	_sprite = ui.Sprite('_', None)
+class MockFloor(terrain.Terrain):
+	_sprite = ui.Sprite('.', None)
+class MockWall(terrain.Terrain):
+	_sprite = ui.Sprite('#', None)
+
 class MockBuilder(object):
 	def __init__(self, rogue_pos=None, walls=None):
-		self.rogue_pos = rogue_pos or (0, 0)
+		self._start_pos = rogue_pos or (0, 0)
 		self.walls = walls or []
+		self.void = MockVoid()
 	def build_block(self, block):
-		block.clear(EndlessFloor())
+		block.clear(MockFloor())
 		if not self.walls:
 			return
 		walls = self.walls.pop(0)
 		for wall in walls:
-			block.set_cell(wall, EndlessWall())
-	def place_rogue(self, terrain):
-		return self.rogue_pos
+			block.set_cell(wall, MockWall())
 
 class TestDungeon(unittest.TestCase):
 	VIEW_RECT = Rect((-4, -4), (9, 9))
@@ -64,7 +69,7 @@ class TestDungeon(unittest.TestCase):
 		_........
 		_........
 		_........
-		""").replace('_', ' '))
+		"""))
 
 		scene.get_player().pos = Point(1, 2)
 		scene.recalibrate(scene.get_player().pos)
@@ -79,7 +84,7 @@ class TestDungeon(unittest.TestCase):
 		_....@...
 		_........
 		_........
-		""").replace('_', ' '))
+		"""))
 
 		scene.get_player().pos = Point(1, 3)
 		scene.recalibrate(scene.get_player().pos)
@@ -94,4 +99,4 @@ class TestDungeon(unittest.TestCase):
 		_........
 		_....@...
 		_........
-		""").replace('_', ' '))
+		"""))

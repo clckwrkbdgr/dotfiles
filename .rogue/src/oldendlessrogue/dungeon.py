@@ -1,9 +1,8 @@
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.math.grid import EndlessMatrix
-from . import builders
 from .. import engine
-from ..engine import actors, scene
-from ..engine import ui, auto
+from ..engine import scene
+from ..engine import auto
 
 class Scene(scene.Scene):
 	BLOCK_SIZE = Size(32, 32)
@@ -13,8 +12,8 @@ class Scene(scene.Scene):
 		self.monsters = []
 		self.builder = self.BUILDERS()
 	def generate(self, id):
-		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block, default_value=builders.EndlessVoid())
-		self._player_pos = Point(self.builder.place_rogue(self.terrain))
+		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block, default_value=self.builder.void)
+		self._player_pos = self.builder._start_pos
 	def enter_actor(self, actor, location):
 		actor.pos = self._player_pos
 		self.monsters.append(actor)
@@ -26,7 +25,7 @@ class Scene(scene.Scene):
 	def recalibrate(self, vantage_point, marging=None):
 		self.terrain.recalibrate(vantage_point)
 	def get_cell_info(self, pos):
-		cell = self.terrain.cell(pos) or builders.EndlessVoid()
+		cell = self.terrain.cell(pos) or self.builder.void
 		return cell, [], [], list(self.iter_actors_at(pos))
 	def iter_actors_at(self, pos, with_player=False):
 		for monster in self.monsters:

@@ -4,21 +4,6 @@ from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr import utils
 from clckwrkbdgr.collections import AutoRegistry
 from ..engine import builders
-from ..engine import terrain
-from ..engine import ui
-
-class EndlessFloor(terrain.Terrain):
-	_sprite = ui.Sprite('.', None)
-	_name = '.'
-	_passable = True
-class EndlessWall(terrain.Terrain):
-	_sprite = ui.Sprite('#', None)
-	_name = '#'
-	_passable = False
-class EndlessVoid(terrain.Terrain):
-	_sprite = ui.Sprite(' ', None)
-	_name = ' '
-	_passable = False
 
 def place_square_tank(grid, topleft_pos, size):
 	size = Size(size)
@@ -50,9 +35,8 @@ def place_broken_tank(grid, topleft_pos, size):
 				grid.set_cell(topleft_pos + (x, y), 'wall')
 
 class Builder(builders.Builder):
-	class Mapping:
-		floor = EndlessFloor()
-		wall = EndlessWall()
+	def generate_appliances(self):
+		yield Point(self.grid.size.width // 2, self.grid.size.height // 2), 'start'
 
 class FilledWithGarbage(Builder):
 	def fill_grid(self, grid):
@@ -99,10 +83,15 @@ class FieldOfTanks(Builder):
 				place_form(grid, tank_topleft, tank_size)
 
 class Builders:
+	def __init__(self, builders, **mapping):
+		self.builder_types = builders
+		self.void = mapping['void']
+		self.mapping = mapping
 	def build_block(self, block):
-		builder_type = random.choice(utils.all_subclasses(Builder))
+		builder_type = random.choice(self.builder_types)
 		builder = builder_type(random, block)
+		builder.map_key(**(self.mapping))
 		builder.generate()
 		builder.make_grid()
-	def place_rogue(self, terrain):
-		return Point(terrain.block_size.width // 2, terrain.block_size.height // 2)
+		appliances = list(builder.make_appliances())
+		self._start_pos = next(_.pos for _ in appliances if _.obj == 'start')

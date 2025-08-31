@@ -2,23 +2,38 @@ from clckwrkbdgr.math import Point, Size, Matrix
 from clckwrkbdgr import unittest
 from ..dungeon import EndlessMatrix as Strata
 from ..builders import *
+from ...engine import ui, terrain
 
-class MockBuilder:
-	def build_block(self, block):
-		pass
+class MockVoid(terrain.Terrain):
+	_sprite = ui.Sprite(' ', None)
+class MockFloor(terrain.Terrain):
+	_sprite = ui.Sprite('.', None)
+class MockWall(terrain.Terrain):
+	_sprite = ui.Sprite('#', None)
 
 class TestMainBuilder(unittest.TestCase):
 	@unittest.mock.patch('random.choice', side_effect=[FilledWithGarbage])
 	@unittest.mock.patch('random.randrange', side_effect=[0, 1, 1, 0, 2, 2])
 	def should_build_block(self, random_randrange, random_choice):
-		block = Matrix((3, 3), '.')
-		builder = Builders()
+		block = Matrix((3, 3), MockVoid())
+		builder = Builders(utils.all_subclasses(Builder),
+					 void=MockVoid(),
+					 floor=MockFloor(),
+					 wall=MockWall(),
+					 start=lambda:'start'
+					 )
 		builder.build_block(block)
 		self.assertEqual(block.tostring(lambda c: c.sprite.sprite), '.#.\n#..\n..#\n')
 	def should_place_rogue(self):
-		terrain = Strata(block_size=(3, 3), builder=MockBuilder().build_block, default_value=EndlessVoid())
-		builder = Builders()
-		pos = builder.place_rogue(terrain)
+		block = Matrix((3, 3), '.')
+		builder = Builders(utils.all_subclasses(Builder),
+					 void=MockVoid(),
+					 floor=MockFloor(),
+					 wall=MockWall(),
+					 start=lambda:'start'
+					 )
+		builder.build_block(block)
+		pos = builder._start_pos
 		self.assertEqual(pos, (1, 1))
 
 class TestBuildings(unittest.TestCase):
@@ -67,6 +82,8 @@ class TestBuilders(unittest.TestCase):
 		field = Matrix((3, 3), '.')
 		builder = FilledWithGarbage(random, field)
 		builder.generate()
+		builder.map_key(floor=MockFloor())
+		builder.map_key(wall=MockWall())
 		builder.make_grid()
 		self.assertEqual(field.tostring(lambda c: c.sprite.sprite), '.#.\n#..\n..#\n')
 	@unittest.mock.patch('random.randrange', side_effect=[1, 1])
@@ -74,6 +91,8 @@ class TestBuilders(unittest.TestCase):
 		field = Matrix((3, 3), '.')
 		builder = EmptySquare(random, field)
 		builder.generate()
+		builder.map_key(floor=MockFloor())
+		builder.map_key(wall=MockWall())
 		builder.make_grid()
 		self.assertEqual(field.tostring(lambda c: c.sprite.sprite), '...\n.#.\n...\n')
 	@unittest.mock.patch('random.choice', side_effect=[place_square_tank]*4)
@@ -82,6 +101,8 @@ class TestBuilders(unittest.TestCase):
 		field = Matrix((13, 13), '.')
 		builder = FieldOfTanks(random, field)
 		builder.generate()
+		builder.map_key(floor=MockFloor())
+		builder.map_key(wall=MockWall())
 		builder.make_grid()
 		self.assertEqual(field.tostring(lambda c: c.sprite.sprite), unittest.dedent("""\
 		.............
