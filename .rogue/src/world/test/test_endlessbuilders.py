@@ -1,7 +1,6 @@
 from clckwrkbdgr.math import Point, Size, Matrix
 from clckwrkbdgr import unittest
-from ..dungeon import EndlessMatrix as Strata
-from ..builders import *
+from ..endlessbuilders import *
 from ...engine import ui, terrain
 
 class MockVoid(terrain.Terrain):

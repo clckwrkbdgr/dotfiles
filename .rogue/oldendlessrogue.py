@@ -5,9 +5,9 @@ from clckwrkbdgr import xdg, fs
 from clckwrkbdgr import logging
 from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
-from . import dungeon, builders
-from .. import engine
-from ..engine import ui, terrain, actors
+from src.world import endlessdungeon, endlessbuilders
+from src import engine
+from src.engine import ui, terrain, actors
 
 class EndlessFloor(terrain.Terrain):
 	_sprite = ui.Sprite('.', None)
@@ -25,8 +25,8 @@ class EndlessVoid(terrain.Terrain):
 class Player(actors.Monster):
 	_sprite = ui.Sprite("@", None)
 
-class Scene(dungeon.Scene):
-	BUILDERS = lambda: builders.Builders([FieldOfTanks, EmptySquare, FilledWithGarbage],
+class Scene(endlessdungeon.Scene):
+	BUILDERS = lambda: endlessbuilders.Builders([FieldOfTanks, EmptySquare, FilledWithGarbage],
 					 void=EndlessVoid,
 					 floor=EndlessFloor,
 					 wall=EndlessWall,

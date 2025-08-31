@@ -1,7 +1,7 @@
 from clckwrkbdgr.math import Point, Size, Matrix, Rect
 from clckwrkbdgr import unittest
 from clckwrkbdgr.collections import dotdict
-from ..dungeon import Scene
+from ..endlessdungeon import Scene
 from ...engine import mock, terrain, ui
 
 class MockScene(Scene):
