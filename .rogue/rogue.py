@@ -404,6 +404,7 @@ events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
 events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')
 events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(_.color, _.item))
 events.Events.on(Events.InventoryIsEmpty)(lambda _:'Inventory is empty.')
+events.Events.on(Events.NotConsumable)(lambda _:'Cannot eat {0}.'.format(_.item.name))
 events.Events.on(Events.DropItem)(lambda _:'{0} drop {1}.'.format(_.actor.name.title(), _.item.name))
 events.Events.on(Events.BumpIntoTerrain)(lambda _:None)
 events.Events.on(Events.Move)(lambda _:None)
@@ -454,9 +455,6 @@ class Game(engine.Game):
 		return Scene()
 	def make_player(self):
 		return Player(None)
-	def drop_item(self, actor, item): # FIXME needed only for adding coords to items.
-		item.pos = self.scene.get_global_pos(actor) # Eh.
-		super(Game, self).drop_item(actor, item)
 
 class Vision(vision.OmniVision):
 	def __init__(self, scene):
@@ -529,7 +527,7 @@ class Scene(scene.Scene):
 		dest_field_data.monsters.remove(actor)
 	def drop_item(self, item_at_pos):
 		coord = NestedGrid.Coord.from_global(item_at_pos.pos, self.world)
-		item_at_pos = coord.values[-1]
+		item_at_pos.pos = coord.values[-1]
 		self.world.get_data(coord)[-1].items.append(item_at_pos)
 	def take_item(self, item_at_pos):
 		coord = NestedGrid.Coord.from_global(item_at_pos.pos, self.world)

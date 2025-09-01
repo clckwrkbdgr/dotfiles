@@ -475,6 +475,12 @@ class Game(object):
 		Produces events.
 		"""
 		item = actor.drop(item)
+
+		# FIXME this effectively overrides creation of ItemAtPos in Actor.drop(),
+		# but we need to ensure that item's pos is global and not just matches
+		# actor's pos (for cases where actor's pos is a local pos on some sub-grid.
+		item.pos = self.scene.get_global_pos(actor)
+
 		self.scene.drop_item(item)
 		self.fire_event(Events.DropItem(actor, item.item))
 		actor.spend_action_points()
