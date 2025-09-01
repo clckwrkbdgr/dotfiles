@@ -390,7 +390,6 @@ class TooMuchQuests(events.Event): FIELDS = ''
 class ChatThanks(events.Event): FIELDS = ''
 class ChatComeLater(events.Event): FIELDS = ''
 class ChatQuestReminder(events.Event): FIELDS = 'color item'
-class NothingToDrop(events.Event): FIELDS = ''
 
 events.Events.on(Events.NothingToPickUp)(lambda _:'Nothing to pick up here.')
 events.Events.on(NoOneToChat)(lambda _:'No one to chat with.')
@@ -404,7 +403,7 @@ events.Events.on(Events.WelcomeBack)(lambda _:'Welcome back!')
 events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
 events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')
 events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(_.color, _.item))
-events.Events.on(NothingToDrop)(lambda _:'Nothing to drop.')
+events.Events.on(Events.InventoryIsEmpty)(lambda _:'Inventory is empty.')
 events.Events.on(Events.DropItem)(lambda _:'{0} drop {1}.'.format(_.actor.name.title(), _.item.name))
 events.Events.on(Events.BumpIntoTerrain)(lambda _:None)
 events.Events.on(Events.Move)(lambda _:None)
@@ -455,6 +454,9 @@ class Game(engine.Game):
 		return Scene()
 	def make_player(self):
 		return Player(None)
+	def drop_item(self, actor, item): # FIXME needed only for adding coords to items.
+		item.pos = self.scene.get_global_pos(actor) # Eh.
+		super(Game, self).drop_item(actor, item)
 
 class Vision(vision.OmniVision):
 	def __init__(self, scene):
@@ -526,8 +528,8 @@ class Scene(scene.Scene):
 			yield item.item
 		dest_field_data.monsters.remove(actor)
 	def drop_item(self, item_at_pos):
-		coord = item_at_pos.item.coord # Eh.
-		delattr(item_at_pos.item, 'coord') # Eh.
+		coord = NestedGrid.Coord.from_global(item_at_pos.pos, self.world)
+		item_at_pos = coord.values[-1]
 		self.world.get_data(coord)[-1].items.append(item_at_pos)
 	def take_item(self, item_at_pos):
 		coord = NestedGrid.Coord.from_global(item_at_pos.pos, self.world)
@@ -905,22 +907,6 @@ class MainGameMode(ui.MainGame):
 					]
 			quest_log = QuestLog(questing)
 			return quest_log
-	@ui.MainGame.Keys.bind('d')
-	def drop_item(self):
-		game = self.game
-		if True:
-			if not game.scene.get_player().inventory:
-				self.game.fire_event(NothingToDrop())
-			else:
-				def _on_select_item(menu_choice):
-					menu_choice = game.scene.get_player().inventory[menu_choice] # Eh.
-					menu_choice.coord = game.scene.get_player_coord() # Eh.
-					game.drop_item(game.scene.get_player(), menu_choice)
-				return ui.Inventory(
-						game.scene.get_player(),
-						caption="Select item to drop (a-z/ESC):",
-						on_select=_on_select_item
-					)
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()
 class DirectionDialogMode(clckwrkbdgr.tui.Mode):

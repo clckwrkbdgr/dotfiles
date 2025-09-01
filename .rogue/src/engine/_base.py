@@ -112,6 +112,9 @@ class Events:
 	class GodModeSwitched(events.Event):
 		""" God Mode state has been switched. """
 		FIELDS = 'name state'
+	class InventoryIsEmpty(events.Event):
+		""" No items to perform action for/on. """
+		FIELDS = ''
 
 class Game(object):
 	""" Main object for the game mechanics.

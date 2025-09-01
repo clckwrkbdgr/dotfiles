@@ -231,8 +231,7 @@ events.Event.on(NoSuchItem)(lambda event:"No such item '{char}'.".format(char=ev
 events.Event.on(Events.InventoryIsFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
 events.Event.on(Events.GrabItem)(lambda event: "Grabbed {item}.".format(who=event.who.name, item=event.item.name))
 events.Event.on(Events.NothingToPickUp)(lambda event:"There is nothing here to pick up.")
-class InventoryEmpty(events.Event): FIELDS = ''
-events.Event.on(InventoryEmpty)(lambda event:"Inventory is empty.")
+events.Event.on(Events.InventoryIsEmpty)(lambda event:"Inventory is empty.")
 events.Event.on(Events.DropItem)(lambda event:"Dropped {item}.".format(Who=event.who.name.title(), item=event.item.name))
 class DropsItem(events.Event): FIELDS = 'Who'
 events.Event.on(DropsItem)(lambda event:"{Who} drops {item}.".format(Who=event.Who))
@@ -403,14 +402,6 @@ class MainGame(ui.MainGame):
 			trace.debug("Unknown key: {0}".format(ch))
 			pass
 
-	@Controls('d')
-	def drop(self):
-		""" Drop item. """
-		dungeon = self.data
-		if not dungeon.get_player().inventory:
-			dungeon.fire_event(InventoryEmpty())
-		else:
-			return QuickDropItem(to_main_screen(self), self.data)
 	@Controls('e')
 	def eat(self):
 		""" Consume item. """
@@ -451,12 +442,6 @@ class ConsumeItem:
 	def item_action(self, index):
 		item = self.data.get_player().inventory[index]
 		self.data.consume_item(self.data.get_player(), item)
-
-class DropItem:
-	def prompt(self): return "Which item to drop?"
-	def item_action(self, index):
-		item = self.data.get_player().inventory[index]
-		self.data.drop_item(self.data.get_player(), item)
 
 class WieldItem:
 	def prompt(self): return "Which item to wield?"

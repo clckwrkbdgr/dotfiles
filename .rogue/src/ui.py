@@ -83,11 +83,14 @@ class MainGame(ui.MainGame):
 	def on_bumping(self, event): # pragma: no cover
 		if event.actor != self.game.scene.get_player():
 			return '{0} bumps.'.format(event.actor.name)
+	@Events.on(engine.Events.InventoryIsEmpty)
+	def on_empty_inventory(self, event): # pragma: no cover
+		return ''
 	@Events.on(engine.Events.GrabItem)
 	def on_grabbing(self, event):
 		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(engine.Events.DropItem)
-	def on_dropping(self, event):
+	def on_dropping(self, event): # pragma: no cover
 		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(engine.Events.ConsumeItem)
 	def on_consuming(self, event):
@@ -102,14 +105,6 @@ class MainGame(ui.MainGame):
 	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	@ui.MainGame.Keys.bind('d')
-	def drop(self):
-		""" Drop item. """
-		return ui.Inventory(
-				self.game.scene.get_player(),
-				caption = "Select item to drop:",
-				on_select = self.game.drop_item,
-				)
 	@ui.MainGame.Keys.bind('e')
 	def consume(self):
 		""" Consume item. """

@@ -229,6 +229,17 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	def show_inventory(self):
 		""" Show inventory. """
 		return Inventory(self.game.scene.get_player())
+	@_MainKeys.bind('d')
+	def drop_item(self):
+		""" Drop item. """
+		if not self.game.scene.get_player().inventory:
+			self.game.fire_event(Events.InventoryIsEmpty())
+			return
+		return Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to drop:",
+				on_select = self.game.drop_item
+			)
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """

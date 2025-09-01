@@ -4,7 +4,7 @@ from clckwrkbdgr.math.grid import Matrix
 from clckwrkbdgr.math import Point, Size, Rect
 import clckwrkbdgr.tui
 from .. import ui
-from .. import Game
+from .. import Game, Events
 from clckwrkbdgr.pcg import RNG
 from ..mock import *
 
@@ -467,3 +467,34 @@ class TestInventory(MainGameTestCase):
 		_                              _
 		""").replace('_', ''))
 		self.assertFalse(self.loop.action())
+	def should_drop_from_inventory(self):
+		self.mock_ui.key('da')
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select item to drop:          _
+		_[a] ( - dagger                _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertFalse(self.loop.action())
+		self.assertFalse(self.game.scene.get_player().inventory)
+	def should_cancel_action_from_inventory(self):
+		self.mock_ui.key('d' + chr(clckwrkbdgr.tui.Key.ESCAPE))
+		self.assertTrue(self.loop.action())
+		self.assertFalse(self.loop.action())
+		self.assertTrue(self.game.scene.get_player().inventory)
+	def should_not_drop_when_inventory_is_empty(self):
+		self.mock_ui.key('d')
+		self.game.scene.get_player().drop(
+				self.game.scene.get_player().inventory[0]
+				)
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.events, [
+			Events.Welcome(),
+			Events.InventoryIsEmpty(),
+			])
