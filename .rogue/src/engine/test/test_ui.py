@@ -498,3 +498,38 @@ class TestInventory(MainGameTestCase):
 			Events.Welcome(),
 			Events.InventoryIsEmpty(),
 			])
+	def should_consume_items(self):
+		self.mock_ui.key('eab')
+		self.game.scene.get_player().grab(Potion())
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select item to consume:       _
+		_[a] ( - dagger                _
+		_[b] ! - potion                _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.events, [
+			Events.Welcome(),
+			Events.NotConsumable(self.game.scene.get_player().inventory[0]),
+			])
+		self.assertEqual(len(self.game.scene.get_player().inventory), 2)
+
+		list(self.game.process_events(raw=True))
+		self.assertFalse(self.loop.action())
+		self.assertEqual(len(self.game.scene.get_player().inventory), 1)
+	def should_not_consume_when_inventory_is_empty(self):
+		self.mock_ui.key('e')
+		self.game.scene.get_player().drop(
+				self.game.scene.get_player().inventory[0]
+				)
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.events, [
+			Events.Welcome(),
+			Events.InventoryIsEmpty(),
+			])

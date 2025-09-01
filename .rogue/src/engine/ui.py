@@ -240,6 +240,17 @@ class MainGame(clckwrkbdgr.tui.Mode):
 				caption = "Select item to drop:",
 				on_select = self.game.drop_item
 			)
+	@_MainKeys.bind('e')
+	def consume(self):
+		""" Consume item. """
+		if not self.game.scene.get_player().inventory:
+			self.game.fire_event(Events.InventoryIsEmpty())
+			return
+		return Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to consume:",
+				on_select = self.game.consume_item,
+				)
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """
@@ -335,7 +346,8 @@ class Inventory(clckwrkbdgr.tui.Mode):
 		if index >= len(self.inventory):
 			self.prompt = "No such item ({0})".format(param)
 			return None
-		self.on_select(self.actor, self.inventory[index])
+		if not self.on_select(self.actor, self.inventory[index]):
+			return False
 		return True
 	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self):

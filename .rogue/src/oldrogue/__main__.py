@@ -402,14 +402,6 @@ class MainGame(ui.MainGame):
 			trace.debug("Unknown key: {0}".format(ch))
 			pass
 
-	@Controls('e')
-	def eat(self):
-		""" Consume item. """
-		dungeon = self.data
-		if not dungeon.get_player().inventory:
-			dungeon.fire_event(InventoryEmpty())
-		else:
-			return QuickConsumeItem(to_main_screen(self), self.data)
 	@Controls('w')
 	def wield(self):
 		""" Wield item. """
@@ -436,12 +428,6 @@ class MainGame(ui.MainGame):
 		""" Take item off. """
 		dungeon = self.data
 		dungeon.take_off_item(dungeon.get_player())
-
-class ConsumeItem:
-	def prompt(self): return "Which item to consume?"
-	def item_action(self, index):
-		item = self.data.get_player().inventory[index]
-		self.data.consume_item(self.data.get_player(), item)
 
 class WieldItem:
 	def prompt(self): return "Which item to wield?"

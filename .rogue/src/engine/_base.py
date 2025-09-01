@@ -478,6 +478,7 @@ class Game(object):
 		self.scene.drop_item(item)
 		self.fire_event(Events.DropItem(actor, item.item))
 		actor.spend_action_points()
+		return True
 	def suicide(self, actor):
 		# No spending action points, because actor will be completely removed.
 		self.affect_health(actor, -actor.hp)
@@ -529,6 +530,7 @@ class Game(object):
 			actor.wield(item)
 		actor.spend_action_points()
 		self.fire_event(Events.Wield(actor, item))
+		return True
 	def unwield_item(self, actor):
 		""" Actor unequips item and puts back to the inventory.
 		Produces events.
@@ -539,18 +541,20 @@ class Game(object):
 			self.fire_event(Events.Unwield(actor, item))
 		else:
 			self.fire_event(Events.NotWielding())
+		return True
 	def wear_item(self, actor, item):
 		try:
 			actor.wear(item)
 		except actor.ItemNotFit as e:
 			self.fire_event(Events.NotWearable(item))
-			return
+			return False
 		except actor.SlotIsTaken:
 			old_item = actor.take_off()
 			self.fire_event(Events.TakeOff(actor, old_item))
 			actor.wear(item)
 		actor.spend_action_points()
 		self.fire_event(Events.Wear(actor, item))
+		return True
 	def take_off_item(self, actor):
 		if not actor.wearing:
 			self.fire_event(Events.NotWearing())
@@ -558,6 +562,7 @@ class Game(object):
 			item = actor.take_off()
 			self.fire_event(Events.TakeOff(actor, item))
 			actor.spend_action_points()
+		return True
 	def _use_passage(self, actor, level_passage, travel_event):
 		""" Use level passage object. """
 		try:

@@ -67,7 +67,7 @@ class MainGame(ui.MainGame):
 	def on_attack(self, event): # pragma: no cover
 		return '{0} x> {1}.'.format(event.actor.name, event.target.name)
 	@Events.on(engine.Events.Health)
-	def on_health_change(self, event):
+	def on_health_change(self, event): # pragma: no cover
 		return '{0}{1:+}hp.'.format(event.target.name, event.diff)
 	@Events.on(engine.Events.Death)
 	def on_death(self, event): # pragma: no cover
@@ -87,16 +87,16 @@ class MainGame(ui.MainGame):
 	def on_empty_inventory(self, event): # pragma: no cover
 		return ''
 	@Events.on(engine.Events.GrabItem)
-	def on_grabbing(self, event):
+	def on_grabbing(self, event): # pragma: no cover
 		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(engine.Events.DropItem)
 	def on_dropping(self, event): # pragma: no cover
 		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(engine.Events.ConsumeItem)
-	def on_consuming(self, event):
+	def on_consuming(self, event): # pragma: no cover
 		return '{0} <~ {1}.'.format(event.actor.name, event.item.name)
 	@Events.on(engine.Events.NotConsumable)
-	def on_not_consuming(self, event):
+	def on_not_consuming(self, event): # pragma: no cover
 		return 'X {0}.'.format(event.item.name)
 	@Events.on(engine.Events.Wield)
 	def on_equipping(self, event):
@@ -105,14 +105,6 @@ class MainGame(ui.MainGame):
 	def on_unequipping(self, event):
 		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
-	@ui.MainGame.Keys.bind('e')
-	def consume(self):
-		""" Consume item. """
-		return ui.Inventory(
-				self.game.scene.get_player(),
-				caption = "Select item to consume:",
-				on_select = self.game.consume_item,
-				)
 	@ui.MainGame.Keys.bind('E')
 	def show_equipment(self):
 		""" Show equipment. """

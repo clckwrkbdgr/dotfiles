@@ -18,9 +18,6 @@ class Potion(items.Item):
 class HealingPotion(items.Item, items.Consumable):
 	_name = 'healing potion'
 	_sprite = Sprite('!', None)
-	def consume(self, target):
-		diff = target.affect_health(+5)
-		return [engine.Events.Health(target, diff)]
 
 class Money(items.Item):
 	_name = 'money'
