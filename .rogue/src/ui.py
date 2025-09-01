@@ -105,63 +105,23 @@ class MainGame(ui.MainGame):
 	@ui.MainGame.Keys.bind('d')
 	def drop(self):
 		""" Drop item. """
-		return DropSelection(self.game)
+		return ui.Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to drop:",
+				on_select = self.game.drop_item,
+				)
 	@ui.MainGame.Keys.bind('e')
 	def consume(self):
 		""" Consume item. """
-		return ConsumeSelection(self.game)
-	@ui.MainGame.Keys.bind('i')
-	def show_inventory(self):
-		""" Show inventory. """
-		return Inventory(self.game)
+		return ui.Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to consume:",
+				on_select = self.game.consume_item,
+				)
 	@ui.MainGame.Keys.bind('E')
 	def show_equipment(self):
 		""" Show equipment. """
 		return Equipment(self.game)
-
-InventoryKeys = Keymapping()
-class Inventory(clckwrkbdgr.tui.Mode):
-	""" Inventory menu.
-	Supports prompting message.
-	Initial prompt can be set via INITIAL_PROMPT.
-	"""
-	KEYMAPPING = InventoryKeys
-	INITIAL_PROMPT = None
-	def __init__(self, game):
-		self.game = game
-		self.prompt = self.INITIAL_PROMPT
-	def redraw(self, ui):
-		game = self.game
-		inventory = game.scene.get_player().inventory
-		if self.prompt:
-			ui.print_line(0, 0, self.prompt)
-		if not inventory:
-			ui.print_line(1, 0, '(Empty)')
-		else:
-			for row, item in enumerate(inventory):
-				ui.print_line(row + 1, 0, '{0} - {1}'.format(
-					chr(ord('a') + row),
-					item.name,
-					))
-	def action(self, done):
-		return not done
-	def _use(self, monster, item): # pragma: no cover
-		return False
-	@InventoryKeys.bind(list('abcdefghijlkmnopqrstuvwxyz'), param=lambda key:str(key))
-	def select(self, param):
-		""" Select item and close inventory. """
-		if not self.game.scene.get_player().inventory:
-			return None
-		index = ord(param) - ord('a')
-		if index >= len(self.game.scene.get_player().inventory):
-			self.prompt = "No such item ({0})".format(param)
-			return None
-		if self._use(self.game.scene.get_player(), self.game.scene.get_player().inventory[index]):
-			return True
-	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
-	def close(self):
-		""" Close by Escape. """
-		return True
 
 EquipmentKeys = Keymapping()
 class Equipment(clckwrkbdgr.tui.Mode):
@@ -186,30 +146,12 @@ class Equipment(clckwrkbdgr.tui.Mode):
 			self.game.unwield_item(self.game.scene.get_player())
 			return True
 		self.done = True
-		return WieldSelection(self.game)
+		return ui.Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to wield:",
+				on_select = self.game.wield_item,
+				)
 	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self):
 		""" Close by Escape. """
-		return True
-
-class ConsumeSelection(Inventory):
-	""" Select item to consume from inventory. """
-	INITIAL_PROMPT = "Select item to consume:"
-	def _use(self, monster, item):
-		self.game.consume_item(monster, item)
-		return True
-
-class DropSelection(Inventory):
-	""" Select item to drop from inventory. """
-	INITIAL_PROMPT = "Select item to drop:"
-	def _use(self, monster, item):
-		""" Select item and close inventory. """
-		self.game.drop_item(monster, item)
-		return True
-
-class WieldSelection(Inventory):
-	""" Select item to wield from inventory. """
-	INITIAL_PROMPT = "Select item to wield:"
-	def _use(self, monster, item):
-		self.game.wield_item(monster, item)
 		return True

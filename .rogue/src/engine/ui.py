@@ -1,3 +1,4 @@
+import string
 import logging
 Log = logging.getLogger('rogue')
 from collections import namedtuple
@@ -224,6 +225,10 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	def god_mode(self):
 		""" God mode options. """
 		return GodModeMenu(self.game)
+	@_MainKeys.bind('i')
+	def show_inventory(self):
+		""" Show inventory. """
+		return Inventory(self.game.scene.get_player())
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """
@@ -267,3 +272,61 @@ class GodModeMenu(clckwrkbdgr.tui.Mode):
 		""" Walk through walls. """
 		self.game.god.toggle_noclip()
 		self.game.fire_event(Events.GodModeSwitched('noclip', self.game.god.noclip))
+
+InventoryKeys = clckwrkbdgr.tui.Keymapping()
+class Inventory(clckwrkbdgr.tui.Mode):
+	""" Inventory menu.
+	Supports prompting message.
+	"""
+	TRANSPARENT = False
+	KEYMAPPING = InventoryKeys
+	def __init__(self, actor, caption=None, on_select=None):
+		""" Shows actor's inventory with optional prompt
+		and callable action upon selecting an item.
+		By default pressing any key will close the inventory view.
+		Selector should accept params: (actor, item).
+		"""
+		self.actor = actor
+		self.inventory = actor.inventory
+		self.prompt = caption or "Inventory:"
+		self.on_select = on_select
+	def redraw(self, ui):
+		if self.prompt:
+			ui.print_line(0, 0, self.prompt)
+		if not self.inventory:
+			ui.print_line(1, 0, '(Empty)')
+			return
+		accumulated = []
+		for shortcut, item in zip(string.ascii_lowercase, self.inventory):
+			for other in accumulated:
+				if other[1].name == item.name:
+					other[2] += 1
+					break
+			else:
+				accumulated.append([shortcut, item, 1])
+		for index, (shortcut, item, amount) in enumerate(accumulated):
+			column = index // 20
+			index = index % 20
+			ui.print_line(index + 1, column * 40 + 0, '[{0}] '.format(shortcut))
+			ui.print_line(index + 1, column * 40 + 4, item.sprite.sprite, item.sprite.color)
+			if amount > 1:
+				ui.print_line(index + 1, column * 40 + 6, '- {0} (x{1})'.format(item.name, amount))
+			else:
+				ui.print_line(index + 1, column * 40 + 6, '- {0}'.format(item.name))
+	def action(self, done):
+		return not done
+	@InventoryKeys.bind(list(string.ascii_lowercase), param=lambda key:str(key))
+	def select(self, param):
+		""" Select item and close inventory. """
+		if not self.on_select:
+			return True
+		index = ord(param) - ord('a')
+		if index >= len(self.inventory):
+			self.prompt = "No such item ({0})".format(param)
+			return None
+		self.on_select(self.actor, self.inventory[index])
+		return True
+	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
+	def close(self):
+		""" Close by Escape. """
+		return True

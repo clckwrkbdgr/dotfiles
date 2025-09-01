@@ -445,10 +445,6 @@ class MainGame(ui.MainGame):
 		""" Take item off. """
 		dungeon = self.data
 		dungeon.take_off_item(dungeon.get_player())
-	@Controls('i')
-	def inventory(self):
-		""" Toggle inventory. """
-		return Inventory
 
 class ConsumeItem:
 	def prompt(self): return "Which item to consume?"
@@ -481,62 +477,31 @@ class QuickItemSelection(tui.widgets.Prompt):
 		return [chr(ord('a') + i) for i in range(len(self.data.get_player().inventory))] + ['*']
 	def on_choice(self, key):
 		if key == '*':
-			return self.extended_mode()
+			ext_mode = self.extended_mode()
+			return ui.Inventory(
+					self.game.get_player(),
+					caption = ext_mode.prompt(),
+					on_select = ext_mode.item_action,
+					)
 		index = key.value - ord('a')
 		self.item_action(index)
 		return self.actual_mode
 
-class QuickConsumeItem(ConsumeItem, QuickItemSelection):
+class QuickConsumeItem(QuickItemSelection):
 	def extended_mode(self):
-		return ConsumeFromInventory
+		return ConsumeItem
 
-class QuickDropItem(DropItem, QuickItemSelection):
+class QuickDropItem(QuickItemSelection):
 	def extended_mode(self):
-		return DropFromInventory
+		return DropItem
 
-class QuickWearItem(WearItem, QuickItemSelection):
+class QuickWearItem(QuickItemSelection):
 	def extended_mode(self):
-		return WearFromInventory
+		return WearItem
 
-class QuickWieldItem(WieldItem, QuickItemSelection):
+class QuickWieldItem(QuickItemSelection):
 	def extended_mode(self):
-		return WieldFromInventory
-
-class Inventory(tui.widgets.Menu):
-	COLUMNS = 2
-	KEYS_TO_CLOSE = ['i', curses.ascii.ESC]
-	def on_close(self):
-		return to_main_screen(self)
-	def prompt(self):
-		if not self.data.get_player().inventory:
-			return "(empty)"
-		return ""
-	def items(self):
-		for index, item in enumerate(self.data.get_player().inventory):
-			line = "{0} {1}".format(item.sprite, item.name)
-			if self.data.get_player().wielding == item:
-				line += " (wielding)"
-			if self.data.get_player().wearing == item:
-				line += " (wearing)"
-			key = ord('a') + index
-			yield tui.widgets.Menu.Item(key, line, key)
-	def on_item(self, item):
-		if hasattr(self, 'item_action'):
-			self.item_action(item.data - ord('a'))
-			return to_main_screen(self)
-		return None
-
-class ConsumeFromInventory(ConsumeItem, Inventory):
-	pass
-
-class DropFromInventory(DropItem, Inventory):
-	pass
-
-class WieldFromInventory(WieldItem, Inventory):
-	pass
-
-class WearFromInventory(WearItem, Inventory):
-	pass
+		return WieldItem
 
 class SuicideAttempt(tui.widgets.Confirmation):
 	MESSAGE = "Do you really want to quit without saving?"

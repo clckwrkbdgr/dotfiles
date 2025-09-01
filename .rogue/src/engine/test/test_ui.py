@@ -30,7 +30,7 @@ class MockUI:
 		yield self
 	def print_char(self, x, y, sprite, color):
 		self.screen.set_cell((x, y), sprite)
-	def print_line(self, y, x, line):
+	def print_line(self, y, x, line, color=None):
 		for i, c in enumerate(line):
 			p = Point(x + i, y)
 			if self.screen.valid(p):
@@ -418,3 +418,52 @@ class TestGodModes(MainGameTestCase):
 		self.assertTrue(self.loop.action())
 		self.assertFalse(self.loop.action())
 		self.assertTrue(self.game.god.noclip)
+
+class TestInventory(MainGameTestCase):
+	def should_show_inventory(self):
+		self.mock_ui.key('ii')
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Inventory:                    _
+		_[a] ( - dagger                _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())
+	def should_show_empty_inventory(self):
+		self.mock_ui.key('i' + chr(clckwrkbdgr.tui.Key.ESCAPE))
+		self.game.scene.get_player().drop(
+				self.game.scene.get_player().inventory[0]
+				)
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Inventory:                    _
+		_(Empty)                       _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())
+	def should_accumulate_items_with_same_name(self):
+		self.mock_ui.key('i' + chr(clckwrkbdgr.tui.Key.ESCAPE))
+		self.game.scene.get_player().grab(Dagger())
+		self.game.scene.get_player().grab(Gold())
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Inventory:                    _
+		_[a] ( - dagger (x2)           _
+		_[c] * - gold                  _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())

@@ -762,49 +762,6 @@ def iter_rect(topleft, bottomright):
 		for y in range(topleft.y, bottomright.y + 1):
 			yield Point(x, y)
 
-InventoryKeys = clckwrkbdgr.tui.Keymapping()
-InventoryKeys.map(list('abcdefghijlkmnopqrstuvwxyz'), lambda key:str(key))
-InventoryKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
-class InventoryMode(clckwrkbdgr.tui.Mode):
-	TRANSPARENT = False
-	KEYMAPPING = InventoryKeys
-	def __init__(self, inventory, caption=None, on_select=None):
-		self.inventory = inventory
-		self.caption = caption
-		self.on_select = on_select
-	def redraw(self, ui):
-		if True:
-			if self.caption:
-				ui.print_line(0, 0, self.caption)
-			accumulated = []
-			for shortcut, item in zip(string.ascii_lowercase, self.inventory):
-				for other in accumulated:
-					if other[1].name == item.name:
-						other[2] += 1
-						break
-				else:
-					accumulated.append([shortcut, item, 1])
-			for index, (shortcut, item, amount) in enumerate(accumulated):
-				column = index // 20
-				index = index % 20
-				ui.print_line(index + 1, column * 40 + 0, '[{0}] '.format(shortcut))
-				ui.print_line(index + 1, column * 40 + 4, item.sprite.sprite, item.sprite.color)
-				if amount > 1:
-					ui.print_line(index + 1, column * 40 + 6, '- {0} (x{1})'.format(item.name, amount))
-				else:
-					ui.print_line(index + 1, column * 40 + 6, '- {0}'.format(item.name))
-	def action(self, control):
-		if control == 'cancel':
-			return None
-		if self.on_select:
-			selected = ord(control) - ord('a')
-			if selected < 0 or len(self.inventory) <= selected:
-				self.caption = 'No such item: {0}'.format(control)
-			else:
-				self.on_select(selected)
-				return None
-		return True
-
 DialogKeys = clckwrkbdgr.tui.Keymapping()
 DialogKeys.map(list('yY'), True)
 
@@ -948,9 +905,6 @@ class MainGameMode(ui.MainGame):
 					]
 			quest_log = QuestLog(questing)
 			return quest_log
-	@ui.MainGame.Keys.bind('i')
-	def display_inventory(self):
-		return InventoryMode(self.game.scene.get_player().inventory)
 	@ui.MainGame.Keys.bind('d')
 	def drop_item(self):
 		game = self.game
@@ -962,8 +916,8 @@ class MainGameMode(ui.MainGame):
 					menu_choice = game.scene.get_player().inventory[menu_choice] # Eh.
 					menu_choice.coord = game.scene.get_player_coord() # Eh.
 					game.drop_item(game.scene.get_player(), menu_choice)
-				return InventoryMode(
-						game.scene.get_player().inventory,
+				return ui.Inventory(
+						game.scene.get_player(),
 						caption="Select item to drop (a-z/ESC):",
 						on_select=_on_select_item
 					)

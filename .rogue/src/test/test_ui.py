@@ -230,7 +230,9 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to drop:',),
-			('addstr', 1, 0, 'a - potion',),
+			('addstr', 1, 0, '[a] ',),
+			('addstr', 1, 4, '!',),
+			('addstr', 1, 6, '- potion',),
 			('refresh',),
 			])
 
@@ -239,7 +241,9 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'No such item (j)',),
-			('addstr', 1, 0, 'a - potion',),
+			('addstr', 1, 0, '[a] ',),
+			('addstr', 1, 4, '!',),
+			('addstr', 1, 6, '- potion',),
 			('refresh',),
 			])
 
@@ -367,8 +371,12 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to consume:',),
-			('addstr', 1, 0, 'a - potion',),
-			('addstr', 2, 0, 'b - healing potion',),
+			('addstr', 1, 0, '[a] ',),
+			('addstr', 1, 4, '!',),
+			('addstr', 1, 6, '- potion',),
+			('addstr', 2, 0, '[b] ',),
+			('addstr', 2, 4, '!',),
+			('addstr', 2, 6, '- healing potion',),
 			('refresh',),
 			])
 
@@ -377,8 +385,12 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'No such item (j)',),
-			('addstr', 1, 0, 'a - potion',),
-			('addstr', 2, 0, 'b - healing potion',),
+			('addstr', 1, 0, '[a] ',),
+			('addstr', 1, 4, '!',),
+			('addstr', 1, 6, '- potion',),
+			('addstr', 2, 0, '[b] ',),
+			('addstr', 2, 4, '!',),
+			('addstr', 2, 6, '- healing potion',),
 			('refresh',),
 			])
 
@@ -414,8 +426,12 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to consume:',),
-			('addstr', 1, 0, 'a - potion',),
-			('addstr', 2, 0, 'b - healing potion',),
+			('addstr', 1, 0, '[a] ',),
+			('addstr', 1, 4, '!',),
+			('addstr', 1, 6, '- potion',),
+			('addstr', 2, 0, '[b] ',),
+			('addstr', 2, 4, '!',),
+			('addstr', 2, 6, '- healing potion',),
 			('refresh',),
 			])
 
@@ -443,65 +459,6 @@ class TestCurses(unittest.TestCase):
 			('addstr', 24, 34, '     '),
 			('addstr', 24, 39, '      '),
 			('addstr', 24, 77, '[?]'),
-			('refresh',),
-			])
-	def should_show_inventory(self):
-		dungeon = mock_dungeon.build('monster and potion')
-		ui, loop = self._init(dungeon, 'ia' + chr(Key.ESCAPE) + 'i')
-		list(dungeon.process_events(raw=True))
-
-		self.assertTrue(loop.action())
-		loop.redraw()
-
-		self.maxDiff = None
-		self.assertEqual(ui.window.get_calls(), [
-			('clear',),
-			('addstr', 1, 0, '(Empty)',),
-			('refresh',),
-			])
-
-		self.assertTrue(loop.action())
-		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [
-			('clear',),
-			('addstr', 1, 0, '(Empty)',),
-			('refresh',),
-			])
-
-		self.assertFalse(loop.action())
-		loop.redraw()
-		DISPLAYED_LAYOUT = [
-				'    #####        #  ',
-				'     ....   #  ...  ',
-				'      ...  .# ..... ',
-				'     ##..##.#...... ',
-				'     #............. ',
-				'#.M..#............. ',
-				'#........@!........#',
-				'#.................. ',
-				'#.................. ',
-				' #################  ',
-				]
-		self.assertEqual(ui.window.get_calls(), [('clear',)] + self._addstr_map(DISPLAYED_LAYOUT) + [
-			('addstr', 0, 0, '                                                                                '),
-			('addstr', 24, 0, 'hp: 10/10  '),
-			('addstr', 24, 12, '       '),
-			('addstr', 24, 20, '       '),
-			('addstr', 24, 28, '      '),
-			('addstr', 24, 34, '     '),
-			('addstr', 24, 39, '      '),
-			('addstr', 24, 77, '[?]'),
-			('refresh',),
-			])
-
-		dungeon.move_actor(dungeon.scene.get_player(), Direction.RIGHT)
-		dungeon.grab_item_here(dungeon.scene.get_player())
-
-		self.assertTrue(loop.action())
-		loop.redraw()
-		self.assertEqual(ui.window.get_calls(), [
-			('clear',),
-			('addstr', 1, 0, 'a - potion',),
 			('refresh',),
 			])
 	def should_equip_items(self):
@@ -557,7 +514,9 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to wield:',),
-			('addstr', 1, 0, 'a - weapon',),
+			('addstr', 1, 0, '[a] ',),
+			('addstr', 1, 4, '(',),
+			('addstr', 1, 6, '- weapon',),
 			('refresh',),
 			])
 
@@ -588,7 +547,9 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'Select item to wield:',),
-			('addstr', 1, 0, 'a - weapon',),
+			('addstr', 1, 0, '[a] ',),
+			('addstr', 1, 4, '(',),
+			('addstr', 1, 6, '- weapon',),
 			('refresh',),
 			])
 
@@ -597,7 +558,9 @@ class TestCurses(unittest.TestCase):
 		self.assertEqual(ui.window.get_calls(), [
 			('clear',),
 			('addstr', 0, 0, 'No such item (b)',),
-			('addstr', 1, 0, 'a - weapon',),
+			('addstr', 1, 0, '[a] ',),
+			('addstr', 1, 4, '(',),
+			('addstr', 1, 6, '- weapon',),
 			('refresh',),
 			])
 
