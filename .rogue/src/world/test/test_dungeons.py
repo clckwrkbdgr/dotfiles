@@ -7,11 +7,10 @@ except: # pragma: no cover
 	from io import StringIO
 from clckwrkbdgr.math import Point, Size, Rect
 from clckwrkbdgr.pcg import RNG
-from ..pcg import builders
-from ..engine import items
-from .. import engine
-from .. import pcg
-from .. import game
+from ..dungeonbuilders import builders
+from ...engine import items
+from ... import engine
+from .. import dungeons as game
 import clckwrkbdgr.serialize.stream as savefile
 from . import mock_dungeon
 from .mock_dungeon import MockGame

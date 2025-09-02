@@ -9,7 +9,7 @@ import clckwrkbdgr.pcg.maze
 import clckwrkbdgr.pcg.rogue
 from clckwrkbdgr.pcg import bsp
 import clckwrkbdgr.math
-from .engine import builders
+from ..engine import builders
 
 class CustomMap(builders.Builder):
 	""" Builds map described by custom layout.

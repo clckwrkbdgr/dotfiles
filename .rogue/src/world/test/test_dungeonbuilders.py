@@ -1,12 +1,12 @@
 import unittest
 unittest.defaultTestLoader.testMethodPrefix = 'should'
 import textwrap
-from .. import pcg as builders
-from ..engine.builders import Builder
+from .. import dungeonbuilders as builders
+from ...engine.builders import Builder
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr import pcg
-from ..engine import items as items_module, appliances as appliances_module
+from ...engine import items as items_module, appliances as appliances_module
 
 class TestCustomMapLayout(unittest.TestCase):
 	def should_generate_map_from_given_custom_layout(self):

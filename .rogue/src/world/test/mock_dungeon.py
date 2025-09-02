@@ -1,11 +1,10 @@
 from clckwrkbdgr.math import Point
-from .. import pcg as builders
-from .. import pcg as settlers
-from .. import game
-from ..engine.terrain import Terrain
-from ..engine import items, actors, appliances
-from .. import engine
-from ..engine.ui import Sprite
+from .. import dungeonbuilders
+from .. import dungeons as game
+from ...engine.terrain import Terrain
+from ...engine import items, actors, appliances
+from ... import engine
+from ...engine.ui import Sprite
 
 class NameItem(items.Item):
 	_name = 'name'
@@ -257,7 +256,7 @@ class MockMapping:
 	def healing_potion(*data):
 		return HealingPotion(*data)
 
-class _MockBuilderSingleMockThief(settlers.CustomMap):
+class _MockBuilderSingleMockThief(dungeonbuilders.CustomMap):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -274,7 +273,7 @@ class _MockBuilderSingleMockThief(settlers.CustomMap):
 	def is_open(self, pos): return self.grid.cell(pos) == '.'
 	def generate_actors(self): yield (self.point(self.is_free), 'thief')
 
-class _MockBuilderSingleMockMonster(settlers.CustomMap):
+class _MockBuilderSingleMockMonster(dungeonbuilders.CustomMap):
 	Mapping = MockMapping
 	MAP_DATA = """\
 		####################
@@ -291,7 +290,7 @@ class _MockBuilderSingleMockMonster(settlers.CustomMap):
 	def is_open(self, pos): return self.grid.cell(pos) == '.'
 	def generate_actors(self): yield (self.point(self.is_free), 'angry_monster')
 
-class CustomSettler(settlers.CustomMap):
+class CustomSettler(dungeonbuilders.CustomMap):
 	""" Fills map with predetermined monsters and items.
 	Data should be provided as list of raw parameters:
 	(<item/monster data>, <pos>)
