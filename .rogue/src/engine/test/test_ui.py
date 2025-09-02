@@ -467,6 +467,32 @@ class TestInventory(MainGameTestCase):
 		_                              _
 		""").replace('_', ''))
 		self.assertFalse(self.loop.action())
+	def should_warn_about_invalid_item_selection(self):
+		self.mock_ui.key('dz')
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select item to drop:          _
+		_[a] ( - dagger                _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertTrue(self.loop.action())
+		self.assertTrue(self.game.scene.get_player().inventory)
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_No such item (z)              _
+		_[a] ( - dagger                _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
 	def should_drop_from_inventory(self):
 		self.mock_ui.key('da')
 		self.assertTrue(self.loop.action())
@@ -533,3 +559,179 @@ class TestInventory(MainGameTestCase):
 			Events.Welcome(),
 			Events.InventoryIsEmpty(),
 			])
+	def should_wield_and_unwield_items(self):
+		self.mock_ui.key('waU')
+		list(self.game.process_events(raw=True))
+		dagger = self.game.scene.get_player().inventory[0]
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select item to wield:         _
+		_[a] ( - dagger                _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertFalse(self.loop.action())
+		self.assertFalse(self.game.scene.get_player().inventory)
+		self.assertEqual(self.game.scene.get_player().wielding, dagger)
+
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.scene.get_player().inventory, [dagger])
+		self.assertIsNone(self.game.scene.get_player().wielding)
+	def should_not_wield_when_inventory_is_empty(self):
+		self.mock_ui.key('w')
+		self.game.scene.get_player().drop(
+				self.game.scene.get_player().inventory[0]
+				)
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.events, [
+			Events.Welcome(),
+			Events.InventoryIsEmpty(),
+			])
+	def should_wear_and_take_off_items(self):
+		self.mock_ui.key('WabT')
+		self.game.scene.get_player().grab(Rags())
+		list(self.game.process_events(raw=True))
+		dagger = self.game.scene.get_player().inventory[0]
+		rags = self.game.scene.get_player().inventory[1]
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select item to wear:          _
+		_[a] ( - dagger                _
+		_[b] [ - rags                  _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.events, [
+			Events.NotWearable(dagger),
+			])
+		self.assertEqual(len(self.game.scene.get_player().inventory), 2)
+
+		list(self.game.process_events(raw=True))
+		self.assertFalse(self.loop.action())
+		self.assertEqual(self.game.scene.get_player().inventory, [dagger])
+		self.assertEqual(self.game.scene.get_player().wearing, rags)
+
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.scene.get_player().inventory, [dagger, rags])
+		self.assertIsNone(self.game.scene.get_player().wearing)
+	def should_not_wear_when_inventory_is_empty(self):
+		self.mock_ui.key('W')
+		self.game.scene.get_player().drop(
+				self.game.scene.get_player().inventory[0]
+				)
+		self.assertTrue(self.loop.action())
+		self.assertEqual(self.game.events, [
+			Events.Welcome(),
+			Events.InventoryIsEmpty(),
+			])
+	def should_equip_items_via_equipment_screen(self):
+		self.mock_ui.key('E' + chr(clckwrkbdgr.tui.Key.ESCAPE) + 'EaaEaEbaEb')
+		dagger = self.game.scene.get_player().inventory[0]
+		rags = Rags()
+		self.game.scene.get_player().grab(rags)
+		list(self.game.process_events(raw=True))
+
+		self.assertTrue(self.loop.action()) # E
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_wielding [a] - None           _
+		_wearing  [b] - None           _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action()) # ESC
+
+		self.assertTrue(self.loop.action()) # E
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_wielding [a] - None           _
+		_wearing  [b] - None           _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action()) # a
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select item to wield:         _
+		_[a] ( - dagger                _
+		_[b] [ - rags                  _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action()) # a
+		self.assertEqual(self.game.scene.get_player().inventory, [rags])
+		self.assertEqual(self.game.scene.get_player().wielding, dagger)
+
+		self.assertTrue(self.loop.action()) # E
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_wielding [a] - dagger         _
+		_wearing  [b] - None           _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action()) # a
+		self.assertEqual(self.game.scene.get_player().inventory, [rags, dagger])
+		self.assertIsNone(self.game.scene.get_player().wielding)
+
+		self.assertTrue(self.loop.action()) # E
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_wielding [a] - None           _
+		_wearing  [b] - None           _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action()) # b
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Select item to wear:          _
+		_[a] [ - rags                  _
+		_[b] ( - dagger                _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action()) # a
+		self.assertEqual(self.game.scene.get_player().inventory, [dagger])
+		self.assertEqual(self.game.scene.get_player().wearing, rags)
+
+		self.assertTrue(self.loop.action()) # E
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_wielding [a] - None           _
+		_wearing  [b] - rags           _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action()) # b
+		self.assertEqual(self.game.scene.get_player().inventory, [dagger, rags])
+		self.assertIsNone(self.game.scene.get_player().wearing)

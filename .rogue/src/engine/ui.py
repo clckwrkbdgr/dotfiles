@@ -251,6 +251,40 @@ class MainGame(clckwrkbdgr.tui.Mode):
 				caption = "Select item to consume:",
 				on_select = self.game.consume_item,
 				)
+	@_MainKeys.bind('w')
+	def wield(self):
+		""" Wield item. """
+		if not self.game.scene.get_player().inventory:
+			self.game.fire_event(Events.InventoryIsEmpty())
+			return
+		return Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to wield:",
+				on_select = self.game.wield_item,
+				)
+	@_MainKeys.bind('U')
+	def unwield(self):
+		""" Unwield item. """
+		self.game.unwield_item(self.game.scene.get_player())
+	@_MainKeys.bind('W')
+	def wear(self):
+		""" Wear item. """
+		if not self.game.scene.get_player().inventory:
+			self.game.fire_event(Events.InventoryIsEmpty())
+			return
+		return Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to wear:",
+				on_select = self.game.wear_item,
+				)
+	@_MainKeys.bind('T')
+	def take_off(self):
+		""" Take item off. """
+		self.game.take_off_item(self.game.scene.get_player())
+	@_MainKeys.bind('E')
+	def show_equipment(self):
+		""" Show equipment. """
+		return Equipment(self.game, self.game.scene.get_player())
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """
@@ -350,6 +384,55 @@ class Inventory(clckwrkbdgr.tui.Mode):
 			return False
 		return True
 	@InventoryKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
+	def close(self):
+		""" Close by Escape. """
+		return True
+
+EquipmentKeys = clckwrkbdgr.tui.Keymapping()
+class Equipment(clckwrkbdgr.tui.Mode):
+	""" Equipment menu.
+	"""
+	KEYMAPPING = EquipmentKeys
+	def __init__(self, game, actor):
+		self.game = game
+		self.actor = actor
+		self.done = False
+	def redraw(self, ui):
+		wielding = self.actor.wielding
+		if wielding:
+			wielding = wielding.name
+		wearing = self.actor.wearing
+		if wearing:
+			wearing = wearing.name
+		ui.print_line(0, 0, 'wielding [a] - {0}'.format(wielding))
+		ui.print_line(1, 0, 'wearing  [b] - {0}'.format(wearing))
+	def action(self, done):
+		return not (done or self.done)
+	@EquipmentKeys.bind('a')
+	def wield(self):
+		""" Wield or unwield item. """
+		if self.actor.wielding:
+			self.game.unwield_item(self.actor)
+			return True
+		self.done = True
+		return Inventory(
+				self.actor,
+				caption = "Select item to wield:",
+				on_select = self.game.wield_item,
+				)
+	@EquipmentKeys.bind('b')
+	def wear(self):
+		""" Wear or take off item. """
+		if self.actor.wearing:
+			self.game.take_off_item(self.actor)
+			return True
+		self.done = True
+		return Inventory(
+				self.actor,
+				caption = "Select item to wear:",
+				on_select = self.game.wear_item,
+				)
+	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self):
 		""" Close by Escape. """
 		return True

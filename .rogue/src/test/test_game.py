@@ -25,6 +25,9 @@ class AbstractTestDungeon(unittest.TestCase):
 		return [list(repr(event) for callback, event in self.dungeon.process_events(raw=True, bind_self=self))]
 
 class TestMonsters(AbstractTestDungeon):
+	def should_treat_all_monsters_as_active(self):
+		dungeon = self.dungeon = mock_dungeon.build('fighting around')
+		self.assertEqual(list(self.dungeon.scene.iter_active_monsters()), self.dungeon.scene.monsters)
 	def should_act_inert_and_attack_only_closest_enemy(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
 		list(dungeon.process_events(raw=True))
@@ -59,6 +62,21 @@ class TestItems(AbstractTestDungeon):
 		self.assertEqual(next(scene.iter_items_at(pos)).name, 'potion')
 
 class TestVisibility(AbstractTestDungeon):
+	def should_iter_scene_cells(self):
+		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilderUnSettler])
+		scene.generate('lonely')
+		self.assertEqual(scene.tostring(scene.get_area_rect()), textwrap.dedent("""\
+		####################
+		#........#>##......#
+		#........#..#......#
+		#....##..##.#......#
+		#....#.............#
+		#....#.............#
+		#.........!........#
+		#..................#
+		#..................#
+		####################
+		"""))
 	def should_list_important_events(self):
 		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilder_FightingGround])
 		scene.generate('fighting around')
@@ -76,6 +94,10 @@ class TestVisibility(AbstractTestDungeon):
 		vision = scene.make_vision()
 		self.assertEqual(scene.get_area_rect(), Rect(Point(0, 0), Size(20, 10)))
 		list(vision.visit(scene.get_player()))
+		self.assertTrue(vision.is_visible(Point(9, 6)))
+		self.assertFalse(vision.is_visible(Point(0, 0)))
+		self.assertTrue(vision.is_explored(Point(9, 6)))
+		self.assertFalse(vision.is_explored(Point(0, 0)))
 		self.assertEqual(vision.visited.tostring(lambda c:'*' if c else '.'), textwrap.dedent("""\
 		....*****........*..
 		.....****...*..***..

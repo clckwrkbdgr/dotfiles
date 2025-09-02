@@ -199,6 +199,8 @@ events.Events.on(Healed)(lambda event: '{0} gains {1}hp.')
 events.Events.on(NothingToDrop)(lambda event: 'Nothing to drop.')
 events.Events.on(DropItem)(lambda event: '{0} drops {2} on {1}'.format(event.who, event.where, event.what))
 events.Events.on(FlopWings)(lambda event: '{0} flops its wings'.format(event.actor))
+events.Events.on(_base.Events.Welcome)(lambda *event: '')
+events.Events.on(_base.Events.Discover)(lambda *event: '')
 class Handler(object):
 	@events.Events.on(Hit)
 	def handle_hits(self, event):

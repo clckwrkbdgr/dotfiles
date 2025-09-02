@@ -362,6 +362,9 @@ class _MockBuilderUnSettler(CustomSettler):
 		#..................#
 		####################
 		"""
+	ITEMS = [
+			(Point(10, 6), 'potion'),
+			]
 
 class _MockBuilder_NowYouSeeMe(CustomSettler):
 	Mapping = MockMapping
