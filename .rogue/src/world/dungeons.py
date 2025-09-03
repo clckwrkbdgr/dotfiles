@@ -25,11 +25,24 @@ class Angry(actors.EquippedMonster):
 			return
 		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
 			game.attack(self, player)
-		elif clckwrkbdgr.math.distance(self.pos, player.pos) <= self.vision:
-			is_transparent = lambda p: game.scene.is_transparent_to_monster(p, self)
-			if clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(self.pos, player.pos, is_transparent):
-				direction = Direction.from_points(self.pos, player.pos)
-				game.move_actor(self, direction)
+			return
+		vision = game.scene.make_vision(self)
+		vision.visit(self)
+		if vision.is_visible(player.pos):
+			direction = Direction.from_points(self.pos, player.pos)
+			game.move_actor(self, direction)
+
+class MonsterVision(vision.Vision):
+	def __init__(self, scene):
+		super(MonsterVision, self).__init__(scene)
+		self.monster = None
+	def is_visible(self, pos):
+		if clckwrkbdgr.math.distance(self.monster.pos, pos) > self.monster.vision:
+			return False
+		is_transparent = lambda p: self.scene.is_transparent_to_monster(p, self.monster)
+		return clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(self.monster.pos, pos, is_transparent)
+	def visit(self, monster):
+		self.monster = monster
 
 class Vision(vision.Vision):
 	def __init__(self, scene):
@@ -92,8 +105,10 @@ class Scene(scene.Scene):
 		self.appliances = []
 	def one_time(self):
 		return True
-	def make_vision(self):
-		return Vision(self)
+	def make_vision(self, actor):
+		if isinstance(actor, actors.Player):
+			return Vision(self)
+		return MonsterVision(self)
 	def generate(self, id):
 		builder = self.rng.choice(self.builders)
 		Log.debug('Building dungeon: {0}...'.format(builder))

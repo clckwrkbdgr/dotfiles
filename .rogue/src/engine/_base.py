@@ -3,7 +3,7 @@ Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Size, Matrix
 from clckwrkbdgr.pcg import RNG
 from . import events
-from . import scene, items, appliances
+from . import scene, items, appliances, actors
 from . import auto
 
 class GodMode:
@@ -143,7 +143,7 @@ class Game(object):
 	@property
 	def vision(self):
 		if self.current_scene_id not in self.visions:
-			self.visions[self.current_scene_id] = self.scene.make_vision()
+			self.visions[self.current_scene_id] = self.scene.make_vision(self.scene.get_player())
 		return self.visions[self.current_scene_id]
 
 	# State control.
@@ -218,7 +218,7 @@ class Game(object):
 			scene_id = stream.read()
 			if not scene_id:
 				break
-			vision = self.scenes[scene_id].make_vision()
+			vision = self.scenes[scene_id].make_vision(self.scene.get_player())
 			vision.load(stream)
 			self.visions[scene_id] = vision
 
@@ -619,7 +619,8 @@ class Game(object):
 		for monster in list(self.scene.iter_active_monsters()):
 			if monster == self.scene.get_player():
 				continue
-			monster.act(self)
+			if isinstance(monster, actors.Behaviour):
+				monster.act(self)
 
 		self.playing_time += 1
 		return True

@@ -105,7 +105,9 @@ class RealMonster(actors.EquippedMonster):
 	_hostile_to = [actors.Player]
 
 	def act(self, dungeon):
-		if not dungeon.scene.actor_sees_player(self):
+		vision = self.scene.make_vision(self)
+		vision.visit(self)
+		if not vision.is_visible(self.scene.get_player().pos):
 			return
 		shift = Point(
 				clckwrkbdgr.math.sign(dungeon.get_player().pos.x - self.pos.x),

@@ -78,7 +78,7 @@ class Monster(src.engine.actors.Monster):
 	_attack = 1
 	_max_inventory = 5
 
-class Plant(src.engine.actors.Monster):
+class Plant(src.engine.actors.Monster, src.engine.actors.Neutral):
 	_hostile_to = [Player]
 	_name = 'plant'
 	_sprite = Sprite('P', None)

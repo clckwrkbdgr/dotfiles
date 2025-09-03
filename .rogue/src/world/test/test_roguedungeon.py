@@ -169,7 +169,7 @@ class TestDungeon(unittest.TestCase):
 		scene = Scene(MockGenerator())
 		scene.generate('top')
 		scene.enter_actor(UNATCOAgent(None), 'basement')
-		vision = scene.make_vision()
+		vision = scene.make_vision(scene.get_player())
 		scene.get_player().pos = Point(3, 1)
 		list(vision.visit(scene.get_player()))
 		scene.get_player().pos = Point(5, 1)
@@ -268,8 +268,13 @@ class TestDungeon(unittest.TestCase):
 		vacuum.pos = Point(2, 1)
 		scene.monsters.append(vacuum)
 
-		self.assertTrue(scene.actor_sees_player(mj12))
-		self.assertFalse(scene.actor_sees_player(vacuum))
+		vision = scene.make_vision(mj12)
+		vision.visit(mj12)
+		self.assertTrue(vision.is_visible(scene.get_player().pos))
+
+		vision = scene.make_vision(vacuum)
+		vision.visit(vacuum)
+		self.assertFalse(vision.is_visible(scene.get_player().pos))
 	def should_iter_monsters_in_rect(self):
 		scene = Scene(MockGenerator())
 		scene.generate('top')

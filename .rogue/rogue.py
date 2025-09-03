@@ -141,14 +141,17 @@ class AggressiveColoredMonster(ColoredMonster):
 		monster_pos = monster_coord.get_global(game.scene.world)
 		if max(abs(self_pos.x - monster_pos.x), abs(self_pos.y - monster_pos.y)) <= 1:
 			game.attack(self, monster)
-		elif math.hypot(self_pos.x - monster_pos.x, self_pos.y - monster_pos.y) <= self.vision:
+			return
+		vision = game.scene.make_vision(self)
+		vision.visit(self)
+		if vision.is_visible(monster_pos):
 			shift = Point(
 					sign(monster_pos.x - self_pos.x),
 					sign(monster_pos.y - self_pos.y),
 					)
 			game.move_actor(self, shift)
 
-class Dweller(Monster):
+class Dweller(Monster, src.engine.actors.Neutral):
 	_max_hp = 10
 	_name = 'dweller'
 	def __init__(self, pos, color=None):
@@ -473,6 +476,15 @@ class Vision(vision.OmniVision):
 			self._first_visit = False
 		self.visible_monsters = current_visible_monsters
 
+class MonsterVision(vision.Vision):
+	def __init__(self, scene):
+		super(MonsterVision, self).__init__(scene)
+		self.monster = None
+	def is_visible(self, pos):
+		return clckwrkbdgr.math.distance(self.scene.get_global_pos(self.monster), pos) <= self.monster.vision
+	def visit(self, monster):
+		self.monster = monster
+
 class Scene(scene.Scene):
 	def __init__(self):
 		self.world = NestedGrid([(256, 256), (16, 16), (16, 16)], [None, ZoneData, FieldData], Terrain)
@@ -480,8 +492,10 @@ class Scene(scene.Scene):
 	@classmethod
 	def get_autoexplorer_class(cls): # pragma: no cover -- TODO
 		return auto.EndlessAreaExplorer
-	def make_vision(self):
-		return Vision(self)
+	def make_vision(self, actor):
+		if isinstance(actor, src.engine.actors.Player):
+			return Vision(self)
+		return MonsterVision(self)
 	def generate(self, id):
 		zone_pos = Point(
 				random.randrange(self.world.cells.size.width),

@@ -30,6 +30,14 @@ class TestMonsters(AbstractTestDungeon):
 		self.assertEqual(list(self.dungeon.scene.iter_actors_in_rect(
 			Rect((8, 5), Size(3, 3))
 			)), self.dungeon.scene.monsters[:2])
+	def should_give_monsters_vision(self):
+		dungeon = self.dungeon = mock_dungeon.build('fighting around')
+		monster = self.dungeon.scene.monsters[1]
+		vision = dungeon.scene.make_vision(monster)
+		vision.visit(monster)
+		self.assertFalse(vision.is_visible(Point(30, 30)))
+		self.assertTrue(vision.is_visible(Point(10, 6)))
+		self.assertFalse(vision.is_visible(Point(1, 3)))
 
 class TestItems(AbstractTestDungeon):
 	def should_grab_items(self):
@@ -73,7 +81,7 @@ class TestVisibility(AbstractTestDungeon):
 		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilder_FightingGround])
 		scene.generate('fighting around')
 		scene.enter_actor(mock_dungeon.Player(Point(9, 6)), None)
-		vision = scene.make_vision()
+		vision = scene.make_vision(scene.get_player())
 		list(vision.visit(scene.get_player()))
 		self.assertEqual(list(vision.iter_important()), [
 			next(scene.iter_actors_at((10, 6))),
@@ -83,7 +91,7 @@ class TestVisibility(AbstractTestDungeon):
 		scene = game.Scene(RNG(0), [mock_dungeon._MockBuilderUnSettler])
 		scene.generate('lonely')
 		scene.enter_actor(mock_dungeon.Player(Point(9, 6)), None)
-		vision = scene.make_vision()
+		vision = scene.make_vision(scene.get_player())
 		self.assertEqual(scene.get_area_rect(), Rect(Point(0, 0), Size(20, 10)))
 		list(vision.visit(scene.get_player()))
 		self.assertTrue(vision.is_visible(Point(9, 6)))
@@ -120,7 +128,7 @@ class TestVisibility(AbstractTestDungeon):
 		scene = game.Scene(RNG(0), [mock_dungeon._MockMiniRogueBuilderUnSettler])
 		scene.generate('mini dark rogue')
 		scene.enter_actor(mock_dungeon.Player(Point(3, 1)), None)
-		vision = scene.make_vision()
+		vision = scene.make_vision(scene.get_player())
 		list(vision.visit(scene.get_player()))
 		self.assertEqual(vision.visited.tostring(lambda c:'*' if c else '.'), textwrap.dedent("""\
 		..****...

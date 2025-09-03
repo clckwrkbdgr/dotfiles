@@ -318,6 +318,13 @@ class Player(Behaviour):
 	def act(self, game): # pragma: no cover
 		pass
 
+class Neutral(Behaviour):
+	""" Trait for neutral non-player character.
+	Does nothing on its own.
+	"""
+	def act(self, game): # pragma: no cover
+		pass
+
 class Defensive(Behaviour):
 	""" Stands still. Attacks only monsters within melee distance.
 	"""

@@ -32,8 +32,10 @@ class Scene(scene.Scene):
 		self.generator = builder
 	def generate(self, id):
 		self.generator.build_level(self, id)
-	def make_vision(self):
-		return Vision(self)
+	def make_vision(self, actor):
+		if isinstance(actor, actors.Player):
+			return Vision(self)
+		return MonsterVision(self)
 	def exit_actor(self, actor):
 		self.monsters.remove(actor)
 		return actor
@@ -160,11 +162,6 @@ class Scene(scene.Scene):
 	@property
 	def current_tunnel(self):
 		return self.tunnel_of(self.get_player().pos)
-	def actor_sees_player(self, actor):
-		if not self.current_room: # pragma: no cover -- TODO
-			return False
-		sees_rogue = self.current_room.contains(actor.pos)
-		return sees_rogue
 	def iter_cells(self, view_rect):
 		trace.debug(list(self.rooms.keys()))
 		terrain = []
@@ -224,6 +221,17 @@ class Scene(scene.Scene):
 		return next((monster for monster in self.monsters if isinstance(monster, actors.Player)), None)
 	def iter_active_monsters(self):
 		return self.monsters
+
+class MonsterVision(vision.Vision):
+	def __init__(self, scene):
+		super(MonsterVision, self).__init__(scene)
+		self.monster = None
+	def is_visible(self, pos):
+		if clckwrkbdgr.math.distance(self.monster.pos, pos) <= 1:
+			return True
+		return self.scene.room_of(self.monster.pos) == self.scene.room_of(pos)
+	def visit(self, monster):
+		self.monster = monster
 
 class Vision(vision.Vision):
 	def __init__(self, scene):

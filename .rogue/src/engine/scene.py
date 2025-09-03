@@ -14,8 +14,10 @@ class Scene(object):
 		By default all visited scenes are kept.
 		"""
 		return False
-	def make_vision(self): # pragma: no cover
-		""" Should init and return empty Vision object that supports this scene.
+	def make_vision(self, actor): # pragma: no cover
+		""" Should init and return empty Vision object that supports this scene
+		for given actor's perspective.
+		By default all actors share OmniVision (everything is visible and explored).
 		"""
 		return vision.OmniVision(self)
 	def generate(self, id): # pragma: no cover

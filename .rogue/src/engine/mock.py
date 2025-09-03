@@ -122,7 +122,11 @@ class Dragonfly(actors.Actor):
 	_sprite = Sprite('d', None)
 	_name = 'dragonfly'
 
-class Butterfly(actors.Actor):
+class Insect(actors.Behaviour):
+	def act(self, game):
+		game.fire_event(FlopWings(self))
+
+class Butterfly(actors.Actor, Insect):
 	_sprite = Sprite('b', None)
 	_name = 'butterfly'
 	def __init__(self, *args, **kwargs):
@@ -135,8 +139,6 @@ class Butterfly(actors.Actor):
 	def save(self, stream):
 		super(Butterfly, self).save(stream)
 		stream.write(self.color)
-	def act(self, game):
-		game.fire_event(FlopWings(self))
 
 class Rogue(actors.EquippedMonster, actors.Player):
 	_hostile_to = [actors.Monster]
@@ -159,7 +161,7 @@ class Rat(actors.Monster, actors.Defensive):
 			(5, Potion),
 			]
 
-class PackRat(Rat):
+class PackRat(Rat, actors.Defensive):
 	_hostile_to = [Rogue]
 	_protection = 1
 	_max_inventory = 10
@@ -255,7 +257,7 @@ class Dungeon(scene.Scene):
 		writer.write(self.monsters)
 		writer.write(self.items)
 		writer.write(sorted(self.appliances))
-	def make_vision(self):
+	def make_vision(self, actor):
 		return Vision(self)
 	def get_area_rect(self): return Rect((0, 0), self.cells.size)
 	def generate_dungeon_floor(self):
