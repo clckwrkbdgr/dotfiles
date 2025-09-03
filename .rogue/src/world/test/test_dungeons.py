@@ -157,6 +157,11 @@ class TestVisibility(AbstractTestDungeon):
 		"""))
 
 class TestMovement(AbstractTestDungeon):
+	def should_detect_invalid_coords(self):
+		scene = game.Scene(RNG(0), [mock_dungeon._MockMiniRogueBuilderUnSettler])
+		scene.generate('mini rogue lonely')
+		self.assertTrue(scene.valid(Point(0, 0)))
+		self.assertFalse(scene.valid(Point(0, -1)))
 	def should_not_allow_move_player_diagonally_both_from_and_to_good_cell(self):
 		scene = game.Scene(RNG(0), [mock_dungeon._MockMiniRogueBuilderUnSettler])
 		scene.generate('mini rogue lonely')
@@ -195,33 +200,3 @@ class TestMovement(AbstractTestDungeon):
 		player = mock_dungeon.Player(Point(3, 1))
 		scene.enter_actor(player, None)
 		self.assertEqual(scene.exit_actor(player), player)
-
-class TestAngryMonsters(AbstractTestDungeon):
-	def should_angry_move_to_attack_player(self):
-		dungeon = self.dungeon = mock_dungeon.build('close angry monster')
-		list(dungeon.process_events(raw=True))
-
-		monster = dungeon.scene.monsters[-1]
-		dungeon.scene.monsters[-1].act(dungeon)
-		self.assertEqual(dungeon.scene.monsters[-1].pos, Point(10, 6))
-		self.assertEqual(len(dungeon.events), 1)
-		self.assertEqual(type(dungeon.events[0]), engine.Events.Move)
-		self.assertEqual(dungeon.events[0].actor, monster)
-		self.assertEqual(dungeon.events[0].dest, Point(10, 6))
-		list(dungeon.process_events(raw=True))
-
-		dungeon.scene.monsters[-1].act(dungeon)
-		self.assertEqual(len(dungeon.events), 2)
-		self.assertEqual(type(dungeon.events[0]), engine.Events.Attack)
-		self.assertEqual(dungeon.events[0].actor, monster)
-		self.assertEqual(dungeon.events[0].target, dungeon.get_player())
-		self.assertEqual(type(dungeon.events[1]), engine.Events.Health)
-		self.assertEqual(dungeon.events[1].target, dungeon.get_player())
-		self.assertEqual(dungeon.events[1].diff, -1)
-	def should_not_angry_move_when_player_is_out_of_sight(self):
-		dungeon = self.dungeon = mock_dungeon.build('close angry monster 2')
-		list(dungeon.process_events(raw=True))
-
-		dungeon.scene.monsters[-1].act(dungeon)
-		self.assertEqual(dungeon.scene.monsters[-1].pos, Point(4, 4))
-		self.assertEqual(len(dungeon.events), 0)

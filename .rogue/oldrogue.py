@@ -101,19 +101,8 @@ make_armor('Leather', "[", "leather", 2)
 make_armor('ChainMail', "[", "chain mail", 3)
 make_armor('PlateArmor', "[", "plate armor", 4)
 
-class RealMonster(actors.EquippedMonster):
+class RealMonster(actors.EquippedMonster, actors.Offensive):
 	_hostile_to = [actors.Player]
-
-	def act(self, dungeon):
-		vision = self.scene.make_vision(self)
-		vision.visit(self)
-		if not vision.is_visible(self.scene.get_player().pos):
-			return
-		shift = Point(
-				clckwrkbdgr.math.sign(dungeon.get_player().pos.x - self.pos.x),
-				clckwrkbdgr.math.sign(dungeon.get_player().pos.y - self.pos.y),
-				)
-		dungeon.move_actor(self, shift)
 
 class Rogue(actors.EquippedMonster, actors.Player):
 	_hostile_to = [RealMonster]

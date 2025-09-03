@@ -175,12 +175,13 @@ class PackRat(Rat, actors.Defensive):
 				],
 			]
 
-class Goblin(actors.EquippedMonster):
+class Goblin(actors.EquippedMonster, actors.Offensive):
 	_hostile_to = [Rogue, PackRat]
 	_sprite = Sprite('g', None)
 	_name = 'goblin'
 	_attack = 1
 	_max_hp = 10
+	_vision = 4
 	_max_inventory = 10
 
 ### Events. ####################################################################
@@ -209,6 +210,15 @@ class Handler(object):
 		return '{0} -> {1}'.format(event.actor, event.target)
 
 ### Map. #######################################################################
+
+class MonsterVision(vision.Vision):
+	def __init__(self, scene):
+		super(MonsterVision, self).__init__(scene)
+		self.monster = None
+	def is_visible(self, pos):
+		return distance(self.monster.pos, pos) <= self.monster.vision
+	def visit(self, monster):
+		self.monster = monster
 
 class Vision(vision.Vision):
 	def __init__(self, scene):
@@ -258,7 +268,9 @@ class Dungeon(scene.Scene):
 		writer.write(self.items)
 		writer.write(sorted(self.appliances))
 	def make_vision(self, actor):
-		return Vision(self)
+		if isinstance(actor, actors.Player):
+			return Vision(self)
+		return MonsterVision(self)
 	def get_area_rect(self): return Rect((0, 0), self.cells.size)
 	def generate_dungeon_floor(self):
 		builder = DungeonFloor(self.rng, Size(10, 10))

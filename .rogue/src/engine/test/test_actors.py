@@ -332,3 +332,30 @@ class TestBehaviour(AbstractTestDungeon):
 			Events.Attack(rat_close, self.game.scene.get_player(), 1),
 			Events.Health(self.game.scene.get_player(), -1),
 			])
+	def should_rush_towards_closest_enemy(self):
+		goblin = Goblin(Point(3, 5))
+		self.game.scene.monsters.append(goblin)
+		self.game.update_vision()
+		rogue = self.game.scene.get_player()
+		rogue.hp = 1
+		dagger = rogue.inventory[0]
+
+		list(self.game.process_events(raw=True)) # Clear events.
+		goblin.act(self.game)
+		self.assertEqual(self.game.events, [
+			Events.Move(goblin, Point(2, 5)),
+			])
+
+		list(self.game.process_events(raw=True)) # Clear events.
+		goblin.act(self.game)
+		self.assertEqual(self.game.events, [
+			Events.Attack(goblin, rogue, 1),
+			Events.Health(rogue, -1),
+			Events.Death(rogue),
+			Events.DropItem(rogue, dagger),
+			])
+
+		list(self.game.process_events(raw=True)) # Clear events.
+		goblin.act(self.game)
+		self.assertEqual(self.game.events, [
+			])

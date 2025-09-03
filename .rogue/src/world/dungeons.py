@@ -10,28 +10,6 @@ from ..engine.events import Event, ImportantEvent
 import clckwrkbdgr.math
 from clckwrkbdgr.collections import DocstringEnum as Enum
 
-class Angry(actors.EquippedMonster):
-	def act(self, game):
-		closest = []
-		for monster in game.scene.monsters:
-			if not self.is_hostile_to(monster):
-				continue
-			closest.append((clckwrkbdgr.math.distance(self.pos, monster.pos), monster))
-		if not closest: # pragma: no cover
-			return
-		_, player = sorted(closest)[0]
-
-		if not player: # pragma: no cover
-			return
-		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
-			game.attack(self, player)
-			return
-		vision = game.scene.make_vision(self)
-		vision.visit(self)
-		if vision.is_visible(player.pos):
-			direction = Direction.from_points(self.pos, player.pos)
-			game.move_actor(self, direction)
-
 class MonsterVision(vision.Vision):
 	def __init__(self, scene):
 		super(MonsterVision, self).__init__(scene)

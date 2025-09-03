@@ -621,6 +621,8 @@ class Game(object):
 				continue
 			if isinstance(monster, actors.Behaviour):
 				monster.act(self)
+			else: # pragma: no cover
+				Log.warning("Actor class {0} has no Behaviour.".format(type(monster)))
 
 		self.playing_time += 1
 		return True

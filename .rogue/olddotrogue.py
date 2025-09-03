@@ -104,7 +104,7 @@ class Slime(actors.EquippedMonster, actors.Defensive):
 			(1, HealingPotion),
 			]
 
-class Rodent(src.game.Angry):
+class Rodent(actors.EquippedMonster, actors.Offensive):
 	_hostile_to = [Player]
 	_name = 'rodent'
 	_sprite = Sprite('r', None)

@@ -97,7 +97,7 @@ class Player(Monster, src.engine.actors.Player):
 			if self.hp >= self.max_hp:
 				self.hp = self.max_hp
 
-class ColoredMonster(RealMonster, src.engine.actors.Defensive):
+class BaseColoredMonster(RealMonster):
 	_attack = 1
 	_max_inventory = 1
 	_hostile_to = [Player]
@@ -105,51 +105,24 @@ class ColoredMonster(RealMonster, src.engine.actors.Defensive):
 	def __init__(self, pos, sprite=None, max_hp=None):
 		self._sprite = sprite
 		self._max_hp = max_hp
-		super(ColoredMonster, self).__init__(pos)
+		super(BaseColoredMonster, self).__init__(pos)
 	def save(self, stream):
-		super(ColoredMonster, self).save(stream)
+		super(BaseColoredMonster, self).save(stream)
 		stream.write(self._sprite.sprite)
 		stream.write(self._sprite.color)
 		stream.write(self._max_hp)
 	def load(self, stream):
-		super(ColoredMonster, self).load(stream)
+		super(BaseColoredMonster, self).load(stream)
 		self._sprite = Sprite(stream.read(), stream.read())
 		self._max_hp = stream.read_int()
 
+class ColoredMonster(BaseColoredMonster, src.engine.actors.Defensive):
+	pass
+
 MAX_MONSTER_ACTION_LENGTH = 10
 
-class AggressiveColoredMonster(ColoredMonster):
+class AggressiveColoredMonster(BaseColoredMonster, src.engine.actors.Offensive):
 	_vision = 10
-	def act(self, game):
-		self_pos = self.coord.get_global(game.scene.world)
-		monster_action_range = Rect(
-				self_pos - Point(self.vision, self.vision),
-				Size(1 + self.vision * 2, 1 + self.vision * 2),
-				)
-		closest = []
-		for monster in game.scene.iter_actors_in_rect(monster_action_range):
-			if not self.is_hostile_to(monster):
-				continue
-			monster_pos = monster.coord.get_global(game.scene.world)
-			closest.append((
-				distance(self_pos, monster_pos),
-				monster.coord, monster,
-				))
-		if not closest:
-			return
-		_, monster_coord, monster = sorted(closest)[0]
-		monster_pos = monster_coord.get_global(game.scene.world)
-		if max(abs(self_pos.x - monster_pos.x), abs(self_pos.y - monster_pos.y)) <= 1:
-			game.attack(self, monster)
-			return
-		vision = game.scene.make_vision(self)
-		vision.visit(self)
-		if vision.is_visible(monster_pos):
-			shift = Point(
-					sign(monster_pos.x - self_pos.x),
-					sign(monster_pos.y - self_pos.y),
-					)
-			game.move_actor(self, shift)
 
 class Dweller(Monster, src.engine.actors.Neutral):
 	_max_hp = 10
@@ -255,7 +228,7 @@ class Builder(builders.Builder):
 			return Dweller(pos, color)
 		@classmethod
 		def monster(cls, pos, sprite, color, strong, aggressive):
-			monster_type = AggressiveColoredMonster if aggressive else ColoredMonster
+			monster_type = AggressiveColoredMonster if aggressive else CalmColoredMonster
 			return monster_type(pos,
 				Sprite(sprite.upper() if strong else sprite, color),
 				1 + 10 * strong + random.randrange(4),
@@ -408,7 +381,7 @@ events.Events.on(Events.Attack)(lambda _:'{0} hit {1}.'.format(_.actor.name.titl
 @events.Events.on(Events.Discover)
 def on_discover(event):
 	if hasattr(event.obj, 'name'):
-		if isinstance(event.obj, ColoredMonster):
+		if isinstance(event.obj, BaseColoredMonster):
 			return '{1} {0}!'.format(event.obj.name, event.obj.sprite.color)
 		return '{0}!'.format(event.obj.name)
 	else: # pragma: no cover

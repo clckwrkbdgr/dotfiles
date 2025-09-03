@@ -64,7 +64,7 @@ class MockMonster(actors.EquippedMonster):
 	_max_inventory = 5
 	_drops = None
 
-class AngryMonster(game.Angry):
+class AngryMonster(actors.EquippedMonster, actors.Offensive):
 	_hostile_to = [Player]
 	_name = 'monster'
 	_sprite = Sprite('M', None)
@@ -96,7 +96,7 @@ class DummyThief(actors.EquippedMonster):
 			(1, Money),
 			]
 
-class Thief(game.Angry):
+class Thief(actors.EquippedMonster, actors.Offensive):
 	_hostile_to = [Player]
 	_name = 'thief'
 	_sprite = Sprite('T', None)
@@ -176,8 +176,6 @@ class MockGame(engine.Game):
 		player = Player(None)
 		player.fill_drops(self.rng)
 		return player
-	def get_player(self): # TODO shortcut for testing purposes.
-		return self.scene.get_player()
 	def make_scene(self, scene_id):
 		_DATA = {
 			'now you see me': _MockBuilder_NowYouSeeMe,
@@ -243,9 +241,6 @@ class MockMapping:
 	@staticmethod
 	def monster(pos,*data):
 		return MockMonster(*(data + (pos,)))
-	@staticmethod
-	def angry_monster(pos,*data):
-		return AngryMonster(*(data + (pos,)))
 	@staticmethod
 	def inert_monster(pos,*data):
 		return InertMonster(*(data + (pos,)))
