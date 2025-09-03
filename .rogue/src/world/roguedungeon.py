@@ -1,19 +1,16 @@
 import functools
+if not hasattr(functools, 'lru_cache'): # pragma: no cover -- py2
+	functools.lru_cache = lambda: (lambda f:f)
 from collections import namedtuple
-import clckwrkbdgr.collections
 from clckwrkbdgr.collections import dotdict
-from clckwrkbdgr.utils import get_type_by_name, classfield
-from clckwrkbdgr.math import Point, Size, Rect, Matrix
+from clckwrkbdgr.math import Point, Rect, Matrix
 import clckwrkbdgr.math
 from ..engine import math, vision
 import logging
 trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
-from clckwrkbdgr import xdg
-from .. import engine
-from ..engine import events, scene
-from ..engine import actors, items, appliances
-from ..engine.items import Item, Wearable
+from ..engine import scene
+from ..engine import actors, appliances
 
 class Scene(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.

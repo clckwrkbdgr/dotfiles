@@ -1,14 +1,10 @@
-from clckwrkbdgr.math import Point, Direction, Matrix, Size, Rect
+from clckwrkbdgr.math import Point, Matrix, Size, Rect
 import logging
 Log = logging.getLogger('rogue')
 from ..engine import items, actors, scene, appliances
-from .. import engine
-from ..engine import auto
-from ..engine import math, vision
+from ..engine import vision
 from ..engine.terrain import Terrain
-from ..engine.events import Event, ImportantEvent
 import clckwrkbdgr.math
-from clckwrkbdgr.collections import DocstringEnum as Enum
 
 class MonsterVision(vision.Vision):
 	def __init__(self, scene):

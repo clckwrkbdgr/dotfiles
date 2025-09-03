@@ -204,6 +204,11 @@ class TestMonsters(unittest.TestCase):
 			])
 		self.assertFalse(rat.inventory)
 	def should_fill_random_drops(self):
+		rogue = Rogue(Point(1, 1))
+		rogue.fill_drops(pcg.RNG(1))
+		self.assertEqual(rogue.inventory, [
+			])
+
 		rat = Rat(Point(1, 1))
 		rat.fill_drops(pcg.RNG(1))
 		self.assertEqual(list(map(repr, rat.inventory)), list(map(repr, [

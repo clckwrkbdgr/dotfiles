@@ -1,52 +1,9 @@
 from clckwrkbdgr import unittest
 import textwrap, functools
-from clckwrkbdgr.math import Point, Matrix, get_neighbours, Rect, Size
-from ..roguedungeon import Item, Wearable
+from clckwrkbdgr.math import Point, Matrix, Rect, Size
 from ..roguedungeon import Scene
-from ...engine import events, Events
-from ...engine import items, actors, appliances
-from ...engine.ui import Sprite
-
-class NanoKey(Item):
-	_name = 'nanokey'
-	def __init__(self):
-		self.value = ''
-
-class Elevator(appliances.LevelPassage):
-	_sprite = Sprite('>', None)
-	_can_go_down = True
-	_unlocking_item = NanoKey
-	_id = 'basement'
-
-class Ladder(appliances.LevelPassage):
-	_sprite = Sprite('<', None)
-	_can_go_up = True
-	_id = 'roof'
-
-class StealthPistol(Item):
-	_attack = 5
-	_name = 'stealth pistol'
-	_sprite = Sprite('(', None)
-
-class ThermopticCamo(Item, Wearable):
-	_name = 'thermoptic camo'
-	_protection = 3
-
-class UNATCOAgent(actors.EquippedMonster, actors.Player):
-	_attack = 2
-	_max_hp = 100
-	_max_inventory = 2
-	_sprite = Sprite('@', None)
-
-class VacuumCleaner(actors.EquippedMonster):
-	_sprite = Sprite('v', None)
-	_max_hp = 5
-
-class MJ12Trooper(actors.EquippedMonster):
-	_attack = 3
-	_max_hp = 200
-	_hostile_to = [UNATCOAgent]
-	_sprite = Sprite('M', None)
+from ...engine import items
+from ...engine.mock import *
 
 class MockGenerator:
 	"""
@@ -69,8 +26,8 @@ class MockGenerator:
 		result.rooms.set_cell((1, 1), Scene.Room((6, 6), (8, 3)))
 		result.size = Size(14, 10)
 		result.objects = [
-				( (Point(1, 1), Elevator('basement', 'top')) ),
-				( (Point(3, 6), Ladder('roof', 'roof')) ),
+				( (Point(1, 1), StairsUp('basement', 'top')) ),
+				( (Point(3, 6), StairsDown('roof', 'roof')) ),
 				]
 		result.tunnels = [
 				Scene.Tunnel(Point(3, 1), Point(7, 3), 'H', 2),
@@ -105,9 +62,9 @@ class TestGridRoomMap(unittest.TestCase):
 	def should_move_within_terrain(self):
 		gridmap = scene = Scene(MockGenerator())
 		scene.generate('top')
-		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.enter_actor(Rogue(None), 'enter')
 		player = scene.get_player()
-		mj12 = MJ12Trooper(None)
+		mj12 = Goblin(None)
 		gridmap.monsters.append(mj12)
 
 		self.assertFalse(gridmap.can_move(player, Point(0, 0)))
@@ -131,9 +88,9 @@ class TestGridRoomMap(unittest.TestCase):
 	def should_detect_player_amongst_other_actors(self):
 		gridmap = scene = Scene(MockGenerator())
 		scene.generate('top')
-		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.enter_actor(Rogue(None), 'enter')
 
-		mj12 = MJ12Trooper(Point(9, 2))
+		mj12 = Goblin(Point(9, 2))
 		gridmap.monsters.append(mj12)
 
 		self.assertEqual(list(scene.iter_actors_at(Point(9, 2))), [mj12])
@@ -142,10 +99,10 @@ class TestGridRoomMap(unittest.TestCase):
 		gridmap = scene = Scene(MockGenerator())
 		scene.generate('top')
 
-		pistol = StealthPistol()
-		armor = ThermopticCamo()
+		pistol = Dagger()
+		armor = Rags()
 
-		mj12 = MJ12Trooper(None)
+		mj12 = Goblin(None)
 		mj12.inventory.append(pistol)
 		mj12.inventory.append(armor)
 
@@ -157,7 +114,7 @@ class TestGridRoomMap(unittest.TestCase):
 	def should_drop_and_grab_item(self):
 		gridmap = scene = Scene(MockGenerator())
 		scene.generate('top')
-		key = NanoKey()
+		key = Gold()
 		gridmap.drop_item(items.ItemAtPos(Point(1, 1), key))
 		self.assertEqual(list(scene.iter_items_at(Point(1, 1))), [key])
 
@@ -168,7 +125,7 @@ class TestDungeon(unittest.TestCase):
 	def should_iter_dungeon_cells(self):
 		scene = Scene(MockGenerator())
 		scene.generate('top')
-		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.enter_actor(Rogue(None), 'enter')
 		vision = scene.make_vision(scene.get_player())
 		scene.get_player().pos = Point(3, 1)
 		list(vision.visit(scene.get_player()))
@@ -179,10 +136,10 @@ class TestDungeon(unittest.TestCase):
 		scene.get_player().pos = Point(7, 3)
 		list(vision.visit(scene.get_player()))
 
-		mj12 = MJ12Trooper(None)
+		mj12 = Goblin(None)
 		mj12.pos = Point(8, 3)
 		scene.monsters.append(mj12)
-		pistol = StealthPistol()
+		pistol = Dagger()
 		scene.items.append((Point(9, 2), pistol))
 
 		view = Matrix((15, 10), '_')
@@ -204,12 +161,12 @@ class TestDungeon(unittest.TestCase):
 		self.maxDiff = None
 		self.assertEqual(view.tostring(), textwrap.dedent("""\
 				+--+___________
-				|>.+##_+----+__
+				|<.+##_+----+__
 				+--+_#_|.(..|__
-				_____##@M...|__
+				_____##@g...|__
 				_______+---++__
 				_+--++__####___
-				_|.<|_+-+----+_
+				_|.>|_+-+----+_
 				_|..+#+......|_
 				_|..|_+------+_
 				_+--+__________
@@ -241,7 +198,7 @@ class TestDungeon(unittest.TestCase):
 	def should_locate_in_maze(self):
 		scene = Scene(MockGenerator())
 		scene.generate('top')
-		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.enter_actor(Rogue(None), 'enter')
 
 		scene.get_player().pos = Point(1, 1)
 		self.assertEqual(scene.current_room, scene.rooms.cell((0, 0)))
@@ -257,14 +214,14 @@ class TestDungeon(unittest.TestCase):
 	def should_detect_player_by_monsters(self):
 		scene = Scene(MockGenerator())
 		scene.generate('top')
-		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.enter_actor(Rogue(None), 'enter')
 		scene.get_player().pos = Point(9, 3)
 
-		mj12 = MJ12Trooper(None)
+		mj12 = Goblin(None)
 		mj12.pos = Point(8, 3)
 		scene.monsters.append(mj12)
 
-		vacuum = VacuumCleaner(None)
+		vacuum = Butterfly(None)
 		vacuum.pos = Point(2, 1)
 		scene.monsters.append(vacuum)
 
@@ -278,14 +235,14 @@ class TestDungeon(unittest.TestCase):
 	def should_iter_monsters_in_rect(self):
 		scene = Scene(MockGenerator())
 		scene.generate('top')
-		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.enter_actor(Rogue(None), 'enter')
 		scene.get_player().pos = Point(9, 3)
 
-		mj12 = MJ12Trooper(None)
+		mj12 = Goblin(None)
 		mj12.pos = Point(8, 3)
 		scene.monsters.append(mj12)
 
-		vacuum = VacuumCleaner(None)
+		vacuum = Butterfly(None)
 		vacuum.pos = Point(2, 1)
 		scene.monsters.append(vacuum)
 
@@ -295,12 +252,12 @@ class TestDungeon(unittest.TestCase):
 	def should_treat_all_monsters_as_active(self):
 		scene = Scene(MockGenerator())
 		scene.generate('top')
-		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.enter_actor(Rogue(None), 'enter')
 		self.assertEqual(list(scene.iter_active_monsters()), list(scene.monsters))
 	def should_enter_and_exit_actor(self):
 		scene = Scene(MockGenerator())
 		scene.generate('top')
-		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.enter_actor(Rogue(None), 'enter')
 		self.assertTrue(scene.get_player())
 		scene.exit_actor(scene.get_player())
 		self.assertFalse(scene.get_player())
