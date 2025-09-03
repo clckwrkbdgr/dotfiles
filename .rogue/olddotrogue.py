@@ -2,11 +2,13 @@ from __future__ import print_function
 import os, sys
 import logging
 Log = logging.getLogger('rogue')
-import src.game, src.engine.items, src.engine.actors, src.engine.terrain
+import src.engine, src.engine.items, src.engine.actors, src.engine.terrain
+import src.world.dungeons
 from src.engine.ui import Sprite
 from src.engine import ui
+from src.engine.events import Events
 from clckwrkbdgr.math import Point, Direction, Rect, Size
-import src.pcg
+import src.world.dungeonbuilders
 import clckwrkbdgr.fs
 import src.engine.builders
 import clckwrkbdgr.serialize.stream
@@ -45,15 +47,11 @@ class DungeonSquatters(src.engine.builders.Builder):
 		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
 			yield _
 
-class Potion(src.engine.items.Item):
-	_name = 'potion'
-	_sprite = Sprite('!', None)
-
 class Healing(src.engine.items.Consumable):
 	healing = 0
 	def consume(self, target):
 		diff = target.affect_health(self.healing)
-		return [HealthEvent(target, diff)]
+		return [src.engine.Events.Health(target, diff)]
 
 class HealingPotion(src.engine.items.Item, Healing):
 	_name = 'healing potion'
@@ -69,15 +67,6 @@ class Player(src.engine.actors.EquippedMonster, src.engine.actors.Player):
 	_attack = 1
 	_max_inventory = 26
 
-class Monster(src.engine.actors.Monster):
-	_hostile_to = [Player]
-	_name = 'monster'
-	_sprite = Sprite('M', None)
-	_max_hp = 3
-	_vision = 10
-	_attack = 1
-	_max_inventory = 5
-
 class Plant(src.engine.actors.Monster, src.engine.actors.Neutral):
 	_hostile_to = [Player]
 	_name = 'plant'
@@ -91,7 +80,7 @@ class Plant(src.engine.actors.Monster, src.engine.actors.Neutral):
 			(5, HealingPotion),
 			]
 
-class Slime(actors.EquippedMonster, actors.Defensive):
+class Slime(src.engine.actors.EquippedMonster, src.engine.actors.Defensive):
 	_hostile_to = [Player]
 	_name = 'slime'
 	_sprite = Sprite('o', None)
@@ -104,7 +93,7 @@ class Slime(actors.EquippedMonster, actors.Defensive):
 			(1, HealingPotion),
 			]
 
-class Rodent(actors.EquippedMonster, actors.Offensive):
+class Rodent(src.engine.actors.EquippedMonster, src.engine.actors.Offensive):
 	_hostile_to = [Player]
 	_name = 'rodent'
 	_sprite = Sprite('r', None)
@@ -125,17 +114,17 @@ class Corner(src.engine.terrain.Terrain):
 	_name = 'corner'
 	_sprite = Sprite("+", None)
 	_passable = False
-	_remembered='+'
+	_remembered = Sprite("+", None)
 class Door(src.engine.terrain.Terrain):
 	_name = 'door'
 	_sprite = Sprite("+", None)
 	_passable = True
-	_remembered='+'
+	_remembered = Sprite("+", None)
 class RogueDoor(src.engine.terrain.Terrain):
 	_name = 'rogue_door'
 	_sprite = Sprite("+", None)
 	_passable = True
-	_remembered='+'
+	_remembered = Sprite("+", None)
 	_allow_diagonal=False
 	_dark=True
 class Floor(src.engine.terrain.Terrain):
@@ -151,29 +140,29 @@ class Passage(src.engine.terrain.Terrain):
 	_name = 'passage'
 	_sprite = Sprite("#", None)
 	_passable = True
-	_remembered='#'
+	_remembered = Sprite("#", None)
 class RoguePassage(src.engine.terrain.Terrain):
 	_name = 'rogue_passage'
 	_sprite = Sprite("#", None)
 	_passable = True
-	_remembered='#'
+	_remembered = Sprite("#", None)
 	_allow_diagonal=False
 	_dark=True
 class Wall(src.engine.terrain.Terrain):
 	_name = 'wall'
 	_sprite = Sprite('#', None)
 	_passable = False
-	_remembered='#'
+	_remembered = Sprite("#", None)
 class WallH(src.engine.terrain.Terrain):
 	_name = 'wall_h'
 	_sprite = Sprite("-", None)
 	_passable = False
-	_remembered='-'
+	_remembered = Sprite("-", None)
 class WallV(src.engine.terrain.Terrain):
 	_name = 'wall_v'
 	_sprite = Sprite("|", None)
 	_passable = False
-	_remembered='|'
+	_remembered = Sprite("|", None)
 class Water(src.engine.terrain.Terrain):
 	_name = 'water'
 	_sprite = Sprite("~", None)
@@ -214,26 +203,26 @@ class DungeonMapping:
 		return Rodent(*(data + (pos,)))
 	healing_potion = HealingPotion
 
-class BSPDungeon(src.pcg.BSPDungeon, DungeonSquatters):
+class BSPDungeon(src.world.dungeonbuilders.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
-class CityBuilder(src.pcg.CityBuilder, DungeonSquatters):
+class CityBuilder(src.world.dungeonbuilders.CityBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
-class Sewers(src.pcg.Sewers, DungeonSquatters):
+class Sewers(src.world.dungeonbuilders.Sewers, DungeonSquatters):
 	Mapping = DungeonMapping
-class RogueDungeon(src.pcg.RogueDungeon, DungeonSquatters):
+class RogueDungeon(src.world.dungeonbuilders.RogueDungeon, DungeonSquatters):
 	Mapping = DungeonMapping
-class CaveBuilder(src.pcg.CaveBuilder, DungeonSquatters):
+class CaveBuilder(src.world.dungeonbuilders.CaveBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
-class MazeBuilder(src.pcg.MazeBuilder, DungeonSquatters):
+class MazeBuilder(src.world.dungeonbuilders.MazeBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
 
-class Game(src.game.Game):
+class Game(src.engine.Game):
 	def make_player(self):
 		player = Player(None)
 		player.fill_drops(self.rng)
 		return player
 	def make_scene(self, scene_id):
-		return Scene(self.rng, [
+		return src.world.dungeons.Scene(self.rng, [
 			BSPDungeon,
 			CityBuilder,
 			Sewers,
@@ -283,7 +272,7 @@ class MainGame(src.engine.ui.MainGame):
 			return '{0}!'.format(event.obj)
 	@Events.on(src.engine.Events.AutoStop)
 	def on_auto_stop(self, event): # pragma: no cover
-		if isinstance(event.reason[0], actors.Actor):
+		if isinstance(event.reason[0], src.engine.actors.Actor):
 			return 'monsters!'
 		else:
 			return '{0}!'.format(event.reason[0])
@@ -365,10 +354,10 @@ def cli(debug=False, command=None, tests=None):
 		if savefile.reader:
 			game.load(savefile.reader)
 		else:
-			game.generate(None)
+			game.generate('dungeon')
 		with clckwrkbdgr.tui.Curses() as ui:
 			loop = clckwrkbdgr.tui.ModeLoop(ui)
-			main_mode = src.ui.MainGame(game)
+			main_mode = MainGame(game)
 			loop.run(main_mode)
 		if not game.is_finished():
 			savefile.save(game, src.game.Version.CURRENT)

@@ -1,30 +1,21 @@
-import os, sys
-import curses, curses.ascii
-import json, itertools, copy, functools
+import itertools
 import logging
-import inspect
-from operator import itemgetter
-from collections import namedtuple
-import six
-if six.PY2:
-	import itertools
-	filter = itertools.ifilter
-import vintage
 from clckwrkbdgr import xdg
-from clckwrkbdgr.utils import get_type_by_name
-from clckwrkbdgr.math import Point, Matrix
+from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr.fs import SerializedEntity
-import clckwrkbdgr.math
 from clckwrkbdgr.collections import dotdict, AutoRegistry
-import clckwrkbdgr.collections
-import clckwrkbdgr.text
 from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
-from . import game
-from .game import Version, Item, Wearable, Room, Tunnel, Scene, Event
-from . import pcg
-from ..engine import events, appliances, ui, Events
+import src.world.roguedungeon 
+from clckwrkbdgr.pcg import RNG
+import clckwrkbdgr.pcg.rogue
+from src.engine.items import Item, Wearable, Consumable
+from src.world.roguedungeon import Scene
+from src.engine import events, actors, appliances, ui, Events, builders
+from src.engine.ui import Sprite
+
+VERSION = 666
 
 class MakeEntity:
 	""" Creates builders for bare-properties-based classes to create subclass in one line. """
@@ -63,6 +54,10 @@ class StairsUp(appliances.LevelPassage):
 	_id = 'enter'
 	_can_go_up = True
 
+class McGuffin(Item):
+	_sprite = Sprite("*", None)
+	_name = "mcguffin"
+
 class DungeonGates(appliances.LevelPassage):
 	_sprite = Sprite('<', None)
 	_name = 'exit from the dungeon'
@@ -79,11 +74,7 @@ class StairsDown(appliances.LevelPassage):
 	_id = 'exit'
 	_can_go_down = True
 
-class McGuffin(Item):
-	_sprite = Sprite("*", None)
-	_name = "mcguffin"
-
-class HealingPotion(Item, items.Consumable):
+class HealingPotion(Item, Consumable):
 	_sprite = Sprite("!", None)
 	_name = "potion"
 	def consume(self, who):
@@ -207,70 +198,75 @@ hard_monsters << make_monster('Xenomorph', 'X', 'xenomorph', 30, 3, animal_drops
 norm_monsters << make_monster('Yeti', 'Y', 'yeti', 10, 2, animal_drops)
 norm_monsters << make_monster('Zealot', 'Z', 'zealot', 10, 2, thug_drops)
 
-events.Event.on(Events.GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
+events.Events.on(Events.GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
 
-events.Event.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
-events.Event.on(Events.Ascend)(lambda event:"Going up...")
-events.Event.on(Events.Descend)(lambda event:"Going down...")
+events.Events.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
+events.Events.on(Events.Ascend)(lambda event:"Going up...")
+events.Events.on(Events.Descend)(lambda event:"Going down...")
 class CannotGoBelow(events.Event): FIELDS = ''
-events.Event.on(CannotGoBelow)(lambda event:"No place down below.")
-events.Event.on(Events.CannotDescend)(lambda event:"Cannot dig through the ground.")
-events.Event.on(Events.CannotAscend)(lambda event:"Cannot reach the ceiling.")
+events.Events.on(CannotGoBelow)(lambda event:"No place down below.")
+events.Events.on(Events.CannotDescend)(lambda event:"Cannot dig through the ground.")
+events.Events.on(Events.CannotAscend)(lambda event:"Cannot reach the ceiling.")
 
 class NoSuchItem(events.Event): FIELDS = 'char'
-events.Event.on(NoSuchItem)(lambda event:"No such item '{char}'.".format(char=event.char))
-events.Event.on(Events.InventoryIsFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
-events.Event.on(Events.GrabItem)(lambda event: "Grabbed {item}.".format(who=event.who.name, item=event.item.name))
-events.Event.on(Events.NothingToPickUp)(lambda event:"There is nothing here to pick up.")
-events.Event.on(Events.InventoryIsEmpty)(lambda event:"Inventory is empty.")
-events.Event.on(Events.DropItem)(lambda event:"Dropped {item}.".format(Who=event.who.name.title(), item=event.item.name))
+events.Events.on(NoSuchItem)(lambda event:"No such item '{char}'.".format(char=event.char))
+events.Events.on(Events.InventoryIsFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
+events.Events.on(Events.GrabItem)(lambda event: "Grabbed {item}.".format(who=event.who.name, item=event.item.name))
+events.Events.on(Events.NothingToPickUp)(lambda event:"There is nothing here to pick up.")
+events.Events.on(Events.InventoryIsEmpty)(lambda event:"Inventory is empty.")
+events.Events.on(Events.DropItem)(lambda event:"Dropped {item}.".format(Who=event.who.name.title(), item=event.item.name))
 class DropsItem(events.Event): FIELDS = 'Who'
-events.Event.on(DropsItem)(lambda event:"{Who} drops {item}.".format(Who=event.Who))
+events.Events.on(DropsItem)(lambda event:"{Who} drops {item}.".format(Who=event.Who))
 
-events.Event.on(Events.NotConsumable)(lambda event:"Cannot consume {item}.".format(item=event.item.name))
-events.Event.on(Events.ConsumeItem)(lambda event:"Consumed {item}.".format(item=event.item.name))
+events.Events.on(Events.NotConsumable)(lambda event:"Cannot consume {item}.".format(item=event.item.name))
+events.Events.on(Events.ConsumeItem)(lambda event:"Consumed {item}.".format(item=event.item.name))
 class DrinksHealingPotion(events.Event): FIELDS = 'Who'
-events.Event.on(DrinksHealingPotion)(lambda event:"{Who} heals itself.".format(Who=event.Who))
+events.Events.on(DrinksHealingPotion)(lambda event:"{Who} heals itself.".format(Who=event.Who))
 
-events.Event.on(Events.NotWielding)(lambda event:"Nothing is wielded already.")
-events.Event.on(Events.Unwield)(lambda event:"Unwielding {item}.".format(item=event.item.name))
-events.Event.on(Events.Wield)(lambda event:"Wielding {item}.".format(item=event.item.name))
+events.Events.on(Events.NotWielding)(lambda event:"Nothing is wielded already.")
+events.Events.on(Events.Unwield)(lambda event:"Unwielding {item}.".format(item=event.item.name))
+events.Events.on(Events.Wield)(lambda event:"Wielding {item}.".format(item=event.item.name))
 
-events.Event.on(Events.NotWearable)(lambda event:"Cannot wear {item}.".format(item=event.item.name))
-events.Event.on(Events.NotWearing)(lambda event:"Nothing is worn already.")
-events.Event.on(Events.TakeOff)(lambda event:"Taking off {item}.".format(item=event.item.name))
-events.Event.on(Events.Wear)(lambda event:"Wearing {item}.".format(item=event.item.name))
+events.Events.on(Events.NotWearable)(lambda event:"Cannot wear {item}.".format(item=event.item.name))
+events.Events.on(Events.NotWearing)(lambda event:"Nothing is worn already.")
+events.Events.on(Events.TakeOff)(lambda event:"Taking off {item}.".format(item=event.item.name))
+events.Events.on(Events.Wear)(lambda event:"Wearing {item}.".format(item=event.item.name))
 
-events.Event.on(Events.Attack)(lambda event: "{Who} hit {whom} for {damage} hp.".format(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
-events.Event.on(Events.Death)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
-@events.Event.on(Events.BumpIntoTerrain)
+events.Events.on(Events.Attack)(lambda event: "{Who} hit {whom} for {damage} hp.".format(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
+events.Events.on(Events.Death)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
+@events.Events.on(Events.BumpIntoTerrain)
 def bumps_into_terrain(event):
 	if event.who != dungeon.get_player():
 		return "{Who} bumps into wall.".format(Who=event.who.name.title())
-events.Event.on(Event.BumpIntoMonster)(lambda event:"{Who} bumps into {whom}.".format(Who=event.who.name.title(), whom=event.whom.name))
+events.Events.on(Events.BumpIntoActor)(lambda event:"{Who} bumps into {whom}.".format(Who=event.who.name.title(), whom=event.whom.name))
 
-class WelcomeBack(Event): FIELDS = 'who'
-events.Event.on(WelcomeBack)(lambda event:"Welcome back, {who}!".format(who=event.who.name))
+events.Events.on(Events.WelcomeBack)(lambda event:"Welcome back, {who}!".format(who=event.who.name))
 
 class _Builder(builders.Builder):
-	class _Dungeon(clckwrkbdgr.pcg.rogue.Dungeon):
-		ROOM_CLASS = Room
-		TUNNEL_CLASS = Tunnel
-		MAX_TUNNEL_ETCHING_TRIES = 5
-	def __init__(self, depth, *args, **kwargs):
+	class Mapping:
+		HealingPotion = HealingPotion
+	def __init__(self, depth, is_bottom, *args, **kwargs):
 		self.depth = depth
+		self.is_bottom = is_bottom
 		super().__init__(*args, **kwargs)
 	def fill_grid(self, grid):
-		self.dungeon = self._Dungeon(self.size, (3, 3))
+		self.dungeon = clckwrkbdgr.pcg.rogue.Dungeon(self.rng, self.size, Size(3, 3), Size(4, 4))
+		self.dungeon.generate_rooms()
+		self.dungeon.generate_maze()
+		self.dungeon.generate_tunnels()
 	def generate_appliances(self):
-		self.enter_room_key = self.rng.choice(list(result.rooms.keys()))
-		enter_room = result.rooms.cell(self.enter_room_key)
-		yield (self.pos_in_rect(enter_room), 'enter')
+		self.enter_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+		enter_room = self.dungeon.grid.cell(self.enter_room_key)
+		yield (self.point_in_rect(enter_room), 'enter')
 
-		if not is_bottom:
-			exit_room_key = self.rng.choice(list(set(result.rooms.keys()) - {self.enter_room_key}))
-			exit_room = result.rooms.cell(exit_room_key)
-			yield (self.pos_in_rect(exit_room), 'exit')
+		if not self.is_bottom:
+			for _ in range(9):
+				exit_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+				exit_room = self.dungeon.grid.cell(exit_room_key)
+				if exit_room_key == self.enter_room_key:
+					continue
+			yield (self.point_in_rect(exit_room), 'exit')
+
 	def generate_items(self):
 		item_distribution = [
 			(50, HealingPotion),
@@ -282,35 +278,38 @@ class _Builder(builders.Builder):
 			(max(0, (self.depth-5) // 3), ChainMail),
 			(max(0, (self.depth-10) // 3), PlateArmor),
 			]
-		for _ in self.distribute(WeightedDistribution, item_distribution, self.amont_fixed(2, 4)
+		item_distribution = [(_, (item_type.__name__,)) for (_, item_type) in item_distribution]
+		for pos, item in self.distribute(builders.WeightedDistribution, item_distribution, self.amount_fixed(2, 4)
 			):
-			if _ is None:
+			if item is None:
 				continue
-			room = self.rng.choice(list(result.rooms.values()))
-			pos = self.pos_in_rect(room)
-			yield pos, _()
-		if is_bottom:
-			exit_room_key = self.rng.choice(list(set(result.rooms.keys()) - {self.enter_room_key}))
-			exit_room = result.rooms.cell(exit_room_key)
-			yield (self.pos_in_rect(exit_room), 'exit_item')
+			room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+			room = self.dungeon.grid.cell(room_key)
+			pos = self.point_in_rect(room)
+			yield pos, item
+		if self.is_bottom:
+			for _ in range(9):
+				exit_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+				exit_room = self.dungeon.grid.cell(exit_room_key)
+				if exit_room_key == self.enter_room_key:
+					continue
+			yield (self.point_in_rect(exit_room), 'exit_item')
 	def generate_actors(self):
 		monster_distribution = list(itertools.chain(
 			easy_monsters.get_distribution(self.depth),
 			norm_monsters.get_distribution(self.depth),
 			hard_monsters.get_distribution(self.depth),
 			))
-		available_rooms = [room for room in result.rooms.values() if room != enter_room and room != exit_room]
-		for pos, monster in self.distribute(WeightedDistribution, monster_distribution,  self.amont_fixed(5)):
+		monster_distribution = [(_, (monster_type.__name__,)) for (_, monster_type) in monster_distribution]
+		available_rooms = [room for room in self.dungeon.grid.keys() if room != self.enter_room_key]
+		for pos, monster in self.distribute(builders.WeightedDistribution, monster_distribution,  self.amount_fixed(5)):
 			if monster is None:
 				continue
-			room = self.rng.choice(list(result.rooms.values()))
-			pos = self.pos_in_rect(room)
-			monster = monster()
-			monster.pos = pos
-			monster.fill_drops(self.rng)
-			yield monster
+			room = self.dungeon.grid.cell(self.rng.choice(available_rooms))
+			pos = self.point_in_rect(room)
+			yield pos, monster
 
-class RogueDungeonGenerator(pcg.Generator):
+class RogueDungeonGenerator(object):
 	MAX_LEVELS = 26
 	SIZE = Size(78, 21)
 	def build_level(self, scene, level_id):
@@ -322,12 +321,19 @@ class RogueDungeonGenerator(pcg.Generator):
 		enter_object_type = StairsUp if level_id > 0 else DungeonGates
 		prev_level_id = level_id - 1 if level_id > 0 else None
 		next_level_id = level_id + 1 if not is_bottom else None
-		builder = _Builder(depth, random, self.SIZE)
-		builder.map_key(enter=enter_object_type(prev_level_id, 'exit'))
+		builder = _Builder(depth, is_bottom, RNG(), self.SIZE)
+		builder.map_key(enter=lambda:enter_object_type(prev_level_id, 'exit'))
 		if is_bottom:
-			builder.map_key(exit_item=McGuffin())
+			builder.map_key(exit_item=lambda:McGuffin())
 		else:
-			builder.map_key(exit=StairsDown(next_level_id, 'enter'))
+			builder.map_key(exit=lambda:StairsDown(next_level_id, 'enter'))
+		monster_distribution = list(itertools.chain(
+			easy_monsters.get_distribution(depth),
+			norm_monsters.get_distribution(depth),
+			hard_monsters.get_distribution(depth),
+			))
+		for _, monster_type in monster_distribution:
+			builder.map_key(**{monster_type.__name__:monster_type})
 		builder.generate()
 		scene.size = self.SIZE
 		scene.rooms = builder.dungeon.grid
@@ -335,6 +341,8 @@ class RogueDungeonGenerator(pcg.Generator):
 		scene.objects = list(builder.make_appliances())
 		scene.items = list(builder.make_items())
 		scene.monsters = list(builder.make_actors())
+		#monster = monster()
+		#monster.fill_drops(self.rng)
 
 class ExitWithoutSave(tui.app.AppExit):
 	def __init__(self):
@@ -408,18 +416,16 @@ class Greetings(tui.widgets.TextScreen):
 class Game(tui.app.App):
 	pass
 
-class RogueDungeon(engine.Game):
+class RogueDungeon(src.engine.Game):
 	def make_scene(self, scene_id):
 		return Scene(RogueDungeonGenerator())
 	def make_player(self):
-		rogue = super(RogueDungeon, self).make_player()
+		rogue = Rogue(None)
 		rogue.grab(Dagger())
 		return rogue
 
-def main(stdscr):
-	curses.curs_set(0)
-
-	with SerializedEntity(xdg.save_data_path('dotrogue')/'rogue.sav', Version._top(), entity_name='dungeon', unlink=True, readable=True) as savefile:
+def main(ui):
+	with SerializedEntity(xdg.save_data_path('dotrogue')/'oldrogue.sav', VERSION, entity_name='dungeon', unlink=True, readable=True) as savefile:
 		dungeon = RogueDungeon()
 		if savefile.entity:
 			dungeon.load(savefile.entity)
@@ -427,12 +433,13 @@ def main(stdscr):
 			dungeon.generate(0)
 			savefile.reset(dungeon)
 
-		game = Game(stdscr)
-		return_code = game.run(to_main_screen(dotdict(data=dungeon)))
+		game = Game(dungeon)
+		loop = clckwrkbdgr.tui.ModeLoop(ui)
+		loop.run(game)
 		if dungeon.is_finished():
 			savefile.reset()
 		else:
-			game.save(savefile.entity)
+			dungeon.save(savefile.entity)
 
 import click
 @click.command()
@@ -443,7 +450,8 @@ def cli(debug=False):
 			filename=xdg.save_state_path('dotrogue')/'rogue.log',
 			stream=None,
 			)
-	curses.wrapper(main)
+	with clckwrkbdgr.tui.Curses() as ui:
+		main(ui)
 
 if __name__ == '__main__':
 	cli()

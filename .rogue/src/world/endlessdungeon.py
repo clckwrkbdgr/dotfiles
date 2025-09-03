@@ -10,7 +10,7 @@ class Scene(scene.Scene):
 	def __init__(self):
 		self.terrain = None
 		self.monsters = []
-		self.builder = self.BUILDERS()
+		self.builder = type(self).BUILDERS()
 	def generate(self, id):
 		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block, default_value=self.builder.void)
 		self._player_pos = self.builder._start_pos

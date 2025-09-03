@@ -24,12 +24,17 @@ class EndlessVoid(terrain.Terrain):
 
 class Player(actors.Monster, actors.Player):
 	_sprite = ui.Sprite("@", None)
+	_vision = 20
 
 class Scene(endlessdungeon.Scene):
-	BUILDERS = lambda: endlessbuilders.Builders([FieldOfTanks, EmptySquare, FilledWithGarbage],
-					 void=EndlessVoid,
-					 floor=EndlessFloor,
-					 wall=EndlessWall,
+	BUILDERS = lambda: endlessbuilders.Builders([
+		endlessbuilders.FieldOfTanks,
+		endlessbuilders.EmptySquare,
+		endlessbuilders.FilledWithGarbage,
+		],
+					 void=EndlessVoid(),
+					 floor=EndlessFloor(),
+					 wall=EndlessWall(),
 					 start=lambda:'start'
 					 )
 
@@ -42,9 +47,9 @@ class Dungeon(engine.Game):
 class Game(ui.MainGame):
 	VIEW_CENTER = Point(12, 12)
 	INDICATORS = [
-			ui.Indicator(Point(27, 0), 29, lambda self:'Time: {0}'.format(self.game.time)),
+			ui.Indicator(Point(27, 0), 29, lambda self:'Time: {0}'.format(self.game.playing_time)),
 			ui.Indicator(Point(27, 1), 29, lambda self:'X:{x} Y:{y}  '.format(x=self.game.scene.get_player().pos.x, y=self.game.scene.get_player().pos.y)),
-			ui.Indicator(Point(27, 24), 29, lambda self:'[autoexploring, press ESC...]' if self.game.autoexplore else ''),
+			ui.Indicator(Point(27, 24), 29, lambda self:'[autoexploring, press ESC...]' if self.game.automovement else ''),
 			]
 
 	def get_viewrect(self):
@@ -61,12 +66,12 @@ def cli(debug=False):
 			filename=xdg.save_state_path('dotrogue')/'rogue.log',
 			stream=None,
 			)
-	with fs.SerializedEntity.store(xdg.save_data_path('dotrogue')/'rogue.sav', 'dungeon', Dungeon) as savefile:
+	with fs.SerializedEntity.store(xdg.save_data_path('dotrogue')/'endlessrogue.sav', 'dungeon', Dungeon) as savefile:
 		dungeon = Dungeon()
-		if savefile.entity:
+		if hasattr(savefile, 'entity') and savefile.entity:
 			dungeon.load(savefile.entity)
 		else:
-			dungeon.generate(None)
+			dungeon.generate('endless')
 		game = Game(dungeon)
 		with clckwrkbdgr.tui.Curses() as ui:
 			clckwrkbdgr.tui.Mode.run(game, ui)
