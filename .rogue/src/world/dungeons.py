@@ -10,20 +10,6 @@ from ..engine.events import Event, ImportantEvent
 import clckwrkbdgr.math
 from clckwrkbdgr.collections import DocstringEnum as Enum
 
-class Version(Enum):
-	""" INITIAL
-	PERSISTENT_RNG
-	TERRAIN_TYPES
-	MONSTERS
-	MONSTER_BEHAVIOR
-	ITEMS
-	INVENTORY
-	WIELDING
-	"""
-
-class Player(actors.EquippedMonster):
-	pass
-
 class Angry(actors.EquippedMonster):
 	def act(self, game):
 		closest = []
@@ -44,22 +30,6 @@ class Angry(actors.EquippedMonster):
 			if clckwrkbdgr.math.algorithm.FieldOfView.in_line_of_sight(self.pos, player.pos, is_transparent):
 				direction = Direction.from_points(self.pos, player.pos)
 				game.move_actor(self, direction)
-
-class Inert(actors.EquippedMonster):
-	def act(self, game):
-		closest = []
-		for monster in game.scene.monsters:
-			if not self.is_hostile_to(monster):
-				continue
-			closest.append((clckwrkbdgr.math.distance(self.pos, monster.pos), monster))
-		if not closest: # pragma: no cover
-			return
-		_, player = sorted(closest)[0]
-
-		if not player: # pragma: no cover
-			return
-		if clckwrkbdgr.math.distance(self.pos, player.pos) == 1:
-			game.attack(self, player)
 
 class Vision(vision.Vision):
 	def __init__(self, scene):
@@ -214,14 +184,19 @@ class Scene(scene.Scene):
 		self.monsters.remove(actor)
 	def get_player(self):
 		""" Returns player character if exists, or None. """
-		return next((monster for monster in self.monsters if isinstance(monster, Player)), None)
+		return next((monster for monster in self.monsters if isinstance(monster, actors.Player)), None)
 	def iter_actors_at(self, pos, with_player=False):
 		""" Yield all monsters at given cell. """
 		for monster in self.monsters:
-			if not with_player and isinstance(monster, Player):
+			if not with_player and isinstance(monster, actors.Player):
 				continue
 			if monster.pos == pos:
 				yield monster
+	def iter_actors_in_rect(self, rect):
+		for monster in self.monsters:
+			if not rect.contains(monster.pos, with_border=True):
+				continue
+			yield monster
 	def iter_items_at(self, pos):
 		""" Return all items at given cell. """
 		for item_pos, item in self.items:

@@ -67,7 +67,7 @@ class Wall(Terrain):
 class RealMonster(Monster):
 	pass
 
-class Player(Monster):
+class Player(Monster, src.engine.actors.Player):
 	_sprite = Sprite('@', 'bold_white')
 	_name = 'you'
 	_vision = 10
@@ -97,7 +97,7 @@ class Player(Monster):
 			if self.hp >= self.max_hp:
 				self.hp = self.max_hp
 
-class ColoredMonster(RealMonster):
+class ColoredMonster(RealMonster, src.engine.actors.Defensive):
 	_attack = 1
 	_max_inventory = 1
 	_hostile_to = [Player]
@@ -116,15 +116,6 @@ class ColoredMonster(RealMonster):
 		self._sprite = Sprite(stream.read(), stream.read())
 		self._max_hp = stream.read_int()
 
-	def act(self, game):
-		monster_pos = self.coord.get_global(game.scene.world)
-		close_rect = Rect(monster_pos - Point(1, 1), Size(3, 3))
-		for monster in game.scene.iter_monsters_in_rect(close_rect):
-			if not self.is_hostile_to(monster):
-				continue
-			game.attack(self, monster)
-			break
-
 MAX_MONSTER_ACTION_LENGTH = 10
 
 class AggressiveColoredMonster(ColoredMonster):
@@ -136,7 +127,7 @@ class AggressiveColoredMonster(ColoredMonster):
 				Size(1 + self.vision * 2, 1 + self.vision * 2),
 				)
 		closest = []
-		for monster in game.scene.iter_monsters_in_rect(monster_action_range):
+		for monster in game.scene.iter_actors_in_rect(monster_action_range):
 			if not self.is_hostile_to(monster):
 				continue
 			monster_pos = monster.coord.get_global(game.scene.world)
@@ -471,7 +462,7 @@ class Vision(vision.OmniVision):
 				Size(1 + actor.vision * 3 * 2 - 1, 1 + actor.vision * 2),
 				)
 		current_visible_monsters = []
-		for monster in self.scene.iter_monsters_in_rect(vision_range):
+		for monster in self.scene.iter_actors_in_rect(vision_range):
 			if monster == actor:
 				continue
 			if monster not in self.visible_monsters:
@@ -738,7 +729,7 @@ class Scene(scene.Scene):
 					if not raw:
 						coord = coord.get_global(self.world)
 					yield coord, monster
-	def iter_monsters_in_rect(self, rect):
+	def iter_actors_in_rect(self, rect):
 		monster_zone_topleft = NestedGrid.Coord.from_global(rect.topleft, self.world)
 		monster_zone_bottomright = NestedGrid.Coord.from_global(rect.bottomright, self.world)
 		monster_zone_range = iter_rect(monster_zone_topleft.values[0], monster_zone_bottomright.values[0])
@@ -754,7 +745,7 @@ class Scene(scene.Scene):
 				player_pos - Point(MAX_MONSTER_ACTION_LENGTH, MAX_MONSTER_ACTION_LENGTH),
 				Size(1 + MAX_MONSTER_ACTION_LENGTH * 2, 1 + MAX_MONSTER_ACTION_LENGTH * 2),
 				)
-		for monster in self.iter_monsters_in_rect(monster_action_range):
+		for monster in self.iter_actors_in_rect(monster_action_range):
 			yield monster
 
 def iter_rect(topleft, bottomright):

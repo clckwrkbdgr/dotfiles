@@ -44,7 +44,7 @@ class Name(actors.EquippedMonster):
 			(2, Potion),
 			]
 
-class Player(game.Player):
+class Player(actors.EquippedMonster, actors.Player):
 	_hostile_to = [actors.Monster]
 	_name = 'player'
 	_sprite = Sprite('@', None)
@@ -74,7 +74,7 @@ class AngryMonster(game.Angry):
 	_max_inventory = 5
 	_drops = None
 
-class InertMonster(game.Inert):
+class InertMonster(actors.EquippedMonster, actors.Defensive):
 	_hostile_to = [Player]
 	_name = 'monster'
 	_sprite = Sprite('M', None)

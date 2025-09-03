@@ -2,7 +2,6 @@ from clckwrkbdgr import unittest
 import textwrap, functools
 from clckwrkbdgr.math import Point, Matrix, get_neighbours, Rect, Size
 from ..roguedungeon import Item, Wearable
-from ..roguedungeon import Player
 from ..roguedungeon import Scene
 from ...engine import events, Events
 from ...engine import items, actors, appliances
@@ -33,7 +32,7 @@ class ThermopticCamo(Item, Wearable):
 	_name = 'thermoptic camo'
 	_protection = 3
 
-class UNATCOAgent(Player):
+class UNATCOAgent(actors.EquippedMonster, actors.Player):
 	_attack = 2
 	_max_hp = 100
 	_max_inventory = 2
@@ -271,6 +270,23 @@ class TestDungeon(unittest.TestCase):
 
 		self.assertTrue(scene.actor_sees_player(mj12))
 		self.assertFalse(scene.actor_sees_player(vacuum))
+	def should_iter_monsters_in_rect(self):
+		scene = Scene(MockGenerator())
+		scene.generate('top')
+		scene.enter_actor(UNATCOAgent(None), 'basement')
+		scene.get_player().pos = Point(9, 3)
+
+		mj12 = MJ12Trooper(None)
+		mj12.pos = Point(8, 3)
+		scene.monsters.append(mj12)
+
+		vacuum = VacuumCleaner(None)
+		vacuum.pos = Point(2, 1)
+		scene.monsters.append(vacuum)
+
+		self.assertEqual(list(scene.iter_actors_in_rect(
+			Rect((8, 2), Size(3, 3))
+			)), scene.monsters[:2])
 	def should_treat_all_monsters_as_active(self):
 		scene = Scene(MockGenerator())
 		scene.generate('top')

@@ -1,4 +1,4 @@
-from clckwrkbdgr.math import Point
+from clckwrkbdgr.math import Point, Rect, Size
 from clckwrkbdgr.utils import classfield
 from clckwrkbdgr import pcg
 from clckwrkbdgr import utils
@@ -68,6 +68,10 @@ class Actor(object):
 		writer.write(type(self).__name__)
 		writer.write(self.pos)
 
+class Behaviour(object):
+	""" Base trait for behavior.
+	Monsters that can act should inherit from any kind of Behaviour class.
+	"""
 	def act(self, game): # pragma: no cover
 		""" Custom actions for the actor on the given game state.
 		Default implementation does nothing (dummy).
@@ -306,3 +310,22 @@ class EquippedMonster(Monster):
 		item, self.wearing = self.wearing, None
 		self.inventory.append(item)
 		return item
+
+class Player(Behaviour):
+	""" Trait for player character.
+	Does nothing in act() due to being controlled by UI input.
+	"""
+	def act(self, game): # pragma: no cover
+		pass
+
+class Defensive(Behaviour):
+	""" Stands still. Attacks only monsters within melee distance.
+	"""
+	def act(self, game):
+		pos = game.scene.get_global_pos(self)
+		close_rect = Rect(pos - Point(1, 1), Size(3, 3))
+		for monster in game.scene.iter_actors_in_rect(close_rect):
+			if not self.is_hostile_to(monster):
+				continue
+			game.attack(self, monster)
+			break

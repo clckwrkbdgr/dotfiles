@@ -20,23 +20,16 @@ class AbstractTestDungeon(unittest.TestCase):
 		if hasattr(self, 'dungeon'):
 			msg = (msg or '') + '\n' + self.dungeon.scene.tostring(self.dungeon.scene.get_area_rect())
 		return super(AbstractTestDungeon, self)._formatMessage(msg, standardMsg)
-	def _events(self):
-		return [list(repr(event) for callback, event in self.dungeon.process_events(raw=True, bind_self=self))]
 
 class TestMonsters(AbstractTestDungeon):
 	def should_treat_all_monsters_as_active(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
 		self.assertEqual(list(self.dungeon.scene.iter_active_monsters()), self.dungeon.scene.monsters)
-	def should_act_inert_and_attack_only_closest_enemy(self):
+	def should_iter_monsters_in_rect(self):
 		dungeon = self.dungeon = mock_dungeon.build('fighting around')
-		list(dungeon.process_events(raw=True))
-		dungeon.move_actor(dungeon.get_player(), game.Direction.UP) # Step in.
-		dungeon.scene.monsters[2].act(dungeon)
-		self.assertEqual(self._events(), [[
-			'Move(actor=player, dest=[9, 5])',
-			'Attack(actor=monster, target=player, damage=1)',
-			'Health(target=player, diff=-1)',
-			]])
+		self.assertEqual(list(self.dungeon.scene.iter_actors_in_rect(
+			Rect((8, 5), Size(3, 3))
+			)), self.dungeon.scene.monsters[:2])
 
 class TestItems(AbstractTestDungeon):
 	def should_grab_items(self):

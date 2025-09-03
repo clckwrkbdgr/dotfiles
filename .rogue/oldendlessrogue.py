@@ -22,7 +22,7 @@ class EndlessVoid(terrain.Terrain):
 	_name = ' '
 	_passable = False
 
-class Player(actors.Monster):
+class Player(actors.Monster, actors.Player):
 	_sprite = ui.Sprite("@", None)
 
 class Scene(endlessdungeon.Scene):

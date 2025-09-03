@@ -60,7 +60,7 @@ class HealingPotion(src.engine.items.Item, Healing):
 	_sprite = Sprite('!', None)
 	healing = +5
 
-class Player(src.game.Player):
+class Player(src.engine.actors.EquippedMonster, src.engine.actors.Player):
 	_hostile_to = [src.engine.actors.Monster]
 	_name = 'player'
 	_sprite = Sprite('@', None)
@@ -91,7 +91,7 @@ class Plant(src.engine.actors.Monster):
 			(5, HealingPotion),
 			]
 
-class Slime(src.game.Inert):
+class Slime(actors.EquippedMonster, actors.Defensive):
 	_hostile_to = [Player]
 	_name = 'slime'
 	_sprite = Sprite('o', None)

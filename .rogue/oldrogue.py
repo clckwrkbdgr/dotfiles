@@ -22,7 +22,7 @@ from clckwrkbdgr import tui
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 from . import game
-from .game import Version, Item, Wearable, Player, Room, Tunnel, Scene, Event
+from .game import Version, Item, Wearable, Room, Tunnel, Scene, Event
 from . import pcg
 from ..engine import events, appliances, ui, Events
 
@@ -102,7 +102,7 @@ make_armor('ChainMail', "[", "chain mail", 3)
 make_armor('PlateArmor', "[", "plate armor", 4)
 
 class RealMonster(actors.EquippedMonster):
-	_hostile_to = [Player]
+	_hostile_to = [actors.Player]
 
 	def act(self, dungeon):
 		if not dungeon.scene.actor_sees_player(self):
@@ -113,7 +113,7 @@ class RealMonster(actors.EquippedMonster):
 				)
 		dungeon.move_actor(self, shift)
 
-class Rogue(Player):
+class Rogue(actors.EquippedMonster, actors.Player):
 	_hostile_to = [RealMonster]
 	_sprite = Sprite("@", None)
 	_name = "rogue"

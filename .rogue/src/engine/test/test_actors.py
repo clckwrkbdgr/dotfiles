@@ -7,6 +7,8 @@ import clckwrkbdgr.serialize.stream as savefile
 from clckwrkbdgr.math import Point
 from .. import actors, items
 from ..mock import *
+from .utils import AbstractTestDungeon
+from .._base import Events
 from clckwrkbdgr import pcg
 
 VERSION = 666
@@ -312,3 +314,21 @@ class TestEquippedMonsters(unittest.TestCase):
 		goblin.grab(rags)
 		goblin.wear(rags)
 		self.assertEqual(goblin.get_protection(), 1)
+
+class TestBehaviour(AbstractTestDungeon):
+	def should_act_inert_and_attack_only_closest_enemy(self):
+		rat_close = Rat(Point(2, 5))
+		rat_far = Rat(Point(3, 5))
+		self.game.scene.monsters.append(rat_close)
+		self.game.scene.monsters.append(rat_far)
+		self.game.update_vision()
+		list(self.game.process_events(raw=True)) # Clear events.
+
+		rat_far.act(self.game)
+		self.assertEqual(self.game.events, [])
+
+		rat_close.act(self.game)
+		self.assertEqual(self.game.events, [
+			Events.Attack(rat_close, self.game.scene.get_player(), 1),
+			Events.Health(self.game.scene.get_player(), -1),
+			])

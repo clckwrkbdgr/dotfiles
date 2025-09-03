@@ -126,6 +126,11 @@ class Scene(object):
 	def iter_appliances_at(self, pos): # pragma: no cover
 		""" Should iterate over all appliance objects at the specified position. """
 		raise NotImplementedError()
+	def iter_actors_in_rect(self, rect): # pragma: no cover
+		""" Should iterate over all actors within given rect.
+		Could return player character.
+		"""
+		raise NotImplementedError()
 	def iter_active_monsters(self): # pragma: no cover
 		""" Should iterate over all actors that could act in the current turn
 		(e.g. actors in some area around player, leaving all other intact).

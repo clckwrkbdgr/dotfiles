@@ -15,23 +15,6 @@ from ..engine import events, scene
 from ..engine import actors, items, appliances
 from ..engine.items import Item, Wearable
 
-class Version(clckwrkbdgr.collections.Enum):
-	auto = clckwrkbdgr.collections.Enum.auto()
-	INITIAL = auto()
-	ENTER_EXIT = auto()
-	LEVELS = auto()
-	ITEMS = auto()
-	INVENTORY = auto()
-	MONSTERS = auto()
-	HITPOINTS = auto()
-	ITEM_CLASSES = auto()
-	WIELDING = auto()
-	WEARING = auto()
-	JSONPICKLE = auto()
-
-class Player(actors.EquippedMonster):
-	_name = 'player'
-
 class Scene(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
 	Items, monsters, fitment objects are supplied.
@@ -223,17 +206,22 @@ class Scene(scene.Scene):
 	def iter_actors_at(self, pos, with_player=False):
 		""" Yield monsters at pos in reverse order (from top to bottom). """
 		for monster in reversed(self.monsters):
-			if not with_player and isinstance(monster, Player):
+			if not with_player and isinstance(monster, actors.Player):
 				continue
 			if monster.pos == pos:
 				yield monster
+	def iter_actors_in_rect(self, rect):
+		for monster in self.monsters:
+			if not rect.contains(monster.pos, with_border=True):
+				continue
+			yield monster
 	def iter_appliances_at(self, pos):
 		""" Yield objects at pos in reverse order (from top to bottom). """
 		for obj_pos, obj in reversed(self.objects):
 			if obj_pos == pos:
 				yield obj
 	def get_player(self):
-		return next((monster for monster in self.monsters if isinstance(monster, Player)), None)
+		return next((monster for monster in self.monsters if isinstance(monster, actors.Player)), None)
 	def iter_active_monsters(self):
 		return self.monsters
 

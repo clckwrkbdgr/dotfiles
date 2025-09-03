@@ -138,7 +138,7 @@ class Butterfly(actors.Actor):
 	def act(self, game):
 		game.fire_event(FlopWings(self))
 
-class Rogue(actors.EquippedMonster):
+class Rogue(actors.EquippedMonster, actors.Player):
 	_hostile_to = [actors.Monster]
 	_sprite = Sprite('@', None)
 	_name = 'rogue'
@@ -147,7 +147,7 @@ class Rogue(actors.EquippedMonster):
 	_max_hp = 10
 	_max_inventory = 26
 
-class Rat(actors.Monster):
+class Rat(actors.Monster, actors.Defensive):
 	_hostile_to = [Rogue]
 	_sprite = Sprite('r', None)
 	_name = 'rat'
@@ -334,6 +334,11 @@ class Dungeon(scene.Scene):
 				continue
 			if monster.pos == pos:
 				yield monster
+	def iter_actors_in_rect(self, rect):
+		for monster in self.monsters:
+			if not rect.contains(monster.pos, with_border=True):
+				continue
+			yield monster
 	def iter_appliances_at(self, pos):
 		for obj_pos, obj in self.appliances:
 			if obj_pos == pos:
