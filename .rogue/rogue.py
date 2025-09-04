@@ -106,8 +106,10 @@ class BaseColoredMonster(RealMonster):
 	def __init__(self, pos, sprite=None, max_hp=None):
 		self._sprite = sprite
 		self._max_hp = max_hp
-		self._name = self.sprite.color + ' ' + self._name
 		super(BaseColoredMonster, self).__init__(pos)
+	@property
+	def name(self):
+		return self.sprite.color + ' ' + self._name
 	def save(self, stream):
 		super(BaseColoredMonster, self).save(stream)
 		stream.write(self._sprite.sprite)
@@ -230,7 +232,7 @@ class Builder(builders.Builder):
 			return Dweller(pos, color)
 		@classmethod
 		def monster(cls, pos, sprite, color, strong, aggressive):
-			monster_type = AggressiveColoredMonster if aggressive else CalmColoredMonster
+			monster_type = AggressiveColoredMonster if aggressive else ColoredMonster
 			return monster_type(pos,
 				Sprite(sprite.upper() if strong else sprite, color),
 				1 + 10 * strong + random.randrange(4),
@@ -739,18 +741,18 @@ def main(ui):
 
 class MainGameMode(ui.MainGame):
 	INDICATORS = [
-			ui.Indicator((62, 0), 18, lambda self: "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
+			((62, 0), ui.Indicator(18, lambda self: "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
 				self.game.scene.get_player_coord().values[0].x,
 				self.game.scene.get_player_coord().values[1].x,
 				self.game.scene.get_player_coord().values[2].x,
 				self.game.scene.get_player_coord().values[0].y,
 				self.game.scene.get_player_coord().values[1].y,
 				self.game.scene.get_player_coord().values[2].y,
-				)),
-			ui.Indicator((62, 1), 18, lambda self:"T:{0}".format(self.game.playing_time)),
-			ui.Indicator((62, 2), 18, lambda self:"hp:{0}/{1}".format(self.game.scene.get_player().hp, self.game.scene.get_player().max_hp) if self.game.scene.get_player() else ""),
-			ui.Indicator((62, 3), 18, lambda self:"inv:{0}".format(len(self.game.scene.get_player().inventory)) if self.game.scene.get_player() else ""),
-			ui.Indicator((62, 4), 18, lambda self:"here:{0}".format(self.item_here().sprite.sprite) if self.item_here() else ""),
+				))),
+			((62, 1), ui.Indicator(18, lambda self:"T:{0}".format(self.game.playing_time))),
+			((62, 2), ui.Indicator(18, lambda self:"hp:{0}/{1}".format(self.game.scene.get_player().hp, self.game.scene.get_player().max_hp) if self.game.scene.get_player() else "")),
+			((62, 3), ui.Indicator(18, lambda self:"inv:{0}".format(len(self.game.scene.get_player().inventory)) if self.game.scene.get_player() else "")),
+			((62, 4), ui.Indicator(18, lambda self:"here:{0}".format(self.item_here().sprite.sprite) if self.item_here() else "")),
 			]
 	def __init__(self, game):
 		super(MainGameMode, self).__init__(game)

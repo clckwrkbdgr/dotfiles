@@ -57,9 +57,9 @@ class MockUI:
 
 class MockMainGame(ui.MainGame):
 	INDICATORS = [
-			ui.Indicator((0, 0), 10, lambda _:'pos: {0}'.format(_.game.scene.get_player().pos)),
-			ui.Indicator((12, 0), 10, lambda _:'aim: {0}'.format(_.aim) if _.aim else ''),
-			ui.Indicator((9, 1), 10, lambda _:'monsters: {0}'.format(len(_.game.scene.monsters))),
+			(0, ui.CaptionedIndicator('pos', 6, lambda _:_.game.scene.get_player().pos)),
+			(0, ui.CaptionedIndicator('aim', 6, lambda _:_.aim)),
+			((9, 1), ui.Indicator(10, lambda _:'monsters: {0}'.format(len(_.game.scene.monsters)))),
 			]
 	def get_map_shift(self):
 		return Point(0, 1)

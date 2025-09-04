@@ -234,23 +234,23 @@ class Game(src.engine.Game):
 
 class MainGame(src.engine.ui.MainGame):
 	INDICATORS = [
-			ui.Indicator((0, 24), 11, lambda self: 'hp: {0:>{1}}/{2}'.format(
+			((0, 24), ui.Indicator(11, lambda self: 'hp: {0:>{1}}/{2}'.format(
 				self.game.scene.get_player().hp,
 				len(str(self.game.scene.get_player().max_hp)),
-				self.game.scene.get_player().max_hp) if self.game.scene.get_player() else '[DEAD] Press Any Key...'),
-			ui.Indicator((12, 24), 7, lambda self: 'here: {0}'.format(
+				self.game.scene.get_player().max_hp) if self.game.scene.get_player() else '[DEAD] Press Any Key...')),
+			(24, ui.Indicator(7, lambda self: 'here: {0}'.format(
 				next(self.game.scene.iter_items_at(self.game.scene.get_player().pos), None).sprite.sprite,
-				) if self.game.scene.get_player() and next(self.game.scene.iter_items_at(self.game.scene.get_player().pos), None) else ''),
-			ui.Indicator((20, 24), 7, lambda self: 'inv: {0:>2}'.format(
+				) if self.game.scene.get_player() and next(self.game.scene.iter_items_at(self.game.scene.get_player().pos), None) else '')),
+			(24, ui.Indicator(7, lambda self: 'inv: {0:>2}'.format(
 				''.join(item.sprite.sprite for item in self.game.scene.get_player().inventory)
 				if len(self.game.scene.get_player().inventory) <= 2
 				else len(self.game.scene.get_player().inventory)
 				) if self.game.scene.get_player() and self.game.scene.get_player().inventory else ''
-					 ),
-			ui.Indicator((28, 24), 6, lambda self: '[auto]' if self.game.in_automovement() else ''),
-			ui.Indicator((34, 24), 5, lambda self: '[vis]' if self.game.god.vision else ''),
-			ui.Indicator((39, 24), 6, lambda self: '[clip]' if self.game.god.noclip else ''),
-			ui.Indicator((77, 24), 3, lambda self: '[?]'),
+					 )),
+			(24, ui.Indicator(6, lambda self: '[auto]' if self.game.in_automovement() else '')),
+			(24, ui.Indicator(5, lambda self: '[vis]' if self.game.god.vision else '')),
+			(24, ui.Indicator(6, lambda self: '[clip]' if self.game.god.noclip else '')),
+			(24, ui.Indicator(3, lambda self: '[?]')),
 			]
 
 	def get_map_shift(self):

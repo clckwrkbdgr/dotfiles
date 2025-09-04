@@ -25,17 +25,32 @@ class Indicator(object):
 	Displays updatable value with optional label at specified location
 	and takes fixed width.
 	"""
-	def __init__(self, pos, width, value_getter):
+	def __init__(self, width, value_getter):
 		""" Value getter should take Mode as parameter
 		and return string value of specified width or less.
 		Result string will be padded automatically.
 		"""
-		self.pos = Point(pos)
 		self.width = width
 		self.value_getter = value_getter
-	def draw(self, ui, mode):
+	def draw(self, ui, pos, mode):
 		value = self.value_getter(mode)
-		ui.print_line(self.pos.y, self.pos.x, value.ljust(self.width))
+		ui.print_line(pos.y, pos.x, value.ljust(self.width))
+
+class CaptionedIndicator(Indicator):
+	""" Displays static caption with dynamic value
+	if form "caption: value"
+	"""
+	def __init__(self, caption, value_width, value_getter):
+		""" Full width is calculated from caption length and given value width.
+		Value getter should return only value.
+		If returned value is None, hides indicator completely.
+		"""
+		super(CaptionedIndicator, self).__init__(len(caption) + 2 + value_width, self.get_value)
+		self.caption = caption
+		self.actual_value_getter = value_getter
+	def get_value(self, mode):
+		value = self.actual_value_getter(mode)
+		return '{0}: {1}'.format(self.caption, str(value)) if value is not None else ''
 
 _MainKeys = clckwrkbdgr.tui.Keymapping()
 class MainGame(clckwrkbdgr.tui.Mode):
@@ -43,7 +58,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	"""
 	Keys = _MainKeys
 	KEYMAPPING = _MainKeys
-	INDICATORS = []
+	INDICATORS = [] # See .draw_status()
 
 	def __init__(self, game):
 		self.game = game
@@ -156,11 +171,24 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			self.messages[0] = self.messages[0][-to_remove:]
 		ui.print_line(pos.y, pos.x, message_line.ljust(line_width))
 	def draw_status(self, ui):
-		""" Draws status line/panel with indicators defined in .INDICATORS.
+		""" Draws status line/panel with indicators defined in .INDICATORS,
+		which should be a list of tuples (pos, Indicator).
+		Pos should be either a point or an integer (line number) - in the
+		latter case it will draw on the same line as previous indicator,
+		but fit right next to it, considering its width.
 		See Indicator for details.
 		"""
-		for indicator in self.INDICATORS:
-			indicator.draw(ui, self)
+		prev_pos, prev_width = Point(0, -1), 0
+		for pos, indicator in self.INDICATORS:
+			if isinstance(pos, int):
+				if pos == prev_pos.y:
+					pos = Point(prev_pos.x + prev_width + 1, prev_pos.y)
+				else:
+					pos = Point(0, pos)
+			else:
+				pos = Point(pos)
+			indicator.draw(ui, pos, self)
+			prev_pos, prev_width = pos, indicator.width
 
 	# Actual controls.
 

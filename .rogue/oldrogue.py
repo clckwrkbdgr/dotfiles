@@ -366,17 +366,17 @@ class GameCompleted(Exception):
 
 class MainGame(ui.MainGame):
 	INDICATORS = [
-			ui.Indicator((0, 24), 9, lambda dungeon: 'Depth: ' + str(1+dungeon.game.current_scene_id)),
-			ui.Indicator((10, 24), 10, lambda dungeon: "HP: " + "{0}/{1}".format(dungeon.game.scene.get_player().hp, dungeon.game.scene.get_player().max_hp)),
-			ui.Indicator((21, 24), 9, lambda dungeon:"Items: " + (
+			((0, 24), ui.Indicator(9, lambda dungeon: 'Depth: ' + str(1+dungeon.game.current_scene_id))),
+			(24, ui.Indicator(10, lambda dungeon: "HP: " + "{0}/{1}".format(dungeon.game.scene.get_player().hp, dungeon.game.scene.get_player().max_hp))),
+			(24, ui.Indicator(9, lambda dungeon:"Items: " + (
 				'' if not dungeon.game.scene.get_player().inventory else (
 					''.join(item.sprite.sprite for item in dungeon.game.scene.get_player().inventory)
 					if len(dungeon.game.scene.get_player().inventory) <= 2
 					else len(dungeon.game.scene.get_player().inventory)
-					))),
-			ui.Indicator((31, 24), 12, lambda dungeon: "Wld: " + (dungeon.game.scene.get_player().wielding.name if dungeon.game.scene.get_player().wielding else '')),
-			ui.Indicator((44, 24), 13, lambda dungeon: "Wear: " + (dungeon.game.scene.get_player().wearing.name if dungeon.game.scene.get_player().wearing else '')),
-			ui.Indicator((58, 24), 7, lambda dungeon: "Here: " + dungeon.sprite_here(dungeon.game.scene.get_player().pos)),
+					)))),
+			(24, ui.Indicator(12, lambda dungeon: "Wld: " + (dungeon.game.scene.get_player().wielding.name if dungeon.game.scene.get_player().wielding else ''))),
+			(24, ui.Indicator(13, lambda dungeon: "Wear: " + (dungeon.game.scene.get_player().wearing.name if dungeon.game.scene.get_player().wearing else ''))),
+			(24, ui.Indicator(7, lambda dungeon: "Here: " + dungeon.sprite_here(dungeon.game.scene.get_player().pos))),
 			]
 	def sprite_here(self, pos):
 		item = next(self.game.scene.iter_items_at(pos), None)
