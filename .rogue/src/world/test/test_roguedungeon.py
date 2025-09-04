@@ -4,6 +4,37 @@ from clckwrkbdgr.math import Point, Matrix, Rect, Size
 from ..roguedungeon import Scene
 from ...engine import items
 from ...engine.mock import *
+import src.engine.terrain
+
+class Corner(src.engine.terrain.Terrain):
+	_name = 'corner'
+	_sprite = Sprite("+", None)
+	_passable = False
+	_remembered = Sprite("+", None)
+class RogueDoor(src.engine.terrain.Terrain):
+	_name = 'rogue_door'
+	_sprite = Sprite("+", None)
+	_passable = True
+	_remembered = Sprite("+", None)
+	_allow_diagonal=False
+	_dark=True
+class RoguePassage(src.engine.terrain.Terrain):
+	_name = 'rogue_passage'
+	_sprite = Sprite("#", None)
+	_passable = True
+	_remembered = Sprite("#", None)
+	_allow_diagonal=False
+	_dark=True
+class WallH(src.engine.terrain.Terrain):
+	_name = 'wall_h'
+	_sprite = Sprite("-", None)
+	_passable = False
+	_remembered = Sprite("-", None)
+class WallV(src.engine.terrain.Terrain):
+	_name = 'wall_v'
+	_sprite = Sprite("|", None)
+	_passable = False
+	_remembered = Sprite("|", None)
 
 class MockGenerator:
 	"""
@@ -25,6 +56,14 @@ class MockGenerator:
 		result.rooms.set_cell((0, 1), Scene.Room((1, 5), (4, 5)))
 		result.rooms.set_cell((1, 1), Scene.Room((6, 6), (8, 3)))
 		result.size = Size(14, 10)
+		result.terrain = Matrix((1, 8))
+		result.terrain.clear(Void())
+		result.terrain.set_cell((0, 1), Corner())
+		result.terrain.set_cell((0, 2), WallV())
+		result.terrain.set_cell((0, 3), WallH())
+		result.terrain.set_cell((0, 4), Floor())
+		result.terrain.set_cell((0, 5), RoguePassage())
+		result.terrain.set_cell((0, 6), RogueDoor())
 		result.objects = [
 				( (Point(1, 1), StairsUp('basement', 'top')) ),
 				( (Point(3, 6), StairsDown('roof', 'roof')) ),
@@ -142,9 +181,11 @@ class TestDungeon(unittest.TestCase):
 		pistol = Dagger()
 		scene.items.append((Point(9, 2), pistol))
 
-		view = Matrix((15, 10), '_')
-		visible = Matrix((15, 10), '.')
-		visited = Matrix((15, 10), '.')
+		self.assertEqual(scene.get_cell_info(Point(8, 3))[0].name, 'floor')
+
+		view = Matrix(scene.get_area_rect().size, ' ')
+		visible = Matrix(scene.get_area_rect().size, '.')
+		visited = Matrix(scene.get_area_rect().size, '.')
 		for pos, (terrain, objects, items, monsters) in scene.iter_cells(None):
 			if vision.is_visible(pos):
 				visible.set_cell(pos, '*')
@@ -160,40 +201,40 @@ class TestDungeon(unittest.TestCase):
 				view.set_cell(pos, terrain.sprite.sprite)
 		self.maxDiff = None
 		self.assertEqual(view.tostring(), textwrap.dedent("""\
-				+--+___________
-				|<.+##_+----+__
-				+--+_#_|.(..|__
-				_____##@g...|__
-				_______+---++__
-				_+--++__####___
-				_|.>|_+-+----+_
-				_|..+#+......|_
-				_|..|_+------+_
-				_+--+__________
-				"""))
+				+--+__________
+				|<.+##_+----+_
+				+--+_#_|.(..|_
+				_____##@g...|_
+				_______+---++_
+				_+--+___####__
+				_|.>|_+-+----+
+				_|..+#+......|
+				_|..|_+------+
+				_+--+_________
+				""").replace('_', ' '))
 		self.assertEqual(visible.tostring(), textwrap.dedent("""\
-				...............
-				...***.******..
-				.....*.******..
-				.....********..
-				.......******..
-				...............
-				...............
-				...............
-				...............
-				...............
+				..............
+				...***.******.
+				.....*.******.
+				.....********.
+				.......******.
+				..............
+				..............
+				..............
+				..............
+				..............
 				""").replace('_', ' '))
 		self.assertEqual(visited.tostring(), textwrap.dedent("""\
-				****...........
-				******.******..
-				****.*.******..
-				.....********..
-				.......******..
-				...............
-				...............
-				...............
-				...............
-				...............
+				****..........
+				******.******.
+				****.*.******.
+				.....********.
+				.......******.
+				..............
+				..............
+				..............
+				..............
+				..............
 				""").replace('_', ' '))
 	def should_locate_in_maze(self):
 		scene = Scene(MockGenerator())

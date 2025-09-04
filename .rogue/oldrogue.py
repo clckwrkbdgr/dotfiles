@@ -1,10 +1,11 @@
 import itertools
 import logging
 from clckwrkbdgr import xdg
-from clckwrkbdgr.math import Point, Size
+from clckwrkbdgr.math import Point, Size, Rect
 from clckwrkbdgr.fs import SerializedEntity
 from clckwrkbdgr.collections import dotdict, AutoRegistry
 from clckwrkbdgr import tui
+import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
 import src.world.roguedungeon 
@@ -47,6 +48,44 @@ class EntityClassDistribution:
 		else:
 			value = self.prob
 		return [(value, entity_class) for entity_class in self.classes]
+
+class Void(src.engine.terrain.Terrain):
+	_name = 'void'
+	_sprite = Sprite(' ', None)
+	_passable = False
+class Corner(src.engine.terrain.Terrain):
+	_name = 'corner'
+	_sprite = Sprite("+", None)
+	_passable = False
+	_remembered = Sprite("+", None)
+class RogueDoor(src.engine.terrain.Terrain):
+	_name = 'rogue_door'
+	_sprite = Sprite("+", None)
+	_passable = True
+	_remembered = Sprite("+", None)
+	_allow_diagonal=False
+	_dark=True
+class Floor(src.engine.terrain.Terrain):
+	_name = 'floor'
+	_sprite = Sprite(".", None)
+	_passable = True
+class RoguePassage(src.engine.terrain.Terrain):
+	_name = 'rogue_passage'
+	_sprite = Sprite("#", None)
+	_passable = True
+	_remembered = Sprite("#", None)
+	_allow_diagonal=False
+	_dark=True
+class WallH(src.engine.terrain.Terrain):
+	_name = 'wall_h'
+	_sprite = Sprite("-", None)
+	_passable = False
+	_remembered = Sprite("-", None)
+class WallV(src.engine.terrain.Terrain):
+	_name = 'wall_v'
+	_sprite = Sprite("|", None)
+	_passable = False
+	_remembered = Sprite("|", None)
 
 class StairsUp(appliances.LevelPassage):
 	_sprite = Sprite('<', None)
@@ -203,20 +242,14 @@ events.Events.on(Events.GodModeSwitched)(lambda event:"God {name} -> {state}".fo
 events.Events.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
 events.Events.on(Events.Ascend)(lambda event:"Going up...")
 events.Events.on(Events.Descend)(lambda event:"Going down...")
-class CannotGoBelow(events.Event): FIELDS = ''
-events.Events.on(CannotGoBelow)(lambda event:"No place down below.")
 events.Events.on(Events.CannotDescend)(lambda event:"Cannot dig through the ground.")
 events.Events.on(Events.CannotAscend)(lambda event:"Cannot reach the ceiling.")
 
-class NoSuchItem(events.Event): FIELDS = 'char'
-events.Events.on(NoSuchItem)(lambda event:"No such item '{char}'.".format(char=event.char))
 events.Events.on(Events.InventoryIsFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
-events.Events.on(Events.GrabItem)(lambda event: "Grabbed {item}.".format(who=event.who.name, item=event.item.name))
+events.Events.on(Events.GrabItem)(lambda event: "Grabbed {item}.".format(who=event.actor.name, item=event.item.name))
 events.Events.on(Events.NothingToPickUp)(lambda event:"There is nothing here to pick up.")
 events.Events.on(Events.InventoryIsEmpty)(lambda event:"Inventory is empty.")
-events.Events.on(Events.DropItem)(lambda event:"Dropped {item}.".format(Who=event.who.name.title(), item=event.item.name))
-class DropsItem(events.Event): FIELDS = 'Who'
-events.Events.on(DropsItem)(lambda event:"{Who} drops {item}.".format(Who=event.Who))
+events.Events.on(Events.DropItem)(lambda event:"{Who} drops {item}.".format(Who=event.who.name.title(), item=event.item.name))
 
 events.Events.on(Events.NotConsumable)(lambda event:"Cannot consume {item}.".format(item=event.item.name))
 events.Events.on(Events.ConsumeItem)(lambda event:"Consumed {item}.".format(item=event.item.name))
@@ -236,8 +269,8 @@ events.Events.on(Events.Attack)(lambda event: "{Who} hit {whom} for {damage} hp.
 events.Events.on(Events.Death)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
 @events.Events.on(Events.BumpIntoTerrain)
 def bumps_into_terrain(event):
-	if event.who != dungeon.get_player():
-		return "{Who} bumps into wall.".format(Who=event.who.name.title())
+	if not isinstance(event.actor, actors.Player):
+		return "{Who} bumps into wall.".format(Who=event.actor.name.title())
 events.Events.on(Events.BumpIntoActor)(lambda event:"{Who} bumps into {whom}.".format(Who=event.who.name.title(), whom=event.whom.name))
 
 events.Events.on(Events.WelcomeBack)(lambda event:"Welcome back, {who}!".format(who=event.who.name))
@@ -245,6 +278,12 @@ events.Events.on(Events.WelcomeBack)(lambda event:"Welcome back, {who}!".format(
 class _Builder(builders.Builder):
 	class Mapping:
 		HealingPotion = HealingPotion
+		corner = Corner()
+		floor = Floor()
+		tunnel = RoguePassage()
+		door = RogueDoor()
+		wall_h = WallH()
+		wall_v = WallV()
 	def __init__(self, depth, is_bottom, *args, **kwargs):
 		self.depth = depth
 		self.is_bottom = is_bottom
@@ -254,6 +293,13 @@ class _Builder(builders.Builder):
 		self.dungeon.generate_rooms()
 		self.dungeon.generate_maze()
 		self.dungeon.generate_tunnels()
+		grid.clear('void')
+		grid.set_cell((0, 1), 'corner')
+		grid.set_cell((0, 2), 'wall_v')
+		grid.set_cell((0, 3), 'wall_h')
+		grid.set_cell((0, 4), 'floor')
+		grid.set_cell((0, 5), 'tunnel')
+		grid.set_cell((0, 6), 'door')
 	def generate_appliances(self):
 		self.enter_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
 		enter_room = self.dungeon.grid.cell(self.enter_room_key)
@@ -334,19 +380,17 @@ class RogueDungeonGenerator(object):
 			))
 		for _, monster_type in monster_distribution:
 			builder.map_key(**{monster_type.__name__:monster_type})
+		builder.map_key(**{'void':Void})
 		builder.generate()
 		scene.size = self.SIZE
 		scene.rooms = builder.dungeon.grid
 		scene.tunnels = builder.dungeon.tunnels
+		scene.terrain = builder.make_grid()
 		scene.objects = list(builder.make_appliances())
 		scene.items = list(builder.make_items())
 		scene.monsters = list(builder.make_actors())
 		#monster = monster()
 		#monster.fill_drops(self.rng)
-
-class ExitWithoutSave(tui.app.AppExit):
-	def __init__(self):
-		super(ExitWithoutSave, self).__init__(False)
 
 class GameCompleted(Exception):
 	pass
@@ -384,37 +428,11 @@ Controls = AutoRegistry()
 class MainGame(ui.MainGame):
 	_full_redraw = True
 	def get_viewrect(self):
-		return None
+		return self.game.scene.get_area_rect()
 	def get_map_shift(self):
 		return Point(0, 1)
-	def _view(self, window):
-		self.draw_map(ui)
-	def _control(self, ch):
-		try:
-			new_mode = Controls[str(ch)](self)
-			if new_mode:
-				return new_mode
-			self.game.process_others()
-			if not dungeon.get_player().is_alive():
-				return MessageView(Grave, self.data)
-		except KeyError:
-			trace.debug("Unknown key: {0}".format(ch))
-			pass
-
-class Grave(tui.widgets.TextScreen):
-	LINES = [
-			"You failed to reach mcguffin!"
-			]
-	RETURN_VALUE = ExitWithoutSave
-
-class Greetings(tui.widgets.TextScreen):
-	LINES = [
-			"Mcguffin is successfully retrieved!"
-			]
-	RETURN_VALUE = ExitWithoutSave
-
-class Game(tui.app.App):
-	pass
+	def get_message_line_rect(self):
+		return Rect(Point(0, 0), Size(80, 1))
 
 class RogueDungeon(src.engine.Game):
 	def make_scene(self, scene_id):
@@ -425,21 +443,21 @@ class RogueDungeon(src.engine.Game):
 		return rogue
 
 def main(ui):
-	with SerializedEntity(xdg.save_data_path('dotrogue')/'oldrogue.sav', VERSION, entity_name='dungeon', unlink=True, readable=True) as savefile:
+	savefile = clckwrkbdgr.serialize.stream.Savefile(xdg.save_data_path('dotrogue')/'oldrogue.sav')
+	with clckwrkbdgr.serialize.stream.AutoSavefile(savefile) as savefile:
 		dungeon = RogueDungeon()
-		if savefile.entity:
-			dungeon.load(savefile.entity)
+		if savefile.reader:
+			dungeon.load(savefile.reader)
 		else:
 			dungeon.generate(0)
-			savefile.reset(dungeon)
 
-		game = Game(dungeon)
+		game = MainGame(dungeon)
 		loop = clckwrkbdgr.tui.ModeLoop(ui)
 		loop.run(game)
 		if dungeon.is_finished():
-			savefile.reset()
+			savefile.savefile.unlink()
 		else:
-			dungeon.save(savefile.entity)
+			pass # savefile.save(dungeon, 666)
 
 import click
 @click.command()

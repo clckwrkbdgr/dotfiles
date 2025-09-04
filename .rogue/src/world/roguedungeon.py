@@ -53,6 +53,8 @@ class Scene(scene.Scene):
 		found = next(_ for _ in self.items if _ == item_at_pos)
 		self.items.remove(found)
 		return found.item
+	def get_area_rect(self):
+		return Rect((0, 0),self.size)
 	def valid(self, pos): # pragma: no cover -- TODO
 		return 0 <= pos.x < self.size.width and 0 <= pos.y < self.size.height
 	@functools.lru_cache()
@@ -104,32 +106,43 @@ class Scene(scene.Scene):
 					return False
 				return True
 		return False
-	def get_cell_info(self, pos): # pragma: no cover -- TODO
-		terrain = []
+	def _get_terrain_name(self, pos):
+		pos = Point(pos.y, pos.x)
+		for tunnel in self.tunnels:
+			if pos == (tunnel.start.y, tunnel.start.x): return "door"
+			if pos == (tunnel.stop.y, tunnel.stop.x): return "door"
+			for cell in tunnel.iter_points():
+				if pos == (cell.y, cell.x): return "tunnel"
 		for room in self.rooms.values():
-			terrain.append((room.top, room.left, "+"))
-			terrain.append((room.bottom, room.left, "+"))
-			terrain.append((room.top, room.right, "+"))
-			terrain.append((room.bottom, room.right, "+"))
+			if pos == (room.top, room.left): return "corner"
+			if pos == (room.bottom, room.left): return "corner"
+			if pos == (room.top, room.right): return "corner"
+			if pos == (room.bottom, room.right): return "corner"
 			for x in range(room.left+1, room.right):
-				terrain.append((room.top, x, "-"))
-				terrain.append((room.bottom, x, "-"))
+				if pos == (room.top, x): return "wall_h"
+				if pos == (room.bottom, x): return "wall_h"
 			for y in range(room.top+1, room.bottom):
-				terrain.append((y, room.left, "|"))
-				terrain.append((y, room.right, "|"))
+				if pos == (y, room.left): return "wall_v"
+				if pos == (y, room.right): return "wall_v"
 			for y in range(room.top+1, room.bottom):
 				for x in range(room.left+1, room.right):
-					terrain.append((y, x, (".", ' ')))
-		for tunnel in self.tunnels:
-			for cell in tunnel.iter_points():
-				terrain.append((cell.y, cell.x, "#"))
-			terrain.append((tunnel.start.y, tunnel.start.x, "+"))
-			terrain.append((tunnel.stop.y, tunnel.stop.x, "+"))
+					if pos == (y, x): return 'floor'
+		return 'void'
+	def _get_terrain(self, pos):
+		terrain = self._get_terrain_name(pos)
+		return self.terrain.cell((0, {
+			'void':  0,
+			'corner':1,
+			'wall_v':2,
+			'wall_h':3,
+			'floor': 4,
+			'tunnel':5,
+			'door'  :6,
+			}[terrain]))
+	def get_cell_info(self, pos):
 		pos = Point(pos)
-		Mock_Terrain = namedtuple('Mock_Terrain', 'sprite')
-		Mock_Sprite = namedtuple('Mock_Sprite', 'sprite')
 		return (
-				next(Mock_Terrain(Mock_Sprite(s)) for (y, x, s) in terrain if pos.x == x and pos.y == y),
+				self._get_terrain(pos),
 				list(self.iter_appliances_at(pos)),
 				list(self.iter_items_at(pos)),
 				list(self.iter_actors_at(pos, with_player=True)),
@@ -161,37 +174,12 @@ class Scene(scene.Scene):
 		return self.tunnel_of(self.get_player().pos)
 	def iter_cells(self, view_rect):
 		trace.debug(list(self.rooms.keys()))
-		terrain = []
-		for room in self.rooms.values():
-			terrain.append((room.top, room.top, "+"))
-			terrain.append((room.top, room.left, "+"))
-			terrain.append((room.bottom, room.left, "+"))
-			terrain.append((room.top, room.right, "+"))
-			terrain.append((room.bottom, room.right, "+"))
-			for x in range(room.left+1, room.right):
-				terrain.append((room.top, x, "-"))
-				terrain.append((room.bottom, x, "-"))
-			for y in range(room.top+1, room.bottom):
-				terrain.append((y, room.left, "|"))
-				terrain.append((y, room.right, "|"))
-			for y in range(room.top+1, room.bottom):
-				for x in range(room.left+1, room.right):
-					terrain.append((y, x, ".")) # , ' ')))
-		for tunnel in self.tunnels:
-			for cell in tunnel.iter_points():
-				terrain.append((cell.y, cell.x, "#"))
-			terrain.append((tunnel.start.y, tunnel.start.x, "+"))
-			terrain.append((tunnel.stop.y, tunnel.stop.x, "+"))
-
-		Mock_Terrain = namedtuple('Mock_Terrain', 'sprite')
-		Mock_Sprite = namedtuple('Mock_Sprite', 'sprite')
-		for y, x, sprite in terrain:
-			sprite = Mock_Terrain(Mock_Sprite(sprite))
-			pos = Point(x, y)
+		for pos in self.size.iter_points():
+			terrain = self._get_terrain(pos)
 			objects = list(self.iter_appliances_at(pos))
 			items = list(self.iter_items_at(pos))
 			monsters = list(self.iter_actors_at(pos, with_player=True))
-			yield pos, (sprite, objects, items, monsters)
+			yield pos, (terrain, objects, items, monsters)
 	def iter_items_at(self, pos):
 		""" Yield items at pos in reverse order (from top to bottom). """
 		for item_pos, item in reversed(self.items):
