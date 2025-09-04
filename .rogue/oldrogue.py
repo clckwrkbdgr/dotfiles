@@ -14,6 +14,7 @@ from src.engine.items import Item, Wearable, Consumable
 from src.world.roguedungeon import Scene
 from src.engine import events, actors, appliances, ui, Events, builders
 from src.engine.ui import Sprite
+from hud import *
 
 VERSION = 666
 
@@ -239,40 +240,9 @@ norm_monsters << make_monster('Zealot', Sprite('Z', None), 'zealot', 10, 2, thug
 events.Events.on(Events.GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
 
 events.Events.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
-events.Events.on(Events.Ascend)(lambda event:"Going up...")
-events.Events.on(Events.Descend)(lambda event:"Going down...")
-events.Events.on(Events.CannotDescend)(lambda event:"Cannot dig through the ground.")
-events.Events.on(Events.CannotAscend)(lambda event:"Cannot reach the ceiling.")
 
-events.Events.on(Events.InventoryIsFull)(lambda event: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
-events.Events.on(Events.GrabItem)(lambda event: "Grabbed {item}.".format(who=event.actor.name, item=event.item.name))
-events.Events.on(Events.NothingToPickUp)(lambda event:"There is nothing here to pick up.")
-events.Events.on(Events.InventoryIsEmpty)(lambda event:"Inventory is empty.")
-events.Events.on(Events.DropItem)(lambda event:"{Who} drops {item}.".format(Who=event.who.name.title(), item=event.item.name))
-
-events.Events.on(Events.NotConsumable)(lambda event:"Cannot consume {item}.".format(item=event.item.name))
-events.Events.on(Events.ConsumeItem)(lambda event:"Consumed {item}.".format(item=event.item.name))
 class DrinksHealingPotion(events.Event): FIELDS = 'Who'
 events.Events.on(DrinksHealingPotion)(lambda event:"{Who} heals itself.".format(Who=event.Who))
-
-events.Events.on(Events.NotWielding)(lambda event:"Nothing is wielded already.")
-events.Events.on(Events.Unwield)(lambda event:"Unwielding {item}.".format(item=event.item.name))
-events.Events.on(Events.Wield)(lambda event:"Wielding {item}.".format(item=event.item.name))
-
-events.Events.on(Events.NotWearable)(lambda event:"Cannot wear {item}.".format(item=event.item.name))
-events.Events.on(Events.NotWearing)(lambda event:"Nothing is worn already.")
-events.Events.on(Events.TakeOff)(lambda event:"Taking off {item}.".format(item=event.item.name))
-events.Events.on(Events.Wear)(lambda event:"Wearing {item}.".format(item=event.item.name))
-
-events.Events.on(Events.Attack)(lambda event: "{Who} hit {whom} for {damage} hp.".format(Who=event.who.name.title(), whom=event.whom.name, damage=event.damage))
-events.Events.on(Events.Death)(lambda event:"{Who} is dead.".format(Who=event.who.name.title()))
-@events.Events.on(Events.BumpIntoTerrain)
-def bumps_into_terrain(event):
-	if not isinstance(event.actor, actors.Player):
-		return "{Who} bumps into wall.".format(Who=event.actor.name.title())
-events.Events.on(Events.BumpIntoActor)(lambda event:"{Who} bumps into {whom}.".format(Who=event.who.name.title(), whom=event.whom.name))
-
-events.Events.on(Events.WelcomeBack)(lambda event:"Welcome back, {who}!".format(who=event.who.name))
 
 class _Builder(builders.Builder):
 	class Mapping:

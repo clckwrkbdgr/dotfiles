@@ -12,6 +12,7 @@ import src.world.dungeonbuilders
 import clckwrkbdgr.fs
 import src.engine.builders
 import clckwrkbdgr.serialize.stream
+from hud import *
 
 class DungeonSquatters(src.engine.builders.Builder):
 	""" Set of squatters, randomly distributed throughout the map
@@ -258,68 +259,6 @@ class MainGame(src.engine.ui.MainGame):
 		return self.game.scene.get_area_rect()
 	def get_message_line_rect(self):
 		return Rect(Point(0, 0), Size(80, 1))
-	@Events.on(src.engine.Events.Welcome)
-	def on_new_game(self, event):
-		return ''
-	@Events.on(src.engine.Events.WelcomeBack)
-	def on_load_game(self, event): # pragma: no cover
-		return ''
-	@Events.on(src.engine.Events.Discover)
-	def on_discovering(self, event):
-		if hasattr(event.obj, 'name'):
-			return '{0}!'.format(event.obj.name)
-		else: # pragma: no cover
-			return '{0}!'.format(event.obj)
-	@Events.on(src.engine.Events.AutoStop)
-	def on_auto_stop(self, event): # pragma: no cover
-		if isinstance(event.reason[0], src.engine.actors.Actor):
-			return 'monsters!'
-		else:
-			return '{0}!'.format(event.reason[0])
-	@Events.on(src.engine.Events.NothingToPickUp)
-	def on_nothing_to_pick_up(self, event): # pragma: no cover
-		return ''
-	@Events.on(src.engine.Events.Attack)
-	def on_attack(self, event): # pragma: no cover
-		return '{0} x> {1}.'.format(event.actor.name, event.target.name)
-	@Events.on(src.engine.Events.Health)
-	def on_health_change(self, event): # pragma: no cover
-		return '{0}{1:+}hp.'.format(event.target.name, event.diff)
-	@Events.on(src.engine.Events.Death)
-	def on_death(self, event): # pragma: no cover
-		return '{0} dies.'.format(event.target.name)
-	@Events.on(src.engine.Events.Move)
-	def on_movement(self, event): # pragma: no cover
-		if event.actor != self.game.scene.get_player():
-			return '{0}...'.format(event.actor.name)
-	@Events.on(src.engine.Events.Descend)
-	def on_descending(self, event): # pragma: no cover
-		return '{0} V...'.format(event.actor.name)
-	@Events.on(src.engine.Events.BumpIntoTerrain)
-	def on_bumping(self, event): # pragma: no cover
-		if event.actor != self.game.scene.get_player():
-			return '{0} bumps.'.format(event.actor.name)
-	@Events.on(src.engine.Events.InventoryIsEmpty)
-	def on_empty_inventory(self, event): # pragma: no cover
-		return ''
-	@Events.on(src.engine.Events.GrabItem)
-	def on_grabbing(self, event): # pragma: no cover
-		return '{0} ^^ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(src.engine.Events.DropItem)
-	def on_dropping(self, event): # pragma: no cover
-		return '{0} VV {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(src.engine.Events.ConsumeItem)
-	def on_consuming(self, event): # pragma: no cover
-		return '{0} <~ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(src.engine.Events.NotConsumable)
-	def on_not_consuming(self, event): # pragma: no cover
-		return 'X {0}.'.format(event.item.name)
-	@Events.on(src.engine.Events.Wield)
-	def on_equipping(self, event):
-		return '{0} <+ {1}.'.format(event.actor.name, event.item.name)
-	@Events.on(src.engine.Events.Unwield)
-	def on_unequipping(self, event):
-		return '{0} +> {1}.'.format(event.actor.name, event.item.name)
 
 import click
 @click.command()

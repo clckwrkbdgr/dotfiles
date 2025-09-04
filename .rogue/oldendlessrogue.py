@@ -8,6 +8,7 @@ import clckwrkbdgr.tui
 from src.world import endlessdungeon, endlessbuilders
 from src import engine
 from src.engine import ui, terrain, actors
+from hud import *
 
 class EndlessFloor(terrain.Terrain):
 	_sprite = ui.Sprite('.', None)

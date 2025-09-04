@@ -124,22 +124,22 @@ class TestMainGameDisplay(MainGameTestCase):
 		mode, mock_ui = self.mode, self.mock_ui
 		mode.messages = [
 		'Hello, this is the first message and it is long.'
-		'Second, also long...',
+		'Second, also long.',
 		'Third.',
 		'Last.',
 		]
 
 		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
 		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
-			"Hello, this is the first...   \n"
+			"Hello, this is the fir[...]   \n"
 			]))
 		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
 		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
-			" message and it is long....   \n"
+			"st message and it is l[...]   \n"
 			]))
 		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
 		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
-			"Second, also long......       \n"
+			"ong.Second, also long.[...]   \n"
 			]))
 		mode.print_messages(mock_ui, Point(0, 6), line_width=27)
 		self.assertEqual(mock_ui.screen.tostring(), '\n'.join([' '*30]*6+[
@@ -186,7 +186,7 @@ class TestMainGameDisplay(MainGameTestCase):
 		_..@..                         _
 		_.b...                         _
 		_#####                         _
-		_Hello, this is the first...   _
+		_Hello, this is the fir[...]   _
 		""").replace('_', ''))
 
 class TestMainGameCustomizations(MainGameTestCase):

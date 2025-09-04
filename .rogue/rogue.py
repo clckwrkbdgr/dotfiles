@@ -24,6 +24,7 @@ from src.engine import ui
 from src.engine import ui as UI
 from src.engine.ui import Sprite
 from src.engine import Events
+from hud import *
 
 SAVEFILE_VERSION = 13
 
@@ -105,6 +106,7 @@ class BaseColoredMonster(RealMonster):
 	def __init__(self, pos, sprite=None, max_hp=None):
 		self._sprite = sprite
 		self._max_hp = max_hp
+		self._name = self.sprite.color + ' ' + self._name
 		super(BaseColoredMonster, self).__init__(pos)
 	def save(self, stream):
 		super(BaseColoredMonster, self).save(stream)
@@ -358,45 +360,12 @@ class ChatThanks(events.Event): FIELDS = ''
 class ChatComeLater(events.Event): FIELDS = ''
 class ChatQuestReminder(events.Event): FIELDS = 'color item'
 
-events.Events.on(Events.NothingToPickUp)(lambda _:'Nothing to pick up here.')
 events.Events.on(NoOneToChat)(lambda _:'No one to chat with.')
 events.Events.on(NoOneToChatInDirection)(lambda _:'No one to chat with in that direction.')
 events.Events.on(TooMuchQuests)(lambda _:"Too much quests already.")
-events.Events.on(Events.InventoryIsFull)(lambda _:'Inventory is full.')
-events.Events.on(Events.GrabItem)(lambda _:'Picked up {0}.'.format(_.item.name))
-events.Events.on(Events.Welcome)(lambda _:'Welcome!')
-events.Events.on(Events.WelcomeBack)(lambda _:'Welcome back!')
-
 events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
 events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')
 events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(_.color, _.item))
-events.Events.on(Events.InventoryIsEmpty)(lambda _:'Inventory is empty.')
-events.Events.on(Events.NotConsumable)(lambda _:'Cannot eat {0}.'.format(_.item.name))
-events.Events.on(Events.DropItem)(lambda _:'{0} drop {1}.'.format(_.actor.name.title(), _.item.name))
-events.Events.on(Events.BumpIntoTerrain)(lambda _:None)
-events.Events.on(Events.Move)(lambda _:None)
-events.Events.on(Events.Health)(lambda _:None)
-events.Events.on(Events.BumpIntoActor)(lambda _:'{0} bump into {1}.'.format(_.actor.name.title(), _.target.name))
-events.Events.on(Events.Attack)(lambda _:'{0} hit {1}.'.format(_.actor.name.title(), _.target.name))
-@events.Events.on(Events.Discover)
-def on_discover(event):
-	if hasattr(event.obj, 'name'):
-		if isinstance(event.obj, BaseColoredMonster):
-			return '{1} {0}!'.format(event.obj.name, event.obj.sprite.color)
-		return '{0}!'.format(event.obj.name)
-	else: # pragma: no cover
-		return '{0}!'.format(event.obj)
-@events.Events.on(Events.AutoStop)
-def stop_auto_activities(event):
-	if isinstance(event.reason[0], src.engine.actors.Actor):
-		return 'There are monsters nearby!'
-	return 'There are {0} nearby!'.format(', '.join(map(str, event.reason)))
-@events.Events.on(Events.Death)
-def monster_is_dead(_):
-	if _.target.name == 'you':
-		return 'You died!!!'
-	return '{0} is dead.'.format(_.target.name.title())
-events.Events.on(Events.StareIntoVoid)(lambda _:'Will not fall into the void.')
 
 Color = namedtuple('Color', 'fg attr dweller monster')
 class Game(engine.Game):

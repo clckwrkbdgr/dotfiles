@@ -147,7 +147,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		if not self.messages:
 			ui.print_line(pos.y, pos.x, " " * line_width)
 			return
-		to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=line_width)
+		to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=line_width, ellipsis="[...]", rjust_ellipsis=True)
 		if not to_remove:
 			del self.messages[:]
 		elif to_remove > 0:
