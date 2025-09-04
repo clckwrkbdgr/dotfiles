@@ -3,8 +3,7 @@ import logging
 from clckwrkbdgr import xdg
 from clckwrkbdgr.math import Point, Size, Rect
 from clckwrkbdgr.fs import SerializedEntity
-from clckwrkbdgr.collections import dotdict, AutoRegistry
-from clckwrkbdgr import tui
+import clckwrkbdgr.tui
 import clckwrkbdgr.serialize.stream
 import clckwrkbdgr.logging
 trace = logging.getLogger('rogue')
@@ -121,15 +120,15 @@ class HealingPotion(Item, Consumable):
 		return [DrinksHealingPotion(Who=who.name.title())]
 
 make_weapon = MakeEntity(Item, '_sprite _name _attack')
-make_weapon('Dagger', '(', 'dagger', 1)
-make_weapon('Sword', '(', 'sword', 2)
-make_weapon('Axe', '(', 'axe', 4)
+make_weapon('Dagger', Sprite('(', None), 'dagger', 1)
+make_weapon('Sword', Sprite('(', None), 'sword', 2)
+make_weapon('Axe', Sprite('(', None), 'axe', 4)
 
 make_armor = MakeEntity((Item, Wearable), '_sprite _name _protection')
-make_armor('Rags', "[", "rags", 1)
-make_armor('Leather', "[", "leather", 2)
-make_armor('ChainMail', "[", "chain mail", 3)
-make_armor('PlateArmor', "[", "plate armor", 4)
+make_armor('Rags', Sprite("[", None), "rags", 1)
+make_armor('Leather', Sprite("[", None), "leather", 2)
+make_armor('ChainMail', Sprite("[", None), "chain mail", 3)
+make_armor('PlateArmor', Sprite("[", None), "plate armor", 4)
 
 class RealMonster(actors.EquippedMonster, actors.Offensive):
 	_hostile_to = [actors.Player]
@@ -184,58 +183,58 @@ easy_monsters = EntityClassDistribution(1)
 norm_monsters = EntityClassDistribution(lambda depth: max(0, (depth-2)))
 hard_monsters = EntityClassDistribution(lambda depth: max(0, (depth-7)//2))
 make_monster = MakeEntity((RealMonster), '_sprite _name _max_hp _attack _drops')
-easy_monsters << make_monster('Ant', 'a', 'ant', 5, 1, animal_drops)
-easy_monsters << make_monster('Bat', 'b', 'bat', 5, 1, animal_drops)
-easy_monsters << make_monster('Cockroach', 'c', 'cockroach', 5, 1, animal_drops)
-easy_monsters << make_monster('Dog', 'd', 'dog', 7, 1, animal_drops)
-norm_monsters << make_monster('Elf', 'e', 'elf', 10, 2, warrior_drops)
-easy_monsters << make_monster('Frog', 'f', 'frog', 5, 1, animal_drops)
-norm_monsters << make_monster('Goblin', "g", "goblin", 10, 2, warrior_drops*2)
-norm_monsters << make_monster('Harpy', 'h', 'harpy', 10, 2, monster_drops)
-norm_monsters << make_monster('Imp', 'i', 'imp', 10, 3, monster_drops)
-easy_monsters << make_monster('Jelly', 'j', 'jelly', 5, 2, animal_drops)
-norm_monsters << make_monster('Kobold', 'k', 'kobold', 10, 2, warrior_drops)
-easy_monsters << make_monster('Lizard', 'l', 'lizard', 5, 1, animal_drops)
-easy_monsters << make_monster('Mummy', 'm', 'mummy', 10, 2, monster_drops)
-norm_monsters << make_monster('Narc', 'n', 'narc', 10, 2, thug_drops)
-norm_monsters << make_monster('Orc', 'o', 'orc', 15, 3, warrior_drops*2)
-easy_monsters << make_monster('Pigrat', 'p', 'pigrat', 10, 2, animal_drops)
-easy_monsters << make_monster('Quokka', 'q', 'quokka', 5, 1, animal_drops)
-easy_monsters << make_monster('Rat', "r", "rat", 5, 1, animal_drops)
-norm_monsters << make_monster('Skeleton', 's', 'skeleton', 20, 2, monster_drops)
-norm_monsters << make_monster('Thug', 't', 'thug', 15, 3, thug_drops*2)
-norm_monsters << make_monster('Unicorn', 'u', 'unicorn', 15, 3, monster_drops)
-norm_monsters << make_monster('Vampire', 'v', 'vampire', 20, 2, monster_drops)
-easy_monsters << make_monster('Worm', 'w', 'worm', 5, 2, animal_drops)
-hard_monsters << make_monster('Exterminator', 'x', 'exterminator', 20, 3, super_warrior_drops)
-norm_monsters << make_monster('Yak', 'y', 'yak', 10, 2, animal_drops)
-easy_monsters << make_monster('Zombie', 'z', 'zombie', 5, 2, thug_drops)
-hard_monsters << make_monster('Angel', 'A', 'angel', 30, 5, super_warrior_drops)
-norm_monsters << make_monster('Beholder', 'B', 'beholder', 20, 2, warrior_drops)
-hard_monsters << make_monster('Cyborg', 'C', 'cyborg', 20, 5, super_warrior_drops*3)
-hard_monsters << make_monster('Dragon', 'D', 'dragon', 40, 5, monster_drops*3)
-norm_monsters << make_monster('Elemental', 'E', 'elemental', 10, 2, [])
-hard_monsters << make_monster('Floater', 'F', 'floater', 40, 1, animal_drops)
-hard_monsters << make_monster('Gargoyle', 'G', 'gargoyle', 30, 3, monster_drops)
-hard_monsters << make_monster('Hydra', 'H', 'hydra', 30, 2, monster_drops)
-norm_monsters << make_monster('Ichthyander', 'I', 'ichthyander', 20, 2, thug_drops)
-hard_monsters << make_monster('Juggernaut', 'J', 'juggernaut', 40, 4, monster_drops)
-hard_monsters << make_monster('Kraken', 'K', 'kraken', 30, 3, monster_drops)
-norm_monsters << make_monster('Lich', 'L', 'lich', 20, 2, monster_drops)
-norm_monsters << make_monster('Minotaur', 'M', 'minotaur', 20, 2, warrior_drops*2)
-norm_monsters << make_monster('Necromancer', 'N', 'necromancer', 20, 2, warrior_drops)
-hard_monsters << make_monster('Ogre', 'O', 'ogre', 30, 5, super_warrior_drops)
-hard_monsters << make_monster('Phoenix', 'P', 'phoenix', 20, 3, monster_drops)
-norm_monsters << make_monster('QueenBee', 'Q', 'queen bee', 20, 2, animal_drops)
-hard_monsters << make_monster('Revenant', 'R', 'revenant', 20, 3, super_warrior_drops)
-norm_monsters << make_monster('Snake', 'S', 'snake', 10, 2, animal_drops)
-hard_monsters << make_monster('Troll', "T", "troll", 25, 5, super_warrior_drops)
-norm_monsters << make_monster('Unseen', 'U', 'unseen', 10, 2, thug_drops)
-norm_monsters << make_monster('Viper', 'V', 'viper', 10, 2, animal_drops)
-hard_monsters << make_monster('Wizard', 'W', 'wizard', 40, 5, thug_drops*2)
-hard_monsters << make_monster('Xenomorph', 'X', 'xenomorph', 30, 3, animal_drops)
-norm_monsters << make_monster('Yeti', 'Y', 'yeti', 10, 2, animal_drops)
-norm_monsters << make_monster('Zealot', 'Z', 'zealot', 10, 2, thug_drops)
+easy_monsters << make_monster('Ant', Sprite('a', None), 'ant', 5, 1, animal_drops)
+easy_monsters << make_monster('Bat', Sprite('b', None), 'bat', 5, 1, animal_drops)
+easy_monsters << make_monster('Cockroach', Sprite('c', None), 'cockroach', 5, 1, animal_drops)
+easy_monsters << make_monster('Dog', Sprite('d', None), 'dog', 7, 1, animal_drops)
+norm_monsters << make_monster('Elf', Sprite('e', None), 'elf', 10, 2, warrior_drops)
+easy_monsters << make_monster('Frog', Sprite('f', None), 'frog', 5, 1, animal_drops)
+norm_monsters << make_monster('Goblin', Sprite("g", None), "goblin", 10, 2, warrior_drops*2)
+norm_monsters << make_monster('Harpy', Sprite('h', None), 'harpy', 10, 2, monster_drops)
+norm_monsters << make_monster('Imp', Sprite('i', None), 'imp', 10, 3, monster_drops)
+easy_monsters << make_monster('Jelly', Sprite('j', None), 'jelly', 5, 2, animal_drops)
+norm_monsters << make_monster('Kobold', Sprite('k', None), 'kobold', 10, 2, warrior_drops)
+easy_monsters << make_monster('Lizard', Sprite('l', None), 'lizard', 5, 1, animal_drops)
+easy_monsters << make_monster('Mummy', Sprite('m', None), 'mummy', 10, 2, monster_drops)
+norm_monsters << make_monster('Narc', Sprite('n', None), 'narc', 10, 2, thug_drops)
+norm_monsters << make_monster('Orc', Sprite('o', None), 'orc', 15, 3, warrior_drops*2)
+easy_monsters << make_monster('Pigrat', Sprite('p', None), 'pigrat', 10, 2, animal_drops)
+easy_monsters << make_monster('Quokka', Sprite('q', None), 'quokka', 5, 1, animal_drops)
+easy_monsters << make_monster('Rat', Sprite("r", None), "rat", 5, 1, animal_drops)
+norm_monsters << make_monster('Skeleton', Sprite('s', None), 'skeleton', 20, 2, monster_drops)
+norm_monsters << make_monster('Thug', Sprite('t', None), 'thug', 15, 3, thug_drops*2)
+norm_monsters << make_monster('Unicorn', Sprite('u', None), 'unicorn', 15, 3, monster_drops)
+norm_monsters << make_monster('Vampire', Sprite('v', None), 'vampire', 20, 2, monster_drops)
+easy_monsters << make_monster('Worm', Sprite('w', None), 'worm', 5, 2, animal_drops)
+hard_monsters << make_monster('Exterminator', Sprite('x', None), 'exterminator', 20, 3, super_warrior_drops)
+norm_monsters << make_monster('Yak', Sprite('y', None), 'yak', 10, 2, animal_drops)
+easy_monsters << make_monster('Zombie', Sprite('z', None), 'zombie', 5, 2, thug_drops)
+hard_monsters << make_monster('Angel', Sprite('A', None), 'angel', 30, 5, super_warrior_drops)
+norm_monsters << make_monster('Beholder', Sprite('B', None), 'beholder', 20, 2, warrior_drops)
+hard_monsters << make_monster('Cyborg', Sprite('C', None), 'cyborg', 20, 5, super_warrior_drops*3)
+hard_monsters << make_monster('Dragon', Sprite('D', None), 'dragon', 40, 5, monster_drops*3)
+norm_monsters << make_monster('Elemental', Sprite('E', None), 'elemental', 10, 2, [])
+hard_monsters << make_monster('Floater', Sprite('F', None), 'floater', 40, 1, animal_drops)
+hard_monsters << make_monster('Gargoyle', Sprite('G', None), 'gargoyle', 30, 3, monster_drops)
+hard_monsters << make_monster('Hydra', Sprite('H', None), 'hydra', 30, 2, monster_drops)
+norm_monsters << make_monster('Ichthyander', Sprite('I', None), 'ichthyander', 20, 2, thug_drops)
+hard_monsters << make_monster('Juggernaut', Sprite('J', None), 'juggernaut', 40, 4, monster_drops)
+hard_monsters << make_monster('Kraken', Sprite('K', None), 'kraken', 30, 3, monster_drops)
+norm_monsters << make_monster('Lich', Sprite('L', None), 'lich', 20, 2, monster_drops)
+norm_monsters << make_monster('Minotaur', Sprite('M', None), 'minotaur', 20, 2, warrior_drops*2)
+norm_monsters << make_monster('Necromancer', Sprite('N', None), 'necromancer', 20, 2, warrior_drops)
+hard_monsters << make_monster('Ogre', Sprite('O', None), 'ogre', 30, 5, super_warrior_drops)
+hard_monsters << make_monster('Phoenix', Sprite('P', None), 'phoenix', 20, 3, monster_drops)
+norm_monsters << make_monster('QueenBee', Sprite('Q', None), 'queen bee', 20, 2, animal_drops)
+hard_monsters << make_monster('Revenant', Sprite('R', None), 'revenant', 20, 3, super_warrior_drops)
+norm_monsters << make_monster('Snake', Sprite('S', None), 'snake', 10, 2, animal_drops)
+hard_monsters << make_monster('Troll', Sprite("T", None), "troll", 25, 5, super_warrior_drops)
+norm_monsters << make_monster('Unseen', Sprite('U', None), 'unseen', 10, 2, thug_drops)
+norm_monsters << make_monster('Viper', Sprite('V', None), 'viper', 10, 2, animal_drops)
+hard_monsters << make_monster('Wizard', Sprite('W', None), 'wizard', 40, 5, thug_drops*2)
+hard_monsters << make_monster('Xenomorph', Sprite('X', None), 'xenomorph', 30, 3, animal_drops)
+norm_monsters << make_monster('Yeti', Sprite('Y', None), 'yeti', 10, 2, animal_drops)
+norm_monsters << make_monster('Zealot', Sprite('Z', None), 'zealot', 10, 2, thug_drops)
 
 events.Events.on(Events.GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
 
@@ -380,7 +379,7 @@ class RogueDungeonGenerator(object):
 			))
 		for _, monster_type in monster_distribution:
 			builder.map_key(**{monster_type.__name__:monster_type})
-		builder.map_key(**{'void':Void})
+		builder.map_key(**{'void':Void()})
 		builder.generate()
 		scene.size = self.SIZE
 		scene.rooms = builder.dungeon.grid
@@ -395,38 +394,28 @@ class RogueDungeonGenerator(object):
 class GameCompleted(Exception):
 	pass
 
-def to_main_screen(mode):
-	return MessageView(StatusLine(MainGame, mode.data), mode.data)
-
-class MessageView(tui.widgets.MessageLineOverlay):
-	def get_new_messages(self):
-		for message in self.data.process_events():
-			trace.debug("Message posted: {0}".format(message))
-			yield message
-	def force_ellipsis(self):
-		return not self.data.get_player().is_alive()
-
-StatusSection = tui.widgets.StatusLine.LabeledSection
-class StatusLine(tui.widgets.StatusLine):
-	CORNER = "[?]"
-	INDICATORS = [
-			ui.Indicator('Depth', 2, lambda dungeon: 1+dungeon.current_level_id),
-			ui.Indicator("HP", 6, lambda dungeon: "{0}/{1}".format(dungeon.get_player().hp, dungeon.get_player().max_hp)),
-			ui.Indicator("Items", 2, lambda dungeon:(
-				None if not dungeon.get_player().inventory else (
-					''.join(item.sprite for item in dungeon.get_player().inventory)
-					if len(dungeon.get_player().inventory) <= 2
-					else len(dungeon.get_player().inventory)
-					))),
-			ui.Indicator("Wld", 7, lambda dungeon: dungeon.get_player().wielding.name if dungeon.get_player().wielding else None),
-			ui.Indicator("Wear", 7, lambda dungeon: dungeon.get_player().wearing.name if dungeon.get_player().wearing else None),
-			ui.Indicator("Here", 1, lambda dungeon: getattr(next(dungeon.scene.iter_items_at(dungeon.get_player().pos), next(dungeon.scene.iter_appliances_at(dungeon.get_player().pos), None)), 'sprite', None)),
-			]
-
-Controls = AutoRegistry()
-
 class MainGame(ui.MainGame):
-	_full_redraw = True
+	INDICATORS = [
+			ui.Indicator((0, 24), 9, lambda dungeon: 'Depth: ' + str(1+dungeon.game.current_scene_id)),
+			ui.Indicator((10, 24), 10, lambda dungeon: "HP: " + "{0}/{1}".format(dungeon.game.scene.get_player().hp, dungeon.game.scene.get_player().max_hp)),
+			ui.Indicator((21, 24), 9, lambda dungeon:"Items: " + (
+				'' if not dungeon.game.scene.get_player().inventory else (
+					''.join(item.sprite.sprite for item in dungeon.game.scene.get_player().inventory)
+					if len(dungeon.game.scene.get_player().inventory) <= 2
+					else len(dungeon.game.scene.get_player().inventory)
+					))),
+			ui.Indicator((31, 24), 12, lambda dungeon: "Wld: " + (dungeon.game.scene.get_player().wielding.name if dungeon.game.scene.get_player().wielding else '')),
+			ui.Indicator((44, 24), 13, lambda dungeon: "Wear: " + (dungeon.game.scene.get_player().wearing.name if dungeon.game.scene.get_player().wearing else '')),
+			ui.Indicator((58, 24), 7, lambda dungeon: "Here: " + dungeon.sprite_here(dungeon.game.scene.get_player().pos)),
+			]
+	def sprite_here(self, pos):
+		item = next(self.game.scene.iter_items_at(pos), None)
+		if item:
+			return item.sprite.sprite
+		obj = next(self.game.scene.iter_appliances_at(pos), None)
+		if obj:
+			return obj.sprite.sprite
+		return ''
 	def get_viewrect(self):
 		return self.game.scene.get_area_rect()
 	def get_map_shift(self):

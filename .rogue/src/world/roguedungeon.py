@@ -243,6 +243,12 @@ class Vision(vision.Vision):
 				if self.is_visible(tunnel, obj):
 					return True
 		return False
+	def iter_important(self): # pragma: no cover
+		if not self.scene.current_room:
+			return
+		for _ in self.scene.iter_actors_in_rect(self.scene.current_room):
+			if _ != self.scene.get_player():
+				yield _
 	def is_explored(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) was visible for player at some point and now can be remembered.
 		Additional data depends on type of primary object.
