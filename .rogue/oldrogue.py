@@ -366,26 +366,13 @@ class GameCompleted(Exception):
 
 class MainGame(ui.MainGame):
 	INDICATORS = [
-			((0, 24), ui.Indicator(9, lambda dungeon: 'Depth: ' + str(1+dungeon.game.current_scene_id))),
-			(24, ui.Indicator(10, lambda dungeon: "HP: " + "{0}/{1}".format(dungeon.game.scene.get_player().hp, dungeon.game.scene.get_player().max_hp))),
-			(24, ui.Indicator(9, lambda dungeon:"Items: " + (
-				'' if not dungeon.game.scene.get_player().inventory else (
-					''.join(item.sprite.sprite for item in dungeon.game.scene.get_player().inventory)
-					if len(dungeon.game.scene.get_player().inventory) <= 2
-					else len(dungeon.game.scene.get_player().inventory)
-					)))),
-			(24, ui.Indicator(12, lambda dungeon: "Wld: " + (dungeon.game.scene.get_player().wielding.name if dungeon.game.scene.get_player().wielding else ''))),
-			(24, ui.Indicator(13, lambda dungeon: "Wear: " + (dungeon.game.scene.get_player().wearing.name if dungeon.game.scene.get_player().wearing else ''))),
-			(24, ui.Indicator(7, lambda dungeon: "Here: " + dungeon.sprite_here(dungeon.game.scene.get_player().pos))),
+			((0, 24), HUD.Depth),
+			(24, HUD.HP),
+			(24, HUD.Inventory),
+			(24, HUD.Wield),
+			(24, HUD.Wear),
+			(24, HUD.Here),
 			]
-	def sprite_here(self, pos):
-		item = next(self.game.scene.iter_items_at(pos), None)
-		if item:
-			return item.sprite.sprite
-		obj = next(self.game.scene.iter_appliances_at(pos), None)
-		if obj:
-			return obj.sprite.sprite
-		return ''
 	def get_viewrect(self):
 		return self.game.scene.get_area_rect()
 	def get_map_shift(self):

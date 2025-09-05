@@ -40,17 +40,18 @@ class CaptionedIndicator(Indicator):
 	""" Displays static caption with dynamic value
 	if form "caption: value"
 	"""
-	def __init__(self, caption, value_width, value_getter):
+	def __init__(self, caption, value_width, value_getter, sep=": "):
 		""" Full width is calculated from caption length and given value width.
 		Value getter should return only value.
 		If returned value is None, hides indicator completely.
 		"""
-		super(CaptionedIndicator, self).__init__(len(caption) + 2 + value_width, self.get_value)
+		super(CaptionedIndicator, self).__init__(len(caption) + len(sep) + value_width, self.get_value)
 		self.caption = caption
+		self.sep = sep
 		self.actual_value_getter = value_getter
 	def get_value(self, mode):
 		value = self.actual_value_getter(mode)
-		return '{0}: {1}'.format(self.caption, str(value)) if value is not None else ''
+		return '{0}{1}{2}'.format(self.caption, self.sep, str(value)) if value is not None else ''
 
 _MainKeys = clckwrkbdgr.tui.Keymapping()
 class MainGame(clckwrkbdgr.tui.Mode):

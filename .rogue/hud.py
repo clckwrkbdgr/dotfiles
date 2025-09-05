@@ -1,4 +1,4 @@
-from src.engine import events, actors, Events
+from src.engine import events, actors, Events, ui
 
 events.Events.on(Events.Welcome)(lambda _:'Welcome!')
 events.Events.on(Events.WelcomeBack)(lambda _:'Welcome back!')
@@ -27,7 +27,7 @@ def on_discover(event):
 
 @events.Events.on(Events.AutoStop)
 def stop_auto_activities(event):
-	if isinstance(event.reason[0], src.engine.actors.Actor):
+	if isinstance(event.reason[0], actors.Actor):
 		return 'There are monsters nearby!'
 	return 'There are {0} nearby!'.format(', '.join(map(str, event.reason)))
 
@@ -52,3 +52,49 @@ events.Events.on(Events.TakeOff)(lambda event:"{actor} takes off {item}.".format
 events.Events.on(Events.Wear)(lambda event:"{actor} wears {item}.".format(actor=event.actor.name.title(), item=event.item.name))
 
 del globals()['Events'] # FIXME to prevent namespace pollution in the main module
+
+class _HUD(object):
+	@classmethod
+	def pos(cls, self):
+		if hasattr(self.game.scene, 'get_player_coord'):
+			coord = self.game.scene.get_player_coord()
+			return "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
+				coord.values[0].x, coord.values[1].x, coord.values[2].x,
+				coord.values[0].y, coord.values[1].y, coord.values[2].y,
+				)
+		pos = self.game.scene.get_global_pos(self.game.scene.get_player())
+		return 'X:{x} Y:{y}  '.format(x=pos.x, y=pos.y)
+	@classmethod
+	def inventory(cls, self):
+		if not self.game.scene.get_player() or not self.game.scene.get_player().inventory:
+			return None
+		if len(self.game.scene.get_player().inventory) <= 2:
+			return ''.join(item.sprite.sprite for item in self.game.scene.get_player().inventory)
+		return len(self.game.scene.get_player().inventory)
+	@classmethod
+	def here(cls, self):
+		pos = self.game.scene.get_global_pos(self.game.scene.get_player())
+		cell, objects, items, _  = self.game.scene.get_cell_info(pos)
+		if items:
+			return items[-1].sprite.sprite
+		if objects:
+			return objects[-1].sprite.sprite
+		return None
+
+class HUD(_HUD):
+	Time = ui.CaptionedIndicator("T", 23, lambda self:self.game.playing_time)
+	Depth = ui.CaptionedIndicator("Depth", 20, lambda dungeon: dungeon.game.current_scene_id)
+	Pos = ui.Indicator(29, _HUD.pos)
+	HP = ui.CaptionedIndicator("hp", 7, lambda self:"{0:>{1}}/{2}".format(
+		self.game.scene.get_player().hp,
+		len(str(self.game.scene.get_player().max_hp)),
+		self.game.scene.get_player().max_hp) if self.game.scene.get_player() else "[DEAD]")
+	Inventory = ui.CaptionedIndicator("inv", 2, _HUD.inventory)
+	Here = ui.CaptionedIndicator("here", 1, _HUD.here)
+	Wear = ui.CaptionedIndicator("Wear", 10, lambda dungeon: (dungeon.game.scene.get_player().wearing.name if dungeon.game.scene.get_player().wearing else None))
+	Wield = ui.CaptionedIndicator("Wld", 10, lambda dungeon: (dungeon.game.scene.get_player().wielding.name if dungeon.game.scene.get_player().wielding else None))
+
+	Auto = ui.Indicator(6, lambda self: '[auto]' if self.game.in_automovement() else '')
+	GodVision = ui.Indicator(5, lambda self: '[vis]' if self.game.god.vision else '')
+	GodNoclip = ui.Indicator(6, lambda self: '[clip]' if self.game.god.noclip else '')
+	Help = ui.Indicator(3, lambda self: '[?]')

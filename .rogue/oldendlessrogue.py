@@ -48,9 +48,9 @@ class Dungeon(engine.Game):
 class Game(ui.MainGame):
 	VIEW_CENTER = Point(12, 12)
 	INDICATORS = [
-			(Point(27, 0), ui.Indicator(29, lambda self:'Time: {0}'.format(self.game.playing_time))),
-			(Point(27, 1), ui.Indicator(29, lambda self:'X:{x} Y:{y}  '.format(x=self.game.scene.get_player().pos.x, y=self.game.scene.get_player().pos.y))),
-			(Point(27, 24), ui.Indicator(29, lambda self:'[autoexploring, press ESC...]' if self.game.automovement else '')),
+			(Point(27, 0), HUD.Time),
+			(Point(27, 1), HUD.Pos),
+			(Point(27, 24), HUD.Auto),
 			]
 
 	def get_viewrect(self):

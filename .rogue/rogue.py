@@ -401,7 +401,8 @@ class Vision(vision.OmniVision):
 		self._first_visit = True
 	def iter_important(self):
 		for _ in self.visible_monsters:
-			yield _
+			if _.is_hostile_to(self.scene.get_player()):
+				yield _
 	def visit(self, actor):
 		actor_pos = self.scene.get_global_pos(actor)
 		vision_range = Rect( # Twice as wide.
@@ -741,18 +742,11 @@ def main(ui):
 
 class MainGameMode(ui.MainGame):
 	INDICATORS = [
-			((62, 0), ui.Indicator(18, lambda self: "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
-				self.game.scene.get_player_coord().values[0].x,
-				self.game.scene.get_player_coord().values[1].x,
-				self.game.scene.get_player_coord().values[2].x,
-				self.game.scene.get_player_coord().values[0].y,
-				self.game.scene.get_player_coord().values[1].y,
-				self.game.scene.get_player_coord().values[2].y,
-				))),
-			((62, 1), ui.Indicator(18, lambda self:"T:{0}".format(self.game.playing_time))),
-			((62, 2), ui.Indicator(18, lambda self:"hp:{0}/{1}".format(self.game.scene.get_player().hp, self.game.scene.get_player().max_hp) if self.game.scene.get_player() else "")),
-			((62, 3), ui.Indicator(18, lambda self:"inv:{0}".format(len(self.game.scene.get_player().inventory)) if self.game.scene.get_player() else "")),
-			((62, 4), ui.Indicator(18, lambda self:"here:{0}".format(self.item_here().sprite.sprite) if self.item_here() else "")),
+			((62, 0), HUD.Pos),
+			((62, 1), HUD.Time),
+			((62, 2), HUD.HP),
+			((62, 3), HUD.Inventory),
+			((62, 4), HUD.Here),
 			]
 	def __init__(self, game):
 		super(MainGameMode, self).__init__(game)
@@ -764,8 +758,6 @@ class MainGameMode(ui.MainGame):
 				self.game.scene.get_player_coord().get_global(self.game.scene.world) + self.centered_viewport.topleft,
 				self.centered_viewport.size,
 				)
-	def item_here(self):
-		return next(self.game.scene.iter_items_at(self.game.scene.get_player_coord()), None)
 	def get_message_line_rect(self):
 		return Rect(Point(0, 23), Size(80, 1))
 	@ui.MainGame.Keys.bind('C')
