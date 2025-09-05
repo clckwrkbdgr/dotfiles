@@ -23,7 +23,7 @@ class EndlessVoid(terrain.Terrain):
 	_name = ' '
 	_passable = False
 
-class Player(actors.Monster, actors.Player):
+class Player(actors.EquippedMonster, actors.Player):
 	_sprite = ui.Sprite("@", None)
 	_vision = 20
 
@@ -45,19 +45,6 @@ class Dungeon(engine.Game):
 	def make_player(self):
 		return Player(None)
 
-class Game(ui.MainGame):
-	VIEW_CENTER = Point(12, 12)
-	INDICATORS = [
-			(Point(27, 0), HUD.Time),
-			(Point(27, 1), HUD.Pos),
-			(Point(27, 24), HUD.Auto),
-			]
-
-	def get_viewrect(self):
-		return Rect(self.game.scene.get_player().pos - self.VIEW_CENTER, Size(25, 25))
-	def get_message_line_rect(self):
-		return Rect(Point(0, 25), Size(80, 1))
-
 import click
 @click.command()
 @click.option('-d', '--debug', is_flag=True)
@@ -73,7 +60,7 @@ def cli(debug=False):
 			dungeon.load(savefile.entity)
 		else:
 			dungeon.generate('endless')
-		game = Game(dungeon)
+		game = MainGame(dungeon)
 		with clckwrkbdgr.tui.Curses() as ui:
 			clckwrkbdgr.tui.Mode.run(game, ui)
 		if dungeon.is_finished():

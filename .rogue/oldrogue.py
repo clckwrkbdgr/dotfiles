@@ -364,22 +364,6 @@ class RogueDungeonGenerator(object):
 class GameCompleted(Exception):
 	pass
 
-class MainGame(ui.MainGame):
-	INDICATORS = [
-			((0, 24), HUD.Depth),
-			(24, HUD.HP),
-			(24, HUD.Inventory),
-			(24, HUD.Wield),
-			(24, HUD.Wear),
-			(24, HUD.Here),
-			]
-	def get_viewrect(self):
-		return self.game.scene.get_area_rect()
-	def get_map_shift(self):
-		return Point(0, 1)
-	def get_message_line_rect(self):
-		return Rect(Point(0, 0), Size(80, 1))
-
 class RogueDungeon(src.engine.Game):
 	def make_scene(self, scene_id):
 		return Scene(RogueDungeonGenerator())

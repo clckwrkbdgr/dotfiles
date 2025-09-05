@@ -232,24 +232,6 @@ class Game(src.engine.Game):
 			MazeBuilder,
 			])
 
-class MainGame(src.engine.ui.MainGame):
-	INDICATORS = [
-			((0, 24), HUD.HP),
-			(24, HUD.Here),
-			(24, HUD.Inventory),
-			(24, HUD.Auto),
-			(24, HUD.GodVision),
-			(24, HUD.GodNoclip),
-			(24, HUD.Help),
-			]
-
-	def get_map_shift(self):
-		return Point(0, 1)
-	def get_viewrect(self):
-		return self.game.scene.get_area_rect()
-	def get_message_line_rect(self):
-		return Rect(Point(0, 0), Size(80, 1))
-
 import click
 @click.command()
 @click.option('-d', '--debug', is_flag=True)

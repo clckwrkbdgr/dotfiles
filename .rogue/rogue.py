@@ -19,14 +19,14 @@ from src.engine import events, auto, vision
 import src.engine.actors, src.engine.items, src.engine.appliances, src.engine.terrain
 from src.engine.items import Item
 from src.engine.terrain import Terrain
-from src.engine.actors import Monster
+from src.engine.actors import Monster, EquippedMonster
 from src.engine import ui
 from src.engine import ui as UI
 from src.engine.ui import Sprite
 from src.engine import Events
 from hud import *
 
-SAVEFILE_VERSION = 13
+SAVEFILE_VERSION = 14
 
 class Void(Terrain):
 	_sprite = Sprite(' ', 'black')
@@ -68,7 +68,7 @@ class Wall(Terrain):
 class RealMonster(Monster):
 	pass
 
-class Player(Monster, src.engine.actors.Player):
+class Player(EquippedMonster, src.engine.actors.Player):
 	_sprite = Sprite('@', 'bold_white')
 	_name = 'you'
 	_vision = 10
@@ -491,6 +491,11 @@ class Scene(scene.Scene):
 	def load(self, stream):
 		super(Scene, self).load(stream)
 		self.world.load(stream)
+	def get_area_rect(self):
+		return Rect((0, 0), Size(
+			self.world.sizes[-3].width * self.world.sizes[-2].width * self.world.sizes[-1].width,
+			self.world.sizes[-3].height * self.world.sizes[-2].height * self.world.sizes[-1].height,
+			))
 	def recalibrate(self, pos, margin):
 		within_zone = Point(
 				pos.x % (self.world.sizes[-2].width * self.world.sizes[-1].width),
@@ -740,26 +745,7 @@ def main(ui):
 	else:
 		savefile.unlink()
 
-class MainGameMode(ui.MainGame):
-	INDICATORS = [
-			((62, 0), HUD.Pos),
-			((62, 1), HUD.Time),
-			((62, 2), HUD.HP),
-			((62, 3), HUD.Inventory),
-			((62, 4), HUD.Here),
-			]
-	def __init__(self, game):
-		super(MainGameMode, self).__init__(game)
-		self.viewport = Rect((0, 0), (61, 23))
-		self.center = Point(*(self.viewport.size // 2))
-		self.centered_viewport = Rect((-self.center.x, -self.center.y), self.viewport.size)
-	def get_viewrect(self):
-		return Rect(
-				self.game.scene.get_player_coord().get_global(self.game.scene.world) + self.centered_viewport.topleft,
-				self.centered_viewport.size,
-				)
-	def get_message_line_rect(self):
-		return Rect(Point(0, 23), Size(80, 1))
+class MainGameMode(MainGame):
 	@ui.MainGame.Keys.bind('C')
 	def char(self):
 		game = self.game

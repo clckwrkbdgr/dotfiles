@@ -1,3 +1,5 @@
+import functools
+from clckwrkbdgr.math import Rect, Size, Point
 from src.engine import events, actors, Events, ui
 
 events.Events.on(Events.Welcome)(lambda _:'Welcome!')
@@ -91,10 +93,52 @@ class HUD(_HUD):
 		self.game.scene.get_player().max_hp) if self.game.scene.get_player() else "[DEAD]")
 	Inventory = ui.CaptionedIndicator("inv", 2, _HUD.inventory)
 	Here = ui.CaptionedIndicator("here", 1, _HUD.here)
-	Wear = ui.CaptionedIndicator("Wear", 10, lambda dungeon: (dungeon.game.scene.get_player().wearing.name if dungeon.game.scene.get_player().wearing else None))
-	Wield = ui.CaptionedIndicator("Wld", 10, lambda dungeon: (dungeon.game.scene.get_player().wielding.name if dungeon.game.scene.get_player().wielding else None))
+	Wear = ui.CaptionedIndicator("Wear", 10, lambda dungeon: (dungeon.game.scene.get_player().wearing.name if dungeon.game.scene.get_player() and dungeon.game.scene.get_player().wearing else None))
+	Wield = ui.CaptionedIndicator("Wld", 10, lambda dungeon: (dungeon.game.scene.get_player().wielding.name if dungeon.game.scene.get_player() and dungeon.game.scene.get_player().wielding else None))
 
 	Auto = ui.Indicator(6, lambda self: '[auto]' if self.game.in_automovement() else '')
 	GodVision = ui.Indicator(5, lambda self: '[vis]' if self.game.god.vision else '')
 	GodNoclip = ui.Indicator(6, lambda self: '[clip]' if self.game.god.noclip else '')
 	Help = ui.Indicator(3, lambda self: '[?]')
+
+class MainGame(ui.MainGame):
+	INDICATORS = [
+			((62, 0), HUD.Depth),
+			((62, 1), HUD.Pos),
+			((62, 2), HUD.Time),
+			((62, 3), HUD.Here),
+
+			((62, 5), HUD.HP),
+			((62, 6), HUD.Inventory),
+			((62, 7), HUD.Wield),
+			((62, 8), HUD.Wear),
+
+			((62, 25), HUD.GodVision),
+			((67, 25), HUD.GodNoclip),
+
+			((62, 25), HUD.Auto),
+			((77, 25), HUD.Help),
+			]
+
+	@functools.lru_cache()
+	def get_viewport(self):
+		viewport = Rect((0, 0), (61, 23))
+		center = Point(*(viewport.size // 2))
+		return Rect((-center.x, -center.y), viewport.size)
+
+	def get_viewrect(self):
+		viewport = self.get_viewport()
+		area_rect = self.game.scene.get_area_rect()
+		if area_rect.size.width <= viewport.size.width and area_rect.size.height <= viewport.size.height:
+			return area_rect
+		player = self.game.scene.get_player()
+		if player:
+			pos = self.game.scene.get_global_pos(self.game.scene.get_player())
+			self._old_pos = pos
+		else:
+			pos = self._old_pos
+		return Rect(pos + viewport.topleft, viewport.size)
+	def get_map_shift(self):
+		return Point(0, 0)
+	def get_message_line_rect(self):
+		return Rect(Point(0, 24), Size(80, 1))

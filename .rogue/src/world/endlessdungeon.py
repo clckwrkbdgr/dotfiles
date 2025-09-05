@@ -1,4 +1,4 @@
-from clckwrkbdgr.math import Point, Size
+from clckwrkbdgr.math import Point, Size, Rect
 from clckwrkbdgr.math.grid import EndlessMatrix
 from .. import engine
 from ..engine import scene
@@ -20,6 +20,11 @@ class Scene(scene.Scene):
 	@classmethod
 	def get_autoexplorer_class(cls): # pragma: no cover -- TODO
 		return auto.EndlessAreaExplorer
+	def get_area_rect(self): # pragma: no cover -- TODO
+		return Rect(
+				self.terrain.shift - Point(Size(self.terrain.block_size)),
+				self.terrain.block_size * 3,
+				)
 	def valid(self, pos): # pragma: no cover -- TODO
 		return self.terrain.valid(pos)
 	def recalibrate(self, vantage_point, marging=None):
