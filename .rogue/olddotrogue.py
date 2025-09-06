@@ -13,6 +13,7 @@ import clckwrkbdgr.fs
 import src.engine.builders
 import clckwrkbdgr.serialize.stream
 from hud import *
+from terrain import *
 
 class DungeonSquatters(src.engine.builders.Builder):
 	""" Set of squatters, randomly distributed throughout the map
@@ -106,68 +107,6 @@ class Rodent(src.engine.actors.EquippedMonster, src.engine.actors.Offensive):
 			(5, None),
 			(1, HealingPotion),
 			]
-
-class Void(src.engine.terrain.Terrain):
-	_name = 'void'
-	_sprite = Sprite(' ', None)
-	_passable = False
-class Corner(src.engine.terrain.Terrain):
-	_name = 'corner'
-	_sprite = Sprite("+", None)
-	_passable = False
-	_remembered = Sprite("+", None)
-class Door(src.engine.terrain.Terrain):
-	_name = 'door'
-	_sprite = Sprite("+", None)
-	_passable = True
-	_remembered = Sprite("+", None)
-class RogueDoor(src.engine.terrain.Terrain):
-	_name = 'rogue_door'
-	_sprite = Sprite("+", None)
-	_passable = True
-	_remembered = Sprite("+", None)
-	_allow_diagonal=False
-	_dark=True
-class Floor(src.engine.terrain.Terrain):
-	_name = 'floor'
-	_sprite = Sprite(".", None)
-	_passable = True
-class TunnelFloor(src.engine.terrain.Terrain):
-	_name = 'tunnel_floor'
-	_sprite = Sprite(".", None)
-	_passable = True
-	_allow_diagonal=False
-class Passage(src.engine.terrain.Terrain):
-	_name = 'passage'
-	_sprite = Sprite("#", None)
-	_passable = True
-	_remembered = Sprite("#", None)
-class RoguePassage(src.engine.terrain.Terrain):
-	_name = 'rogue_passage'
-	_sprite = Sprite("#", None)
-	_passable = True
-	_remembered = Sprite("#", None)
-	_allow_diagonal=False
-	_dark=True
-class Wall(src.engine.terrain.Terrain):
-	_name = 'wall'
-	_sprite = Sprite('#', None)
-	_passable = False
-	_remembered = Sprite("#", None)
-class WallH(src.engine.terrain.Terrain):
-	_name = 'wall_h'
-	_sprite = Sprite("-", None)
-	_passable = False
-	_remembered = Sprite("-", None)
-class WallV(src.engine.terrain.Terrain):
-	_name = 'wall_v'
-	_sprite = Sprite("|", None)
-	_passable = False
-	_remembered = Sprite("|", None)
-class Water(src.engine.terrain.Terrain):
-	_name = 'water'
-	_sprite = Sprite("~", None)
-	_passable = True
 
 class Stairs(src.engine.appliances.LevelPassage):
 	_name = 'stairs'

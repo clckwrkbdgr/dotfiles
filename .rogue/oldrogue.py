@@ -15,6 +15,7 @@ from src.world.roguedungeon import Scene
 from src.engine import events, actors, appliances, ui, Events, builders
 from src.engine.ui import Sprite
 from hud import *
+from terrain import *
 
 VERSION = 666
 
@@ -48,44 +49,6 @@ class EntityClassDistribution:
 		else:
 			value = self.prob
 		return [(value, entity_class) for entity_class in self.classes]
-
-class Void(src.engine.terrain.Terrain):
-	_name = 'void'
-	_sprite = Sprite(' ', None)
-	_passable = False
-class Corner(src.engine.terrain.Terrain):
-	_name = 'corner'
-	_sprite = Sprite("+", None)
-	_passable = False
-	_remembered = Sprite("+", None)
-class RogueDoor(src.engine.terrain.Terrain):
-	_name = 'rogue_door'
-	_sprite = Sprite("+", None)
-	_passable = True
-	_remembered = Sprite("+", None)
-	_allow_diagonal=False
-	_dark=True
-class Floor(src.engine.terrain.Terrain):
-	_name = 'floor'
-	_sprite = Sprite(".", None)
-	_passable = True
-class RoguePassage(src.engine.terrain.Terrain):
-	_name = 'rogue_passage'
-	_sprite = Sprite("#", None)
-	_passable = True
-	_remembered = Sprite("#", None)
-	_allow_diagonal=False
-	_dark=True
-class WallH(src.engine.terrain.Terrain):
-	_name = 'wall_h'
-	_sprite = Sprite("-", None)
-	_passable = False
-	_remembered = Sprite("-", None)
-class WallV(src.engine.terrain.Terrain):
-	_name = 'wall_v'
-	_sprite = Sprite("|", None)
-	_passable = False
-	_remembered = Sprite("|", None)
 
 class StairsUp(appliances.LevelPassage):
 	_sprite = Sprite('<', None)

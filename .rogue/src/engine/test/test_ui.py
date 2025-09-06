@@ -100,8 +100,9 @@ class TestMainGameDisplay(MainGameTestCase):
 		mode.game.scene.get_player().pos = Point(7, 7)
 		mode.game.update_vision()
 		self.assertEqual(mode.get_sprite(Point(3, 2)), ui.Sprite('&', None))
-		self.assertEqual(mode.get_sprite(Point(1, 2)), None) # ?
+		self.assertEqual(mode.get_sprite(Point(1, 2)), ui.Sprite(' ', None))
 		self.assertEqual(mode.get_sprite(Point(0, 0)), ui.Sprite('#', None))
+		self.assertEqual(mode.get_sprite(Point(3, 0)), ui.Sprite('#', None))
 	def should_draw_map(self):
 		mode, mock_ui = self.mode, self.mock_ui
 

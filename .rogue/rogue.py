@@ -25,45 +25,9 @@ from src.engine import ui as UI
 from src.engine.ui import Sprite
 from src.engine import Events
 from hud import *
+from terrain import *
 
 SAVEFILE_VERSION = 14
-
-class Void(Terrain):
-	_sprite = Sprite(' ', 'black')
-	_passable = False
-
-class Bog(Terrain):
-	_sprite = Sprite('~', 'green')
-class Bush(Terrain):
-	_sprite = Sprite('"', 'bold_green')
-class DeadTree(Terrain):
-	_sprite = Sprite('&', 'yellow')
-class FrozenGround(Terrain):
-	_sprite = Sprite('.', 'white')
-class Grass(Terrain):
-	_sprite = Sprite('.', 'green')
-class Ice(Terrain):
-	_sprite = Sprite('.', 'cyan')
-class Plant(Terrain):
-	_sprite = Sprite('"', 'green')
-class Rock(Terrain):
-	_sprite = Sprite('^', 'yellow')
-	_passable = False
-class Sand(Terrain):
-	_sprite = Sprite('.', 'bold_yellow')
-class Snow(Terrain):
-	_sprite = Sprite('.', 'bold_white')
-class Swamp(Terrain):
-	_sprite = Sprite('~', 'cyan')
-class Tree(Terrain):
-	_sprite = Sprite('&', 'bold_green')
-class SwampTree(Terrain):
-	_sprite = Sprite('&', 'green')
-class Floor(Terrain):
-	_sprite = Sprite('.', 'white')
-class Wall(Terrain):
-	_sprite = Sprite('#', 'white')
-	_passable = False
 
 class RealMonster(Monster):
 	pass

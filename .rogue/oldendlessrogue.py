@@ -9,19 +9,7 @@ from src.world import endlessdungeon, endlessbuilders
 from src import engine
 from src.engine import ui, terrain, actors
 from hud import *
-
-class EndlessFloor(terrain.Terrain):
-	_sprite = ui.Sprite('.', None)
-	_name = '.'
-	_passable = True
-class EndlessWall(terrain.Terrain):
-	_sprite = ui.Sprite('#', None)
-	_name = '#'
-	_passable = False
-class EndlessVoid(terrain.Terrain):
-	_sprite = ui.Sprite(' ', None)
-	_name = ' '
-	_passable = False
+from terrain import *
 
 class Player(actors.EquippedMonster, actors.Player):
 	_sprite = ui.Sprite("@", None)
@@ -33,9 +21,9 @@ class Scene(endlessdungeon.Scene):
 		endlessbuilders.EmptySquare,
 		endlessbuilders.FilledWithGarbage,
 		],
-					 void=EndlessVoid(),
-					 floor=EndlessFloor(),
-					 wall=EndlessWall(),
+					 void=Void(),
+					 floor=Floor(),
+					 wall=Wall(),
 					 start=lambda:'start'
 					 )
 

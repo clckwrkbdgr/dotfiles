@@ -341,8 +341,10 @@ class Game(object):
 			cell, objects, items, monsters = cell_info
 			if objects:
 				return objects[-1].sprite
-			elif cell and cell.remembered:
-				return cell.remembered
+			elif cell:
+				if cell.remembered:
+					return cell.remembered
+				return cell.sprite
 		return None
 
 	# Actions.

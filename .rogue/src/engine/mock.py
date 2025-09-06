@@ -17,6 +17,7 @@ class Floor(terrain.Terrain):
 	_sprite = Sprite('.', None)
 	_name = 'floor'
 	_passable = True
+	_remembered = Sprite(' ', None)
 
 class CorridorFloor(terrain.Terrain):
 	_sprite = Sprite('.', None)
@@ -27,6 +28,7 @@ class CorridorFloor(terrain.Terrain):
 class ToxicWaste(terrain.Terrain):
 	_sprite = Sprite('~', None)
 	_name = 'toxic waste'
+	_remembered = Sprite(' ', None)
 	_passable = True
 	def __init__(self, damage=0):
 		self.damage = damage
@@ -40,7 +42,6 @@ class Wall(terrain.Terrain):
 	_sprite = Sprite('#', None)
 	_name = 'wall'
 	_passable = False
-	_remembered = Sprite('#', None)
 
 ### Items. #####################################################################
 
