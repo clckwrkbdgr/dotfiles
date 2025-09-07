@@ -14,6 +14,7 @@ import src.engine.builders
 import clckwrkbdgr.serialize.stream
 from hud import *
 from terrain import *
+from items import *
 
 class DungeonSquatters(src.engine.builders.Builder):
 	""" Set of squatters, randomly distributed throughout the map
@@ -48,17 +49,6 @@ class DungeonSquatters(src.engine.builders.Builder):
 		""" Drops items in random locations. """
 		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
 			yield _
-
-class Healing(src.engine.items.Consumable):
-	healing = 0
-	def consume(self, target):
-		diff = target.affect_health(self.healing)
-		return [src.engine.Events.Health(target, diff)]
-
-class HealingPotion(src.engine.items.Item, Healing):
-	_name = 'healing potion'
-	_sprite = Sprite('!', None)
-	healing = +5
 
 class Player(src.engine.actors.EquippedMonster, src.engine.actors.Player):
 	_hostile_to = [src.engine.actors.Monster]

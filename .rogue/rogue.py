@@ -26,6 +26,7 @@ from src.engine.ui import Sprite
 from src.engine import Events
 from hud import *
 from terrain import *
+from items import *
 
 SAVEFILE_VERSION = 14
 
@@ -130,19 +131,6 @@ class Dweller(Monster, src.engine.actors.Neutral):
 			self.prepared_quest = (int(self.prepared_quest), stream.read(), stream.read(int))
 		else:
 			self.prepared_quest = None
-
-class ColoredSkin(Item):
-	def __init__(self, sprite=None, name=None):
-		self._sprite = sprite
-		self._name = name
-	def save(self, stream):
-		super(ColoredSkin, self).save(stream)
-		stream.write(self._sprite.sprite)
-		stream.write(self._sprite.color)
-		stream.write(self._name)
-	def load(self, stream):
-		self._sprite = Sprite(stream.read(), stream.read())
-		self._name = stream.read()
 
 class ZoneData:
 	def save(self, stream):

@@ -13,28 +13,14 @@ import clckwrkbdgr.pcg.rogue
 from src.engine.items import Item, Wearable, Consumable
 from src.world.roguedungeon import Scene
 from src.engine import events, actors, appliances, ui, Events, builders
+from src.engine.entity import MakeEntity
 from src.engine.ui import Sprite
 from hud import *
 from terrain import *
+from items import *
 
 VERSION = 666
 
-class MakeEntity:
-	""" Creates builders for bare-properties-based classes to create subclass in one line. """
-	def __init__(self, base_classes, *properties):
-		""" Properties are either list of strings, or a single strings with space-separated identifiers. """
-		self.base_classes = base_classes if clckwrkbdgr.utils.is_collection(base_classes) else (base_classes,)
-		self.properties = properties
-		if len(self.properties) == 1 and ' ' in self.properties[0]:
-			self.properties = self.properties[0].split()
-	def __call__(self, class_name, *values):
-		""" Creates class object and puts it into global namespace.
-		Values should match properties given at init.
-		"""
-		assert len(self.properties) == len(values), len(values)
-		entity_class = type(class_name, self.base_classes, dict(zip(self.properties, values)))
-		globals()[class_name] = entity_class
-		return entity_class
 class EntityClassDistribution:
 	def __init__(self, prob):
 		self.prob = prob
@@ -56,10 +42,6 @@ class StairsUp(appliances.LevelPassage):
 	_id = 'enter'
 	_can_go_up = True
 
-class McGuffin(Item):
-	_sprite = Sprite("*", None)
-	_name = "mcguffin"
-
 class DungeonGates(appliances.LevelPassage):
 	_sprite = Sprite('<', None)
 	_name = 'exit from the dungeon'
@@ -75,24 +57,6 @@ class StairsDown(appliances.LevelPassage):
 	_name = 'stairs down'
 	_id = 'exit'
 	_can_go_down = True
-
-class HealingPotion(Item, Consumable):
-	_sprite = Sprite("!", None)
-	_name = "potion"
-	def consume(self, who):
-		who.affect_health(10)
-		return [DrinksHealingPotion(Who=who.name.title())]
-
-make_weapon = MakeEntity(Item, '_sprite _name _attack')
-make_weapon('Dagger', Sprite('(', None), 'dagger', 1)
-make_weapon('Sword', Sprite('(', None), 'sword', 2)
-make_weapon('Axe', Sprite('(', None), 'axe', 4)
-
-make_armor = MakeEntity((Item, Wearable), '_sprite _name _protection')
-make_armor('Rags', Sprite("[", None), "rags", 1)
-make_armor('Leather', Sprite("[", None), "leather", 2)
-make_armor('ChainMail', Sprite("[", None), "chain mail", 3)
-make_armor('PlateArmor', Sprite("[", None), "plate armor", 4)
 
 class RealMonster(actors.EquippedMonster, actors.Offensive):
 	_hostile_to = [actors.Player]
@@ -203,9 +167,6 @@ norm_monsters << make_monster('Zealot', Sprite('Z', None), 'zealot', 10, 2, thug
 events.Events.on(Events.GodModeSwitched)(lambda event:"God {name} -> {state}".format(name=event.name, state=event.state))
 
 events.Events.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
-
-class DrinksHealingPotion(events.Event): FIELDS = 'Who'
-events.Events.on(DrinksHealingPotion)(lambda event:"{Who} heals itself.".format(Who=event.Who))
 
 class _Builder(builders.Builder):
 	class Mapping:

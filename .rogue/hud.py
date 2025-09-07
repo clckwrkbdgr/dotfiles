@@ -58,6 +58,8 @@ del globals()['Events'] # FIXME to prevent namespace pollution in the main modul
 class _HUD(object):
 	@classmethod
 	def pos(cls, self):
+		if not self.game.scene.get_player():
+			return None
 		if hasattr(self.game.scene, 'get_player_coord'):
 			coord = self.game.scene.get_player_coord()
 			return "@{0:02X}.{1:X}.{2:X};{3:02X}.{4:X}.{5:X}".format(
