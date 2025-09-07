@@ -15,6 +15,7 @@ import clckwrkbdgr.serialize.stream
 from hud import *
 from terrain import *
 from items import *
+from objects import *
 
 class DungeonSquatters(src.engine.builders.Builder):
 	""" Set of squatters, randomly distributed throughout the map
@@ -98,11 +99,6 @@ class Rodent(src.engine.actors.EquippedMonster, src.engine.actors.Offensive):
 			(1, HealingPotion),
 			]
 
-class Stairs(src.engine.appliances.LevelPassage):
-	_name = 'stairs'
-	_sprite = Sprite('>', None)
-	_id = 'enter'
-
 class DungeonMapping:
 	void = Void()
 	corner = Corner()
@@ -120,7 +116,7 @@ class DungeonMapping:
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod
-	def exit(): return Stairs(None, 'enter')
+	def exit(): return StairsDown(None, 'enter')
 
 	@staticmethod
 	def plant(pos,*data):

@@ -18,6 +18,7 @@ from src.engine.ui import Sprite
 from hud import *
 from terrain import *
 from items import *
+from objects import *
 
 VERSION = 666
 
@@ -35,28 +36,6 @@ class EntityClassDistribution:
 		else:
 			value = self.prob
 		return [(value, entity_class) for entity_class in self.classes]
-
-class StairsUp(appliances.LevelPassage):
-	_sprite = Sprite('<', None)
-	_name = 'stairs up'
-	_id = 'enter'
-	_can_go_up = True
-
-class DungeonGates(appliances.LevelPassage):
-	_sprite = Sprite('<', None)
-	_name = 'exit from the dungeon'
-	_id = 'enter'
-	_can_go_up = True
-	_unlocking_item = McGuffin
-	def use(self, who):
-		if super().use(who):
-			raise GameCompleted()
-
-class StairsDown(appliances.LevelPassage):
-	_sprite = Sprite('>', None)
-	_name = 'stairs down'
-	_id = 'exit'
-	_can_go_down = True
 
 class RealMonster(actors.EquippedMonster, actors.Offensive):
 	_hostile_to = [actors.Player]

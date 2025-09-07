@@ -27,6 +27,7 @@ from src.engine import Events
 from hud import *
 from terrain import *
 from items import *
+from objects import *
 
 SAVEFILE_VERSION = 14
 

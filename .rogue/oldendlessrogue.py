@@ -11,6 +11,7 @@ from src.engine import ui, terrain, actors
 from hud import *
 from terrain import *
 from items import *
+from objects import *
 
 class Player(actors.EquippedMonster, actors.Player):
 	_sprite = ui.Sprite("@", None)
