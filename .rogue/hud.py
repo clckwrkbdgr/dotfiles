@@ -1,4 +1,6 @@
 import functools
+import logging
+Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Rect, Size, Point
 from src.engine import events, actors, Events, ui
 
@@ -139,6 +141,7 @@ class MainGame(ui.MainGame):
 			self._old_pos = pos
 		else:
 			pos = self._old_pos
+		Log.debug('Viewport: {0} at pos {1}'.format(viewport, pos))
 		return Rect(pos + viewport.topleft, viewport.size)
 	def get_map_shift(self):
 		return Point(0, 0)

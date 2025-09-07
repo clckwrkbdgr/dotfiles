@@ -174,12 +174,14 @@ class Scene(scene.Scene):
 		return self.tunnel_of(self.get_player().pos)
 	def iter_cells(self, view_rect):
 		trace.debug(list(self.rooms.keys()))
-		for pos in self.size.iter_points():
-			terrain = self._get_terrain(pos)
-			objects = list(self.iter_appliances_at(pos))
-			items = list(self.iter_items_at(pos))
-			monsters = list(self.iter_actors_at(pos, with_player=True))
-			yield pos, (terrain, objects, items, monsters)
+		for y in range(view_rect.topleft.y, view_rect.bottomright.y + 1):
+			for x in range(view_rect.topleft.x, view_rect.bottomright.x + 1):
+				pos = Point(x, y)
+				terrain = self._get_terrain(pos)
+				objects = list(self.iter_appliances_at(pos))
+				items = list(self.iter_items_at(pos))
+				monsters = list(self.iter_actors_at(pos, with_player=True))
+				yield pos, (terrain, objects, items, monsters)
 	def iter_items_at(self, pos):
 		""" Yield items at pos in reverse order (from top to bottom). """
 		for item_pos, item in reversed(self.items):

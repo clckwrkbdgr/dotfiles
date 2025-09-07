@@ -2,6 +2,7 @@ from __future__ import print_function
 import os, sys
 import logging
 Log = logging.getLogger('rogue')
+from clckwrkbdgr import logging
 import src.engine, src.engine.items, src.engine.actors, src.engine.terrain
 import src.world.dungeons
 from src.engine.ui import Sprite
@@ -164,7 +165,11 @@ import click
 @click.argument('tests', nargs=-1)
 def cli(debug=False, command=None, tests=None):
 	if debug:
-		Log.init('rogue.log')
+		clckwrkbdgr.logging.init('rogue',
+			debug=debug,
+			filename='rogue.log',
+			stream=None,
+			)
 	savefile = clckwrkbdgr.serialize.stream.Savefile(os.path.expanduser('~/.rogue.sav'))
 	def _need_tests():
 		if command == 'test':

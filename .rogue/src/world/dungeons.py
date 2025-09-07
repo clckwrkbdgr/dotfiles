@@ -145,10 +145,11 @@ class Scene(scene.Scene):
 				return False
 		return True
 	def iter_cells(self, view_rect):
-		for y in range(view_rect.height):
-			for x in range(view_rect.width):
+		for y in range(view_rect.topleft.y, view_rect.bottomright.y + 1):
+			for x in range(view_rect.topleft.x, view_rect.bottomright.x + 1):
 				pos = Point(x, y)
-				yield pos, self.get_cell_info(pos)
+				if self.valid(pos):
+					yield pos, self.get_cell_info(pos)
 	def get_cell_info(self, pos):
 		return (
 				self.strata.cell(pos),

@@ -186,7 +186,7 @@ class TestDungeon(unittest.TestCase):
 		view = Matrix(scene.get_area_rect().size, ' ')
 		visible = Matrix(scene.get_area_rect().size, '.')
 		visited = Matrix(scene.get_area_rect().size, '.')
-		for pos, (terrain, objects, items, monsters) in scene.iter_cells(None):
+		for pos, (terrain, objects, items, monsters) in scene.iter_cells(scene.get_area_rect()):
 			if vision.is_visible(pos):
 				visible.set_cell(pos, '*')
 			if vision.is_explored(pos):
