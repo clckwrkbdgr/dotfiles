@@ -17,6 +17,8 @@ from hud import *
 from terrain import *
 from items import *
 from objects import *
+from monsters import *
+from quests import *
 
 class DungeonSquatters(src.engine.builders.Builder):
 	""" Set of squatters, randomly distributed throughout the map
@@ -52,54 +54,6 @@ class DungeonSquatters(src.engine.builders.Builder):
 		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
 			yield _
 
-class Player(src.engine.actors.EquippedMonster, src.engine.actors.Player):
-	_hostile_to = [src.engine.actors.Monster]
-	_name = 'player'
-	_sprite = Sprite('@', None)
-	_max_hp = 10
-	_vision = 10
-	_attack = 1
-	_max_inventory = 26
-
-class Plant(src.engine.actors.Monster, src.engine.actors.Neutral):
-	_hostile_to = [Player]
-	_name = 'plant'
-	_sprite = Sprite('P', None)
-	_max_hp = 1
-	_vision = 1
-	_attack = 1
-	_max_inventory = 5
-	_drops = [
-			(1, None),
-			(5, HealingPotion),
-			]
-
-class Slime(src.engine.actors.EquippedMonster, src.engine.actors.Defensive):
-	_hostile_to = [Player]
-	_name = 'slime'
-	_sprite = Sprite('o', None)
-	_max_hp = 5
-	_vision = 3
-	_attack = 1
-	_max_inventory = 5
-	_drops = [
-			(1, None),
-			(1, HealingPotion),
-			]
-
-class Rodent(src.engine.actors.EquippedMonster, src.engine.actors.Offensive):
-	_hostile_to = [Player]
-	_name = 'rodent'
-	_sprite = Sprite('r', None)
-	_max_hp = 3
-	_vision = 8
-	_attack = 1
-	_max_inventory = 5
-	_drops = [
-			(5, None),
-			(1, HealingPotion),
-			]
-
 class DungeonMapping:
 	void = Void()
 	corner = Corner()
@@ -121,7 +75,7 @@ class DungeonMapping:
 
 	@staticmethod
 	def plant(pos,*data):
-		return Plant(*(data + (pos,)))
+		return CarnivorousPlant(*(data + (pos,)))
 	@staticmethod
 	def slime(pos,*data):
 		return Slime(*(data + (pos,)))
@@ -145,7 +99,7 @@ class MazeBuilder(src.world.dungeonbuilders.MazeBuilder, DungeonSquatters):
 
 class Game(src.engine.Game):
 	def make_player(self):
-		player = Player(None)
+		player = Rogue(None)
 		player.fill_drops(self.rng)
 		return player
 	def make_scene(self, scene_id):

@@ -21,6 +21,7 @@ events.Events.on(Events.Health)(lambda _:'{0} {1:+}hp.'.format(_.target.name, _.
 events.Events.on(Events.BumpIntoActor)(lambda _:'{0} bumps into {1}.'.format(_.actor.name.title(), _.target.name))
 events.Events.on(Events.Attack)(lambda _:'{0} hits {1} for {2}hp.'.format(_.actor.name.title(), _.target.name, _.damage))
 events.Events.on(Events.StareIntoVoid)(lambda _:'The void gazes back.')
+events.Events.on(Events.GodModeSwitched)(lambda event:"God {name} {state}".format(name=event.name, state=event.state))
 
 @events.Events.on(Events.Discover)
 def on_discover(event):
@@ -117,11 +118,11 @@ class MainGame(ui.MainGame):
 			((62, 7), HUD.Wield),
 			((62, 8), HUD.Wear),
 
-			((62, 25), HUD.GodVision),
-			((67, 25), HUD.GodNoclip),
+			((62, 22), HUD.GodVision),
+			((67, 22), HUD.GodNoclip),
 
-			((62, 25), HUD.Auto),
-			((77, 25), HUD.Help),
+			((62, 23), HUD.Auto),
+			((77, 23), HUD.Help),
 			]
 
 	@functools.lru_cache()

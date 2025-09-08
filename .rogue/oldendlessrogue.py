@@ -2,7 +2,7 @@ import sys
 import logging
 trace = logging.getLogger('rogue')
 from clckwrkbdgr import xdg, fs
-from clckwrkbdgr import logging
+import clckwrkbdgr.logging
 from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
 from src.world import endlessdungeon, endlessbuilders
@@ -12,10 +12,8 @@ from hud import *
 from terrain import *
 from items import *
 from objects import *
-
-class Player(actors.EquippedMonster, actors.Player):
-	_sprite = ui.Sprite("@", None)
-	_vision = 20
+from monsters import *
+from quests import *
 
 class Scene(endlessdungeon.Scene):
 	BUILDERS = lambda: endlessbuilders.Builders([
@@ -33,13 +31,13 @@ class Dungeon(engine.Game):
 	def make_scene(self, scene_id):
 		return Scene()
 	def make_player(self):
-		return Player(None)
+		return Rogue(None)
 
 import click
 @click.command()
 @click.option('-d', '--debug', is_flag=True)
 def cli(debug=False):
-	logging.init('rogue',
+	clckwrkbdgr.logging.init('rogue',
 			debug=debug,
 			filename=xdg.save_state_path('dotrogue')/'rogue.log',
 			stream=None,

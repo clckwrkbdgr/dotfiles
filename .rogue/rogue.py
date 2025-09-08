@@ -28,110 +28,12 @@ from hud import *
 from terrain import *
 from items import *
 from objects import *
+from monsters import *
+from quests import *
 
-SAVEFILE_VERSION = 14
-
-class RealMonster(Monster):
-	pass
-
-class Player(EquippedMonster, src.engine.actors.Player):
-	_sprite = Sprite('@', 'bold_white')
-	_name = 'you'
-	_vision = 10
-	_attack = 1
-	_hostile_to = [RealMonster]
-	init_max_hp = 10
-	_max_inventory = 26
-	def __init__(self, pos):
-		self._max_hp = self.init_max_hp
-		super(Player, self).__init__(pos)
-		self.regeneration = 0
-	def save(self, stream):
-		super(Player, self).save(stream)
-		stream.write(self.regeneration)
-		stream.write(self.max_hp)
-	def load(self, stream):
-		super(Player, self).load(stream)
-		self.regeneration = stream.read(int)
-		self._max_hp = stream.read(int)
-	def apply_auto_effects(self):
-		if self.hp >= self.max_hp:
-			return
-		self.regeneration += 1
-		while self.regeneration >= 10:
-			self.regeneration -= 10
-			self.affect_health(+1)
-			if self.hp >= self.max_hp:
-				self.hp = self.max_hp
-
-class BaseColoredMonster(RealMonster):
-	_attack = 1
-	_max_inventory = 1
-	_hostile_to = [Player]
-	_name = 'monster'
-	def __init__(self, pos, sprite=None, max_hp=None):
-		self._sprite = sprite
-		self._max_hp = max_hp
-		super(BaseColoredMonster, self).__init__(pos)
-	@property
-	def name(self):
-		return self.sprite.color + ' ' + self._name
-	def save(self, stream):
-		super(BaseColoredMonster, self).save(stream)
-		stream.write(self._sprite.sprite)
-		stream.write(self._sprite.color)
-		stream.write(self._max_hp)
-	def load(self, stream):
-		super(BaseColoredMonster, self).load(stream)
-		self._sprite = Sprite(stream.read(), stream.read())
-		self._max_hp = stream.read_int()
-
-class ColoredMonster(BaseColoredMonster, src.engine.actors.Defensive):
-	pass
+SAVEFILE_VERSION = 15
 
 MAX_MONSTER_ACTION_LENGTH = 10
-
-class AggressiveColoredMonster(BaseColoredMonster, src.engine.actors.Offensive):
-	_vision = 10
-
-class Dweller(Monster, src.engine.actors.Neutral):
-	_max_hp = 10
-	_name = 'dweller'
-	def __init__(self, pos, color=None):
-		self._sprite = Sprite('@', color)
-		super(Dweller, self).__init__(pos)
-		self.quest = None
-		self.prepared_quest = None
-	def save(self, stream):
-		super(Dweller, self).save(stream)
-		stream.write(self._sprite.color)
-
-		if self.quest:
-			stream.write(self.quest[0])
-			stream.write(self.quest[1])
-			stream.write(self.quest[2])
-		else:
-			stream.write('')
-		if self.prepared_quest:
-			stream.write(self.prepared_quest[0])
-			stream.write(self.prepared_quest[1])
-			stream.write(self.prepared_quest[2])
-		else:
-			stream.write('')
-	def load(self, stream):
-		super(Dweller, self).load(stream)
-		self._sprite = Sprite(self._sprite.sprite, stream.read())
-
-		self.quest = stream.read()
-		if self.quest:
-			self.quest = (int(self.quest), stream.read(), stream.read(int))
-		else:
-			self.quest = None
-		self.prepared_quest = stream.read()
-		if self.prepared_quest:
-			self.prepared_quest = (int(self.prepared_quest), stream.read(), stream.read(int))
-		else:
-			self.prepared_quest = None
 
 class ZoneData:
 	def save(self, stream):
@@ -345,7 +247,7 @@ class Game(engine.Game):
 	def make_scene(self, scene_id):
 		return Scene()
 	def make_player(self):
-		return Player(None)
+		return Rogue(None)
 
 class Vision(vision.OmniVision):
 	def __init__(self, scene):
@@ -565,7 +467,7 @@ class Scene(scene.Scene):
 		return coord
 	def _get_player_data(self):
 		if self._cached_player_pos is None:
-			player, self._cached_player_pos = next(((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player)), (None, self._cached_player_pos))
+			player, self._cached_player_pos = next(((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Rogue)), (None, self._cached_player_pos))
 			return player, self._cached_player_pos
 		expected_zone_index = self._cached_player_pos.values[0]
 		expected_zone = self.world.cells.cell(expected_zone_index)
@@ -573,13 +475,13 @@ class Scene(scene.Scene):
 		expected_field = expected_zone.cells.cell(expected_field_index)
 		# Expecting at the last remembered field:
 		for monster in expected_field.data.monsters:
-			if isinstance(monster, Player):
+			if isinstance(monster, Rogue):
 				self._cached_player_pos = NestedGrid.Coord(expected_zone_index, expected_field_index, monster.pos)
 				return monster, self._cached_player_pos
 		# Not found in the field.
 		# Checking the whole last remembered zone:
 		for coord, monster in self.all_monsters(raw=True, zone_range=[expected_zone_index]):
-			if isinstance(monster, Player):
+			if isinstance(monster, Rogue):
 				self._cached_player_pos = coord
 				return monster, self._cached_player_pos
 		# Not found in the last remembered zone.
@@ -589,12 +491,12 @@ class Scene(scene.Scene):
 			expected_zone_index + Point(1, 1),
 			)) - {expected_zone_index}
 		for coord, monster in self.all_monsters(raw=True, zone_range=adjacent_zones):
-			if isinstance(monster, Player):
+			if isinstance(monster, Rogue):
 				self._cached_player_pos = coord
 				return monster, self._cached_player_pos
 		# Not found in adjacent zones.
 		# Performing full lookup:
-		player, self._cached_player_pos = next(((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player)), (None, None))
+		player, self._cached_player_pos = next(((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Rogue)), (None, None))
 		return player, self._cached_player_pos
 
 	def get_global_pos(self, actor):
@@ -631,7 +533,7 @@ class Scene(scene.Scene):
 			pos = NestedGrid.Coord.from_global(pos, self.world)
 		zone_actors = self.world.get_data(pos)[-1].monsters
 		for actor in zone_actors:
-			if not with_player and isinstance(actor, Player):
+			if not with_player and isinstance(actor, Rogue):
 				continue
 			if pos.values[-1] == actor.pos:
 				yield actor

@@ -73,7 +73,7 @@ class EntityAtPos(object):
 		writer.write(self.entity)
 		writer.write(self.pos)
 
-class MakeEntity:
+class MakeEntity(object):
 	""" Creates builders for bare-properties-based classes to create subclass in one line.
 	>>> make_weapon = MakeEntity(Item, '_sprite _name _attack')
 	>>> make_weapon('Dagger', Sprite('(', None), 'dagger', 1)
@@ -93,3 +93,24 @@ class MakeEntity:
 		caller_globals = inspect.currentframe().f_back.f_globals
 		caller_globals[class_name] = entity_class
 		return entity_class
+
+class EntityClassDistribution(object):
+	""" Distributes entities based on probability.
+
+	>>> norm_monsters = EntityClassDistribution(lambda depth: max(0, (depth-2)))
+	>>> norm_monsters << Ant
+	>>> norm_monsters.get_distribution(depth)
+	"""
+	def __init__(self, prob):
+		self.prob = prob
+		self.classes = []
+	def __lshift__(self, entity_class):
+		self.classes.append(entity_class)
+	def __iter__(self):
+		return iter(self.classes)
+	def get_distribution(self, param):
+		if callable(self.prob):
+			value = self.prob(param)
+		else:
+			value = self.prob
+		return [(value, entity_class) for entity_class in self.classes]
