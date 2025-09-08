@@ -3,22 +3,18 @@ from clckwrkbdgr.utils import classfield
 from clckwrkbdgr import pcg
 from clckwrkbdgr import utils
 from . import items
-import inspect
-import six
+from . import entity
 
-class Actor(object):
+class Actor(entity.Entity):
 	""" Basic actor.
 	Supports no properties/behaviour except movement.
 	"""
-	sprite = classfield('_sprite', None)
-	name = classfield('_name', 'unknown creature')
+	_metainfo_key = 'Actors'
 	vision = classfield('_vision', 0) # Radius of field of vision.
 
 	def __init__(self, pos):
 		self.pos = Point(pos) if pos else None
 		self.action_points = True # TODO should be proper counter for free action points left. Also should save them.
-	def __str__(self):
-		return self.name
 	def __repr__(self):
 		return '{0}({1} @{2})'.format(type(self).__name__, self.name, self.pos)
 
@@ -39,33 +35,15 @@ class Actor(object):
 
 	@classmethod
 	def load(cls, reader):
-		""" Loads basic info about Actor object (class name and pos),
-		constructs actual instance and optionally loads subclass-specific data.
-		Classes are serialized as their class names, so reader metainfo with key 'Actors'
-		should be a dict-like object which stores all required classes under their class names.
-		Subclasses should have default c-tor.
-		Subclasses should override this method as non-classmethod (regular instance method)
-		which loads subclass-specific data only.
+		""" Loads basic info about Actor object (class name and pos)
 		"""
-		type_name = reader.read()
-		registry = reader.get_meta_info('Actors')
-		obj_type = registry[type_name]
-		assert obj_type is cls or issubclass(obj_type, cls)
-		pos = reader.read_point()
-		obj = obj_type(pos)
-		if six.PY2: # pragma: no cover -- TODO
-			is_overridden_as_instance_method = obj_type.load.__self__ is not None
-		else: # pragma: no cover -- TODO
-			is_overridden_as_instance_method = inspect.ismethod(obj_type.load)
-		if not is_overridden_as_instance_method:
-			obj.load(reader)
-		return obj
+		return super(Actor, cls).load(reader, _additional_init=lambda r: r.read_point())
 	def save(self, writer):
 		""" Default implementation writes only class name and position.
 		Override to write additional subclass-specific properties.
 		Don't forget to call super().save()!
 		"""
-		writer.write(type(self).__name__)
+		super(Actor, self).save(writer)
 		writer.write(self.pos)
 
 class Behaviour(object):

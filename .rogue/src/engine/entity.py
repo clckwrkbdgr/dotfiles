@@ -1,5 +1,77 @@
 import inspect
+import six
+from clckwrkbdgr.utils import classfield
 import clckwrkbdgr.utils
+
+class Entity(object):
+	""" The base for any entity in the game: actor, terrain, item etc.
+	"""
+	_metainfo_key = None
+	sprite = classfield('_sprite', None)
+	name = classfield('_name', 'unknown')
+	def __str__(self):
+		return self.name
+	def __repr__(self):
+		return '{0}({1})'.format(type(self).__name__, self.name)
+
+	def save(self, writer):
+		""" Default implementation writes only class name.
+		Override to write additional subclass-specific properties.
+		Don't forget to call super().save()!
+		"""
+		writer.write(type(self).__name__)
+
+	@classmethod
+	def load(cls, reader, _additional_init=None):
+		""" Loads info about object (class name), constructs actual instance
+		and optionally loads subclass-specific data.
+		Classes are serialized as their class names, so reader metainfo with key 'Appliances'
+		should be a dict-like object which stores all required classes under their class names.
+		Subclasses should have default c-tor.
+		Subclasses should override this method as non-classmethod (regular instance method)
+		which loads subclass-specific data only.
+		"""
+		type_name = reader.read()
+		registry = reader.get_meta_info(cls._metainfo_key)
+		obj_type = registry[type_name]
+		assert obj_type is cls or issubclass(obj_type, cls)
+		if _additional_init:
+			obj = obj_type(_additional_init(reader))
+		else:
+			obj = obj_type()
+		if six.PY2: # pragma: no cover -- TODO
+			is_overridden_as_instance_method = obj_type.load.__self__ is not None
+		else: # pragma: no cover -- TODO
+			is_overridden_as_instance_method = inspect.ismethod(obj_type.load)
+		if not is_overridden_as_instance_method:
+			obj.load(reader)
+		return obj
+
+class EntityAtPos(object):
+	_entity_type = None
+	def __init__(self, pos, entity):
+		self.pos = pos
+		self.entity = entity
+	def __repr__(self):
+		return '{0} @{1}'.format(repr(self.entity), repr(self.pos))
+	def __str__(self):
+		return '{0} @{1}'.format(self.entity, self.pos)
+	def __lt__(self, other):
+		return (self.pos, self.entity) < (other.pos, other.entity)
+	def __eq__(self, other):
+		if isinstance(other, type(self)):
+			return (self.pos, self.entity) == (other.pos, other.entity)
+		return self.entity == other
+	def __iter__(self):
+		return iter((self.pos, self.entity))
+	@classmethod
+	def load(cls, reader):
+		entity = reader.read(cls._entity_type)
+		pos = reader.read_point()
+		return cls(pos, entity)
+	def save(self, writer):
+		writer.write(self.entity)
+		writer.write(self.pos)
 
 class MakeEntity:
 	""" Creates builders for bare-properties-based classes to create subclass in one line.

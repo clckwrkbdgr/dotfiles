@@ -17,7 +17,8 @@ class TestAppliances(unittest.TestCase):
 		self.assertEqual(repr(tree), 'Tree(tree)')
 	def should_str_appliance_at_pos(self):
 		tree = Tree()
-		appliance = appliances.ObjectAtPos(Point(1, 1), tree)
+		appliance = appliances.ObjectAtPos(Point(1, 1), None)
+		appliance.obj = tree
 		self.assertEqual(str(appliance), 'tree @[1, 1]')
 		self.assertEqual(appliance, appliance)
 		self.assertEqual(appliance, tree)

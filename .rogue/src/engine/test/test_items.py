@@ -17,7 +17,8 @@ class TestItems(unittest.TestCase):
 		self.assertEqual(repr(potion), 'Potion(potion)')
 	def should_str_item_at_pos(self):
 		potion = Potion()
-		item = items.ItemAtPos(Point(1, 1), potion)
+		item = items.ItemAtPos(Point(1, 1), None)
+		item.item = potion
 		self.assertEqual(str(item), 'potion @[1, 1]')
 
 class TestItemsSavefile(unittest.TestCase):
