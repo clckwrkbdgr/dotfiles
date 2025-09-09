@@ -10,27 +10,32 @@ class MockFloor(terrain.Terrain):
 class MockWall(terrain.Terrain):
 	_sprite = ui.Sprite('#', None)
 
+class MockEndlessBuilder(object):
+	class Mapping(object):
+		void = MockVoid()
+		floor = MockFloor()
+		wall = MockWall()
+		@staticmethod
+		def start(): return 'start'
+
+class MockFieldOfTanks(MockEndlessBuilder, FieldOfTanks):
+	pass
+class MockEmptySquare(MockEndlessBuilder, EmptySquare):
+	pass
+class MockFilledWithGarbage(MockEndlessBuilder, FilledWithGarbage):
+	pass
+
 class TestMainBuilder(unittest.TestCase):
-	@unittest.mock.patch('random.choice', side_effect=[FilledWithGarbage])
+	@unittest.mock.patch('random.choice', side_effect=[MockFilledWithGarbage])
 	@unittest.mock.patch('random.randrange', side_effect=[0, 1, 1, 0, 2, 2])
 	def should_build_block(self, random_randrange, random_choice):
 		block = Matrix((3, 3), MockVoid())
-		builder = Builders(utils.all_subclasses(Builder),
-					 void=MockVoid(),
-					 floor=MockFloor(),
-					 wall=MockWall(),
-					 start=lambda:'start'
-					 )
+		builder = Builders(utils.all_subclasses(MockEndlessBuilder))
 		builder.build_block(block)
 		self.assertEqual(block.tostring(lambda c: c.sprite.sprite), '.#.\n#..\n..#\n')
 	def should_place_rogue(self):
 		block = Matrix((3, 3), '.')
-		builder = Builders(utils.all_subclasses(Builder),
-					 void=MockVoid(),
-					 floor=MockFloor(),
-					 wall=MockWall(),
-					 start=lambda:'start'
-					 )
+		builder = Builders(utils.all_subclasses(MockEndlessBuilder))
 		builder.build_block(block)
 		pos = builder._start_pos
 		self.assertEqual(pos, (1, 1))

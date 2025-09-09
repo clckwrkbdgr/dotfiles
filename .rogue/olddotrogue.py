@@ -34,13 +34,13 @@ class DungeonSquatters(src.engine.builders.Builder):
 	"""
 	CELLS_PER_MONSTER = 60 # One monster for every 60 cells.
 	MONSTERS = [
-			(1, ('plant',)),
+			(1, ('carnivorous_plant',)),
 			(3, ('slime',)),
 			(10, ('rodent',)),
 			]
 	CELLS_PER_ITEM = 180 # One item for every 180 cells.
 	ITEMS = [
-			(1, ('healing_potion',)),
+			(1, ('HealingPotion',)),
 			]
 	def is_open(self, pos):
 		return self.grid.cell(pos) == 'floor'
@@ -54,35 +54,11 @@ class DungeonSquatters(src.engine.builders.Builder):
 		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
 			yield _
 
-class DungeonMapping:
-	void = Void()
-	corner = Corner()
-	door = Door()
-	rogue_door = RogueDoor()
-	floor = Floor()
-	tunnel_floor = TunnelFloor()
-	passage = Passage()
-	rogue_passage = RoguePassage()
-	wall = Wall()
-	wall_h = WallH()
-	wall_v = WallV()
-	water = Water()
-
+class DungeonMapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping):
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod
 	def exit(): return StairsDown(None, 'enter')
-
-	@staticmethod
-	def plant(pos,*data):
-		return CarnivorousPlant(*(data + (pos,)))
-	@staticmethod
-	def slime(pos,*data):
-		return Slime(*(data + (pos,)))
-	@staticmethod
-	def rodent(pos,*data):
-		return Rodent(*(data + (pos,)))
-	healing_potion = HealingPotion
 
 class BSPDungeon(src.world.dungeonbuilders.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping

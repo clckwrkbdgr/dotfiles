@@ -1,7 +1,7 @@
 import sys
 import logging
 trace = logging.getLogger('rogue')
-from clckwrkbdgr import xdg, fs
+from clckwrkbdgr import xdg, fs, utils
 import clckwrkbdgr.logging
 from clckwrkbdgr.math import Point, Rect, Size
 import clckwrkbdgr.tui
@@ -15,17 +15,19 @@ from objects import *
 from monsters import *
 from quests import *
 
+class EndlessBuilder:
+	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping):
+		start = lambda:'start'
+
+class FieldOfTanks(EndlessBuilder, endlessbuilders.FieldOfTanks):
+	pass
+class EmptySquare(EndlessBuilder, endlessbuilders.EmptySquare):
+	pass
+class FilledWithGarbage(EndlessBuilder, endlessbuilders.FilledWithGarbage):
+	pass
+
 class Scene(endlessdungeon.Scene):
-	BUILDERS = lambda: endlessbuilders.Builders([
-		endlessbuilders.FieldOfTanks,
-		endlessbuilders.EmptySquare,
-		endlessbuilders.FilledWithGarbage,
-		],
-					 void=Void(),
-					 floor=Floor(),
-					 wall=Wall(),
-					 start=lambda:'start'
-					 )
+	BUILDERS = lambda: endlessbuilders.Builders(utils.all_subclasses(EndlessBuilder))
 
 class Dungeon(engine.Game):
 	def make_scene(self, scene_id):

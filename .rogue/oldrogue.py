@@ -27,14 +27,8 @@ VERSION = 666
 events.Events.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
 
 class _Builder(builders.Builder):
-	class Mapping:
-		HealingPotion = HealingPotion
-		corner = Corner()
-		floor = Floor()
-		tunnel = RoguePassage()
-		door = RogueDoor()
-		wall_h = WallH()
-		wall_v = WallV()
+	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping):
+		pass
 	def __init__(self, depth, is_bottom, *args, **kwargs):
 		self.depth = depth
 		self.is_bottom = is_bottom
@@ -50,11 +44,14 @@ class _Builder(builders.Builder):
 		grid.set_cell((0, 3), 'wall_h')
 		grid.set_cell((0, 4), 'floor')
 		grid.set_cell((0, 5), 'tunnel')
-		grid.set_cell((0, 6), 'door')
+		grid.set_cell((0, 6), 'rogue_door')
 	def generate_appliances(self):
 		self.enter_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
 		enter_room = self.dungeon.grid.cell(self.enter_room_key)
-		yield (self.point_in_rect(enter_room), 'enter')
+		if self.depth == 0:
+			yield (self.point_in_rect(enter_room), 'dungeon_enter')
+		else:
+			yield (self.point_in_rect(enter_room), 'enter', self.depth - 1)
 
 		if not self.is_bottom:
 			for _ in range(9):
@@ -62,7 +59,7 @@ class _Builder(builders.Builder):
 				exit_room = self.dungeon.grid.cell(exit_room_key)
 				if exit_room_key == self.enter_room_key:
 					continue
-			yield (self.point_in_rect(exit_room), 'exit')
+			yield (self.point_in_rect(exit_room), 'exit', self.depth + 1)
 
 	def generate_items(self):
 		item_distribution = [
@@ -90,7 +87,7 @@ class _Builder(builders.Builder):
 				exit_room = self.dungeon.grid.cell(exit_room_key)
 				if exit_room_key == self.enter_room_key:
 					continue
-			yield (self.point_in_rect(exit_room), 'exit_item')
+			yield (self.point_in_rect(exit_room), 'mcguffin')
 	def generate_actors(self):
 		monster_distribution = list(itertools.chain(
 			easy_monsters.get_distribution(self.depth),
@@ -115,23 +112,10 @@ class RogueDungeonGenerator(object):
 		depth = level_id
 		is_bottom = depth >= (self.MAX_LEVELS - 1)
 
-		enter_object_type = StairsUp if level_id > 0 else DungeonGates
-		prev_level_id = level_id - 1 if level_id > 0 else None
-		next_level_id = level_id + 1 if not is_bottom else None
 		builder = _Builder(depth, is_bottom, RNG(), self.SIZE)
-		builder.map_key(enter=lambda:enter_object_type(prev_level_id, 'exit'))
-		if is_bottom:
-			builder.map_key(exit_item=lambda:McGuffin())
-		else:
-			builder.map_key(exit=lambda:StairsDown(next_level_id, 'enter'))
-		monster_distribution = list(itertools.chain(
-			easy_monsters.get_distribution(depth),
-			norm_monsters.get_distribution(depth),
-			hard_monsters.get_distribution(depth),
-			))
-		for _, monster_type in monster_distribution:
-			builder.map_key(**{monster_type.__name__:monster_type})
-		builder.map_key(**{'void':Void()})
+		builder.map_key(dungeon_enter=lambda:DungeonGates(None, 'exit'))
+		builder.map_key(enter=lambda prev_level_id:StairsUp(prev_level_id, 'exit'))
+		builder.map_key(exit=lambda next_level_id:StairsDown(next_level_id, 'enter'))
 		builder.generate()
 		scene.size = self.SIZE
 		scene.rooms = builder.dungeon.grid

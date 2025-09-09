@@ -1,3 +1,4 @@
+import itertools
 from src.engine.entity import MakeEntity, EntityClassDistribution
 from src.engine import actors
 from src.engine.ui import Sprite
@@ -14,7 +15,7 @@ class Rogue(actors.EquippedMonster, actors.Player):
 	_name = 'rogue'
 	_vision = 10
 	_attack = 1
-	_hostile_to = [Beast]
+	_hostile_to = [Beast, RealMonster]
 	init_max_hp = 10
 	_max_inventory = 26
 	def __init__(self, pos):
@@ -197,3 +198,32 @@ hard_monsters << make_monster('Wizard', Sprite('W', None), 'wizard', 40, 5, thug
 hard_monsters << make_monster('Xenomorph', Sprite('X', None), 'xenomorph', 30, 3, animal_drops)
 norm_monsters << make_monster('Yeti', Sprite('Y', None), 'yeti', 10, 2, animal_drops)
 norm_monsters << make_monster('Zealot', Sprite('Z', None), 'zealot', 10, 2, thug_drops)
+
+class MonsterMapping:
+	@classmethod
+	def colored_monster(cls, pos, sprite, color, strong, aggressive):
+		monster_type = AggressiveColoredMonster if aggressive else ColoredMonster
+		return monster_type(pos,
+			Sprite(sprite.upper() if strong else sprite, color),
+			1 + 10 * strong + random.randrange(4),
+			)
+	@classmethod
+	def colored_monster_carrying(cls, pos, sprite, color, strong, aggressive):
+		result = cls.colored_monster(pos, sprite, color, strong, aggressive)
+		result.grab(ColoredSkin(
+			Sprite('*', color),
+			'{0} skin'.format(color.replace('_', ' ')),
+			))
+		return result
+	@staticmethod
+	def carnivorous_plant(pos,*data):
+		return CarnivorousPlant(*(data + (pos,)))
+	@staticmethod
+	def slime(pos,*data):
+		return Slime(*(data + (pos,)))
+	@staticmethod
+	def rodent(pos,*data):
+		return Rodent(*(data + (pos,)))
+
+for _monster_type in itertools.chain(easy_monsters, norm_monsters, hard_monsters):
+	setattr(MonsterMapping, _monster_type.__name__, _monster_type)

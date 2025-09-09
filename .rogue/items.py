@@ -41,3 +41,14 @@ make_armor('Rags', Sprite("[", None), "rags", 1)
 make_armor('Leather', Sprite("[", None), "leather", 2)
 make_armor('ChainMail', Sprite("[", None), "chain mail", 3)
 make_armor('PlateArmor', Sprite("[", None), "plate armor", 4)
+
+class ItemMapping:
+	HealingPotion = HealingPotion
+	mcguffin = McGuffin
+	Dagger = Dagger
+	Sword = Sword
+	Axe = Axe
+	Rags = Rags
+	Leather = Leather
+	ChainMail = ChainMail
+	PlateArmor = PlateArmor

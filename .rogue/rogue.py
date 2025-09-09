@@ -67,39 +67,8 @@ class FieldData:
 		return self
 
 class Builder(builders.Builder):
-	class Mapping:
-		bog = Bog()
-		bush = Bush()
-		dead_tree = DeadTree()
-		frozen_ground = FrozenGround()
-		grass = Grass()
-		ice = Ice()
-		plant = Plant()
-		rock = Rock()
-		sand = Sand()
-		snow = Snow()
-		swamp = Swamp()
-		tree = Tree()
-		swamp_tree = SwampTree()
-		floor = Floor()
-		wall = Wall()
-		def dweller(pos, color):
-			return Dweller(pos, color)
-		@classmethod
-		def monster(cls, pos, sprite, color, strong, aggressive):
-			monster_type = AggressiveColoredMonster if aggressive else ColoredMonster
-			return monster_type(pos,
-				Sprite(sprite.upper() if strong else sprite, color),
-				1 + 10 * strong + random.randrange(4),
-				)
-		@classmethod
-		def monster_carrying(cls, pos, sprite, color, strong, aggressive):
-			result = cls.monster(pos, sprite, color, strong, aggressive)
-			result.grab(ColoredSkin(
-				Sprite('*', color),
-				'{0} skin'.format(color.replace('_', ' ')),
-				))
-			return result
+	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping):
+		pass
 
 	def fill_grid(self, grid):
 		self._make_terrain(grid)
@@ -164,7 +133,7 @@ class Builder(builders.Builder):
 		strong = random.randrange(2)
 		aggressive = random.randrange(2)
 		monster_color = random.choice(bold_colors if aggressive else normal_colors)
-		key = 'monster_carrying' if random.randrange(2) else 'monster'
+		key = 'colored_monster_carrying' if random.randrange(2) else 'colored_monster'
 		return (
 				monster_pos, key, 
 				random.choice(string.ascii_lowercase),

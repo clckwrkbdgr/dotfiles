@@ -12,7 +12,7 @@ class Scene(scene.Scene):
 		self.monsters = []
 		self.builder = type(self).BUILDERS()
 	def generate(self, id):
-		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block, default_value=self.builder.void)
+		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block)
 		self._player_pos = self.builder._start_pos
 	def enter_actor(self, actor, location):
 		actor.pos = self._player_pos
@@ -30,7 +30,7 @@ class Scene(scene.Scene):
 	def recalibrate(self, vantage_point, marging=None):
 		self.terrain.recalibrate(vantage_point)
 	def get_cell_info(self, pos):
-		cell = self.terrain.cell(pos) or self.builder.void
+		cell = self.terrain.cell(pos)
 		return cell, [], [], list(self.iter_actors_at(pos))
 	def iter_actors_at(self, pos, with_player=False):
 		for monster in self.monsters:

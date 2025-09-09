@@ -40,3 +40,7 @@ class Dweller(actors.Monster, actors.Neutral):
 		else:
 			self.prepared_quest = None
 
+class QuestMapping:
+	@classmethod
+	def dweller(pos, color):
+		return Dweller(pos, color)

@@ -83,14 +83,11 @@ class FieldOfTanks(Builder):
 				place_form(grid, tank_topleft, tank_size)
 
 class Builders:
-	def __init__(self, builders, **mapping):
+	def __init__(self, builders):
 		self.builder_types = builders
-		self.void = mapping['void']
-		self.mapping = mapping
 	def build_block(self, block):
 		builder_type = random.choice(self.builder_types)
 		builder = builder_type(random, block)
-		builder.map_key(**(self.mapping))
 		builder.generate()
 		builder.make_grid()
 		appliances = list(builder.make_appliances())
