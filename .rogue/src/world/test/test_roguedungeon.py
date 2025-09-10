@@ -1,8 +1,9 @@
 from clckwrkbdgr import unittest
 import textwrap, functools
 from clckwrkbdgr.math import Point, Matrix, Rect, Size
+from clckwrkbdgr.pcg import RNG
 import clckwrkbdgr.pcg.rogue
-from ..roguedungeon import Scene
+from ..roguedungeon import Scene, Builder
 from ...engine import items
 from ...engine.mock import *
 import src.engine.terrain
@@ -81,7 +82,7 @@ class MockScene(Scene):
 				Scene.Tunnel(Point(4, 7), Point(6, 7), 'H', 1),
 				]
 
-class MockBuilder(builders.Builder):
+class MockBuilder(Builder):
 	class Mapping:
 		void = Void()
 		corner = Corner()
@@ -90,22 +91,26 @@ class MockBuilder(builders.Builder):
 		wall_v = WallV()
 		wall_h = WallH()
 		rogue_door = RogueDoor()
-	def __init__(self, depth, is_bottom, *args, **kwargs):
-		self.depth = depth
-		self.is_bottom = is_bottom
-		super(MockBuilder, self).__init__(*args, **kwargs)
-	def fill_grid(self, grid):
-		self.dungeon = clckwrkbdgr.pcg.rogue.Dungeon(self.rng, self.size, Size(3, 3), Size(4, 4))
-		self.dungeon.generate_rooms()
-		self.dungeon.generate_maze()
-		self.dungeon.generate_tunnels()
-		grid.clear('void')
-		grid.set_cell((0, 1), 'corner')
-		grid.set_cell((0, 2), 'wall_v')
-		grid.set_cell((0, 3), 'wall_h')
-		grid.set_cell((0, 4), 'floor')
-		grid.set_cell((0, 5), 'tunnel')
-		grid.set_cell((0, 6), 'rogue_door')
+		Potion = Potion
+		Rags = Rags
+		Rat = Rat
+		Goblin = Goblin
+		mcguffin = Gold
+		@staticmethod
+		def dungeon_enter(): return StairsUp(-1, 'exit')
+		@staticmethod
+		def enter(level_id): return StairsUp(level_id, 'exit')
+		@staticmethod
+		def exit(level_id): return StairsDown(level_id, 'enter')
+	def get_item_distribution(self, depth): # pragma: no cover
+		return [
+				(50, Potion),
+				]
+	def get_monster_distribution(self, depth): # pragma: no cover
+		return [
+				(50, Rat),
+				(25, Goblin),
+				]
 
 class MockFullScene(Scene):
 	MAX_LEVELS = 3
@@ -114,10 +119,79 @@ class MockFullScene(Scene):
 
 class TestGridRoomMap(unittest.TestCase):
 	def should_generate_full_scene(self):
-		scene = MockFullScene()
+		self.maxDiff = None
+		scene = MockFullScene(RNG(0))
 		with self.assertRaises(KeyError):
 			scene.generate(-1)
+		scene.generate(0)
+		self.assertEqual(scene.tostring(scene.get_area_rect()), textwrap.dedent("""\
+		_  +--+          +--+        +----+      _
+		_  |..|          |rr|        |.!..|      _
+		_  |g.|          |..|        |....|      _
+		_  +--+          +--+        +----+      _
+		_   +               +         +          _
+		_   ######        ###         #######    _
+		_    +---+    +---+-----+    +------++   _
+		_    |...|    |....<....|    |.......|   _
+		_    |...|+###+.........|    |>......|   _
+		_    +---+    +---------+    +-------+   _
+		_      +             +        +          _
+		_      ###     #######       ##          _
+		_+-------+-+  ++------+     ++-+         _
+		_|.......g.|  |.......|+##  |!.|         _
+		_|.r...!...|  |.......|  ###+..|         _
+		_+---------+  +-------+     +--+         _
+		_                                        _
+		_                                        _
+		_                                        _
+		_                                        _
+		""").replace('_', ''))
 		scene.generate(1)
+		self.assertEqual(scene.tostring(scene.get_area_rect()), textwrap.dedent("""\
+		_    +-----+     +-----+   +---------+   _
+		_    |.....|     |.....|+##+......<..|   _
+		_    |....>|     |.....|   |.....!...|   _
+		_    +-----+     +-----+   +---------+   _
+		_          +           +    +            _
+		_ ##########         ###    ##           _
+		_++----+      +------+--+  +-+-------+   _
+		_|.....|      |.....g...|  |.........|   _
+		_|.....|      |.........|+#|.........|   _
+		_+-----+      +---------+ #+---------+   _
+		_    +           +                   +   _
+		_    ######      ###                ##   _
+		_+--------++  +----+-+        +-----++   _
+		_|...r.....| #+......|        |...g..|   _
+		_|..r.!....| #|.....r|        |!.....|   _
+		_+---------++#+------+        +------+   _
+		_                                        _
+		_                                        _
+		_                                        _
+		_                                        _
+		""").replace('_', ''))
+		scene.generate(2)
+		self.assertEqual(scene.tostring(scene.get_area_rect()), textwrap.dedent("""\
+		_  +-----+    +----+       +-------+     _
+		_  |g....|    |*.!.|       |...<...|     _
+		_  |..g..|    |....|       |.......|     _
+		_  +-----+    +----++######+-------+     _
+		_     +          +                       _
+		_ #####          ####                    _
+		_++-------+     +---+---+  +------+      _
+		_|........|+####|.......|  |......|      _
+		_|........|    #+.!r....|  |......|      _
+		_+--------+     +-------+  +------+      _
+		_  +               +              +      _
+		_  ########      ###             ##      _
+		_   +-----++  +--+------+     +--+-+     _
+		_   |..!...|+#|..g......|     |....|     _
+		_   |......| #|.........|+####+..r.|     _
+		_   +------+ #+---------+     +----+     _
+		_                                        _
+		_                                        _
+		_                                        _
+		_                                        _
+		""").replace('_', ''))
 	def should_find_room_by_pos(self):
 		gridmap = scene = MockScene()
 		scene.generate('top')

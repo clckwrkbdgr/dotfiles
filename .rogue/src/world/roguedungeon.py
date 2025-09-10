@@ -3,15 +3,75 @@ if not hasattr(functools, 'lru_cache'): # pragma: no cover -- py2
 	functools.lru_cache = lambda: (lambda f:f)
 from collections import namedtuple
 from clckwrkbdgr.collections import dotdict
-from clckwrkbdgr.math import Point, Rect, Matrix
+from clckwrkbdgr.math import Point, Rect, Matrix, Size
 from clckwrkbdgr.pcg import RNG
 import clckwrkbdgr.math
 from ..engine import math, vision
 import logging
 trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
-from ..engine import scene
+from ..engine import scene, builders
 from ..engine import actors, appliances
+
+class Builder(builders.Builder):
+	def get_item_distribution(self, depth): # pragma: no cover
+		raise NotImplementedError()
+	def get_monster_distribution(self, depth): # pragma: no cover
+		raise NotImplementedError()
+
+	def __init__(self, depth, is_bottom, *args, **kwargs):
+		self.depth = depth
+		self.is_bottom = is_bottom
+		super(Builder, self).__init__(*args, **kwargs)
+	def fill_grid(self, grid):
+		self.dungeon = clckwrkbdgr.pcg.rogue.Dungeon(self.rng, self.size, Size(3, 3), Size(4, 4))
+		self.dungeon.generate_rooms()
+		self.dungeon.generate_maze()
+		self.dungeon.generate_tunnels()
+		grid.clear('void')
+		grid.set_cell((0, 1), 'corner')
+		grid.set_cell((0, 2), 'wall_v')
+		grid.set_cell((0, 3), 'wall_h')
+		grid.set_cell((0, 4), 'floor')
+		grid.set_cell((0, 5), 'tunnel')
+		grid.set_cell((0, 6), 'rogue_door')
+	def generate_appliances(self):
+		self.enter_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+		enter_room = self.dungeon.grid.cell(self.enter_room_key)
+		if self.depth == 0:
+			yield (self.point_in_rect(enter_room), 'dungeon_enter')
+		else:
+			yield (self.point_in_rect(enter_room), 'enter', self.depth - 1)
+
+		for _ in range(9):
+			exit_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+			self.exit_room = self.dungeon.grid.cell(exit_room_key)
+			if exit_room_key == self.enter_room_key:
+				continue
+		if not self.is_bottom:
+			yield (self.point_in_rect(self.exit_room), 'exit', self.depth + 1)
+
+	def generate_items(self):
+		item_distribution = [(prob, (item_type.__name__,)) for (prob, item_type) in self.get_item_distribution(self.depth)]
+		for pos, item in self.distribute(builders.WeightedDistribution, item_distribution, self.amount_fixed(2, 4)
+			):
+			if item is None: # pragma: no cover
+				continue
+			room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
+			room = self.dungeon.grid.cell(room_key)
+			pos = self.point_in_rect(room)
+			yield pos, item
+		if self.is_bottom:
+			yield (self.point_in_rect(self.exit_room), 'mcguffin')
+	def generate_actors(self):
+		monster_distribution = [(_, (monster_type.__name__,)) for (_, monster_type) in self.get_monster_distribution(self.depth)]
+		available_rooms = [room for room in self.dungeon.grid.keys() if room != self.enter_room_key]
+		for pos, monster in self.distribute(builders.WeightedDistribution, monster_distribution,  self.amount_fixed(5)):
+			if monster is None: # pragma: no cover
+				continue
+			room = self.dungeon.grid.cell(self.rng.choice(available_rooms))
+			pos = self.point_in_rect(room)
+			yield pos, monster
 
 class Scene(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
@@ -23,20 +83,21 @@ class Scene(scene.Scene):
 	Room = Rect
 	Tunnel = clckwrkbdgr.math.geometry.RectConnection
 
-	def __init__(self): # pragma: no cover
+	def __init__(self, rng=None): # pragma: no cover
 		self.size = None
 		self.rooms = Matrix( (3, 3) )
 		self.tunnels = []
 		self.items = []
 		self.monsters = []
 		self.objects = []
+		self.rng = rng or RNG()
 	def generate(self, level_id):
 		if level_id < 0 or level_id >= self.MAX_LEVELS:
 			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
 		depth = level_id
 		is_bottom = depth >= (self.MAX_LEVELS - 1)
 
-		builder = self.BUILDER(depth, is_bottom, RNG(), self.SIZE)
+		builder = self.BUILDER(depth, is_bottom, self.rng, self.SIZE)
 		builder.generate()
 		self.size = self.SIZE
 		self.rooms = builder.dungeon.grid

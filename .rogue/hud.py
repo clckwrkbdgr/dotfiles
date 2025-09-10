@@ -22,6 +22,7 @@ events.Events.on(Events.BumpIntoActor)(lambda _:'{0} bumps into {1}.'.format(_.a
 events.Events.on(Events.Attack)(lambda _:'{0} hits {1} for {2}hp.'.format(_.actor.name.title(), _.target.name, _.damage))
 events.Events.on(Events.StareIntoVoid)(lambda _:'The void gazes back.')
 events.Events.on(Events.GodModeSwitched)(lambda event:"God {name} {state}".format(name=event.name, state=event.state))
+events.Events.on(Events.NeedKey)(lambda event:"Cannot be opened without {0}!".format(event.key))
 
 @events.Events.on(Events.Discover)
 def on_discover(event):
