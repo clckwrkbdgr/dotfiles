@@ -28,7 +28,7 @@ class TestCustomMapLayout(unittest.TestCase):
 			'#':'#',
 			'.':'.',
 			'start':lambda: 'start',
-			'exit':lambda: 'exit',
+			'exit':lambda level_id: 'exit',
 			}))
 		appliances = sorted(builder.make_appliances())
 		self.assertEqual(appliances, sorted([
@@ -74,7 +74,7 @@ class TestCustomMapLayout(unittest.TestCase):
 			'"':'"',
 			'~':'~',
 			'start':lambda: 'start',
-			'exit':lambda: 'exit',
+			'exit':lambda level_id: 'exit',
 			}))
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
@@ -114,7 +114,7 @@ class TestRogueDungeon(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				start = lambda: 'start',
-				exit = lambda: 'exit',
+				exit = lambda level_id: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
@@ -168,7 +168,7 @@ class TestBSPDungeon(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				start = lambda: 'start',
-				exit = lambda: 'exit',
+				exit = lambda level_id: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
@@ -222,7 +222,7 @@ class TestBSPCityBuilder(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				start = lambda: 'start',
-				exit = lambda: 'exit',
+				exit = lambda level_id: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
@@ -276,7 +276,7 @@ class TestCaveDungeon(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				start = lambda: 'start',
-				exit = lambda: 'exit',
+				exit = lambda level_id: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
@@ -330,7 +330,7 @@ class TestMazeDungeon(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				start = lambda: 'start',
-				exit = lambda: 'exit',
+				exit = lambda level_id: 'exit',
 				)
 		builder.generate()
 		appliances = sorted(builder.make_appliances())
@@ -384,7 +384,7 @@ class TestSewers(unittest.TestCase):
 				rogue_door = "+",
 				rogue_passage = "#",
 				start = lambda: 'start',
-				exit = lambda: 'exit',
+				exit = lambda level_id: 'exit',
 				)
 		builder.generate()
 		self.maxDiff = None

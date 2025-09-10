@@ -1,11 +1,17 @@
 from clckwrkbdgr import unittest
 import textwrap, functools
 from clckwrkbdgr.math import Point, Matrix, Rect, Size
+import clckwrkbdgr.pcg.rogue
 from ..roguedungeon import Scene
 from ...engine import items
 from ...engine.mock import *
 import src.engine.terrain
 
+class Void(src.engine.terrain.Terrain):
+	_name = 'void'
+	_sprite = Sprite(" ", None)
+	_passable = False
+	_remembered = Sprite(" ", None)
 class Corner(src.engine.terrain.Terrain):
 	_name = 'corner'
 	_sprite = Sprite("+", None)
@@ -36,7 +42,7 @@ class WallV(src.engine.terrain.Terrain):
 	_passable = False
 	_remembered = Sprite("|", None)
 
-class MockGenerator:
+class MockScene(Scene):
 	"""
 			####          
 			#> +.. ###### 
@@ -49,7 +55,8 @@ class MockGenerator:
 			 #  # ########
 			 ####         
 			"""
-	def build_level(self, result, level_id):
+	def generate(self, level_id):
+		result = self
 		result.rooms = Matrix((2, 2))
 		result.rooms.set_cell((0, 0), Scene.Room((0, 0), (4, 3)))
 		result.rooms.set_cell((1, 0), Scene.Room((7, 1), (6, 4)))
@@ -74,32 +81,68 @@ class MockGenerator:
 				Scene.Tunnel(Point(4, 7), Point(6, 7), 'H', 1),
 				]
 
+class MockBuilder(builders.Builder):
+	class Mapping:
+		void = Void()
+		corner = Corner()
+		floor = Floor()
+		tunnel = RoguePassage()
+		wall_v = WallV()
+		wall_h = WallH()
+		rogue_door = RogueDoor()
+	def __init__(self, depth, is_bottom, *args, **kwargs):
+		self.depth = depth
+		self.is_bottom = is_bottom
+		super(MockBuilder, self).__init__(*args, **kwargs)
+	def fill_grid(self, grid):
+		self.dungeon = clckwrkbdgr.pcg.rogue.Dungeon(self.rng, self.size, Size(3, 3), Size(4, 4))
+		self.dungeon.generate_rooms()
+		self.dungeon.generate_maze()
+		self.dungeon.generate_tunnels()
+		grid.clear('void')
+		grid.set_cell((0, 1), 'corner')
+		grid.set_cell((0, 2), 'wall_v')
+		grid.set_cell((0, 3), 'wall_h')
+		grid.set_cell((0, 4), 'floor')
+		grid.set_cell((0, 5), 'tunnel')
+		grid.set_cell((0, 6), 'rogue_door')
+
+class MockFullScene(Scene):
+	MAX_LEVELS = 3
+	SIZE = Size(40, 20)
+	BUILDER = MockBuilder
+
 class TestGridRoomMap(unittest.TestCase):
+	def should_generate_full_scene(self):
+		scene = MockFullScene()
+		with self.assertRaises(KeyError):
+			scene.generate(-1)
+		scene.generate(1)
 	def should_find_room_by_pos(self):
-		gridmap = scene = Scene(MockGenerator())
+		gridmap = scene = MockScene()
 		scene.generate('top')
 		self.assertEqual(gridmap.room_of(Point(2, 2)), gridmap.rooms.cell((0, 0)))
 		self.assertIsNone(gridmap.room_of(Point(10, 0)))
 	def should_find_tunnel_by_pos(self):
-		gridmap = scene = Scene(MockGenerator())
+		gridmap = scene = MockScene()
 		scene.generate('top')
 		self.assertEqual(gridmap.tunnel_of(Point(5, 1)), gridmap.tunnels[0])
 		self.assertIsNone(gridmap.tunnel_of(Point(10, 2)))
 	def should_get_tunnels_for_room(self):
-		gridmap = scene = Scene(MockGenerator())
+		gridmap = scene = MockScene()
 		scene.generate('top')
 		self.assertEqual(gridmap.get_tunnels(gridmap.rooms.cell((1, 0))), [
 			gridmap.tunnels[0], gridmap.tunnels[1],
 			])
 	def should_get_rooms_for_tunnel(self):
-		gridmap = scene = Scene(MockGenerator())
+		gridmap = scene = MockScene()
 		scene.generate('top')
 		self.assertEqual(list(gridmap.get_tunnel_rooms(gridmap.tunnels[0])), [
 			gridmap.rooms.cell((0, 0)),
 			gridmap.rooms.cell((1, 0)),
 			])
 	def should_move_within_terrain(self):
-		gridmap = scene = Scene(MockGenerator())
+		gridmap = scene = MockScene()
 		scene.generate('top')
 		scene.enter_actor(Rogue(None), 'enter')
 		player = scene.get_player()
@@ -125,7 +168,7 @@ class TestGridRoomMap(unittest.TestCase):
 		player.pos = Point(8, 2)
 		self.assertFalse(gridmap.can_move(player, Point(7, 3)))
 	def should_detect_player_amongst_other_actors(self):
-		gridmap = scene = Scene(MockGenerator())
+		gridmap = scene = MockScene()
 		scene.generate('top')
 		scene.enter_actor(Rogue(None), 'enter')
 
@@ -135,7 +178,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(list(scene.iter_actors_at(Point(9, 2))), [mj12])
 		self.assertEqual(list(scene.iter_actors_at(Point(1, 1), with_player=True)), [scene.get_player()])
 	def should_rip_monster(self):
-		gridmap = scene = Scene(MockGenerator())
+		gridmap = scene = MockScene()
 		scene.generate('top')
 
 		pistol = Dagger()
@@ -151,7 +194,7 @@ class TestGridRoomMap(unittest.TestCase):
 		self.assertEqual(loot, [armor, pistol])
 		self.assertEqual(list(scene.iter_actors_at(Point(9, 2))), [])
 	def should_drop_and_grab_item(self):
-		gridmap = scene = Scene(MockGenerator())
+		gridmap = scene = MockScene()
 		scene.generate('top')
 		key = Gold()
 		gridmap.drop_item(items.ItemAtPos(Point(1, 1), key))
@@ -162,7 +205,7 @@ class TestGridRoomMap(unittest.TestCase):
 
 class TestDungeon(unittest.TestCase):
 	def should_iter_dungeon_cells(self):
-		scene = Scene(MockGenerator())
+		scene = MockScene()
 		scene.generate('top')
 		scene.enter_actor(Rogue(None), 'enter')
 		vision = scene.make_vision(scene.get_player())
@@ -237,7 +280,7 @@ class TestDungeon(unittest.TestCase):
 				..............
 				""").replace('_', ' '))
 	def should_locate_in_maze(self):
-		scene = Scene(MockGenerator())
+		scene = MockScene()
 		scene.generate('top')
 		scene.enter_actor(Rogue(None), 'enter')
 
@@ -253,7 +296,7 @@ class TestDungeon(unittest.TestCase):
 		self.assertIsNone(scene.current_room)
 		self.assertEqual(scene.current_tunnel, scene.tunnels[0])
 	def should_detect_player_by_monsters(self):
-		scene = Scene(MockGenerator())
+		scene = MockScene()
 		scene.generate('top')
 		scene.enter_actor(Rogue(None), 'enter')
 		scene.get_player().pos = Point(9, 3)
@@ -274,7 +317,7 @@ class TestDungeon(unittest.TestCase):
 		vision.visit(vacuum)
 		self.assertFalse(vision.is_visible(scene.get_player().pos))
 	def should_iter_monsters_in_rect(self):
-		scene = Scene(MockGenerator())
+		scene = MockScene()
 		scene.generate('top')
 		scene.enter_actor(Rogue(None), 'enter')
 		scene.get_player().pos = Point(9, 3)
@@ -291,12 +334,12 @@ class TestDungeon(unittest.TestCase):
 			Rect((8, 2), Size(3, 3))
 			)), scene.monsters[:2])
 	def should_treat_all_monsters_as_active(self):
-		scene = Scene(MockGenerator())
+		scene = MockScene()
 		scene.generate('top')
 		scene.enter_actor(Rogue(None), 'enter')
 		self.assertEqual(list(scene.iter_active_monsters()), list(scene.monsters))
 	def should_enter_and_exit_actor(self):
-		scene = Scene(MockGenerator())
+		scene = MockScene()
 		scene.generate('top')
 		scene.enter_actor(Rogue(None), 'enter')
 		self.assertTrue(scene.get_player())

@@ -67,7 +67,7 @@ class FieldData:
 		return self
 
 class Builder(builders.Builder):
-	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping):
+	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
 		pass
 
 	def fill_grid(self, grid):

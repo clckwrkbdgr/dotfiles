@@ -48,7 +48,7 @@ class CustomMap(builders.Builder):
 				if self._map_data[y][x] == '@':
 					yield Point(x, y), 'start'
 				elif self._map_data[y][x] == '>':
-					yield Point(x, y), 'exit'
+					yield Point(x, y), 'exit', 0 # TODO proper next_level_id
 
 class RogueDungeon(builders.Builder):
 	""" Original Rogue dungeon.
@@ -94,7 +94,7 @@ class RogueDungeon(builders.Builder):
 			if exit_room_key == enter_room_key:
 				continue
 		exit_pos = self.point_in_rect(exit_room)
-		yield exit_pos, 'exit'
+		yield exit_pos, 'exit', 0 # TODO proper next_level_id
 		Log.debug("Generated exit pos: {0}".format(exit_pos))
 
 class BSPBuilder(object):
@@ -179,7 +179,7 @@ class BSPDungeon(builders.Builder):
 		return self.grid.cell(pos) == 'floor'
 	def generate_appliances(self):
 		yield self.point(self.is_accessible), 'start'
-		yield self.point(self.is_accessible), 'exit'
+		yield self.point(self.is_accessible), 'exit', 0 # TODO proper next_level_id
 
 class CityBuilder(builders.Builder):
 	""" A city block of buildings, surrounded by a thick wall.
@@ -211,7 +211,7 @@ class CityBuilder(builders.Builder):
 		return self.grid.cell(pos) == 'floor'
 	def generate_appliances(self):
 		yield self.point(self.is_accessible), 'start'
-		yield self.point(self.is_accessible), 'exit'
+		yield self.point(self.is_accessible), 'exit', 0 # TODO proper next_level_id
 
 class CaveBuilder(builders.Builder):
 	""" A large open natural cave.
@@ -227,7 +227,7 @@ class CaveBuilder(builders.Builder):
 		return self.grid.cell(pos) == 'floor'
 	def generate_appliances(self):
 		yield self.point(self.is_accessible), 'start'
-		yield self.point(self.is_accessible), 'exit'
+		yield self.point(self.is_accessible), 'exit', 0 # TODO proper next_level_id
 
 class MazeBuilder(builders.Builder):
 	""" A maze labyrinth on a grid.
@@ -254,7 +254,7 @@ class MazeBuilder(builders.Builder):
 		""" Places other points of interests (start, exit).
 		"""
 		yield self.point(self.is_accessible), 'start'
-		yield self.point(self.is_accessible), 'exit'
+		yield self.point(self.is_accessible), 'exit', 0 # TODO proper next_level_id
 	def fill_grid(self, grid):
 		maze = clckwrkbdgr.pcg.maze.Maze(self.rng, self.size, self.CELL_SIZE)
 		layout = maze.build()

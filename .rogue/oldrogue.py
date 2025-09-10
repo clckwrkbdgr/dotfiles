@@ -27,7 +27,7 @@ VERSION = 666
 events.Events.on(Events.NeedKey)(lambda event:"You cannot escape the dungeon without {0}!".format(event.key))
 
 class _Builder(builders.Builder):
-	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping):
+	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
 		pass
 	def __init__(self, depth, is_bottom, *args, **kwargs):
 		self.depth = depth
@@ -103,36 +103,17 @@ class _Builder(builders.Builder):
 			pos = self.point_in_rect(room)
 			yield pos, monster
 
-class RogueDungeonGenerator(object):
+class RogueDungeonScene(Scene):
 	MAX_LEVELS = 26
 	SIZE = Size(78, 21)
-	def build_level(self, scene, level_id):
-		if level_id < 0 or level_id >= self.MAX_LEVELS:
-			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
-		depth = level_id
-		is_bottom = depth >= (self.MAX_LEVELS - 1)
-
-		builder = _Builder(depth, is_bottom, RNG(), self.SIZE)
-		builder.map_key(dungeon_enter=lambda:DungeonGates(None, 'exit'))
-		builder.map_key(enter=lambda prev_level_id:StairsUp(prev_level_id, 'exit'))
-		builder.map_key(exit=lambda next_level_id:StairsDown(next_level_id, 'enter'))
-		builder.generate()
-		scene.size = self.SIZE
-		scene.rooms = builder.dungeon.grid
-		scene.tunnels = builder.dungeon.tunnels
-		scene.terrain = builder.make_grid()
-		scene.objects = list(builder.make_appliances())
-		scene.items = list(builder.make_items())
-		scene.monsters = list(builder.make_actors())
-		#monster = monster()
-		#monster.fill_drops(self.rng)
+	BUILDER = _Builder
 
 class GameCompleted(Exception):
 	pass
 
 class RogueDungeon(src.engine.Game):
 	def make_scene(self, scene_id):
-		return Scene(RogueDungeonGenerator())
+		return RogueDungeonScene()
 	def make_player(self):
 		rogue = Rogue(None)
 		rogue.grab(Dagger())

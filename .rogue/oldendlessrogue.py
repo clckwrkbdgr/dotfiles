@@ -16,8 +16,8 @@ from monsters import *
 from quests import *
 
 class EndlessBuilder:
-	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping):
-		start = lambda:'start'
+	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
+		pass
 
 class FieldOfTanks(EndlessBuilder, endlessbuilders.FieldOfTanks):
 	pass

@@ -4,6 +4,7 @@ if not hasattr(functools, 'lru_cache'): # pragma: no cover -- py2
 from collections import namedtuple
 from clckwrkbdgr.collections import dotdict
 from clckwrkbdgr.math import Point, Rect, Matrix
+from clckwrkbdgr.pcg import RNG
 import clckwrkbdgr.math
 from ..engine import math, vision
 import logging
@@ -16,19 +17,35 @@ class Scene(scene.Scene):
 	""" Original Rogue-like map with grid of rectangular rooms connected by tunnels.
 	Items, monsters, fitment objects are supplied.
 	"""
+	MAX_LEVELS = None
+	SIZE = None
+	BUILDER = None
 	Room = Rect
 	Tunnel = clckwrkbdgr.math.geometry.RectConnection
 
-	def __init__(self, builder): # pragma: no cover
+	def __init__(self): # pragma: no cover
 		self.size = None
 		self.rooms = Matrix( (3, 3) )
 		self.tunnels = []
 		self.items = []
 		self.monsters = []
 		self.objects = []
-		self.generator = builder
-	def generate(self, id):
-		self.generator.build_level(self, id)
+	def generate(self, level_id):
+		if level_id < 0 or level_id >= self.MAX_LEVELS:
+			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
+		depth = level_id
+		is_bottom = depth >= (self.MAX_LEVELS - 1)
+
+		builder = self.BUILDER(depth, is_bottom, RNG(), self.SIZE)
+		builder.generate()
+		self.size = self.SIZE
+		self.rooms = builder.dungeon.grid
+		self.tunnels = builder.dungeon.tunnels
+		self.terrain = builder.make_grid()
+		self.objects = list(builder.make_appliances())
+		self.items = list(builder.make_items())
+		self.monsters = list(builder.make_actors())
+		#monster.fill_drops(self.rng)
 	def make_vision(self, actor):
 		if isinstance(actor, actors.Player):
 			return Vision(self)

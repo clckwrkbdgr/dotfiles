@@ -54,11 +54,8 @@ class DungeonSquatters(src.engine.builders.Builder):
 		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
 			yield _
 
-class DungeonMapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping):
-	@staticmethod
-	def start(): return 'start'
-	@staticmethod
-	def exit(): return StairsDown(None, 'enter')
+class DungeonMapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
+	pass
 
 class BSPDungeon(src.world.dungeonbuilders.BSPDungeon, DungeonSquatters):
 	Mapping = DungeonMapping

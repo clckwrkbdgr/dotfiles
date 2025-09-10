@@ -23,3 +23,15 @@ class DungeonGates(LevelPassage):
 	def use(self, who):
 		if super().use(who):
 			raise GameCompleted()
+
+class ObjectMapping:
+	@staticmethod
+	def start():
+		return 'start'
+	@staticmethod
+	def enter(prev_level_id):
+		return StairsUp(prev_level_id, 'exit')
+	@staticmethod
+	def exit(next_level_id):
+		return StairsDown(next_level_id, 'enter')
+	dungeon_enter = lambda:DungeonGates(None, 'exit')

@@ -52,7 +52,7 @@ class MockMapping:
 	@staticmethod
 	def start(): return 'start'
 	@staticmethod
-	def exit(): return StairsDown(None, 'enter')
+	def exit(level_id): return StairsDown(level_id, 'enter')
 	@staticmethod
 	def pack_rat(pos,*data):
 		return PackRat(*(data + (pos,)))
