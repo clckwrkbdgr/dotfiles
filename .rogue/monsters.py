@@ -1,3 +1,4 @@
+import random
 import itertools
 from src.engine.entity import MakeEntity, EntityClassDistribution
 from src.engine import actors

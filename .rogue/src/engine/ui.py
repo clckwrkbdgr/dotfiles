@@ -34,7 +34,8 @@ class Indicator(object):
 		self.value_getter = value_getter
 	def draw(self, ui, pos, mode):
 		value = self.value_getter(mode)
-		ui.print_line(pos.y, pos.x, value.ljust(self.width))
+		if value is not None:
+			ui.print_line(pos.y, pos.x, value.ljust(self.width))
 
 class CaptionedIndicator(Indicator):
 	""" Displays static caption with dynamic value

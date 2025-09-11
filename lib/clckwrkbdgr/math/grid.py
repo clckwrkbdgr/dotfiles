@@ -380,6 +380,8 @@ class NestedGrid: # pragma: no cover -- TODO
 			return self.values == other.values
 		def __ne__(self, other):
 			return not (self == other)
+		def __repr__(self):
+			return 'x'.join(map(str, self.values))
 		def __str__(self):
 			return ';'.join((
 					''.join('{0:02X}'.format(value.x) for value in self.values),
