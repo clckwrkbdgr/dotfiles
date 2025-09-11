@@ -167,7 +167,7 @@ class Marsh(Builder):
 		for _ in range(self.rng.randrange(10)):
 			grid.set_cell(self.point(), 'dead_tree')
 
-class Vision(vision.OmniVision): # pragma: no cover -- TODO
+class Vision(vision.OmniVision):
 	def __init__(self, scene):
 		super(Vision, self).__init__(scene)
 		self.visible_monsters = []
@@ -194,7 +194,7 @@ class Vision(vision.OmniVision): # pragma: no cover -- TODO
 			self._first_visit = False
 		self.visible_monsters = current_visible_monsters
 
-class MonsterVision(vision.Vision): # pragma: no cover -- TODO
+class MonsterVision(vision.Vision):
 	def __init__(self, scene):
 		super(MonsterVision, self).__init__(scene)
 		self.monster = None
@@ -203,7 +203,7 @@ class MonsterVision(vision.Vision): # pragma: no cover -- TODO
 	def visit(self, monster):
 		self.monster = monster
 
-class Scene(scene.Scene): # pragma: no cover -- TODO
+class Scene(scene.Scene):
 	MAX_MONSTER_ACTION_LENGTH = 10
 	SIZE = [(256, 256), (16, 16), (16, 16)]
 
@@ -369,9 +369,10 @@ class Scene(scene.Scene): # pragma: no cover -- TODO
 				zone_index = pos.values[0]
 				zone = self.world.cells.cell(zone_index)
 				field_index = pos.values[1]
-				field = zone.cells.cell(field_index)
-			else:
-				return (Void(), [], [], [])
+				if zone:
+					field = zone.cells.cell(field_index)
+			if field is None:
+				return (None, [], [], [])
 		return (
 				field.cells.cell(pos.values[-1]),
 				[], # No objects.
@@ -385,10 +386,10 @@ class Scene(scene.Scene): # pragma: no cover -- TODO
 		_, coord = self._get_player_data()
 		if coord:
 			self._cached_coord = coord
-		else:
+		else: # pragma: no cover -- TODO
 			coord = self._cached_coord
 		return coord
-	def _get_player_data(self):
+	def _get_player_data(self): # pragma: no cover -- TODO
 		if self._cached_player_pos is None:
 			player, self._cached_player_pos = next(((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player)), (None, self._cached_player_pos))
 			return player, self._cached_player_pos
@@ -434,7 +435,7 @@ class Scene(scene.Scene): # pragma: no cover -- TODO
 		return dest_cell.passable
 	def transfer_actor(self, actor, pos):
 		dest_pos = NestedGrid.Coord.from_global(pos, self.world)
-		if actor == self.get_player():
+		if actor == self.get_player(): # pragma: no cover -- TODO
 			actor_coord = self.get_player_coord()
 		else:
 			actor_coord = actor.coord
@@ -459,16 +460,19 @@ class Scene(scene.Scene): # pragma: no cover -- TODO
 			if not with_player and isinstance(actor, Player):
 				continue
 			if pos.values[-1] == actor.pos:
+				actor.coord = pos
 				yield actor
 	def all_monsters(self, raw=False, zone_range=None):
 		for zone_index in (zone_range or self.world.cells):
+			if not self.world.cells.valid(zone_index):
+				continue
 			zone = self.world.cells.cell(zone_index)
 			if zone is None:
 				continue
 			for field_index in zone.cells:
 				for monster in zone.cells.cell(field_index).data.monsters:
 					coord = NestedGrid.Coord(zone_index, field_index, monster.pos)
-					if not raw:
+					if not raw: # pragma: no cover -- TODO
 						coord = coord.get_global(self.world)
 					yield coord, monster
 	def iter_actors_in_rect(self, rect):
@@ -490,7 +494,7 @@ class Scene(scene.Scene): # pragma: no cover -- TODO
 		for monster in self.iter_actors_in_rect(monster_action_range):
 			yield monster
 
-def iter_rect(topleft, bottomright): # pragma: no cover -- TODO
+def iter_rect(topleft, bottomright):
 	for x in range(topleft.x, bottomright.x + 1):
 		for y in range(topleft.y, bottomright.y + 1):
 			yield Point(x, y)

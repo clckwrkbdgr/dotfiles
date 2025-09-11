@@ -154,6 +154,7 @@ class Rat(actors.Monster, actors.Defensive):
 	_hostile_to = [Rogue]
 	_sprite = Sprite('r', None)
 	_name = 'rat'
+	_vision = 2
 	_max_hp = 10
 	_attack = 1
 	_max_inventory = 1
