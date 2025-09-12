@@ -67,6 +67,7 @@ class Monster(Actor):
 
 	max_hp = classfield('_max_hp', 1)
 	max_inventory = classfield('_max_inventory', 1)
+	max_quests = classfield('_max_quests', 1)
 	drops = classfield('_drops', None) # See .fill_drops() for details
 	base_attack = classfield('_attack', 0) # Base unarmed attack.
 	base_protection = classfield('_protection', 0) # Base protection.

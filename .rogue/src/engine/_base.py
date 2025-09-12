@@ -1,6 +1,6 @@
 import logging
 Log = logging.getLogger('rogue')
-from clckwrkbdgr.math import Size, Matrix
+from clckwrkbdgr.math import Point, Size, Matrix, Rect
 from clckwrkbdgr.pcg import RNG
 from . import events
 from . import scene, items, appliances, actors
@@ -115,6 +115,24 @@ class Events:
 	class InventoryIsEmpty(events.Event):
 		""" No items to perform action for/on. """
 		FIELDS = ''
+	class NoOneToChat(events.Event):
+		""" No one to chat nearby at all. """
+		FIELDS = ''
+	class NoOneToChatInDirection(events.Event):
+		""" No one to chat in picked direction. """
+		FIELDS = ''
+	class TooMuchQuests(events.Event):
+		""" Too much quests already. """
+		FIELDS = ''
+	class ChatThanks(events.Event):
+		""" Quest is completed. """
+		FIELDS = ''
+	class ChatComeLater(events.Event):
+		""" Quest is declined by player. """
+		FIELDS = ''
+	class ChatQuestReminder(events.Event):
+		""" Reminder about quest. """
+		FIELDS = 'message'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -602,6 +620,60 @@ class Game(object):
 			self.fire_event(Events.CannotAscend(here))
 			return False
 		return self._use_passage(actor, stairs_here, Events.Ascend)
+	def get_respondents(self, actor):
+		""" Returns list of respondents to chat with.
+		"""
+		pos = self.scene.get_global_pos(actor)
+		npcs = [
+				other for other
+				in self.scene.iter_actors_in_rect(Rect(
+					(pos.x - 1, pos.y - 1), (3, 3),
+					))
+				if isinstance(other, actors.Questgiver)
+				and actor != other
+				]
+		if not npcs:
+			self.fire_event(Events.NoOneToChat())
+			return []
+		return npcs
+	def chat(self, actor, respondent_or_direction):
+		""" Chats with respondent or in given direction.
+		Performs quest activation or quest completion, depending on
+		current state.
+		Returns dialog in form of tuple:
+		("prompt", on_yes(), on_no())
+		"""
+		if isinstance(respondent_or_direction, Point):
+			direction = respondent_or_direction
+			dest = self.scene.get_global_pos(actor) + direction
+			npcs = self.get_respondents(actor)
+			npcs = [npc for npc in npcs if npc.pos == dest]
+			if not npcs:
+				self.fire_event(Events.NoOneToChatInDirection())
+				return None, None, None
+			respondent = npcs[0]
+			return self.chat(actor, respondent)
+		respondent = respondent_or_direction
+		if not respondent.quest or not respondent.quest.is_active():
+			if len(list(self.scene.iter_active_quests())) >= actor.max_quests:
+				self.fire_event(Events.TooMuchQuests())
+				return None, None, None
+			respondent.prepare_chat(self)
+			def _on_yes():
+				respondent.quest.activate()
+			def _on_no():
+				self.fire_event(Events.ChatComeLater())
+			return respondent.quest.init_prompt(), _on_yes, _on_no
+		if respondent.quest.check(self):
+			def _on_yes():
+				self.fire_event(Events.ChatThanks())
+				respondent.quest.complete(self)
+				respondent.quest = None
+			def _on_no():
+				self.fire_event(Events.ChatComeLater())
+			return respondent.quest.complete_prompt(), _on_yes, _on_no
+		self.fire_event(Events.ChatQuestReminder(respondent.quest.reminder()))
+		return None, None, None
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

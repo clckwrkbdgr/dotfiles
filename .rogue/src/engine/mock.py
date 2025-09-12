@@ -229,6 +229,28 @@ class Doctor(actors.Questgiver, actors.Neutral):
 	def prepare_chat(self, game):
 		self.quest = RandomQuest('Ottilie Harsham')
 
+class GoldQuest(quests.Quest):
+	def init_prompt(self):
+		return "Bring me gold, I'll give you a chain mail."
+	def summary(self):
+		return "Bring Smith a piece of gold."
+	def reminder(self):
+		return "Gold. I need gold."
+	def complete_prompt(self):
+		return "Will trade this chain mail for your gold."
+	def check(self, game):
+		return bool(game.scene.get_player().find_item(Gold))
+	def complete(self, game):
+		gold = game.scene.get_player().find_item(Gold)
+		game.scene.get_player().drop(gold)
+		game.scene.get_player().grab(ChainMail())
+
+class Smith(actors.Questgiver, actors.Neutral):
+	_sprite = Sprite('@', 'cyan')
+	_name = 'smith'
+	def prepare_chat(self, game):
+		self.quest = GoldQuest()
+
 ### Map. #######################################################################
 
 class MonsterVision(vision.Vision):
@@ -361,6 +383,11 @@ class Dungeon(scene.Scene):
 		for item_pos, item in self.items:
 			if item_pos == pos:
 				yield item
+	def iter_active_quests(self):
+		for monster in self.monsters:
+			if isinstance(monster, actors.Questgiver):
+				if monster.quest and monster.quest.is_active():
+					yield monster, monster.quest
 	def iter_actors_at(self, pos, with_player=False):
 		""" Yield all monsters at given cell. """
 		for monster in self.monsters:

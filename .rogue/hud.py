@@ -57,6 +57,14 @@ events.Events.on(Events.NotWearing)(lambda event:"Already wearing nothing.")
 events.Events.on(Events.TakeOff)(lambda event:"{actor} takes off {item}.".format(actor=event.actor.name.title(), item=event.item.name))
 events.Events.on(Events.Wear)(lambda event:"{actor} wears {item}.".format(actor=event.actor.name.title(), item=event.item.name))
 
+events.Events.on(Events.NoOneToChat)(lambda _:'No one to chat with.')
+events.Events.on(Events.NoOneToChatInDirection)(lambda _:'No one to chat with in that direction.')
+events.Events.on(Events.TooMuchQuests)(lambda _:"Too much quests already.")
+events.Events.on(Events.ChatThanks)(lambda _:'"Thanks. Here you go."')
+events.Events.on(Events.ChatComeLater)(lambda _:'"OK, come back later if you want it."')
+events.Events.on(Events.ChatQuestReminder)(lambda _:'"{0}"'.format(_.message))
+
+
 del globals()['Events'] # FIXME to prevent namespace pollution in the main module
 
 class _HUD(object):

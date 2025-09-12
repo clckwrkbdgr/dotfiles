@@ -7,7 +7,7 @@ from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Rect, Size
 from ..engine import builders, vision, scene
 from ..engine.items import ItemAtPos
-from ..engine.actors import Actor, Player
+from ..engine.actors import Actor, Player, Questgiver
 from ..engine.terrain import Terrain
 
 class ZoneData(object):
@@ -462,6 +462,10 @@ class Scene(scene.Scene):
 			if pos.values[-1] == actor.pos:
 				actor.coord = pos
 				yield actor
+	def iter_active_quests(self): # pragma: no cover -- TODO
+		for coord, npc in self.all_monsters(raw=True):
+			if isinstance(npc, Questgiver) and npc.quest and npc.quest.is_active():
+				yield npc, npc.quest
 	def all_monsters(self, raw=False, zone_range=None):
 		for zone_index in (zone_range or self.world.cells):
 			if not self.world.cells.valid(zone_index):

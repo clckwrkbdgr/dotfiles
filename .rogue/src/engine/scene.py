@@ -140,6 +140,11 @@ class Scene(object):
 		Could return player character.
 		"""
 		raise NotImplementedError()
+	def iter_active_quests(self): # pragma: no cover
+		""" Should iterate over all actors with questgiver capabilities
+		and active Quests and yield pairs (<npc>, <quest>).
+		"""
+		raise NotImplementedError()
 
 	def get_global_pos(self, actor):
 		""" Should return global pos for scenes where Actor.pos refers

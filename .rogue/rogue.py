@@ -32,7 +32,7 @@ from objects import *
 from monsters import *
 from quests import *
 
-SAVEFILE_VERSION = 16
+SAVEFILE_VERSION = 17
 
 class Builder(object):
 	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
@@ -42,20 +42,6 @@ class Forest(Builder, overworld.Forest): pass
 class Desert(Builder, overworld.Desert): pass
 class Thundra(Builder, overworld.Thundra): pass
 class Marsh(Builder, overworld.Marsh): pass
-
-class NoOneToChat(events.Event): FIELDS = ''
-class NoOneToChatInDirection(events.Event): FIELDS = ''
-class TooMuchQuests(events.Event): FIELDS = ''
-class ChatThanks(events.Event): FIELDS = ''
-class ChatComeLater(events.Event): FIELDS = ''
-class ChatQuestReminder(events.Event): FIELDS = 'message'
-
-events.Events.on(NoOneToChat)(lambda _:'No one to chat with.')
-events.Events.on(NoOneToChatInDirection)(lambda _:'No one to chat with in that direction.')
-events.Events.on(TooMuchQuests)(lambda _:"Too much quests already.")
-events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
-events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')
-events.Events.on(ChatQuestReminder)(lambda _:'"{0}"'.format(_.message))
 
 Color = namedtuple('Color', 'fg attr dweller monster')
 class Game(engine.Game):
@@ -113,75 +99,22 @@ def main(ui):
 class MainGameMode(MainGame):
 	@ui.MainGame.Keys.bind('C')
 	def char(self):
-		game = self.game
-		player_pos = game.scene.get_player_coord().get_global(game.scene.world)
-		if True:
-			npcs = [
-					monster for monster_pos, monster
-					in self.game.scene.all_monsters()
-					if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1
-					and isinstance(monster, Questgiver)
-					]
-			questing = [
-					npc for _, npc in self.game.scene.all_monsters()
-					if isinstance(npc, Questgiver)
-					and npc.quest and npc.quest.is_active()
-					]
-			if not npcs:
-				self.game.fire_event(NoOneToChat())
-			elif len(questing) > 20:
-				self.game.fire_event(TooMuchQuests())
-			else:
-				if len(npcs) > 1:
-					def _on_direction(direction):
-						dest = player_pos + dialog.answer
-						npcs = [npc for npc in npcs if npc.pos == dest]
-						return self._chat_with_npcs(npcs)
-					return DirectionDialogMode(on_direction=_on_direction)
-				return self._chat_with_npcs(npcs)
-	def _chat_with_npcs(self, npcs):
-		if True:
-			if True:
-				if npcs:
-					npc = npcs[0]
-					return self._chat_with_npc(npc)
-				else:
-					self.game.fire_event(NoOneToChatInDirection())
+		npcs = game.get_respondents(game.scene.get_player())
+		if not npcs:
+			return None
+		if len(npcs) > 1:
+			return DirectionDialogMode(on_direction=self._chat_with_npc)
+		return self._chat_with_npc(npcs[0])
 	def _chat_with_npc(self, npc):
-		game = self.game
-		if True:
-			if True:
-				if True:
-					if npc.quest and npc.quest.is_active():
-						if npc.quest.check(game):
-							def _on_yes():
-								self.game.fire_event(ChatThanks())
-								npc.quest.complete(game)
-								npc.quest = None
-							def _on_no():
-								self.game.fire_event(ChatComeLater())
-							return TradeDialogMode('"{0}" (y/n)'.format(npc.quest.complete_prompt()),
-										on_yes=_on_yes, on_no=_on_no)
-						else:
-							self.game.fire_event(ChatQuestReminder(npc.quest.reminder()))
-					else:
-						npc.prepare_chat()
-						def _on_yes():
-							npc.quest.activate()
-						def _on_no():
-							self.game.fire_event(ChatComeLater())
-						return TradeDialogMode('"{0}" (y/n)'.format(npc.quest.init_prompt()),
-										 on_yes=_on_yes, on_no=_on_no)
+		prompt, on_yes, on_no = self.game.chat(self.game.scene.get_player(), npc)
+		if prompt:
+			return TradeDialogMode('"{0}" (y/n)'.format(prompt),
+						on_yes=on_yes, on_no=on_no)
 	@ui.MainGame.Keys.bind('q')
 	def show_questlog(self):
 		game = self.game
 		if True:
-			questing = [
-					(coord, npc) for coord, npc in self.game.scene.all_monsters(raw=True)
-					if isinstance(npc, Questgiver)
-					and npc.quest and npc.quest.is_active()
-					]
-			quest_log = QuestLog(questing)
+			quest_log = QuestLog(list(self.game.scene.iter_active_quests()))
 			return quest_log
 
 DirectionKeys = clckwrkbdgr.tui.Keymapping()
@@ -229,10 +162,10 @@ class QuestLog(clckwrkbdgr.tui.Mode):
 			ui.print_line(0, 0, "No current quests.")
 		else:
 			ui.print_line(0, 0, "Current quests:")
-		for index, (coord, npc) in enumerate(self.quests):
-			ui.print_line(index + 1, 0, "@ {0}: {1}".format(
-				coord,
-				npc.quest.summary(),
+		for index, (npc, quest) in enumerate(self.quests):
+			ui.print_line(index + 1, 0, "{0} @ {1}: {2}".format(
+				npc.name, npc.pos,
+				quest.summary(),
 				))
 	def action(self, control):
 		return control != 'cancel'

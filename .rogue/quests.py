@@ -55,11 +55,11 @@ class Dweller(actors.Questgiver, actors.Neutral):
 	def prepare_chat(self, game):
 		if self.quest:
 			return
-		colors = {
+		colors = [
 				'red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white',
 				'bold black', 'bold red', 'bold green', 'bold blue',
 				'bold yellow', 'bold cyan', 'bold magenta', 'bold white',
-				}
+				]
 		amount = 1 + game.rng.randrange(3)
 		bounty = max(1, amount // 2 + 1)
 		color = game.rng.choice(colors) + ' skin'

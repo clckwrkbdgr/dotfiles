@@ -423,6 +423,105 @@ class TestItems(AbstractTestDungeon):
 			])
 		self.assertTrue(game.scene.get_player().has_acted())
 
+class TestChat(AbstractTestDungeon):
+	def should_not_chat_with_empty_space(self):
+		self.assertEqual(self.game.get_respondents(self.game.scene.get_player()), [])
+		self.assertEqual(self.game.events, [_base.Events.NoOneToChat()])
+	def should_pick_respondents(self):
+		smith = Smith(self.game.scene.get_player().pos + Point(1, 0))
+		self.game.scene.enter_actor(smith, None)
+		self.assertEqual(self.game.get_respondents(self.game.scene.get_player()), [smith])
+		self.assertEqual(self.game.events, [])
+	def should_chat_in_direction(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.pos = game.scene.get_player().pos + Point(1, 0)
+		prompt, on_yes, on_no = game.chat(game.scene.get_player(), Point(1, 0))
+		self.assertEqual(prompt, "Bring me gold, I'll give you a chain mail.")
+	def should_refuse_to_chat_with_no_one_in_direction(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.pos = game.scene.get_player().pos + Point(1, 1)
+		prompt, on_yes, on_no = game.chat(game.scene.get_player(), Point(1, 0))
+		self.assertIsNone(prompt)
+		self.assertEqual(self.game.events, [_base.Events.NoOneToChatInDirection()])
+
+	def should_decline_quests_from_npc(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		prompt, on_yes, on_no = game.chat(game.scene.get_player(), smith)
+		self.assertEqual(prompt, "Bring me gold, I'll give you a chain mail.")
+		on_no()
+		self.assertFalse(smith.quest.is_active())
+		self.assertEqual(game.events, [_base.Events.ChatComeLater()])
+	def should_accept_quests_from_npc(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		prompt, on_yes, on_no = game.chat(game.scene.get_player(), smith)
+		self.assertEqual(prompt, "Bring me gold, I'll give you a chain mail.")
+		on_yes()
+		self.assertTrue(smith.quest.is_active())
+		self.assertEqual(game.events, [])
+	def should_decline_quests_if_full(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.prepare_chat(game)
+		smith.quest.activate()
+
+		other_smith = Smith(game.scene.get_player().pos + Point(1, 1))
+
+		prompt, on_yes, on_no = game.chat(game.scene.get_player(), other_smith)
+		self.assertIsNone(prompt)
+		self.assertIsNone(other_smith.quest)
+		self.assertEqual(game.events, [_base.Events.TooMuchQuests()])
+		self.assertEqual(len(list(game.scene.iter_active_quests())), 1)
+	def should_remind_about_not_finished_quest(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.prepare_chat(game)
+		smith.quest.activate()
+
+		self.assertEqual(smith.quest.summary(), "Bring Smith a piece of gold.")
+
+		prompt, on_yes, on_no = game.chat(game.scene.get_player(), smith)
+		self.assertIsNone(prompt)
+		self.assertTrue(smith.quest.is_active())
+		self.assertEqual(game.events, [_base.Events.ChatQuestReminder("Gold. I need gold.")])
+	def should_decline_completing_finished_quest(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.prepare_chat(game)
+		smith.quest.activate()
+
+		game.scene.get_player().grab(Gold())
+
+		prompt, on_yes, on_no = game.chat(game.scene.get_player(), smith)
+		self.assertEqual(prompt, "Will trade this chain mail for your gold.")
+		on_no()
+		self.assertTrue(smith.quest.is_active())
+		self.assertEqual(game.events, [_base.Events.ChatComeLater()])
+	def should_accept_completing_finished_quest(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.prepare_chat(game)
+		smith.quest.activate()
+
+		game.scene.get_player().grab(Gold())
+
+		prompt, on_yes, on_no = game.chat(game.scene.get_player(), smith)
+		self.assertEqual(prompt, "Will trade this chain mail for your gold.")
+		on_yes()
+		self.assertIsNone(smith.quest)
+		self.assertEqual(game.events, [_base.Events.ChatThanks()])
+
 class TestScenes(AbstractTestDungeon):
 	def should_travel_to_other_scene(self):
 		game = self.game
