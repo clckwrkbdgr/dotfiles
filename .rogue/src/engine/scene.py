@@ -1,4 +1,4 @@
-from . import items, appliances, actors, terrain
+from . import items, appliances, actors, terrain, quests
 from . import vision
 from clckwrkbdgr import utils
 from clckwrkbdgr.math.grid import Matrix
@@ -50,6 +50,7 @@ class Scene(object):
 	def load(self, stream):
 		stream.set_meta_info('Terrain', {_.__name__:_ for _ in utils.all_subclasses(terrain.Terrain)})
 		stream.set_meta_info('Items', {_.__name__:_ for _ in utils.all_subclasses(items.Item)})
+		stream.set_meta_info('Quests', {_.__name__:_ for _ in utils.all_subclasses(quests.Quest)})
 		stream.set_meta_info('Appliances', {_.__name__:_ for _ in utils.all_subclasses(appliances.Appliance)})
 		stream.set_meta_info('Actors', {_.__name__:_ for _ in utils.all_subclasses(actors.Actor)})
 

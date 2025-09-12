@@ -1,6 +1,6 @@
 from clckwrkbdgr.math import Point, Rect, Size, distance
 from clckwrkbdgr.math.grid import Matrix
-from . import terrain, actors, items, appliances
+from . import terrain, actors, items, appliances, quests
 from . import builders
 from . import scene, events, vision
 from . import _base
@@ -210,6 +210,18 @@ class Handler(object):
 	@events.Events.on(Hit)
 	def handle_hits(self, event):
 		return '{0} -> {1}'.format(event.actor, event.target)
+
+### Quests. ####################################################################
+
+class RandomQuest(quests.Quest):
+	def __init__(self, name = None):
+		super(RandomQuest, self).__init__()
+		self.name = name
+	def load(self, stream):
+		self.name = stream.read()
+	def save(self, stream):
+		super(RandomQuest, self).save(stream)
+		stream.write(self.name)
 
 ### Map. #######################################################################
 

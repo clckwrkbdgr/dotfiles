@@ -25,7 +25,7 @@ class Entity(object):
 	def load(cls, reader, _additional_init=None):
 		""" Loads info about object (class name), constructs actual instance
 		and optionally loads subclass-specific data.
-		Classes are serialized as their class names, so reader metainfo with key 'Appliances'
+		Classes are serialized as their class names, so reader has to have metainfo with key (_metainfo_key)
 		should be a dict-like object which stores all required classes under their class names.
 		Subclasses should have default c-tor.
 		Subclasses should override this method as non-classmethod (regular instance method)

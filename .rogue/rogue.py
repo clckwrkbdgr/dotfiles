@@ -32,7 +32,7 @@ from objects import *
 from monsters import *
 from quests import *
 
-SAVEFILE_VERSION = 15
+SAVEFILE_VERSION = 16
 
 class Builder(object):
 	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
@@ -48,14 +48,14 @@ class NoOneToChatInDirection(events.Event): FIELDS = ''
 class TooMuchQuests(events.Event): FIELDS = ''
 class ChatThanks(events.Event): FIELDS = ''
 class ChatComeLater(events.Event): FIELDS = ''
-class ChatQuestReminder(events.Event): FIELDS = 'color item'
+class ChatQuestReminder(events.Event): FIELDS = 'message'
 
 events.Events.on(NoOneToChat)(lambda _:'No one to chat with.')
 events.Events.on(NoOneToChatInDirection)(lambda _:'No one to chat with in that direction.')
 events.Events.on(TooMuchQuests)(lambda _:"Too much quests already.")
 events.Events.on(ChatThanks)(lambda _:'"Thanks. Here you go."')
 events.Events.on(ChatComeLater)(lambda _:'"OK, come back later if you want it."')
-events.Events.on(ChatQuestReminder)(lambda _:'"Come back with {0} {1}."'.format(_.color, _.item))
+events.Events.on(ChatQuestReminder)(lambda _:'"{0}"'.format(_.message))
 
 Color = namedtuple('Color', 'fg attr dweller monster')
 class Game(engine.Game):
@@ -125,7 +125,7 @@ class MainGameMode(MainGame):
 			questing = [
 					npc for _, npc in self.game.scene.all_monsters()
 					if isinstance(npc, Dweller)
-					and npc.quest
+					and npc.quest and npc.quest.is_active()
 					]
 			if not npcs:
 				self.game.fire_event(NoOneToChat())
@@ -152,39 +152,30 @@ class MainGameMode(MainGame):
 		if True:
 			if True:
 				if True:
-					if npc.quest:
-						required_amount, required_name, bounty = npc.quest
-						have_required_items = list(
-								game.scene.get_player().iter_items(ColoredSkin, name=required_name),
-								)[:required_amount]
-						if len(have_required_items) >= required_amount:
+					if npc.quest and npc.quest.is_active():
+						if npc.quest.check(game):
 							def _on_yes():
 								self.game.fire_event(ChatThanks())
-								for item in have_required_items:
-									game.scene.get_player().drop(item)
-								if game.scene.get_player().hp == game.scene.get_player().max_hp:
-									game.scene.get_player().hp += bounty
-								game.scene.get_player()._max_hp += bounty
+								npc.quest.complete(game)
 								npc.quest = None
 							def _on_no():
 								self.game.fire_event(ChatComeLater())
-							return TradeDialogMode('"You have {0} {1}. Trade it for +{2} max hp?" (y/n)'.format(*(npc.quest)),
+							return TradeDialogMode('"{0}" (y/n)'.format(npc.quest.complete_prompt()),
 										on_yes=_on_yes, on_no=_on_no)
 						else:
-							self.game.fire_event(ChatQuestReminder(*(npc.quest)))
+							self.game.fire_event(ChatQuestReminder(npc.quest.reminder()))
 					else:
-						if not npc.prepared_quest:
+						if not npc.quest:
 							amount = 1 + random.randrange(3)
 							bounty = max(1, amount // 2 + 1)
 							colors = [name for name, color in game.COLORS.items() if color.monster]
 							color = random.choice(colors).replace('_', ' ') + ' skin'
-							npc.prepared_quest = (amount, color, bounty)
+							npc.quest = ColoredSkinQuest(amount, color, bounty)
 						def _on_yes():
-							npc.quest = npc.prepared_quest
-							npc.prepared_quest = None
+							npc.quest.activate()
 						def _on_no():
 							self.game.fire_event(ChatComeLater())
-						return TradeDialogMode('"Bring me {0} {1}, trade it for +{2} max hp, deal?" (y/n)'.format(*(npc.prepared_quest)),
+						return TradeDialogMode('"{0}" (y/n)'.format(npc.quest.init_prompt()),
 										 on_yes=_on_yes, on_no=_on_no)
 	@ui.MainGame.Keys.bind('q')
 	def show_questlog(self):
@@ -193,7 +184,7 @@ class MainGameMode(MainGame):
 			questing = [
 					(coord, npc) for coord, npc in self.game.scene.all_monsters(raw=True)
 					if isinstance(npc, Dweller)
-					and npc.quest
+					and npc.quest and npc.quest.is_active()
 					]
 			quest_log = QuestLog(questing)
 			return quest_log
@@ -244,10 +235,9 @@ class QuestLog(clckwrkbdgr.tui.Mode):
 		else:
 			ui.print_line(0, 0, "Current quests:")
 		for index, (coord, npc) in enumerate(self.quests):
-			ui.print_line(index + 1, 0, "@ {2}: Bring {0} {1}.".format(
-				npc.quest[0],
-				npc.quest[1],
+			ui.print_line(index + 1, 0, "@ {0}: {1}".format(
 				coord,
+				npc.quest.summary(),
 				))
 	def action(self, control):
 		return control != 'cancel'
