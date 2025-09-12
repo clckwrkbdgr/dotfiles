@@ -223,6 +223,12 @@ class RandomQuest(quests.Quest):
 		super(RandomQuest, self).save(stream)
 		stream.write(self.name)
 
+class Doctor(actors.Questgiver, actors.Neutral):
+	_sprite = Sprite('@', 'yellow')
+	_name = 'doctor'
+	def prepare_chat(self, game):
+		self.quest = RandomQuest('Ottilie Harsham')
+
 ### Map. #######################################################################
 
 class MonsterVision(vision.Vision):

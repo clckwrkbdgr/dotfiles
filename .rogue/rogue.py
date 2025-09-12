@@ -120,11 +120,11 @@ class MainGameMode(MainGame):
 					monster for monster_pos, monster
 					in self.game.scene.all_monsters()
 					if max(abs(monster_pos.x - player_pos.x), abs(monster_pos.y - player_pos.y)) <= 1
-					and isinstance(monster, Dweller)
+					and isinstance(monster, Questgiver)
 					]
 			questing = [
 					npc for _, npc in self.game.scene.all_monsters()
-					if isinstance(npc, Dweller)
+					if isinstance(npc, Questgiver)
 					and npc.quest and npc.quest.is_active()
 					]
 			if not npcs:
@@ -165,12 +165,7 @@ class MainGameMode(MainGame):
 						else:
 							self.game.fire_event(ChatQuestReminder(npc.quest.reminder()))
 					else:
-						if not npc.quest:
-							amount = 1 + random.randrange(3)
-							bounty = max(1, amount // 2 + 1)
-							colors = [name for name, color in game.COLORS.items() if color.monster]
-							color = random.choice(colors).replace('_', ' ') + ' skin'
-							npc.quest = ColoredSkinQuest(amount, color, bounty)
+						npc.prepare_chat()
 						def _on_yes():
 							npc.quest.activate()
 						def _on_no():
@@ -183,7 +178,7 @@ class MainGameMode(MainGame):
 		if True:
 			questing = [
 					(coord, npc) for coord, npc in self.game.scene.all_monsters(raw=True)
-					if isinstance(npc, Dweller)
+					if isinstance(npc, Questgiver)
 					and npc.quest and npc.quest.is_active()
 					]
 			quest_log = QuestLog(questing)

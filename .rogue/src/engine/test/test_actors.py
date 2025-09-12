@@ -320,6 +320,39 @@ class TestEquippedMonsters(unittest.TestCase):
 		goblin.wear(rags)
 		self.assertEqual(goblin.get_protection(), 1)
 
+class TestQuestgiver(unittest.TestCase):
+	def should_load_questgiver(self):
+		stream = StringIO(str(VERSION) + '\x00Doctor\x001\x002\x001\x000\x00.\x00RandomQuest\x000\x00Ottilie Harsham')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Actors', {'Doctor':Doctor})
+		reader.set_meta_info('Quests', {'RandomQuest':RandomQuest})
+		actor = reader.read(actors.Actor)
+		self.assertEqual(type(actor), Doctor)
+		self.assertEqual(actor.pos, Point(1, 2))
+		self.assertEqual(type(actor.quest), RandomQuest)
+	def should_load_questgiver_without_quest(self):
+		stream = StringIO(str(VERSION) + '\x00Doctor\x001\x002\x001\x000\x00')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Actors', {'Doctor':Doctor})
+		reader.set_meta_info('Quests', {'RandomQuest':RandomQuest})
+		actor = reader.read(actors.Actor)
+		self.assertEqual(type(actor), Doctor)
+		self.assertEqual(actor.pos, Point(1, 2))
+		self.assertIsNone(actor.quest)
+	def should_save_questgiver(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		actor = Doctor(Point(1, 2))
+		actor.prepare_chat(None)
+		writer.write(actor)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Doctor\x001\x002\x001\x000\x00.\x00RandomQuest\x000\x00Ottilie Harsham')
+	def should_save_questgiver_without_quest(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		actor = Doctor(Point(1, 2))
+		writer.write(actor)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Doctor\x001\x002\x001\x000\x00')
+
 class TestBehaviour(AbstractTestDungeon):
 	def should_act_inert_and_attack_only_closest_enemy(self):
 		rat_close = Rat(Point(2, 5))

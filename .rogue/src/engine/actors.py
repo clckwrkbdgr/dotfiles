@@ -2,7 +2,7 @@ from clckwrkbdgr.math import Point, Rect, Size, distance, Direction
 from clckwrkbdgr.utils import classfield
 from clckwrkbdgr import pcg
 from clckwrkbdgr import utils
-from . import items
+from . import items, quests
 from . import entity
 
 class Actor(entity.Entity):
@@ -288,6 +288,30 @@ class EquippedMonster(Monster):
 		item, self.wearing = self.wearing, None
 		self.inventory.append(item)
 		return item
+
+class Questgiver(Monster):
+	""" Actor that can chat and give quests. """
+	def __init__(self, pos):
+		super(Questgiver, self).__init__(pos)
+		self.quest = None
+	def save(self, stream):
+		super(Questgiver, self).save(stream)
+		if self.quest:
+			stream.write('.')
+			self.quest.save(stream)
+		else:
+			stream.write('')
+	def load(self, stream):
+		super(Questgiver, self).load(stream)
+		self.quest = stream.read()
+		if self.quest:
+			self.quest = stream.read(quests.Quest)
+		else:
+			self.quest = None
+	def prepare_chat(self, game): # pragma: no cover
+		""" Prepares actor to chat (e.g. creates inactive quest beforehand).
+		"""
+		raise NotImplementedError()
 
 class Player(Behaviour):
 	""" Trait for player character.

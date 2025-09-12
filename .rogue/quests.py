@@ -40,31 +40,30 @@ class ColoredSkinQuest(Quest):
 			game.scene.get_player().hp += self.reward
 		game.scene.get_player()._max_hp += self.reward
 
-class Dweller(actors.Monster, actors.Neutral):
+class Dweller(actors.Questgiver, actors.Neutral):
 	_max_hp = 10
 	_name = 'dweller'
 	def __init__(self, pos, color=None):
 		self._sprite = Sprite('@', color)
 		super(Dweller, self).__init__(pos)
-		self.quest = None
 	def save(self, stream):
 		super(Dweller, self).save(stream)
 		stream.write(self._sprite.color)
-
-		if self.quest:
-			stream.write('.')
-			self.quest.save(stream)
-		else:
-			stream.write('')
 	def load(self, stream):
 		super(Dweller, self).load(stream)
 		self._sprite = Sprite(self._sprite.sprite, stream.read())
-
-		self.quest = stream.read()
+	def prepare_chat(self, game):
 		if self.quest:
-			self.quest = stream.read(Quest)
-		else:
-			self.quest = None
+			return
+		colors = {
+				'red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white',
+				'bold black', 'bold red', 'bold green', 'bold blue',
+				'bold yellow', 'bold cyan', 'bold magenta', 'bold white',
+				}
+		amount = 1 + game.rng.randrange(3)
+		bounty = max(1, amount // 2 + 1)
+		color = game.rng.choice(colors) + ' skin'
+		self.quest = ColoredSkinQuest(amount, color, bounty)
 
 class QuestMapping:
 	@staticmethod
