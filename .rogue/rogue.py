@@ -68,12 +68,6 @@ class Game(engine.Game):
 	def make_player(self):
 		return Rogue(None)
 
-DialogKeys = clckwrkbdgr.tui.Keymapping()
-DialogKeys.map(list('yY'), True)
-
-QuestLogKeys = clckwrkbdgr.tui.Keymapping()
-QuestLogKeys.map(clckwrkbdgr.tui.Key.ESCAPE, 'cancel')
-
 def main(ui):
 	for name, color in Game.COLORS.items():
 		ui.init_color(name, color.fg, color.attr)
@@ -87,7 +81,7 @@ def main(ui):
 		else:
 			game.generate(None)
 
-	main_game = MainGameMode(game)
+	main_game = MainGame(game)
 	loop = clckwrkbdgr.tui.ModeLoop(ui)
 	loop.run(main_game)
 	if not game.is_finished():
@@ -95,80 +89,6 @@ def main(ui):
 			game.save(writer)
 	else:
 		savefile.unlink()
-
-class MainGameMode(MainGame):
-	@ui.MainGame.Keys.bind('C')
-	def char(self):
-		npcs = game.get_respondents(game.scene.get_player())
-		if not npcs:
-			return None
-		if len(npcs) > 1:
-			return DirectionDialogMode(on_direction=self._chat_with_npc)
-		return self._chat_with_npc(npcs[0])
-	def _chat_with_npc(self, npc):
-		prompt, on_yes, on_no = self.game.chat(self.game.scene.get_player(), npc)
-		if prompt:
-			return TradeDialogMode('"{0}" (y/n)'.format(prompt),
-						on_yes=on_yes, on_no=on_no)
-	@ui.MainGame.Keys.bind('q')
-	def show_questlog(self):
-		game = self.game
-		if True:
-			quest_log = QuestLog(list(self.game.scene.iter_active_quests()))
-			return quest_log
-
-DirectionKeys = clckwrkbdgr.tui.Keymapping()
-class DirectionDialogMode(clckwrkbdgr.tui.Mode):
-	TRANSPARENT = True
-	KEYMAPPING = DirectionKeys
-	def __init__(self, on_direction=None):
-		self.on_direction = on_direction
-	def redraw(self, ui):
-		ui.print_line(24, 0, " " * 80)
-		ui.print_line(24, 0, "Too crowded. Chat in which direction?")
-	@DirectionKeys.bind(list('hjklyubn'), lambda key:UI.DIRECTION[str(key)])
-	def choose_direction(self, direction):
-		if self.on_direction:
-			return self.on_direction(direction)
-		return False
-	def action(self, control):
-		return False
-
-class TradeDialogMode(clckwrkbdgr.tui.Mode):
-	TRANSPARENT = True
-	KEYMAPPING = DialogKeys
-	def __init__(self, question, on_yes=None, on_no=None):
-		self.question = question
-		self.on_yes = on_yes
-		self.on_no = on_no
-	def redraw(self, ui):
-		ui.print_line(24, 0, " " * 80)
-		ui.print_line(24, 0, self.question)
-	def action(self, control):
-		if control:
-			if self.on_yes:
-				self.on_yes()
-		else:
-			if self.on_no:
-				self.on_no()
-
-class QuestLog(clckwrkbdgr.tui.Mode):
-	TRANSPARENT = False
-	KEYMAPPING = QuestLogKeys
-	def __init__(self, quests):
-		self.quests = quests
-	def redraw(self, ui):
-		if not self.quests:
-			ui.print_line(0, 0, "No current quests.")
-		else:
-			ui.print_line(0, 0, "Current quests:")
-		for index, (npc, quest) in enumerate(self.quests):
-			ui.print_line(index + 1, 0, "{0} @ {1}: {2}".format(
-				npc.name, npc.pos,
-				quest.summary(),
-				))
-	def action(self, control):
-		return control != 'cancel'
 
 import click
 @click.command()

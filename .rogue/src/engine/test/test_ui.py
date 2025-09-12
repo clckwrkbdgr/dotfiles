@@ -375,8 +375,8 @@ class TestHelpScreen(MainGameTestCase):
 		< - Ascend/go up.             _
 		> - Descend/go down.          _
 		? - Show this help.           _
+		C - Chat with NPC.            _
 		E - Show equipment.           _
-		Q - Suicide (quit without savi_
 		""").replace('_', ''))
 		self.assertFalse(self.loop.action())
 
@@ -419,6 +419,156 @@ class TestGodModes(MainGameTestCase):
 		self.assertTrue(self.loop.action())
 		self.assertFalse(self.loop.action())
 		self.assertTrue(self.game.god.noclip)
+
+class TestQuests(MainGameTestCase):
+	def should_show_empty_quest_list(self):
+		self.mock_ui.key('q' + chr(clckwrkbdgr.tui.Key.ESCAPE))
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_No current quests.            _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())
+	def should_show_quest_list(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.prepare_chat(game)
+		smith.quest.activate()
+
+		self.mock_ui.key('q' + chr(clckwrkbdgr.tui.Key.ESCAPE))
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_Current quests:               _
+		_smith @ [1, 5]: Bring Smith a _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())
+	def should_not_chat_with_no_one(self):
+		self.mock_ui.key('C')
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 2          _
+		_ #...                         _
+		_ #@..                         _
+		_ ##.~                         _
+		_ #...                         _
+		_No one to chat.               _
+		""").replace('_', ''))
+	def should_chat_with_npc(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.pos = game.scene.get_player().pos + Point(1, 0)
+
+		self.mock_ui.key('CnCy')
+
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 3          _
+		_ #...                         _
+		_ #@@.                         _
+		_ ##.~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertFalse(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 3          _
+		_ #...                         _
+		_ #@@.                         _
+		_ ##.~                         _
+		_ #...                         _
+		_Come later.                   _
+		""").replace('_', ''))
+
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 3          _
+		_ #...                         _
+		_ #@@.                         _
+		_ ##.~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertFalse(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 3          _
+		_ #...                         _
+		_ #@@.                         _
+		_ ##.~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
+	def should_chat_with_multiple_npc(self):
+		game = self.game
+		smith = Smith(game.scene.get_player().pos + Point(1, 0))
+		game.scene.enter_actor(smith, None)
+		smith.pos = game.scene.get_player().pos + Point(1, 0)
+		other_smith = Smith(game.scene.get_player().pos + Point(1, 1))
+		game.scene.enter_actor(other_smith, None)
+		other_smith.pos = game.scene.get_player().pos + Point(1, 1)
+
+		self.mock_ui.key('Cny')
+
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 4          _
+		_ #...                         _
+		_ #@@.                         _
+		_ ##@~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertFalse(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 4          _
+		_ #...                         _
+		_ #@@.                         _
+		_ ##@~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
+
+		self.assertFalse(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_pos: [1, 5]                   _
+		_ #...    monsters: 4          _
+		_ #...                         _
+		_ #@@.                         _
+		_ ##@~                         _
+		_ #...                         _
+		_                              _
+		""").replace('_', ''))
 
 class TestInventory(MainGameTestCase):
 	def should_show_inventory(self):

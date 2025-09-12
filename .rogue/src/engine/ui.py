@@ -318,6 +318,24 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	def show_equipment(self):
 		""" Show equipment. """
 		return Equipment(self.game, self.game.scene.get_player())
+	@_MainKeys.bind('q')
+	def show_questlog(self):
+		""" List current quests. """
+		return QuestLog(list(self.game.scene.iter_active_quests()))
+	@_MainKeys.bind('C')
+	def chat(self):
+		""" Chat with NPC. """
+		npcs = self.game.get_respondents(self.game.scene.get_player())
+		if not npcs:
+			return None
+		def _chat_with_npc(npc):
+			prompt, on_yes, on_no = self.game.chat(self.game.scene.get_player(), npc)
+			if prompt:
+				return TradeDialogMode('"{0}" (y/n)'.format(prompt),
+							on_yes=on_yes, on_no=on_no)
+		if len(npcs) > 1:
+			return DirectionDialogMode(on_direction=_chat_with_npc)
+		return _chat_with_npc(npcs[0])
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """
@@ -466,6 +484,67 @@ class Equipment(clckwrkbdgr.tui.Mode):
 				on_select = self.game.wear_item,
 				)
 	@EquipmentKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
+	def close(self):
+		""" Close by Escape. """
+		return True
+
+DirectionKeys = clckwrkbdgr.tui.Keymapping()
+class DirectionDialogMode(clckwrkbdgr.tui.Mode):
+	""" User prompt to pick direction in case where there are
+	multiple options for some action.
+	"""
+	TRANSPARENT = True
+	KEYMAPPING = DirectionKeys
+	def __init__(self, on_direction=None):
+		self.on_direction = on_direction
+	def redraw(self, ui):
+		ui.print_line(24, 0, " " * 80)
+		ui.print_line(24, 0, "Too crowded. Chat in which direction?")
+	@DirectionKeys.bind(list(DIRECTION.keys()), lambda key:DIRECTION[str(key)])
+	def choose_direction(self, direction):
+		return self.on_direction(direction) if self.on_direction else False
+	def action(self, control):
+		return False
+
+DialogKeys = clckwrkbdgr.tui.Keymapping()
+DialogKeys.map(list('yY'), True)
+class TradeDialogMode(clckwrkbdgr.tui.Mode):
+	TRANSPARENT = True
+	KEYMAPPING = DialogKeys
+	def __init__(self, question, on_yes=None, on_no=None):
+		self.question = question
+		self.on_yes = on_yes
+		self.on_no = on_no
+	def redraw(self, ui):
+		ui.print_line(24, 0, " " * 80)
+		ui.print_line(24, 0, self.question)
+	def action(self, control):
+		if control:
+			if self.on_yes:
+				self.on_yes()
+		else:
+			if self.on_no:
+				self.on_no()
+
+QuestLogKeys = clckwrkbdgr.tui.Keymapping()
+class QuestLog(clckwrkbdgr.tui.Mode):
+	TRANSPARENT = False
+	KEYMAPPING = QuestLogKeys
+	def __init__(self, quests):
+		self.quests = quests
+	def redraw(self, ui):
+		if not self.quests:
+			ui.print_line(0, 0, "No current quests.")
+		else:
+			ui.print_line(0, 0, "Current quests:")
+		for index, (npc, quest) in enumerate(self.quests):
+			ui.print_line(index + 1, 0, "{0} @ {1}: {2}".format(
+				npc.name, npc.pos,
+				quest.summary(),
+				))
+	def action(self, done):
+		return not done
+	@QuestLogKeys.bind(clckwrkbdgr.tui.Key.ESCAPE)
 	def close(self):
 		""" Close by Escape. """
 		return True

@@ -206,6 +206,8 @@ events.Events.on(DropItem)(lambda event: '{0} drops {2} on {1}'.format(event.who
 events.Events.on(FlopWings)(lambda event: '{0} flops its wings'.format(event.actor))
 events.Events.on(_base.Events.Welcome)(lambda *event: '')
 events.Events.on(_base.Events.Discover)(lambda *event: '')
+events.Events.on(_base.Events.NoOneToChat)(lambda *event: 'No one to chat.')
+events.Events.on(_base.Events.ChatComeLater)(lambda *event: 'Come later.')
 class Handler(object):
 	@events.Events.on(Hit)
 	def handle_hits(self, event):
