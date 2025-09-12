@@ -21,21 +21,6 @@ from monsters import *
 from quests import *
 from world import *
 
-class Game(src.engine.Game):
-	def make_player(self):
-		player = Rogue(None)
-		player.fill_drops(self.rng)
-		return player
-	def make_scene(self, scene_id):
-		return src.world.dungeons.Scene(self.rng, [
-			BSPDungeon,
-			CityBuilder,
-			Sewers,
-			RogueDungeon,
-			CaveBuilder,
-			MazeBuilder,
-			])
-
 import click
 @click.command()
 @click.option('-d', '--debug', is_flag=True)
@@ -73,7 +58,7 @@ def cli(debug=False, command=None, tests=None):
 		if savefile.reader:
 			game.load(savefile.reader)
 		else:
-			game.generate('dungeon')
+			game.generate('dungeon/0')
 		with clckwrkbdgr.tui.Curses() as ui:
 			loop = clckwrkbdgr.tui.ModeLoop(ui)
 			main_mode = MainGame(game)

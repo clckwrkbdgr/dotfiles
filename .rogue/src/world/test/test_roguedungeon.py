@@ -122,8 +122,8 @@ class TestGridRoomMap(unittest.TestCase):
 		self.maxDiff = None
 		scene = MockFullScene(RNG(0))
 		with self.assertRaises(KeyError):
-			scene.generate(-1)
-		scene.generate(0)
+			scene.generate('rogue/-1')
+		scene.generate('rogue/0')
 		self.assertEqual(scene.tostring(scene.get_area_rect()), textwrap.dedent("""\
 		_  +--+          +--+        +----+      _
 		_  |..|          |rr|        |.!..|      _
@@ -146,7 +146,7 @@ class TestGridRoomMap(unittest.TestCase):
 		_                                        _
 		_                                        _
 		""").replace('_', ''))
-		scene.generate(1)
+		scene.generate('rogue/1')
 		self.assertEqual(scene.tostring(scene.get_area_rect()), textwrap.dedent("""\
 		_    +-----+     +-----+   +---------+   _
 		_    |.....|     |.....|+##+......<..|   _
@@ -169,7 +169,7 @@ class TestGridRoomMap(unittest.TestCase):
 		_                                        _
 		_                                        _
 		""").replace('_', ''))
-		scene.generate(2)
+		scene.generate('rogue/2')
 		self.assertEqual(scene.tostring(scene.get_area_rect()), textwrap.dedent("""\
 		_  +-----+    +----+       +-------+     _
 		_  |g....|    |*.!.|       |...<...|     _

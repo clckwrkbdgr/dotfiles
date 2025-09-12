@@ -41,7 +41,7 @@ class Builder(builders.Builder):
 		if self.depth == 0:
 			yield (self.point_in_rect(enter_room), 'dungeon_enter')
 		else:
-			yield (self.point_in_rect(enter_room), 'enter', self.depth - 1)
+			yield (self.point_in_rect(enter_room), 'enter', 'rogue/{0}'.format(self.depth - 1))
 
 		for _ in range(9):
 			exit_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
@@ -49,7 +49,7 @@ class Builder(builders.Builder):
 			if exit_room_key == self.enter_room_key:
 				continue
 		if not self.is_bottom:
-			yield (self.point_in_rect(self.exit_room), 'exit', self.depth + 1)
+			yield (self.point_in_rect(self.exit_room), 'exit', 'rogue/{0}'.format(self.depth + 1))
 
 	def generate_items(self):
 		item_distribution = [(prob, (item_type.__name__,)) for (prob, item_type) in self.get_item_distribution(self.depth)]
@@ -92,9 +92,9 @@ class Scene(scene.Scene):
 		self.objects = []
 		self.rng = rng or RNG()
 	def generate(self, level_id):
-		if level_id < 0 or level_id >= self.MAX_LEVELS:
+		depth = int(level_id.split('/')[-1])
+		if depth < 0 or depth >= self.MAX_LEVELS:
 			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
-		depth = level_id
 		is_bottom = depth >= (self.MAX_LEVELS - 1)
 
 		builder = self.BUILDER(depth, is_bottom, self.rng, self.SIZE)

@@ -1,8 +1,30 @@
+from collections import namedtuple
 import functools
 import logging
+import curses
 Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Rect, Size, Point
 from src.engine import events, actors, Events, ui
+
+Color = namedtuple('Color', 'fg attr')
+COLORS = {
+		'black': Color(curses.COLOR_BLACK, 0),
+		'red': Color(curses.COLOR_RED, 0),
+		'green': Color(curses.COLOR_GREEN, 0),
+		'blue': Color(curses.COLOR_BLUE, 0),
+		'yellow': Color(curses.COLOR_YELLOW, 0),
+		'cyan': Color(curses.COLOR_CYAN, 0),
+		'magenta': Color(curses.COLOR_MAGENTA, 0),
+		'white': Color(curses.COLOR_WHITE, 0),
+		'bold_black': Color(curses.COLOR_BLACK, curses.A_BOLD),
+		'bold_red': Color(curses.COLOR_RED, curses.A_BOLD),
+		'bold_green': Color(curses.COLOR_GREEN, curses.A_BOLD),
+		'bold_blue': Color(curses.COLOR_BLUE, curses.A_BOLD),
+		'bold_yellow': Color(curses.COLOR_YELLOW, curses.A_BOLD),
+		'bold_cyan': Color(curses.COLOR_CYAN, curses.A_BOLD),
+		'bold_magenta': Color(curses.COLOR_MAGENTA, curses.A_BOLD),
+		'bold_white': Color(curses.COLOR_WHITE, curses.A_BOLD),
+		}
 
 events.Events.on(Events.Welcome)(lambda _:'Welcome!')
 events.Events.on(Events.WelcomeBack)(lambda _:'Welcome back!')
@@ -22,7 +44,7 @@ events.Events.on(Events.BumpIntoActor)(lambda _:'{0} bumps into {1}.'.format(_.a
 events.Events.on(Events.Attack)(lambda _:'{0} hits {1} for {2}hp.'.format(_.actor.name.title(), _.target.name, _.damage))
 events.Events.on(Events.StareIntoVoid)(lambda _:'The void gazes back.')
 events.Events.on(Events.GodModeSwitched)(lambda event:"God {name} {state}".format(name=event.name, state=event.state))
-events.Events.on(Events.NeedKey)(lambda event:"Cannot be opened without {0}!".format(event.key))
+events.Events.on(Events.NeedKey)(lambda event:"Cannot be opened without {0}!".format(event.key.__name__))
 
 @events.Events.on(Events.Discover)
 def on_discover(event):

@@ -16,12 +16,6 @@ from monsters import *
 from quests import *
 from world import *
 
-class Dungeon(engine.Game):
-	def make_scene(self, scene_id):
-		return EndlessScene()
-	def make_player(self):
-		return Rogue(None)
-
 import click
 @click.command()
 @click.option('-d', '--debug', is_flag=True)
@@ -31,12 +25,12 @@ def cli(debug=False):
 			filename=xdg.save_state_path('dotrogue')/'rogue.log',
 			stream=None,
 			)
-	with fs.SerializedEntity.store(xdg.save_data_path('dotrogue')/'endlessrogue.sav', 'dungeon', Dungeon) as savefile:
-		dungeon = Dungeon()
+	with fs.SerializedEntity.store(xdg.save_data_path('dotrogue')/'endlessrogue.sav', 'dungeon', Game) as savefile:
+		dungeon = Game()
 		if hasattr(savefile, 'entity') and savefile.entity:
 			dungeon.load(savefile.entity)
 		else:
-			dungeon.generate('endless')
+			dungeon.generate('hollow')
 		game = MainGame(dungeon)
 		with clckwrkbdgr.tui.Curses() as ui:
 			clckwrkbdgr.tui.Mode.run(game, ui)

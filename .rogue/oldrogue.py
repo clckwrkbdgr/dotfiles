@@ -25,25 +25,14 @@ from world import *
 
 VERSION = 666
 
-class GameCompleted(Exception):
-	pass
-
-class RogueDungeon(src.engine.Game):
-	def make_scene(self, scene_id):
-		return RogueDungeonScene()
-	def make_player(self):
-		rogue = Rogue(None)
-		rogue.grab(Dagger())
-		return rogue
-
 def main(ui):
 	savefile = clckwrkbdgr.serialize.stream.Savefile(xdg.save_data_path('dotrogue')/'oldrogue.sav')
 	with clckwrkbdgr.serialize.stream.AutoSavefile(savefile) as savefile:
-		dungeon = RogueDungeon()
+		dungeon = Game()
 		if savefile.reader:
 			dungeon.load(savefile.reader)
 		else:
-			dungeon.generate(0)
+			dungeon.generate('rogue/0')
 
 		game = MainGame(dungeon)
 		loop = clckwrkbdgr.tui.ModeLoop(ui)
