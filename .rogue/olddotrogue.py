@@ -19,56 +19,7 @@ from items import *
 from objects import *
 from monsters import *
 from quests import *
-
-class DungeonSquatters(src.engine.builders.Builder):
-	""" Set of squatters, randomly distributed throughout the map
-	based on their relative weights (int or float) within corresponding
-	distribution list.
-
-	Data should be defined in class fields MONSTERS and ITEMS as lists of tuples:
-	MONSTERS = (<weight>, 'monster_type_id', <args...>)
-	ITEMS = (<weight>, 'item_type_id', <args...>)
-
-	Distribution is controlled by corresponding CELLS_PER_* fields, which should
-	set amount of _free_ (i.e. passable) cells that support one monster/item.
-	"""
-	CELLS_PER_MONSTER = 60 # One monster for every 60 cells.
-	MONSTERS = [
-			(1, ('carnivorous_plant',)),
-			(3, ('slime',)),
-			(10, ('rodent',)),
-			]
-	CELLS_PER_ITEM = 180 # One item for every 180 cells.
-	ITEMS = [
-			(1, ('HealingPotion',)),
-			]
-	def is_open(self, pos):
-		return self.grid.cell(pos) == 'floor'
-	def generate_actors(self):
-		""" Places random population of different types of monsters.
-		"""
-		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.MONSTERS, self.amount_by_free_cells(self.CELLS_PER_MONSTER)):
-			yield _
-	def generate_items(self):
-		""" Drops items in random locations. """
-		for _ in self.distribute(src.engine.builders.WeightedDistribution, self.ITEMS, self.amount_by_free_cells(self.CELLS_PER_ITEM)):
-			yield _
-
-class DungeonMapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
-	pass
-
-class BSPDungeon(src.world.dungeonbuilders.BSPDungeon, DungeonSquatters):
-	Mapping = DungeonMapping
-class CityBuilder(src.world.dungeonbuilders.CityBuilder, DungeonSquatters):
-	Mapping = DungeonMapping
-class Sewers(src.world.dungeonbuilders.Sewers, DungeonSquatters):
-	Mapping = DungeonMapping
-class RogueDungeon(src.world.dungeonbuilders.RogueDungeon, DungeonSquatters):
-	Mapping = DungeonMapping
-class CaveBuilder(src.world.dungeonbuilders.CaveBuilder, DungeonSquatters):
-	Mapping = DungeonMapping
-class MazeBuilder(src.world.dungeonbuilders.MazeBuilder, DungeonSquatters):
-	Mapping = DungeonMapping
+from world import *
 
 class Game(src.engine.Game):
 	def make_player(self):

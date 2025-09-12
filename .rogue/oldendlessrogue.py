@@ -14,24 +14,11 @@ from items import *
 from objects import *
 from monsters import *
 from quests import *
-
-class EndlessBuilder:
-	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
-		pass
-
-class FieldOfTanks(EndlessBuilder, endlessbuilders.FieldOfTanks):
-	pass
-class EmptySquare(EndlessBuilder, endlessbuilders.EmptySquare):
-	pass
-class FilledWithGarbage(EndlessBuilder, endlessbuilders.FilledWithGarbage):
-	pass
-
-class Scene(endlessdungeon.Scene):
-	BUILDERS = lambda: endlessbuilders.Builders(utils.all_subclasses(EndlessBuilder))
+from world import *
 
 class Dungeon(engine.Game):
 	def make_scene(self, scene_id):
-		return Scene()
+		return EndlessScene()
 	def make_player(self):
 		return Rogue(None)
 

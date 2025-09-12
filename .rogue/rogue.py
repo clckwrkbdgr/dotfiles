@@ -31,17 +31,9 @@ from items import *
 from objects import *
 from monsters import *
 from quests import *
+from world import *
 
 SAVEFILE_VERSION = 17
-
-class Builder(object):
-	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
-		pass
-
-class Forest(Builder, overworld.Forest): pass
-class Desert(Builder, overworld.Desert): pass
-class Thundra(Builder, overworld.Thundra): pass
-class Marsh(Builder, overworld.Marsh): pass
 
 Color = namedtuple('Color', 'fg attr dweller monster')
 class Game(engine.Game):
@@ -64,7 +56,7 @@ class Game(engine.Game):
 			'bold_white': Color(curses.COLOR_WHITE, curses.A_BOLD, False, True),
 			}
 	def make_scene(self, scene_id):
-		return overworld.Scene(utils.all_subclasses(Builder))
+		return overworld.Scene(utils.all_subclasses(OverBuilder))
 	def make_player(self):
 		return Rogue(None)
 

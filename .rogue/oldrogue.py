@@ -21,35 +21,9 @@ from items import *
 from objects import *
 from monsters import *
 from quests import *
+from world import *
 
 VERSION = 666
-
-class _Builder(Builder):
-	class Mapping(TerrainMapping, QuestMapping, ItemMapping, MonsterMapping, ObjectMapping):
-		pass
-
-	def get_item_distribution(self, depth):
-		return [
-		(50, HealingPotion),
-		(depth, Dagger),
-		(depth // 2, Sword),
-		(max(0, (depth-5) // 3), Axe),
-		(depth, Rags),
-		(depth // 2, Leather),
-		(max(0, (depth-5) // 3), ChainMail),
-		(max(0, (depth-10) // 3), PlateArmor),
-		]
-	def get_monster_distribution(self, depth):
-		return itertools.chain(
-				easy_monsters.get_distribution(depth),
-				norm_monsters.get_distribution(depth),
-				hard_monsters.get_distribution(depth),
-				)
-
-class RogueDungeonScene(Scene):
-	MAX_LEVELS = 26
-	SIZE = Size(78, 21)
-	BUILDER = _Builder
 
 class GameCompleted(Exception):
 	pass
