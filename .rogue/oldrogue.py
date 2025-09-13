@@ -27,10 +27,10 @@ VERSION = 666
 
 def main(ui):
 	savefile = clckwrkbdgr.serialize.stream.Savefile(xdg.save_data_path('dotrogue')/'oldrogue.sav')
-	with clckwrkbdgr.serialize.stream.AutoSavefile(savefile) as savefile:
+	with savefile.get_reader() as reader:
 		dungeon = Game()
-		if savefile.reader:
-			dungeon.load(savefile.reader)
+		if reader:
+			dungeon.load(reader)
 		else:
 			dungeon.generate('rogue/0')
 
@@ -38,9 +38,10 @@ def main(ui):
 		loop = clckwrkbdgr.tui.ModeLoop(ui)
 		loop.run(game)
 		if dungeon.is_finished():
-			savefile.savefile.unlink()
+			savefile.unlink()
 		else:
-			pass # savefile.save(dungeon, 666)
+			with savefile.save(VERSION) as writer:
+				dungeon.save(writer)
 
 import click
 @click.command()

@@ -21,6 +21,8 @@ from monsters import *
 from quests import *
 from world import *
 
+VERSION = 666
+
 import click
 @click.command()
 @click.option('-d', '--debug', is_flag=True)
@@ -53,10 +55,10 @@ def cli(debug=False, command=None, tests=None):
 		if rc != 0 or command == 'test':
 			sys.exit(rc)
 	Log.debug('started')
-	with clckwrkbdgr.serialize.stream.AutoSavefile(savefile) as savefile:
+	with savefile.get_reader() as reader:
 		game = Game()
-		if savefile.reader:
-			game.load(savefile.reader)
+		if reader:
+			game.load(reader)
 		else:
 			game.generate('dungeon/0')
 		with clckwrkbdgr.tui.Curses() as ui:
@@ -64,7 +66,8 @@ def cli(debug=False, command=None, tests=None):
 			main_mode = MainGame(game)
 			loop.run(main_mode)
 		if not game.is_finished():
-			savefile.save(game, src.game.Version.CURRENT)
+			with savefile.save(VERSION) as writer:
+				game.save(writer)
 		else:
 			savefile.savefile.unlink()
 	Log.debug('exited')

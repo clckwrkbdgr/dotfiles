@@ -1,7 +1,7 @@
 from clckwrkbdgr.math import Point, Size, Rect
 from clckwrkbdgr.math.grid import EndlessMatrix
 from .. import engine
-from ..engine import scene
+from ..engine import scene, terrain, actors
 from ..engine import auto
 
 class Scene(scene.Scene):
@@ -14,6 +14,18 @@ class Scene(scene.Scene):
 	def generate(self, id):
 		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block)
 		self._player_pos = self.builder._start_pos
+	def save(self, stream): # pragma: no cover -- TODO
+		self.terrain.save(stream)
+		stream.write(len(self.monsters))
+		for monster in self.monsters:
+			monster.save(stream)
+	def load(self, stream): # pragma: no cover -- TODO
+		super(Scene, self).load(stream)
+		self.terrain = EndlessMatrix(block_size=self.BLOCK_SIZE, builder=self.builder.build_block, cell_type=terrain.Terrain)
+		self.terrain.load(stream)
+		monsters = stream.read(int)
+		for _ in range(monsters):
+			self.monsters.append(actors.Actor.load(stream))
 	def enter_actor(self, actor, location):
 		actor.pos = self._player_pos
 		self.monsters.append(actor)

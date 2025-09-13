@@ -265,12 +265,13 @@ class EndlessMatrix(object):
 	After position of interest is moved, method recalibrate(new_pos) should be called
 	to recalculate available blocks.
 	"""
-	def __init__(self, block_size, builder, default_value=None):
+	def __init__(self, block_size, builder, default_value=None, cell_type=None):
 		""" Create 3x3 blocks of given size and fill them using builder callable (accepts a Matrix object).
 		Default filling value can be supplied. It will also be used for recalibration.
 		At the start, anchor pos is considered to be at (0, 0) of the central block.
 		"""
 		self.builder = builder
+		self.cell_type = cell_type
 		self.block_size = Size(block_size)
 		self.shift = Point(0, 0) - self.block_size
 		self.blocks = Matrix((3, 3))
@@ -288,6 +289,33 @@ class EndlessMatrix(object):
 				}
 	def __setstate__(self, state): # pragma: no cover
 		self.__dict__.update(state)
+	def save(self, stream): # pragma: no cover -- TODO
+		stream.write(self.shift.x)
+		stream.write(self.shift.y)
+
+		stream.write(self.blocks.width)
+		stream.write(self.blocks.height)
+		for row in range(self.blocks.height):
+			for col in range(self.blocks.width):
+				block = self.blocks.cell((col, row))
+				stream.write(block.width)
+				stream.write(block.height)
+				for tile_index in block:
+					tile = block.cell(tile_index)
+					tile.save(stream)
+	def load(self, stream): # pragma: no cover -- TODO
+		self.shift = Point(stream.read(int), stream.read(int))
+
+		size = Size(stream.read(int), stream.read(int))
+		self.blocks = Matrix(size, None)
+		for row in range(self.blocks.height):
+			for col in range(self.blocks.width):
+				block_size = Size(stream.read(int), stream.read(int))
+				block = Matrix(block_size, None)
+				self.blocks.set_cell((col, row), block)
+				for tile_index in block:
+					tile = self.cell_type.load(stream)
+					block.set_cell(tile_index, tile)
 	def __eq__(self, other):
 		return type(other) is type(self) \
 				and self.block_size == other.block_size \

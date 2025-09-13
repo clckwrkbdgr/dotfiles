@@ -120,10 +120,8 @@ class Scene(scene.Scene):
 	def load(self, reader): # pragma: no cover
 		super(Scene, self).load(reader)
 		self.strata = reader.read_matrix(Terrain)
-		if reader.version > Version.MONSTERS:
-			self.monsters.extend(reader.read_list(actors.Actor))
-		if reader.version > Version.ITEMS:
-			self.items.extend(reader.read_list(items.ItemAtPos))
+		self.monsters.extend(reader.read_list(actors.Actor))
+		self.items.extend(reader.read_list(items.ItemAtPos))
 		self.appliances.extend(reader.read_list(appliances.ObjectAtPos))
 	def save(self, writer): # pragma: no cover
 		writer.write(self.strata)
