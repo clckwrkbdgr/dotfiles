@@ -41,9 +41,9 @@
 			"homepageURL": "https://github.com/gorhill/uBlock#ublock-origin",
 			"id": "uBlock0@raymondhill.net",
 			"name": "uBlock Origin",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4531307/ublock_origin-1.65.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4573289/ublock_origin-1.66.0.xpi",
 			"type": "extension",
-			"version": "1.65.0"
+			"version": "1.66.0"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/noscript/",
