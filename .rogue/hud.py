@@ -111,6 +111,8 @@ class _HUD(object):
 		return len(self.game.scene.get_player().inventory)
 	@classmethod
 	def here(cls, self):
+		if not self.game.scene.get_player():
+			return None
 		pos = self.game.scene.get_global_pos(self.game.scene.get_player())
 		cell, objects, items, _  = self.game.scene.get_cell_info(pos)
 		if items:

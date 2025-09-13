@@ -69,7 +69,7 @@ def cli(debug=False, command=None, tests=None):
 			with savefile.save(VERSION) as writer:
 				game.save(writer)
 		else:
-			savefile.savefile.unlink()
+			savefile.unlink()
 	Log.debug('exited')
 
 if __name__ == '__main__':

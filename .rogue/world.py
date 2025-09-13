@@ -2,6 +2,7 @@ from clckwrkbdgr.math import Size
 from clckwrkbdgr import utils
 from src.engine import Game, builders
 import src.world.dungeonbuilders
+import src.world.dungeons
 import src.world.roguedungeon
 from src.world import endlessbuilders, endlessdungeon
 from src.world import overworld
@@ -60,6 +61,10 @@ class CaveBuilder(src.world.dungeonbuilders.CaveBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
 class MazeBuilder(src.world.dungeonbuilders.MazeBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
+
+class DungeonScene(src.world.dungeons.Scene):
+	MAX_LEVELS = 30
+	EXIT_SCENE = 'hollow'
 
 class EndlessBuilder:
 	Mapping = DungeonMapping
@@ -120,7 +125,7 @@ class Game(src.engine.Game):
 		if scene_id.startswith('rogue/'):
 			return RogueDungeonScene()
 		if scene_id.startswith('dungeon/'):
-			return src.world.dungeons.Scene(self.rng, [
+			return DungeonScene(self.rng, [
 				BSPDungeon,
 				CityBuilder,
 				Sewers,

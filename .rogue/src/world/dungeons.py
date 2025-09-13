@@ -70,6 +70,8 @@ class Vision(vision.Vision):
 		self.visible_items = current_visible_items
 
 class Scene(scene.Scene):
+	MAX_LEVELS = 10
+	EXIT_SCENE = None
 	def __init__(self, rng, builders):
 		self.rng = rng
 		self.builders = builders
@@ -103,8 +105,11 @@ class Scene(scene.Scene):
 			level_id, index = id.split('/')
 		else:
 			level_id, index = id, 0
-		index = str(int(index) + 1)
-		exit_stairs.level_id = '/'.join((level_id, index))
+		index = int(index) + 1
+		if index < self.MAX_LEVELS:
+			exit_stairs.level_id = '/'.join((level_id, str(index)))
+		else:
+			exit_stairs.level_id = self.EXIT_SCENE
 
 		for monster in settler.make_actors():
 			monster.fill_drops(self.rng)
