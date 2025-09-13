@@ -33,7 +33,7 @@ from monsters import *
 from quests import *
 from world import *
 
-SAVEFILE_VERSION = 17
+SAVEFILE_VERSION = 18
 
 def main(ui):
 	for name, color in COLORS.items():
