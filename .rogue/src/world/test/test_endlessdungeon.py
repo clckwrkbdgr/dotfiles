@@ -2,7 +2,7 @@ from clckwrkbdgr.math import Point, Size, Matrix, Rect
 from clckwrkbdgr import unittest
 from clckwrkbdgr.collections import dotdict
 from ..endlessdungeon import Scene
-from ...engine import mock, terrain, ui
+from ...engine import mock, terrain, ui, appliances
 
 class MockScene(Scene):
 	BLOCK_SIZE = Size(3, 3)
@@ -16,7 +16,7 @@ def make_scene(scene_id):
 		if scene_id == 1:
 			return MockScene(MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]]))
 		if scene_id == 3:
-			return MockScene(MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]] + [[]]*4 + [[(2, 2)]]))
+			return MockScene(MockBuilder(rogue_pos=(1, 1), walls=[[]]*4+[[(1, 0), (0, 1)]] + [[]]*4 + [[(2, 2)]], exit_pos=(1, 1)))
 
 class MockVoid(terrain.Terrain):
 	_sprite = ui.Sprite('_', None)
@@ -26,8 +26,9 @@ class MockWall(terrain.Terrain):
 	_sprite = ui.Sprite('#', None)
 
 class MockBuilder(object):
-	def __init__(self, rogue_pos=None, walls=None):
+	def __init__(self, rogue_pos=None, walls=None, exit_pos=None):
 		self._start_pos = rogue_pos or (0, 0)
+		self._exit_pos = exit_pos
 		self.walls = walls or []
 		self.void = MockVoid()
 	def build_block(self, block):
@@ -37,6 +38,9 @@ class MockBuilder(object):
 		walls = self.walls.pop(0)
 		for wall in walls:
 			block.set_cell(wall, MockWall())
+		self.appliances = []
+		if self._exit_pos:
+			self.appliances.append(appliances.ObjectAtPos(self._exit_pos, mock.StairsUp('overworld', None)))
 
 class TestDungeon(unittest.TestCase):
 	VIEW_RECT = Rect((-4, -4), (9, 9))
@@ -52,6 +56,8 @@ class TestDungeon(unittest.TestCase):
 		player = mock.Rogue(None)
 		scene.enter_actor(player, None)
 		self.assertEqual(list(scene.iter_active_monsters()), [player])
+		scene.exit_actor(player)
+		self.assertEqual(list(scene.iter_active_monsters()), [])
 	def should_recalibrate_plane_after_player_moved(self):
 		scene = make_scene(3)
 		scene.generate(3)
@@ -80,7 +86,7 @@ class TestDungeon(unittest.TestCase):
 		_........
 		_........
 		_....#...
-		_...#....
+		_...#<...
 		_....@...
 		_........
 		_........
@@ -95,7 +101,7 @@ class TestDungeon(unittest.TestCase):
 		_________
 		_________
 		_....#...
-		_...#....
+		_...#<...
 		_........
 		_....@...
 		_........

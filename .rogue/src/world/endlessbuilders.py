@@ -1,18 +1,18 @@
-import random
 import math
+from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Size
 from clckwrkbdgr import utils
 from clckwrkbdgr.collections import AutoRegistry
 from ..engine import builders
 
-def place_square_tank(grid, topleft_pos, size):
+def place_square_tank(rng, grid, topleft_pos, size):
 	size = Size(size)
 	topleft_pos = Point(topleft_pos)
 	for x in range(size.width):
 		for y in range(size.height):
 			grid.set_cell(topleft_pos + (x, y), 'wall')
 
-def place_round_tank(grid, topleft_pos, size):
+def place_round_tank(rng, grid, topleft_pos, size):
 	size = Size(size)
 	topleft_pos = Point(topleft_pos)
 	center = Point(
@@ -26,17 +26,20 @@ def place_round_tank(grid, topleft_pos, size):
 				continue
 			grid.set_cell(topleft_pos + (x, y), 'wall')
 
-def place_broken_tank(grid, topleft_pos, size):
+def place_broken_tank(rng, grid, topleft_pos, size):
 	size = Size(size)
 	topleft_pos = Point(topleft_pos)
 	for x in range(size.width):
 		for y in range(size.height):
-			if random.choice((False, True)):
+			if rng.choice((False, True)):
 				grid.set_cell(topleft_pos + (x, y), 'wall')
 
 class Builder(builders.Builder):
+	def is_open(self, pos):
+		return self.grid.cell(pos) == 'floor'
 	def generate_appliances(self):
-		yield Point(self.grid.size.width // 2, self.grid.size.height // 2), 'start'
+		yield self.point(self.is_accessible), 'start'
+		yield self.point(self.is_accessible), 'overworld_exit'
 
 class FilledWithGarbage(Builder):
 	def fill_grid(self, grid):
@@ -65,9 +68,9 @@ class FieldOfTanks(Builder):
 				)
 		field_shift = Point(1, 1)
 		if (grid.width - 2) > array_size.width:
-			field_shift.x += random.randrange((grid.width - 2) - array_size.width)
+			field_shift.x += self.rng.randrange((grid.width - 2) - array_size.width)
 		if (grid.height - 2) > array_size.height:
-			field_shift.y += random.randrange((grid.height - 2) - array_size.height)
+			field_shift.y += self.rng.randrange((grid.height - 2) - array_size.height)
 		forms = [
 				place_square_tank,
 				place_round_tank,
@@ -79,16 +82,18 @@ class FieldOfTanks(Builder):
 						col * (tank_size.width + 1),
 						row * (tank_size.height + 1),
 						)
-				place_form = random.choice(forms)
-				place_form(grid, tank_topleft, tank_size)
+				place_form = self.rng.choice(forms)
+				place_form(self.rng, grid, tank_topleft, tank_size)
 
 class Builders:
-	def __init__(self, builders):
+	def __init__(self, builders, rng=None):
+		self.rng = rng or RNG()
 		self.builder_types = builders
 	def build_block(self, block):
-		builder_type = random.choice(self.builder_types)
-		builder = builder_type(random, block)
+		builder_type = self.rng.choice(self.builder_types)
+		builder = builder_type(self.rng, block)
 		builder.generate()
 		builder.make_grid()
 		appliances = list(builder.make_appliances())
 		self._start_pos = next(_.pos for _ in appliances if _.obj == 'start')
+		self.appliances = [_ for _ in appliances if _.obj != 'start']

@@ -38,3 +38,6 @@ class ObjectMapping:
 	@staticmethod
 	def dungeon_entrance():
 		return StairsDown('dungeon/0', 'enter')
+	@staticmethod
+	def overworld_exit():
+		return StairsUp('overworld', None)
