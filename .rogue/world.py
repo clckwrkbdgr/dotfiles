@@ -1,7 +1,8 @@
 from clckwrkbdgr.math import Size
 from clckwrkbdgr import utils
-from src.engine import builders
+from src.engine import Game, builders
 import src.world.dungeonbuilders
+import src.world.dungeons
 import src.world.roguedungeon
 from src.world import endlessbuilders, endlessdungeon
 from src.world import overworld
@@ -61,6 +62,10 @@ class CaveBuilder(src.world.dungeonbuilders.CaveBuilder, DungeonSquatters):
 class MazeBuilder(src.world.dungeonbuilders.MazeBuilder, DungeonSquatters):
 	Mapping = DungeonMapping
 
+class DungeonScene(src.world.dungeons.Scene):
+	MAX_LEVELS = 30
+	EXIT_SCENE = 'hollow'
+
 class EndlessBuilder:
 	Mapping = DungeonMapping
 
@@ -106,3 +111,26 @@ class Forest(OverBuilder, overworld.Forest): pass
 class Desert(OverBuilder, overworld.Desert): pass
 class Thundra(OverBuilder, overworld.Thundra): pass
 class Marsh(OverBuilder, overworld.Marsh): pass
+
+class Game(src.engine.Game):
+	def make_player(self):
+		rogue = Rogue(None)
+		rogue.grab(Dagger())
+		return rogue
+	def make_scene(self, scene_id):
+		if scene_id == 'hollow':
+			return EndlessScene()
+		if scene_id == 'overworld':
+			return overworld.Scene(utils.all_subclasses(OverBuilder))
+		if scene_id.startswith('rogue/'):
+			return RogueDungeonScene()
+		if scene_id.startswith('dungeon/'):
+			return DungeonScene(self.rng, [
+				BSPDungeon,
+				CityBuilder,
+				Sewers,
+				RogueDungeon,
+				CaveBuilder,
+				MazeBuilder,
+				])
+		raise NotImplementedError(scene_id)

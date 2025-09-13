@@ -70,6 +70,8 @@ class Vision(vision.Vision):
 		self.visible_items = current_visible_items
 
 class Scene(scene.Scene):
+	MAX_LEVELS = 10
+	EXIT_SCENE = None
 	def __init__(self, rng, builders):
 		self.rng = rng
 		self.builders = builders
@@ -103,8 +105,11 @@ class Scene(scene.Scene):
 			level_id, index = id.split('/')
 		else:
 			level_id, index = id, 0
-		index = str(int(index) + 1)
-		exit_stairs.level_id = '/'.join((level_id, index))
+		index = int(index) + 1
+		if index < self.MAX_LEVELS:
+			exit_stairs.level_id = '/'.join((level_id, str(index)))
+		else:
+			exit_stairs.level_id = self.EXIT_SCENE
 
 		for monster in settler.make_actors():
 			monster.fill_drops(self.rng)
@@ -120,10 +125,8 @@ class Scene(scene.Scene):
 	def load(self, reader): # pragma: no cover
 		super(Scene, self).load(reader)
 		self.strata = reader.read_matrix(Terrain)
-		if reader.version > Version.MONSTERS:
-			self.monsters.extend(reader.read_list(actors.Actor))
-		if reader.version > Version.ITEMS:
-			self.items.extend(reader.read_list(items.ItemAtPos))
+		self.monsters.extend(reader.read_list(actors.Actor))
+		self.items.extend(reader.read_list(items.ItemAtPos))
 		self.appliances.extend(reader.read_list(appliances.ObjectAtPos))
 	def save(self, writer): # pragma: no cover
 		writer.write(self.strata)

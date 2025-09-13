@@ -4,6 +4,7 @@ from clckwrkbdgr.math.grid import NestedGrid
 import clckwrkbdgr.serialize.stream as savefile
 from clckwrkbdgr.pcg import RNG
 from .. import overworld
+from ...engine.appliances import ObjectAtPos
 from ...engine.items import ItemAtPos
 from ...engine.mock import *
 from ...engine.test.utils import *
@@ -17,11 +18,16 @@ class MockVoidBuilder(overworld.Builder):
 		@staticmethod
 		def colored_monster(pos, *data):
 			return Rat(pos)
+		@staticmethod
+		def dungeon_entrance():
+			return StairsDown('dungeon/0', 'exit')
+
 	def _make_terrain(self, grid):
 		grid.clear('void')
 class MockBuilder(object):
 	class Mapping:
-		dead_tree = plant = Floor()
+		ice = grass = snow = frozen_ground = dead_tree = plant = Floor()
+		swamp_tree = Wall()
 class MockForest(MockBuilder, overworld.Forest): pass
 class MockDesert(MockBuilder, overworld.Desert): pass
 class MockThundra(MockBuilder, overworld.Thundra): pass
@@ -35,19 +41,19 @@ class MockScene(overworld.Scene):
 class TestBuilders(unittest.TestCase):
 	def should_generate_basic_grid(self):
 		grid = Matrix((16, 16))
-		builder = MockVoidBuilder(RNG(1), grid)
+		builder = MockVoidBuilder(RNG(188), grid)
 		builder.generate()
 		self.assertEqual(builder.grid.tostring(), '\n'.join(['void'*16]*16) +'\n')
-		self.assertEqual(builder.actors, {Point(8, 15):[
-			('colored_monster', 'd', 'bold_blue', 0, 1),
+		self.assertEqual(dict(builder.actors), {Point(3, 10):[
+			('colored_monster', 'u', 'bold_white', 0, 1),
 			]})
 	def should_generate_several_monsters(self):
 		grid = Matrix((16, 16))
-		builder = MockVoidBuilder(RNG(26), grid)
+		builder = MockVoidBuilder(RNG(186), grid)
 		builder.generate()
 		self.assertEqual(dict(builder.actors), {
-			Point(0, 15): [('colored_monster_carrying', 'v', 'white', 1, 0)],
-			Point(13, 7): [('colored_monster', 'f', 'magenta', 1, 0)],
+			Point(8, 6): [('colored_monster_carrying', 'j', 'bold_magenta', 0, 1)],
+			Point(11, 9): [('colored_monster_carrying', 'd', 'bold_green', 0, 1)],
 			})
 	def should_generate_buildings_with_doors_and_dwellers(self):
 		grid = Matrix((16, 16))
@@ -232,33 +238,37 @@ class TestBuilders(unittest.TestCase):
 
 class TestScene(unittest.TestCase):
 	def should_generate_scene_starting_from_a_single_zone(self):
-		scene = MockScene(BUILDERS, RNG(0))
+		scene = MockScene(BUILDERS, RNG(1))
 		scene.generate(None)
-		self.assertEqual(scene._player_pos, NestedGrid.Coord((0, 1), (0, 1), (0, 1)))
-		self.assertEqual([_ is not None for _ in scene.world.cells.values()], [False]*3 + [True] + [False] * 5)
+		self.assertEqual(scene._player_pos, NestedGrid.Coord((1, 0), (1, 1), (1, 1)))
+		self.assertEqual([_ is not None for _ in scene.world.cells.values()], [False] + [True] + [False] * 7)
 		self.assertEqual(scene.get_area_rect(), Rect((0, 0), (3*2*2, 3*2*2)))
 	def should_serialize_and_deserialize_scene(self):
-		scene = MockScene(BUILDERS, RNG(0))
+		scene = MockScene(BUILDERS, RNG(1))
 		scene.generate(None)
 		scene.enter_actor(Rogue(None), None)
-		scene.drop_item(ItemAtPos(Point(1, 7), Dagger()))
+		scene.drop_item(ItemAtPos(Point(7, 3), Dagger()))
+		scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.appliances.append(
+				ObjectAtPos(Point(0, 0), StairsDown('dungeon/0', 'exit'))
+				)
 
 		writer = savefile.Writer(MockWriterStream(), 1)
 		scene.save(writer)
 		dump = writer.f.dump[1:]
 		self.maxDiff = None
 		self.assertEqual(dump, ['3', '3',
-					'', '', '',
+					'', 
 					'.',
 					'2', '2', '2', '2', 'Floor', 'Floor', 'Floor', 'Floor',
-					'0', '0', '2', '2', 'Floor', 'Floor', 'Floor', 'Floor',
-					'0', '0', '2', '2', 'Floor', 'Floor', 'Floor', 'Floor',
+					'0', '0', '0', '2', '2', 'Floor', 'Floor', 'Floor', 'Wall',
+					'0', '0', '0', '2', '2', 'Floor', 'Floor', 'Floor', 'Wall',
+					'0', '0', '0', '2', '2', 'Floor', 'Floor', 'Floor', 'Floor',
 						'1', 'Dagger', '1', '1',
-						'1', 'Rogue', '0', '1', '10', '0',
-					'0', '0', '2', '2', 'Floor', 'Floor', 'Floor', 'Floor',
+						'1', 'StairsDown', 'dungeon/0', 'exit', '0', '0',
+						'1', 'Rogue', '1', '1', '10', '0',
 					'0',
 					'0',
-					'', '', '', '', ''
+					'', '', '', '', '', '', '',
 					])
 		dump = [str(1)] + list(map(str, dump))
 
@@ -266,42 +276,42 @@ class TestScene(unittest.TestCase):
 		reader = savefile.Reader(iter(dump))
 		restored.load(reader)
 
-		self.assertEqual([_ is not None for _ in restored.world.cells.values()], [False]*3 + [True] + [False] * 5)
+		self.assertEqual([_ is not None for _ in restored.world.cells.values()], [False] + [True] + [False] * 7)
 	def should_enter_actor(self):
-		scene = MockScene(BUILDERS, RNG(0))
+		scene = MockScene(BUILDERS, RNG(1))
 		scene.generate(None)
 		rogue = Rogue(None)
 		scene.enter_actor(rogue, None)
-		self.assertEqual(scene.world.cells.cell((0, 1)).cells.cell((0, 1)).data.monsters[0], rogue)
-		self.assertEqual(rogue.pos, Point(0, 1))
+		self.assertEqual(scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.monsters[0], rogue)
+		self.assertEqual(rogue.pos, Point(1, 1))
 	def should_exit_actor(self):
-		scene = MockScene(BUILDERS, RNG(0))
+		scene = MockScene(BUILDERS, RNG(1))
 		scene.generate(None)
 		rogue = Rogue(None)
 		scene.enter_actor(rogue, None)
 		scene.exit_actor(rogue)
-		self.assertEqual(scene.world.cells.cell((0, 1)).cells.cell((0, 1)).data.monsters, [])
+		self.assertEqual(scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.monsters, [])
 	def should_rip_actor(self):
-		scene = MockScene(BUILDERS, RNG(0))
+		scene = MockScene(BUILDERS, RNG(1))
 		scene.generate(None)
 		rogue = Rogue(None)
 		dagger = Dagger()
 		rogue.grab(dagger)
 		scene.enter_actor(rogue, None)
 		dropped_items = list(scene.rip(rogue))
-		self.assertEqual(scene.world.cells.cell((0, 1)).cells.cell((0, 1)).data.monsters, [])
+		self.assertEqual(scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.monsters, [])
 		self.assertEqual(dropped_items, [dagger])
-		self.assertEqual(scene.world.cells.cell((0, 1)).cells.cell((0, 1)).data.items, dropped_items)
+		self.assertEqual(scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.items, dropped_items)
 	def should_drop_and_take_item(self):
-		scene = MockScene(BUILDERS, RNG(0))
+		scene = MockScene(BUILDERS, RNG(1))
 		scene.generate(None)
 		dagger = Dagger()
-		scene.drop_item(ItemAtPos(Point(1, 7), dagger))
-		self.assertEqual(scene.world.cells.cell((0, 1)).cells.cell((0, 1)).data.items, [dagger])
+		scene.drop_item(ItemAtPos(Point(7, 3), dagger))
+		self.assertEqual(scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.items, [dagger])
 
-		item = scene.take_item(ItemAtPos(Point(1, 7), dagger))
+		item = scene.take_item(ItemAtPos(Point(7, 3), dagger))
 		self.assertEqual(item, dagger)
-		self.assertEqual(scene.world.cells.cell((0, 1)).cells.cell((0, 1)).data.items, [])
+		self.assertEqual(scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.items, [])
 	def should_recalibrate_scene_by_generating_new_zones(self):
 		scene = MockScene([MockVoidBuilder], RNG(9))
 		scene.generate(None)
@@ -359,7 +369,7 @@ class TestScene(unittest.TestCase):
 		scene = MockScene([MockVoidBuilder], RNG(9))
 		scene.generate(None)
 		scene.recalibrate(Point(4, 4), Size(3, 3))
-		self.assertEqual(repr(scene.get_cell_info(Point(3, 4))), repr((Void(), [], [], [Rat(Point(1, 0))])))
+		self.assertEqual(repr(scene.get_cell_info(Point(3, 4))), repr((Void(), [], [], [PackRat(Point(1, 0))])))
 		self.assertEqual(scene.get_cell_info(Point(9, 9)), (None, [], [], []))
 	def should_get_global_pos(self):
 		scene = MockScene([MockVoidBuilder], RNG(9))
@@ -376,6 +386,15 @@ class TestScene(unittest.TestCase):
 		self.assertTrue(scene.can_move(rat, Point(4, 4)))
 		scene.transfer_actor(rat, Point(4, 4))
 		self.assertEqual(scene.get_global_pos(rat), Point(3, 4))
+	def should_find_appliances(self):
+		scene = MockScene([MockVoidBuilder], RNG(9))
+		scene.generate(None)
+		scene.recalibrate(Point(4, 4), Size(3, 3))
+		stairs = StairsDown('dungeon/0', 'exit')
+		scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.appliances.append(
+				ObjectAtPos(Point(1, 1), stairs)
+				)
+		self.assertEqual(list(scene.iter_appliances_at(Point(7, 3))), [stairs])
 	def should_find_items(self):
 		scene = MockScene([MockVoidBuilder], RNG(9))
 		scene.generate(None)
@@ -391,36 +410,43 @@ class TestScene(unittest.TestCase):
 		scene.recalibrate(Point(4, 4), Size(3, 3))
 		rat = scene.get_cell_info(Point(3, 4))[-1][0]
 		self.assertEqual(list(scene.iter_actors_at(Point(3, 4))), [rat])
-		self.assertEqual(list(scene.iter_actors_at(Point(7, 6))), [])
-		self.assertEqual(list(scene.iter_actors_at(Point(7, 6), with_player=True)), [rogue])
+		player_pos = scene.get_global_pos(rogue)
+		self.assertEqual(list(scene.iter_actors_at(player_pos)), [])
+		self.assertEqual(list(scene.iter_actors_at(player_pos, with_player=True)), [rogue])
 
 		self.assertEqual(sorted(map(repr, scene.iter_actors_in_rect(Rect((0, 0), (6, 6))))), [
+			'PackRat(rat @[0, 0] 10/10hp)',
+			'PackRat(rat @[0, 1] 10/10hp)',
+			'PackRat(rat @[0, 1] 10/10hp)',
+			'PackRat(rat @[1, 0] 10/10hp)',
+			'PackRat(rat @[1, 0] 10/10hp)',
+			'PackRat(rat @[1, 0] 10/10hp)',
+			'PackRat(rat @[1, 1] 10/10hp)',
+			'PackRat(rat @[1, 1] 10/10hp)',
+			'PackRat(rat @[1, 1] 10/10hp)',
+			'Rat(rat @[0, 0] 10/10hp)',
 			'Rat(rat @[0, 0] 10/10hp)',
 			'Rat(rat @[0, 1] 10/10hp)',
-			'Rat(rat @[1, 0] 10/10hp)',
-			'Rat(rat @[1, 0] 10/10hp)',
 			'Rat(rat @[1, 1] 10/10hp)',
+			'Rogue(rogue @[0, 1] 10/10hp)',
 			])
-		self.assertEqual(list(map(repr, scene.iter_active_monsters())), [
-			'Rat(rat @[1, 0] 10/10hp)',
-			'Rogue(rogue @[1, 0] 10/10hp)',
-			])
+		self.assertEqual(len(list(scene.iter_active_monsters())), 26)
 	def should_iter_cells(self):
 		scene = MockScene([MockVoidBuilder], RNG(9))
 		scene.generate(None)
 		scene.recalibrate(Point(4, 4), Size(3, 3))
 		scene.recalibrate(Point(7, 4), Size(3, 3))
 		scene.recalibrate(Point(4, 7), Size(3, 3))
-		self.assertEqual(scene.tostring(Rect((3, 4), (9, 8))), unittest.dedent("""\
-		r......rr
-		.......rr
-		.....rr..
-		.....rr..
-		....r....
+		self.assertEqual(scene.tostring(Rect((3, 4), (9, 8))).replace(' ', '.'), unittest.dedent("""\
+		r...r....
+		r..rr....
+		.r.......
 		.........
 		.........
-		..r......
-		""").replace('.', ' '))
+		.........
+		r........
+		r...>....
+		"""))
 
 class TestVision(unittest.TestCase):
 	def should_visit_places_by_monsters(self):
@@ -450,10 +476,8 @@ class TestVision(unittest.TestCase):
 		vision = scene.make_vision(rogue)
 		vision._first_visit = False
 		monsters = list(vision.visit(rogue))
-		self.assertEqual(list(map(repr, monsters)), [
-			'Rat(rat @[1, 0] 10/10hp)',
-			'PackRat(rat @[0, 0] 10/10hp)',
-			])
+		self.maxDiff = None
+		self.assertEqual(len(list(monsters)), 19)
 		new_monsters = list(vision.visit(rogue))
 		self.assertEqual(new_monsters, [])
 

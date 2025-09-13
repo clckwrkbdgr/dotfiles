@@ -281,3 +281,10 @@ class TestMovement(AbstractTestDungeon):
 		player = Rogue(Point(3, 1))
 		scene.enter_actor(player, None)
 		self.assertEqual(scene.exit_actor(player), player)
+	def should_leave_whole_dungeon(self):
+		scene = game.Scene(RNG(0), [_MockMiniRogue])
+		scene.generate('mini rogue lonely/10')
+		self.assertTrue(scene.one_time())
+		player = Rogue(Point(3, 1))
+		scene.enter_actor(player, None)
+		self.assertEqual(next(scene.iter_appliances_at((4, 3))).level_id, None)

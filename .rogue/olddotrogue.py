@@ -21,20 +21,7 @@ from monsters import *
 from quests import *
 from world import *
 
-class Game(src.engine.Game):
-	def make_player(self):
-		player = Rogue(None)
-		player.fill_drops(self.rng)
-		return player
-	def make_scene(self, scene_id):
-		return src.world.dungeons.Scene(self.rng, [
-			BSPDungeon,
-			CityBuilder,
-			Sewers,
-			RogueDungeon,
-			CaveBuilder,
-			MazeBuilder,
-			])
+VERSION = 666
 
 import click
 @click.command()
@@ -68,20 +55,21 @@ def cli(debug=False, command=None, tests=None):
 		if rc != 0 or command == 'test':
 			sys.exit(rc)
 	Log.debug('started')
-	with clckwrkbdgr.serialize.stream.AutoSavefile(savefile) as savefile:
+	with savefile.get_reader() as reader:
 		game = Game()
-		if savefile.reader:
-			game.load(savefile.reader)
+		if reader:
+			game.load(reader)
 		else:
-			game.generate('dungeon')
+			game.generate('dungeon/0')
 		with clckwrkbdgr.tui.Curses() as ui:
 			loop = clckwrkbdgr.tui.ModeLoop(ui)
 			main_mode = MainGame(game)
 			loop.run(main_mode)
 		if not game.is_finished():
-			savefile.save(game, src.game.Version.CURRENT)
+			with savefile.save(VERSION) as writer:
+				game.save(writer)
 		else:
-			savefile.savefile.unlink()
+			savefile.unlink()
 	Log.debug('exited')
 
 if __name__ == '__main__':

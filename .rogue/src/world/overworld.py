@@ -7,6 +7,7 @@ from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Rect, Size
 from ..engine import builders, vision, scene
 from ..engine.items import ItemAtPos
+from ..engine.appliances import ObjectAtPos
 from ..engine.actors import Actor, Player, Questgiver
 from ..engine.terrain import Terrain
 
@@ -21,10 +22,15 @@ class FieldData(object):
 	def __init__(self):
 		self.items = []
 		self.monsters = []
+		self.appliances = []
 	def save(self, stream):
 		stream.write(len(self.items))
 		for item in self.items:
 			item.save(stream)
+
+		stream.write(len(self.appliances))
+		for appliance in self.appliances:
+			appliance.save(stream)
 
 		stream.write(len(self.monsters))
 		for monster in self.monsters:
@@ -35,6 +41,10 @@ class FieldData(object):
 		items = stream.read(int)
 		for _ in range(items):
 			self.items.append(stream.read(ItemAtPos))
+
+		appliances = stream.read(int)
+		for _ in range(appliances):
+			self.appliances.append(stream.read(ObjectAtPos))
 
 		monsters = stream.read(int)
 		for _ in range(monsters):
@@ -64,8 +74,11 @@ class Builder(builders.Builder):
 	def fill_grid(self, grid):
 		self._make_terrain(grid)
 		self._building = self.rng.randrange(50) == 0
+		self._stairs = False
 		if self._building:
 			self._building = self._add_building(grid)
+		else:
+			self._stairs = self.rng.randrange(50) == 0
 	def _add_building(self, grid):
 		building = Rect(
 				Point(2 + self.rng.randrange(3), 2 + self.rng.randrange(3)),
@@ -93,7 +106,14 @@ class Builder(builders.Builder):
 			else:
 				grid.set_cell((door, building.bottom), 'floor')
 		return building
+	def is_open(self, pos):
+		return self.grid.cell(pos) == 'floor'
+	def generate_appliances(self):
+		if self._stairs:
+			yield self.point(self.is_accessible), 'dungeon_entrance'
 	def generate_actors(self):
+		if self._stairs:
+			return
 		if self._building:
 			yield self._make_dweller(self._building)
 			return
@@ -318,6 +338,7 @@ class Scene(scene.Scene):
 			builder.generate()
 			builder.make_grid()
 			field.data.monsters.extend(builder.make_actors())
+			field.data.appliances.extend(builder.make_appliances())
 		return zone
 	def iter_cells(self, view_rect):
 		viewport_topleft = NestedGrid.Coord.from_global(view_rect.topleft, self.world)
@@ -375,7 +396,7 @@ class Scene(scene.Scene):
 				return (None, [], [], [])
 		return (
 				field.cells.cell(pos.values[-1]),
-				[], # No objects.
+				list(self.iter_appliances_at(pos)),
 				list(self.iter_items_at(pos)),
 				list(self.iter_actors_at(pos, with_player=True)),
 				)
@@ -445,6 +466,13 @@ class Scene(scene.Scene):
 			current_field_data.monsters.remove(actor)
 			dest_field_data.monsters.append(actor)
 		actor.pos = dest_pos.values[-1]
+	def iter_appliances_at(self, pos):
+		if isinstance(pos, Point):
+			pos = NestedGrid.Coord.from_global(pos, self.world)
+		zone_appliances = self.world.get_data(pos)[-1].appliances
+		for appliance_pos, appliance in zone_appliances:
+			if pos.values[-1] == appliance_pos:
+				yield appliance
 	def iter_items_at(self, pos):
 		if isinstance(pos, Point):
 			pos = NestedGrid.Coord.from_global(pos, self.world)

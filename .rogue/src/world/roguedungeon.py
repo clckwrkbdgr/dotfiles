@@ -11,7 +11,7 @@ import logging
 trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
 from ..engine import scene, builders
-from ..engine import actors, appliances
+from ..engine import actors, items, appliances, terrain
 
 class Builder(builders.Builder):
 	def get_item_distribution(self, depth): # pragma: no cover
@@ -41,7 +41,7 @@ class Builder(builders.Builder):
 		if self.depth == 0:
 			yield (self.point_in_rect(enter_room), 'dungeon_enter')
 		else:
-			yield (self.point_in_rect(enter_room), 'enter', self.depth - 1)
+			yield (self.point_in_rect(enter_room), 'enter', 'rogue/{0}'.format(self.depth - 1))
 
 		for _ in range(9):
 			exit_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
@@ -49,7 +49,7 @@ class Builder(builders.Builder):
 			if exit_room_key == self.enter_room_key:
 				continue
 		if not self.is_bottom:
-			yield (self.point_in_rect(self.exit_room), 'exit', self.depth + 1)
+			yield (self.point_in_rect(self.exit_room), 'exit', 'rogue/{0}'.format(self.depth + 1))
 
 	def generate_items(self):
 		item_distribution = [(prob, (item_type.__name__,)) for (prob, item_type) in self.get_item_distribution(self.depth)]
@@ -92,9 +92,9 @@ class Scene(scene.Scene):
 		self.objects = []
 		self.rng = rng or RNG()
 	def generate(self, level_id):
-		if level_id < 0 or level_id >= self.MAX_LEVELS:
+		depth = int(level_id.split('/')[-1])
+		if depth < 0 or depth >= self.MAX_LEVELS:
 			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
-		depth = level_id
 		is_bottom = depth >= (self.MAX_LEVELS - 1)
 
 		builder = self.BUILDER(depth, is_bottom, self.rng, self.SIZE)
@@ -243,6 +243,70 @@ class Scene(scene.Scene):
 			data.map_items.append( [pos, item] )
 		data.monsters = self.monsters
 		return data
+	def save(self, stream): # pragma: no cover -- TODO
+		for tile_index in self.rooms:
+			tile = self.rooms.cell(tile_index)
+			stream.write(tile.topleft.x)
+			stream.write(tile.topleft.y)
+			stream.write(tile.size.width)
+			stream.write(tile.size.height)
+
+		stream.write(len(self.tunnels))
+		for tunnel in self.tunnels:
+			stream.write(tunnel.start.x)
+			stream.write(tunnel.start.y)
+			stream.write(tunnel.stop.x)
+			stream.write(tunnel.stop.y)
+			stream.write(tunnel.direction)
+			stream.write(tunnel.bending_point)
+
+		for i in range(7):
+			self.terrain.cell((0, i)).save(stream)
+
+		stream.write(len(self.items))
+		for item in self.items:
+			item.save(stream)
+
+		stream.write(len(self.monsters))
+		for monster in self.monsters:
+			monster.save(stream)
+
+		stream.write(len(self.objects))
+		for obj in self.objects:
+			obj.save(stream)
+	def load(self, stream): # pragma: no cover -- TODO
+		super(Scene, self).load(stream)
+		self.size = self.SIZE
+		for tile_index in self.rooms:
+			self.rooms.set_cell(tile_index, Rect(
+				(stream.read(int), stream.read(int)),
+				(stream.read(int), stream.read(int)),
+				))
+
+		tunnels = stream.read(int)
+		for tunnel in range(tunnels):
+			self.tunnels.append(self.Tunnel(
+				Point(stream.read(int), stream.read(int)),
+				Point(stream.read(int), stream.read(int)),
+				stream.read(),
+				stream.read(int),
+				))
+
+		self.terrain = Matrix((1, 7), None)
+		for i in range(7):
+			self.terrain.set_cell(Point(0, i), stream.read(terrain.Terrain))
+
+		_items = stream.read(int)
+		for _ in range(_items):
+			self.items.append(stream.read(items.ItemAtPos))
+
+		monsters = stream.read(int)
+		for _ in range(monsters):
+			self.monsters.append(actors.Actor.load(stream))
+
+		objects = stream.read(int)
+		for _ in range(objects):
+			self.objects.append(stream.read(appliances.ObjectAtPos))
 
 	@property
 	def current_room(self):
@@ -303,6 +367,32 @@ class Vision(vision.Vision):
 		super(Vision, self).__init__(scene)
 		self.visited_rooms = Matrix((3, 3), False)
 		self.visited_tunnels = [set() for tunnel in scene.tunnels]
+	def save(self, stream): # pragma: no cover -- TODO
+		stream.write(self.visited_rooms.width)
+		stream.write(self.visited_rooms.height)
+		for tile_index in self.visited_rooms:
+			stream.write(self.visited_rooms.cell(tile_index))
+
+		stream.write(len(self.visited_tunnels))
+		for tunnel in self.visited_tunnels:
+			stream.write(len(tunnel))
+			for p in tunnel:
+				stream.write(p.x)
+				stream.write(p.y)
+	def load(self, stream): # pragma: no cover -- TODO
+		size = Size(stream.read(int), stream.read(int))
+		self.visited_rooms = Matrix(size, None)
+		for tile_index in self.visited_rooms:
+			self.visited_rooms.set_cell(tile_index, bool(stream.read(int)))
+
+		length = stream.read(int)
+		self.visited_tunnels = []
+		for _ in range(length):
+			tunnel_length = stream.read(int)
+			tunnel = set()
+			for p in range(tunnel_length):
+				tunnel.add(Point(stream.read(int), stream.read(int)))
+			self.visited_tunnels.append(tunnel)
 	def is_visible(self, obj, additional=None):
 		""" Returns true if object (Room, Tunnel, Point) is visible for player.
 		Additional data depends on type of primary object.

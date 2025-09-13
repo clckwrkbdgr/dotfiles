@@ -35,3 +35,9 @@ class ObjectMapping:
 	def exit(next_level_id):
 		return StairsDown(next_level_id, 'enter')
 	dungeon_enter = lambda:DungeonGates(None, 'exit')
+	@staticmethod
+	def dungeon_entrance():
+		return StairsDown('dungeon/0', 'enter')
+	@staticmethod
+	def overworld_exit():
+		return StairsUp('overworld', None)
