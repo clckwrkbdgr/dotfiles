@@ -19,8 +19,10 @@ class Builder(builders.Builder):
 	def get_monster_distribution(self, depth): # pragma: no cover
 		raise NotImplementedError()
 
-	def __init__(self, depth, is_bottom, *args, **kwargs):
-		self.depth = depth
+	def __init__(self, level_id, is_bottom, *args, **kwargs):
+		level_id = level_id.split('/')
+		self.level_id = '/'.join(level_id[:-1])
+		self.depth = int(level_id[-1])
 		self.is_bottom = is_bottom
 		super(Builder, self).__init__(*args, **kwargs)
 	def fill_grid(self, grid):
@@ -41,7 +43,7 @@ class Builder(builders.Builder):
 		if self.depth == 0:
 			yield (self.point_in_rect(enter_room), 'dungeon_enter')
 		else:
-			yield (self.point_in_rect(enter_room), 'enter', 'rogue/{0}'.format(self.depth - 1))
+			yield (self.point_in_rect(enter_room), 'enter', '{0}/{1}'.format(self.level_id, self.depth - 1))
 
 		for _ in range(9):
 			exit_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
@@ -49,7 +51,7 @@ class Builder(builders.Builder):
 			if exit_room_key == self.enter_room_key:
 				continue
 		if not self.is_bottom:
-			yield (self.point_in_rect(self.exit_room), 'exit', 'rogue/{0}'.format(self.depth + 1))
+			yield (self.point_in_rect(self.exit_room), 'exit', '{0}/{1}'.format(self.level_id, self.depth + 1))
 
 	def generate_items(self):
 		item_distribution = [(prob, (item_type.__name__,)) for (prob, item_type) in self.get_item_distribution(self.depth)]
@@ -97,7 +99,7 @@ class Scene(scene.Scene):
 			raise KeyError("Invalid level ID: {0} (supports only [0; {1}))".format(level_id, self.MAX_LEVELS))
 		is_bottom = depth >= (self.MAX_LEVELS - 1)
 
-		builder = self.BUILDER(depth, is_bottom, self.rng, self.SIZE)
+		builder = self.BUILDER(level_id, is_bottom, self.rng, self.SIZE)
 		builder.generate()
 		self.size = self.SIZE
 		self.rooms = builder.dungeon.grid
@@ -310,10 +312,10 @@ class Scene(scene.Scene):
 
 	@property
 	def current_room(self):
-		return self.room_of(self.get_player().pos)
+		return self.get_player() and self.room_of(self.get_player().pos)
 	@property
 	def current_tunnel(self):
-		return self.tunnel_of(self.get_player().pos)
+		return self.get_player() and self.tunnel_of(self.get_player().pos)
 	def iter_cells(self, view_rect):
 		trace.debug(list(self.rooms.keys()))
 		for y in range(view_rect.topleft.y, view_rect.bottomright.y + 1):
