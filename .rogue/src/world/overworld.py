@@ -74,11 +74,9 @@ class Builder(builders.Builder):
 	def fill_grid(self, grid):
 		self._make_terrain(grid)
 		self._building = self.rng.randrange(50) == 0
-		self._stairs = False
 		if self._building:
 			self._building = self._add_building(grid)
-		else:
-			self._stairs = self.rng.randrange(50) == 0
+		self._stairs = self.rng.randrange(50) == 0
 	def _add_building(self, grid):
 		building = Rect(
 				Point(2 + self.rng.randrange(3), 2 + self.rng.randrange(3)),
@@ -110,7 +108,14 @@ class Builder(builders.Builder):
 		return self.grid.cell(pos) == 'floor'
 	def generate_appliances(self):
 		if self._stairs:
-			yield self.point(self.is_accessible), 'dungeon_entrance'
+			if self._building:
+				stairs_pos = self._building.topleft + Point(1, 1) + Point(
+						self.rng.randrange(self._building.width - 2),
+						self.rng.randrange(self._building.height - 2),
+						)
+				yield stairs_pos, 'rogue_dungeon_entrance', str(self.rng.randrange(100000))
+			else:
+				yield self.point(self.is_accessible), 'dungeon_entrance'
 	def generate_actors(self):
 		if self._stairs:
 			return

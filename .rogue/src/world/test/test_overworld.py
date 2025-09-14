@@ -55,6 +55,38 @@ class TestBuilders(unittest.TestCase):
 			Point(8, 6): [('colored_monster_carrying', 'j', 'bold_magenta', 0, 1)],
 			Point(11, 9): [('colored_monster_carrying', 'd', 'bold_green', 0, 1)],
 			})
+	def should_generate_buildings_with_rogue_dungeon_entrances(self):
+		grid = Matrix((16, 16))
+		"""
+		for i in range(10000):
+			builder = MockVoidBuilder(RNG(i), grid)
+			builder.generate()
+			self.assertFalse(len(builder.appliances) == 1 and 'wall' in builder.grid.tostring(), msg=i)
+			"""
+		builder = MockVoidBuilder(RNG(1263), grid)
+		builder.generate()
+		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#'), unittest.dedent("""\
+				________________
+				________________
+				__######________
+				__#....#________
+				__#....#________
+				__#....#________
+				__#....#________
+				__####.#________
+				________________
+				________________
+				________________
+				________________
+				________________
+				________________
+				________________
+				________________
+				"""))
+		self.assertFalse(builder.actors)
+		self.assertEqual(dict(builder.appliances), {Point(5, 5):[
+			('rogue_dungeon_entrance', '23606'),
+			]})
 	def should_generate_buildings_with_doors_and_dwellers(self):
 		grid = Matrix((16, 16))
 		builder = MockVoidBuilder(RNG(0), grid)
@@ -77,8 +109,8 @@ class TestBuilders(unittest.TestCase):
 				________________
 				________________
 				"""))
-		self.assertEqual(builder.actors, {Point(6, 4):[
-			('dweller', 'bold_magenta'),
+		self.assertEqual(dict(builder.actors), {Point(5, 4):[
+			('dweller', 'red'),
 			]})
 
 		builder = MockVoidBuilder(RNG(181), grid)

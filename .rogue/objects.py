@@ -39,5 +39,8 @@ class ObjectMapping:
 	def dungeon_entrance():
 		return StairsDown('dungeon/0', 'enter')
 	@staticmethod
+	def rogue_dungeon_entrance(dungeon_id):
+		return StairsDown('rogue/{0}/0'.format(dungeon_id), 'enter')
+	@staticmethod
 	def overworld_exit():
 		return StairsUp('overworld', None)
