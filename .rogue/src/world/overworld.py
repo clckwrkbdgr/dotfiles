@@ -7,7 +7,7 @@ from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Rect, Size
 from ..engine import builders, vision, scene
 from ..engine.items import ItemAtPos
-from ..engine.appliances import ObjectAtPos
+from ..engine.appliances import ObjectAtPos, LevelPassage
 from ..engine.actors import Actor, Player, Questgiver
 from ..engine.terrain import Terrain
 
@@ -268,8 +268,13 @@ class Scene(scene.Scene):
 		dest_field_data = self.world.get_data(dest_pos)[-1]
 		dest_field_data.monsters.remove(actor)
 	def enter_actor(self, actor, location):
-		actor.pos = self._player_pos.values[-1]
-		self.world.get_data(self._player_pos)[-1].monsters.append(actor)
+		if location:
+			coord = next((pos for pos, obj in self.all_appliances() if isinstance(obj, LevelPassage) and obj.id == location), None)
+			assert coord is not None, "No stairs with id {0}".format(repr(location))
+		else:
+			coord = self._player_pos
+		actor.pos = coord.values[-1]
+		self.world.get_data(coord)[-1].monsters.append(actor)
 	def rip(self, actor):
 		dest_pos = self.get_global_pos(actor)
 		dest_pos = NestedGrid.Coord.from_global(dest_pos, self.world)
@@ -499,6 +504,17 @@ class Scene(scene.Scene):
 		for coord, npc in self.all_monsters(raw=True):
 			if isinstance(npc, Questgiver) and npc.quest and npc.quest.is_active():
 				yield npc, npc.quest
+	def all_appliances(self):
+		for zone_index in self.world.cells:
+			if not self.world.cells.valid(zone_index): # pragma: no cover -- TODO
+				continue
+			zone = self.world.cells.cell(zone_index)
+			if zone is None:
+				continue
+			for field_index in zone.cells:
+				for appliance in zone.cells.cell(field_index).data.appliances:
+					coord = NestedGrid.Coord(zone_index, field_index, appliance.pos)
+					yield coord, appliance.obj
 	def all_monsters(self, raw=False, zone_range=None):
 		for zone_index in (zone_range or self.world.cells):
 			if not self.world.cells.valid(zone_index):

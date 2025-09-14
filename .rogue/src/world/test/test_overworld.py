@@ -21,13 +21,18 @@ class MockVoidBuilder(overworld.Builder):
 		@staticmethod
 		def dungeon_entrance():
 			return StairsDown('dungeon/0', 'exit')
+		@staticmethod
+		def rogue_dungeon_entrance(dungeon_id):
+			return DungeonEntrance('rogue/{0}/0', 'enter')
 
 	def _make_terrain(self, grid):
 		grid.clear('void')
 class MockBuilder(object):
-	class Mapping:
-		ice = grass = snow = frozen_ground = dead_tree = plant = Floor()
-		swamp_tree = Wall()
+	class Mapping(MockVoidBuilder.Mapping):
+		bog = sand = ice = grass = snow = frozen_ground = dead_tree = plant = Floor()
+		tree = rock = bush = swamp_tree = Wall()
+	def _add_building(self, grid):
+		return Rect((0, 0), (2, 2))
 class MockForest(MockBuilder, overworld.Forest): pass
 class MockDesert(MockBuilder, overworld.Desert): pass
 class MockThundra(MockBuilder, overworld.Thundra): pass
@@ -309,12 +314,19 @@ class TestScene(unittest.TestCase):
 		restored.load(reader)
 
 		self.assertEqual([_ is not None for _ in restored.world.cells.values()], [False] + [True] + [False] * 7)
-	def should_enter_actor(self):
+	def should_enter_actor_at_start_pos(self):
 		scene = MockScene(BUILDERS, RNG(1))
 		scene.generate(None)
 		rogue = Rogue(None)
 		scene.enter_actor(rogue, None)
 		self.assertEqual(scene.world.cells.cell((1, 0)).cells.cell((1, 1)).data.monsters[0], rogue)
+		self.assertEqual(rogue.pos, Point(1, 1))
+	def should_enter_actor_at_dungeon_entrance(self):
+		scene = MockScene(BUILDERS, RNG(484))
+		scene.generate(None)
+		rogue = Rogue(None)
+		scene.enter_actor(rogue, 'dungeon')
+		self.assertEqual(scene.world.cells.cell((2, 1)).cells.cell((0, 1)).data.monsters[0], rogue)
 		self.assertEqual(rogue.pos, Point(1, 1))
 	def should_exit_actor(self):
 		scene = MockScene(BUILDERS, RNG(1))

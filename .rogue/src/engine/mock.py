@@ -105,6 +105,12 @@ class StairsDown(appliances.LevelPassage):
 	_id = 'exit'
 	_can_go_down = True
 
+class DungeonEntrance(appliances.LevelPassage):
+	_sprite = Sprite('>', None)
+	_name = 'dungeon entrance'
+	_id = 'dungeon'
+	_can_go_down = True
+
 class Statue(appliances.Appliance):
 	_sprite = Sprite('&', None)
 	_name = 'statue'

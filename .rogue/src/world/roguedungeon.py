@@ -21,7 +21,7 @@ class Builder(builders.Builder):
 
 	def __init__(self, level_id, is_bottom, *args, **kwargs):
 		level_id = level_id.split('/')
-		self.level_id = '/'.join(level_id[:-1])
+		self.dungeon_id = '/'.join(level_id[:-1])
 		self.depth = int(level_id[-1])
 		self.is_bottom = is_bottom
 		super(Builder, self).__init__(*args, **kwargs)
@@ -41,9 +41,9 @@ class Builder(builders.Builder):
 		self.enter_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
 		enter_room = self.dungeon.grid.cell(self.enter_room_key)
 		if self.depth == 0:
-			yield (self.point_in_rect(enter_room), 'dungeon_enter')
+			yield (self.point_in_rect(enter_room), 'rogue_dungeon_exit', self.dungeon_id)
 		else:
-			yield (self.point_in_rect(enter_room), 'enter', '{0}/{1}'.format(self.level_id, self.depth - 1))
+			yield (self.point_in_rect(enter_room), 'enter', '{0}/{1}'.format(self.dungeon_id, self.depth - 1))
 
 		for _ in range(9):
 			exit_room_key = self.rng.choice(list(self.dungeon.grid.size.iter_points()))
@@ -51,7 +51,7 @@ class Builder(builders.Builder):
 			if exit_room_key == self.enter_room_key:
 				continue
 		if not self.is_bottom:
-			yield (self.point_in_rect(self.exit_room), 'exit', '{0}/{1}'.format(self.level_id, self.depth + 1))
+			yield (self.point_in_rect(self.exit_room), 'exit', '{0}/{1}'.format(self.dungeon_id, self.depth + 1))
 
 	def generate_items(self):
 		item_distribution = [(prob, (item_type.__name__,)) for (prob, item_type) in self.get_item_distribution(self.depth)]

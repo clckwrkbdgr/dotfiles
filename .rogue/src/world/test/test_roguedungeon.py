@@ -97,7 +97,7 @@ class MockBuilder(Builder):
 		Goblin = Goblin
 		mcguffin = Gold
 		@staticmethod
-		def dungeon_enter(): return StairsUp(-1, 'exit')
+		def rogue_dungeon_exit(entrance_id): return StairsUp('overworld', entrance_id)
 		@staticmethod
 		def enter(level_id): return StairsUp(level_id, 'exit')
 		@staticmethod
