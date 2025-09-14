@@ -1,30 +1,9 @@
 from collections import namedtuple
 import functools
 import logging
-import curses
 Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Rect, Size, Point
 from src.engine import events, actors, Events, ui
-
-Color = namedtuple('Color', 'fg attr')
-COLORS = {
-		'black': Color(curses.COLOR_BLACK, 0),
-		'red': Color(curses.COLOR_RED, 0),
-		'green': Color(curses.COLOR_GREEN, 0),
-		'blue': Color(curses.COLOR_BLUE, 0),
-		'yellow': Color(curses.COLOR_YELLOW, 0),
-		'cyan': Color(curses.COLOR_CYAN, 0),
-		'magenta': Color(curses.COLOR_MAGENTA, 0),
-		'white': Color(curses.COLOR_WHITE, 0),
-		'bold_black': Color(curses.COLOR_BLACK, curses.A_BOLD),
-		'bold_red': Color(curses.COLOR_RED, curses.A_BOLD),
-		'bold_green': Color(curses.COLOR_GREEN, curses.A_BOLD),
-		'bold_blue': Color(curses.COLOR_BLUE, curses.A_BOLD),
-		'bold_yellow': Color(curses.COLOR_YELLOW, curses.A_BOLD),
-		'bold_cyan': Color(curses.COLOR_CYAN, curses.A_BOLD),
-		'bold_magenta': Color(curses.COLOR_MAGENTA, curses.A_BOLD),
-		'bold_white': Color(curses.COLOR_WHITE, curses.A_BOLD),
-		}
 
 events.Events.on(Events.Welcome)(lambda _:'Welcome!')
 events.Events.on(Events.WelcomeBack)(lambda _:'Welcome back!')
@@ -85,9 +64,6 @@ events.Events.on(Events.TooMuchQuests)(lambda _:"Too much quests already.")
 events.Events.on(Events.ChatThanks)(lambda _:'"Thanks. Here you go."')
 events.Events.on(Events.ChatComeLater)(lambda _:'"OK, come back later if you want it."')
 events.Events.on(Events.ChatQuestReminder)(lambda _:'"{0}"'.format(_.message))
-
-
-del globals()['Events'] # FIXME to prevent namespace pollution in the main module
 
 class _HUD(object):
 	@classmethod

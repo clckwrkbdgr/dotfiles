@@ -11,6 +11,26 @@ except: # pragma: no cover
 	curses = None
 import six
 
+Color = namedtuple('Color', 'fg attr')
+COLORS = {
+		'black': Color(curses.COLOR_BLACK, 0),
+		'red': Color(curses.COLOR_RED, 0),
+		'green': Color(curses.COLOR_GREEN, 0),
+		'blue': Color(curses.COLOR_BLUE, 0),
+		'yellow': Color(curses.COLOR_YELLOW, 0),
+		'cyan': Color(curses.COLOR_CYAN, 0),
+		'magenta': Color(curses.COLOR_MAGENTA, 0),
+		'white': Color(curses.COLOR_WHITE, 0),
+		'bold_black': Color(curses.COLOR_BLACK, curses.A_BOLD),
+		'bold_red': Color(curses.COLOR_RED, curses.A_BOLD),
+		'bold_green': Color(curses.COLOR_GREEN, curses.A_BOLD),
+		'bold_blue': Color(curses.COLOR_BLUE, curses.A_BOLD),
+		'bold_yellow': Color(curses.COLOR_YELLOW, curses.A_BOLD),
+		'bold_cyan': Color(curses.COLOR_CYAN, curses.A_BOLD),
+		'bold_magenta': Color(curses.COLOR_MAGENTA, curses.A_BOLD),
+		'bold_white': Color(curses.COLOR_WHITE, curses.A_BOLD),
+		}
+
 @functools.total_ordering
 class Key(object):
 	""" Wrapper for getch'ed key.
@@ -167,6 +187,8 @@ class Curses(object):
 			pass
 		# Custom actions, not from curses.wrapper
 		curses.curs_set(0)
+		for name, color in COLORS.items():
+			self.init_color(name, color.fg, color.attr)
 		return self
 	def __exit__(self, *_targs): # pragma: no cover -- TODO Mostly repeats curses.wrapper - original wrapper has no context manager option.
 		self.window.keypad(0)
