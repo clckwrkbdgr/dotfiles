@@ -258,6 +258,24 @@ class TestMovement(AbstractTestDungeon):
 				#..b.....#
 				##########
 				"""))
+	def should_bump_into_objects(self):
+		game = self.game
+		game.scene.transfer_actor(game.scene.get_player(), Point(3, 3))
+		self.assertFalse(game.move_actor(game.scene.get_player(), Point(0, -1)))
+		self.assertTrue(game.scene.get_player().has_acted())
+		self.assertEqual(game.events, [_base.Events.BumpIntoTerrain(game.scene.get_player(), Point(3, 2))])
+		self.assertEqual(game.scene.tostring(Rect((0, 0), game.scene.cells.size)), unittest.dedent("""\
+				##########
+				#........#
+				#?.&.....#
+				#..@.....#
+				#........#
+				#<.......#
+				##.~>....#
+				#........#
+				#..b.....#
+				##########
+				"""))
 	def should_attack_other_actor(self):
 		game = self.game
 		game.scene.transfer_actor(game.scene.get_player(), Point(3, 7))

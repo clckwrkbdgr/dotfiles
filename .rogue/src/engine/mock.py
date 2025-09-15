@@ -84,8 +84,9 @@ class ScribbledNote(items.Item):
 
 ### Appliances. ################################################################
 
-class Door(appliances.Appliance):
-	_sprite = Sprite('+', None)
+class Door(appliances.Door):
+	_closed_sprite = Sprite('+', None)
+	_opened_sprite = Sprite('-', None)
 	_name = 'door'
 
 class Tree(appliances.Appliance):
@@ -424,6 +425,8 @@ class Tomb(builders.Builder):
 	class Mapping:
 		@staticmethod
 		def start(): return StairsUp('floor', 'exit')
+		@staticmethod
+		def closed_door(): return Door(True)
 		wall = Wall()
 		void = Void()
 		_ = {
@@ -452,8 +455,11 @@ class Tomb(builders.Builder):
 					grid.set_cell((x, y), 'water')
 				elif c == '.':
 					grid.set_cell((x, y), 'corridor_floor')
+	def is_open(self, pos):
+		return self.grid.cell(pos) == 'corridor_floor'
 	def generate_appliances(self):
 		yield self._start, 'start'
+		yield self.point(self.is_accessible), 'closed_door'
 
 class DungeonFloor(builders.Builder):
 	class Mapping:

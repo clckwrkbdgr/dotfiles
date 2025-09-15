@@ -133,6 +133,14 @@ class Events:
 	class ChatQuestReminder(events.Event):
 		""" Reminder about quest. """
 		FIELDS = 'message'
+	class NothingToOpen(events.Event):
+		""" Nothing to open/close. """
+		FIELDS = ''
+	class ToggledDoor(events.Event):
+		""" Door was opened/closed.
+		State shows if it is closed now.
+		"""
+		FIELDS = 'obj state'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -475,6 +483,11 @@ class Game(object):
 			passable = True
 		else:
 			passable = self.scene.can_move(actor, new_pos)
+			if passable:
+				for appliance in self.scene.iter_appliances_at(new_pos):
+					if not appliance.passable:
+						passable = False
+						break
 		if not passable:
 			actor.spend_action_points()
 			self.fire_event(Events.BumpIntoTerrain(actor, new_pos))
@@ -674,6 +687,20 @@ class Game(object):
 			return respondent.quest.complete_prompt(), _on_yes, _on_no
 		self.fire_event(Events.ChatQuestReminder(respondent.quest.reminder()))
 		return None, None, None
+	def toggle_nearby_doors(self, actor):
+		pos = self.scene.get_global_pos(actor)
+		doors = []
+		for x in (-1, 0, 1):
+			for y in (-1, 0, 1):
+				doors.extend(door for door in self.scene.iter_appliances_at(pos + Point(x, y)) if isinstance(door, appliances.Door))
+		if not doors:
+			self.fire_event(Events.NothingToOpen())
+			return False
+		for door in doors:
+			door.toggle()
+			actor.spend_action_points()
+			self.fire_event(Events.ToggledDoor(door, door.is_closed()))
+		return True
 
 	def process_others(self): # pragma: no cover
 		""" Should be called at the end of player's turn

@@ -343,6 +343,10 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	def show_map(self):
 		""" Show map. """
 		return MapScreen(self.game.scene, self.get_viewport())
+	@_MainKeys.bind('O')
+	def open_close_doors(self):
+		""" Open/close nearby doors. """
+		self.game.toggle_nearby_doors(self.game.scene.get_player())
 
 class MapScreen(clckwrkbdgr.tui.Mode):
 	""" Map of the surrounding area (if Scene allows). """

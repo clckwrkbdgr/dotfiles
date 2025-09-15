@@ -1,20 +1,25 @@
-from src.engine.appliances import LevelPassage
+from src.engine import appliances
 from src.engine.ui import Sprite
 from items import *
 
-class StairsDown(LevelPassage):
+class Door(appliances.Door):
+	_opened_sprite = Sprite('-', 'white')
+	_closed_sprite = Sprite('+', 'yellow')
+	_name = 'door'
+
+class StairsDown(appliances.LevelPassage):
 	_sprite = Sprite('>', None)
 	_name = 'stairs down'
 	_id = 'exit'
 	_can_go_down = True
 
-class StairsUp(LevelPassage):
+class StairsUp(appliances.LevelPassage):
 	_sprite = Sprite('<', None)
 	_name = 'stairs up'
 	_id = 'enter'
 	_can_go_up = True
 
-class DungeonEntrance(LevelPassage):
+class DungeonEntrance(appliances.LevelPassage):
 	_sprite = Sprite('>', None)
 	_name = 'dungeon entrance'
 	_can_go_down = True
@@ -31,7 +36,7 @@ class DungeonEntrance(LevelPassage):
 		super(DungeonEntrance, self).save(stream)
 		stream.write(self._id)
 
-class DungeonGates(LevelPassage):
+class DungeonGates(appliances.LevelPassage):
 	_sprite = Sprite('<', None)
 	_name = 'exit from the dungeon'
 	_id = 'enter'
@@ -42,6 +47,12 @@ class ObjectMapping:
 	@staticmethod
 	def start():
 		return 'start'
+	@staticmethod
+	def closed_door():
+		return Door(True)
+	@staticmethod
+	def opened_door():
+		return Door(False)
 	@staticmethod
 	def enter(prev_level_id):
 		return StairsUp(prev_level_id, 'exit')

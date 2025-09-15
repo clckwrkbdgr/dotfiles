@@ -50,6 +50,47 @@ class TestAppliancesSavefile(unittest.TestCase):
 		writer.write(appliance)
 		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Statue\x00goddess')
 
+class TestDoors(unittest.TestCase):
+	def should_load_level_passage(self):
+		stream = StringIO(str(VERSION) + '\x00Door\x001')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Appliances', {'Door':Door})
+		door = reader.read(appliances.Appliance)
+		self.assertEqual(type(door), Door)
+		self.assertTrue(door.is_closed())
+	def should_save_level_passage(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		door = Door(False)
+		writer.write(door)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Door\x000')
+	def should_open_and_close_door(self):
+		door = Door(True)
+		self.assertTrue(door.is_closed())
+		door.open()
+		self.assertFalse(door.is_closed())
+		door.close()
+		self.assertTrue(door.is_closed())
+
+		door.toggle()
+		self.assertFalse(door.is_closed())
+		door.toggle()
+		self.assertTrue(door.is_closed())
+	def should_make_door_impassable_when_closed(self):
+		door = Door(True)
+		self.assertFalse(door.passable)
+		door.open()
+		self.assertTrue(door.passable)
+		door.close()
+		self.assertFalse(door.passable)
+	def should_switch_sprites_when_door_is_closed(self):
+		door = Door(True)
+		self.assertEqual(door.sprite, Door._closed_sprite)
+		door.open()
+		self.assertEqual(door.sprite, Door._opened_sprite)
+		door.close()
+		self.assertEqual(door.sprite, Door._closed_sprite)
+
 class TestLevelPassages(unittest.TestCase):
 	def should_load_level_passage(self):
 		stream = StringIO(str(VERSION) + '\x00StairsDown\x00next_level\x00enter')

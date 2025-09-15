@@ -170,16 +170,20 @@ class BSPDungeon(builders.Builder):
 		builder = BSPBuilder(grid,
 								 free=lambda: 'floor',
 								 obstacle=lambda: 'wall',
-								 door=lambda: 'floor',
+								 door=lambda: 'doorway',
 						 )
+		self.doors = []
 		for splitter in partition.generate(Point(1, 1), Point(self.size.width - 2, self.size.height - 2)):
 			Log.debug("Splitter: {0}".format(splitter))
 			builder.fill(*splitter)
+			self.doors.append(splitter[-1])
 	def is_open(self, pos):
 		return self.grid.cell(pos) == 'floor'
 	def generate_appliances(self):
 		yield self.point(self.is_accessible), 'start'
 		yield self.point(self.is_accessible), 'exit', 0 # TODO proper next_level_id
+		for door_pos in self.doors:
+			yield door_pos, self.rng.choice(('opened_door', 'closed_door'))
 
 class CityBuilder(builders.Builder):
 	""" A city block of buildings, surrounded by a thick wall.

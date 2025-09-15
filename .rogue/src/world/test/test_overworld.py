@@ -19,6 +19,9 @@ class MockVoidBuilder(overworld.Builder):
 		def colored_monster(pos, *data):
 			return Rat(pos)
 		@staticmethod
+		def closed_door():
+			return Door(True)
+		@staticmethod
 		def dungeon_entrance():
 			return StairsDown('dungeon/0', 'exit')
 		@staticmethod
@@ -32,6 +35,7 @@ class MockBuilder(object):
 		bog = sand = ice = grass = snow = frozen_ground = dead_tree = plant = Floor()
 		tree = rock = bush = swamp_tree = Wall()
 	def _add_building(self, grid):
+		self._door = Point(0, 1)
 		return Rect((0, 0), (2, 2))
 class MockForest(MockBuilder, overworld.Forest): pass
 class MockDesert(MockBuilder, overworld.Desert): pass
@@ -62,15 +66,9 @@ class TestBuilders(unittest.TestCase):
 			})
 	def should_generate_buildings_with_rogue_dungeon_entrances(self):
 		grid = Matrix((16, 16))
-		"""
-		for i in range(10000):
-			builder = MockVoidBuilder(RNG(i), grid)
-			builder.generate()
-			self.assertFalse(len(builder.appliances) == 1 and 'wall' in builder.grid.tostring(), msg=i)
-			"""
 		builder = MockVoidBuilder(RNG(1263), grid)
 		builder.generate()
-		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#'), unittest.dedent("""\
+		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#').replace('closed_door', '+'), unittest.dedent("""\
 				________________
 				________________
 				__######________
@@ -89,14 +87,15 @@ class TestBuilders(unittest.TestCase):
 				________________
 				"""))
 		self.assertFalse(builder.actors)
-		self.assertEqual(dict(builder.appliances), {Point(5, 5):[
-			('rogue_dungeon_entrance', '23606'),
-			]})
+		self.assertEqual(dict(builder.appliances), {
+			Point(5, 5):[('rogue_dungeon_entrance', '23606')],
+			Point(6, 7):[('closed_door',)],
+			})
 	def should_generate_buildings_with_doors_and_dwellers(self):
 		grid = Matrix((16, 16))
 		builder = MockVoidBuilder(RNG(0), grid)
 		builder.generate()
-		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#'), unittest.dedent("""\
+		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#').replace('closed_door', '+'), unittest.dedent("""\
 				________________
 				________________
 				___########_____
@@ -120,7 +119,7 @@ class TestBuilders(unittest.TestCase):
 
 		builder = MockVoidBuilder(RNG(181), grid)
 		builder.generate()
-		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#'), unittest.dedent("""\
+		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#').replace('closed_door', '+'), unittest.dedent("""\
 				________________
 				________________
 				________________
@@ -141,7 +140,7 @@ class TestBuilders(unittest.TestCase):
 
 		builder = MockVoidBuilder(RNG(253), grid)
 		builder.generate()
-		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#'), unittest.dedent("""\
+		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#').replace('closed_door', '+'), unittest.dedent("""\
 				________________
 				________________
 				___######_______
@@ -162,7 +161,7 @@ class TestBuilders(unittest.TestCase):
 
 		builder = MockVoidBuilder(RNG(362), grid)
 		builder.generate()
-		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#'), unittest.dedent("""\
+		self.assertEqual(builder.grid.tostring().replace('void', '_').replace('floor', '.').replace('wall', '#').replace('closed_door', '+'), unittest.dedent("""\
 				________________
 				________________
 				________________

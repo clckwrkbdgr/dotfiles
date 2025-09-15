@@ -9,7 +9,7 @@ from src.engine import events, auto, vision
 from hud import *
 from world import *
 
-SAVEFILE_VERSION = 18
+SAVEFILE_VERSION = 19
 
 import click
 @click.command()

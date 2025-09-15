@@ -289,13 +289,54 @@ class TestMainGameControls(MainGameTestCase):
 		self.assertEqual(self.game.current_scene_id, 'floor')
 		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
 		_                              _
-		_.....                         _
-		_.....                         _
-		_..@..                         _
-		_~....                         _
-		_.....                         _
+		_...#                          _
+		_...#                          _
+		_..@##                         _
+		_...#.                         _
+		_...##                         _
 		_                              _
 		""").replace('_', ''))
+	def should_open_doors(self):
+		self.game.travel(self.game.scene.get_player(), 'tomb')
+		self.mock_ui.key('OnlO')
+
+		self.assertTrue(self.loop.action())
+		self.mode.draw_map(self.mock_ui)
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_                              _
+		_                              _
+		_ ###                          _
+		_ #@##                         _
+		_ #...                         _
+		_ ####                         _
+		_                              _
+		""").replace('_', ''))
+		self.assertEqual(self.game.events, [
+			Events.Welcome(),
+			Events.NothingToOpen(),
+			])
+		list(self.game.process_events(raw=True))
+
+		self.assertTrue(self.loop.action())
+		list(self.game.process_events(raw=True))
+		self.assertTrue(self.loop.action())
+		list(self.game.process_events(raw=True))
+
+		self.assertTrue(self.loop.action())
+		self.game.update_vision()
+		self.mode.draw_map(self.mock_ui)
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_                              _
+		_##                            _
+		_<####                         _
+		_..@.#                         _
+		_###-#                         _
+		_  #.#                         _
+		_                              _
+		""").replace('_', ''))
+		self.assertEqual(self.game.events, [
+			Events.ToggledDoor(next(self.game.scene.iter_appliances_at(Point(4, 3))), False),
+			])
 
 class TestAim(MainGameTestCase):
 	def should_start_aim_mode(self):

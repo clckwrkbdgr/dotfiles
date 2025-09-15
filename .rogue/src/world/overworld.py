@@ -91,7 +91,9 @@ class Builder(builders.Builder):
 		self._building = self.rng.randrange(50) == 0
 		if self._building:
 			self._building = self._add_building(grid)
-		self._stairs = self.rng.randrange(50) == 0
+			self._stairs = self.rng.randrange(10) == 0
+		else:
+			self._stairs = self.rng.randrange(50) == 0
 	def _add_building(self, grid):
 		building = Rect(
 				Point(2 + self.rng.randrange(3), 2 + self.rng.randrange(3)),
@@ -109,15 +111,16 @@ class Builder(builders.Builder):
 		if self.rng.randrange(2) == 0:
 			door = building.top + 1 + self.rng.randrange(building.height - 2)
 			if self.rng.randrange(2) == 0:
-				grid.set_cell((building.left, door), 'floor')
+				self._door = Point(building.left, door)
 			else:
-				grid.set_cell((building.right, door), 'floor')
+				self._door = Point(building.right, door)
 		else:
 			door = building.left + 1 + self.rng.randrange(building.width - 2)
 			if self.rng.randrange(2) == 0:
-				grid.set_cell((door, building.top), 'floor')
+				self._door = Point(door, building.top)
 			else:
-				grid.set_cell((door, building.bottom), 'floor')
+				self._door = Point(door, building.bottom)
+		grid.set_cell(self._door, 'floor')
 		return building
 	def is_open(self, pos):
 		return self.grid.cell(pos) == 'floor'
@@ -131,6 +134,8 @@ class Builder(builders.Builder):
 				yield stairs_pos, 'rogue_dungeon_entrance', str(self.rng.randrange(100000))
 			else:
 				yield self.point(self.is_accessible), 'dungeon_entrance'
+		if self._building:
+			yield self._door, 'closed_door'
 	def generate_actors(self):
 		if self._stairs:
 			return

@@ -5,6 +5,37 @@ class Appliance(entity.Entity):
 	_metainfo_key = 'Appliances'
 	passable = classfield('_passable', True) # allow free movement through the structure.
 
+class Door(Appliance):
+	""" Base for object that can be opened/closed.
+	Passability and sprite depend on the state.
+	At least closed_sprite must be defined.
+	"""
+	opened_sprite = classfield('_opened_sprite', None)
+	closed_sprite = classfield('_closed_sprite', None)
+	def __init__(self, closed=False):
+		self._closed = closed
+	def load(self, stream):
+		self._closed = bool(stream.read(int))
+	def save(self, stream):
+		super(Door, self).save(stream)
+		stream.write(self._closed)
+	@property
+	def passable(self):
+		return not self._closed
+	@property
+	def sprite(self):
+		if not self._closed and self.opened_sprite:
+			return self.opened_sprite
+		return self.closed_sprite
+	def is_closed(self):
+		return self._closed
+	def open(self):
+		self._closed = False
+	def close(self):
+		self._closed = True
+	def toggle(self):
+		self._closed = not self._closed
+
 class LevelPassage(Appliance):
 	""" Object that allows travel between levels.
 	Each passage should be connected to another passage on target level.
