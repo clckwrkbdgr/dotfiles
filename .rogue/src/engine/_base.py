@@ -141,6 +141,14 @@ class Events:
 		State shows if it is closed now.
 		"""
 		FIELDS = 'obj state'
+	class Unlocked(events.Event):
+		""" Object was unlocked.
+		"""
+		FIELDS = 'obj'
+	class Locked(events.Event):
+		""" Object was locked.
+		"""
+		FIELDS = 'obj'
 
 class Game(object):
 	""" Main object for the game mechanics.
@@ -696,9 +704,22 @@ class Game(object):
 		if not doors:
 			self.fire_event(Events.NothingToOpen())
 			return False
+		ok = True
 		for door in doors:
-			door.toggle()
-			actor.spend_action_points()
+			try:
+				door.toggle()
+				actor.spend_action_points()
+			except door.Locked as e:
+				try:
+					door.unlock(actor)
+					actor.spend_action_points()
+					self.fire_event(Events.Unlocked(door))
+					door.toggle()
+					actor.spend_action_points()
+				except door.Locked as e:
+					self.fire_event(Events.NeedKey(e.key_item_type))
+					ok = False
+					continue
 			self.fire_event(Events.ToggledDoor(door, door.is_closed()))
 		return True
 

@@ -49,6 +49,10 @@ class Gold(items.Item):
 	_sprite = Sprite('*', None)
 	_name = 'gold'
 
+class SkeletonKey(items.Item):
+	_sprite = Sprite('*', 'bold_white')
+	_name = 'skeleton key'
+
 class Potion(items.Item, items.Consumable):
 	_sprite = Sprite('!', None)
 	_name = 'potion'
@@ -88,6 +92,12 @@ class Door(appliances.Door):
 	_closed_sprite = Sprite('+', None)
 	_opened_sprite = Sprite('-', None)
 	_name = 'door'
+
+class LockedDoor(appliances.LockedDoor):
+	_closed_sprite = Sprite('+', 'red')
+	_opened_sprite = Sprite('-', 'red')
+	_name = 'metal door'
+	_unlocking_item = SkeletonKey
 
 class Tree(appliances.Appliance):
 	_sprite = Sprite('&', None)
@@ -426,7 +436,7 @@ class Tomb(builders.Builder):
 		@staticmethod
 		def start(): return StairsUp('floor', 'exit')
 		@staticmethod
-		def closed_door(): return Door(True)
+		def metal_door(): return LockedDoor(True, False)
 		wall = Wall()
 		void = Void()
 		_ = {
@@ -459,7 +469,7 @@ class Tomb(builders.Builder):
 		return self.grid.cell(pos) == 'corridor_floor'
 	def generate_appliances(self):
 		yield self._start, 'start'
-		yield self.point(self.is_accessible), 'closed_door'
+		yield self.point(self.is_accessible), 'metal_door'
 
 class DungeonFloor(builders.Builder):
 	class Mapping:

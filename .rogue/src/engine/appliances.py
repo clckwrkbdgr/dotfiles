@@ -36,12 +36,7 @@ class Door(Appliance):
 	def toggle(self):
 		self._closed = not self._closed
 
-class LevelPassage(Appliance):
-	""" Object that allows travel between levels.
-	Each passage should be connected to another passage on target level.
-	Passages on the same level are differentiated by ID.
-	Passage ID can be an arbitrary value.
-	"""
+class LockedObject(object):
 	class Locked(Exception):
 		""" Should be thrown when passage is locked
 		and requires item of specific type to travel through.
@@ -51,10 +46,54 @@ class LevelPassage(Appliance):
 		def __str__(self):
 			return "Locked; required {0} to unlock".format(self.key_item_type.__name__)
 
+	unlocking_item = classfield('_unlocking_item', None) # Type of item that unlocks appliance; by default (None) allows usage unconditionally.
+	def check_lock(self, user=None, lock_id=None):
+		if not self.unlocking_item:
+			return
+		if not (user and user.has_item(self.unlocking_item)):
+			raise self.Locked(self.unlocking_item)
+
+class LockedDoor(Door, LockedObject):
+	def __init__(self, closed=False, locked=False):
+		self._closed = closed
+		self._locked = locked
+	def load(self, stream):
+		super(LockedDoor, self).load(stream)
+		self._locked = bool(stream.read(int))
+	def save(self, stream):
+		super(LockedDoor, self).save(stream)
+		stream.write(self._locked)
+	def is_locked(self):
+		return self._locked
+	def lock(self, user):
+		self.check_lock(user)
+		self._locked = True
+	def unlock(self, user):
+		self.check_lock(user)
+		self._locked = False
+	def open(self):
+		if self._locked:
+			self.check_lock()
+		super(LockedDoor, self).open()
+	def close(self):
+		if self._locked:
+			self.check_lock()
+		super(LockedDoor, self).close()
+	def toggle(self):
+		if self._locked:
+			self.check_lock()
+		super(LockedDoor, self).toggle()
+
+class LevelPassage(Appliance, LockedObject):
+	""" Object that allows travel between levels.
+	Each passage should be connected to another passage on target level.
+	Passages on the same level are differentiated by ID.
+	Passage ID can be an arbitrary value.
+	"""
+
 	id = classfield('_id', 'enter') # ID of passage that can be used as a target during travelling.
 	can_go_down = classfield('_can_go_down', False)
 	can_go_up = classfield('_can_go_up', False)
-	unlocking_item = classfield('_unlocking_item', None) # Type of item that unlocks travel; by default (None) allows travel unconditionally.
 
 	def __init__(self, level_id=None, connected_passage=None):
 		""" Creates level passage linked to specified level/passage. """
@@ -72,9 +111,7 @@ class LevelPassage(Appliance):
 		If passage requires item to unlock, checks user's inventory beforehand
 		and throws Locked() if item is missing.
 		"""
-		if self.unlocking_item:
-			if not user.has_item(self.unlocking_item):
-				raise self.Locked(self.unlocking_item)
+		self.check_lock(user)
 		return self.level_id, self.connected_passage
 
 class ObjectAtPos(entity.EntityAtPos):

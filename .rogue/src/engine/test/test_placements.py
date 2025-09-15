@@ -51,14 +51,14 @@ class TestAppliancesSavefile(unittest.TestCase):
 		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Statue\x00goddess')
 
 class TestDoors(unittest.TestCase):
-	def should_load_level_passage(self):
+	def should_load_door(self):
 		stream = StringIO(str(VERSION) + '\x00Door\x001')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Appliances', {'Door':Door})
 		door = reader.read(appliances.Appliance)
 		self.assertEqual(type(door), Door)
 		self.assertTrue(door.is_closed())
-	def should_save_level_passage(self):
+	def should_save_door(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, VERSION)
 		door = Door(False)
@@ -90,6 +90,53 @@ class TestDoors(unittest.TestCase):
 		self.assertEqual(door.sprite, Door._opened_sprite)
 		door.close()
 		self.assertEqual(door.sprite, Door._closed_sprite)
+
+class TestLockedDoors(unittest.TestCase):
+	def should_load_locked_door(self):
+		stream = StringIO(str(VERSION) + '\x00LockedDoor\x001\x001')
+		reader = savefile.Reader(stream)
+		reader.set_meta_info('Appliances', {'LockedDoor':LockedDoor})
+		door = reader.read(appliances.Appliance)
+		self.assertEqual(type(door), LockedDoor)
+		self.assertTrue(door.is_closed())
+		self.assertTrue(door.is_locked())
+	def should_save_locked_door(self):
+		stream = StringIO()
+		writer = savefile.Writer(stream, VERSION)
+		door = LockedDoor(False, True)
+		writer.write(door)
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00LockedDoor\x000\x001')
+	def should_unlock_door(self):
+		rogue = Rogue(None)
+		door = LockedDoor(True, True)
+		with self.assertRaises(LockedDoor.Locked):
+			door.unlock(rogue)
+		rogue.grab(SkeletonKey())
+		door.unlock(rogue)
+		self.assertFalse(door.is_locked())
+		door.lock(rogue)
+		self.assertTrue(door.is_locked())
+	def should_open_and_close_unlocked_door(self):
+		door = LockedDoor(True, False)
+		self.assertTrue(door.is_closed())
+		door.open()
+		self.assertFalse(door.is_closed())
+		door.close()
+		self.assertTrue(door.is_closed())
+
+		door.toggle()
+		self.assertFalse(door.is_closed())
+		door.toggle()
+		self.assertTrue(door.is_closed())
+	def should_not_allow_usage_of_locked_door(self):
+		door = LockedDoor(True, True)
+		with self.assertRaises(LockedDoor.Locked):
+			door.open()
+		door = LockedDoor(False, True)
+		with self.assertRaises(LockedDoor.Locked):
+			door.close()
+		with self.assertRaises(LockedDoor.Locked):
+			door.toggle()
 
 class TestLevelPassages(unittest.TestCase):
 	def should_load_level_passage(self):

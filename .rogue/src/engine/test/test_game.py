@@ -295,6 +295,40 @@ class TestMovement(AbstractTestDungeon):
 				##########
 				"""))
 
+class TestDoors(AbstractTestDungeon):
+	def should_unlock_doors_before_usage(self):
+		rogue = self.game.scene.get_player()
+		self.game.travel(rogue, 'tomb', 'enter')
+		self.game.jump_to(rogue, Point(3, 2))
+		door = next(self.game.scene.iter_appliances_at(Point(4, 3)))
+		door._locked = True
+		list(self.game.process_events(raw=True)) # Clear events.
+
+		self.game.toggle_nearby_doors(rogue)
+		self.assertTrue(door.is_locked())
+		self.assertTrue(door.is_closed())
+		self.assertEqual(self.game.events, [
+			_base.Events.NeedKey(key=SkeletonKey),
+			])
+		list(self.game.process_events(raw=True)) # Clear events.
+
+		rogue.grab(SkeletonKey())
+		self.game.toggle_nearby_doors(rogue)
+		self.assertFalse(door.is_locked())
+		self.assertFalse(door.is_closed())
+		self.assertEqual(self.game.events, [
+			_base.Events.Unlocked(door),
+			_base.Events.ToggledDoor(door, False),
+			])
+		list(self.game.process_events(raw=True)) # Clear events.
+
+		self.game.toggle_nearby_doors(rogue)
+		self.assertFalse(door.is_locked())
+		self.assertTrue(door.is_closed())
+		self.assertEqual(self.game.events, [
+			_base.Events.ToggledDoor(door, True),
+			])
+
 class TestItems(AbstractTestDungeon):
 	def should_drop_item(self):
 		game = self.game
