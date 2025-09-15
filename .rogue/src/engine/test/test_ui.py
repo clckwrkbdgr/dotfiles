@@ -70,6 +70,8 @@ class MockMainGame(ui.MainGame):
 				self.game.scene.get_player().pos - Point(2, 2),
 				Size(5, 5),
 				)
+	def get_viewport(self):
+		return Size(3, 3)
 
 class MainGameTestCase(unittest.TestCase):
 	def setUp(self):
@@ -88,7 +90,7 @@ class TestMainGameDisplay(MainGameTestCase):
 		mode, mock_ui = self.mode, self.mock_ui
 		mode.game.update_vision()
 		self.assertEqual(mode.get_sprite(Point(0, 5)), ui.Sprite('#', None))
-		self.assertEqual(mode.get_sprite(Point(1, 5)), ui.Sprite('@', None))
+		self.assertEqual(mode.get_sprite(Point(1, 5)), ui.Sprite('@', 'bold_white'))
 		mode.game.scene.get_player().pos = Point(1, 1)
 		mode.game.update_vision()
 		self.assertEqual(mode.get_sprite(Point(3, 2)), ui.Sprite('&', None))
@@ -886,3 +888,38 @@ class TestInventory(MainGameTestCase):
 		self.assertFalse(self.loop.action()) # b
 		self.assertEqual(self.game.scene.get_player().inventory, [dagger, rags])
 		self.assertIsNone(self.game.scene.get_player().wearing)
+
+class TestMap(MainGameTestCase):
+	def should_show_map(self):
+		self.mock_ui.key('M ')
+		self.game.scene._map = Matrix((3, 3))
+		self.game.scene._map.set_cell((0, 0), Floor._sprite)
+		self.game.scene._map.set_cell((1, 0), ToxicWaste._sprite)
+		self.game.scene._map.set_cell((0, 1), StairsDown._sprite)
+		self.game.scene._map.set_cell((1, 1), Rogue._sprite)
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_.~                            _
+		_>@                            _
+		_                              _
+		_[Press Any Key...]            _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())
+	def should_show_no_map_if_does_not_support(self):
+		self.mock_ui.key('M ')
+		self.assertTrue(self.loop.action())
+		self.loop.redraw()
+		self.assertEqual(self.mock_ui.screen.tostring(), unittest.dedent("""\
+		_No map for current location.  _
+		_[Press Any Key...]            _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		_                              _
+		""").replace('_', ''))
+		self.assertFalse(self.loop.action())

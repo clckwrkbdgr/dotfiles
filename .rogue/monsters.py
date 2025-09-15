@@ -16,6 +16,7 @@ class Rogue(actors.EquippedMonster, actors.Player):
 	_name = 'rogue'
 	_vision = 10
 	_attack = 1
+	_max_quests = 20
 	_hostile_to = [Beast, RealMonster]
 	init_max_hp = 10
 	_max_inventory = 26

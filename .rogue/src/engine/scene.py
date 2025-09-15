@@ -82,6 +82,13 @@ class Scene(object):
 		if objects:
 			return objects[-1].sprite
 		return cell.sprite if cell is not None else None
+	def make_map(self, size): # pragma: no cover
+		""" Should make Matrix of Sprites of given size
+		that depicts current global map (positioning and centering may depend
+		on actual implementation).
+		By default returns None (no map available from this scene).
+		"""
+		return None
 
 	def get_area_rect(self): # pragma: no cover
 		""" Should return maximum addressable rect,

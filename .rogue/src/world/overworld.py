@@ -1,11 +1,11 @@
 import string
-from collections import namedtuple
-from clckwrkbdgr.math.grid import NestedGrid
+from collections import namedtuple, Counter
+from clckwrkbdgr.math.grid import NestedGrid, Matrix
 import clckwrkbdgr.math
 from clckwrkbdgr import utils
 from clckwrkbdgr.pcg import RNG
 from clckwrkbdgr.math import Point, Rect, Size
-from ..engine import builders, vision, scene
+from ..engine import builders, vision, scene, auto
 from ..engine.items import ItemAtPos
 from ..engine.appliances import ObjectAtPos, LevelPassage
 from ..engine.actors import Actor, Player, Questgiver
@@ -23,6 +23,21 @@ class FieldData(object):
 		self.items = []
 		self.monsters = []
 		self.appliances = []
+		self._terrain_sprite = None
+	def get_map_sprite(self, terrain):
+		if not self._terrain_sprite:
+			counter = Counter(terrain.values())
+			self._terrain_sprite = counter.most_common(1)[0][0].sprite
+		if self.monsters:
+			character = next((_ for _ in self.monsters if isinstance(_, Player)), None)
+			if not character:
+				character = next((_ for _ in self.monsters if isinstance(_, Questgiver)), None)
+			if character:
+				return character.sprite
+		if self.appliances:
+			appliance = next(iter(self.appliances)).obj
+			return appliance.sprite
+		return self._terrain_sprite
 	def save(self, stream):
 		stream.write(len(self.items))
 		for item in self.items:
@@ -453,7 +468,29 @@ class Scene(scene.Scene):
 		# Performing full lookup:
 		player, self._cached_player_pos = next(((monster, coord) for coord, monster in self.all_monsters(raw=True) if isinstance(monster, Player)), (None, None))
 		return player, self._cached_player_pos
+	def make_map(self, size):
+		center = NestedGrid.Coord(*(self.get_player_coord().values[:-1]))
+		global_center = center.get_global(self.world)
+		half_size = Point(size.width // 2, size.height // 2)
+		viewrect = Rect(global_center - half_size, size)
+		result = Matrix(size)
+		for pos in viewrect.size.iter_points():
+			world_pos = pos + viewrect.topleft
+			world_pos.x *= self.SIZE[-1][0]
+			world_pos.y *= self.SIZE[-1][1]
+			coord = NestedGrid.Coord.from_global(world_pos, self.world)
+			if not self.world.valid(coord):
+				continue
 
+			zone_index = coord.values[0]
+			zone = self.world.cells.cell(zone_index)
+			field_index = coord.values[1]
+			field = zone.cells.cell(field_index)
+			field_data = self.world.get_data(coord)[-1]
+
+			sprite = field_data.get_map_sprite(field.cells)
+			result.set_cell(pos, sprite)
+		return result
 	def get_global_pos(self, actor):
 		if actor == self.get_player():
 			actor_coord = self.get_player_coord()

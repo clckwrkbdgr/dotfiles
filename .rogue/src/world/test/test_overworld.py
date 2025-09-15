@@ -314,6 +314,38 @@ class TestScene(unittest.TestCase):
 		restored.load(reader)
 
 		self.assertEqual([_ is not None for _ in restored.world.cells.values()], [False] + [True] + [False] * 7)
+	def should_get_map_sprite(self):
+		scene = MockScene(BUILDERS, RNG(1))
+		scene.generate(None)
+		field = scene.world.cells.cell((1, 0)).cells.cell((1, 1))
+		self.assertEqual(field.data.get_map_sprite(field.cells), Floor._sprite)
+
+		field.data.appliances.append(
+				ObjectAtPos(Point(0, 0), StairsDown('dungeon/0', 'exit'))
+				)
+		self.assertEqual(field.data.get_map_sprite(field.cells), StairsDown._sprite)
+
+		smith = Smith(None)
+		scene.enter_actor(smith, None)
+		self.assertEqual(field.data.get_map_sprite(field.cells), Smith._sprite)
+
+		rogue = Rogue(None)
+		scene.enter_actor(rogue, None)
+		self.assertEqual(field.data.get_map_sprite(field.cells), Rogue._sprite)
+	def should_get_full_map_of_the_area(self):
+		scene = MockScene(BUILDERS, RNG(1))
+		scene.generate(None)
+		field = scene.world.cells.cell((1, 0)).cells.cell((1, 0))
+		field.data.appliances.append(
+				ObjectAtPos(Point(0, 0), StairsDown('dungeon/0', 'exit'))
+				)
+		rogue = Rogue(None)
+		scene.enter_actor(rogue, None)
+		self.assertEqual(scene.make_map(Size(3, 3)).tostring(lambda c:c.sprite if c else '_'), unittest.dedent("""\
+				.>_
+				.@_
+				___
+				"""))
 	def should_enter_actor_at_start_pos(self):
 		scene = MockScene(BUILDERS, RNG(1))
 		scene.generate(None)

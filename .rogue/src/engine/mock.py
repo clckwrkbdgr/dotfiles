@@ -149,7 +149,7 @@ class Butterfly(actors.Actor, Insect):
 
 class Rogue(actors.EquippedMonster, actors.Player):
 	_hostile_to = [actors.Monster]
-	_sprite = Sprite('@', None)
+	_sprite = Sprite('@', 'bold_white')
 	_name = 'rogue'
 	_attack = 1
 	_vision = 2
@@ -306,6 +306,7 @@ class Dungeon(scene.Scene):
 		self.appliances = []
 		self.items = []
 		self.monsters = []
+		self._map = None
 	def load(self, reader):
 		super(Dungeon, self).load(reader)
 		self.cells = reader.read_matrix(terrain.Terrain)
@@ -321,6 +322,8 @@ class Dungeon(scene.Scene):
 		if isinstance(actor, actors.Player):
 			return Vision(self)
 		return MonsterVision(self)
+	def make_map(self, size):
+		return self._map
 	def get_area_rect(self): return Rect((0, 0), self.cells.size)
 	def generate_dungeon_floor(self):
 		builder = DungeonFloor(self.rng, Size(10, 10))

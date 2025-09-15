@@ -136,14 +136,12 @@ class MainGame(ui.MainGame):
 
 	@functools.lru_cache()
 	def get_viewport(self):
-		viewport = Rect((0, 0), (61, 23))
-		center = Point(*(viewport.size // 2))
-		return Rect((-center.x, -center.y), viewport.size)
+		return Size(61, 23)
 
 	def get_viewrect(self):
 		viewport = self.get_viewport()
 		area_rect = self.game.scene.get_area_rect()
-		if area_rect.size.width <= viewport.size.width and area_rect.size.height <= viewport.size.height:
+		if area_rect.size.width <= viewport.width and area_rect.size.height <= viewport.height:
 			return area_rect
 		player = self.game.scene.get_player()
 		if player:
@@ -151,8 +149,9 @@ class MainGame(ui.MainGame):
 			self._old_pos = pos
 		else:
 			pos = self._old_pos
-		Log.debug('Viewport: {0} at pos {1}'.format(viewport, pos))
-		return Rect(pos + viewport.topleft, viewport.size)
+		viewport_center = Point(*(viewport // 2))
+		Log.debug('Viewport: {0}x{1} at pos {2}'.format(viewport_center, viewport, pos))
+		return Rect(pos - viewport_center, viewport)
 	def get_map_shift(self):
 		return Point(0, 0)
 	def get_message_line_rect(self):

@@ -113,6 +113,9 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		By default starts at the (0;0) and width is 80.
 		"""
 		return Rect(Point(0, 0), Size(80, 1))
+	def get_viewport(self): # pragma: no cover
+		""" Should return Size of a map view port. """
+		raise NotImplementedError()
 	def get_viewrect(self): # pragma: no cover
 		""" Should return Rect (in world coordinates)
 		that defines what part of the current map is to be displayed
@@ -336,6 +339,30 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		if len(npcs) > 1:
 			return DirectionDialogMode(on_direction=_chat_with_npc)
 		return _chat_with_npc(npcs[0])
+	@_MainKeys.bind('M')
+	def show_map(self):
+		""" Show map. """
+		return MapScreen(self.game.scene, self.get_viewport())
+
+class MapScreen(clckwrkbdgr.tui.Mode):
+	""" Map of the surrounding area (if Scene allows). """
+	def __init__(self, scene, size):
+		self.scene = scene
+		self.size = size
+	def redraw(self, ui):
+		area_map = self.scene.make_map(self.size)
+		if not area_map:
+			ui.print_line(0, 0, 'No map for current location.')
+			ui.print_line(1, 0, '[Press Any Key...]')
+			return
+		for pos in area_map:
+			sprite = area_map.cell(pos)
+			if not sprite:
+				continue
+			ui.print_char(pos.x, pos.y, sprite.sprite, sprite.color)
+		ui.print_line(area_map.height, 0, '[Press Any Key...]')
+	def action(self, control):
+		return False
 
 class HelpScreen(clckwrkbdgr.tui.Mode):
 	""" Main help screen with controls cheatsheet. """
