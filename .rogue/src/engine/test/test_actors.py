@@ -20,29 +20,34 @@ class TestActors(unittest.TestCase):
 		self.assertEqual(repr(dragonfly), 'Dragonfly(dragonfly @[1, 1])')
 	def should_spend_action_points(self):
 		dragonfly = Dragonfly(Point(1, 1))
-		self.assertEqual(dragonfly.action_points, True)
+		self.assertAlmostEqual(dragonfly.action_points, 1.0)
 		self.assertFalse(dragonfly.has_acted())
-		dragonfly.spend_action_points()
-		self.assertEqual(dragonfly.action_points, False)
+		dragonfly.spend_action_points(0.7)
+		self.assertAlmostEqual(dragonfly.action_points, 0.3)
+		self.assertFalse(dragonfly.has_acted())
+		dragonfly.spend_action_points(0.7)
+		self.assertAlmostEqual(dragonfly.action_points, -0.4)
 		self.assertTrue(dragonfly.has_acted())
-		dragonfly.add_action_points()
-		self.assertEqual(dragonfly.action_points, True)
+		dragonfly.add_action_points(1.0)
+		self.assertAlmostEqual(dragonfly.action_points, 0.6)
 		self.assertFalse(dragonfly.has_acted())
 	def should_load_actor(self):
-		stream = StringIO(str(VERSION) + '\x00Dragonfly\x001\x002')
+		stream = StringIO(str(VERSION) + '\x00Dragonfly\x001\x002\x00-0.7')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'Dragonfly':Dragonfly})
 		actor = reader.read(actors.Actor)
 		self.assertEqual(type(actor), Dragonfly)
 		self.assertEqual(actor.pos, Point(1, 2))
+		self.assertAlmostEqual(actor.action_points, -0.7)
 	def should_save_actor(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, VERSION)
 		actor = Dragonfly(Point(1, 2))
+		actor.spend_action_points(1.3)
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Dragonfly\x001\x002')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Dragonfly\x001\x002\x00-0.3')
 	def should_load_actor_with_custom_properties(self):
-		stream = StringIO(str(VERSION) + '\x00Butterfly\x001\x002\x00red')
+		stream = StringIO(str(VERSION) + '\x00Butterfly\x001\x002\x001.0\x00red')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'Butterfly':Butterfly})
 		actor = reader.read(actors.Actor)
@@ -54,7 +59,7 @@ class TestActors(unittest.TestCase):
 		writer = savefile.Writer(stream, VERSION)
 		actor = Butterfly(Point(1, 2), color='red')
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Butterfly\x001\x002\x00red')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Butterfly\x001\x002\x001.0\x00red')
 
 class TestMonsters(unittest.TestCase):
 	def should_str_monster(self):
@@ -62,7 +67,7 @@ class TestMonsters(unittest.TestCase):
 		self.assertEqual(str(rat), 'rat')
 		self.assertEqual(repr(rat), 'Rat(rat @[1, 1] 10/10hp)')
 	def should_load_monster(self):
-		stream = StringIO(str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00Potion')
+		stream = StringIO(str(VERSION) + '\x00Rat\x001\x002\x001.0\x0010\x001\x00Potion')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'Rat':Rat})
 		reader.set_meta_info('Items', {'Potion':Potion})
@@ -76,7 +81,7 @@ class TestMonsters(unittest.TestCase):
 		actor = Rat(Point(1, 2))
 		actor.grab(Potion())
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Rat\x001\x002\x0010\x001\x00Potion')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Rat\x001\x002\x001.0\x0010\x001\x00Potion')
 	def should_detect_alive_monster(self):
 		rat = Rat(Point(1, 1))
 		self.assertTrue(rat.is_alive())
@@ -233,7 +238,7 @@ class TestMonsters(unittest.TestCase):
 
 class TestEquippedMonsters(unittest.TestCase):
 	def should_load_equpped_monster(self):
-		stream = StringIO(str(VERSION) + '\x00Goblin\x001\x002\x0010\x000\x001\x00Dagger\x001\x00Rags')
+		stream = StringIO(str(VERSION) + '\x00Goblin\x001\x002\x001.0\x0010\x000\x001\x00Dagger\x001\x00Rags')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'Goblin':Goblin})
 		reader.set_meta_info('Items', {'Dagger':Dagger,'Rags':Rags})
@@ -249,7 +254,7 @@ class TestEquippedMonsters(unittest.TestCase):
 		goblin.wielding = Dagger()
 		goblin.wearing = Rags()
 		writer.write(goblin)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Goblin\x001\x002\x0010\x000\x001\x00Dagger\x001\x00Rags')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Goblin\x001\x002\x001.0\x0010\x000\x001\x00Dagger\x001\x00Rags')
 	
 	def should_wield_items(self):
 		goblin = Goblin(Point(1, 2))
@@ -322,7 +327,7 @@ class TestEquippedMonsters(unittest.TestCase):
 
 class TestQuestgiver(unittest.TestCase):
 	def should_load_questgiver(self):
-		stream = StringIO(str(VERSION) + '\x00Doctor\x001\x002\x001\x000\x00.\x00RandomQuest\x000\x00Ottilie Harsham')
+		stream = StringIO(str(VERSION) + '\x00Doctor\x001\x002\x001.0\x001\x000\x00.\x00RandomQuest\x000\x00Ottilie Harsham')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'Doctor':Doctor})
 		reader.set_meta_info('Quests', {'RandomQuest':RandomQuest})
@@ -331,7 +336,7 @@ class TestQuestgiver(unittest.TestCase):
 		self.assertEqual(actor.pos, Point(1, 2))
 		self.assertEqual(type(actor.quest), RandomQuest)
 	def should_load_questgiver_without_quest(self):
-		stream = StringIO(str(VERSION) + '\x00Doctor\x001\x002\x001\x000\x00')
+		stream = StringIO(str(VERSION) + '\x00Doctor\x001\x002\x001.0\x001\x000\x00')
 		reader = savefile.Reader(stream)
 		reader.set_meta_info('Actors', {'Doctor':Doctor})
 		reader.set_meta_info('Quests', {'RandomQuest':RandomQuest})
@@ -345,13 +350,13 @@ class TestQuestgiver(unittest.TestCase):
 		actor = Doctor(Point(1, 2))
 		actor.prepare_chat(None)
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Doctor\x001\x002\x001\x000\x00.\x00RandomQuest\x000\x00Ottilie Harsham')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Doctor\x001\x002\x001.0\x001\x000\x00.\x00RandomQuest\x000\x00Ottilie Harsham')
 	def should_save_questgiver_without_quest(self):
 		stream = StringIO()
 		writer = savefile.Writer(stream, VERSION)
 		actor = Doctor(Point(1, 2))
 		writer.write(actor)
-		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Doctor\x001\x002\x001\x000\x00')
+		self.assertEqual(stream.getvalue(), str(VERSION) + '\x00Doctor\x001\x002\x001.0\x001\x000\x00')
 
 class TestBehaviour(AbstractTestDungeon):
 	def should_act_inert_and_attack_only_closest_enemy(self):

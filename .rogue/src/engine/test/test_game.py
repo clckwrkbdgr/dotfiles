@@ -55,8 +55,8 @@ class TestSerialization(AbstractTestDungeon):
 			Wall, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Floor, Wall,
 			Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall,
 			2,
-				'Butterfly', 3, 8, 'red',
-				'Rogue', 1, 5, 10, 1, 'Dagger', '0', '0',
+				'Butterfly', 3, 8, 1.0, 'red',
+				'Rogue', 1, 5, 1.0, 10, 1, 'Dagger', '0', '0',
 			1,
 				'ScribbledNote', 'welcome', 1, 2,
 			3,
@@ -110,7 +110,7 @@ class TestActionLoop(AbstractTestDungeon):
 		self.assertEqual(game.playing_time, 0)
 		self.assertEqual(list(game.process_events()), [])
 
-		game.scene.get_player().spend_action_points()
+		game.scene.get_player().spend_action_points(1.0)
 		self.assertTrue(game.scene.get_player().has_acted())
 		game.process_others()
 		self.assertEqual(game.playing_time, 1)
@@ -417,12 +417,14 @@ class TestItems(AbstractTestDungeon):
 		self.assertEqual(game.events, [_base.Events.NotWielding()])
 		self.assertFalse(game.scene.get_player().has_acted())
 
+		self.assertFalse(game.scene.get_player().has_acted())
 		list(game.process_events(raw=True)) # Clear events.
 		game.wield_item(game.scene.get_player(), dagger)
 		self.assertEqual(game.events, [_base.Events.Wield(game.scene.get_player(), dagger)])
 		self.assertTrue(game.scene.get_player().has_acted())
 
-		game.scene.get_player().add_action_points()
+		game.scene.get_player().add_action_points(3.0)
+		self.assertFalse(game.scene.get_player().has_acted())
 		list(game.process_events(raw=True)) # Clear events.
 		game.wield_item(game.scene.get_player(), potion)
 		self.assertEqual(game.events, [
@@ -431,7 +433,8 @@ class TestItems(AbstractTestDungeon):
 			])
 		self.assertTrue(game.scene.get_player().has_acted())
 
-		game.scene.get_player().add_action_points()
+		game.scene.get_player().add_action_points(3.0)
+		self.assertFalse(game.scene.get_player().has_acted())
 		list(game.process_events(raw=True)) # Clear events.
 		game.unwield_item(game.scene.get_player())
 		self.assertEqual(game.events, [
@@ -458,7 +461,8 @@ class TestItems(AbstractTestDungeon):
 		self.assertEqual(game.events, [_base.Events.Wear(game.scene.get_player(), rags)])
 		self.assertTrue(game.scene.get_player().has_acted())
 
-		game.scene.get_player().add_action_points()
+		game.scene.get_player().add_action_points(5.0)
+		self.assertFalse(game.scene.get_player().has_acted())
 		list(game.process_events(raw=True)) # Clear events.
 		game.wear_item(game.scene.get_player(), armor)
 		self.assertEqual(game.events, [
@@ -467,7 +471,8 @@ class TestItems(AbstractTestDungeon):
 			])
 		self.assertTrue(game.scene.get_player().has_acted())
 
-		game.scene.get_player().add_action_points()
+		game.scene.get_player().add_action_points(5.0)
+		self.assertFalse(game.scene.get_player().has_acted())
 		list(game.process_events(raw=True)) # Clear events.
 		game.take_off_item(game.scene.get_player())
 		self.assertEqual(game.events, [

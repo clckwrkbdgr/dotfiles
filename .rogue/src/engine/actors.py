@@ -12,21 +12,25 @@ class Actor(entity.Entity):
 	_metainfo_key = 'Actors'
 	vision = classfield('_vision', 0) # Radius of field of vision.
 
-	def __init__(self, pos):
+	def __init__(self, pos, action_points=1.0):
+		if isinstance(pos, dict): # For _additional_init in classmethod load()
+			pos, action_points = pos['p'], pos['ap']
 		self.pos = Point(pos) if pos else None
-		self.action_points = True # TODO should be proper counter for free action points left. Also should save them.
+		self.action_points = action_points
 	def __repr__(self):
 		return '{0}({1} @{2})'.format(type(self).__name__, self.name, self.pos)
 
 	def has_acted(self):
 		""" Returns True if there are no more free action points left. """
-		return not self.action_points # TODO should be a number.
-	def add_action_points(self, amount=None):
+		return self.action_points <= 0
+	def add_action_points(self, amount):
 		""" Adds free action points (usually at the start of new turn). """
-		self.action_points = True # TODO Should be a number and consider _amount_.
-	def spend_action_points(self, amount=None):
+		assert amount > 0
+		self.action_points += amount
+	def spend_action_points(self, amount):
 		""" Decreases free action points (when some action is performed). """
-		self.action_points = False # TODO Should be a number and consider _amount_.
+		assert amount > 0
+		self.action_points -= amount
 	def apply_auto_effects(self): # pragma: no cover
 		""" Apply any internal effects of on-going conditions at the end of current turn,
 		like regeneration or poison.
@@ -37,7 +41,7 @@ class Actor(entity.Entity):
 	def load(cls, reader):
 		""" Loads basic info about Actor object (class name and pos)
 		"""
-		return super(Actor, cls).load(reader, _additional_init=lambda r: r.read_point())
+		return super(Actor, cls).load(reader, _additional_init=lambda r: {'p':r.read_point(), 'ap':r.read(float)})
 	def save(self, writer):
 		""" Default implementation writes only class name and position.
 		Override to write additional subclass-specific properties.
@@ -45,6 +49,7 @@ class Actor(entity.Entity):
 		"""
 		super(Actor, self).save(writer)
 		writer.write(self.pos)
+		writer.write(round(self.action_points, 5)) # To cut off insignificant parts.
 
 class Behaviour(object):
 	""" Base trait for behavior.

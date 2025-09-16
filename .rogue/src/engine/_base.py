@@ -456,17 +456,17 @@ class Game(object):
 		Returns True is actual attack happened.
 		"""
 		if not actor.is_hostile_to(other):
-			actor.spend_action_points()
+			actor.spend_action_points(1.0)
 			self.fire_event(Events.BumpIntoActor(actor, other))
 			return False
 		damage = max(0, actor.get_attack_damage() - other.get_protection())
 		self.fire_event(Events.Attack(actor, other, damage))
 		self.affect_health(other, -damage)
 		self.update_vision()
-		actor.spend_action_points()
+		actor.spend_action_points(2.0)
 	def wait(self, actor):
 		""" Wait in place and do nothing for a turn. """
-		actor.spend_action_points()
+		actor.spend_action_points(1.0)
 	def move_actor(self, actor, shift):
 		""" Moves monster into given direction (if possible).
 		If there is a monster, performs .attack().
@@ -497,7 +497,7 @@ class Game(object):
 						passable = False
 						break
 		if not passable:
-			actor.spend_action_points()
+			actor.spend_action_points(1.0)
 			self.fire_event(Events.BumpIntoTerrain(actor, new_pos))
 			return False
 
@@ -505,7 +505,7 @@ class Game(object):
 
 		self.scene.transfer_actor(actor, new_pos)
 		self.fire_event(Events.Move(actor, new_pos))
-		actor.spend_action_points()
+		actor.spend_action_points(1.0)
 
 		if actor == self.scene.get_player():
 			self.scene.recalibrate(new_pos, Size(actor.vision, actor.vision))
@@ -524,7 +524,7 @@ class Game(object):
 
 		self.scene.drop_item(item)
 		self.fire_event(Events.DropItem(actor, item.item))
-		actor.spend_action_points()
+		actor.spend_action_points(1.0)
 		return True
 	def suicide(self, actor):
 		# No spending action points, because actor will be completely removed.
@@ -544,7 +544,7 @@ class Game(object):
 			actor.grab(item)
 			item = self.scene.take_item(items.ItemAtPos(pos, item))
 			self.fire_event(Events.GrabItem(actor, item))
-			actor.spend_action_points()
+			actor.spend_action_points(2.0)
 		except actor.InventoryFull:
 			self.fire_event(Events.InventoryIsFull(item))
 			return None
@@ -556,7 +556,7 @@ class Game(object):
 		"""
 		try:
 			events = actor.consume(item)
-			actor.spend_action_points()
+			actor.spend_action_points(3.0)
 			self.fire_event(Events.ConsumeItem(actor, item))
 			for event in events:
 				self.fire_event(event)
@@ -575,7 +575,7 @@ class Game(object):
 			if old_item:
 				self.fire_event(Events.Unwield(actor, old_item))
 			actor.wield(item)
-		actor.spend_action_points()
+		actor.spend_action_points(3.0)
 		self.fire_event(Events.Wield(actor, item))
 		return True
 	def unwield_item(self, actor):
@@ -584,7 +584,7 @@ class Game(object):
 		"""
 		item = actor.unwield()
 		if item:
-			actor.spend_action_points()
+			actor.spend_action_points(2.0)
 			self.fire_event(Events.Unwield(actor, item))
 		else:
 			self.fire_event(Events.NotWielding())
@@ -599,7 +599,7 @@ class Game(object):
 			old_item = actor.take_off()
 			self.fire_event(Events.TakeOff(actor, old_item))
 			actor.wear(item)
-		actor.spend_action_points()
+		actor.spend_action_points(5.0)
 		self.fire_event(Events.Wear(actor, item))
 		return True
 	def take_off_item(self, actor):
@@ -608,14 +608,14 @@ class Game(object):
 		else:
 			item = actor.take_off()
 			self.fire_event(Events.TakeOff(actor, item))
-			actor.spend_action_points()
+			actor.spend_action_points(3.0)
 		return True
 	def _use_passage(self, actor, level_passage, travel_event):
 		""" Use level passage object. """
 		try:
 			level_id, connected_passage = level_passage.use(actor)
 			self.travel(actor, level_id, connected_passage)
-			actor.spend_action_points()
+			actor.spend_action_points(1.0)
 			self.fire_event(travel_event(actor))
 			return True
 		except level_passage.Locked as e:
@@ -708,14 +708,14 @@ class Game(object):
 		for door in doors:
 			try:
 				door.toggle()
-				actor.spend_action_points()
+				actor.spend_action_points(1.0)
 			except door.Locked as e:
 				try:
 					door.unlock(actor)
-					actor.spend_action_points()
+					actor.spend_action_points(5.0)
 					self.fire_event(Events.Unlocked(door))
 					door.toggle()
-					actor.spend_action_points()
+					actor.spend_action_points(1.0)
 				except door.Locked as e:
 					self.fire_event(Events.NeedKey(e.key_item_type))
 					ok = False
@@ -736,7 +736,7 @@ class Game(object):
 		if not (self.scene.get_player() and self.scene.get_player().has_acted()):
 			return False
 		self.scene.get_player().apply_auto_effects()
-		self.scene.get_player().add_action_points()
+		self.scene.get_player().add_action_points(1.0)
 
 		for monster in list(self.scene.iter_active_monsters()):
 			if monster == self.scene.get_player():

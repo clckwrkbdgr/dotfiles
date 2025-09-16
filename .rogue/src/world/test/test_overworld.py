@@ -301,7 +301,7 @@ class TestScene(unittest.TestCase):
 					'0', '0', '0', '2', '2', 'Floor', 'Floor', 'Floor', 'Floor',
 						'1', 'Dagger', '1', '1',
 						'1', 'StairsDown', 'dungeon/0', 'exit', '0', '0',
-						'1', 'Rogue', '1', '1', '10', '0',
+						'1', 'Rogue', '1', '1', '1.0', '10', '0',
 					'0',
 					'0',
 					'', '', '', '', '', '', '',
