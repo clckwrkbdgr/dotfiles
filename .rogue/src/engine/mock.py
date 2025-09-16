@@ -74,6 +74,7 @@ class ChainMail(items.Item, items.Wearable):
 	_sprite = Sprite('[', None)
 	_name = 'chain mail'
 	_protection = 3
+	_speed_penalty = 2
 
 class ScribbledNote(items.Item):
 	_sprite = Sprite('?', None)

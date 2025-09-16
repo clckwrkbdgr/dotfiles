@@ -736,11 +736,12 @@ class Game(object):
 		if not (self.scene.get_player() and self.scene.get_player().has_acted()):
 			return False
 		self.scene.get_player().apply_auto_effects()
-		self.scene.get_player().add_action_points(1.0)
+		self.scene.get_player().add_action_points(self.scene.get_player().action_point_restore)
 
 		for monster in list(self.scene.iter_active_monsters()):
 			if monster == self.scene.get_player():
 				continue
+			monster.add_action_points(monster.action_point_restore)
 			if isinstance(monster, actors.Behaviour):
 				monster.act(self)
 			else: # pragma: no cover

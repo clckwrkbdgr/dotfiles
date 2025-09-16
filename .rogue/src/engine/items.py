@@ -9,6 +9,7 @@ class Wearable(object):
 	""" Trait for items that can be worn as outfit.
 	"""
 	protection = classfield('_protection', 0) # Base protection from incoming attacks.
+	speed_penalty = classfield('_speed_penalty', 1.0) # Multiplier for every actor's action when equipped.
 
 class Consumable(object):
 	""" Trait for consumable items that affect consumer.

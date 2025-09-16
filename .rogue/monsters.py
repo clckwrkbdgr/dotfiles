@@ -57,6 +57,7 @@ class CarnivorousPlant(Beast, actors.Neutral):
 class Slime(Beast, actors.Defensive):
 	_name = 'slime'
 	_sprite = Sprite('o', None)
+	_action_point_restore = 0.5
 	_max_hp = 5
 	_vision = 3
 	_attack = 1
@@ -69,6 +70,7 @@ class Slime(Beast, actors.Defensive):
 class Rodent(Beast, actors.Offensive):
 	_name = 'rodent'
 	_sprite = Sprite('r', None)
+	_action_point_restore = 1.5
 	_max_hp = 3
 	_vision = 8
 	_attack = 1

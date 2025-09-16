@@ -471,7 +471,7 @@ class TestItems(AbstractTestDungeon):
 			])
 		self.assertTrue(game.scene.get_player().has_acted())
 
-		game.scene.get_player().add_action_points(5.0)
+		game.scene.get_player().add_action_points(5.0 * ChainMail._speed_penalty)
 		self.assertFalse(game.scene.get_player().has_acted())
 		list(game.process_events(raw=True)) # Clear events.
 		game.take_off_item(game.scene.get_player())

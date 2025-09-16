@@ -36,11 +36,11 @@ make_weapon('Dagger', Sprite('(', None), 'dagger', 1)
 make_weapon('Sword', Sprite('(', None), 'sword', 2)
 make_weapon('Axe', Sprite('(', None), 'axe', 4)
 
-make_armor = MakeEntity((Item, Wearable), '_sprite _name _protection')
-make_armor('Rags', Sprite("[", None), "rags", 1)
-make_armor('Leather', Sprite("[", None), "leather", 2)
-make_armor('ChainMail', Sprite("[", None), "chain mail", 3)
-make_armor('PlateArmor', Sprite("[", None), "plate armor", 4)
+make_armor = MakeEntity((Item, Wearable), '_sprite _name _protection _speed_penalty')
+make_armor('Rags', Sprite("[", None), "rags", 1, 1.0)
+make_armor('Leather', Sprite("[", None), "leather", 2, 1.0)
+make_armor('ChainMail', Sprite("[", None), "chain mail", 3, 1.5)
+make_armor('PlateArmor', Sprite("[", None), "plate armor", 4, 2.0)
 
 class DoorKey(Item):
 	pass

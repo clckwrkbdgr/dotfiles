@@ -11,6 +11,7 @@ class Actor(entity.Entity):
 	"""
 	_metainfo_key = 'Actors'
 	vision = classfield('_vision', 0) # Radius of field of vision.
+	action_point_restore = classfield('_action_point_restore', 1) # Amount of action point restored at each turn.
 
 	def __init__(self, pos, action_points=1.0):
 		if isinstance(pos, dict): # For _additional_init in classmethod load()
@@ -237,6 +238,12 @@ class EquippedMonster(Monster):
 		super(EquippedMonster, self).load(stream)
 		self.wielding = stream.read(items.Item, optional=True)
 		self.wearing = stream.read(items.Item, optional=True)
+
+	def spend_action_points(self, amount):
+		""" Considers speed penalty of equipped items. """
+		if self.wearing:
+			amount *= self.wearing.speed_penalty
+		super(EquippedMonster, self).spend_action_points(amount)
 
 	def get_attack_damage(self):
 		""" Final attack damage with all modifiers. """
