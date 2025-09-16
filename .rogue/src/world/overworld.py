@@ -26,8 +26,8 @@ class FieldData(object):
 		self._terrain_sprite = None
 	def get_map_sprite(self, terrain):
 		if not self._terrain_sprite:
-			counter = Counter(terrain.values())
-			self._terrain_sprite = counter.most_common(1)[0][0].sprite
+			counter = Counter(_.sprite for _ in terrain.values())
+			self._terrain_sprite = counter.most_common(1)[0][0]
 		if self.monsters:
 			character = next((_ for _ in self.monsters if isinstance(_, Player)), None)
 			if not character:

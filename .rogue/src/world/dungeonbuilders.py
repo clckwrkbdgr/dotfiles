@@ -1,6 +1,7 @@
 import textwrap
 from collections import defaultdict
-from clckwrkbdgr.math import Matrix, Point, Size
+from clckwrkbdgr.math import Matrix, Point, Size, get_neighbours
+import clckwrkbdgr.math.algorithm
 import logging
 Log = logging.getLogger('rogue')
 from clckwrkbdgr import pcg
@@ -180,10 +181,52 @@ class BSPDungeon(builders.Builder):
 	def is_open(self, pos):
 		return self.grid.cell(pos) == 'floor'
 	def generate_appliances(self):
-		yield self.point(self.is_accessible), 'start'
+		start_pos = self.point(self.is_accessible)
+		yield start_pos, 'start'
 		yield self.point(self.is_accessible), 'exit', 0 # TODO proper next_level_id
+
+		self._locked_door = None
+		if self.rng.randrange(5) == 0:
+			self._locked_door = self.rng.choice(self.doors)
+			self.doors.remove(self._locked_door)
+
+			reach = Matrix(self.size, 1)
+			for pos in reach:
+				if self.grid.cell(pos) == 'wall':
+					reach.set_cell(pos, 0)
+			reach.set_cell(self._locked_door, 0)
+			def _spread_function(p):
+				return [x for x in get_neighbours(reach, p) if reach.cell(x) == 1]
+			for pos in clckwrkbdgr.math.algorithm.floodfill(start_pos, _spread_function):
+				reach.set_cell(pos, 2)
+			for door in self.doors:
+				reach.set_cell(door, 1)
+
+			self._key_pos = self.rng.choice([p for p in reach if reach.cell(p)])
+			self._key_type = self.rng.choice([
+				'red',
+				'green',
+				'blue',
+				'yellow',
+				'cyan',
+				'magenta',
+				'white',
+				'bold_black',
+				'bold_red',
+				'bold_green',
+				'bold_blue',
+				'bold_yellow',
+				'bold_cyan',
+				'bold_magenta',
+				'bold_white',
+				])
+			yield self._locked_door, 'locked_door', self._key_type
+
 		for door_pos in self.doors:
 			yield door_pos, self.rng.choice(('opened_door', 'closed_door'))
+	def generate_items(self):
+		if self._locked_door:
+			yield self._key_pos, 'door_key', self._key_type
 
 class CityBuilder(builders.Builder):
 	""" A city block of buildings, surrounded by a thick wall.
