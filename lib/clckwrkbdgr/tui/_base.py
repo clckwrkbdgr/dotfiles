@@ -336,9 +336,11 @@ class ModeLoop(object): # pragma: no cover -- TODO
 			pass
 	def run_iteration(self):
 		""" Single iteration: redraw + user action. """
+		result = True
 		with ExceptionScreen(self.ui.window):
 			self.redraw()
-			return self.action()
+			result = self.action()
+		return result
 	def redraw(self):
 		""" Redraws all modes, starting from the first non-transparent mode from the end of the current stack. """
 		visible = []
