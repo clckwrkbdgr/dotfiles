@@ -485,25 +485,11 @@
     "schemes": {
         "irc": {
             "action": 2,
-            "ask": true,
-            "handlers": [
-                null,
-                {
-                    "name": "Mibbit",
-                    "uriTemplate": "https://www.mibbit.com/?url=%s"
-                }
-            ]
+            "ask": true
         },
         "ircs": {
             "action": 2,
-            "ask": true,
-            "handlers": [
-                null,
-                {
-                    "name": "Mibbit",
-                    "uriTemplate": "https://www.mibbit.com/?url=%s"
-                }
-            ]
+            "ask": true
         },
         "magnet": {
             "action": 2,

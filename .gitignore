@@ -63,6 +63,8 @@ firefox/features/*/*.xpi
 firefox/pluginreg.dat
 firefox/safebrowsing
 firefox/security_state/data.safe.bin
+firefox/security_state/crlite.filter
+firefox/security_state/*.filter.delta
 firefox/settings/data.safe.bin
 firefox/settings/main/ms-language-packs/browser/newtab/asrouter.ftl
 firefox/serviceworker.txt

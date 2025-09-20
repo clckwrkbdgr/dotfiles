@@ -1,0 +1,34 @@
+BEGIN TRANSACTION;
+CREATE TABLE "NimbusEnrollments" (
+            id             INTEGER NOT NULL,
+            profileId      INTEGER NOT NULL,
+            slug           TEXT NOT NULL,
+            branchSlug     TEXT NOT NULL,
+            recipe         JSONB,
+            active         BOOLEAN NOT NULL,
+            unenrollReason TEXT,
+            lastSeen       TEXT NOT NULL,
+            setPrefs       JSONB,
+            prefFlips      JSONB,
+            source         TEXT NOT NULL,
+            PRIMARY KEY(id),
+            UNIQUE (profileId, slug) ON CONFLICT FAIL
+          );
+CREATE TABLE "Profiles" (
+              id      INTEGER NOT NULL,
+              path    TEXT NOT NULL UNIQUE,
+              name    TEXT NOT NULL,
+              avatar  TEXT NOT NULL,
+              themeId TEXT NOT NULL,
+              themeFg TEXT NOT NULL,
+              themeBg TEXT NOT NULL,
+              PRIMARY KEY(id)
+            );
+CREATE TABLE "SharedPrefs" (
+              id        INTEGER NOT NULL,
+              name      TEXT NOT NULL UNIQUE,
+              value     BLOB,
+              isBoolean INTEGER,
+              PRIMARY KEY(id)
+            );
+COMMIT;

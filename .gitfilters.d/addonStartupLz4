@@ -17,4 +17,4 @@ replace '*.*.*' 'version' --with '"0.0"'
 delete '*.*.*.path' 'null'
 
 # Built-in addons.
-delete app-system-defaults.addons proxy-failover@mozilla.com
+#delete app-system-defaults.addons proxy-failover@mozilla.com

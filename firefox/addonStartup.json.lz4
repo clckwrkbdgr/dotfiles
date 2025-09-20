@@ -29,6 +29,7 @@
                 "version": "0.0"
             },
             "default-theme@mozilla.org": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": false,
                 "loader": null,
@@ -38,6 +39,7 @@
                 "version": "0.0"
             },
             "firefox-alpenglow@mozilla.org": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": false,
                 "loader": null,
@@ -47,6 +49,7 @@
                 "version": "0.0"
             },
             "firefox-compact-dark@mozilla.org": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "loader": null,
@@ -57,6 +60,7 @@
                 "version": "0.0"
             },
             "firefox-compact-light@mozilla.org": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": false,
                 "loader": null,
@@ -81,6 +85,35 @@
                 "rootURI": "resource://search-extensions/wikipedia/",
                 "runInSafeMode": true,
                 "startupData": {},
+                "version": "0.0"
+            }
+        }
+    },
+    "app-builtin-addons": {
+        "addons": {
+            "addons-search-detection@mozilla.com": {
+                "enabled": false,
+                "rootURI": "resource://builtin-addons/search-detection/",
+                "version": "0.0"
+            },
+            "formautofill@mozilla.org": {
+                "enabled": false,
+                "rootURI": "resource://builtin-addons/formautofill/",
+                "version": "0.0"
+            },
+            "newtab@mozilla.org": {
+                "enabled": false,
+                "rootURI": "resource://builtin-addons/newtab/",
+                "version": "0.0"
+            },
+            "pictureinpicture@mozilla.org": {
+                "enabled": false,
+                "rootURI": "resource://builtin-addons/pictureinpicture/",
+                "version": "0.0"
+            },
+            "webcompat@mozilla.org": {
+                "enabled": false,
+                "rootURI": "resource://builtin-addons/webcompat/",
                 "version": "0.0"
             }
         }
@@ -216,64 +249,5 @@
             }
         },
         "path": "$HOME/.config/firefox/extensions"
-    },
-    "app-system-defaults": {
-        "addons": {
-            "formautofill@mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "formautofill@mozilla.org.xpi",
-                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/formautofill@mozilla.org.xpi!/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            },
-            "pictureinpicture@mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "pictureinpicture@mozilla.org.xpi",
-                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/pictureinpicture@mozilla.org.xpi!/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            },
-            "screenshots@mozilla.org": {
-                "dependencies": [],
-                "enabled": false,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "screenshots@mozilla.org.xpi",
-                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/screenshots@mozilla.org.xpi!/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            },
-            "webcompat-reporter@mozilla.org": {
-                "dependencies": [],
-                "enabled": false,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "webcompat-reporter@mozilla.org.xpi",
-                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/webcompat-reporter@mozilla.org.xpi!/",
-                "runInSafeMode": true,
-                "version": "0.0"
-            },
-            "webcompat@mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "lastModifiedTime": 0,
-                "loader": null,
-                "path": "webcompat@mozilla.org.xpi",
-                "rootURI": "jar:file:///usr/lib/firefox-esr/browser/features/webcompat@mozilla.org.xpi!/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            }
-        },
-        "path": "/usr/lib/firefox-esr/browser/features"
     }
 }

@@ -1,0 +1,14 @@
+BEGIN TRANSACTION;
+CREATE TABLE domain_to_categories (
+              string_id
+                TEXT PRIMARY KEY NOT NULL,
+              categories
+                TEXT
+            ) WITHOUT ROWID;
+CREATE TABLE moz_meta (
+              key
+                TEXT PRIMARY KEY NOT NULL,
+              value
+                INTEGER
+            ) WITHOUT ROWID;
+COMMIT;

@@ -152,6 +152,12 @@ delete 'browser.shell.didSkipDefaultBrowserCheckOnFirstRun' ''
 delete 'browser.bookmarks.defaultLocation' ''
 delete 'extensions.formautofill.creditCards.reauth.optout' ''
 delete 'signon.management.page.os-auth.optout' ''
+delete 'captchadetection.lastSubmission' ''
+delete 'browser.search.totalSearches' ''
+delete 'datareporting.dau.cachedUsageProfileGroupID' ''
+delete 'datareporting.dau.cachedUsageProfileID' ''
+delete 'nimbus.migrations.*' ''
+delete 'nimbus.profileId' ''
 
 replace 'extensions.systemAddonSet' '{.*}' --with '{"schema":1,"addons":{}}' --pattern-type=regex
 #sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
