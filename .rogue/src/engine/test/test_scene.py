@@ -17,6 +17,9 @@ class TestScene(unittest.TestCase):
 		self.assertEqual(scene.str_cell((3, 2)), '&')
 		self.assertEqual(scene.str_cell((1, 2)), '?')
 		self.assertEqual(scene.str_cell((3, 8)), 'b')
+	def should_str_actors_locations(self):
+		scene = self._generate()
+		self.assertEqual(scene.get_str_location(scene.get_player()), '[1, 5]')
 	def should_str_scene(self):
 		scene = self._generate()
 		self.assertEqual(scene.tostring(Rect((0, 0), scene.cells.size)), unittest.dedent("""\

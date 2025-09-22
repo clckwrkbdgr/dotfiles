@@ -324,7 +324,7 @@ class MainGame(clckwrkbdgr.tui.Mode):
 	@_MainKeys.bind('q')
 	def show_questlog(self):
 		""" List current quests. """
-		return QuestLog(list(self.game.scene.iter_active_quests()))
+		return QuestLog(self.game.scene, list(self.game.scene.iter_active_quests()))
 	@_MainKeys.bind('C')
 	def chat(self):
 		""" Chat with NPC. """
@@ -561,7 +561,8 @@ QuestLogKeys = clckwrkbdgr.tui.Keymapping()
 class QuestLog(clckwrkbdgr.tui.Mode):
 	TRANSPARENT = False
 	KEYMAPPING = QuestLogKeys
-	def __init__(self, quests):
+	def __init__(self, scene, quests):
+		self.scene = scene
 		self.quests = quests
 	def redraw(self, ui):
 		if not self.quests:
@@ -569,9 +570,10 @@ class QuestLog(clckwrkbdgr.tui.Mode):
 		else:
 			ui.print_line(0, 0, "Current quests:")
 		for index, (npc, quest) in enumerate(self.quests):
-			ui.print_line(index + 1, 0, "{0} @ {1}: {2}".format(
-				npc.name, npc.pos,
-				quest.summary(),
+			ui.print_line(index + 1, 0, npc.name)
+			ui.print_line(index + 1, len(npc.name) + 1, npc.sprite.sprite, npc.sprite.color)
+			ui.print_line(index + 1, len(npc.name) + 3, "{0}: {1}".format(
+				self.scene.get_str_location(npc), quest.summary(),
 				))
 	def action(self, done):
 		return not done

@@ -158,6 +158,11 @@ class Scene(object):
 		to some local zones and global pos should be calculated.
 		"""
 		return actor.pos
+	def get_str_location(self, actor):
+		""" Should return string representation of Actor's location.
+		By default returns str() for get_global_pos().
+		"""
+		return str(self.get_global_pos(actor))
 	def can_move(self, actor, pos):
 		""" Should return True if actor can move onto terrain at pos
 		(without checks for objects or other actors).

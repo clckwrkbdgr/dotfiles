@@ -8,7 +8,7 @@ from src.engine import events, actors, Events, ui
 events.Events.on(Events.Welcome)(lambda _:'Welcome!')
 events.Events.on(Events.WelcomeBack)(lambda _:'Welcome back!')
 events.Events.on(Events.NothingToPickUp)(lambda _:'Nothing to pick up here.')
-events.Events.on(Events.InventoryIsFull)(lambda _: "Inventory is full! Cannot pick up {item}".format(item=event.item.name))
+events.Events.on(Events.InventoryIsFull)(lambda _: "Inventory is full! Cannot pick up {item}".format(item=_.item.name))
 events.Events.on(Events.GrabItem)(lambda _:'{0} picks up {1}.'.format(_.actor.name, _.item.name))
 events.Events.on(Events.InventoryIsEmpty)(lambda _:'Inventory is empty.')
 events.Events.on(Events.NotConsumable)(lambda _:'Cannot consume {0}.'.format(_.item.name))

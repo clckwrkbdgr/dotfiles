@@ -449,9 +449,12 @@ class TestScene(unittest.TestCase):
 	def should_get_global_pos(self):
 		scene = MockScene([MockVoidBuilder], RNG(9))
 		scene.generate(None)
+		scene.enter_actor(Rogue(None), None)
 		scene.recalibrate(Point(4, 4), Size(3, 3))
 		rat = scene.get_cell_info(Point(3, 4))[-1][0]
 		self.assertEqual(scene.get_global_pos(rat), Point(3, 4))
+		self.assertEqual(scene.get_str_location(rat), '000101;010000')
+		self.assertEqual(scene.get_str_location(scene.get_player()), '010000;010001')
 	def should_perform_movement(self):
 		scene = MockScene([MockVoidBuilder], RNG(9))
 		scene.generate(None)

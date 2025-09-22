@@ -496,6 +496,10 @@ class Scene(scene.Scene):
 			sprite = field_data.get_map_sprite(field.cells)
 			result.set_cell(pos, sprite)
 		return result
+	def get_str_location(self, actor):
+		if actor == self.get_player():
+			return str(self.get_player_coord())
+		return str(actor.coord)
 	def get_global_pos(self, actor):
 		if actor == self.get_player():
 			actor_coord = self.get_player_coord()
