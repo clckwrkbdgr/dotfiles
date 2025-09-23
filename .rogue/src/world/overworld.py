@@ -499,12 +499,14 @@ class Scene(scene.Scene):
 	def get_str_location(self, actor):
 		if actor == self.get_player():
 			return str(self.get_player_coord())
-		return str(actor.coord)
+		return str(NestedGrid.Coord.from_global(self.get_global_pos(actor), self.world))
 	def get_global_pos(self, actor):
 		if actor == self.get_player():
 			actor_coord = self.get_player_coord()
-		else:
+		elif hasattr(actor, 'coord'):
 			actor_coord = actor.coord
+		else: # pragma: no cover -- TODO should re-use search chain in _get_player_data for any monster to find coord
+			actor_coord = actor.coord = next(coord for coord, monster in self.all_monsters(raw=True) if monster == actor)
 		return actor_coord.get_global(self.world)
 	def can_move(self, actor, pos):
 		dest_pos = NestedGrid.Coord.from_global(pos, self.world)
