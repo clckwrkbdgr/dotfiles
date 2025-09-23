@@ -339,6 +339,7 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		result = True
 		with ExceptionScreen(self.ui.window):
 			self.redraw()
+		with ExceptionScreen(self.ui.window):
 			result = self.action()
 		return result
 	def redraw(self):
