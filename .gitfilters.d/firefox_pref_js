@@ -158,6 +158,7 @@ delete 'datareporting.dau.cachedUsageProfileGroupID' ''
 delete 'datareporting.dau.cachedUsageProfileID' ''
 delete 'nimbus.migrations.*' ''
 delete 'nimbus.profileId' ''
+delete 'captchadetection.hasUnsubmittedData' ''
 
 replace 'extensions.systemAddonSet' '{.*}' --with '{"schema":1,"addons":{}}' --pattern-type=regex
 #sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \

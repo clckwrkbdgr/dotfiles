@@ -196,7 +196,6 @@ user_pref("capability.principal.codebase.p8.subjectName", "");
 user_pref("capability.principal.codebase.p9.granted", "UniversalXPConnect");
 user_pref("capability.principal.codebase.p9.id", "file://");
 user_pref("capability.principal.codebase.p9.subjectName", "");
-user_pref("captchadetection.hasUnsubmittedData", true);
 user_pref("content.interrupt.parsing", true);
 user_pref("content.max.tokenizing.time", 2250000);
 user_pref("content.notify.backoffcount", 5);
