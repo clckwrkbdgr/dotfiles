@@ -21,9 +21,6 @@ class Corner(Impassable):
 	_name = 'corner'
 	_sprite = Sprite("+", 'white')
 
-class Door(Terrain):
-	_name = 'door'
-	_sprite = Sprite("+", 'yellow')
 class RogueDoor(Terrain):
 	_name = 'door'
 	_sprite = Sprite("+", 'bold_black')
@@ -95,9 +92,9 @@ class TerrainMapping:
 	bush = Bush()
 	corner = Corner()
 	dead_tree = DeadTree()
-	door = Door()
 	rogue_door = RogueDoor()
 	floor = Floor()
+	doorway = Floor()
 	frozen_ground = FrozenGround()
 	grass = Grass()
 	ice = Ice()
