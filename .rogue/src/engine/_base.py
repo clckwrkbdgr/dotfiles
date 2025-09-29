@@ -206,12 +206,12 @@ class Game(object):
 		(see Scene.enter_actor).
 		Actor should be present on the current scene (if there is any).
 		"""
-		if self.current_scene_id is not None:
-			self.scene.exit_actor(actor)
-
 		if scene_id not in self.scenes:
 			self.scenes[scene_id] = self.make_scene(scene_id)
 			self.scenes[scene_id].generate(scene_id)
+
+		if self.current_scene_id is not None:
+			self.scene.exit_actor(actor)
 		if self.current_scene_id and self.scene.one_time(): # pragma: no cover -- TODO
 			del self.scenes[self.current_scene_id]
 			del self.visions[self.current_scene_id]
