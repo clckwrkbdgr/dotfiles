@@ -103,11 +103,19 @@ class Scene(scene.Scene):
 		builder.generate()
 		self.size = self.SIZE
 		self.rooms = builder.dungeon.grid
+		for key in self.rooms:
+			# FIXME rogue dungeon generator makes room 1x1 size smaller than
+			# FIXME actually should be, so the doors are appear outside the walls.
+			self.rooms.set_cell(key, Scene.Room(
+					self.rooms.cell(key).topleft,
+					self.rooms.cell(key).size + Size(1, 1),
+					))
 		self.tunnels = builder.dungeon.tunnels
 		self.terrain = builder.make_grid()
 		self.objects = list(builder.make_appliances())
 		self.items = list(builder.make_items())
 		self.monsters = list(builder.make_actors())
+		self._make_actual_grid()
 		#monster.fill_drops(self.rng)
 	def make_vision(self, actor):
 		if isinstance(actor, actors.Player):
@@ -186,31 +194,28 @@ class Scene(scene.Scene):
 					return False
 				return True
 		return False
-	def _get_terrain_name(self, pos):
-		pos = Point(pos.y, pos.x)
-		for tunnel in self.tunnels:
-			if pos == (tunnel.start.y, tunnel.start.x): return "door"
-			if pos == (tunnel.stop.y, tunnel.stop.x): return "door"
-			for cell in tunnel.iter_points():
-				if pos == (cell.y, cell.x): return "tunnel"
+	def _make_actual_grid(self):
+		self.grid = Matrix(self.size, 'void')
 		for room in self.rooms.values():
-			if pos == (room.top, room.left): return "corner"
-			if pos == (room.bottom, room.left): return "corner"
-			if pos == (room.top, room.right): return "corner"
-			if pos == (room.bottom, room.right): return "corner"
-			for x in range(room.left+1, room.right):
-				if pos == (room.top, x): return "wall_h"
-				if pos == (room.bottom, x): return "wall_h"
-			for y in range(room.top+1, room.bottom):
-				if pos == (y, room.left): return "wall_v"
-				if pos == (y, room.right): return "wall_v"
 			for y in range(room.top+1, room.bottom):
 				for x in range(room.left+1, room.right):
-					if pos == (y, x): return 'floor'
-		return 'void'
-	def _get_terrain(self, pos):
-		terrain = self._get_terrain_name(pos)
-		return self.terrain.cell((0, {
+					self.grid.set_cell((x, y), 'floor')
+			for x in range(room.left+1, room.right):
+				self.grid.set_cell((x, room.top), "wall_h")
+				self.grid.set_cell((x, room.bottom), "wall_h")
+			for y in range(room.top+1, room.bottom):
+				self.grid.set_cell((room.left, y), "wall_v")
+				self.grid.set_cell((room.right, y), "wall_v")
+			self.grid.set_cell((room.left, room.top), "corner")
+			self.grid.set_cell((room.left, room.bottom), "corner")
+			self.grid.set_cell((room.right, room.top), "corner")
+			self.grid.set_cell((room.right, room.bottom), "corner")
+		for tunnel in self.tunnels:
+			for cell in tunnel.iter_points():
+				self.grid.set_cell(cell, "tunnel")
+			self.grid.set_cell(tunnel.start, "door")
+			self.grid.set_cell(tunnel.stop, "door")
+		mapping = {
 			'void':  0,
 			'corner':1,
 			'wall_v':2,
@@ -218,7 +223,11 @@ class Scene(scene.Scene):
 			'floor': 4,
 			'tunnel':5,
 			'door'  :6,
-			}[terrain]))
+			}
+		for pos in self.grid:
+			self.grid.set_cell(pos, self.terrain.cell((0, mapping[self.grid.cell(pos)])))
+	def _get_terrain(self, pos):
+		return self.grid.cell(pos)
 	def get_cell_info(self, pos):
 		pos = Point(pos)
 		return (
@@ -309,6 +318,8 @@ class Scene(scene.Scene):
 		objects = stream.read(int)
 		for _ in range(objects):
 			self.objects.append(stream.read(appliances.ObjectAtPos))
+
+		self._make_actual_grid()
 
 	@property
 	def current_room(self):
