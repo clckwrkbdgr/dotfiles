@@ -1,3 +1,5 @@
+import logging
+Log = logging.getLogger('rogue')
 import clckwrkbdgr.math
 import clckwrkbdgr.math.algorithm
 

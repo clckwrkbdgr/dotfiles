@@ -8,7 +8,7 @@ from clckwrkbdgr.pcg import RNG
 import clckwrkbdgr.math
 from ..engine import math, vision
 import logging
-trace = logging.getLogger('rogue')
+Log = trace = logging.getLogger('rogue')
 import clckwrkbdgr.logging
 from ..engine import scene, builders
 from ..engine import actors, items, appliances, terrain
@@ -118,6 +118,7 @@ class Scene(scene.Scene):
 		self._make_actual_grid()
 		#monster.fill_drops(self.rng)
 	def make_vision(self, actor):
+		Log.debug(actor)
 		if isinstance(actor, actors.Player):
 			return Vision(self)
 		return MonsterVision(self)
@@ -227,6 +228,8 @@ class Scene(scene.Scene):
 		for pos in self.grid:
 			self.grid.set_cell(pos, self.terrain.cell((0, mapping[self.grid.cell(pos)])))
 	def _get_terrain(self, pos):
+		if not self.grid.valid(pos): # pragma: no cover -- TODO
+			return self.terrain.cell((0, 0)) # Void.
 		return self.grid.cell(pos)
 	def get_cell_info(self, pos):
 		pos = Point(pos)
@@ -351,6 +354,7 @@ class Scene(scene.Scene):
 				yield monster
 	def iter_actors_in_rect(self, rect):
 		for monster in self.monsters:
+			Log.debug("{0} in {1}".format(monster, rect))
 			if not rect.contains(monster.pos, with_border=True):
 				continue
 			yield monster
@@ -369,6 +373,7 @@ class MonsterVision(vision.Vision):
 		super(MonsterVision, self).__init__(scene)
 		self.monster = None
 	def is_visible(self, pos):
+		Log.debug(repr((self.monster.pos, pos, clckwrkbdgr.math.distance(self.monster.pos, pos))))
 		if clckwrkbdgr.math.distance(self.monster.pos, pos) <= 1:
 			return True
 		return self.scene.room_of(self.monster.pos) == self.scene.room_of(pos)
@@ -458,15 +463,21 @@ class Vision(vision.Vision):
 		shifts = [Point(0, 0)]
 		if adjacent:
 			shifts += [
+				Point(-1, -1),
 				Point(-1, 0),
+				Point(-1, +1),
 				Point(0, -1),
+				Point(+1, -1),
 				Point(+1, 0),
 				Point(0, +1),
+				Point(+1, +1),
 				]
 		tunnel_visited = self.visited_tunnels[tunnel_index]
 		for shift in shifts:
 			p = pos + shift
 			if tunnel.contains(p):
+				tunnel_visited.add(p)
+			elif not self.scene.room_of(pos): # Void walls of the tunnel.
 				tunnel_visited.add(p)
 	def visit(self, monster):
 		""" Marks all objects (rooms, tunnels) related to pos as visited. """
@@ -486,4 +497,15 @@ class Vision(vision.Vision):
 		if tunnel:
 			tunnel_index = scene.tunnels.index(tunnel)
 			self.visit_tunnel(tunnel, tunnel_index, pos)
+
+		result = Matrix(self.scene.size, ' ')
+		for pos in self.scene.size.iter_points():
+			result.set_cell(pos, '*' if self.is_visible(pos) else ' ')
+		Log.debug("Visited:\n"+result.tostring())
+
+		result = Matrix(self.scene.size, ' ')
+		for pos in self.scene.size.iter_points():
+			result.set_cell(pos, '*' if self.is_explored(pos) else ' ')
+		Log.debug("Explored:\n"+result.tostring())
+
 		return []

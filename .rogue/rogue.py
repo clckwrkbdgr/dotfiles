@@ -14,10 +14,11 @@ SAVEFILE_VERSION = 20
 import click
 @click.command()
 @click.option('-d', '--debug', is_flag=True)
-def cli(debug=False):
+@click.option('--logfile', default=xdg.save_state_path('dotrogue')/'rogue.log')
+def cli(debug=False, logfile=None):
 	clckwrkbdgr.logging.init('rogue',
-			debug=debug,
-			filename=xdg.save_state_path('dotrogue')/'rogue.log',
+			debug=bool(debug),
+			filename=logfile,
 			stream=None,
 			)
 	Log.debug('started')

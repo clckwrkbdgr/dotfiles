@@ -1,3 +1,5 @@
+import logging
+Log = logging.getLogger('rogue')
 from clckwrkbdgr.math.auto import Autoexplorer
 from . import math
 from clckwrkbdgr.math import Size
@@ -60,6 +62,7 @@ class BasicQueuedExplorer(AutoMovement):
 		if not path:
 			return None
 		assert path[0] == current_pos
+		Log.debug("Found path: {0}".format(path))
 		return [next_p - prev_p for (prev_p, next_p) in zip(path[:-1], path[1:])]
 	def next(self):
 		""" If queue is ended and dest is specified, stops.
@@ -67,9 +70,12 @@ class BasicQueuedExplorer(AutoMovement):
 		"""
 		if not self.queue:
 			if self.dest:
+				Log.debug("Stopping autowalk.")
 				return None
 			self.queue = self.find_path()
+			Log.debug("New queue: {0}".format(self.queue))
 			if not self.queue:
+				Log.debug("Nothing left to explore, stopping.")
 				return None
 		return self.queue.pop(0)
 
@@ -87,5 +93,7 @@ class AutoExplorer(BasicQueuedExplorer):
 	def find_target(self, wave):
 		for target in sorted(wave):
 			if self.wave.is_frontier(target):
+				Log.debug("New target: {0}".format(target))
 				return target
+		Log.debug("Cannot find target")
 		return None

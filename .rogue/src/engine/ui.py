@@ -149,12 +149,11 @@ class MainGame(clckwrkbdgr.tui.Mode):
 		Log.debug('View rect: {0}'.format(view_rect))
 		for world_pos, cell_info in self.game.scene.iter_cells(view_rect):
 			sprite = self.get_sprite(world_pos, cell_info)
-			Log.debug('World: {0} - None'.format(world_pos))
 			if sprite is None:
 				continue
 			viewport_pos = world_pos - view_rect.topleft
 			screen_pos = viewport_pos + self.get_map_shift()
-			Log.debug('World: {0}, view: {1}, screen: {2}'.format(world_pos, viewport_pos, screen_pos))
+			#Log.debug('World: {0}, view: {1}, screen: {2}'.format(world_pos, viewport_pos, screen_pos))
 			ui.print_char(screen_pos.x, screen_pos.y, sprite.sprite, sprite.color)
 	def print_messages(self, ui, pos, line_width=80):
 		""" Processes unprocessed events and prints

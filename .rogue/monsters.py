@@ -146,10 +146,12 @@ super_warrior_drops = [
 			(5, Axe),
 			(10, Leather),
 			]
+class RogueDungeonMonster(RealMonster, actors.Offensive):
+	_vision = 10
 easy_monsters = EntityClassDistribution(1)
 norm_monsters = EntityClassDistribution(lambda depth: max(0, (depth-2)))
 hard_monsters = EntityClassDistribution(lambda depth: max(0, (depth-7)//2))
-make_monster = MakeEntity((RealMonster), '_sprite _name _max_hp _attack _drops')
+make_monster = MakeEntity((RogueDungeonMonster), '_sprite _name _max_hp _attack _drops')
 easy_monsters << make_monster('Ant', Sprite('a', None), 'ant', 5, 1, animal_drops)
 easy_monsters << make_monster('Bat', Sprite('b', None), 'bat', 5, 1, animal_drops)
 easy_monsters << make_monster('Cockroach', Sprite('c', None), 'cockroach', 5, 1, animal_drops)

@@ -1,3 +1,5 @@
+import logging
+Log = logging.getLogger('rogue')
 from clckwrkbdgr.math import Point, Rect, Size, distance, Direction
 from clckwrkbdgr.utils import classfield
 from clckwrkbdgr import pcg
@@ -358,6 +360,7 @@ class Offensive(Behaviour):
 	"""
 	def act(self, game):
 		self_pos = game.scene.get_global_pos(self)
+		Log.debug("{0} at pos: {1}".format(self, self_pos))
 		action_range = Rect(
 				self_pos - Point(self.vision, self.vision),
 				Size(1 + self.vision * 2, 1 + self.vision * 2),
@@ -365,17 +368,21 @@ class Offensive(Behaviour):
 
 		closest = []
 		for monster in game.scene.iter_actors_in_rect(action_range):
+			Log.debug("Other monster {0} is hostile: {1}".format(monster, self.is_hostile_to(monster)))
 			if not self.is_hostile_to(monster):
 				continue
 			monster_pos = game.scene.get_global_pos(monster)
 			closest.append((distance(self_pos, monster_pos), monster))
+		Log.debug("Closest hostiles: {0}".format(closest))
 		if not closest:
 			return
 
 		_, target = sorted(closest)[0]
 		target_pos = game.scene.get_global_pos(target)
+		target_dist = distance(self_pos, target_pos)
 
-		if distance(self_pos, target_pos) <= 1:
+		Log.debug("Distanct to the target: {0}".format(target_dist))
+		if target_dist <= 1:
 			game.attack(self, target)
 			return
 
