@@ -8,10 +8,10 @@ class Door(appliances.Door):
 	_closed_sprite = Sprite('+', 'yellow')
 	_name = 'door'
 
-class LockedDoor(appliances.LockedDoor):
+class DungeonLockedDoor(appliances.LockedDoor):
 	pass
 
-make_locked_door = MakeEntity(LockedDoor, '_unlocking_item _name _closed_sprite _opened_sprite')
+make_locked_door = MakeEntity(DungeonLockedDoor, '_unlocking_item _name _closed_sprite _opened_sprite')
 make_locked_door('RedBlastDoor',   RedAccessCard,   'red blast door',   Sprite('+', 'red'), Sprite('-', 'white'))
 make_locked_door('GreenBlastDoor', GreenAccessCard, 'green blast door', Sprite('+', 'green'), Sprite('-', 'white'))
 make_locked_door('BlueBlastDoor',  BlueAccessCard,  'blue blast door',  Sprite('+', 'blue'), Sprite('-', 'white'))
@@ -94,4 +94,4 @@ class ObjectMapping:
 		return StairsUp('overworld', None)
 	@staticmethod
 	def locked_door(key_type):
-		return next(_ for _ in utils.all_subclasses(LockedDoor) if _._closed_sprite.color == key_type)
+		return next(_ for _ in utils.all_subclasses(DungeonLockedDoor) if _._closed_sprite.color == key_type)
