@@ -12,21 +12,21 @@ class DungeonLockedDoor(appliances.LockedDoor):
 	pass
 
 make_locked_door = MakeEntity(DungeonLockedDoor, '_unlocking_item _name _closed_sprite _opened_sprite')
-make_locked_door('RedBlastDoor',   RedAccessCard,   'red blast door',   Sprite('+', 'red'), Sprite('-', 'white'))
-make_locked_door('GreenBlastDoor', GreenAccessCard, 'green blast door', Sprite('+', 'green'), Sprite('-', 'white'))
-make_locked_door('BlueBlastDoor',  BlueAccessCard,  'blue blast door',  Sprite('+', 'blue'), Sprite('-', 'white'))
-make_locked_door('WoodenDoor',   BronzeKey,   'wooden door',  Sprite('+', 'yellow'), Sprite('-', 'white'))
-make_locked_door('DeepDoor',     NavyKey,     'deep door',    Sprite('+', 'cyan'), Sprite('-', 'white'))
-make_locked_door('FleshDoor',    FleshKey,    'flesh key',    Sprite('+', 'magenta'), Sprite('-', 'white'))
+make_locked_door('RedBlastDoor',   RedAccessCard,   'red blast door',   Sprite('+', 'red'), Sprite('-', 'red'))
+make_locked_door('GreenBlastDoor', GreenAccessCard, 'green blast door', Sprite('+', 'green'), Sprite('-', 'green'))
+make_locked_door('BlueBlastDoor',  BlueAccessCard,  'blue blast door',  Sprite('+', 'blue'), Sprite('-', 'blue'))
+make_locked_door('WoodenDoor',   BronzeKey,   'wooden door',  Sprite('+', 'yellow'), Sprite('-', 'yellow'))
+make_locked_door('DeepDoor',     NavyKey,     'deep door',    Sprite('+', 'cyan'), Sprite('-', 'cyan'))
+make_locked_door('FleshDoor',    FleshKey,    'flesh key',    Sprite('+', 'magenta'), Sprite('-', 'magenta'))
 make_locked_door('SkeletonDoor', SkeletonKey, 'skeleton key', Sprite('+', 'white'), Sprite('-', 'white'))
-make_locked_door('ObsidianDoor', ObsidianKey, 'obsidian key', Sprite('+', 'bold_black'), Sprite('-', 'white'))
-make_locked_door('RubyDoor',     RubyKey,     'ruby key',     Sprite('+', 'bold_red'), Sprite('-', 'white'))
-make_locked_door('EmeraldDoor',  EmeraldKey,  'emerald key',  Sprite('+', 'bold_green'), Sprite('-', 'white'))
-make_locked_door('SaphireDoor',  SaphireKey,  'saphire key',  Sprite('+', 'bold_blue'), Sprite('-', 'white'))
-make_locked_door('GoldenDoor',   GoldenKey,   'golden key',   Sprite('+', 'bold_yellow'), Sprite('-', 'white'))
-make_locked_door('CrystalDoor',  CrystalKey,  'crystal key',  Sprite('+', 'bold_cyan'), Sprite('-', 'white'))
-make_locked_door('InfernalDoor', InfernalKey, 'infernal key', Sprite('+', 'bold_magenta'), Sprite('-', 'white'))
-make_locked_door('MarbleDoor',   MarbleKey,   'marble key',   Sprite('+', 'bold_white'), Sprite('-', 'white'))
+make_locked_door('ObsidianDoor', ObsidianKey, 'obsidian key', Sprite('+', 'bold_black'), Sprite('-', 'bold_black'))
+make_locked_door('RubyDoor',     RubyKey,     'ruby key',     Sprite('+', 'bold_red'), Sprite('-', 'bold_red'))
+make_locked_door('EmeraldDoor',  EmeraldKey,  'emerald key',  Sprite('+', 'bold_green'), Sprite('-', 'bold_green'))
+make_locked_door('SaphireDoor',  SaphireKey,  'saphire key',  Sprite('+', 'bold_blue'), Sprite('-', 'bold_blue'))
+make_locked_door('GoldenDoor',   GoldenKey,   'golden key',   Sprite('+', 'bold_yellow'), Sprite('-', 'bold_yellow'))
+make_locked_door('CrystalDoor',  CrystalKey,  'crystal key',  Sprite('+', 'bold_cyan'), Sprite('-', 'bold_cyan'))
+make_locked_door('InfernalDoor', InfernalKey, 'infernal key', Sprite('+', 'bold_magenta'), Sprite('-', 'bold_magenta'))
+make_locked_door('MarbleDoor',   MarbleKey,   'marble key',   Sprite('+', 'bold_white'), Sprite('-', 'bold_white'))
 
 class StairsDown(appliances.LevelPassage):
 	_sprite = Sprite('>', None)
@@ -94,4 +94,4 @@ class ObjectMapping:
 		return StairsUp('overworld', None)
 	@staticmethod
 	def locked_door(key_type):
-		return next(_ for _ in utils.all_subclasses(DungeonLockedDoor) if _._closed_sprite.color == key_type)
+		return next(_ for _ in utils.all_subclasses(DungeonLockedDoor) if _._closed_sprite.color == key_type)(True, locked=True)

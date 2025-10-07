@@ -1,3 +1,4 @@
+import inspect
 import copy
 from collections import defaultdict
 from clckwrkbdgr.math import Matrix, Size
@@ -144,7 +145,10 @@ class Builder(object):
 				key, entity_data = entity_data[0], entity_data[1:]
 				mapped_object = self._get_mapping(key)
 				if at_pos_type:
-					yield at_pos_type(pos, mapped_object(*entity_data))
+					mapped_object = mapped_object(*entity_data)
+					if inspect.isclass(mapped_object): # pragma: no cover
+						Log.error('Expected instance when making entities, got {0} instead.'.format(repr(mapped_object)))
+					yield at_pos_type(pos, mapped_object)
 				else:
 					yield mapped_object(pos, *entity_data)
 	def make_appliances(self):

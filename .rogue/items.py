@@ -1,3 +1,4 @@
+from clckwrkbdgr import utils
 from src.engine.items import Item, Consumable, Wearable
 from src.engine.ui import Sprite
 from src.engine import Events
@@ -74,4 +75,4 @@ class ItemMapping:
 	PlateArmor = PlateArmor
 	@staticmethod
 	def door_key(key_type):
-		return next(_ for _ in utils.all_subclasses(DoorKey) if _._sprite.color == key_type)
+		return next(_ for _ in utils.all_subclasses(DoorKey) if _._sprite.color == key_type)()

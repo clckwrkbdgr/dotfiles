@@ -154,7 +154,10 @@ class MainGame(clckwrkbdgr.tui.Mode):
 			viewport_pos = world_pos - view_rect.topleft
 			screen_pos = viewport_pos + self.get_map_shift()
 			#Log.debug('World: {0}, view: {1}, screen: {2}'.format(world_pos, viewport_pos, screen_pos))
-			ui.print_char(screen_pos.x, screen_pos.y, sprite.sprite, sprite.color)
+			try:
+				ui.print_char(screen_pos.x, screen_pos.y, sprite.sprite, sprite.color)
+			except: # pragma: no cover
+				raise RuntimeError('Failed to draw sprite @{0} (screen {1}): {2} ({3})'.format(world_pos, screen_pos, sprite, cell_info))
 	def print_messages(self, ui, pos, line_width=80):
 		""" Processes unprocessed events and prints
 		currently collected messages on line at specified pos
