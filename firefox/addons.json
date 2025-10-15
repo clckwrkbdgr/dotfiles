@@ -14,9 +14,9 @@
 			"homepageURL": "https://tampermonkey.net",
 			"id": "firefox@tampermonkey.net",
 			"name": "Tampermonkey",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4405733/tampermonkey-5.3.3.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4578764/tampermonkey-5.4.0.xpi",
 			"type": "extension",
-			"version": "5.3.3"
+			"version": "5.4.0"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/ghosttext/",
