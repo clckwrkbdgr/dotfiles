@@ -170,6 +170,12 @@
                 "xlt"
             ]
         },
+        "application/x-fictionbook+xml": {
+            "action": 1,
+            "extensions": [
+                "fb2"
+            ]
+        },
         "application/x-generic": {
             "action": 1
         },
