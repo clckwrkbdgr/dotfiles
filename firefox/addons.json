@@ -86,9 +86,9 @@
 			"homepageURL": "https://github.com/philc/vimium",
 			"id": "{d7742d87-e61d-4b78-b8a1-b469842139fa}",
 			"name": "Vimium",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4524018/vimium_ff-2.3.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4618554/vimium_ff-2.3.1.xpi",
 			"type": "extension",
-			"version": "2.3"
+			"version": "2.3.1"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/i-m-not-robot-captcha-clicker/",
