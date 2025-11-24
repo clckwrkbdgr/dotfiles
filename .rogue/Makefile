@@ -4,4 +4,7 @@ test:
 run:
 	screen python rogue.py
 
-.PHONY: run test
+gui:
+	python rogue.py --gui
+
+.PHONY: run gui test
