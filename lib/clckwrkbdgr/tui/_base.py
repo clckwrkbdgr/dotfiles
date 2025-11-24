@@ -8,7 +8,9 @@ try:
 	import curses
 	import curses.ascii
 except: # pragma: no cover
-	curses = None
+	from ..collections import dotdict
+	curses = dotdict()
+	curses.ascii = dotdict()
 import six
 
 Color = namedtuple('Color', 'fg attr')
