@@ -56,5 +56,10 @@ cli() {
 	done | xargs -d '\n' $browser --
 }
 
+RUN_LOG_FILE="${XDG_STATE_HOME:-$HOME/.state}/firefox/runs.log"
+echo "$(date) $@" >>"$RUN_LOG_FILE"
+pstree -sap "$$" >>"$RUN_LOG_FILE"
+truncate_logfile "$RUN_LOG_FILE" 1000
+
 click::run "$@"
 
