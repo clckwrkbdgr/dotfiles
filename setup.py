@@ -7,7 +7,11 @@ See '--help' for usage.
 import os
 from collections import OrderedDict
 import click
-import clckwrkbdgr.jobsequence as JB
+try:
+	import clckwrkbdgr.jobsequence as JB
+except ImportError:
+	import sys
+	sys.path.append(os.path.join(os.path.dirname(__file__)), 'lib')
 
 setup = JB.JobSequence(
 		verbose_var_name='DOTFILES_SETUP_VERBOSE',
