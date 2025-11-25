@@ -3,7 +3,12 @@ try:
 	ClassType = (type, types.ClassType)
 except: # pragma: no cover
 	ClassType = type
-import curses, curses.ascii
+try:
+	import curses, curses.ascii
+except: # pragma: no cover
+	from ..collections import dotdict
+	curses = dotdict()
+	curses.ascii = dotdict()
 import clckwrkbdgr.text
 from . import app, Key
 
