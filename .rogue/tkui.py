@@ -22,13 +22,34 @@ class TkUI(object):
 		self.window = Matrix((100, 30), ' ')
 		self.keypresses = []
 		self._cursor = None
+		self._font_size = 8
 	def __enter__(self): # pragma: no cover -- TODO
 		self.root = tkinter.Tk()
-		tkinter.Button(text='Exit', command=self.force_exit).pack()
+
+		outer_frame = tkinter.Frame(self.root)
+		outer_frame.pack(fill='both', expand=True)
+		canvas = tkinter.Canvas(outer_frame)
+		canvas.pack(side="left", fill="both", expand=True)
+		v_scrollbar = tkinter.Scrollbar(outer_frame, orient="vertical", command=canvas.yview)
+		v_scrollbar.pack(side="right", fill="y")
+		h_scrollbar = tkinter.Scrollbar(outer_frame, orient="horizontal", command=canvas.xview)
+		h_scrollbar.pack(side="bottom", fill="x")
+		canvas.configure(yscrollcommand=v_scrollbar.set)
+		canvas.configure(xscrollcommand=h_scrollbar.set)
+		canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion = canvas.bbox("all")))
+		inner_frame = tkinter.Frame(canvas)
+		canvas.create_window((0, 0), window=inner_frame, anchor="nw")
+
+		menu_frame = tkinter.Frame(inner_frame)
+		menu_frame.pack()
+		tkinter.Button(menu_frame, text='Exit', command=self.force_exit).pack(side='left')
+		tkinter.Button(menu_frame, text='Font+', command=self.font_bigger).pack(side='left')
+		tkinter.Button(menu_frame, text='Font-', command=self.font_smaller).pack(side='left')
+
 		self.view = tkinter.Label(
-				self.root,
+				inner_frame,
 				text=self.window.tostring(),
-				font=("Courier", 8),
+				font=("Courier", self._font_size),
 				)
 		self.view.pack()
 
@@ -39,7 +60,7 @@ class TkUI(object):
 				'prstz ',
 				]
 		for keyline in keys:
-			frame = tkinter.Frame(self.root)
+			frame = tkinter.Frame(inner_frame)
 			frame.pack()
 			for key in keyline:
 				tkinter.Button(frame, text=key, command=lambda _key=key:self.add_keypress(_key)).pack(side='left')
@@ -52,6 +73,12 @@ class TkUI(object):
 		self.root.destroy()
 	def add_keypress(self, key):
 		self.keypresses.append(key)
+	def font_smaller(self):
+		self._font_size = max(1, self._font_size - 1)
+		self.view.config(font=("Courier", self._font_size))
+	def font_bigger(self):
+		self._font_size = min(72, self._font_size + 1)
+		self.view.config(font=("Courier", self._font_size))
 
 	@contextlib.contextmanager
 	def redraw(self, clean=False): # pragma: no cover -- TODO
