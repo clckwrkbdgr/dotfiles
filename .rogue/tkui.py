@@ -2,8 +2,16 @@ import sys
 import contextlib
 import time, threading
 import tkinter
+from clckwrkbdgr.math import Point
 from clckwrkbdgr.math.grid import Matrix
 from clckwrkbdgr.tui import Key, Mode
+
+class Cursor(object): # pragma: no cover -- TODO
+	def __init__(self, engine):
+		self._pos = Point(0, 0)
+		self.engine = engine
+	def move(self, x, y):
+		self._pos = Point(x, y)
 
 class TkUI(object):
 	def __init__(self): # pragma: no cover -- TODO
@@ -13,6 +21,7 @@ class TkUI(object):
 		self._nodelay = False
 		self.window = Matrix((100, 30), ' ')
 		self.keypresses = []
+		self._cursor = None
 	def __enter__(self): # pragma: no cover -- TODO
 		self.root = tkinter.Tk()
 		tkinter.Button(text='Exit', command=self.force_exit).pack()
@@ -51,6 +60,8 @@ class TkUI(object):
 				self.window.clear(' ')
 			yield self
 		finally:
+			if self._cursor:
+				self.window.set_cell(self._cursor._pos, 'X')
 			self.view.config(text=self.window.tostring())
 	def print_char(self, x, y, sprite, color=None): # pragma: no cover -- TODO
 		self.window.set_cell((x, y), sprite[0])
@@ -59,7 +70,15 @@ class TkUI(object):
 			self.window.set_cell((col + i, row), line[i])
 
 	def cursor(self, on=True): # pragma: no cover -- TODO
-		pass
+		""" Switches cursor on/off and returns Cursor object, if on.
+		"""
+		if on:
+			if self._cursor is None:
+				self._cursor = Cursor(self)
+			return self._cursor
+		if self._cursor is not None:
+			self._cursor = None
+		return None
 	
 	def get_keypress(self, nodelay=False, timeout=100): # pragma: no cover -- TODO
 		""" Returns Key object for the pressed key.
