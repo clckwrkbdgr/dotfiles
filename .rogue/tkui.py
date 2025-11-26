@@ -23,6 +23,8 @@ class TkUI(object):
 		self.keypresses = []
 		self._cursor = None
 		self._font_size = 8
+		self._gui_size = 8
+		self._buttons = []
 	def __enter__(self): # pragma: no cover -- TODO
 		self.root = tkinter.Tk()
 
@@ -42,9 +44,11 @@ class TkUI(object):
 
 		menu_frame = tkinter.Frame(inner_frame)
 		menu_frame.pack()
-		tkinter.Button(menu_frame, text='Exit', command=self.force_exit).pack(side='left')
-		tkinter.Button(menu_frame, text='Font+', command=self.font_bigger).pack(side='left')
-		tkinter.Button(menu_frame, text='Font-', command=self.font_smaller).pack(side='left')
+		self._button(menu_frame, text='Exit', command=self.force_exit)
+		self._button(menu_frame, text='Font+', command=self.font_bigger)
+		self._button(menu_frame, text='Font-', command=self.font_smaller)
+		self._button(menu_frame, text='GUI+', command=self.gui_bigger)
+		self._button(menu_frame, text='GUI-', command=self.gui_smaller)
 
 		self.view = tkinter.Label(
 				inner_frame,
@@ -63,10 +67,17 @@ class TkUI(object):
 			frame = tkinter.Frame(inner_frame)
 			frame.pack()
 			for key in keyline:
-				tkinter.Button(frame, text=key, command=lambda _key=key:self.add_keypress(_key)).pack(side='left')
+				self._button(frame, text=key, command=lambda _key=key:self.add_keypress(_key))
+
+		for button in self._buttons:
+			button.config(font=("Courier", self._gui_size))
 		return self
 	def __exit__(self, *_targs): # pragma: no cover -- TODO
 		pass
+	def _button(self, frame, text=None, command=None):
+		button = tkinter.Button(frame, text=text, command=command)
+		self._buttons.append(button)
+		button.pack(side='left')
 	def force_exit(self):
 		self._destroying = True
 		self._loop.modes.clear()
@@ -79,6 +90,14 @@ class TkUI(object):
 	def font_bigger(self):
 		self._font_size = min(72, self._font_size + 1)
 		self.view.config(font=("Courier", self._font_size))
+	def gui_smaller(self):
+		self._gui_size = max(1, self._gui_size - 1)
+		for button in self._buttons:
+			button.config(font=("Courier", self._gui_size))
+	def gui_bigger(self):
+		self._gui_size = min(72, self._gui_size + 1)
+		for button in self._buttons:
+			button.config(font=("Courier", self._gui_size))
 
 	@contextlib.contextmanager
 	def redraw(self, clean=False): # pragma: no cover -- TODO
