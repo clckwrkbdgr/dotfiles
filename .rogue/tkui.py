@@ -7,6 +7,7 @@ from clckwrkbdgr.math import Point
 from clckwrkbdgr.math.grid import Matrix
 from clckwrkbdgr.tui import Key, Mode
 from clckwrkbdgr import xdg
+import src.engine.ui
 
 class Cursor(object): # pragma: no cover -- TODO
 	def __init__(self, engine):
@@ -61,8 +62,13 @@ class TkUI(object):
 		self._button(menu_frame, text='GUI+', command=self.gui_bigger)
 		self._button(menu_frame, text='GUI-', command=self.gui_smaller)
 
+		self.mode_frame = tkinter.Frame(inner_frame)
+		self.mode_frame.pack()
+
+		self.main_frame = tkinter.Frame(self.mode_frame)
+		self.main_frame.pack()
 		self.view = tkinter.Label(
-				inner_frame,
+				self.main_frame,
 				text=self.window.tostring(),
 				font=("Courier", self._font_size),
 				)
@@ -75,7 +81,7 @@ class TkUI(object):
 				'prstz ',
 				]
 		for keyline in keys:
-			frame = tkinter.Frame(inner_frame)
+			frame = tkinter.Frame(self.main_frame)
 			frame.pack()
 			for key in keyline:
 				self._button(frame, text=key, command=lambda _key=key:self.add_keypress(_key))
@@ -187,6 +193,37 @@ class TkUI(object):
 			control = control(*callback_args, **callback_kwargs)
 		return control
 
+class QuestLog(object):
+	def __init__(self, ui, scene, quests):
+		self.ui = ui
+		self.scene = scene
+		self.quests = quests
+	def show(self):
+		self.window = tkinter.Toplevel(self.ui.root)
+		button = tkinter.Button(
+				self.window, text='Close',
+				font=("Courier", self.ui._gui_size),
+				command=self.window.destroy,
+				)
+		button.pack()
+
+		quests = []
+		if not self.quests:
+			quests.append("No current quests.")
+		else:
+			quests.append("Current quests:")
+		for index, (npc, quest) in enumerate(self.quests):
+			quests.append(npc.name + ' ' + npc.sprite.sprite + ' ' + "{0}: {1}".format(
+				self.scene.get_str_location(npc), quest.summary(),
+				))
+
+		quest_list = tkinter.Label(
+				self.window,
+				text='\n'.join(quests),
+				font=("Courier", self.ui._font_size),
+				)
+		quest_list.pack()
+
 class ModeLoop(object): # pragma: no cover -- TODO
 	""" Main mode loop.
 	Runs redraw/input until aborted by Mode.action().
@@ -246,6 +283,10 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		if not result:
 			self.modes.pop()
 		if new_mode:
+			if isinstance(new_mode, src.engine.ui.QuestLog):
+				dialog = QuestLog(self.ui, new_mode.scene, new_mode.quests)
+				dialog.show()
+				return result
 			self.modes.append(new_mode)
 
 		return result
