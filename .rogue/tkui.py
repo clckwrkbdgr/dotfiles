@@ -2,9 +2,11 @@ import sys
 import contextlib
 import time, threading
 import tkinter
+import configparser
 from clckwrkbdgr.math import Point
 from clckwrkbdgr.math.grid import Matrix
 from clckwrkbdgr.tui import Key, Mode
+from clckwrkbdgr import xdg
 
 class Cursor(object): # pragma: no cover -- TODO
 	def __init__(self, engine):
@@ -14,6 +16,7 @@ class Cursor(object): # pragma: no cover -- TODO
 		self._pos = Point(x, y)
 
 class TkUI(object):
+	CONFIG_FILE = xdg.save_state_path('dotrogue')/'tkui.cfg'
 	def __init__(self): # pragma: no cover -- TODO
 		self.root = None
 		self.view = None
@@ -26,6 +29,14 @@ class TkUI(object):
 		self._gui_size = 8
 		self._buttons = []
 	def __enter__(self): # pragma: no cover -- TODO
+		if self.CONFIG_FILE.exists():
+			config = configparser.ConfigParser()
+			config.read(str(self.CONFIG_FILE))
+			if config.has_section('font'):
+				self._font_size = int(config.get('font', 'size'))
+			if config.has_section('gui'):
+				self._gui_size = int(config.get('gui', 'size'))
+
 		self.root = tkinter.Tk()
 
 		outer_frame = tkinter.Frame(self.root)
@@ -73,7 +84,14 @@ class TkUI(object):
 			button.config(font=("Courier", self._gui_size))
 		return self
 	def __exit__(self, *_targs): # pragma: no cover -- TODO
-		pass
+		config = configparser.ConfigParser()
+		with self.CONFIG_FILE.open('w') as f:
+			config.add_section('font')
+			config.set('font', 'size', str(self._font_size))
+			config.add_section('gui')
+			config.set('gui', 'size', str(self._gui_size))
+			config.write(f)
+
 	def _button(self, frame, text=None, command=None):
 		button = tkinter.Button(frame, text=text, command=command)
 		self._buttons.append(button)
