@@ -8,6 +8,7 @@ from clckwrkbdgr.math.grid import Matrix
 from clckwrkbdgr.tui import Key, Mode
 from clckwrkbdgr import xdg
 import src.engine.ui
+from src.engine import Events
 
 class Cursor(object): # pragma: no cover -- TODO
 	def __init__(self, engine):
@@ -204,17 +205,21 @@ class TkUI(object):
 		return control
 
 class QuestLog(object):
-	def __init__(self, ui, scene, quests):
-		self.ui = ui
+	def __init__(self, scene, quests):
 		self.scene = scene
 		self.quests = quests
-	def show(self):
-		self.window = tkinter.Toplevel(self.ui.root)
+	def close(self):
+		self.window.destroy()
+		self.loop.redraw()
+	def show(self, loop):
+		self.loop = loop
+		ui = loop.ui
+		self.window = tkinter.Toplevel(ui.root)
 		self.window.config(background=TkUI.BACKGROUND)
 		button = tkinter.Button(
 				self.window, text='Close',
-				font=("Courier", self.ui._gui_size),
-				command=self.window.destroy,
+				font=("Courier", ui._gui_size),
+				command=self.close,
 				)
 		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 		button.pack()
@@ -232,10 +237,65 @@ class QuestLog(object):
 		quest_list = tkinter.Label(
 				self.window,
 				text='\n'.join(quests),
-				font=("Courier", self.ui._font_size),
+				font=("Courier", ui._font_size),
 				)
 		quest_list.pack()
 		quest_list.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+
+class GodModeMenu(object):
+	""" God mode options. """
+	def __init__(self, game):
+		self.game = game
+	def close(self):
+		self.window.destroy()
+		self.loop.redraw()
+	def show(self, loop):
+		self.loop = loop
+		ui = loop.ui
+		self.window = tkinter.Toplevel(ui.root)
+		self.window.config(background=TkUI.BACKGROUND)
+		button = tkinter.Button(
+				self.window, text='Close',
+				font=("Courier", ui._gui_size),
+				command=self.close,
+				)
+		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+		button.pack()
+
+		caption = tkinter.Label(
+				self.window,
+				text='Select God option:',
+				font=("Courier", ui._font_size),
+				)
+		caption.pack()
+		caption.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+
+		button = tkinter.Button(
+				self.window, text='[{0}] Vision'.format('X' if self.game.god.vision else ' '),
+				font=("Courier", ui._gui_size),
+				command=self.vision,
+				)
+		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+		button.pack()
+
+		button = tkinter.Button(
+				self.window, text='[{0}] NoClip'.format('X' if self.game.god.noclip else ' '),
+				font=("Courier", ui._gui_size),
+				command=self.noclip,
+				)
+		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+		button.pack()
+
+	def vision(self):
+		""" See all. """
+		self.game.god.toggle_vision()
+		self.game.fire_event(Events.GodModeSwitched('vision', self.game.god.vision))
+		self.close()
+	def noclip(self):
+		""" Walk through walls. """
+		self.game.god.toggle_noclip()
+		self.game.fire_event(Events.GodModeSwitched('noclip', self.game.god.noclip))
+		self.close()
 
 class ModeLoop(object): # pragma: no cover -- TODO
 	""" Main mode loop.
@@ -297,8 +357,12 @@ class ModeLoop(object): # pragma: no cover -- TODO
 			self.modes.pop()
 		if new_mode:
 			if isinstance(new_mode, src.engine.ui.QuestLog):
-				dialog = QuestLog(self.ui, new_mode.scene, new_mode.quests)
-				dialog.show()
+				dialog = QuestLog(new_mode.scene, new_mode.quests)
+				dialog.show(self)
+				return result
+			if isinstance(new_mode, src.engine.ui.GodModeMenu):
+				dialog = GodModeMenu(new_mode.game)
+				dialog.show(self)
 				return result
 			self.modes.append(new_mode)
 
