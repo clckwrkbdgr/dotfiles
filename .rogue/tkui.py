@@ -17,6 +17,8 @@ class Cursor(object): # pragma: no cover -- TODO
 		self._pos = Point(x, y)
 
 class TkUI(object):
+	BACKGROUND = '#222222'
+	FOREGROUND = '#aaaaaa'
 	CONFIG_FILE = xdg.save_state_path('dotrogue')/'tkui.cfg'
 	def __init__(self): # pragma: no cover -- TODO
 		self.root = None
@@ -39,6 +41,7 @@ class TkUI(object):
 				self._gui_size = int(config.get('gui', 'size'))
 
 		self.root = tkinter.Tk()
+		self.root.config(background=TkUI.BACKGROUND)
 
 		outer_frame = tkinter.Frame(self.root)
 		outer_frame.pack(fill='both', expand=True)
@@ -52,10 +55,13 @@ class TkUI(object):
 		canvas.configure(xscrollcommand=h_scrollbar.set)
 		canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion = canvas.bbox("all")))
 		inner_frame = tkinter.Frame(canvas)
+		inner_frame.config(background=TkUI.BACKGROUND)
 		canvas.create_window((0, 0), window=inner_frame, anchor="nw")
+		canvas.config(background=TkUI.BACKGROUND)
 
 		menu_frame = tkinter.Frame(inner_frame)
 		menu_frame.pack()
+		menu_frame.config(background=TkUI.BACKGROUND)
 		self._button(menu_frame, text='Exit', command=self.force_exit)
 		self._button(menu_frame, text='Font+', command=self.font_bigger)
 		self._button(menu_frame, text='Font-', command=self.font_smaller)
@@ -64,15 +70,18 @@ class TkUI(object):
 
 		self.mode_frame = tkinter.Frame(inner_frame)
 		self.mode_frame.pack()
+		self.mode_frame.config(background=TkUI.BACKGROUND)
 
 		self.main_frame = tkinter.Frame(self.mode_frame)
 		self.main_frame.pack()
+		self.main_frame.config(background=TkUI.BACKGROUND)
 		self.view = tkinter.Label(
 				self.main_frame,
 				text=self.window.tostring(),
 				font=("Courier", self._font_size),
 				)
 		self.view.pack()
+		self.view.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 
 		keys = [
 				chr(27) + 'S~gdieOayku',
@@ -100,6 +109,7 @@ class TkUI(object):
 
 	def _button(self, frame, text=None, command=None):
 		button = tkinter.Button(frame, text=text, command=command)
+		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 		self._buttons.append(button)
 		button.pack(side='left')
 	def force_exit(self):
@@ -200,11 +210,13 @@ class QuestLog(object):
 		self.quests = quests
 	def show(self):
 		self.window = tkinter.Toplevel(self.ui.root)
+		self.window.config(background=TkUI.BACKGROUND)
 		button = tkinter.Button(
 				self.window, text='Close',
 				font=("Courier", self.ui._gui_size),
 				command=self.window.destroy,
 				)
+		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 		button.pack()
 
 		quests = []
@@ -223,6 +235,7 @@ class QuestLog(object):
 				font=("Courier", self.ui._font_size),
 				)
 		quest_list.pack()
+		quest_list.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 
 class ModeLoop(object): # pragma: no cover -- TODO
 	""" Main mode loop.
