@@ -204,11 +204,9 @@ class TkUI(object):
 			control = control(*callback_args, **callback_kwargs)
 		return control
 
-class QuestLog(object):
-	def __init__(self, scene, quests):
-		self.scene = scene
-		self.quests = quests
+class ModalDialog(object):
 	def close(self):
+		self.window.grab_release()
 		self.window.destroy()
 		self.loop.redraw()
 	def show(self, loop):
@@ -224,6 +222,18 @@ class QuestLog(object):
 		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 		button.pack()
 
+		self.create_window(ui)
+		self.window.wait_visibility()
+		self.window.grab_set()
+		self.window.transient(ui.root)
+	def create_window(self, ui):
+		raise NotImplementedError()
+
+class QuestLog(ModalDialog):
+	def __init__(self, scene, quests):
+		self.scene = scene
+		self.quests = quests
+	def create_window(self, ui):
 		quests = []
 		if not self.quests:
 			quests.append("No current quests.")
@@ -242,26 +252,11 @@ class QuestLog(object):
 		quest_list.pack()
 		quest_list.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 
-class GodModeMenu(object):
+class GodModeMenu(ModalDialog):
 	""" God mode options. """
 	def __init__(self, game):
 		self.game = game
-	def close(self):
-		self.window.destroy()
-		self.loop.redraw()
-	def show(self, loop):
-		self.loop = loop
-		ui = loop.ui
-		self.window = tkinter.Toplevel(ui.root)
-		self.window.config(background=TkUI.BACKGROUND)
-		button = tkinter.Button(
-				self.window, text='Close',
-				font=("Courier", ui._gui_size),
-				command=self.close,
-				)
-		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
-		button.pack()
-
+	def create_window(self, ui):
 		caption = tkinter.Label(
 				self.window,
 				text='Select God option:',
