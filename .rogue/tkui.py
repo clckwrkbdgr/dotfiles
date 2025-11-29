@@ -410,6 +410,95 @@ class Inventory(ModalDialog):
 			return
 		self.close()
 
+class Equipment(ModalDialog):
+	""" Equipment menu.
+	"""
+	def __init__(self, game, actor):
+		self.game = game
+		self.actor = actor
+		self.done = False
+	def create_window(self, ui):
+		wielding = self.actor.wielding
+		if wielding:
+			wielding = wielding.name
+		wearing = self.actor.wearing
+		if wearing:
+			wearing = wearing.name
+
+		wielding = tkinter.Button(
+				self.window,
+				text='wielding - {0}'.format(wielding),
+				font=("Courier", ui._font_size),
+				command=self.wield,
+				)
+		wielding.pack()
+		wielding.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+
+		wearing = tkinter.Button(
+				self.window,
+				text='wearing  - {0}'.format(wearing),
+				font=("Courier", ui._font_size),
+				command=self.wear,
+				)
+		wearing.pack()
+		wearing.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+	def wield(self):
+		""" Wield or unwield item. """
+		if self.actor.wielding:
+			self.game.unwield_item(self.actor)
+			self.close()
+			return
+		dialog = Inventory(
+				self.actor,
+				caption = "Select item to wield:",
+				on_select = self.game.wield_item,
+				)
+		dialog.show(self.loop)
+		self.close()
+	def wear(self):
+		""" Wear or take off item. """
+		if self.actor.wearing:
+			self.game.take_off_item(self.actor)
+			self.close()
+			return
+		dialog = Inventory(
+				self.actor,
+				caption = "Select item to wear:",
+				on_select = self.game.wear_item,
+				)
+		dialog.show(self.loop)
+		self.close()
+
+class MapScreen(ModalDialog):
+	""" Map of the surrounding area (if Scene allows). """
+	def __init__(self, scene, size):
+		self.scene = scene
+		self.size = size
+	def create_window(self, ui):
+		area_map = self.scene.make_map(self.size)
+		if not area_map:
+			message = tkinter.Label(
+					self.window,
+					text='No map for current location.',
+					font=("Courier", ui._font_size),
+					)
+			message.pack()
+			message.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+			return
+		output = Matrix(self.size, ' ')
+		for pos in area_map:
+			sprite = area_map.cell(pos)
+			if not sprite:
+				continue
+			output.set_cell(pos, sprite.sprite)
+		map_view = tkinter.Label(
+				self.window,
+				text=output.tostring(),
+				font=("Courier", ui._font_size),
+				)
+		map_view.pack()
+		map_view.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+
 class TradeDialogMode(ModalDialog):
 	def __init__(self, question, on_yes=None, on_no=None):
 		self.question = question
@@ -519,6 +608,14 @@ class ModeLoop(object): # pragma: no cover -- TODO
 				return result
 			if isinstance(new_mode, src.engine.ui.Inventory):
 				dialog = Inventory(new_mode.actor, new_mode.prompt, new_mode.on_select)
+				dialog.show(self)
+				return result
+			if isinstance(new_mode, src.engine.ui.Equipment):
+				dialog = Equipment(new_mode.game, new_mode.actor)
+				dialog.show(self)
+				return result
+			if isinstance(new_mode, src.engine.ui.MapScreen):
+				dialog = MapScreen(new_mode.scene, new_mode.size)
 				dialog.show(self)
 				return result
 			self.modes.append(new_mode)
