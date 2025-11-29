@@ -204,11 +204,9 @@ class TkUI(object):
 			control = control(*callback_args, **callback_kwargs)
 		return control
 
-class QuestLog(object):
-	def __init__(self, scene, quests):
-		self.scene = scene
-		self.quests = quests
+class ModalDialog(object):
 	def close(self):
+		self.window.grab_release()
 		self.window.destroy()
 		self.loop.redraw()
 	def show(self, loop):
@@ -224,6 +222,18 @@ class QuestLog(object):
 		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 		button.pack()
 
+		self.create_window(ui)
+		self.window.wait_visibility()
+		self.window.grab_set()
+		self.window.transient(ui.root)
+	def create_window(self, ui):
+		raise NotImplementedError()
+
+class QuestLog(ModalDialog):
+	def __init__(self, scene, quests):
+		self.scene = scene
+		self.quests = quests
+	def create_window(self, ui):
 		quests = []
 		if not self.quests:
 			quests.append("No current quests.")
@@ -242,26 +252,11 @@ class QuestLog(object):
 		quest_list.pack()
 		quest_list.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 
-class GodModeMenu(object):
+class GodModeMenu(ModalDialog):
 	""" God mode options. """
 	def __init__(self, game):
 		self.game = game
-	def close(self):
-		self.window.destroy()
-		self.loop.redraw()
-	def show(self, loop):
-		self.loop = loop
-		ui = loop.ui
-		self.window = tkinter.Toplevel(ui.root)
-		self.window.config(background=TkUI.BACKGROUND)
-		button = tkinter.Button(
-				self.window, text='Close',
-				font=("Courier", ui._gui_size),
-				command=self.close,
-				)
-		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
-		button.pack()
-
+	def create_window(self, ui):
 		caption = tkinter.Label(
 				self.window,
 				text='Select God option:',
@@ -296,6 +291,74 @@ class GodModeMenu(object):
 		self.game.god.toggle_noclip()
 		self.game.fire_event(Events.GodModeSwitched('noclip', self.game.god.noclip))
 		self.close()
+
+class DirectionDialogMode(ModalDialog):
+	""" User prompt to pick direction in case where there are
+	multiple options for some action.
+	"""
+	def __init__(self, on_direction=None):
+		self.on_direction = on_direction
+	def create_window(self, ui):
+		caption = tkinter.Label(
+				self.window,
+				text="Too crowded. Chat in which direction?",
+				font=("Courier", ui._font_size),
+				)
+		caption.pack()
+		caption.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+		if self.on_direction:
+			keys = [
+					'yku',
+					'h l',
+					'bjn',
+					]
+			for keyline in keys:
+				frame = tkinter.Frame(self.window)
+				frame.pack()
+				for key in keyline:
+					if key == ' ':
+						command = lambda:None
+					else:
+						command = lambda _key=key: self.on_direction(src.engine.ui.DIRECTION(_key))
+					button = tkinter.Button(
+							frame, text=key,
+							command=command,
+							)
+					button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+					button.pack(side='left')
+
+
+class TradeDialogMode(ModalDialog):
+	def __init__(self, question, on_yes=None, on_no=None):
+		self.question = question
+		self.on_yes = on_yes
+		self.on_no = on_no
+	def create_window(self, ui):
+		caption = tkinter.Label(
+				self.window,
+				text=self.question,
+				font=("Courier", ui._font_size),
+				)
+		caption.pack()
+		caption.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+
+		if self.on_yes:
+			button = tkinter.Button(
+					self.window, text='Yes',
+					font=("Courier", ui._gui_size),
+					command=self.on_yes,
+					)
+			button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+			button.pack()
+
+		if self.on_no:
+			button = tkinter.Button(
+					self.window, text='No',
+					font=("Courier", ui._gui_size),
+					command=self.on_no,
+					)
+			button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+			button.pack()
 
 class ModeLoop(object): # pragma: no cover -- TODO
 	""" Main mode loop.
@@ -362,6 +425,14 @@ class ModeLoop(object): # pragma: no cover -- TODO
 				return result
 			if isinstance(new_mode, src.engine.ui.GodModeMenu):
 				dialog = GodModeMenu(new_mode.game)
+				dialog.show(self)
+				return result
+			if isinstance(new_mode, src.engine.ui.TradeDialogMode):
+				dialog = TradeDialogMode(new_mode.question, new_mode.on_yes, new_mode.on_no)
+				dialog.show(self)
+				return result
+			if isinstance(new_mode, src.engine.ui.DirectionDialogMode):
+				dialog = DirectionDialogMode(new_mode.on_direction)
 				dialog.show(self)
 				return result
 			self.modes.append(new_mode)
