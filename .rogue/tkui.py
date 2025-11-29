@@ -2,6 +2,7 @@ import sys
 import contextlib
 import time, threading
 import tkinter
+import string
 import configparser
 from clckwrkbdgr.math import Point
 from clckwrkbdgr.math.grid import Matrix
@@ -43,6 +44,7 @@ class TkUI(object):
 
 		self.root = tkinter.Tk()
 		self.root.config(background=TkUI.BACKGROUND)
+		self.root.attributes('-zoomed', True)
 
 		outer_frame = tkinter.Frame(self.root)
 		outer_frame.pack(fill='both', expand=True)
@@ -223,9 +225,12 @@ class ModalDialog(object):
 		button.pack()
 
 		self.create_window(ui)
-		self.window.wait_visibility()
 		self.window.grab_set()
 		self.window.transient(ui.root)
+		try:
+			self.window.wait_visibility()
+		except tkinter.TclError: # window "..." was deleted before its visibility changed
+			pass
 	def create_window(self, ui):
 		raise NotImplementedError()
 
@@ -327,6 +332,83 @@ class DirectionDialogMode(ModalDialog):
 					button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 					button.pack(side='left')
 
+class Inventory(ModalDialog):
+	""" Inventory menu.
+	Supports prompting message.
+	"""
+	def __init__(self, actor, caption=None, on_select=None):
+		""" Shows actor's inventory with optional prompt
+		and callable action upon selecting an item.
+		By default pressing any key will close the inventory view.
+		Selector should accept params: (actor, item).
+		"""
+		self.actor = actor
+		self.inventory = actor.inventory
+		self.prompt = caption or 'Inventory:'
+		self.on_select = on_select
+	def update_prompt(self, value):
+		self.prompt.config(text=value)
+	def create_window(self, ui):
+		self.prompt = tkinter.Label(
+				self.window,
+				text=self.prompt,
+				font=("Courier", ui._font_size),
+				)
+		self.prompt.pack()
+		self.prompt.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+
+		if not self.inventory:
+			message = tkinter.Label(
+					self.window,
+					text = '(Empty)',
+					font=("Courier", ui._font_size),
+					)
+			message.pack()
+			message.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+			return
+		accumulated = []
+		for shortcut, item in zip(string.ascii_lowercase, self.inventory):
+			for other in accumulated:
+				if other[1].name == item.name:
+					other[2] += 1
+					break
+			else:
+				accumulated.append([shortcut, item, 1])
+		columns = []
+		for index, (shortcut, item, amount) in enumerate(accumulated):
+			column = index // 20
+			if column >= len(columns):
+				frame = tkinter.Frame(self.window)
+				frame.pack(side='left')
+				frame.config(background=TkUI.BACKGROUND)
+				columns.append(frame)
+			index = index % 20
+
+			text = item.sprite.sprite
+			if amount > 1:
+				text += ' - {0} (x{1})'.format(item.name, amount)
+			else:
+				text += ' - {0}'.format(item.name)
+			button = tkinter.Button(
+					columns[column], text=text,
+					font=("Courier", ui._gui_size),
+					command=lambda _key=shortcut: self.select(_key),
+					)
+			button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
+			button.pack()
+
+	def select(self, param):
+		""" Select item and close inventory. """
+		if not self.on_select:
+			self.close()
+			return
+		index = ord(param) - ord('a')
+		if index >= len(self.inventory):
+			self.update_prompt("No such item ({0})".format(param))
+			return
+		if not self.on_select(self.actor, self.inventory[index]):
+			return
+		self.close()
 
 class TradeDialogMode(ModalDialog):
 	def __init__(self, question, on_yes=None, on_no=None):
@@ -433,6 +515,10 @@ class ModeLoop(object): # pragma: no cover -- TODO
 				return result
 			if isinstance(new_mode, src.engine.ui.DirectionDialogMode):
 				dialog = DirectionDialogMode(new_mode.on_direction)
+				dialog.show(self)
+				return result
+			if isinstance(new_mode, src.engine.ui.Inventory):
+				dialog = Inventory(new_mode.actor, new_mode.prompt, new_mode.on_select)
 				dialog.show(self)
 				return result
 			self.modes.append(new_mode)
