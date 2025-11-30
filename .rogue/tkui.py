@@ -92,7 +92,7 @@ class TkUI(object):
 
 		keys = [
 				chr(27) + 'S~gdieOayku',
-				'?vxwUWTEfh.l',
+				' vxwUWTEfh.l',
 				'QcqCMo><mbjn',
 				'prstz ',
 				]
@@ -121,7 +121,7 @@ class TkUI(object):
 		button.pack(side='left')
 	def force_exit(self):
 		self._destroying = True
-		self._loop.modes.clear()
+		self._loop.mode = None
 		self.root.destroy()
 	def add_keypress(self, key):
 		self.keypresses.append(key)
@@ -400,10 +400,6 @@ class MainGame(Mode):
 	def grab_item(self):
 		""" Grab item. """
 		self.game.grab_item_here(self.game.scene.get_player())
-	@_MainKeys.bind('?')
-	def help(self):
-		""" Show this help. """
-		return src.engine.ui.HelpScreen()
 	@_MainKeys.bind('Q')
 	def suicide(self):
 		""" Suicide (quit without saving). """
@@ -429,44 +425,49 @@ class MainGame(Mode):
 	@_MainKeys.bind('~')
 	def god_mode(self):
 		""" God mode options. """
-		return src.engine.ui.GodModeMenu(self.game)
+		dialog = GodModeMenu(self.game)
+		dialog.show(self)
 	@_MainKeys.bind('i')
 	def show_inventory(self):
 		""" Show inventory. """
-		return src.engine.ui.Inventory(self.game.scene.get_player())
+		dialog = Inventory(self.game.scene.get_player())
+		dialog.show(self.loop)
 	@_MainKeys.bind('d')
 	def drop_item(self):
 		""" Drop item. """
 		if not self.game.scene.get_player().inventory:
 			self.game.fire_event(Events.InventoryIsEmpty())
 			return
-		return src.engine.ui.Inventory(
+		dialog = Inventory(
 				self.game.scene.get_player(),
 				caption = "Select item to drop:",
 				on_select = self.game.drop_item
 			)
+		dialog.show(self.loop)
 	@_MainKeys.bind('e')
 	def consume(self):
 		""" Consume item. """
 		if not self.game.scene.get_player().inventory:
 			self.game.fire_event(Events.InventoryIsEmpty())
 			return
-		return src.engine.ui.Inventory(
+		dialog = Inventory(
 				self.game.scene.get_player(),
 				caption = "Select item to consume:",
 				on_select = self.game.consume_item,
 				)
+		dialog.show(self.loop)
 	@_MainKeys.bind('w')
 	def wield(self):
 		""" Wield item. """
 		if not self.game.scene.get_player().inventory:
 			self.game.fire_event(Events.InventoryIsEmpty())
 			return
-		return src.engine.ui.Inventory(
+		dialog = Inventory(
 				self.game.scene.get_player(),
 				caption = "Select item to wield:",
 				on_select = self.game.wield_item,
 				)
+		dialog.show(self.loop)
 	@_MainKeys.bind('U')
 	def unwield(self):
 		""" Unwield item. """
@@ -477,11 +478,12 @@ class MainGame(Mode):
 		if not self.game.scene.get_player().inventory:
 			self.game.fire_event(Events.InventoryIsEmpty())
 			return
-		return src.engine.ui.Inventory(
+		dialog = Inventory(
 				self.game.scene.get_player(),
 				caption = "Select item to wear:",
 				on_select = self.game.wear_item,
 				)
+		dialog.show(self.loop)
 	@_MainKeys.bind('T')
 	def take_off(self):
 		""" Take item off. """
@@ -489,11 +491,13 @@ class MainGame(Mode):
 	@_MainKeys.bind('E')
 	def show_equipment(self):
 		""" Show equipment. """
-		return src.engine.ui.Equipment(self.game, self.game.scene.get_player())
+		dialog = Equipment(self.game, self.game.scene.get_player())
+		dialog.show(self.loop)
 	@_MainKeys.bind('q')
 	def show_questlog(self):
 		""" List current quests. """
-		return src.engine.ui.QuestLog(self.game.scene, list(self.game.scene.iter_active_quests()))
+		dialog = QuestLog(self.game.scene, list(self.game.scene.iter_active_quests()))
+		dialog.show(self.loop)
 	@_MainKeys.bind('C')
 	def chat(self):
 		""" Chat with NPC. """
@@ -503,15 +507,20 @@ class MainGame(Mode):
 		def _chat_with_npc(npc):
 			prompt, on_yes, on_no = self.game.chat(self.game.scene.get_player(), npc)
 			if prompt:
-				return src.engine.ui.TradeDialogMode('"{0}" (y/n)'.format(prompt),
+				dialog = TradeDialogMode('"{0}" (y/n)'.format(prompt),
 							on_yes=on_yes, on_no=on_no)
+				dialog.show(self.loop)
+				return None
 		if len(npcs) > 1:
-			return src.engine.ui.DirectionDialogMode(on_direction=_chat_with_npc)
+			dialog = DirectionDialogMode(on_direction=_chat_with_npc)
+			dialog.show(self.loop)
+			return None
 		return _chat_with_npc(npcs[0])
 	@_MainKeys.bind('M')
 	def show_map(self):
 		""" Show map. """
-		return src.engine.ui.MapScreen(self.game.scene, self.get_viewport())
+		dialog = MapScreen(self.game.scene, self.get_viewport())
+		dialog.show(self.loop)
 	@_MainKeys.bind('O')
 	def open_close_doors(self):
 		""" Open/close nearby doors. """
@@ -850,93 +859,41 @@ class ModeLoop(object): # pragma: no cover -- TODO
 	def __init__(self, ui):
 		self.ui = ui
 		self.ui._loop = self
-		self.modes = []
+		self.mode = None
 	def run(self, mode):
 		""" Start loop from the given ("main") mode.
 		Runs until the last mode is exited.
 		"""
-		self.modes.append(mode)
+		self.mode = mode
+		mode.loop = self
 		thread = threading.Thread(target=self._thread_func)
 		thread.start()
 		self.ui.root.mainloop()
 		thread.join()
 	def _thread_func(self):
-		while self.run_iteration() or self.modes:
+		self.redraw()
+		while self.action() or self.mode:
 			pass
 		self.ui.root.after(10, self.ui.root.destroy)
-	def run_iteration(self):
-		""" Single iteration: redraw + user action. """
-		result = True
-		self.redraw()
-		result = self.action()
-		return result
 	def redraw(self):
 		""" Redraws all modes, starting from the first non-transparent mode from the end of the current stack. """
-		visible = []
-		for mode in reversed(self.modes):
-			visible.append(mode)
-			if not mode.TRANSPARENT:
-				break
-		for mode in reversed(visible):
-			with self.ui.redraw(clean=not mode.TRANSPARENT):
-				mode.redraw(self.ui)
-	def mode_action(self, mode):
-		""" Perform user action for a specific mode.
-		Any callbacks are bound to the mode (see also Mode.get_bind_callback_args).
-		Returns False if mode is done and should be closed, otherwise True.
-		"""
+		with self.ui.redraw(clean=True):
+			self.mode.redraw(self.ui)
+	def action(self):
+		""" Perform user actions for the current stack of modes. """
+		current_mode = self.mode
+		if not current_mode.pre_action():
+			self.mode = None
+			return False
+		mode = current_mode
 		keymapping = mode.get_keymapping()
 		if keymapping:
 			control = self.ui.get_control(keymapping, nodelay=mode.nodelay(), bind_self=mode, callback_args=mode.get_bind_callback_args())
 		else:
 			control = self.ui.get_keypress(nodelay=mode.nodelay())
-
-		new_mode = None
-		if isinstance(control, Mode):
-			new_mode = control
-			control = None
-
 		result = mode.action(control)
-
 		if not result:
-			self.modes.pop()
-		if new_mode:
-			if isinstance(new_mode, src.engine.ui.QuestLog):
-				dialog = QuestLog(new_mode.scene, new_mode.quests)
-				dialog.show(self)
-				return result
-			if isinstance(new_mode, src.engine.ui.GodModeMenu):
-				dialog = GodModeMenu(new_mode.game)
-				dialog.show(self)
-				return result
-			if isinstance(new_mode, src.engine.ui.TradeDialogMode):
-				dialog = TradeDialogMode(new_mode.question, new_mode.on_yes, new_mode.on_no)
-				dialog.show(self)
-				return result
-			if isinstance(new_mode, src.engine.ui.DirectionDialogMode):
-				dialog = DirectionDialogMode(new_mode.on_direction)
-				dialog.show(self)
-				return result
-			if isinstance(new_mode, src.engine.ui.Inventory):
-				dialog = Inventory(new_mode.actor, new_mode.prompt, new_mode.on_select)
-				dialog.show(self)
-				return result
-			if isinstance(new_mode, src.engine.ui.Equipment):
-				dialog = Equipment(new_mode.game, new_mode.actor)
-				dialog.show(self)
-				return result
-			if isinstance(new_mode, src.engine.ui.MapScreen):
-				dialog = MapScreen(new_mode.scene, new_mode.size)
-				dialog.show(self)
-				return result
-			self.modes.append(new_mode)
-
-		return result
-	def action(self):
-		""" Perform user actions for the current stack of modes. """
-		current_mode = self.modes[-1]
-		if not current_mode.pre_action():
-			self.modes.pop()
+			self.mode = None
 			return False
-		return self.mode_action(current_mode)
-
+		self.redraw()
+		return True
