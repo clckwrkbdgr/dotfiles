@@ -1,15 +1,19 @@
 import sys
-import contextlib
+import contextlib, functools
 import time, threading
 import tkinter
 import string
 import configparser
-from clckwrkbdgr.math import Point
+import logging
+Log = logging.getLogger('rogue')
+from clckwrkbdgr.math import Point, Size, Rect
 from clckwrkbdgr.math.grid import Matrix
-from clckwrkbdgr.tui import Key, Mode
+from clckwrkbdgr.tui import Key, Mode, Keymapping
 from clckwrkbdgr import xdg
+import clckwrkbdgr.text
 import src.engine.ui
 from src.engine import Events
+from hud import HUD
 
 class Cursor(object): # pragma: no cover -- TODO
 	def __init__(self, engine):
@@ -146,8 +150,6 @@ class TkUI(object):
 			if self._cursor:
 				self.window.set_cell(self._cursor._pos, 'X')
 			self.view.config(text=self.window.tostring())
-	def print_char(self, x, y, sprite, color=None): # pragma: no cover -- TODO
-		self.window.set_cell((x, y), sprite[0])
 	def print_line(self, row, col, line, color=None): # pragma: no cover -- TODO
 		for i in range(len(line)):
 			self.window.set_cell((col + i, row), line[i])
@@ -205,6 +207,315 @@ class TkUI(object):
 			callback_kwargs = callback_kwargs or {}
 			control = control(*callback_args, **callback_kwargs)
 		return control
+
+_MainKeys = Keymapping()
+class MainGame(Mode):
+	""" Main game mode: map, status line/panel, messages.
+	"""
+	Keys = _MainKeys
+	KEYMAPPING = _MainKeys
+	INDICATORS = [
+			((62, 0), HUD.Depth),
+			((62, 1), HUD.Pos),
+			((62, 2), HUD.Time),
+			((62, 3), HUD.Here),
+
+			((62, 5), HUD.HP),
+			((62, 6), HUD.Inventory),
+			((62, 7), HUD.Wield),
+			((62, 8), HUD.Wear),
+
+			((62, 22), HUD.GodVision),
+			((67, 22), HUD.GodNoclip),
+
+			((62, 23), HUD.Auto),
+			((77, 23), HUD.Help),
+			]
+
+	def __init__(self, game):
+		self.game = game
+		self.messages = []
+		self.aim = None
+
+	# Overridden behavior.
+
+	def nodelay(self):
+		return self.game.in_automovement()
+	def get_keymapping(self):
+		if self.messages:
+			return None
+		player = self.game.scene.get_player()
+		if not (player and player.is_alive()):
+			return None
+		if self.nodelay():
+			return None
+		return super(MainGame, self).get_keymapping()
+	def pre_action(self):
+		if not self.game.scene.get_player():
+			return False
+		self.game.perform_automovement()
+		return True
+	def action(self, control):
+		if isinstance(control, clckwrkbdgr.tui.Key):
+			if self.messages:
+				return True
+			player = self.game.scene.get_player()
+			if not (player and player.is_alive()):
+				return False
+			self.game.stop_automovement()
+			return True
+		self.game.process_others()
+		return not control
+
+	# Options for customizations.
+
+	def get_map_shift(self):
+		return Point(0, 0)
+	def get_message_line_rect(self):
+		return Rect(Point(0, 24), Size(80, 1))
+	@functools.lru_cache()
+	def get_viewport(self):
+		return Size(61, 23)
+	def get_viewrect(self):
+		viewport = self.get_viewport()
+		area_rect = self.game.scene.get_area_rect()
+		if area_rect.size.width <= viewport.width and area_rect.size.height <= viewport.height:
+			return area_rect
+		player = self.game.scene.get_player()
+		if player:
+			pos = self.game.scene.get_global_pos(self.game.scene.get_player())
+			self._old_pos = pos
+		else:
+			pos = self._old_pos
+		viewport_center = Point(*(viewport // 2))
+		Log.debug('Viewport: {0}x{1} at pos {2}'.format(viewport_center, viewport, pos))
+		return Rect(pos - viewport_center, viewport)
+	def get_sprite(self, pos, cell_info=None):
+		""" Returns topmost Sprite object to display at the specified world pos.
+		Additional cell info may be passed (see Scene.get_cell_info()).
+		"""
+		return self.game.get_sprite(pos, cell_info=cell_info)
+	
+	# Displaying.
+
+	def redraw(self, ui):
+		""" Redraws all parts of UI: map, message line, status line/panel.
+		Also displays cursor if aim mode is enabled.
+		"""
+		ui.cursor(bool(self.aim))
+		self.draw_map(ui)
+		self.print_messages(ui, self.get_message_line_rect().topleft, line_width=self.get_message_line_rect().width)
+		self.draw_status(ui)
+		if self.aim:
+			cursor = self.aim + self.get_map_shift() - self.get_viewrect().topleft
+			ui.cursor().move(cursor.x, cursor.y)
+	def draw_map(self, ui):
+		""" Redraws map according to get_viewrect() and get_sprite().
+		"""
+		view_rect = self.get_viewrect()
+		Log.debug('View rect: {0}'.format(view_rect))
+		for world_pos, cell_info in self.game.scene.iter_cells(view_rect):
+			sprite = self.get_sprite(world_pos, cell_info)
+			if sprite is None:
+				continue
+			viewport_pos = world_pos - view_rect.topleft
+			screen_pos = viewport_pos + self.get_map_shift()
+			#Log.debug('World: {0}, view: {1}, screen: {2}'.format(world_pos, viewport_pos, screen_pos))
+			try:
+				ui.window.set_cell(screen_pos, sprite.sprite[0])
+			except: # pragma: no cover
+				raise RuntimeError('Failed to draw sprite @{0} (screen {1}): {2} ({3})'.format(world_pos, screen_pos, sprite, cell_info))
+	def print_messages(self, ui, pos, line_width=80):
+		""" Processes unprocessed events and prints
+		currently collected messages on line at specified pos
+		with specified max. width.
+		Clears line if there are no current messages.
+		"""
+		for result in self.game.process_events(bind_self=self): # pragma: no cover -- TODO
+			if not result:
+				continue
+			self.messages.append(result)
+
+		if not self.messages:
+			ui.print_line(pos.y, pos.x, " " * line_width)
+			return
+		to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=line_width, ellipsis="[...]", rjust_ellipsis=True)
+		if not to_remove:
+			del self.messages[:]
+		elif to_remove > 0:
+			self.messages = self.messages[to_remove:]
+		else:
+			self.messages[0] = self.messages[0][-to_remove:]
+		ui.print_line(pos.y, pos.x, message_line.ljust(line_width))
+	def draw_status(self, ui):
+		""" Draws status line/panel with indicators defined in .INDICATORS,
+		which should be a list of tuples (pos, Indicator).
+		Pos should be either a point or an integer (line number) - in the
+		latter case it will draw on the same line as previous indicator,
+		but fit right next to it, considering its width.
+		See Indicator for details.
+		"""
+		prev_pos, prev_width = Point(0, -1), 0
+		for pos, indicator in self.INDICATORS:
+			if isinstance(pos, int):
+				if pos == prev_pos.y:
+					pos = Point(prev_pos.x + prev_width + 1, prev_pos.y)
+				else:
+					pos = Point(0, pos)
+			else:
+				pos = Point(pos)
+			indicator.draw(ui, pos, self)
+			prev_pos, prev_width = pos, indicator.width
+
+	# Actual controls.
+
+	@_MainKeys.bind('S')
+	def exit_game(self):
+		""" Save and quit. """
+		Log.debug('Exiting the game.')
+		return True
+	@_MainKeys.bind('o')
+	def start_autoexplore(self):
+		""" Autoexplore. """
+		self.game.automove()
+	@_MainKeys.bind(list('hjklyubn'), lambda key:src.engine.ui.DIRECTION[str(key)])
+	def move_player(self, direction):
+		""" Move around. """
+		Log.debug('Moving.')
+		if self.aim:
+			new_pos = self.aim + direction
+			if self.game.scene.valid(new_pos) and self.get_viewrect().contains(new_pos, with_border=True):
+				self.aim = new_pos
+		else:
+			self.game.move_actor(self.game.scene.get_player(), direction)
+	@_MainKeys.bind('.')
+	def wait(self):
+		""" Wait in-place / go to selected aim. """
+		if self.aim:
+			self.game.automove(self.aim)
+			self.aim = None
+		else:
+			self.game.wait(self.game.scene.get_player())
+	@_MainKeys.bind('g')
+	def grab_item(self):
+		""" Grab item. """
+		self.game.grab_item_here(self.game.scene.get_player())
+	@_MainKeys.bind('?')
+	def help(self):
+		""" Show this help. """
+		return src.engine.ui.HelpScreen()
+	@_MainKeys.bind('Q')
+	def suicide(self):
+		""" Suicide (quit without saving). """
+		Log.debug('Suicide.')
+		self.game.suicide(self.game.scene.get_player())
+	@_MainKeys.bind('x')
+	def examine(self):
+		""" Examine surroundings (cursor mode). """
+		if self.aim:
+			self.aim = None
+		else:
+			self.aim = self.game.scene.get_global_pos(self.game.scene.get_player())
+	@_MainKeys.bind('>')
+	def descend(self):
+		""" Descend/go down. """
+		if not self.aim:
+			self.game.descend(self.game.scene.get_player())
+	@_MainKeys.bind('<')
+	def ascend(self):
+		""" Ascend/go up. """
+		if not self.aim:
+			self.game.ascend(self.game.scene.get_player())
+	@_MainKeys.bind('~')
+	def god_mode(self):
+		""" God mode options. """
+		return src.engine.ui.GodModeMenu(self.game)
+	@_MainKeys.bind('i')
+	def show_inventory(self):
+		""" Show inventory. """
+		return src.engine.ui.Inventory(self.game.scene.get_player())
+	@_MainKeys.bind('d')
+	def drop_item(self):
+		""" Drop item. """
+		if not self.game.scene.get_player().inventory:
+			self.game.fire_event(Events.InventoryIsEmpty())
+			return
+		return src.engine.ui.Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to drop:",
+				on_select = self.game.drop_item
+			)
+	@_MainKeys.bind('e')
+	def consume(self):
+		""" Consume item. """
+		if not self.game.scene.get_player().inventory:
+			self.game.fire_event(Events.InventoryIsEmpty())
+			return
+		return src.engine.ui.Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to consume:",
+				on_select = self.game.consume_item,
+				)
+	@_MainKeys.bind('w')
+	def wield(self):
+		""" Wield item. """
+		if not self.game.scene.get_player().inventory:
+			self.game.fire_event(Events.InventoryIsEmpty())
+			return
+		return src.engine.ui.Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to wield:",
+				on_select = self.game.wield_item,
+				)
+	@_MainKeys.bind('U')
+	def unwield(self):
+		""" Unwield item. """
+		self.game.unwield_item(self.game.scene.get_player())
+	@_MainKeys.bind('W')
+	def wear(self):
+		""" Wear item. """
+		if not self.game.scene.get_player().inventory:
+			self.game.fire_event(Events.InventoryIsEmpty())
+			return
+		return src.engine.ui.Inventory(
+				self.game.scene.get_player(),
+				caption = "Select item to wear:",
+				on_select = self.game.wear_item,
+				)
+	@_MainKeys.bind('T')
+	def take_off(self):
+		""" Take item off. """
+		self.game.take_off_item(self.game.scene.get_player())
+	@_MainKeys.bind('E')
+	def show_equipment(self):
+		""" Show equipment. """
+		return src.engine.ui.Equipment(self.game, self.game.scene.get_player())
+	@_MainKeys.bind('q')
+	def show_questlog(self):
+		""" List current quests. """
+		return src.engine.ui.QuestLog(self.game.scene, list(self.game.scene.iter_active_quests()))
+	@_MainKeys.bind('C')
+	def chat(self):
+		""" Chat with NPC. """
+		npcs = self.game.get_respondents(self.game.scene.get_player())
+		if not npcs:
+			return None
+		def _chat_with_npc(npc):
+			prompt, on_yes, on_no = self.game.chat(self.game.scene.get_player(), npc)
+			if prompt:
+				return src.engine.ui.TradeDialogMode('"{0}" (y/n)'.format(prompt),
+							on_yes=on_yes, on_no=on_no)
+		if len(npcs) > 1:
+			return src.engine.ui.DirectionDialogMode(on_direction=_chat_with_npc)
+		return _chat_with_npc(npcs[0])
+	@_MainKeys.bind('M')
+	def show_map(self):
+		""" Show map. """
+		return src.engine.ui.MapScreen(self.game.scene, self.get_viewport())
+	@_MainKeys.bind('O')
+	def open_close_doors(self):
+		""" Open/close nearby doors. """
+		self.game.toggle_nearby_doors(self.game.scene.get_player())
 
 class ModalDialog(object):
 	def close(self):

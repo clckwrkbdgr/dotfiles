@@ -34,7 +34,7 @@ def cli(debug=False, logfile=None, use_gui=False):
 			game.generate('overworld')
 	if use_gui:
 		with tkui.TkUI() as ui:
-			main_game = MainGame(game)
+			main_game = tkui.MainGame(game)
 			loop = tkui.ModeLoop(ui)
 			loop.run(main_game)
 	else:
