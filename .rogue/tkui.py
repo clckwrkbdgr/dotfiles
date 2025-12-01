@@ -125,6 +125,7 @@ class TkUI(object):
 		self.root.destroy()
 	def add_keypress(self, key):
 		self.keypresses.append(key)
+		self._loop.action()
 	def font_smaller(self):
 		self._font_size = max(1, self._font_size - 1)
 		self.view.config(font=("Courier", self._font_size))
@@ -175,13 +176,6 @@ class TkUI(object):
 		if self._nodelay != nodelay:
 			self._nodelay = nodelay
 
-		# Emulating (possibly nodelay) getch.
-		while not self.keypresses:
-			if self._destroying:
-				return 0
-			time.sleep(timeout/1000.)
-			if self._nodelay:
-				break
 		if self.keypresses:
 			ch = ord(self.keypresses.pop(0))
 		else:
@@ -201,7 +195,10 @@ class TkUI(object):
 		they will be passed as args/kwargs to the callback.
 		"""
 		key = self.get_keypress(nodelay=nodelay, timeout=timeout)
-		control = keymapping.get(key, bind_self=bind_self)
+		if key is not None:
+			control = keymapping.get(key, bind_self=bind_self)
+		else:
+			control = None
 		if callable(control):
 			callback_args = callback_args or []
 			callback_kwargs = callback_kwargs or {}
@@ -866,15 +863,8 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		"""
 		self.mode = mode
 		mode.loop = self
-		thread = threading.Thread(target=self._thread_func)
-		thread.start()
-		self.ui.root.mainloop()
-		thread.join()
-	def _thread_func(self):
 		self.redraw()
-		while self.action() or self.mode:
-			pass
-		self.ui.root.after(10, self.ui.root.destroy)
+		self.ui.root.mainloop()
 	def redraw(self):
 		""" Redraws all modes, starting from the first non-transparent mode from the end of the current stack. """
 		with self.ui.redraw(clean=True):
@@ -884,6 +874,7 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		current_mode = self.mode
 		if not current_mode.pre_action():
 			self.mode = None
+			self.ui.root.after(10, self.ui.root.destroy)
 			return False
 		mode = current_mode
 		keymapping = mode.get_keymapping()
@@ -894,6 +885,9 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		result = mode.action(control)
 		if not result:
 			self.mode = None
+			self.ui.root.after(10, self.ui.root.destroy)
 			return False
 		self.redraw()
+		if self.mode.nodelay():
+			self.ui.root.after(100, self.action)
 		return True
