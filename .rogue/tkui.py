@@ -30,9 +30,7 @@ class TkUI(object):
 		self.root = None
 		self.view = None
 		self._destroying = False
-		self._nodelay = False
 		self.window = Matrix((100, 30), ' ')
-		self.keypresses = []
 		self._cursor = None
 		self._font_size = 8
 		self._gui_size = 8
@@ -100,7 +98,7 @@ class TkUI(object):
 			frame = tkinter.Frame(self.main_frame)
 			frame.pack()
 			for key in keyline:
-				self._button(frame, text=key, command=lambda _key=key:self.add_keypress(_key))
+				self._button(frame, text=key, command=lambda _key=key:self._loop.action(Key(ord(_key))))
 
 		for button in self._buttons:
 			button.config(font=("Courier", self._gui_size))
@@ -123,9 +121,6 @@ class TkUI(object):
 		self._destroying = True
 		self._loop.mode = None
 		self.root.destroy()
-	def add_keypress(self, key):
-		self.keypresses.append(key)
-		self._loop.action()
 	def font_smaller(self):
 		self._font_size = max(1, self._font_size - 1)
 		self.view.config(font=("Courier", self._font_size))
@@ -165,45 +160,6 @@ class TkUI(object):
 		if self._cursor is not None:
 			self._cursor = None
 		return None
-	
-	def get_keypress(self, nodelay=False, timeout=100): # pragma: no cover -- TODO
-		""" Returns Key object for the pressed key.
-		Waits for keypress, unless nodelay is specified - in that case
-		returns key immediately (after specified timeout msec)
-		or None, if no keys are pressed.
-		"""
-		nodelay = bool(nodelay)
-		if self._nodelay != nodelay:
-			self._nodelay = nodelay
-
-		if self.keypresses:
-			ch = ord(self.keypresses.pop(0))
-		else:
-			ch = -1
-
-		if ch == -1:
-			return None
-		return Key(ch)
-	def get_control(self, keymapping, nodelay=False, timeout=100, bind_self=None, callback_args=None, callback_kwargs=None): # pragma: no cover -- TODO
-		""" Returns mapped object from keymapping for the pressed key
-		or None in case of unknown key.
-		In nodelay mode tries to return keymapping for None,
-		or None value itself if no such keymapping found.
-		See get_keypress and Keymapping.get for other details.
-		Callback will be detected and executed automatically.
-		If callback_args and/or callback_kwargs are given and callback is bound,
-		they will be passed as args/kwargs to the callback.
-		"""
-		key = self.get_keypress(nodelay=nodelay, timeout=timeout)
-		if key is not None:
-			control = keymapping.get(key, bind_self=bind_self)
-		else:
-			control = None
-		if callable(control):
-			callback_args = callback_args or []
-			callback_kwargs = callback_kwargs or {}
-			control = control(*callback_args, **callback_kwargs)
-		return control
 
 _MainKeys = Keymapping()
 class MainGame(Mode):
@@ -233,36 +189,6 @@ class MainGame(Mode):
 		self.game = game
 		self.messages = []
 		self.aim = None
-
-	# Overridden behavior.
-
-	def nodelay(self):
-		return self.game.in_automovement()
-	def get_keymapping(self):
-		if self.messages:
-			return None
-		player = self.game.scene.get_player()
-		if not (player and player.is_alive()):
-			return None
-		if self.nodelay():
-			return None
-		return super(MainGame, self).get_keymapping()
-	def pre_action(self):
-		if not self.game.scene.get_player():
-			return False
-		self.game.perform_automovement()
-		return True
-	def action(self, control):
-		if isinstance(control, clckwrkbdgr.tui.Key):
-			if self.messages:
-				return True
-			player = self.game.scene.get_player()
-			if not (player and player.is_alive()):
-				return False
-			self.game.stop_automovement()
-			return True
-		self.game.process_others()
-		return not control
 
 	# Options for customizations.
 
@@ -869,25 +795,50 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		""" Redraws all modes, starting from the first non-transparent mode from the end of the current stack. """
 		with self.ui.redraw(clean=True):
 			self.mode.redraw(self.ui)
-	def action(self):
+	def action(self, control=None):
 		""" Perform user actions for the current stack of modes. """
 		current_mode = self.mode
-		if not current_mode.pre_action():
+		mode = current_mode
+		if not mode.game.scene.get_player():
 			self.mode = None
 			self.ui.root.after(10, self.ui.root.destroy)
 			return False
-		mode = current_mode
+		mode.game.perform_automovement()
+
 		keymapping = mode.get_keymapping()
+		if mode.messages:
+			keymapping = None
+		player = mode.game.scene.get_player()
+		if not (player and player.is_alive()):
+			keymapping = None
+		if mode.game.in_automovement():
+			keymapping = None
+
 		if keymapping:
-			control = self.ui.get_control(keymapping, nodelay=mode.nodelay(), bind_self=mode, callback_args=mode.get_bind_callback_args())
-		else:
-			control = self.ui.get_keypress(nodelay=mode.nodelay())
-		result = mode.action(control)
+			if control is not None:
+				control = keymapping.get(control, bind_self=mode)
+				if callable(control):
+					callback_args = mode.get_bind_callback_args() or []
+					control = control(*callback_args)
+			else:
+				control = None
+
+		result = not control
+		if isinstance(control, clckwrkbdgr.tui.Key):
+			if mode.messages:
+				result = True
+			player = mode.game.scene.get_player()
+			if not (player and player.is_alive()):
+				result = False
+			mode.game.stop_automovement()
+			result = True
+		mode.game.process_others()
+
 		if not result:
 			self.mode = None
 			self.ui.root.after(10, self.ui.root.destroy)
 			return False
 		self.redraw()
-		if self.mode.nodelay():
+		if self.mode.game.in_automovement():
 			self.ui.root.after(100, self.action)
 		return True
