@@ -162,7 +162,7 @@ class TkUI(object):
 		return None
 
 _MainKeys = Keymapping()
-class MainGame(Mode):
+class MainGame(object):
 	""" Main game mode: map, status line/panel, messages.
 	"""
 	Keys = _MainKeys
@@ -797,41 +797,32 @@ class ModeLoop(object): # pragma: no cover -- TODO
 			self.mode.redraw(self.ui)
 	def action(self, control=None):
 		""" Perform user actions for the current stack of modes. """
-		current_mode = self.mode
-		mode = current_mode
-		if not mode.game.scene.get_player():
+		mode = self.mode
+		player = mode.game.scene.get_player()
+		if not player:
 			self.mode = None
 			self.ui.root.after(10, self.ui.root.destroy)
 			return False
 		mode.game.perform_automovement()
 
-		keymapping = mode.get_keymapping()
+		keymapping = mode.KEYMAPPING
 		if mode.messages:
 			keymapping = None
-		player = mode.game.scene.get_player()
 		if not (player and player.is_alive()):
 			keymapping = None
 		if mode.game.in_automovement():
 			keymapping = None
 
-		if keymapping:
-			if control is not None:
+		result = True
+		if control is not None:
+			if keymapping:
 				control = keymapping.get(control, bind_self=mode)
-				if callable(control):
-					callback_args = mode.get_bind_callback_args() or []
-					control = control(*callback_args)
+				if control:
+					result = not control()
 			else:
-				control = None
-
-		result = not control
-		if isinstance(control, clckwrkbdgr.tui.Key):
-			if mode.messages:
-				result = True
-			player = mode.game.scene.get_player()
-			if not (player and player.is_alive()):
-				result = False
-			mode.game.stop_automovement()
-			result = True
+				if not (player and player.is_alive()):
+					result = False
+				mode.game.stop_automovement()
 		mode.game.process_others()
 
 		if not result:
