@@ -6,7 +6,7 @@ import string
 import configparser
 import logging
 Log = logging.getLogger('rogue')
-from clckwrkbdgr.math import Point, Size, Rect
+from clckwrkbdgr.math import Point, Size, Rect, Direction
 from clckwrkbdgr.math.grid import Matrix
 from clckwrkbdgr.tui import Key, Mode, Keymapping
 from clckwrkbdgr import xdg
@@ -87,21 +87,6 @@ class TkUI(object):
 				)
 		self.view.pack()
 		self.view.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
-
-		keys = [
-				chr(27) + 'S~gdieOayku',
-				' vxwUWTEfh.l',
-				'QcqCMo><mbjn',
-				'prstz ',
-				]
-		for keyline in keys:
-			frame = tkinter.Frame(self.main_frame)
-			frame.pack()
-			for key in keyline:
-				self._button(frame, text=key, command=lambda _key=key:self._loop.action(Key(ord(_key))))
-
-		for button in self._buttons:
-			button.config(font=("Courier", self._gui_size))
 		return self
 	def __exit__(self, *_targs): # pragma: no cover -- TODO
 		config = configparser.ConfigParser()
@@ -113,7 +98,7 @@ class TkUI(object):
 			config.write(f)
 
 	def _button(self, frame, text=None, command=None):
-		button = tkinter.Button(frame, text=text, command=command)
+		button = tkinter.Button(frame, text=text, command=command, font=("Courier", self._gui_size))
 		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 		self._buttons.append(button)
 		button.pack(side='left')
@@ -189,6 +174,45 @@ class MainGame(object):
 		self.game = game
 		self.messages = []
 		self.aim = None
+	def create_window(self, ui):
+		frame = tkinter.Frame(ui.main_frame)
+		frame.pack()
+		ui._button(frame, text=' ', command=lambda:ui._loop.action(lambda:None))
+		ui._button(frame, text='~', command=lambda:ui._loop.action(self.god_mode))
+		ui._button(frame, text='g', command=lambda:ui._loop.action(self.grab_item))
+		ui._button(frame, text='d', command=lambda:ui._loop.action(self.drop_item))
+		ui._button(frame, text='i', command=lambda:ui._loop.action(self.show_inventory))
+		ui._button(frame, text='e', command=lambda:ui._loop.action(self.consume))
+		ui._button(frame, text='O', command=lambda:ui._loop.action(self.open_close_doors))
+		ui._button(frame, text='y', command=lambda:ui._loop.action(lambda:self.move_player(Direction.UP_LEFT)))
+		ui._button(frame, text='k', command=lambda:ui._loop.action(lambda:self.move_player(Direction.UP)))
+		ui._button(frame, text='u', command=lambda:ui._loop.action(lambda:self.move_player(Direction.UP_RIGHT)))
+
+		frame = tkinter.Frame(ui.main_frame)
+		frame.pack()
+		ui._button(frame, text='S', command=lambda:ui._loop.action(self.exit_game))
+		ui._button(frame, text='x', command=lambda:ui._loop.action(self.examine))
+		ui._button(frame, text='w', command=lambda:ui._loop.action(self.wield))
+		ui._button(frame, text='U', command=lambda:ui._loop.action(self.unwield))
+		ui._button(frame, text='W', command=lambda:ui._loop.action(self.wear))
+		ui._button(frame, text='T', command=lambda:ui._loop.action(self.take_off))
+		ui._button(frame, text='E', command=lambda:ui._loop.action(self.show_equipment))
+		ui._button(frame, text='h', command=lambda:ui._loop.action(lambda:self.move_player(Direction.LEFT)))
+		ui._button(frame, text='.', command=lambda:ui._loop.action(self.wait))
+		ui._button(frame, text='l', command=lambda:ui._loop.action(lambda:self.move_player(Direction.RIGHT)))
+
+		frame = tkinter.Frame(ui.main_frame)
+		frame.pack()
+		ui._button(frame, text='Q', command=lambda:ui._loop.action(self.suicide))
+		ui._button(frame, text='q', command=lambda:ui._loop.action(self.show_questlog))
+		ui._button(frame, text='C', command=lambda:ui._loop.action(self.chat))
+		ui._button(frame, text='M', command=lambda:ui._loop.action(self.show_map))
+		ui._button(frame, text='o', command=lambda:ui._loop.action(self.start_autoexplore))
+		ui._button(frame, text='>', command=lambda:ui._loop.action(self.descend))
+		ui._button(frame, text='<', command=lambda:ui._loop.action(self.ascend))
+		ui._button(frame, text='b', command=lambda:ui._loop.action(lambda:self.move_player(Direction.DOWN_LEFT)))
+		ui._button(frame, text='j', command=lambda:ui._loop.action(lambda:self.move_player(Direction.DOWN)))
+		ui._button(frame, text='n', command=lambda:ui._loop.action(lambda:self.move_player(Direction.DOWN_RIGHT)))
 
 	# Options for customizations.
 
@@ -292,16 +316,13 @@ class MainGame(object):
 
 	# Actual controls.
 
-	@_MainKeys.bind('S')
 	def exit_game(self):
 		""" Save and quit. """
 		Log.debug('Exiting the game.')
 		return True
-	@_MainKeys.bind('o')
 	def start_autoexplore(self):
 		""" Autoexplore. """
 		self.game.automove()
-	@_MainKeys.bind(list('hjklyubn'), lambda key:src.engine.ui.DIRECTION[str(key)])
 	def move_player(self, direction):
 		""" Move around. """
 		Log.debug('Moving.')
@@ -311,7 +332,6 @@ class MainGame(object):
 				self.aim = new_pos
 		else:
 			self.game.move_actor(self.game.scene.get_player(), direction)
-	@_MainKeys.bind('.')
 	def wait(self):
 		""" Wait in-place / go to selected aim. """
 		if self.aim:
@@ -319,43 +339,35 @@ class MainGame(object):
 			self.aim = None
 		else:
 			self.game.wait(self.game.scene.get_player())
-	@_MainKeys.bind('g')
 	def grab_item(self):
 		""" Grab item. """
 		self.game.grab_item_here(self.game.scene.get_player())
-	@_MainKeys.bind('Q')
 	def suicide(self):
 		""" Suicide (quit without saving). """
 		Log.debug('Suicide.')
 		self.game.suicide(self.game.scene.get_player())
-	@_MainKeys.bind('x')
 	def examine(self):
 		""" Examine surroundings (cursor mode). """
 		if self.aim:
 			self.aim = None
 		else:
 			self.aim = self.game.scene.get_global_pos(self.game.scene.get_player())
-	@_MainKeys.bind('>')
 	def descend(self):
 		""" Descend/go down. """
 		if not self.aim:
 			self.game.descend(self.game.scene.get_player())
-	@_MainKeys.bind('<')
 	def ascend(self):
 		""" Ascend/go up. """
 		if not self.aim:
 			self.game.ascend(self.game.scene.get_player())
-	@_MainKeys.bind('~')
 	def god_mode(self):
 		""" God mode options. """
 		dialog = GodModeMenu(self.game)
-		dialog.show(self)
-	@_MainKeys.bind('i')
+		dialog.show(self.loop)
 	def show_inventory(self):
 		""" Show inventory. """
 		dialog = Inventory(self.game.scene.get_player())
 		dialog.show(self.loop)
-	@_MainKeys.bind('d')
 	def drop_item(self):
 		""" Drop item. """
 		if not self.game.scene.get_player().inventory:
@@ -367,7 +379,6 @@ class MainGame(object):
 				on_select = self.game.drop_item
 			)
 		dialog.show(self.loop)
-	@_MainKeys.bind('e')
 	def consume(self):
 		""" Consume item. """
 		if not self.game.scene.get_player().inventory:
@@ -379,7 +390,6 @@ class MainGame(object):
 				on_select = self.game.consume_item,
 				)
 		dialog.show(self.loop)
-	@_MainKeys.bind('w')
 	def wield(self):
 		""" Wield item. """
 		if not self.game.scene.get_player().inventory:
@@ -391,11 +401,9 @@ class MainGame(object):
 				on_select = self.game.wield_item,
 				)
 		dialog.show(self.loop)
-	@_MainKeys.bind('U')
 	def unwield(self):
 		""" Unwield item. """
 		self.game.unwield_item(self.game.scene.get_player())
-	@_MainKeys.bind('W')
 	def wear(self):
 		""" Wear item. """
 		if not self.game.scene.get_player().inventory:
@@ -407,21 +415,17 @@ class MainGame(object):
 				on_select = self.game.wear_item,
 				)
 		dialog.show(self.loop)
-	@_MainKeys.bind('T')
 	def take_off(self):
 		""" Take item off. """
 		self.game.take_off_item(self.game.scene.get_player())
-	@_MainKeys.bind('E')
 	def show_equipment(self):
 		""" Show equipment. """
 		dialog = Equipment(self.game, self.game.scene.get_player())
 		dialog.show(self.loop)
-	@_MainKeys.bind('q')
 	def show_questlog(self):
 		""" List current quests. """
 		dialog = QuestLog(self.game.scene, list(self.game.scene.iter_active_quests()))
 		dialog.show(self.loop)
-	@_MainKeys.bind('C')
 	def chat(self):
 		""" Chat with NPC. """
 		npcs = self.game.get_respondents(self.game.scene.get_player())
@@ -439,12 +443,10 @@ class MainGame(object):
 			dialog.show(self.loop)
 			return None
 		return _chat_with_npc(npcs[0])
-	@_MainKeys.bind('M')
 	def show_map(self):
 		""" Show map. """
 		dialog = MapScreen(self.game.scene, self.get_viewport())
 		dialog.show(self.loop)
-	@_MainKeys.bind('O')
 	def open_close_doors(self):
 		""" Open/close nearby doors. """
 		self.game.toggle_nearby_doors(self.game.scene.get_player())
@@ -788,6 +790,7 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		Runs until the last mode is exited.
 		"""
 		self.mode = mode
+		self.mode.create_window(self.ui)
 		mode.loop = self
 		self.redraw()
 		self.ui.root.mainloop()
@@ -816,9 +819,7 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		result = True
 		if control is not None:
 			if keymapping:
-				control = keymapping.get(control, bind_self=mode)
-				if control:
-					result = not control()
+				result = not control()
 			else:
 				if not (player and player.is_alive()):
 					result = False
