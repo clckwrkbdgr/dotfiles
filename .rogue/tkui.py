@@ -798,39 +798,47 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		""" Redraws all modes, starting from the first non-transparent mode from the end of the current stack. """
 		with self.ui.redraw(clean=True):
 			self.mode.redraw(self.ui)
-	def action(self, control=None):
+	def action(self, control):
 		""" Perform user actions for the current stack of modes. """
+		if self.control_mode(control):
+			return True
+		self.mode = None
+		self.ui.root.after(10, self.ui.root.destroy)
+		return False
+	def control_mode(self, control):
 		mode = self.mode
 		player = mode.game.scene.get_player()
-		if not player:
-			self.mode = None
-			self.ui.root.after(10, self.ui.root.destroy)
+		if not (player and player.is_alive()):
 			return False
 		mode.game.perform_automovement()
 
 		keymapping = mode.KEYMAPPING
 		if mode.messages:
 			keymapping = None
-		if not (player and player.is_alive()):
-			keymapping = None
 		if mode.game.in_automovement():
 			keymapping = None
 
 		result = True
-		if control is not None:
-			if keymapping:
-				result = not control()
-			else:
-				if not (player and player.is_alive()):
-					result = False
-				mode.game.stop_automovement()
+		if keymapping:
+			result = not control()
+		else:
+			mode.game.stop_automovement()
 		mode.game.process_others()
 
 		if not result:
-			self.mode = None
-			self.ui.root.after(10, self.ui.root.destroy)
 			return False
 		self.redraw()
 		if self.mode.game.in_automovement():
-			self.ui.root.after(100, self.action)
+			self.ui.root.after(100, self.auto_mode)
+		return True
+	def auto_mode(self):
+		mode = self.mode
+		player = mode.game.scene.get_player()
+		if not player:
+			return False
+		mode.game.perform_automovement()
+		mode.game.process_others()
+		self.redraw()
+		if self.mode.game.in_automovement():
+			self.ui.root.after(100, self.auto_mode)
 		return True
