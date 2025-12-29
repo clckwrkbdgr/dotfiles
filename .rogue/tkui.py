@@ -102,6 +102,7 @@ class TkUI(object):
 		button.config(background=TkUI.BACKGROUND, foreground=TkUI.FOREGROUND)
 		self._buttons.append(button)
 		button.pack(side='left')
+		return button
 	def force_exit(self):
 		self._destroying = True
 		self._loop.mode = None
@@ -174,45 +175,74 @@ class MainGame(object):
 		self.game = game
 		self.messages = []
 		self.aim = None
+		self.main_buttons = []
+		self.main_buttons_hidden = False
+	def hide_main_buttons(self):
+		if self.main_buttons_hidden:
+			return
+		for button in self.main_buttons:
+			button.pack_forget()
+		self.main_buttons_hidden = True
+	def show_main_buttons(self):
+		if not self.main_buttons_hidden:
+			return
+		for button in self.main_buttons:
+			button.pack(side='left')
+		self.main_buttons_hidden = False
+	def action(self, ui, control):
+		result = ui._loop.action(control, self.show_main_buttons)
+		if self.game.in_automovement():
+			self.hide_main_buttons()
+		else:
+			self.show_main_buttons()
+		return result
+	def add_button(self, ui, frame, text, control):
+		is_main = True
+		if control is None:
+			control = lambda:None
+			is_main = False
+		button = ui._button(frame, text=text, command=lambda:self.action(ui, control))
+		if is_main:
+			self.main_buttons.append(button)
 	def create_window(self, ui):
 		frame = tkinter.Frame(ui.main_frame)
 		frame.pack()
-		ui._button(frame, text=' ', command=lambda:ui._loop.action(lambda:None))
-		ui._button(frame, text='~', command=lambda:ui._loop.action(self.god_mode))
-		ui._button(frame, text='g', command=lambda:ui._loop.action(self.grab_item))
-		ui._button(frame, text='d', command=lambda:ui._loop.action(self.drop_item))
-		ui._button(frame, text='i', command=lambda:ui._loop.action(self.show_inventory))
-		ui._button(frame, text='e', command=lambda:ui._loop.action(self.consume))
-		ui._button(frame, text='O', command=lambda:ui._loop.action(self.open_close_doors))
-		ui._button(frame, text='y', command=lambda:ui._loop.action(lambda:self.move_player(Direction.UP_LEFT)))
-		ui._button(frame, text='k', command=lambda:ui._loop.action(lambda:self.move_player(Direction.UP)))
-		ui._button(frame, text='u', command=lambda:ui._loop.action(lambda:self.move_player(Direction.UP_RIGHT)))
+		self.add_button(ui, frame, ' ', None)
+		self.add_button(ui, frame, '~', self.god_mode)
+		self.add_button(ui, frame, 'g', self.grab_item)
+		self.add_button(ui, frame, 'd', self.drop_item)
+		self.add_button(ui, frame, 'i', self.show_inventory)
+		self.add_button(ui, frame, 'e', self.consume)
+		self.add_button(ui, frame, 'O', self.open_close_doors)
+		self.add_button(ui, frame, 'y', lambda:self.move_player(Direction.UP_LEFT))
+		self.add_button(ui, frame, 'k', lambda:self.move_player(Direction.UP))
+		self.add_button(ui, frame, 'u', lambda:self.move_player(Direction.UP_RIGHT))
 
 		frame = tkinter.Frame(ui.main_frame)
 		frame.pack()
-		ui._button(frame, text='S', command=lambda:ui._loop.action(self.exit_game))
-		ui._button(frame, text='x', command=lambda:ui._loop.action(self.examine))
-		ui._button(frame, text='w', command=lambda:ui._loop.action(self.wield))
-		ui._button(frame, text='U', command=lambda:ui._loop.action(self.unwield))
-		ui._button(frame, text='W', command=lambda:ui._loop.action(self.wear))
-		ui._button(frame, text='T', command=lambda:ui._loop.action(self.take_off))
-		ui._button(frame, text='E', command=lambda:ui._loop.action(self.show_equipment))
-		ui._button(frame, text='h', command=lambda:ui._loop.action(lambda:self.move_player(Direction.LEFT)))
-		ui._button(frame, text='.', command=lambda:ui._loop.action(self.wait))
-		ui._button(frame, text='l', command=lambda:ui._loop.action(lambda:self.move_player(Direction.RIGHT)))
+		self.add_button(ui, frame, 'S', self.exit_game)
+		self.add_button(ui, frame, 'x', self.examine)
+		self.add_button(ui, frame, 'w', self.wield)
+		self.add_button(ui, frame, 'U', self.unwield)
+		self.add_button(ui, frame, 'W', self.wear)
+		self.add_button(ui, frame, 'T', self.take_off)
+		self.add_button(ui, frame, 'E', self.show_equipment)
+		self.add_button(ui, frame, 'h', lambda:self.move_player(Direction.LEFT))
+		self.add_button(ui, frame, '.', self.wait)
+		self.add_button(ui, frame, 'l', lambda:self.move_player(Direction.RIGHT))
 
 		frame = tkinter.Frame(ui.main_frame)
 		frame.pack()
-		ui._button(frame, text='Q', command=lambda:ui._loop.action(self.suicide))
-		ui._button(frame, text='q', command=lambda:ui._loop.action(self.show_questlog))
-		ui._button(frame, text='C', command=lambda:ui._loop.action(self.chat))
-		ui._button(frame, text='M', command=lambda:ui._loop.action(self.show_map))
-		ui._button(frame, text='o', command=lambda:ui._loop.action(self.start_autoexplore))
-		ui._button(frame, text='>', command=lambda:ui._loop.action(self.descend))
-		ui._button(frame, text='<', command=lambda:ui._loop.action(self.ascend))
-		ui._button(frame, text='b', command=lambda:ui._loop.action(lambda:self.move_player(Direction.DOWN_LEFT)))
-		ui._button(frame, text='j', command=lambda:ui._loop.action(lambda:self.move_player(Direction.DOWN)))
-		ui._button(frame, text='n', command=lambda:ui._loop.action(lambda:self.move_player(Direction.DOWN_RIGHT)))
+		self.add_button(ui, frame, 'Q', self.suicide)
+		self.add_button(ui, frame, 'q', self.show_questlog)
+		self.add_button(ui, frame, 'C', self.chat)
+		self.add_button(ui, frame, 'M', self.show_map)
+		self.add_button(ui, frame, 'o', self.start_autoexplore)
+		self.add_button(ui, frame, '>', self.descend)
+		self.add_button(ui, frame, '<', self.ascend)
+		self.add_button(ui, frame, 'b', lambda:self.move_player(Direction.DOWN_LEFT))
+		self.add_button(ui, frame, 'j', lambda:self.move_player(Direction.DOWN))
+		self.add_button(ui, frame, 'n', lambda:self.move_player(Direction.DOWN_RIGHT))
 
 	# Options for customizations.
 
@@ -798,14 +828,14 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		""" Redraws all modes, starting from the first non-transparent mode from the end of the current stack. """
 		with self.ui.redraw(clean=True):
 			self.mode.redraw(self.ui)
-	def action(self, control):
+	def action(self, control, on_autostop):
 		""" Perform user actions for the current stack of modes. """
-		if self.control_mode(control):
+		if self.control_mode(control, on_autostop):
 			return True
 		self.mode = None
 		self.ui.root.after(10, self.ui.root.destroy)
 		return False
-	def control_mode(self, control):
+	def control_mode(self, control, on_autostop):
 		mode = self.mode
 		player = mode.game.scene.get_player()
 		if not (player and player.is_alive()):
@@ -829,9 +859,9 @@ class ModeLoop(object): # pragma: no cover -- TODO
 			return False
 		self.redraw()
 		if self.mode.game.in_automovement():
-			self.ui.root.after(100, self.auto_mode)
+			self.ui.root.after(100, lambda:self.auto_mode(on_autostop))
 		return True
-	def auto_mode(self):
+	def auto_mode(self, on_autostop):
 		mode = self.mode
 		player = mode.game.scene.get_player()
 		if not player:
@@ -840,5 +870,7 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		mode.game.process_others()
 		self.redraw()
 		if self.mode.game.in_automovement():
-			self.ui.root.after(100, self.auto_mode)
+			self.ui.root.after(100, lambda:self.auto_mode(on_autostop))
+		else:
+			on_autostop()
 		return True
