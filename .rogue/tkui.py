@@ -196,13 +196,15 @@ class MainGame(object):
 		else:
 			self.show_main_buttons()
 		return result
+	def autostop(self, ui):
+		self.game.stop_automovement()
+		self.game.process_others()
+		ui._loop.redraw()
 	def add_button(self, ui, frame, text, control):
-		is_main = True
 		if control is None:
-			control = lambda:None
-			is_main = False
-		button = ui._button(frame, text=text, command=lambda:self.action(ui, control))
-		if is_main:
+			button = ui._button(frame, text=text, command=lambda:self.autostop(ui))
+		else:
+			button = ui._button(frame, text=text, command=lambda:self.action(ui, control))
 			self.main_buttons.append(button)
 	def create_window(self, ui):
 		frame = tkinter.Frame(ui.main_frame)
@@ -840,19 +842,14 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		player = mode.game.scene.get_player()
 		if not (player and player.is_alive()):
 			return False
-		mode.game.perform_automovement()
 
 		keymapping = mode.KEYMAPPING
 		if mode.messages:
-			keymapping = None
-		if mode.game.in_automovement():
 			keymapping = None
 
 		result = True
 		if keymapping:
 			result = not control()
-		else:
-			mode.game.stop_automovement()
 		mode.game.process_others()
 
 		if not result:
