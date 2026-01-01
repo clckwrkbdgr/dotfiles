@@ -30,7 +30,7 @@ class TkUI(object):
 		self.root = None
 		self.view = None
 		self._destroying = False
-		self.window = Matrix((100, 30), ' ')
+		self.window = Matrix((100, 25), ' ')
 		self._cursor = None
 		self._font_size = 8
 		self._gui_size = 8
@@ -173,7 +173,7 @@ class MainGame(object):
 
 	def __init__(self, game):
 		self.game = game
-		self.messages = []
+		self.messages = None
 		self.aim = None
 		self.main_buttons = []
 		self.main_buttons_hidden = False
@@ -207,6 +207,22 @@ class MainGame(object):
 			button = ui._button(frame, text=text, command=lambda:self.action(ui, control))
 			self.main_buttons.append(button)
 	def create_window(self, ui):
+		frame = tkinter.Frame(ui.main_frame)
+		frame.pack()
+		self.messages = tkinter.Listbox(
+				frame, width=80, height=5,
+				)
+		self.messages.pack(expand=True, fill=tkinter.X, side=tkinter.LEFT)
+		self.messages.config(
+				font=("Courier", ui._gui_size),
+				foreground=TkUI.FOREGROUND,
+				background=TkUI.BACKGROUND,
+				)
+		scrollbar = tkinter.Scrollbar(frame, orient=tkinter.VERTICAL)
+		scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
+		self.messages.config(yscrollcommand=scrollbar.set)
+		scrollbar.config(command=self.messages.yview)
+
 		frame = tkinter.Frame(ui.main_frame)
 		frame.pack()
 		self.add_button(ui, frame, ' ', None)
@@ -250,8 +266,6 @@ class MainGame(object):
 
 	def get_map_shift(self):
 		return Point(0, 0)
-	def get_message_line_rect(self):
-		return Rect(Point(0, 24), Size(80, 1))
 	@functools.lru_cache()
 	def get_viewport(self):
 		return Size(61, 23)
@@ -283,7 +297,17 @@ class MainGame(object):
 		"""
 		ui.cursor(bool(self.aim))
 		self.draw_map(ui)
-		self.print_messages(ui, self.get_message_line_rect().topleft, line_width=self.get_message_line_rect().width)
+
+		sep = False
+		for result in self.game.process_events(bind_self=self):
+			if not result:
+				continue
+			if not sep:
+				self.messages.insert(tkinter.END, '--')
+				sep = True
+			self.messages.insert(tkinter.END, result)
+			self.messages.yview_moveto(1.0)
+
 		self.draw_status(ui)
 		if self.aim:
 			cursor = self.aim + self.get_map_shift() - self.get_viewrect().topleft
@@ -304,28 +328,6 @@ class MainGame(object):
 				ui.window.set_cell(screen_pos, sprite.sprite[0])
 			except: # pragma: no cover
 				raise RuntimeError('Failed to draw sprite @{0} (screen {1}): {2} ({3})'.format(world_pos, screen_pos, sprite, cell_info))
-	def print_messages(self, ui, pos, line_width=80):
-		""" Processes unprocessed events and prints
-		currently collected messages on line at specified pos
-		with specified max. width.
-		Clears line if there are no current messages.
-		"""
-		for result in self.game.process_events(bind_self=self): # pragma: no cover -- TODO
-			if not result:
-				continue
-			self.messages.append(result)
-
-		if not self.messages:
-			ui.print_line(pos.y, pos.x, " " * line_width)
-			return
-		to_remove, message_line = clckwrkbdgr.text.wrap_lines(self.messages, width=line_width, ellipsis="[...]", rjust_ellipsis=True)
-		if not to_remove:
-			del self.messages[:]
-		elif to_remove > 0:
-			self.messages = self.messages[to_remove:]
-		else:
-			self.messages[0] = self.messages[0][-to_remove:]
-		ui.print_line(pos.y, pos.x, message_line.ljust(line_width))
 	def draw_status(self, ui):
 		""" Draws status line/panel with indicators defined in .INDICATORS,
 		which should be a list of tuples (pos, Indicator).
@@ -843,13 +845,7 @@ class ModeLoop(object): # pragma: no cover -- TODO
 		if not (player and player.is_alive()):
 			return False
 
-		keymapping = mode.KEYMAPPING
-		if mode.messages:
-			keymapping = None
-
-		result = True
-		if keymapping:
-			result = not control()
+		result = not control()
 		mode.game.process_others()
 
 		if not result:
