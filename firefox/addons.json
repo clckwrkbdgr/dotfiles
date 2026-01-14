@@ -50,9 +50,9 @@
 			"homepageURL": "https://noscript.net",
 			"id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
 			"name": "NoScript Security Suite",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4658660/noscript-13.5.6.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4664409/noscript-13.5.7.xpi",
 			"type": "extension",
-			"version": "13.5.6"
+			"version": "13.5.7"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/styl-us/",
