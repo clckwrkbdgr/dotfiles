@@ -50,16 +50,16 @@
 			"homepageURL": "https://noscript.net",
 			"id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
 			"name": "NoScript Security Suite",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4664741/noscript-13.5.8.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4665893/noscript-13.5.9.xpi",
 			"type": "extension",
-			"version": "13.5.8"
+			"version": "13.5.9"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/styl-us/",
 			"homepageURL": "https://add0n.com/stylus.html",
 			"id": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}",
 			"name": "Stylus",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4661054/styl_us-2.3.19.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4661054/styl_us-2.3.19_qtD9vir.xpi",
 			"type": "extension",
 			"version": "2.3.19"
 		},
