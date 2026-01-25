@@ -20,6 +20,13 @@ BaseHandler.handle_error = ignore_broken_pipes
 
 @runner.test_suite('html')
 def html_javascript_unittest(tests, quiet=False, verbose=False): # pragma: no cover -- TODO
+	if os.environ.get('CLCKWRKBDGR_UNITTEST_DONT_START_BROWSER'):
+		if subprocess.call(['pgrep', 'firefox'], stdout=subprocess.DEVNULL) != 0:
+			if not quiet:
+				print('Browser is not started, refusing to start new instance due to CLCKWRKBDGR_UNITTEST_DONT_START_BROWSER={0}, skipping tests.'.format(
+					repr(os.environ.get('CLCKWRKBDGR_UNITTEST_DONT_START_BROWSER')),
+					), file=sys.stderr)
+			return 0
 	try:
 		from blackcompany.util.adhocserver import AdhocBackgroundServer
 	except ImportError:
