@@ -41,18 +41,18 @@
 			"homepageURL": "https://github.com/gorhill/uBlock#ublock-origin",
 			"id": "uBlock0@raymondhill.net",
 			"name": "uBlock Origin",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4629131/ublock_origin-1.68.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4675310/ublock_origin-1.69.0.xpi",
 			"type": "extension",
-			"version": "1.68.0"
+			"version": "1.69.0"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/noscript/",
 			"homepageURL": "https://noscript.net",
 			"id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
 			"name": "NoScript Security Suite",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4668449/noscript-13.5.10.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4674630/noscript-13.5.12.xpi",
 			"type": "extension",
-			"version": "13.5.10"
+			"version": "13.5.12"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/styl-us/",
