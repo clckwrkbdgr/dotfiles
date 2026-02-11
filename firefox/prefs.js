@@ -216,6 +216,7 @@ user_pref("devtools.hud.height", 230);
 user_pref("devtools.inspector.simple-highlighters.message-dismissed", true);
 user_pref("devtools.inspector.three-pane-enabled", false);
 user_pref("devtools.netmonitor.msg.visibleColumns", "[\"data\",\"time\"]");
+user_pref("devtools.netmonitor.ui.default-raw-response", true);
 user_pref("devtools.onboarding.telemetry.logged", true);
 user_pref("devtools.selfxss.count", 5);
 user_pref("devtools.theme", "dark");
