@@ -67,8 +67,21 @@ class TestBasicLogger(unittest.TestCase):
 					'[DEBUG] should_create_debug_logger: Debug...\n'
 					)
 
+def fix_issue_with_logging_handlers_at_shutdown(func):
+	""" To prevent issues at atexit (logging.shutdown)
+	with closing pyfakefs handle from logging.FileHandler.
+	"""
+	def _actual(*args, **kwargs):
+		try:
+			backup_handlerList = logging._handlerList[:]
+			return func(*args, **kwargs)
+		finally:
+			logging._handlerList[:] = backup_handlerList
+	return _actual
+
 class TestFileLogger(unittest.fs.TestCase):
-	MODULES = [clckwrkbdgr.logging]
+	MODULES = [clckwrkbdgr.logging, logging]
+	@fix_issue_with_logging_handlers_at_shutdown
 	@unittest.mock.patch('logging.Formatter.converter', side_effect=[time.gmtime(10000)])
 	def should_print_message_to_file_and_stream(self, time_localtime):
 		logfile = Path('/trace.log')
@@ -77,6 +90,7 @@ class TestFileLogger(unittest.fs.TestCase):
 			logger.warning(u'File and stream!')
 			self.assertEqual(stream.getvalue(), '[WARNING] should_print_message_to_file_and_stream: File and stream!\n')
 		self.assertEqual(logfile.read_text(), '1970-01-01 02:46:40:should_print_message_to_file_and_stream:WARNING: File and stream!\n')
+	@fix_issue_with_logging_handlers_at_shutdown
 	@unittest.mock.patch('logging.Formatter.converter', side_effect=[time.gmtime(10000)])
 	def should_print_message_to_file_only(self, time_localtime):
 		logfile = Path('/trace.log')
@@ -84,6 +98,7 @@ class TestFileLogger(unittest.fs.TestCase):
 		logger = init('should_print_message_to_file_and_stream', stream=None, filename=logfile)
 		logger.warning(u'File only!')
 		self.assertEqual(logfile.read_text(), 'previous_content\n1970-01-01 02:46:40:should_print_message_to_file_and_stream:WARNING: File only!\n')
+	@fix_issue_with_logging_handlers_at_shutdown
 	@unittest.mock.patch('logging.Formatter.converter', side_effect=[time.gmtime(10000)])
 	def should_rewrite_file_if_requested(self, time_localtime):
 		logfile = Path('/trace.log')
