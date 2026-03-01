@@ -100,6 +100,7 @@ user_pref("browser.tabs.crashReporting.sendReport", false);
 user_pref("browser.tabs.firefox-view.ui-state.recently-closed-tabs.open", false);
 user_pref("browser.tabs.firefox-view.ui-state.tab-pickup.open", false);
 user_pref("browser.tabs.inTitlebar", 0);
+user_pref("browser.tabs.loadBookmarksInTabs", true);
 user_pref("browser.tabs.loadDivertedInBackground", true);
 user_pref("browser.tabs.remote.autostart.2", true);
 user_pref("browser.theme.content-theme", 0);
