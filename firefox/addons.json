@@ -50,9 +50,9 @@
 			"homepageURL": "https://noscript.net",
 			"id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
 			"name": "NoScript Security Suite",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4674630/noscript-13.5.12.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4711048/noscript-13.6.3.xpi",
 			"type": "extension",
-			"version": "13.5.12"
+			"version": "13.6.3"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/styl-us/",
@@ -86,9 +86,9 @@
 			"homepageURL": "https://github.com/philc/vimium",
 			"id": "{d7742d87-e61d-4b78-b8a1-b469842139fa}",
 			"name": "Vimium",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4618554/vimium_ff-2.3.1.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4698049/vimium_ff-2.4.0.xpi",
 			"type": "extension",
-			"version": "2.3.1"
+			"version": "2.4.0"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/i-m-not-robot-captcha-clicker/",
