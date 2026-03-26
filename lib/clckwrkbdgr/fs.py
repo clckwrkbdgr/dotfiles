@@ -1,4 +1,5 @@
 import os
+import shutil
 import socket, time
 import subprocess
 import contextlib
@@ -242,6 +243,35 @@ def command_clean_files(pattern, debug=False): # pragma: no cover
 				entry.unlink()
 		except Exception as e:
 			Log.error('{0}: {1}'.format(entry, e))
+
+@cli.command('move-tree')
+@click.option('--debug', is_flag=True)
+@click.argument('src_dir', type=Path)
+@click.argument('dest_dir', type=Path)
+@utils.exits_with_return_value
+def command_move_tree(src_dir, dest_dir, debug=False): # pragma: no cover
+	""" Moves contents of the SRC dir to the DEST dir, respecting file tree
+	and replacing existing files unconditionally.
+	Removes SRC directory afterwards if there were no errors.
+	"""
+	Log = logging.init('fs', debug=debug, verbose=True)
+	src_dir = src_dir.absolute()
+	dest_dir = dest_dir.absolute()
+	Log.debug('Moving tree: {0} -> {1}'.format(src_dir, dest_dir))
+	dirs_to_remove = {src_dir}
+	for root, dirs, files in os.walk(str(src_dir)):
+		root = Path(root)
+		dirs_to_remove |= {root/dirname for dirname in dirs}
+		rel_root = root.relative_to(src_dir)
+		for filename in files:
+			src_filename = root/filename
+			dest_filename = dest_dir/rel_root/filename
+			Log.debug('Moving: {0} -> {1}'.format(src_filename, dest_filename))
+			dest_filename.parent.mkdir(parents=True, exist_ok=True)
+			shutil.move(str(src_filename), str(dest_filename))
+	for dirname in sorted(dirs_to_remove, reverse=True):
+		Log.debug('Deleting dir: {0}'.format(dirname))
+		os.rmdir(str(dirname))
 
 if __name__ == '__main__': # pragma: no cover
 	cli()
