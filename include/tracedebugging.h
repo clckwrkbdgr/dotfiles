@@ -316,7 +316,7 @@ char * BADGER_VSNPRINTF(const char * format, va_list args)
 #else
 # define vscprintf(...) vsnprintf(NULL, 0, __VA_ARGS__)
 #endif
-   needed = vscprintf(format, args);
+   needed = (size_t)vscprintf(format, args);
    buffer = (char*)malloc(needed + 1);
 
    vsnprintf(buffer, needed + 1, format, args);
@@ -616,7 +616,7 @@ BADGER_ULTRA_TIME BADGER_GET_ULTRA_TIMESTAMP(void)
 BADGER_STATIC_FUNCTION
 unsigned long long BADGER_ULTRA_TIME_TO_ULLONG(BADGER_ULTRA_TIME timestamp)
 {
-   return timestamp.tv_sec * 1000000 + timestamp.tv_nsec / 1000;
+   return (unsigned long long)(timestamp.tv_sec * 1000000 + timestamp.tv_nsec / 1000);
 }
 
 /** Returns difference between two ultra timestamps with microseconds. */
