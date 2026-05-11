@@ -7,14 +7,14 @@
             "id": "User.scrollDownPage"
         },
         {
-            "command": "scrollUpPage",
-            "id": "User.scrollUpPage"
-        },
-        {
             "command": {
                 "action": "newTab"
             },
             "id": "User.newTab.5DEADB41"
+        },
+        {
+            "command": "scrollUpPage",
+            "id": "User.scrollUpPage"
         },
         {
             "command": {
@@ -41,24 +41,24 @@
     "initialRows": 24,
     "keybindings": [
         {
-            "id": "User.scrollDownPage",
-            "keys": "ctrl+pgdn"
-        },
-        {
             "id": null,
             "keys": "alt+c"
         },
         {
-            "id": "User.prevTab.0",
-            "keys": "ctrl+shift+tab"
+            "id": "User.newTab.5DEADB41",
+            "keys": "ctrl+t"
         },
         {
             "id": "User.nextTab.0",
             "keys": "ctrl+tab"
         },
         {
-            "id": "User.newTab.5DEADB41",
-            "keys": "ctrl+t"
+            "id": "User.prevTab.0",
+            "keys": "ctrl+shift+tab"
+        },
+        {
+            "id": "User.scrollDownPage",
+            "keys": "ctrl+pgdn"
         },
         {
             "id": "User.scrollUpPage",

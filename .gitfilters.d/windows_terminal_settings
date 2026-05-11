@@ -9,3 +9,4 @@ delete schemes "'name': 'Solarized Light'"
 delete schemes "'name': 'Tango Dark'"
 delete schemes "'name': 'Tango Light'"
 delete schemes "'name': 'Vintage'"
+sort keybindings[id]
