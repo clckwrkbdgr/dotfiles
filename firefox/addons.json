@@ -23,9 +23,9 @@
 			"homepageURL": "https://github.com/fregante/GhostText",
 			"id": "ghosttext@bfred.it",
 			"name": "GhostText",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4334686/ghosttext-24.8.10.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4801976/ghosttext-26.5.12.xpi",
 			"type": "extension",
-			"version": "24.8.10"
+			"version": "26.5.12"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/new-tab-override/",
@@ -50,9 +50,9 @@
 			"homepageURL": "https://noscript.net",
 			"id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
 			"name": "NoScript Security Suite",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4777406/noscript-13.6.16.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4794904/noscript-13.6.19.xpi",
 			"type": "extension",
-			"version": "13.6.16"
+			"version": "13.6.19"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/styl-us/",
