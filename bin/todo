@@ -382,14 +382,19 @@ def collect_search(project_name, exclude=None, plugin=None):
 
 @search.command('show')
 @click.argument('project_name')
+@click.option('-e', '--open-editor', is_flag=True, default=False, help='Open findings in editor instead of printing them to stdout.')
+@click.pass_obj
 @utils.exits_with_return_value
-def show_collected_search(project_name):
+def show_collected_search(config, project_name, open_editor):
 	""" Displays all collected todo entries under given PROJECT_NAME.
 	"""
 	entry = SEARCH_PROJECT_ROOT/project_name
 	if not entry.exists():
 		return 1
-	sys.stdout.write(entry.read_text())
+	if open_editor:
+		return 0 == subprocess.call(config.quickfix_editor + [str(entry)], shell=(platform.system() == 'Windows'))
+	else:
+		sys.stdout.write(entry.read_text())
 
 @search.command('list')
 @click.option('-c', '--count', is_flag=True, help='Print number of entries in every batch (in the first column, separated by TAB character).')

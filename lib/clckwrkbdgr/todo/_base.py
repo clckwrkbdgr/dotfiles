@@ -103,6 +103,7 @@ Optional configuration file is keeped for backward compatibility at $XDG_DATA_HO
 \b
 Fields:
 - editor: Command to run editor (list of arguments). Filename will be added to the end of the arg list. Default is [$EDITOR].
+- quickfix_editor: Command to run editor with list of todo seach finding (list of arguments). Filename will be added to the end of the arg list. By default value of config.editor is used.
 - inbox_file: path to INBOX file (may contain tilde and environment variables). Default is "~/.local/share/todo/.INBOX.md"
 - prepend_inbox: prepend new items to INBOX file instead of appending it to the end. Default is False (appending to the end).
 - todo_dir: entries in this directory will be used for default built-in task provider (clckwrkbdgr.todo.provider.todo_dir).
@@ -152,11 +153,13 @@ def read_config(config_file=None):
 		else: # pragma: no cover
 			print("Failed to find module for tasklist class '{0}'".format(tasklist_class_name))
 
+	editor_cmd = list(data.get('editor', [os.environ.get('EDITOR', 'vim')]))
 	return dotdict(
 			inbox_file=Path(os.path.expandvars(data.get('inbox_file', "~/.local/share/todo/.INBOX.md"))).expanduser(),
 			prepend_inbox=bool(data.get('prepend_inbox', False)),
 			pager=data.get('pager', False),
-			editor=list(data.get('editor', [os.environ.get('EDITOR', 'vim')])),
+			editor=editor_cmd,
+			quickfix_editor=list(data.get('quickfix_editor', editor_cmd)),
 			todo_dir=Path(os.path.expandvars(data.get('todo_dir', "~/.local/share/todo/"))).expanduser(),
 			task_providers=list(data.get('task_providers', [])),
 			todo_separator_color=data.get('todo_separator_color', None),

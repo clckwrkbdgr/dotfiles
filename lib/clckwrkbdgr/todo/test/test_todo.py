@@ -190,10 +190,11 @@ class TestConfig(unittest.fs.TestCase):
 	@unittest.mock.patch('importlib.import_module')
 	def should_read_config(self, import_module):
 		config = todo.read_config.__wrapped__()
-		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor', 'pager', 'todo_separator_color'})
+		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor', 'quickfix_editor', 'pager', 'todo_separator_color'})
 		self.assertEqual(config.inbox_file, Path("~/.local/share/todo/.INBOX.md").expanduser())
 		self.assertEqual(config.prepend_inbox, False)
 		self.assertEqual(config.editor, ["myeditor"])
+		self.assertEqual(config.quickfix_editor, ["myeditor"])
 		self.assertEqual(config.todo_dir, Path("~/.local/share/todo/").expanduser())
 		self.assertEqual(config.task_providers, [])
 		self.assertEqual(config.tasklist, None)
@@ -202,7 +203,8 @@ class TestConfig(unittest.fs.TestCase):
 		{
 			"inbox_file" : "~/$MYVAR/inbox.txt",
 			"prepend_inbox" : true,
-			"editor" : ["vim", "+cw"],
+			"editor" : ["vim"],
+			"quickfix_editor" : ["vim", "+cw"],
 			"todo_dir" : "~/$MYVAR",
 			"tasklist" : "my_module.MyTaskList",
 			"task_providers" : [
@@ -217,10 +219,11 @@ class TestConfig(unittest.fs.TestCase):
 		import_module.side_effect = [ImportError, mock_module]
 
 		config = todo.read_config.__wrapped__()
-		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor', 'pager', 'todo_separator_color'})
+		self.assertEqual(set(config.keys()), {'tasklist', 'todo_dir', 'task_providers', 'inbox_file', 'prepend_inbox', 'editor', 'quickfix_editor', 'pager', 'todo_separator_color'})
 		self.assertEqual(config.inbox_file, Path("~/myvalue/inbox.txt").expanduser())
 		self.assertEqual(config.prepend_inbox, True)
-		self.assertEqual(config.editor, ["vim", "+cw"])
+		self.assertEqual(config.editor, ["vim"])
+		self.assertEqual(config.quickfix_editor, ["vim", "+cw"])
 		self.assertEqual(config.todo_dir, Path("~/myvalue").expanduser())
 		self.assertEqual(config.task_providers, ["foo", "bar"])
 		self.assertEqual(config.tasklist, MyTaskList)
