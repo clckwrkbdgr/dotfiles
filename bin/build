@@ -45,6 +45,13 @@ def build_python_setuptools(toolchain, install=False, install_global=False, quie
 		for entry in os.listdir('dist')
 		if entry.endswith('.whl')
 		], key=os.path.getmtime)))
+	if len(wheels) != 1 and toolchain is not None:
+		wheels = list(reversed(sorted([
+			os.path.join('dist', entry)
+			for entry in os.listdir('dist')
+			if entry.endswith('.whl')
+			and 'py{0}'.format(toolchain[0]) in entry
+			], key=os.path.getmtime)))
 	if len(wheels) != 1:
 		print('Expected only one wheel:', file=sys.stderr)
 		print('  ' + '\n  '.join(wheels))
