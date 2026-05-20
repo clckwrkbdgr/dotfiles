@@ -7,7 +7,6 @@ try:
 	from pathlib2 import Path
 except ImportError: # pragma: no cover
 	from pathlib import Path
-from clckwrkbdgr.serialize.entity import SerializedEntity
 from . import utils
 from . import logging
 
