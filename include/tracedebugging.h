@@ -307,6 +307,7 @@ const char * BADGER_TRACE_FORMAT(int use_colors)
 BADGER_STATIC_FUNCTION
 char * BADGER_VSNPRINTF(const char * format, va_list args)
 {
+   va_list args_for_length;
    size_t needed = 0;
    char * buffer = NULL;
 
@@ -316,7 +317,9 @@ char * BADGER_VSNPRINTF(const char * format, va_list args)
 #else
 # define vscprintf(...) vsnprintf(NULL, 0, __VA_ARGS__)
 #endif
-   needed = (size_t)vscprintf(format, args);
+   va_copy(args_for_length, args);
+   needed = (size_t)vscprintf(format, args_for_length);
+   va_end(args_for_length);
    buffer = (char*)malloc(needed + 1);
 
    vsnprintf(buffer, needed + 1, format, args);
