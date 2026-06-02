@@ -35,16 +35,16 @@ class TestVector(unittest.TestCase):
 	@unittest.skipUnless(jsonpickle, "Jsonpickle is not detected.")
 	def should_serialize_vector_to_json(self): # pragma: no cover -- TODO needs mocks instead of just skipping.
 		p = MyVector(1, 2)
-		data = json.loads(jsonpickle.encode(p, unpicklable=False))
+		data = json.loads(jsonpickle.encode(p, unpicklable=False, keys=True))
 		self.assertEqual(data, [1, 2])
-		self.assertEqual(jsonpickle.decode(jsonpickle.encode(p)), p)
+		self.assertEqual(jsonpickle.decode(jsonpickle.encode(p, keys=True), keys=True), p)
 	def should_have_hash(self):
 		p = MyVector(1, 2)
 		other = MyVector(1, 2)
 		self.assertEqual(set([p]), set([other]))
 	@unittest.skipUnless(jsonpickle, "Jsonpickle is not detected.")
 	def should_deserialize_old_vector(self): # pragma: no cover -- TODO needs mocks instead of just skipping.
-		q = jsonpickle.decode('{"py/newargs": {"py/tuple": [1, 2]}, "py/object": "clckwrkbdgr.math.test.test_math.MyVector", "py/seq": [1, 2]}')
+		q = jsonpickle.decode('{"py/newargs": {"py/tuple": [1, 2]}, "py/object": "clckwrkbdgr.math.test.test_math.MyVector", "py/seq": [1, 2]}', keys=True)
 		self.assertEqual(q.first, 1)
 		self.assertEqual(q.second, 2)
 	def should_create_vector_from_other_vector(self):
@@ -139,9 +139,9 @@ class TestRect(unittest.TestCase):
 	@unittest.skipUnless(jsonpickle, "Jsonpickle is not detected.")
 	def should_serialize_rect(self): # pragma: no cover -- TODO needs mocks instead of just skipping.
 		rect = Rect((1, 2), (4, 5))
-		data = json.loads(jsonpickle.encode(rect, unpicklable=False))
+		data = json.loads(jsonpickle.encode(rect, unpicklable=False, keys=True))
 		self.assertEqual(data, {'topleft': [1, 2], 'size' : [4, 5]})
-		self.assertEqual(jsonpickle.decode(jsonpickle.encode(rect)), rect)
+		self.assertEqual(jsonpickle.decode(jsonpickle.encode(rect, keys=True), keys=True), rect)
 	def should_check_if_rects_are_equal(self):
 		self.assertEqual(Rect((1, 2), (4, 5)), Rect((1, 2), (4, 5)))
 		self.assertNotEqual(Rect((1, 2), (4, 5)), Rect((1, 2), (14, 15)))
