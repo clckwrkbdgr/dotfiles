@@ -76,6 +76,11 @@ def run_python_unittests(version, tests, quiet=False, verbose=False): # pragma: 
 		if setup_cfg.has_option(custom_coverage_run_category, 'omit'):
 			custom_omit.extend(setup_cfg.get(custom_coverage_run_category, 'omit').splitlines())
 
+	override_report_coveragerc = None
+	if setup_cfg.has_section('unittest'):
+		if setup_cfg.has_option('unittest', 'override_report_coveragerc'):
+			override_report_coveragerc = os.path.expanduser(os.path.expandvars(setup_cfg.get('unittest', 'override_report_coveragerc')))
+
 	if platform.system() == 'Windows':
 		python_runner = ['py', '-{0}'.format(version)]
 		rc = subprocess.call(python_runner + ['-V'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -134,6 +139,8 @@ def run_python_unittests(version, tests, quiet=False, verbose=False): # pragma: 
 	args = python_runner + ['-m', 'coverage', 'report', '-m']
 	if custom_omit:
 		args.extend(['--omit', ','.join(custom_omit)])
+	if override_report_coveragerc and os.path.exists(override_report_coveragerc):
+		args.extend(['--rcfile', override_report_coveragerc])
 	return quiet_call(args,
 			quiet_stdout_patterns=PYTHON_COVERAGE_QUIET_PATTERNS if quiet else None,
 			exclude_stdout_patterns=PYTHON_COVERAGE_QUIET_EXCLUDE_PATTERNS if quiet else None,
