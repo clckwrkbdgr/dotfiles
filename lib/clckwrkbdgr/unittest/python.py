@@ -78,7 +78,7 @@ def run_python_unittests(version, tests, quiet=False, verbose=False): # pragma: 
 
 	override_report_coveragerc = None
 	if setup_cfg.has_section('unittest'):
-		version_specific_category_name = 'override_report_coveragerc:py{0}'.format(version)
+		version_specific_category_name = 'override_report_coveragerc.py{0}'.format(version)
 		if setup_cfg.has_option('unittest', version_specific_category_name):
 			override_report_coveragerc = os.path.expanduser(os.path.expandvars(setup_cfg.get('unittest', version_specific_category_name)))
 		elif setup_cfg.has_option('unittest', 'override_report_coveragerc'):
