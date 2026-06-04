@@ -12,6 +12,7 @@ def init(logger,
 		timestamps=False,
 		filename=None, stream=sys.stderr,
 		rewrite_file=False,
+		add_root_logger=True,
 		):
 	""" Creates and initializes specified logger (logging.Logger object or name).
 
@@ -27,6 +28,8 @@ def init(logger,
 	- file: <time>:<logger name>:<LEVEL>:<message>
 
 	If timestamps is True, then stream logger also will have timestamps.
+
+	If add_global_logger is True (by default), root logger is also initialized the same way.
 
 	Returns created logger. Logger can also be accessed later using logging.getLogger(name)
 	Returned logger will be callable, direct call will be equivalent to calling logging function corresponding to minimal logging level (e.g. logger.debug, logger.warning etc).
@@ -48,7 +51,7 @@ def init(logger,
 		level = logging.INFO
 
 	loggers = [logger]
-	if not logging.getLogger().handlers:
+	if add_root_logger and not logging.getLogger().handlers:
 		logging.basicConfig()
 		for _handler in logging.root.handlers[:]: # We will use custom logger instead of the stock one.
 			logging.root.removeHandler(_handler)

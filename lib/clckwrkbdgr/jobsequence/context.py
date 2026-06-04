@@ -108,6 +108,7 @@ class Context: # pragma: no cover -- TODO need mocks
 		clckwrkbdgr.logging.init(self._logger,
 				verbose=(self._verbose_level == 1),
 				debug=(self._verbose_level is not None and self._verbose_level > 1),
+				add_root_logger=False,
 				)
 		self._returncode = 0
 	def script(self, name=None, shebang=None, rootdir=None, overwrite=True):
