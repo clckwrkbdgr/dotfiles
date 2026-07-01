@@ -83,6 +83,8 @@ def html_javascript_unittest(tests, quiet=False, verbose=False): # pragma: no co
 	custom_port = os.environ.get('CLCKWRKBDGR_UNITTEST_HTML_PORT')
 	with AdhocBackgroundServer(port=custom_port) as server:
 		rc = run_tests(found_tests, port=server.port)
+		if rc != 0:
+			return rc
 		# Wait until all unit test pages execute and return results.
 		for _ in range(10000):
 			time.sleep(0.1)
