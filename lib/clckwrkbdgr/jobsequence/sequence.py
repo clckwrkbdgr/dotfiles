@@ -56,8 +56,13 @@ def run_job_executable(executable, header=None): # pragma: no cover -- TODO proc
 	header = header or (str(executable)+'\n')
 	process = subprocess.Popen([str(executable)], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) # TODO maybe stdin=DEVNULL? As these jobs should always be automatically.
 	stdout, stderr = process.communicate()
-	if stdout or stderr:
-		sys.stdout.write(header)
+	rc = process.wait()
+	if stdout or stderr or rc != 0:
+		if rc == 0:
+			sys.stdout.write(header)
+		else:
+			ln = '\n' if header.endswith('\n') else ''
+			sys.stdout.write(header.rstrip() + ' (RC = {0}){1}'.format(rc, ln))
 		sys.stdout.flush()
 	was_output = b''
 	if stdout:
@@ -74,7 +79,6 @@ def run_job_executable(executable, header=None): # pragma: no cover -- TODO proc
 		else:
 			sys.stderr.write(stderr)
 		sys.stderr.flush()
-	rc = process.wait()
 	return rc, was_output
 
 class JobSequence:
