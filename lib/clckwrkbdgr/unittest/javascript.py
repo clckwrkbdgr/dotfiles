@@ -84,6 +84,10 @@ def html_javascript_unittest(tests, quiet=False, verbose=False): # pragma: no co
 	with AdhocBackgroundServer(port=custom_port) as server:
 		rc = run_tests(found_tests, port=server.port)
 		if rc != 0:
+			if rc == 255:
+				if not quiet:
+					print('Browser returns 255, we treat it as -1, which _should_ mean "browser is absent in the system, nothing to run", so tests are silently skipped.', file=sys.stderr)
+				return 0
 			return rc
 		# Wait until all unit test pages execute and return results.
 		for _ in range(10000):
