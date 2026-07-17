@@ -59,9 +59,9 @@
 			"homepageURL": "https://add0n.com/stylus.html",
 			"id": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}",
 			"name": "Stylus",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4899605/styl_us-2.4.6.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4903256/styl_us-2.4.7.xpi",
 			"type": "extension",
-			"version": "2.4.6"
+			"version": "2.4.7"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/request-blocker-we/",
