@@ -12,6 +12,7 @@ try: # pragma: no cover
 	def _get_xpath_value(root, xpath):
 		return root.xpath(xpath)
 	def _find_abs_xpath(el, xpath):
+		xpath = xpath.lstrip(':') # See fallback version of _find_abs_xpath below.
 		elements = el.xpath(xpath, namespaces=el.nsmap)
 		for element in elements:
 			if isinstance(element, ET._ElementUnicodeResult) or isinstance(element, ET._ElementStringResult) :
@@ -58,6 +59,14 @@ except ImportError: # pragma: no cover
 		return root.find(xpath)
 	XPATH_WITH_ATTR = re.compile(r'^(.*)/@([-A-Za-z_0-9]+)$')
 	def _find_abs_xpath(el, xpath):
+		namespaces = _parse.nsmap
+		if xpath.startswith(':/'):
+			# Special custom syntax for XPath expression to work around
+			# namespaces issues with .findall if there are no NSes assigned
+			# for nodes - for some reason ET refuses to find any element
+			# in such case, so we omit NSes from findall completely.
+			xpath = xpath[1:]
+			namespaces = None
 		assert xpath.startswith('/')
 		root_name, rel_xpath = xpath[1:].split('/', 1)
 		el_real_tag = el.tag
@@ -65,7 +74,7 @@ except ImportError: # pragma: no cover
 			el_ns, el_real_tag = el_real_tag.split('}')
 			el_ns = el_ns.rsplit('/', 1)[-1].rstrip('#')
 			el_real_tag = el_ns + ':' + el_real_tag
-		assert el_real_tag == root_name
+		assert el_real_tag == root_name, (el.tag, el_real_tag, root_name)
 		attr = XPATH_WITH_ATTR.match(rel_xpath)
 		if attr:
 			rel_xpath, attr = attr.group(1), attr.group(2)
@@ -77,7 +86,7 @@ except ImportError: # pragma: no cover
 			else:
 				yield el, None
 			return
-		for element in el.findall("./" + rel_xpath, namespaces=_parse.nsmap):
+		for element in el.findall("./" + rel_xpath, namespaces=namespaces):
 			if attr:
 				yield element, attr
 			else:
