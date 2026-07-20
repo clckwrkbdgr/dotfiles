@@ -32,9 +32,9 @@
 			"homepageURL": "https://www.soeren-hentzschel.at/firefox-webextensions/new-tab-override/",
 			"id": "newtaboverride@agenedia.com",
 			"name": "New Tab Override",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4861424/new_tab_override-18.0.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4907726/new_tab_override-19.0.0.xpi",
 			"type": "extension",
-			"version": "18.0.0"
+			"version": "19.0.0"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/",
@@ -59,9 +59,9 @@
 			"homepageURL": "https://add0n.com/stylus.html",
 			"id": "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}",
 			"name": "Stylus",
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4903256/styl_us-2.4.7.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4907275/styl_us-2.4.8.xpi",
 			"type": "extension",
-			"version": "2.4.7"
+			"version": "2.4.8"
 		},
 		{
 			"amoListingURL": "https://addons.mozilla.org/en-US/firefox/addon/request-blocker-we/",
