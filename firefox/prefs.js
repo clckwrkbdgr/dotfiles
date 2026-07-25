@@ -615,7 +615,6 @@ user_pref("services.sync.migrated", true);
 user_pref("services.sync.nextSync", 0);
 user_pref("services.sync.tabs.lastSync", "0");
 user_pref("services.sync.tabs.lastSyncLocal", "0");
-user_pref("sidebar.backupState", "{\"command\":\"\",\"panelOpen\":false,\"launcherExpanded\":false,\"launcherVisible\":false}");
 user_pref("sidebar.visibility", "hide-sidebar");
 user_pref("signon.autologin.proxy", true);
 user_pref("signon.importedFromSqlite", true);
