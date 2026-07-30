@@ -125,18 +125,21 @@ def with_stdin_content(enviro_action=None):
 			finally:
 				if not has_content:
 					if enviro_action == 'restore':
-						if sys.version_info >= (3, 0): # pragma: no cover -- os/py-version dependent.
-							bin_stdout = sys.stdout.buffer
-						else: # pragma: no cover -- os/py-version dependent.
-							if sys.platform == "win32":
-								import msvcrt
-								msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
-							bin_stdout = sys.stdout
 						data = settings.format.encode(settings.content)
 						assert hasattr(data, 'decode'), "Encoded output does not look like binary data"
-						bin_stdout.write(data) # Returning binary data.
 					else:
-						sys.stdout.write(settings.content) # Returning text representation.
+						try: # pragma: no cover
+							data = settings.content.encode()
+						except UnicodeError: # pragma: no cover
+							data = settings.content.encode('utf-8')
+					if sys.version_info >= (3, 0): # pragma: no cover -- os/py-version dependent.
+						bin_stdout = sys.stdout.buffer
+					else: # pragma: no cover -- os/py-version dependent.
+						if sys.platform == "win32":
+							import msvcrt
+							msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+						bin_stdout = sys.stdout
+					bin_stdout.write(data) # Returning binary data.
 					delattr(settings, 'content')
 		return _wrapper
 	return _actual

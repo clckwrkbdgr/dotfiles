@@ -128,13 +128,21 @@ class XMLConfig(ConfigFilter):
 		""" Deletes XML nodes at specified xpath (node/attr) matching given pattern.
 		E.g. /root/sub/item/@attr - removes ./item where attr matches pattern,
 		or /root/sub/item - removes item where content matches pattern.
+		If @attr is specified and attr name ends with "!", deletes attribute instead of the node.
 		"""
 		pattern = convert_pattern(pattern, pattern_type)
+		del_attribute = False
+		if xpath.endswith('!'): # pragma: no cover -- TODO
+			del_attribute = True
+			xpath = xpath[:-1]
 		for element, attr in _find_abs_xpath(self.content, xpath):
 			if attr:
 				element_attr = element.get(attr)
 				if element_attr and pattern.match(element_attr):
-					_getparent(element, self.content).remove(element)
+					if del_attribute: # pragma: no cover -- TODO
+						del element.attrib[attr]
+					else:
+						_getparent(element, self.content).remove(element)
 			else:
 				if element.text is None or pattern.match(element.text):
 					_getparent(element, self.content).remove(element)
