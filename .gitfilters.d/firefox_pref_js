@@ -163,6 +163,7 @@ delete 'browser.region.update.*' ''
 delete 'devtools.netmonitor.requestfilter' ''
 delete 'sidebar.old-sidebar.has-used' ''
 delete 'sidebar.backupState' ''
+delete 'browser.topsites.contile.cacheValidFor' ''
 
 replace 'extensions.systemAddonSet' '{.*}' --with '{"schema":1,"addons":{}}' --pattern-type=regex
 #sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \

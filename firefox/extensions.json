@@ -10,6 +10,166 @@
 			"dependencies": [],
 			"embedderDisabled": false,
 			"foreignInstall": false,
+			"hidden": true,
+			"id": "addons-search-detection@mozilla.com",
+			"loader": null,
+			"location": "app-builtin-addons",
+			"manifestVersion": 2,
+			"optionsBrowserStyle": true,
+			"optionsType": null,
+			"requestedPermissions": {
+				"data_collection": [],
+				"origins": [],
+				"permissions": []
+			},
+			"skinnable": false,
+			"softDisabled": false,
+			"sourceURI": null,
+			"strictCompatibility": true,
+			"syncGUID": "{6cfd9dc6-b92a-43ff-aaf6-eeb85cfb2024}",
+			"type": "extension",
+			"userDisabled": false,
+			"version": "2.0.0",
+			"visible": true
+		},
+		{
+			"aboutURL": null,
+			"active": true,
+			"appDisabled": false,
+			"blocklistAttentionDismissed": false,
+			"blocklistState": 0,
+			"blocklistURL": null,
+			"dependencies": [],
+			"embedderDisabled": false,
+			"foreignInstall": false,
+			"hidden": true,
+			"id": "formautofill@mozilla.org",
+			"loader": null,
+			"location": "app-builtin-addons",
+			"manifestVersion": 2,
+			"optionsBrowserStyle": true,
+			"optionsType": null,
+			"requestedPermissions": {
+				"data_collection": [],
+				"origins": [],
+				"permissions": []
+			},
+			"skinnable": false,
+			"softDisabled": false,
+			"sourceURI": null,
+			"strictCompatibility": true,
+			"syncGUID": "{4c91e0de-bc92-4983-b132-2efc2448f547}",
+			"type": "extension",
+			"userDisabled": false,
+			"version": "1.0.1",
+			"visible": true
+		},
+		{
+			"aboutURL": null,
+			"active": true,
+			"appDisabled": false,
+			"blocklistAttentionDismissed": false,
+			"blocklistState": 0,
+			"blocklistURL": null,
+			"dependencies": [],
+			"embedderDisabled": false,
+			"foreignInstall": false,
+			"hidden": true,
+			"id": "newtab@mozilla.org",
+			"loader": null,
+			"location": "app-builtin-addons",
+			"manifestVersion": 2,
+			"optionsBrowserStyle": true,
+			"optionsType": null,
+			"requestedPermissions": {
+				"data_collection": [],
+				"origins": [],
+				"permissions": []
+			},
+			"skinnable": false,
+			"softDisabled": false,
+			"sourceURI": null,
+			"strictCompatibility": true,
+			"syncGUID": "{c4fdaa37-f1d2-494e-bd6e-ba670eb2af2e}",
+			"type": "extension",
+			"userDisabled": false,
+			"version": "140.0.0",
+			"visible": true
+		},
+		{
+			"aboutURL": null,
+			"active": true,
+			"appDisabled": false,
+			"blocklistAttentionDismissed": false,
+			"blocklistState": 0,
+			"blocklistURL": null,
+			"dependencies": [],
+			"embedderDisabled": false,
+			"foreignInstall": false,
+			"hidden": true,
+			"id": "pictureinpicture@mozilla.org",
+			"loader": null,
+			"location": "app-builtin-addons",
+			"manifestVersion": 2,
+			"optionsBrowserStyle": true,
+			"optionsType": null,
+			"requestedPermissions": {
+				"data_collection": [],
+				"origins": [],
+				"permissions": []
+			},
+			"skinnable": false,
+			"softDisabled": false,
+			"sourceURI": null,
+			"strictCompatibility": true,
+			"syncGUID": "{72640a5c-7874-4255-8488-db08f54e8d63}",
+			"type": "extension",
+			"userDisabled": false,
+			"version": "1.0.0",
+			"visible": true
+		},
+		{
+			"aboutURL": null,
+			"active": true,
+			"appDisabled": false,
+			"blocklistAttentionDismissed": false,
+			"blocklistState": 0,
+			"blocklistURL": null,
+			"dependencies": [],
+			"embedderDisabled": false,
+			"foreignInstall": false,
+			"hidden": true,
+			"id": "webcompat@mozilla.org",
+			"loader": null,
+			"location": "app-builtin-addons",
+			"manifestVersion": 2,
+			"optionsBrowserStyle": true,
+			"optionsType": null,
+			"requestedPermissions": {
+				"data_collection": [],
+				"origins": [],
+				"permissions": []
+			},
+			"skinnable": false,
+			"softDisabled": false,
+			"sourceURI": null,
+			"strictCompatibility": true,
+			"syncGUID": "{a43716e1-c51e-47a3-aab0-25821f448d3f}",
+			"type": "extension",
+			"userDisabled": false,
+			"version": "140.13.0",
+			"visible": true
+		},
+		{
+			"aboutURL": null,
+			"active": true,
+			"appDisabled": false,
+			"blocklistAttentionDismissed": false,
+			"blocklistState": 0,
+			"blocklistURL": null,
+			"dependencies": [],
+			"embedderDisabled": false,
+			"foreignInstall": false,
 			"hidden": false,
 			"id": "@mutelinks",
 			"loader": null,
@@ -18,6 +178,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 5,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -28,9 +189,9 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4271092/mutelinks-0.2.3resigned1.xpi",
+			"sourceURI": null,
 			"strictCompatibility": true,
-			"syncGUID": "{fa548d43-837e-4f6a-b54d-4115e8b82723}",
+			"syncGUID": "{dba2084c-2587-4b8b-8f5d-933ec396259a}",
 			"type": "extension",
 			"userDisabled": false,
 			"version": "0.2.3resigned1",
@@ -54,6 +215,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -64,12 +226,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4405733/tampermonkey-5.3.3.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4797143/tampermonkey-5.5.0.xpi",
 			"strictCompatibility": true,
-			"syncGUID": "{ef09a717-2421-4fcb-9fa0-35cfdb5f6c36}",
+			"syncGUID": "{b4859d9e-382d-4b64-942d-4425869d3700}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "5.3.3",
+			"version": "5.5.0",
 			"visible": true
 		},
 		{
@@ -90,6 +252,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 5,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [
 					"http://localhost/",
 					"http://localhost:4001/*"
@@ -103,12 +266,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4334686/ghosttext-24.8.10.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4801976/ghosttext-26.5.12.xpi",
 			"strictCompatibility": true,
-			"syncGUID": "{4915360e-6908-4ad5-af60-caf15bb31d7b}",
+			"syncGUID": "{702165f3-c5b3-499b-b911-d101b03a0704}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "24.8.10",
+			"version": "26.5.12",
 			"visible": true
 		},
 		{
@@ -129,6 +292,7 @@
 			"optionsBrowserStyle": true,
 			"optionsType": null,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -141,10 +305,10 @@
 			"softDisabled": false,
 			"sourceURI": "https://gv.erinome.net/godville/godville-ui-plus-firefox-we-latest.xpi",
 			"strictCompatibility": true,
-			"syncGUID": "{a16e5fd6-ec26-4c0e-9c0b-9ad73f67b7cb}",
+			"syncGUID": "{cf26d81d-76a9-41da-a44a-703299195270}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.1.38.6",
+			"version": "1.1.39.10",
 			"visible": true
 		},
 		{
@@ -165,6 +329,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [
 					"https://www.soeren-hentzschel.at/*"
 				],
@@ -177,12 +342,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4442226/new_tab_override-17.0.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4907726/new_tab_override-19.0.0.xpi",
 			"strictCompatibility": true,
-			"syncGUID": "{b99ecef3-6239-4db5-a030-ef8c89657283}",
+			"syncGUID": "{a58126d8-aa5c-4537-9835-007fcebbed9b}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "17.0.0",
+			"version": "19.0.0",
 			"visible": true
 		},
 		{
@@ -203,6 +368,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -213,12 +379,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4492375/ublock_origin-1.64.0.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4981431/ublock_origin-1.74.0.xpi",
 			"strictCompatibility": true,
-			"syncGUID": "{c1f4c119-9cc0-4da2-b91a-7cba61f68243}",
+			"syncGUID": "{6bc367d7-c4b8-4acf-ae02-eff3661f70ba}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.64.0",
+			"version": "1.74.0",
 			"visible": true
 		},
 		{
@@ -239,6 +405,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -249,12 +416,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4497468/noscript-13.0.8.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4968026/noscript-13.6.32.xpi",
 			"strictCompatibility": true,
-			"syncGUID": "{a4224489-1408-4951-a90f-510526edd38e}",
+			"syncGUID": "{2de90fae-7015-4c61-b51d-97eb5d3eedbd}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "13.0.8",
+			"version": "13.6.32",
 			"visible": true
 		},
 		{
@@ -275,6 +442,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -285,12 +453,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4451438/styl_us-2.3.14.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4970801/styl_us-2.4.11.xpi",
 			"strictCompatibility": true,
-			"syncGUID": "{9473608a-d068-45af-90a5-ff851165b8a9}",
+			"syncGUID": "{cbc3ee05-251f-4f70-9871-23c9ae87b656}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "2.3.14",
+			"version": "2.4.11",
 			"visible": true
 		},
 		{
@@ -311,6 +479,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -321,9 +490,9 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4193619/request_blocker_we-0.6.2.xpi",
+			"sourceURI": null,
 			"strictCompatibility": true,
-			"syncGUID": "{1a5c2ea4-bde9-40d9-a7e2-01ed945c64b3}",
+			"syncGUID": "{a85f68f9-b8b6-4935-8a52-2c9de2979ff5}",
 			"type": "extension",
 			"userDisabled": false,
 			"version": "0.6.2",
@@ -347,6 +516,7 @@
 			"optionsBrowserStyle": true,
 			"optionsType": null,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -357,9 +527,9 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3486391/ourstickys_sticky_notes-0.1.99.xpi",
+			"sourceURI": null,
 			"strictCompatibility": true,
-			"syncGUID": "{9679c393-5b94-4f2d-8324-f6e988ebebf6}",
+			"syncGUID": "{a4e651d8-906b-4ac9-a462-fc3914babbda}",
 			"type": "extension",
 			"userDisabled": false,
 			"version": "0.1.99",
@@ -383,6 +553,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [
 					"<all_urls>",
 					"file:///",
@@ -397,12 +568,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4524018/vimium_ff-2.3.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4717567/vimium_ff-2.4.2.xpi",
 			"strictCompatibility": true,
-			"syncGUID": "{6df8a213-bf81-4a04-9774-dfe80ef46b35}",
+			"syncGUID": "{c09656f2-57f5-4b0e-b3fb-542a394d58da}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "2.3",
+			"version": "2.4.2",
 			"visible": true
 		},
 		{
@@ -423,6 +594,7 @@
 			"optionsBrowserStyle": false,
 			"optionsType": 3,
 			"requestedPermissions": {
+				"data_collection": [],
 				"origins": [],
 				"permissions": []
 			},
@@ -433,9 +605,9 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/3897119/i_m_not_robot_captcha_clicker-1.3.1.xpi",
+			"sourceURI": null,
 			"strictCompatibility": true,
-			"syncGUID": "{a6bfeb67-4439-4d52-b8b0-5689e777dd0b}",
+			"syncGUID": "{ce2b0105-c48e-42f2-9873-59d68aa1ea9e}",
 			"type": "extension",
 			"userDisabled": false,
 			"version": "1.3.1",

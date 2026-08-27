@@ -40,6 +40,23 @@
                 }
             ]
         },
+        "privacy.containers": {
+            "initialValue": {},
+            "precedenceList": [
+                {
+                    "enabled": true,
+                    "id": "newtaboverride@agenedia.com",
+                    "installDate": 1741203625987,
+                    "value": "newtaboverride@agenedia.com"
+                },
+                {
+                    "enabled": true,
+                    "id": "firefox@tampermonkey.net",
+                    "installDate": 1734723853623,
+                    "value": "firefox@tampermonkey.net"
+                }
+            ]
+        },
         "websites.hyperlinkAuditingEnabled": {
             "initialValue": {},
             "precedenceList": [

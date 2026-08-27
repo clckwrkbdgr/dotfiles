@@ -2,28 +2,11 @@
     "app-builtin": {
         "addons": {
             "addons-search-detection@mozilla.com": {
+                "blocklistState": 0,
                 "dependencies": [],
-                "enabled": true,
+                "enabled": false,
                 "loader": null,
                 "rootURI": "resource://builtin-addons/search-detection/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            },
-            "bing@search.mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "loader": null,
-                "rootURI": "resource://search-extensions/bing/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            },
-            "ddg@search.mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "loader": null,
-                "rootURI": "resource://search-extensions/ddg/",
                 "runInSafeMode": true,
                 "startupData": {},
                 "version": "0.0"
@@ -68,52 +51,55 @@
                 "runInSafeMode": true,
                 "type": "theme",
                 "version": "0.0"
-            },
-            "google@search.mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "loader": null,
-                "rootURI": "resource://search-extensions/google/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
-            },
-            "wikipedia@search.mozilla.org": {
-                "dependencies": [],
-                "enabled": true,
-                "loader": null,
-                "rootURI": "resource://search-extensions/wikipedia/",
-                "runInSafeMode": true,
-                "startupData": {},
-                "version": "0.0"
             }
         }
     },
     "app-builtin-addons": {
         "addons": {
             "addons-search-detection@mozilla.com": {
-                "enabled": false,
+                "blocklistState": 0,
+                "dependencies": [],
+                "enabled": true,
+                "loader": null,
                 "rootURI": "resource://builtin-addons/search-detection/",
+                "runInSafeMode": true,
                 "version": "0.0"
             },
             "formautofill@mozilla.org": {
-                "enabled": false,
+                "blocklistState": 0,
+                "dependencies": [],
+                "enabled": true,
+                "loader": null,
                 "rootURI": "resource://builtin-addons/formautofill/",
+                "runInSafeMode": true,
                 "version": "0.0"
             },
             "newtab@mozilla.org": {
-                "enabled": false,
+                "blocklistState": 0,
+                "dependencies": [],
+                "enabled": true,
+                "loader": null,
                 "rootURI": "resource://builtin-addons/newtab/",
+                "runInSafeMode": true,
                 "version": "0.0"
             },
             "pictureinpicture@mozilla.org": {
-                "enabled": false,
+                "blocklistState": 0,
+                "dependencies": [],
+                "enabled": true,
+                "loader": null,
                 "rootURI": "resource://builtin-addons/pictureinpicture/",
+                "runInSafeMode": true,
                 "version": "0.0"
             },
             "webcompat@mozilla.org": {
-                "enabled": false,
+                "blocklistState": 0,
+                "dependencies": [],
+                "enabled": true,
+                "loader": null,
                 "rootURI": "resource://builtin-addons/webcompat/",
+                "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             }
         }
@@ -121,6 +107,7 @@
     "app-profile": {
         "addons": {
             "@mutelinks": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -131,6 +118,7 @@
                 "version": "0.0"
             },
             "firefox@tampermonkey.net": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -142,6 +130,7 @@
                 "version": "0.0"
             },
             "ghosttext@bfred.it": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -153,6 +142,7 @@
                 "version": "0.0"
             },
             "godville-ui-plus@erinome.net": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -163,6 +153,7 @@
                 "version": "0.0"
             },
             "newtaboverride@agenedia.com": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -174,6 +165,7 @@
                 "version": "0.0"
             },
             "uBlock0@raymondhill.net": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -185,6 +177,7 @@
                 "version": "0.0"
             },
             "{73a6fe31-595d-460b-a920-fcc0f8843232}": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -196,6 +189,7 @@
                 "version": "0.0"
             },
             "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -207,6 +201,7 @@
                 "version": "0.0"
             },
             "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -217,6 +212,7 @@
                 "version": "0.0"
             },
             "{980500da-0b6d-4de9-ad90-93d17605276c}": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -227,6 +223,7 @@
                 "version": "0.0"
             },
             "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,
@@ -238,6 +235,7 @@
                 "version": "0.0"
             },
             "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
+                "blocklistState": 0,
                 "dependencies": [],
                 "enabled": true,
                 "lastModifiedTime": 0,

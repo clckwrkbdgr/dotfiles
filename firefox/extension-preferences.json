@@ -1,5 +1,6 @@
 {
     "@mutelinks": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
@@ -13,24 +14,11 @@
         ]
     },
     "addons-search-detection@mozilla.com": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:svgContextPropertiesAllowed",
             "internal:privateBrowsingAllowed"
-        ]
-    },
-    "bing@search.mozilla.org": {
-        "origins": [],
-        "permissions": [
-            "internal:privateBrowsingAllowed",
-            "internal:svgContextPropertiesAllowed"
-        ]
-    },
-    "ddg@search.mozilla.org": {
-        "origins": [],
-        "permissions": [
-            "internal:privateBrowsingAllowed",
-            "internal:svgContextPropertiesAllowed"
         ]
     },
     "doh-rollout@mozilla.org": {
@@ -48,12 +36,14 @@
         ]
     },
     "firefox@tampermonkey.net": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
         ]
     },
     "formautofill@mozilla.org": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed",
@@ -67,6 +57,7 @@
         ]
     },
     "ghosttext@bfred.it": {
+        "data_collection": [],
         "origins": [
             "http://localhost/*",
             "http://localhost:4001/*",
@@ -75,16 +66,10 @@
         "permissions": []
     },
     "godville-ui-plus@erinome.net": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
-        ]
-    },
-    "google@search.mozilla.org": {
-        "origins": [],
-        "permissions": [
-            "internal:privateBrowsingAllowed",
-            "internal:svgContextPropertiesAllowed"
         ]
     },
     "hotfix-intermediate-2018@mozilla.com": {
@@ -93,13 +78,22 @@
             "internal:svgContextPropertiesAllowed"
         ]
     },
+    "newtab@mozilla.org": {
+        "data_collection": [],
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed"
+        ]
+    },
     "newtaboverride@agenedia.com": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
         ]
     },
     "pictureinpicture@mozilla.org": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:svgContextPropertiesAllowed",
@@ -127,23 +121,18 @@
         ]
     },
     "uBlock0@raymondhill.net": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
         ]
     },
     "webcompat@mozilla.org": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:svgContextPropertiesAllowed",
             "internal:privateBrowsingAllowed"
-        ]
-    },
-    "wikipedia@search.mozilla.org": {
-        "origins": [],
-        "permissions": [
-            "internal:privateBrowsingAllowed",
-            "internal:svgContextPropertiesAllowed"
         ]
     },
     "{60f82f00-9ad5-4de5-b31c-b16a47c51558}": {
@@ -153,24 +142,28 @@
         ]
     },
     "{73a6fe31-595d-460b-a920-fcc0f8843232}": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
         ]
     },
     "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
         ]
     },
     "{8b0dd2c0-b9e8-46d5-b360-e2c53e43f2bc}": {
+        "data_collection": [],
         "origins": [],
         "permissions": [
             "internal:privateBrowsingAllowed"
         ]
     },
     "{d7742d87-e61d-4b78-b8a1-b469842139fa}": {
+        "data_collection": [],
         "origins": [
             "<all_urls>",
             "file:///*"
@@ -181,6 +174,7 @@
         ]
     },
     "{d7ce25e4-e6a8-433e-bb29-ec763dcd26bf}": {
+        "data_collection": [],
         "origins": [],
         "permissions": []
     }
