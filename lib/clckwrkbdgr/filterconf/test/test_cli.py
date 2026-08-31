@@ -159,10 +159,13 @@ class TestCLI(unittest.TestCase):
 		  second
 			third
 		"""))
+
+class TestCLIWithScripts(unittest.fs.TestCase):
+	MODULES = [_base]
 	def should_perform_multiple_commands(self):
 		self.maxDiff = None
 		runner = CliRunner()
-		with runner.isolated_filesystem():
+		if True:
 			with open('script.sh', 'w') as f:
 				f.write(textwrap.dedent("""\
 				# Comment
@@ -179,7 +182,7 @@ class TestCLI(unittest.TestCase):
 	def should_pack_unpack_only_once_in_multiple_commands_mode(self):
 		self.maxDiff = None
 		runner = CliRunner()
-		with runner.isolated_filesystem():
+		if True:
 			with open('script.sh', 'w') as f:
 				f.write(textwrap.dedent("""\
 				# Comment
@@ -206,7 +209,7 @@ class TestCLI(unittest.TestCase):
 			""".rstrip() + '\n')
 	def should_fail_on_unknown_command_in_script(self):
 		runner = CliRunner()
-		with runner.isolated_filesystem():
+		if True:
 			with open('script.sh', 'w') as f:
 				f.write(textwrap.dedent("""\
 				# Comment
@@ -223,7 +226,7 @@ class TestCLI(unittest.TestCase):
 			self.assertEqual(result.exit_code, 1)
 	def should_fail_on_not_a_command_in_script(self):
 		runner = CliRunner()
-		with runner.isolated_filesystem():
+		if True:
 			with open('script.sh', 'w') as f:
 				f.write(textwrap.dedent("""\
 				# Comment
