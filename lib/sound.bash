@@ -4,22 +4,14 @@ current_volume() {
 	# Prints current volume value to stdout in percents (without the percent sign).
 	# If argument is supplied, this channel is checked. Default channel is 'Master'.
 	channel="${1:-Master}"
-	if amixer get "$channel" | grep -q 'Front Left'; then
-		amixer get "$channel" | sed '/^ *Front\ Left: /{s/^.*\[\(.*\)%\].*/\1/;p;};d;'
-	else
-		amixer get "$channel" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)%\].*/\1/;p;};d;'
-	fi
+	amixer get "$channel" | sed '/^ *\(Front\ Left:\|Mono: Playback\) /{s/^.*\[\(.*\)%\].*/\1/;p;};d;'
 }
 
 current_channel_status() {
 	# Prints current status of channel to stdout ([on] or [off]).
 	# If argument is supplied, this channel is checked. Default channel is 'Master'.
 	channel="${1:-Master}"
-	if amixer get "$channel" | grep -q 'Front Left'; then
-		amixer get "$channel" | awk '$2 == "Left:" { print $NF; }'
-	else
-		amixer get "$channel" | sed '/^ *Mono: Playback /{s/^.*\[\(.*\)\]$/\1/;p;};d;'
-	fi
+	amixer get "$channel" | awk '($1 == "Mono:" && $2 == "Playback") || $2 == "Left:" { print $NF; }'
 }
 
 set_volume() {
