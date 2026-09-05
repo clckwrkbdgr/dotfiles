@@ -63,6 +63,7 @@
                 "loader": null,
                 "rootURI": "resource://builtin-addons/search-detection/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "formautofill@mozilla.org": {
@@ -72,6 +73,7 @@
                 "loader": null,
                 "rootURI": "resource://builtin-addons/formautofill/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "newtab@mozilla.org": {
@@ -81,6 +83,7 @@
                 "loader": null,
                 "rootURI": "resource://builtin-addons/newtab/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "pictureinpicture@mozilla.org": {
@@ -90,6 +93,7 @@
                 "loader": null,
                 "rootURI": "resource://builtin-addons/pictureinpicture/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "webcompat@mozilla.org": {
