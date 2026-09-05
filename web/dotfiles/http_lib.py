@@ -25,7 +25,15 @@ def save_to_fs_storage():
 	filename = local_path/'{0}.json'.format(domain)
 	data = {}
 	if filename.exists():
-		data = json.loads(filename.read_text())
+		for tryout in reversed(range(3)):
+			try:
+				data = json.loads(filename.read_text())
+				break
+			except json.decoder.JSONDecodeError:
+				if tryout == 0:
+					raise
+				import time
+				time.sleep(1) # FIXME: some key-value storage with concurrent access like SQLite instead of global json.
 	if name is None:
 		data.update(value)
 	else:
