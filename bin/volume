@@ -26,7 +26,7 @@ cli() {
 
 	volume_lock=$XDG_RUNTIME_DIR/clckwrkbdgr_volume.lock
 	# Wait 2 times for 1 sec, if lockfile already exists for more that 2 sec, kill it immediately and retry after 1 sec.
-	lockfile -1 -r 2 -l 2 -s 1 "$volume_lock"
+	lockfile -1 -r 2 -l 2 -s 1 "$volume_lock" 2>/dev/null
 	finally  "rm -rf '$volume_lock'"
 
 	old_volume=$(current_volume)
