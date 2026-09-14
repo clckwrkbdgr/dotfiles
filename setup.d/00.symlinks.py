@@ -81,11 +81,10 @@ known_symlinks.ignore(XDG_CONFIG_HOME/'firefox'/'lock')
 def find_unknown_symlinks(root, known_symlinks):
 	unknown = []
 	for root, dirnames, filenames in os.walk(str(root)):
-		root = Path(root)
 		for filename in filenames + dirnames:
-			filename = root/filename
-			if not filename.is_symlink():
+			if not os.path.islink(os.path.join(root, filename)):
 				continue
+			filename = Path(os.path.join(root, filename))
 			trace.debug(filename)
 			if known_symlinks.is_known(filename):
 				continue
