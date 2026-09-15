@@ -308,7 +308,7 @@
 			"syncGUID": "{cf26d81d-76a9-41da-a44a-703299195270}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "1.1.39.10",
+			"version": "1.1.39.11",
 			"visible": true
 		},
 		{
@@ -416,12 +416,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4968026/noscript-13.6.32.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/5028324/noscript-13.6.33.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{2de90fae-7015-4c61-b51d-97eb5d3eedbd}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "13.6.32",
+			"version": "13.6.33",
 			"visible": true
 		},
 		{
@@ -453,12 +453,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/4970801/styl_us-2.4.11.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/5028285/styl_us-2.4.13.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{cbc3ee05-251f-4f70-9871-23c9ae87b656}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "2.4.11",
+			"version": "2.4.13",
 			"visible": true
 		},
 		{
