@@ -453,12 +453,12 @@
 			],
 			"skinnable": false,
 			"softDisabled": false,
-			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/5028285/styl_us-2.4.13.xpi",
+			"sourceURI": "https://addons.mozilla.org/firefox/downloads/file/5044316/styl_us-2.4.14.xpi",
 			"strictCompatibility": true,
 			"syncGUID": "{cbc3ee05-251f-4f70-9871-23c9ae87b656}",
 			"type": "extension",
 			"userDisabled": false,
-			"version": "2.4.13",
+			"version": "2.4.14",
 			"visible": true
 		},
 		{
