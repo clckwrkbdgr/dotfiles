@@ -3,6 +3,8 @@
 *.pyo
 *.pyc
 __pycache__/
+*.db-shm
+*.db-wal
 
 # Dir/symlink to a dir with custom user-defined local configuration.
 # Defined to be always related to the local host/system/profile, so should be never committed here.
@@ -194,3 +196,6 @@ blender/*/config/recent-files.txt
 cataclysm-dda/lastworld.json
 # Cataclysm DDA (state)
 cataclysm-dda/debug.log
+# Copilot.
+github-copilot/auth.db
+github-copilot/versions.json
