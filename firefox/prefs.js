@@ -580,6 +580,7 @@ user_pref("print.tmp.printerfeatures.PostScript/default.supports_resolution_chan
 user_pref("print.tmp.printerfeatures.PostScript/default.supports_spoolercommand_change", true);
 user_pref("print_printer", "PostScript/default");
 user_pref("privacy.bounceTrackingProtection.hasMigratedUserActivationData", true);
+user_pref("privacy.clearHistory.formdata", true);
 user_pref("privacy.clearOnShutdown.cache", false);
 user_pref("privacy.clearOnShutdown.cookies", false);
 user_pref("privacy.clearOnShutdown.offlineApps", true);
@@ -592,6 +593,7 @@ user_pref("privacy.donottrackheader.enabled", true);
 user_pref("privacy.history.custom", true);
 user_pref("privacy.purge_trackers.date_in_cookie_database", "0");
 user_pref("privacy.sanitize.clearOnShutdown.hasMigratedToNewPrefs3", true);
+user_pref("privacy.sanitize.cpd.hasMigratedToNewPrefs3", true);
 user_pref("privacy.sanitize.migrateFx3Prefs", true);
 user_pref("privacy.userContext.enabled", true);
 user_pref("privacy.userContext.extension", "newtaboverride@agenedia.com");
