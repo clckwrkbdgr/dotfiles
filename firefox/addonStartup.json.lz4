@@ -76,6 +76,15 @@
                 "startupData": {},
                 "version": "0.0"
             },
+            "ipp-activator@mozilla.com": {
+                "blocklistState": 0,
+                "dependencies": [],
+                "enabled": true,
+                "loader": null,
+                "rootURI": "resource://builtin-addons/ipp-activator/",
+                "runInSafeMode": true,
+                "version": "0.0"
+            },
             "newtab@mozilla.org": {
                 "blocklistState": 0,
                 "dependencies": [],

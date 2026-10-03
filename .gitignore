@@ -79,6 +79,9 @@ firefox/SiteSecurityServiceState.bin
 firefox/activity-stream.weather_feed.json
 firefox/bounce-tracking-protection.sqlite
 firefox/extension-store-menus/data.safe.bin
+firefox/extension-store/data.safe.bin
+firefox/activity-stream.frecency_boost_cache.json
+firefox/activity-stream.shortcut_cache.json
 # Firefox state
 firefox/compatibility.ini
 firefox/crashes/store.json.mozlz4
@@ -98,6 +101,9 @@ firefox/times.json
 firefox/protections.sqlite
 firefox/activity-stream.discovery_stream.json
 firefox/Telemetry.FailedProfileLocks.txt
+firefox/breach-alerts.db
+firefox/sessionstore-logs/error-sessionrestore-*.txt
+mozilla/firefox-esr/Crash Reports/crash_helper_server.log 
 # Firefox local/share
 firefox/content-prefs.sqlite
 firefox/cookies.sqlite
@@ -114,6 +120,7 @@ firefox/storage-sync-v2.sqlite
 firefox/storage.sqlite
 firefox/storage/
 firefox/webappsstore.sqlite
+firefox/logins.db
 # Purple cache
 purple/accels
 purple/certificates

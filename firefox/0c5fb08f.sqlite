@@ -1,4 +1,20 @@
 BEGIN TRANSACTION;
+CREATE TABLE "Heartbeats" (
+              id              INTEGER NOT NULL,
+              recipeId        TEXT NOT NULL UNIQUE,
+              lastShown       INTEGER,
+              lastInteraction	INTEGER,
+              PRIMARY KEY(id)
+            );
+CREATE TABLE "MessagingSystemMessageBlocklist" (
+            id                  INTEGER PRIMARY KEY,
+            messageId           TEXT UNIQUE NOT NULL
+          );
+CREATE TABLE "MessagingSystemMessageImpressions" (
+            id                  INTEGER PRIMARY KEY,
+            messageId           TEXT UNIQUE NOT NULL,
+            impressions         JSONB
+          );
 CREATE TABLE "NimbusEnrollments" (
             id             INTEGER NOT NULL,
             profileId      INTEGER NOT NULL,
@@ -13,6 +29,14 @@ CREATE TABLE "NimbusEnrollments" (
             source         TEXT NOT NULL,
             PRIMARY KEY(id),
             UNIQUE (profileId, slug) ON CONFLICT FAIL
+          );
+CREATE TABLE "NimbusSyncTimestamps" (
+            id                  INTEGER NOT NULL,
+            profileId           TEXT NOT NULL,
+            collection          TEXT NOT NULL,
+            lastModified        INTEGER NOT NULL,
+            PRIMARY KEY(id),
+            UNIQUE (profileId, collection) ON CONFLICT FAIL
           );
 CREATE TABLE "Profiles" (
               id      INTEGER NOT NULL,

@@ -78,6 +78,14 @@
             "internal:svgContextPropertiesAllowed"
         ]
     },
+    "ipp-activator@mozilla.com": {
+        "data_collection": [],
+        "origins": [],
+        "permissions": [
+            "internal:privateBrowsingAllowed",
+            "internal:svgContextPropertiesAllowed"
+        ]
+    },
     "newtab@mozilla.org": {
         "data_collection": [],
         "origins": [],
