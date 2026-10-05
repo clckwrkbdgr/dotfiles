@@ -82,7 +82,6 @@ user_pref("browser.pagethumbnails.storage_version", 3);
 user_pref("browser.panorama.animate_zoom", false);
 user_pref("browser.places.importBookmarksHTML", false);
 user_pref("browser.places.smartBookmarksVersion", 8);
-user_pref("browser.preferences.experimental.hidden", true);
 user_pref("browser.proton.toolbar.version", 3);
 user_pref("browser.reader.detectedFirstArticle", true);
 user_pref("browser.search.countryCode", "UA");
