@@ -28,7 +28,6 @@ user_pref("browser.cache.disk.smart_size.use_old_max", false);
 user_pref("browser.cache.frecency_experiment", 1);
 user_pref("browser.cache.use_new_backend", 1);
 user_pref("browser.contentblocking.category", "custom");
-user_pref("browser.contextual-services.contextId", "cc5cfbcf-b834-46a9-b887-eb86bb2c5746");
 user_pref("browser.ctrlTab.migrated", true);
 user_pref("browser.display.background_color", "#000000");
 user_pref("browser.display.foreground_color", "#CCCCCC");
