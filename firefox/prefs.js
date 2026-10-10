@@ -91,6 +91,7 @@ user_pref("browser.search.serpEventTelemetryCategorization.regionEnabled", false
 user_pref("browser.search.suggest.enabled", false);
 user_pref("browser.sessionstore.upgradeBackup.maxUpgradeBackups", 0);
 user_pref("browser.sessionstore.warnOnQuit", true);
+user_pref("browser.settings-redesign.promo.dismissed", true);
 user_pref("browser.shell.checkDefaultBrowser", true);
 user_pref("browser.showQuitWarning", true);
 user_pref("browser.startup.homepage", "http://localhost:8006/links.html");
