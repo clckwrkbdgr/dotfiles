@@ -83,6 +83,7 @@
                 "loader": null,
                 "rootURI": "resource://builtin-addons/ipp-activator/",
                 "runInSafeMode": true,
+                "startupData": {},
                 "version": "0.0"
             },
             "newtab@mozilla.org": {
