@@ -349,7 +349,10 @@
             "extensions": [
                 "jpeg",
                 "jpg",
-                "jpe"
+                "jpe",
+                "jfif",
+                "pjpeg",
+                "pjp"
             ]
         },
         "image/pcx": {
