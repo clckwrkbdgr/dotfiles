@@ -129,6 +129,7 @@ gnome-games/aisleriot.accels caps=home
 .gitignore caps=work
 .gitmodules caps=work
 .rogue/** caps=work
+.github/** caps=work
 caps.py caps=work
 Makefile caps=work
 LICENSE caps=work

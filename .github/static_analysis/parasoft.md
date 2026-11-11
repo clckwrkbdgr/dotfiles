@@ -1,0 +1,592 @@
+# Parasoft C++ rules
+
+## AUTOSAR
+
+- **A0-1-1** A project shall not contain instances of non-volatile variables being given values that are not subsequently used. 
+- **A0-1-2** The value returned by a function having a non-void return type that is not an overloaded operator shall be used. 
+- **A0-1-3** Every function defined in an anonymous namespace, or static function with internal linkage, or private member function shall be used. 
+- **A0-1-4** There shall be no unused named parameters in non-virtual functions. 
+- **A0-1-5** There shall be no unused named parameters in the set of parameters for a virtual function and all the functions that override it. 
+- **A0-1-6** There should be no unused type declarations. 
+- **A0-4-2** Type long double shall not be used. 
+- **A0-4-4** Range, domain and pole errors shall be checked when using math functions.
+- **A1-1-1** All code shall conform to ISO/IEC 14882:2014 - Programming Language C++ and shall not use deprecated features. 
+- **A1-4-3** All code should compile free of compiler warnings. 
+- **A2-3-1** Only those characters specified in the C++ Language Standard basic source character set shall be used in the source code. 
+- **A2-5-1** Trigraphs shall not be used. 
+- **A2-5-2** Digraphs shall not be used. 
+- **A2-7-1** The character \ shall not occur as a last character of a C++ comment. 
+- **A2-7-3** All declarations of "user-defined" types, static and non-static data members, functions and methods shall be preceded by documentation. 
+- **A2-10-1** An identifier declared in an inner scope shall not hide an identifier declared in an outer scope. 
+- **A2-10-4** The identifier name of a non-member object with static storage duration or static function shall not be reused within a namespace. 
+- **A2-10-5** An identifier name of a function with static storage duration or a non-member object with external or internal linkage should not be reused. 
+- **A2-10-6** A class or enumeration name shall not be hidden by a variable, function or enumerator declaration in the same scope. 
+- **A2-11-1** Volatile keyword shall not be used. 
+- **A2-13-1** Only those escape sequences that are defined in ISO/IEC 14882:2014 shall be used. 
+- **A2-13-2** String literals with different encoding prefixes shall not be concatenated. 
+- **A2-13-3** Type wchar_t shall not be used. 
+- **A2-13-4** String literals shall not be assigned to non-constant pointers. 
+- **A2-13-5** Hexadecimal constants should be upper case. 
+- **A2-13-6** Universal character names shall be used only inside character or string literals. 
+- **A3-1-1** It shall be possible to include any header file in multiple translation units without violating the One Definition Rule. 
+- **A3-1-2** Header files, that are defined locally in the project, shall have a file name extension of one of: ".h", ".hpp" or ".hxx". 
+- **A3-1-3** Implementation files, that are defined locally in the project, should have a file name extension of ".cpp". 
+- **A3-1-4** When an array with external linkage is declared, its size shall be stated explicitly. 
+- **A3-1-5** A function definition shall only be placed in a class definition if (1) the function is intended to be inlined (2) it is a member function template (3) it is a member function of a class template. 
+- **A3-1-6** Trivial accessor and mutator functions should be inlined. 
+- **A3-3-1** Objects or functions with external linkage (including members of named namespaces) shall be declared in a header file. 
+- **A3-3-2** Static and thread-local objects shall be constant-initialized. 
+- **A3-9-1** Fixed width integer types from `<cstdint>`, indicating the size and signedness, shall be used in place of the basic numerical types. 
+- **A4-5-1** Expressions with type enum or enum class shall not be used as operands to built-in and overloaded operators other than the subscript operator `[ ]`, the assignment operator `=`, the equality operators `==` and `!=`, the unary `&` operator, and the relational operators `<`, `<=`, `>`, `>=`. 
+- **A4-7-1** An integer expression shall not lead to data loss. 
+- **A4-10-1** Only nullptr literal shall be used as the null-pointer-constant. 
+- **A5-0-1** The value of an expression shall be the same under any order of evaluation that the standard permits. 
+- **A5-0-2** The condition of an if-statement and the condition of an iteration statement shall have type bool. 
+- **A5-0-3** The declaration of objects shall contain no more than two levels of pointer indirection. 
+- **A5-0-4** Pointer arithmetic shall not be used with pointers to non-final classes. 
+- **A5-1-1** Literal values shall not be used apart from type initialization, otherwise symbolic names shall be used instead. 
+- **A5-1-2** Variables shall not be implicitly captured in a lambda expression. 
+- **A5-1-3** Parameter list (possibly empty) shall be included in every lambda expression. 
+- **A5-1-4** A lambda expression object shall not outlive any of its reference-captured objects. 
+- **A5-1-6** Return type of a non-void return type lambda expression should be explicitly specified. 
+- **A5-1-7** The underlying type of lambda expression shall not be used. 
+- **A5-1-8** Lambda expressions should not be defined inside another lambda expression. 
+- **A5-1-9** Identical unnamed lambda expressions shall be replaced with a named function or a named lambda expression.
+- **A5-2-1** dynamic_cast should not be used. 
+- **A5-2-2** Traditional C-style casts shall not be used. 
+- **A5-2-3** A cast shall not remove any const or volatile qualification from the type of a pointer or reference. 
+- **A5-2-4** reinterpret_cast shall not be used. 
+- **A5-2-5** An array or container shall not be accessed beyond its range. 
+- **A5-2-6** The operands of a logical && or || shall be parenthesized if the operands contain binary operators. 
+- **A5-3-2** Null pointers shall not be dereferenced. 
+- **A5-3-3** Pointers to incomplete class types shall not be deleted. 
+- **A5-5-1** A pointer to member shall not access non-existent class members. 
+- **A5-6-1** The right hand operand of the integer division or remainder operators shall not be equal to zero. 
+- **A5-10-1** A pointer to member virtual function shall only be tested for equality with null-pointer-constant. 
+- **A5-16-1** The ternary conditional operator shall not be used as a sub-expression. 
+- **A6-2-1** Move and copy assignment operators shall either move or respectively copy base classes and data members of a class, without any side effects. 
+- **A6-2-2** Expression statements shall not be explicit calls to constructors of temporary objects only. 
+- **A6-4-1** A switch statement shall have at least two case-clauses, distinct from the default label. 
+- **A6-5-1** A for-loop that loops through all elements of the container and does not use its loop-counter shall not be used. 
+- **A6-5-2** A for loop shall contain a single loop-counter which shall not have floating-point type. 
+- **A6-5-3** Do statements should not be used. 
+- **A6-5-4** For-init-statement and expression should not perform actions other than loop-counter initialization and modification. 
+- **A6-6-1** The goto statement shall not be used. 
+- **A7-1-1** Constexpr or const specifiers shall be used for immutable data declaration. 
+- **A7-1-2** The constexpr specifier shall be used for values that can be determined at compile time. 
+- **A7-1-3** CV-qualifiers shall be placed on the right hand side of the type that is a typedef or a using name. 
+- **A7-1-4** The register keyword shall not be used. 
+- **A7-1-5** The auto specifier shall not be used apart from following cases: (1) to declare that a variable has the same type as return type of a function call, (2) to declare that a variable has the same type as initializer of non-fundamental type, (3) to declare parameters of a generic lambda expression, (4) to declare a function template using trailing return type syntax. 
+- **A7-1-6** The typedef specifier shall not be used. 
+- **A7-1-7** Each expression statement and identifier declaration shall be placed on a separate line. 
+- **A7-1-8** A non-type specifier shall be placed before a type specifier in a declaration. 
+- **A7-1-9** A class, structure, or enumeration shall not be declared in the definition of its type. 
+- **A7-2-1** An expression with enum underlying type shall only have values corresponding to the enumerators of the enumeration. 
+- **A7-2-2** Enumeration underlying base type shall be explicitly defined. 
+- **A7-2-3** Enumerations shall be declared as scoped enum classes. 
+- **A7-2-4** In an enumeration, either (1) none, (2) the first or (3) all enumerators shall be initialized. 
+- **A7-3-1** All overloads of a function shall be visible from where it is called. 
+- **A7-4-1** The asm declaration shall not be used. 
+- **A7-5-1** A function shall not return a reference or a pointer to a parameter that is passed by reference to const. 
+- **A7-5-2** Functions shall not call themselves, either directly or indirectly. 
+- **A7-6-1** Functions declared with the [[noreturn]] attribute shall not return. 
+- **A8-2-1** When declaring function templates, the trailing return type syntax shall be used if the return type depends on the type of parameters. 
+- **A8-4-1** Functions shall not be defined using the ellipsis notation. 
+- **A8-4-2** All exit paths from a function with non-void return type shall have an explicit return statement with an expression. 
+- **A8-4-4** Multiple output values from a function should be returned as a struct or tuple. 
+- **A8-4-5** "consume" parameters declared as X && shall always be moved from. 
+- **A8-4-6** "forward" parameters declared as T && shall always be forwarded. 
+- **A8-4-7** "in" parameters for "cheap to copy" types shall be passed by value. 
+- **A8-4-8** Output parameters shall not be used. 
+- **A8-4-9** "in-out" parameters declared as T & shall be modified. 
+- **A8-4-10** A parameter shall be passed by reference if it can't be NULL 
+- **A8-4-11** A smart pointer shall only be used as a parameter type if it expresses lifetime semantics
+- **A8-4-12** A std::unique_ptr shall be passed to a function as: (1) a copy to express the function assumes ownership (2) an lvalue reference to express that the function replaces the managed object. 
+- **A8-4-13** A std::shared_ptr shall be passed to a function as: (1) a copy to express the function shares ownership (2) an lvalue reference to express that the function replaces the managed object (3) a const lvalue reference to express that the function retains a reference count.
+- **A8-5-0** All memory shall be initialized before it is read. 
+- **A8-5-1** In an initialization list, the order of initialization shall be following: (1) virtual base classes in depth and left to right order of the inheritance graph, (2) direct base classes in left to right order of inheritance list, (3) non-static data members in the order they were declared in the class definition. 
+- **A8-5-2** Braces shall be used to indicate and match the structure in the non-zero initialization of arrays and structures. 
+- **A8-5-3** A variable of type auto shall not be initialized using {} or ={} braced-initialization. 
+- **A8-5-4** If a class has a user-declared constructor that takes a parameter of type std::initializer_list, then it shall be the only constructor apart from special member function constructors. 
+- **A9-3-1** Member functions shall not return non-const "raw" pointers or references to private or protected data owned by the class. 
+- **A9-5-1** Unions shall not be used. 
+- **A9-6-1** Data types used for interfacing with hardware or conforming to communication protocols shall be trivial, standard-layout and only contain members of types with defined sizes. 
+- **A10-1-1** Class shall not be derived from more than one base class which is not an interface class. 
+- **A10-2-1** Non-virtual public or protected member functions shall not be redefined in derived classes. 
+- **A10-3-1** Virtual function declaration shall contain exactly one of the three specifiers: (1) virtual, (2) override, (3) final. 
+- **A10-3-2** Each overriding virtual function shall be declared with the override or final specifier. 
+- **A10-3-3** Virtual functions shall not be introduced in a final class. 
+- **A10-3-5** A user-defined assignment operator shall not be virtual. 
+- **A11-0-1** A non-POD type should be defined as class. 
+- **A11-0-2** A type defined as struct shall: (1) provide only public data members, (2) not provide any special member functions or methods, (3) not be a base of another struct or class, (4) not inherit from another struct or class. 
+- **A11-3-1** Friend declarations shall not be used. 
+- **A12-0-1** If a class declares a copy or move operation, or a destructor, either via "=default", "=delete", or via a user-provided declaration, then all others of these five special member functions shall be declared as well. 
+- **A12-0-2** Bitwise operations and operations that assume data representation in memory shall not be performed on objects. 
+- **A12-1-1** Constructors shall explicitly initialize all virtual base classes, all direct non-virtual base classes and all non-static data members. 
+- **A12-1-2** Both NSDMI and a non-static member initializer in a constructor shall not be used in the same type. 
+- **A12-1-3** If all user-defined constructors of a class initialize data members with constant values that are the same across all constructors, then data members shall be initialized using NSDMI instead. 
+- **A12-1-4** All constructors that are callable with a single argument of fundamental type shall be declared explicit. 
+- **A12-1-5** Common class initialization for non-constant members shall be done by a delegating constructor. 
+- **A12-1-6** Derived classes that do not need further explicit initialization and require all the constructors from the base class shall use inheriting constructors. 
+- **A12-4-1** Destructor of a base class shall be public virtual, public override or protected non-virtual. 
+- **A12-4-2** If a public destructor of a class is non-virtual, then the class should be declared final. 
+- **A12-6-1** All class data members that are initialized by the constructor shall be initialized using member initializers. 
+- **A12-7-1** If the behavior of a user-defined special member function is identical to implicitly defined special member function, then it shall be defined "=default" or be left undefined. 
+- **A12-8-1** Move and copy constructors shall move and respectively copy base classes and data members of a class, without any side effects. 
+- **A12-8-2** User-defined copy and move assignment operators should use user-defined no-throw swap function. 
+- **A12-8-3** Moved-from object shall not be read-accessed. 
+- **A12-8-4** Move constructor shall not initialize its class members and base classes using copy semantics. 
+- **A12-8-5** A copy assignment and a move assignment operators shall handle self-assignment. 
+- **A12-8-6** Copy and move constructors and copy assignment and move assignment operators shall be declared protected or defined "=delete" in base class. 
+- **A12-8-7** Assignment operators should be declared with the ref-qualifier &. 
+- **A13-1-2** User defined suffixes of the user defined literal operators shall start with underscore followed by one or more letters. 
+- **A13-1-3** User defined literals operators shall only perform conversion of passed parameters. 
+- **A13-2-1** An assignment operator shall return a reference to "this". 
+- **A13-2-2** A binary arithmetic operator and a bitwise operator shall return a "prvalue". 
+- **A13-2-3** A relational operator shall return a boolean value. 
+- **A13-3-1** A function that contains "forwarding reference" as its argument shall not be overloaded. 
+- **A13-5-1** If "operator[]" is to be overloaded with a non-const version, const version shall also be implemented. 
+- **A13-5-2** All user-defined conversion operators shall be defined explicit. 
+- **A13-5-3** User-defined conversion operators should not be used. 
+- **A13-5-4** If two opposite operators are defined, one shall be defined in terms of the other. 
+- **A13-5-5** Comparison operators shall be non-member functions with identical parameter types and noexcept. 
+- **A13-6-1** Digit sequences separators ' shall only be used as follows: (1) for decimal, every 3 digits, (2) for hexadecimal, every 2 digits, (3) for binary, every 4 digits. 
+- **A14-5-1** A template constructor shall not participate in overload resolution for a single argument of the enclosing class type. 
+- **A14-5-2** Class members that are not dependent on template class parameters should be defined in a separate base class. 
+- **A14-5-3** A non-member generic operator shall only be declared in a namespace that does not contain class (struct) type, enum type or union type declarations. 
+- **A14-7-1** A type used as a template argument shall provide all members that are used by the template. 
+- **A14-7-2** Template specialization shall be declared in the same file (1) as the primary template (2) as a user-defined type, for which the specialization is declared. 
+- **A14-8-2** Explicit specializations of function templates shall not be used. 
+- **A15-0-2** At least the basic guarantee for exception safety shall be provided for all operations. In addition, each function may offer either the strong guarantee or the nothrow guarantee 
+- **A15-1-1** Only instances of types derived from std::exception should be thrown. 
+- **A15-1-2** An exception object shall not be a pointer. 
+- **A15-1-3** All thrown exceptions should be unique. 
+- **A15-1-4** If a function exits with an exception, then before a throw, the function shall place all objects/resources that the function constructed in valid states or it shall delete them. 
+- **A15-2-1** Constructors that are not noexcept shall not be invoked before program startup. 
+- **A15-2-2** If a constructor is not noexcept and the constructor cannot finish object initialization, then it shall deallocate the object's resources and it shall throw an exception. 
+- **A15-3-3** Main function and a task main function shall catch at least: base class exceptions from all third-party libraries used, std::exception and all otherwise unhandled exceptions. 
+- **A15-3-5** A class type exception shall be caught by reference or const reference. 
+- **A15-4-1** Dynamic exception-specification shall not be used. 
+- **A15-4-2** If a function is declared to be noexcept, noexcept(true) or noexcept(<true condition>), then it shall not exit with an exception. 
+- **A15-4-3** The noexcept specification of a function shall either be identical across all translation units, or identical or more restrictive between a virtual member function and an overrider. 
+- **A15-4-4** A declaration of non-throwing function shall contain noexcept specification. 
+- **A15-4-5** Checked exceptions that could be thrown from a function shall be specified together with the function declaration and they shall be identical in all function declarations and for all its overriders. 
+- **A15-5-1** All user-provided class destructors, deallocation functions,move constructors, move assignment operators and swap functions shall not exit with an exception. A noexcept exception specification shall be added to these functions as appropriate. 
+- **A15-5-2** Program shall not be abruptly terminated. In particular, an implicit or explicit invocation of std::abort(), std::quick_exit(), std::_Exit(), std::terminate() shall not be done. 
+- **A15-5-3** The std::terminate() function shall not be called implicitly. 
+- **A16-0-1** The pre-processor shall only be used for unconditional and conditional file inclusion and include guards, and using the following directives: (1) #ifndef, (2) #ifdef, (3) #if, (4) #if defined, (5) #elif, (6) #else, (7) #define, (8) #endif, (9) #include. 
+- **A16-2-1** The ', ", /*, //, \ characters shall not occur in a header file name or in #include directive. 
+- **A16-2-2** There shall be no unused include directives. 
+- **A16-6-1** #error directive shall not be used. 
+- **A16-7-1** The #pragma directive shall not be used. 
+- **A17-0-1** Reserved identifiers, macros and functions in the C++ standard library shall not be defined, redefined or undefined. 
+- **A17-6-1** Non-standard entities shall not be added to standard namespaces. 
+- **A18-0-1** The C library facilities shall only be accessed through C++ library headers. 
+- **A18-0-2** The error state of a conversion from string to a numeric value shall be checked. 
+- **A18-0-3** The library <clocale> (locale.h) and the setlocale function shall not be used. 
+- **A18-1-1** C-style arrays shall not be used. 
+- **A18-1-2** The std::vector<bool> specialization shall not be used. 
+- **A18-1-3** The std::auto_ptr type shall not be used. 
+- **A18-1-4** A pointer pointing to an element of an array of objects shall not be passed to a smart pointer of single object type. 
+- **A18-1-6** All std::hash specializations for user-defined types shall have a noexcept function call operator. 
+- **A18-5-1** Functions malloc, calloc, realloc and free shall not be used. 
+- **A18-5-2** Non-placement new or delete expressions shall not be used. 
+- **A18-5-3** The form of the delete expression shall match the form of the new expression used to allocate the memory. 
+- **A18-5-4** If a project has sized or unsized version of operator "delete" globally defined, then both sized and unsized versions shall be defined. 
+- **A18-5-5** Memory management functions shall ensure the following: (a) deterministic behavior resulting with the existence of worst-case execution time, (b) avoiding memory fragmentation, (c) avoid running out of memory, (d) avoiding mismatched allocations or deallocations, (e) no dependence on non-deterministic calls to kernel. 
+- **A18-5-8** Objects that do not outlive a function shall have automatic storage duration. 
+- **A18-5-9** Custom implementations of dynamic memory allocation and deallocation functions shall meet the semantic requirements specified in the corresponding "Required behaviour" clause from the C++ Standard. 
+- **A18-5-10** Placement new shall be used only with properly aligned pointers to sufficient storage capacity. 
+- **A18-5-11** "operator new" and "operator delete" shall be defined together. 
+- **A18-9-1** The std::bind shall not be used. 
+- **A18-9-2** Forwarding values to other functions shall be done via: (1) std::move if the value is an rvalue reference, (2) std::forward if the value is forwarding reference. 
+- **A18-9-3** The std::move shall not be used on objects declared const or const&. 
+- **A18-9-4** An argument to std::forward shall not be subsequently used. 
+- **A20-8-1** An already-owned pointer value shall not be stored in an unrelated smart pointer. 
+- **A20-8-2** A std::unique_ptr shall be used to represent exclusive ownership. 
+- **A20-8-3** A std::shared_ptr shall be used to represent shared ownership. 
+- **A20-8-4** A std::unique_ptr shall be used over std::shared_ptr if ownership sharing is not required. 
+- **A20-8-5** std::make_unique shall be used to construct objects owned by std::unique_ptr. 
+- **A20-8-6** std::make_shared shall be used to construct objects owned by std::shared_ptr. 
+- **A21-8-1** Arguments to character-handling functions shall be representable as an unsigned char. 
+- **A23-0-1** An iterator shall not be implicitly converted to const_iterator. 
+- **A23-0-2** Elements of a container shall only be accessed via valid references, iterators, and pointers. 
+- **A25-1-1** Non-static data members or captured values of predicate function objects that are state related to this object's identity shall not be copied. 
+- **A26-5-1** Pseudorandom numbers shall not be generated using std::rand(). 
+- **A26-5-2** Random number engines shall not be default-initialized. 
+- **A27-0-2** A C-style string shall guarantee sufficient space for data and the null terminator. 
+- **A27-0-3** Alternate input and output operations on a file stream shall not be used without an intervening flush or positioning call. 
+- **A27-0-4** C-style strings shall not be used. 
+- **M0-1-1** A project shall not contain unreachable code. 
+- **M0-1-2** A project shall not contain infeasible paths. 
+- **M0-1-3** A project shall not contain unused variables. 
+- **M0-1-4** A project shall not contain non-volatile POD variables having only one use. 
+- **M0-1-8** All functions with void return type shall have external side effect(s). 
+- **M0-1-9** There shall be no dead code. 
+- **M0-1-10** Every defined function should be called at least once. 
+- **M0-2-1** An object shall not be assigned to an overlapping object. 
+- **M2-7-1** The character sequence /* shall not be used within a C-style comment. 
+- **M2-10-1** Different identifiers shall be typographically unambiguous. 
+- **M2-13-2** Octal constants (other than zero) and octal escape sequences (other than "\0" ) shall not be used. 
+- **M2-13-3** A "U" suffix shall be applied to all octal or hexadecimal integer literals of unsigned type. 
+- **M2-13-4** Literal suffixes shall be upper case. 
+- **M3-1-2** Functions shall not be declared at block scope. 
+- **M3-2-1** All declarations of an object or function shall have compatible types. 
+- **M3-2-2** The One Definition Rule shall not be violated. 
+- **M3-2-3** A type, object or function that is used in multiple translation units shall be declared in one and only one file. 
+- **M3-2-4** An identifier with external linkage shall have exactly one definition. 
+- **M3-3-2** If a function has internal linkage then all re-declarations shall include the static storage class specifier. 
+- **M3-4-1** An identifier declared to be an object or type shall be defined in a block that minimizes its visibility. 
+- **M3-9-1** The types used for an object, a function return type, or a function parameter shall be token-for-token identical in all declarations and re-declarations. 
+- **M3-9-3** The underlying bit representations of floating-point values shall not be used. 
+- **M4-5-1** Expressions with type bool shall not be used as operands to built-in operators other than the assignment operator =, the logical operators &&, ||, !, the equality operators == and !=, the unary & operator, and the conditional operator. 
+- **M4-5-3** Expressions with type (plain) char and wchar_t shall not be used as operands to built-in operators other than the assignment operator =, the equality operators == and !=, and the unary & operator. 
+- **M4-10-1** NULL shall not be used as an integer value. 
+- **M4-10-2** Literal zero (0) shall not be used as the null-pointer-constant. 
+- **M5-0-2** Limited dependence should be placed on C++ operator precedence rules in expressions. 
+- **M5-0-3** A cvalue expression shall not be implicitly converted to a different underlying type. 
+- **M5-0-4** An implicit integral conversion shall not change the signedness of the underlying type. 
+- **M5-0-5** There shall be no implicit floating-integral conversions. 
+- **M5-0-6** An implicit integral or floating-point conversion shall not reduce the size of the underlying type. 
+- **M5-0-7** There shall be no explicit floating-integral conversions of a cvalue expression. 
+- **M5-0-8** An explicit integral or floating-point conversion shall not increase the size of the underlying type of a cvalue expression. 
+- **M5-0-9** An explicit integral conversion shall not change the signedness of the underlying type of a cvalue expression. 
+- **M5-0-10** If the bitwise operators `~` and `<<` are applied to an operand with an underlying type of unsigned char or unsigned short, the result shall be immediately cast to the underlying type of the operand. 
+- **M5-0-11** The plain char type shall only be used for the storage and use of character values. 
+- **M5-0-12** Signed char and unsigned char type shall only be used for the storage and use of numeric values. 
+- **M5-0-14** The first operand of a conditional-operator shall have type bool. 
+- **M5-0-15** Array indexing shall be the only form of pointer arithmetic. 
+- **M5-0-16** A pointer operand and any pointer resulting from pointer arithmetic using that operand shall both address elements of the same array. 
+- **M5-0-17** Subtraction between pointers shall only be applied to pointers that address elements of the same array. 
+- **M5-0-18** `>`, `>=`, `<`, `<=` shall not be applied to objects of pointer type, except where they point to the same array. 
+- **M5-0-20** Non-constant operands to a binary bitwise operator shall have the same underlying type. 
+- **M5-0-21** Bitwise operators shall only be applied to operands of unsigned underlying type. 
+- **M5-2-2** A pointer to a virtual base class shall only be cast to a pointer to a derived class by means of dynamic_cast. 
+- **M5-2-3** Casts from a base class to a derived class should not be performed on polymorphic types. 
+- **M5-2-6** A cast shall not convert a pointer to a function to any other pointer type, including a pointer to function type. 
+- **M5-2-8** An object with integer type or pointer to void type shall not be converted to an object with pointer type. 
+- **M5-2-9** A cast shall not convert a pointer type to an integral type. 
+- **M5-2-10** The increment (++) and decrement (-) operators shall not be mixed with other operators in an expression. 
+- **M5-2-11** The comma operator, && operator and the ||operator shall not be overloaded. 
+- **M5-2-12** An identifier with array type passed as a function argument shall not decay to a pointer. 
+- **M5-3-1** Each operand of the ! operator, the logical && or the logical ||operators shall have type bool. 
+- **M5-3-2** The unary minus operator shall not be applied to an expression whose underlying type is unsigned. 
+- **M5-3-3** The unary & operator shall not be overloaded. 
+- **M5-3-4** Evaluation of the operand to the sizeof operator shall not contain side effects. 
+- **M5-8-1** The right hand operand of a shift operator shall lie between zero and one less than the width in bits of the underlying type of the left hand operand. 
+- **M5-14-1** The right hand operand of a logical && or ||operator shall not contain side effects. 
+- **M5-18-1** The comma operator shall not be used. 
+- **M5-19-1** Evaluation of constant unsigned integer expressions shall not lead to wrap-around. 
+- **M6-2-1** Assignment operators shall not be used in sub-expressions. 
+- **M6-2-2** Floating-point expressions shall not be directly or indirectly tested for equality or inequality. 
+- **M6-2-3** Before preprocessing, a null statement shall only occur on a line by itself; it may be followed by a comment, provided that the first character following the null statement is a white-space character. 
+- **M6-3-1** The statement forming the body of a switch, while, do ... while or for statement shall be a compound statement. 
+- **M6-4-1** An if ( condition ) construct shall be followed by a compound statement. The else keyword shall be followed by either a compound statement, or another if statement. 
+- **M6-4-2** All if ... else if constructs shall be terminated with an else clause. 
+- **M6-4-3** A switch statement shall be a well-formed switch statement. 
+- **M6-4-4** A switch-label shall only be used when the most closely-enclosing compound statement is the body of a switch statement. 
+- **M6-4-5** An unconditional throw or break statement shall terminate every non-empty switchclause. 
+- **M6-4-6** The final clause of a switch statement shall be the default-clause. 
+- **M6-4-7** The condition of a switch statement shall not have bool type. 
+- **M6-5-2** If loop-counter is not modified by or ++, then, within condition, the loop-counter shall only be used as an operand to <=, <, > or >=. 
+- **M6-5-3** The loop-counter shall not be modified within condition or statement. 
+- **M6-5-4** The loop-counter shall be modified by one of: -, ++, -=n, or +=n; where n remains constant for the duration of the loop. 
+- **M6-5-5** A loop-control-variable other than the loop-counter shall not be modified within condition or expression. 
+- **M6-5-6** A loop-control-variable other than the loop-counter which is modified in statement shall have type bool. 
+- **M6-6-1** Any label referenced by a goto statement shall be declared in the same block, or in a block enclosing the goto statement. 
+- **M6-6-2** The goto statement shall jump to a label declared later in the same function body. 
+- **M6-6-3** The continue statement shall only be used within a well-formed for loop. 
+- **M7-1-2** A pointer or reference parameter in a function shall be declared as pointer to const or reference to const if the corresponding object is not modified. 
+- **M7-3-1** The global namespace shall only contain main, namespace declarations and extern "C" declarations. 
+- **M7-3-2** The identifier main shall not be used for a function other than the global function main. 
+- **M7-3-3** There shall be no unnamed namespaces in header files. 
+- **M7-3-4** Using-directives shall not be used. 
+- **M7-3-6** Using-directives and using-declarations (excluding class scope or function scope using-declarations) shall not be used in header files. 
+- **M7-4-2** Assembler instructions shall only be introduced using the asm declaration. 
+- **M7-4-3** Assembly language shall be encapsulated and isolated. 
+- **M8-0-1** An init-declarator-list or a member-declarator-list shall consist of a single initdeclarator or member-declarator respectively. 
+- **M8-3-1** Parameters in an overriding virtual function shall either use the same default arguments as the function they override, or else shall not specify any default arguments. 
+- **M8-4-2** The identifiers used for the parameters in a re-declaration of a function shall be identical to those in the declaration. 
+- **M8-4-4** A function identifier shall either be used to call the function or it shall be preceded by &. 
+- **M8-5-2** Braces shall be used to indicate and match the structure in the non-zero initialization of arrays and structures. 
+- **M9-3-1** Const member functions shall not return non-const pointers or references to classdata. 
+- **M9-3-3** If a member function can be made static then it shall be made static, otherwise if it can be made const then it shall be made const. 
+- **M9-6-4** Named bit-fields with signed integer type shall have a length of more than one bit. 
+- **M10-1-1** Classes should not be derived from virtual bases. 
+- **M10-1-2** A base class shall only be declared virtual if it is used in a diamond hierarchy. 
+- **M10-1-3** An accessible base class shall not be both virtual and non-virtual in the same hierarchy. 
+- **M10-2-1** All accessible entity names within a multiple inheritance hierarchy should be unique. 
+- **M10-3-3** A virtual function shall only be overridden by a pure virtual function if it is itself declared as pure virtual. 
+- **M11-0-1** Member data in non-POD class types shall be private. 
+- **M12-1-1** An object's dynamic type shall not be used from the body of its constructor or destructor. 
+- **M14-5-3** A copy assignment operator shall be declared when there is a template assignment operator with a parameter that is a generic parameter. 
+- **M14-6-1** In a class template with a dependent base, any name that may be found in that dependent base shall be referred to using a qualified-id or this->. 
+- **M15-0-3** Control shall not be transferred into a try or catch block using a goto or a switch statement. 
+- **M15-1-1** The assignment-expression of a throw statement shall not itself cause an exception to be thrown. 
+- **M15-1-2** NULL shall not be thrown explicitly. 
+- **M15-1-3** An empty throw (throw;) shall only be used in the compound statement of a catch handler. 
+- **M15-3-1** Exceptions shall be raised only after start-up and before termination. 
+- **M15-3-3** Handlers of a function-try-block implementation of a class constructor or destructor shall not reference non-static members from this class or its bases. 
+- **M15-3-4** Each exception explicitly thrown in the code shall have a handler of a compatible type in all call paths that could lead to that point. 
+- **M15-3-6** Where multiple handlers are provided in a single try-catch statement or function-try-block for a derived class and some or all of its bases, the handlers shall be ordered most-derived to base class. 
+- **M15-3-7** Where multiple handlers are provided in a single try-catch statement or function-try-block, any ellipsis (catch-all) handler shall occur last. 
+- **M16-0-1** #include directives in a file shall only be preceded by other pre-processor directives or comments. 
+- **M16-0-2** Macros shall only be #define'd or #undef'd in the global namespace. 
+- **M16-0-5** Arguments to a function-like macro shall not contain tokens that look like preprocessing directives. 
+- **M16-0-6** In the definition of a function-like macro, each instance of a parameter shall be enclosed in parentheses, unless it is used as the operand of # or ##. 
+- **M16-0-7** Undefined macro identifiers shall not be used in #if or #elif pre-processor directives, except as operands to the defined operator. 
+- **M16-0-8** If the # token appears as the first token on a line, then it shall be immediately followed by a pre-processing token. 
+- **M16-1-1** The defined pre-processor operator shall only be used in one of the two standard forms. 
+- **M16-1-2** All #else, #elif and #endif pre-processor directives shall reside in the same file as the #if or #ifdef directive to which they are related. 
+- **M16-2-3** Include guards shall be provided. 
+- **M16-3-1** There shall be at most one occurrence of the # or ## operators in a single macro definition. 
+- **M16-3-2** The # and ## operators should not be used. 
+- **M17-0-2** The names of standard library macros and objects shall not be reused. 
+- **M17-0-3** The names of standard library functions shall not be overridden. 
+- **M17-0-5** The setjmp macro and the longjmp function shall not be used. 
+- **M18-0-3** The library functions abort, exit, getenv and system from library <cstdlib> shall not be used. 
+- **M18-0-4** The time handling functions of library <ctime> shall not be used. 
+- **M18-0-5** The unbounded functions of library <cstring> shall not be used. 
+- **M18-2-1** The macro offsetof shall not be used. 
+- **M18-7-1** The signal handling facilities of <csignal> shall not be used. 
+- **M19-3-1** The error indicator errno shall not be used. 
+- **M27-0-1** The stream input/output library <cstdio> shall not be used.
+
+## CERT_C
+
+- **API00-C.** Functions should validate their parameters
+- **API01-C.** Avoid laying out strings in memory directly before sensitive data
+- **API02-C.** Functions that read or write to or from an array should take an argument to specify the source or target size
+- **ARR01-C.** Do not apply the sizeof operator to a pointer when taking the size of an array
+- **ARR02-C.** Explicitly specify array bounds, even if implicitly defined by an initializer
+- **ARR30-C.** Do not form or use out-of-bounds pointers or array subscripts
+- **ARR32-C.** Ensure size arguments for variable length arrays are in a valid range
+- **ARR36-C.** Do not subtract or compare two pointers that do not refer to the same array
+- **ARR37-C.** Do not add or subtract an integer to a pointer to a non-array object
+- **ARR38-C.** Guarantee that library functions do not form invalid pointers
+- **ARR39-C.** Do not add or subtract a scaled integer to a pointer
+- **CON01-C.** Acquire and release synchronization primitives in the same module, at the same level of abstraction
+- **CON02-C.** Do not use volatile as a synchronization primitive
+- **CON05-C.** Do not perform operations that can block while holding a lock
+- **CON30-C.** Clean up thread-specific storage
+- **CON31-C.** Do not destroy a mutex while it is locked
+- **CON32-C.** Prevent data races when accessing bit-fields from multiple threads
+- **CON33-C.** Avoid race conditions when using library functions
+- **CON34-C.** Declare objects shared between threads with appropriate storage durations
+- **CON35-C.** Avoid deadlock by locking in a predefined order
+- **CON36-C.** Wrap functions that can spuriously wake up in a loop
+- **CON37-C.** Do not call signal() in a multithreaded program
+- **CON38-C.** Preserve thread safety and liveness when using condition variables
+- **CON39-C.** Do not join or detach a thread that was previously joined or detached
+- **CON40-C.** Do not refer to an atomic variable twice in an expression
+- **CON41-C.** Wrap functions that can fail spuriously in a loop
+- **CON43-C.** Do not allow data races in multithreaded code
+- **DCL00-C.** Const-qualify immutable objects
+- **DCL01-C.** Do not reuse variable names in subscopes
+- **DCL02-C.** Use visually distinct identifiers
+- **DCL04-C.** Do not declare more than one variable per declaration
+- **DCL05-C.** Use typedefs of non-pointer types only
+- **DCL06-C.** Use meaningful symbolic constants to represent literal values
+- **DCL10-C.** Maintain the contract between the writer and caller of variadic functions
+- **DCL11-C.** Understand the type issues associated with variadic functions
+- **DCL12-C.** Implement abstract data types using opaque types
+- **DCL13-C.** Declare function parameters that are pointers to values not changed by the function as const
+- **DCL15-C.** Declare file-scope objects or functions that do not need external linkage as static
+- **DCL16-C.** Use "L," not "l," to indicate a long value
+- **DCL18-C.** Do not begin integer constants with 0 when specifying a decimal value
+- **DCL19-C.** Minimize the scope of variables and functions
+- **DCL20-C.** Explicitly specify void when a function accepts no arguments
+- **DCL22-C.** Use volatile for data that cannot be cached
+- **DCL30-C.** Declare objects with appropriate storage durations
+- **DCL31-C.** Declare identifiers before using them
+- **DCL36-C.** Do not declare an identifier with conflicting linkage classifications
+- **DCL37-C.** Do not declare or define a reserved identifier
+- **DCL38-C.** Use the correct syntax when declaring a flexible array member
+- **DCL39-C.** Avoid information leakage when passing a structure across a trust boundary
+- **DCL40-C.** Do not create incompatible declarations of the same function or object
+- **DCL41-C.** Do not declare variables inside a switch statement before the first case label
+- **ENV01-C.** Do not make assumptions about the size of an environment variable
+- **ENV02-C.** Beware of multiple environment variables with the same effective name
+- **ENV30-C.** Do not modify the object referenced by the return value of certain functions
+- **ENV31-C.** Do not rely on an environment pointer following an operation that may invalidate it
+- **ENV32-C.** All exit handlers must return normally
+- **ENV33-C.** Do not call system()
+- **ENV34-C.** Do not store pointers returned by certain functions
+- **ERR01-C.** Use ferror() rather than errno to check for FILE stream errors
+- **ERR02-C.** Avoid in-band error indicators
+- **ERR04-C.** Choose an appropriate termination strategy
+- **ERR05-C.** Application-independent code should provide error detection without dictating error handling
+- **ERR06-C.** Understand the termination behavior of assert() and abort()
+- **ERR07-C.** Prefer functions that support error checking over equivalent functions that don't
+- **ERR30-C.** Take care when reading errno
+- **ERR32-C.** Do not rely on indeterminate values of errno
+- **ERR33-C.** Detect and handle standard library errors
+- **ERR34-C.** Detect errors when converting a string to a number
+- **EXP00-C.** Use parentheses for precedence of operation
+- **EXP02-C.** Be aware of the short-circuit behavior of the logical AND and OR operators
+- **EXP05-C.** Do not cast away a const qualification
+- **EXP08-C.** Ensure pointer arithmetic is used correctly
+- **EXP10-C.** Do not depend on the order of evaluation of subexpressions or the order in which side effects take place
+- **EXP12-C.** Do not ignore values returned by functions
+- **EXP14-C.** Beware of integer promotion when performing bitwise operations on integer types smaller than int
+- **EXP15-C.** Do not place a semicolon on the same line as an if, for, or while statement
+- **EXP16-C.** Do not compare function pointers to constant values
+- **EXP19-C.** Use braces for the body of an if, for, or while statement
+- **EXP20-C.** Perform explicit tests to determine success, true and false, and equality
+- **EXP30-C.** Do not depend on the order of evaluation for side effects
+- **EXP32-C.** Do not access a volatile object through a nonvolatile reference
+- **EXP33-C.** Do not read uninitialized memory
+- **EXP34-C.** Do not dereference null pointers
+- **EXP35-C.** Do not modify objects with temporary lifetime
+- **EXP36-C.** Do not cast pointers into more strictly aligned pointer types
+- **EXP37-C.** Call functions with the correct number and type of arguments
+- **EXP39-C.** Do not access a variable through a pointer of an incompatible type
+- **EXP40-C.** Do not modify constant objects
+- **EXP42-C.** Do not compare padding data
+- **EXP43-C.** Avoid undefined behavior when using restrict-qualified pointers
+- **EXP44-C.** Do not rely on side effects in operands to sizeof, `_Alignof`, or `_Generic`
+- **EXP45-C.** Do not perform assignments in selection statements
+- **EXP46-C.** Do not use a bitwise operator with a Boolean-like operand
+- **FIO01-C.** Be careful using functions that use file names for identification
+- **FIO21-C.** Do not create temporary files in shared directories
+- **FIO22-C.** Close files before spawning processes
+- **FIO24-C.** Do not open a file that is already open
+- **FIO30-C.** Exclude user input from format strings
+- **FIO32-C.** Do not perform operations on devices that are only appropriate for files
+- **FIO34-C.** Distinguish between characters read from a file and EOF or WEOF
+- **FIO38-C.** Do not copy a FILE object
+- **FIO39-C.** Do not alternately input and output from a stream without an intervening flush or positioning call
+- **FIO40-C.** Reset strings on fgets() or fgetws() failure
+- **FIO41-C.** Do not call getc(), putc(), getwc(), or putwc() with a stream argument that has side effects
+- **FIO42-C.** Close files when they are no longer needed
+- **FIO44-C.** Only use values for fsetpos() that are returned from fgetpos()
+- **FIO45-C.** Avoid TOCTOU race conditions while accessing files
+- **FIO46-C.** Do not access a closed file
+- **FIO47-C.** Use valid format strings
+- **FLP00-C.** Understand the limitations of floating-point numbers
+- **FLP02-C.** Avoid using floating-point numbers when precise computation is needed
+- **FLP03-C.** Detect and handle floating-point errors
+- **FLP06-C.** Convert integers to floating point for floating-point operations
+- **FLP30-C.** Do not use floating-point variables as loop counters
+- **FLP32-C.** Prevent or detect domain and range errors in math functions
+- **FLP34-C.** Ensure that floating-point conversions are within range of the new type
+- **FLP36-C.** Preserve precision when converting integral values to floating-point type
+- **FLP37-C.** Do not use object representations to compare floating-point values
+- **INT02-C.** Understand integer conversion rules
+- **INT04-C.** Enforce limits on integer values originating from tainted sources
+- **INT05-C.** Do not use input functions to convert character data if they cannot handle all possible inputs
+- **INT07-C.** Use only explicitly signed or unsigned char type for numeric values
+- **INT08-C.** Verify that all integer values are in range
+- **INT09-C.** Ensure enumeration constants map to unique values
+- **INT10-C.** Do not assume a positive remainder when using the % operator
+- **INT12-C.** Do not make assumptions about the type of a plain int bit-field when used in an expression
+- **INT13-C.** Use bitwise operators only on unsigned operands
+- **INT15-C.** Use intmax_t or uintmax_t for formatted IO on programmer-defined integer types
+- **INT16-C.** Do not make assumptions about representation of signed integers
+- **INT18-C.** Evaluate integer expressions in a larger size before comparing or assigning to that size
+- **INT30-C.** Ensure that unsigned integer operations do not wrap
+- **INT31-C.** Ensure that integer conversions do not result in lost or misinterpreted data
+- **INT32-C.** Ensure that operations on signed integers do not result in overflow
+- **INT33-C.** Ensure that division and remainder operations do not result in divide-by-zero errors
+- **INT34-C.** Do not shift an expression by a negative number of bits or by greater than or equal to the number of bits that exist in the operand
+- **INT35-C.** Use correct integer precisions
+- **INT36-C.** Converting a pointer to integer or integer to pointer
+- **MEM00-C.** Allocate and free memory in the same module, at the same level of abstraction
+- **MEM01-C.** Store a new value in pointers immediately after free()
+- **MEM02-C.** Immediately cast the result of a memory allocation function call into a pointer to the allocated type
+- **MEM03-C.** Clear sensitive information stored in reusable resources
+- **MEM04-C.** Beware of zero-length allocations
+- **MEM05-C.** Avoid large stack allocations
+- **MEM07-C.** Ensure that the arguments to calloc(), when multiplied, do not wrap
+- **MEM12-C.** Consider using a goto chain when leaving a function on error when using and releasing resources
+- **MEM30-C.** Do not access freed memory
+- **MEM31-C.** Free dynamically allocated memory when no longer needed
+- **MEM33-C.** Allocate and copy structures containing a flexible array member dynamically
+- **MEM34-C.** Only free memory allocated dynamically
+- **MEM35-C.** Allocate sufficient memory for an object
+- **MEM36-C.** Do not modify the alignment of objects by calling realloc()
+- **MSC01-C.** Strive for logical completeness
+- **MSC04-C.** Use comments consistently and in a readable fashion
+- **MSC06-C.** Beware of compiler optimizations
+- **MSC07-C.** Detect and remove dead code
+- **MSC09-C.** Character encoding: Use subset of ASCII for safety
+- **MSC11-C.** Incorporate diagnostic tests using assertions
+- **MSC12-C.** Detect and remove code that has no effect or is never executed
+- **MSC13-C.** Detect and remove unused values
+- **MSC14-C.** Do not introduce unnecessary platform dependencies
+- **MSC15-C.** Do not depend on undefined behavior
+- **MSC17-C.** Finish every set of statements associated with a case label with a break statement
+- **MSC19-C.** For functions that return an array, prefer returning an empty array over a null value
+- **MSC22-C.** Use the setjmp(), longjmp() facility securely
+- **MSC24-C.** Do not use deprecated or obsolescent functions
+- **MSC30-C.** Do not use the rand() function for generating pseudorandom numbers
+- **MSC32-C.** Properly seed pseudorandom number generators
+- **MSC33-C.** Do not pass invalid data to the asctime() function
+- **MSC37-C.** Ensure that control never reaches the end of a non-void function
+- **MSC38-C.** Do not treat a predefined identifier as an object if it might only be implemented as a macro
+- **MSC39-C.** Do not call va_arg() on a va_list that has an indeterminate value
+- **MSC40-C.** Do not violate constraints
+- **MSC41-C.** Never hard code sensitive information
+- **POS30-C.** Use the readlink() function properly
+- **POS34-C.** Do not call putenv() with a pointer to an automatic variable as the argument
+- **POS35-C.** Avoid race conditions while checking for the existence of a symbolic link
+- **POS36-C.** Observe correct revocation order while relinquishing privileges
+- **POS37-C.** Ensure that privilege relinquishment is successful
+- **POS38-C.** Beware of race conditions when using fork and file descriptors
+- **POS39-C.** Use the correct byte ordering when transferring data between systems
+- **POS44-C.** Do not use signals to terminate threads
+- **POS47-C.** Do not use threads that can be canceled asynchronously
+- **POS48-C.** Do not unlock or destroy another POSIX thread's mutex
+- **POS49-C.** When data must be accessed by multiple threads, provide a mutex and guarantee no adjacent data is also accessed
+- **POS50-C.** Declare objects shared between POSIX threads with appropriate storage durations
+- **POS51-C.** Avoid deadlock with POSIX threads by locking in predefined order
+- **POS52-C.** Do not perform operations that can block while holding a POSIX lock
+- **POS53-C.** Do not use more than one mutex for concurrent waiting operations on a condition variable
+- **POS54-C.** Detect and handle POSIX library errors
+- **PRE00-C.** Prefer inline or static functions to function-like macros
+- **PRE01-C.** Use parentheses within macros around parameter names
+- **PRE02-C.** Macro replacement lists should be parenthesized
+- **PRE06-C.** Enclose header files in an include guard
+- **PRE07-C.** Avoid using repeated question marks
+- **PRE30-C.** Do not create a universal character name through concatenation
+- **PRE31-C.** Avoid side effects in arguments to unsafe macros
+- **PRE32-C.** Do not use preprocessor directives in invocations of function-like macros
+- **SIG00-C.** Mask signals handled by noninterruptible signal handlers
+- **SIG01-C.** Understand implementation-specific details regarding signal handler persistence
+- **SIG02-C.** Avoid using signals to implement normal functionality
+- **SIG30-C.** Call only asynchronous-safe functions within signal handlers
+- **SIG31-C.** Do not access shared objects in signal handlers
+- **SIG34-C.** Do not call signal() from within interruptible signal handlers
+- **SIG35-C.** Do not return from a computational exception signal handler
+- **STR00-C.** Represent characters using an appropriate type
+- **STR02-C.** Sanitize data passed to complex subsystems
+- **STR03-C.** Do not inadvertently truncate a string
+- **STR04-C.** Use plain char for characters in the basic character set
+- **STR05-C.** Use pointers to const when referring to string literals
+- **STR09-C.** Don't assume numeric values for expressions with type plain character
+- **STR10-C.** Do not concatenate different type of string literals
+- **STR11-C.** Do not specify the bound of a character array initialized with a string literal
+- **STR30-C.** Do not attempt to modify string literals
+- **STR31-C.** Guarantee that storage for strings has sufficient space for character data and the null terminator
+- **STR32-C.** Do not pass a non-null-terminated character sequence to a library function that expects a string
+- **STR34-C.** Cast characters to unsigned char before converting to larger integer sizes
+- **STR37-C.** Arguments to character-handling functions must be representable as an unsigned char
+- **STR38-C.** Do not confuse narrow and wide character strings and functions
+- **WIN00-C.** Be specific when dynamically loading libraries
+- **WIN30-C.** Properly pair allocation and deallocation functions
+- **MEM01-C.** Store a new value in pointers immediately after free()
+- **DCL40-C.** Do not create incompatible declarations of the same function or object
+- **EXP33-C.** Do not read uninitialized memory
+- **EXP34-C.** Do not dereference null pointers
+- **INT32-C.** Ensure that operations on signed integers do not result in overflow
+- **INT33-C.** Ensure that division and remainder operations do not result in divide-by-zero errors
+- **ARR30-C.** Do not form or use out-of-bounds pointers or array subscripts
+- **ARR38-C.** Guarantee that library functions do not form invalid pointers
+- **MEM30-C.** Do not access freed memory
+- **MEM31-C.** Free dynamically allocated memory when no longer needed
+- **MEM34-C.** Only free memory allocated dynamically
+- **ERR33-C.** Detect and handle standard library errors
+- **DCL11-C.** Understand the type issues associated with variadic functions
+- **EXP08-C.** Ensure pointer arithmetic is used correctly
+- **FLP03-C.** Detect and handle floating-point errors
+- **MEM00-C.** Allocate and free memory in the same module, at the same level of abstraction
