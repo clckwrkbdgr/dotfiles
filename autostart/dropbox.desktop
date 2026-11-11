@@ -8,3 +8,5 @@ Type=Application
 Icon=dropbox
 Categories=Network;FileTransfer;
 StartupNotify=false
+# Temporarily disabled; will be started by other means.
+Hidden=true
