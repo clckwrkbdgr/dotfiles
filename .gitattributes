@@ -80,6 +80,7 @@ QtProject.conf caps=home
 QtProject/Designer.conf caps=home
 QtProject/Linguist.conf caps=home
 mimeapps.list caps=home
+setup.d/30.resume-mocp-last-track.py caps=home
 
 bin/audiostreaming caps=home
 bin/backlight_off caps=home
