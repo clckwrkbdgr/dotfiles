@@ -75,6 +75,7 @@ moc/** caps=home
 naev/* caps=home
 mplayer/* caps=home
 klavaro/* caps=home
+autostart/im-launch.desktop caps=home
 autostart/dropbox.desktop caps=home
 QtProject.conf caps=home
 QtProject/Designer.conf caps=home
