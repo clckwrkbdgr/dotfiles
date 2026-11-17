@@ -31,6 +31,9 @@ cli() {
 		if ! processes_by_names $pnames | grep -q '.'; then
 			return 1
 		fi
+		if [ -f "$XRE_PROFILE_PATH/.startup-incomplete" ]; then
+			return 1
+		fi
 	fi
 	
 	[ -z "${CLICK_ARGS[hide]}" ] && bring_to_top_by_pnames $pnames
