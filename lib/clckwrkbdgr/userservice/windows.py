@@ -112,13 +112,21 @@ class UserService(_base.UserService): # pragma: no cover -- TODO - subprocesses,
 		fqdn = next(line for line in subprocess.check_output(['ipconfig', '/all']).decode().splitlines() if line.lstrip().startswith('Primary Dns Suffix')).split(':')[-1].strip()
 		fully_qualified_username = '{1}@{0}'.format(fqdn, username)
 
-		output = subprocess.check_output([
-			'wmic', 'service',
-			'where', 'StartName like "{0}" OR StartName like "{1}"'.format(qualified_username.replace('\\', '\\\\'), fully_qualified_username),
-			'get', '/format:csv',
-			], shell=True)
+		try:
+			output = subprocess.check_output([
+				'powershell', '-noprofile', '-command',
+				'Get-CimInstance -ClassName Win32_Service |  Where-Object {{ $_.StartName -eq "{0}" -or $_.StartName -eq "{1}" }} | Select-Object Name, State | ConvertTo-Csv'.format(qualified_username.replace('\\', '\\\\'), fully_qualified_username),
+				], shell=True)
+		except subprocess.CalledProcessError:
+			# Legacy way (WMIC was deprecated and removed in Win11).
+			output = subprocess.check_output([
+				'wmic', 'service',
+				'where', 'StartName like "{0}" OR StartName like "{1}"'.format(qualified_username.replace('\\', '\\\\'), fully_qualified_username),
+				'get', '/format:csv',
+				], shell=True)
 		import csv
-		for row in csv.DictReader(filter(None, output.decode('utf-8', 'replace').splitlines())):
+		lines = (line for line in output.decode('utf-8', 'replace').splitlines() if line.strip() and not line.startswith('#TYPE'))
+		for row in csv.DictReader(lines):
 			yield cls.Status(row['Name'], row['State'] == 'Running')
 	def is_installed(self):
 		rc = subprocess.call(["sc", "query", self.id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
