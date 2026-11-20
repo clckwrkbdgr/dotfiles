@@ -272,6 +272,7 @@ lib/clckwrkbdgr/leds/windows.py caps=work
 lib/clckwrkbdgr/test/test_leds.py caps=work
 lib/clckwrkbdgr/lint/** caps=work
 lib/clckwrkbdgr/mail.py caps=work
+lib/clckwrkbdgr/media/** caps=work
 lib/clckwrkbdgr/test/test_mail.py caps=work
 lib/clckwrkbdgr/math/*.py caps=work
 lib/clckwrkbdgr/math/test/*.py caps=work

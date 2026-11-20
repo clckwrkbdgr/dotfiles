@@ -15,25 +15,35 @@ control_mpv() { # <action>
 	echo "$mpv_command" | socat - "$XDG_CONFIG_HOME/mpv/remote-control.socket"
 }
 
+ensure_mocp() { # <mocp args>
+	mocp "$@"
+	[ $? -eq 0 ] && return 0
+	if mocp -i 2>&1 | grep -q 'FATAL_ERROR: The server is not running!'; then
+		python -m clckwrkbdgr.media.mocp fix-last-track >&2
+		mocp -S >&2
+		mocp "$@"
+	fi
+}
+
 control_mocp() { # <action>
 	action="$1"
 	if [ "$action" == "state" ]; then
-		mocp -i | grep -q 'State: PLAY'
+		ensure_mocp -i | grep -q 'State: PLAY'
 		return $?
 	fi
 	if [ "$action" == "pause" ]; then
-		mocp -P
+		ensure_mocp -P
 	elif [ "$action" == "resume" ]; then
-		if [ "$(mocp -Q '%state')" == STOP ]; then
-			mocp -p
+		if [ "$(ensure_mocp -Q '%state')" == STOP ]; then
+			ensure_mocp -p
 		else
-			mocp -U
+			ensure_mocp -U
 		fi
 	else
-		if [ "$(mocp -Q '%state')" == STOP ]; then
-			mocp -p
+		if [ "$(ensure_mocp -Q '%state')" == STOP ]; then
+			ensure_mocp -p
 		else
-			mocp -G
+			ensure_mocp -G
 		fi
 	fi
 }
