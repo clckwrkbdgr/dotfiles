@@ -38,12 +38,17 @@ check process lastfmsubmitd with pidfile /var/run/lastfm/lastfmsubmitd.pid
 """
 MONIT_CONF_DIR = Path('/etc/monit/conf.d/')
 
-def file_has_content(filename, content):
+def file_has_content(filename, content, full_match=True):
 	filename = Path(filename)
 	if not filename.is_file():
 		return False
-	if filename.read_text() != content:
-		return False
+	actual_content = filename.read_text()
+	if full_match:
+		if actual_content != content:
+			return False
+	else:
+		if content not in actual_content:
+			return False
 	return True
 
 if not file_has_content(MONIT_CONF_DIR/'lastfmsubmitd', LASTFMSUBMITD_MONIT):
@@ -52,6 +57,22 @@ if not file_has_content(MONIT_CONF_DIR/'lastfmsubmitd', LASTFMSUBMITD_MONIT):
 		))
 	print(LASTFMSUBMITD_MONIT)
 	sys.exit(1) # TODO way to fix automatically with sudo.
+
+dist_dir = '/usr/local/lib/python2.7/dist-packages/lastfm'
+client_src = os.path.join(dist_dir, 'client.py')
+LASTFM_RUN_MKDIR_PATCH = """\
+        try:
+            piddir = os.path.dirname(self.conf.pidfile_path) # BADGER PATCHED
+            if not os.path.isdir(piddir): # BADGER PATCHED
+                os.makedirs(piddir) # BADGER PATCHED
+            pidfile = open(self.conf.pidfile_path, 'w')
+"""
+if not file_has_content(client_src, LASTFM_RUN_MKDIR_PATCH, full_match=False):
+	trace.error('{0} is missing or does not contain following patch:'.format(
+		client_src,
+		))
+	print(LASTFM_RUN_MKDIR_PATCH)
+	context | 1
 
 if not os.path.isdir('/run/lastfm'):
 	trace.error('Directory {0} is missing.'.format('/run/lastfm'))
@@ -63,3 +84,5 @@ if not os.path.isdir('/run/lastfm'):
 	script += 'sudo /usr/sbin/service lastfmsubmitd restart'
 
 	context.die('or run script {0}'.format(script.filename))
+
+context.done()
