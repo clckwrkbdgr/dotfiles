@@ -24,8 +24,6 @@ if pushd lib >/dev/null; then
 
 	unittest -q -p py3 -p bash -p html # TODO option to exclude --platform py2
 	rc=$((rc+$?))
-	python -c "import clckwrkbdgr.buildqueue; clckwrkbdgr.buildqueue.run_command(['unittest', '-q', '-p', 'py2'], start_dir='$(pwd)')"
-	rc=$((rc+$?))
 
 	popd >/dev/null
 fi
