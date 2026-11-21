@@ -10,5 +10,5 @@ context = clckwrkbdgr.jobsequence.context.init(
 lock = fs.CrossHostFSMutex(xdg.save_state_path('dailyupdate')/'dotfiles_lib_unittest.lock')
 lock.wait_lock(timeout=60)
 with lock:
-	context | subprocess.call(['unittest'] + context.quiet_arg("-q"), shell=(platform.system()=='Windows'))
+	context | subprocess.call(['unittest', '-p', 'py3', '-p', 'bash', '-p', 'html'] + context.quiet_arg("-q"), shell=(platform.system()=='Windows'))
 	context.done()
