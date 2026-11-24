@@ -169,6 +169,7 @@ delete 'browser.crashReports.cleanupCheck.lastDate' ''
 delete 'browser.urlbar.lastUrlbarSearchSeconds' ''
 delete 'identity.fxaccounts.account.device.name' ''
 delete 'browser.contextual-services.contextId' ''
+delete 'browser.preferences.experimental.hidden' ''
 
 replace 'extensions.systemAddonSet' '{.*}' --with '{"schema":1,"addons":{}}' --pattern-type=regex
 #sed 's/\(browser.uiCustomization.state.*newElementCount[^:]*\): *[0-9]\+/\1:1/' | \
